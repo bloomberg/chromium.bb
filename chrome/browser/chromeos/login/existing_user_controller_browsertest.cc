@@ -241,9 +241,10 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(CreateAuthenticator(kUsername, kPassword)));
-  EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(UserContext(kUsername, kPassword, "", kUsername),
-                             _, _, _, _))
+  UserContext user_context(kUsername);
+  user_context.SetPassword(kPassword);
+  user_context.SetUserIDHash(kUsername);
+  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -263,7 +264,7 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
-  existing_user_controller()->Login(UserContext(kUsername, kPassword, ""));
+  existing_user_controller()->Login(user_context);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -289,8 +290,9 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
       .Times(1)
       .InSequence(uiEnabledSequence);
   existing_user_controller()->DoAutoEnrollment();
-  existing_user_controller()->CompleteLogin(
-      UserContext(kUsername, kPassword, ""));
+  UserContext user_context(kUsername);
+  user_context.SetPassword(kPassword);
+  existing_user_controller()->CompleteLogin(user_context);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -311,12 +313,10 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
       base::Bind(&MockUserManager::AddUser,
                  base::Unretained(mock_user_manager_),
                  kNewUsername);
-  EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(UserContext(kNewUsername,
-                                         kPassword,
-                                         std::string(),
-                                         kNewUsername),
-                             _, _, _, _))
+  UserContext user_context(kNewUsername);
+  user_context.SetPassword(kPassword);
+  user_context.SetUserIDHash(kNewUsername);
+  EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(DoAll(
           InvokeWithoutArgs(&add_user_cb,
@@ -345,8 +345,7 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
       .Times(1)
       .InSequence(uiEnabledSequence);
 
-  existing_user_controller()->CompleteLogin(
-      UserContext(kNewUsername, kPassword, ""));
+  existing_user_controller()->CompleteLogin(user_context);
   content::RunAllPendingInMessageLoop();
 }
 
@@ -446,9 +445,10 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
         .Times(1)
         .WillOnce(WithArg<0>(CreateAuthenticator(username, password)));
-    EXPECT_CALL(*mock_login_utils_,
-                PrepareProfile(UserContext(username, password, "", username),
-                               _, _, _, _))
+    UserContext user_context(username);
+    user_context.SetPassword(password);
+    user_context.SetUserIDHash(username);
+    EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                     &base::Callback<void(void)>::Run));
@@ -590,7 +590,9 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Login and check that it stopped the timer.
-  existing_user_controller()->Login(UserContext(kUsername, kPassword, ""));
+  UserContext user_context(kUsername);
+  user_context.SetPassword(kPassword);
+  existing_user_controller()->Login(user_context);
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
@@ -643,8 +645,9 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Check that login completes and stops the timer.
-  existing_user_controller()->CompleteLogin(
-      UserContext(kUsername, kPassword, ""));
+  UserContext user_context(kUsername);
+  user_context.SetPassword(kPassword);
+  existing_user_controller()->CompleteLogin(user_context);
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
 

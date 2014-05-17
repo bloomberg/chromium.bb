@@ -397,25 +397,22 @@ class LoginUtilsTest : public testing::Test,
 
     scoped_refptr<Authenticator> authenticator =
         LoginUtils::Get()->CreateAuthenticator(this);
+    UserContext user_context(username);
+    user_context.SetPassword("password");
+    user_context.SetUserIDHash(username);
     authenticator->CompleteLogin(ProfileHelper::GetSigninProfile(),
-                                 UserContext(username,
-                                             "password",
-                                             std::string(),
-                                             username));   // username_hash
+                                 user_context);
 
-    const bool kUsingOAuth = true;
     // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
     // waiting for an IO task before proceeding.
     const bool kHasCookies = false;
     const bool kHasActiveSession = false;
-    LoginUtils::Get()->PrepareProfile(
-        UserContext(username,
-                    "password",
-                    std::string(),
-                    username,
-                    kUsingOAuth,
-                    UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML),
-        std::string(), kHasCookies, kHasActiveSession, this);
+    user_context.SetAuthFlow(UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+    LoginUtils::Get()->PrepareProfile(user_context,
+                                      std::string(),
+                                      kHasCookies,
+                                      kHasActiveSession,
+                                      this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
 

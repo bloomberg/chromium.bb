@@ -8,8 +8,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -107,47 +109,27 @@ class PublicAccountUser : public User {
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
 
-UserContext::UserContext() : is_using_oauth_(true),
+UserContext::UserContext() : does_need_password_hashing_(true),
+                             is_using_oauth_(true),
                              auth_flow_(AUTH_FLOW_OFFLINE) {
 }
 
-UserContext::UserContext(const std::string& user_id,
-                         const std::string& password,
-                         const std::string& auth_code)
-    : user_id_(user_id),
-      password_(password),
-      does_need_password_hashing_(true),
-      auth_code_(auth_code),
-      is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE) {
+UserContext::UserContext(const UserContext& other)
+    : user_id_(other.user_id_),
+      password_(other.password_),
+      does_need_password_hashing_(other.does_need_password_hashing_),
+      key_label_(other.key_label_),
+      auth_code_(other.auth_code_),
+      user_id_hash_(other.user_id_hash_),
+      is_using_oauth_(other.is_using_oauth_),
+      auth_flow_(other.auth_flow_) {
 }
 
-UserContext::UserContext(const std::string& user_id,
-                         const std::string& password,
-                         const std::string& auth_code,
-                         const std::string& user_id_hash)
-    : user_id_(user_id),
-      password_(password),
+UserContext::UserContext(const std::string& user_id)
+    : user_id_(login::CanonicalizeUserID(user_id)),
       does_need_password_hashing_(true),
-      auth_code_(auth_code),
-      user_id_hash_(user_id_hash),
       is_using_oauth_(true),
       auth_flow_(AUTH_FLOW_OFFLINE) {
-}
-
-UserContext::UserContext(const std::string& user_id,
-                         const std::string& password,
-                         const std::string& auth_code,
-                         const std::string& user_id_hash,
-                         bool is_using_oauth,
-                         AuthFlow auth_flow)
-    : user_id_(user_id),
-      password_(password),
-      does_need_password_hashing_(true),
-      auth_code_(auth_code),
-      user_id_hash_(user_id_hash),
-      is_using_oauth_(is_using_oauth),
-      auth_flow_(auth_flow) {
 }
 
 UserContext::~UserContext() {
@@ -162,17 +144,6 @@ bool UserContext::operator==(const UserContext& context) const {
          context.user_id_hash_ == user_id_hash_ &&
          context.is_using_oauth_ == is_using_oauth_ &&
          context.auth_flow_ == auth_flow_;
-}
-
-void UserContext::CopyFrom(const UserContext& other) {
-  user_id_ = other.user_id_;
-  password_ = other.password_;
-  does_need_password_hashing_ = other.does_need_password_hashing_;
-  key_label_ = other.key_label_;
-  auth_code_ = other.auth_code_;
-  user_id_hash_ = other.user_id_hash_;
-  is_using_oauth_ = other.is_using_oauth_;
-  auth_flow_ = other.auth_flow_;
 }
 
 const std::string& UserContext::GetUserID() const {
@@ -212,7 +183,7 @@ bool UserContext::HasCredentials() const {
 }
 
 void UserContext::SetUserID(const std::string& user_id) {
-  user_id_ = user_id;
+  user_id_ = login::CanonicalizeUserID(user_id);
 }
 
 void UserContext::SetPassword(const std::string& password) {
@@ -237,6 +208,15 @@ void UserContext::SetUserIDHash(const std::string& user_id_hash) {
 
 void UserContext::SetIsUsingOAuth(bool is_using_oauth) {
   is_using_oauth_ = is_using_oauth;
+}
+
+void UserContext::SetAuthFlow(AuthFlow auth_flow) {
+  auth_flow_ = auth_flow;
+}
+
+void UserContext::ClearSecrets() {
+  password_.clear();
+  auth_code_.clear();
 }
 
 std::string User::GetEmail() const {

@@ -267,12 +267,11 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
   base::Base64Decode(creation_context_->signature_key,
                      &password_key.signature_key);
 
-  UserContext context(creation_context_->local_user_id,
-                      creation_context_->salted_master_key,
-                      std::string());
-  context.SetIsUsingOAuth(false);
+  UserContext context(creation_context_->local_user_id);
+  context.SetPassword(creation_context_->salted_master_key);
   context.SetDoesNeedPasswordHashing(false);
   context.SetKeyLabel(kCryptohomeMasterKeyLabel);
+  context.SetIsUsingOAuth(false);
 
   authenticator_->AddKey(
       context,

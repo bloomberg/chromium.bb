@@ -268,12 +268,7 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 
   if (login_status_consumer_) {
     login_status_consumer_->OnLoginSuccess(
-        UserContext(authentication_capture_->user_context.GetUserID(),
-                    authentication_capture_->user_context.GetPassword(),
-                    authentication_capture_->user_context.GetAuthCode(),
-                    authentication_capture_->user_context.GetUserIDHash(),
-                    authentication_capture_->user_context.IsUsingOAuth(),
-                    authentication_capture_->user_context.GetAuthFlow()));
+        authentication_capture_->user_context);
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();

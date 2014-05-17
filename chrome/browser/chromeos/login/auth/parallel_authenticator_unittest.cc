@@ -75,13 +75,9 @@ class ParallelAuthenticatorTest : public testing::Test {
     SystemSaltGetter::Initialize();
 
     auth_ = new ParallelAuthenticator(&consumer_);
-    state_.reset(new TestAttemptState(UserContext(username_,
-                                                  password_,
-                                                  std::string()),
-                                      "",
-                                      "",
-                                      User::USER_TYPE_REGULAR,
-                                      false));
+    UserContext user_context(username_);
+    user_context.SetPassword(password_);
+    state_.reset(new TestAttemptState(user_context, false));
   }
 
   // Tears down the test fixture.
@@ -144,15 +140,12 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   void ExpectLoginSuccess(const std::string& username,
                           const std::string& password,
-                          const std::string& username_hash_,
+                          const std::string& username_hash,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(
-        username,
-        password,
-        std::string(),
-        username_hash_,
-        true,  // using_oauth
-        UserContext::AUTH_FLOW_OFFLINE)))
+    UserContext user_context(username);
+    user_context.SetPassword(password);
+    user_context.SetUserIDHash(username_hash);
+    EXPECT_CALL(consumer_, OnLoginSuccess(user_context))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
   }
@@ -209,13 +202,10 @@ class ParallelAuthenticatorTest : public testing::Test {
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(
-      username_,
-      password_,
-      std::string(),
-      username_hash_,
-      true,  // using oauth
-      UserContext::AUTH_FLOW_OFFLINE)))
+  UserContext user_context(username_);
+  user_context.SetPassword(password_);
+  user_context.SetUserIDHash(username_hash_);
+  EXPECT_CALL(consumer_, OnLoginSuccess(user_context))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -279,13 +269,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   SetOwnerState(false, false);
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(UserContext(username_,
-                                                password_,
-                                                std::string()),
-                                    "",
-                                    "",
-                                    User::USER_TYPE_REGULAR,
-                                    false));
+  UserContext user_context(username_);
+  user_context.SetPassword(password_);
+  state_.reset(new TestAttemptState(user_context, false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OFFLINE_LOGIN,
             SetAndResolveState(auth_.get(), state_.release()));
@@ -328,13 +314,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // verification.
   device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
-  state_.reset(new TestAttemptState(UserContext(username_,
-                                                password_,
-                                                std::string()),
-                                    "",
-                                    "",
-                                    User::USER_TYPE_REGULAR,
-                                    false));
+  UserContext user_context(username_);
+  user_context.SetPassword(password_);
+  state_.reset(new TestAttemptState(user_context, false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
             SetAndResolveState(auth_.get(), state_.release()));
@@ -607,9 +589,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
       .Times(1)
       .RetiresOnSaturation();
 
-  auth_->AuthenticateToUnlock(UserContext(username_,
-                                          std::string(),
-                                          std::string()));
+  auth_->AuthenticateToUnlock(UserContext(username_));
   base::MessageLoop::current()->Run();
 }
 

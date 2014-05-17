@@ -36,23 +36,11 @@ class UserContext {
   };
 
   UserContext();
-  UserContext(const std::string& user_id,
-              const std::string& password,
-              const std::string& auth_code);
-  UserContext(const std::string& user_id,
-              const std::string& password,
-              const std::string& auth_code,
-              const std::string& user_id_hash);
-  UserContext(const std::string& user_id,
-              const std::string& password,
-              const std::string& auth_code,
-              const std::string& user_id_hash,
-              bool is_using_oauth,
-              AuthFlow auth_flow);
+  UserContext(const UserContext& other);
+  explicit UserContext(const std::string& user_id);
   ~UserContext();
-  bool operator==(const UserContext& context) const;
 
-  void CopyFrom(const UserContext& other);
+  bool operator==(const UserContext& context) const;
 
   const std::string& GetUserID() const;
   const std::string& GetPassword() const;
@@ -72,6 +60,9 @@ class UserContext {
   void SetAuthCode(const std::string& auth_code);
   void SetUserIDHash(const std::string& user_id_hash);
   void SetIsUsingOAuth(bool is_using_oauth);
+  void SetAuthFlow(AuthFlow auth_flow);
+
+  void ClearSecrets();
 
  private:
   std::string user_id_;

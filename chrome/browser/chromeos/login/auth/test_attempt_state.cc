@@ -4,21 +4,17 @@
 
 #include "chrome/browser/chromeos/login/auth/test_attempt_state.h"
 
-#include <string>
-
+#include "chrome/browser/chromeos/login/users/user.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
 
 TestAttemptState::TestAttemptState(const UserContext& credentials,
-                                   const std::string& login_token,
-                                   const std::string& login_captcha,
-                                   const User::UserType user_type,
                                    const bool user_is_new)
     : AuthAttemptState(credentials,
-                       login_token,
-                       login_captcha,
-                       user_type,
+                       User::USER_TYPE_REGULAR,
+                       false,  // unlock
+                       false,  // online_complete
                        user_is_new) {
 }
 

@@ -125,8 +125,7 @@ std::string SupervisedUserAuthentication::TransformPassword(
 
 UserContext SupervisedUserAuthentication::TransformPasswordInContext(
     const UserContext& context) {
-  UserContext result;
-  result.CopyFrom(context);
+  UserContext result = context;
   int user_schema = GetPasswordSchema(context.GetUserID());
   if (user_schema == SCHEMA_PLAIN)
     return result;

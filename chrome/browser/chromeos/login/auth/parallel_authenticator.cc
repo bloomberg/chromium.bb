@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "crypto/sha2.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
@@ -226,17 +225,13 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
 void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const UserContext& user_context) {
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   authentication_profile_ = profile;
-  current_state_.reset(
-      new AuthAttemptState(
-          UserContext(canonicalized,
-                      user_context.GetPassword(),
-                      user_context.GetAuthCode()),
-          std::string(), // login_token, not used.
-          std::string(), // login_captcha, not used.
-          User::USER_TYPE_REGULAR,
-          !UserManager::Get()->IsKnownUser(canonicalized)));
+  current_state_.reset(new AuthAttemptState(
+      user_context,
+      User::USER_TYPE_REGULAR,
+      false,  // unlock
+      false,  // online_complete
+      !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
   // Reset the verified flag.
   owner_is_verified_ = false;
 
@@ -249,17 +244,13 @@ void ParallelAuthenticator::AuthenticateToLogin(
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const UserContext& user_context) {
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   authentication_profile_ = profile;
-  current_state_.reset(
-      new AuthAttemptState(
-          UserContext(canonicalized,
-                      user_context.GetPassword(),
-                      user_context.GetAuthCode(),
-                      user_context.GetUserIDHash(),
-                      user_context.IsUsingOAuth(),
-                      user_context.GetAuthFlow()),
-          !UserManager::Get()->IsKnownUser(canonicalized)));
+  current_state_.reset(new AuthAttemptState(
+      user_context,
+      User::USER_TYPE_REGULAR,
+      true,   // unlock
+      false,  // online_complete
+      !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
 
   // Reset the verified flag.
   owner_is_verified_ = false;
@@ -280,10 +271,11 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
 
 void ParallelAuthenticator::AuthenticateToUnlock(
     const UserContext& user_context) {
-  current_state_.reset(
-      new AuthAttemptState(
-          gaia::CanonicalizeEmail(user_context.GetUserID()),
-          user_context.GetPassword()));
+  current_state_.reset(new AuthAttemptState(user_context,
+                                            User::USER_TYPE_REGULAR,
+                                            true,     // unlock
+                                            true,     // online_complete
+                                            false));  // user_is_new
   remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -298,10 +290,10 @@ void ParallelAuthenticator::LoginAsLocallyManagedUser(
   // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
   current_state_.reset(
       new AuthAttemptState(user_context,
-                           "",   // login_token
-                           "",   // login_captcha
                            User::USER_TYPE_LOCALLY_MANAGED,
-                           false));
+                           false,    // unlock
+                           false,    // online_complete
+                           false));  // user_is_new
   remove_user_data_on_failure_ = false;
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
@@ -315,13 +307,11 @@ void ParallelAuthenticator::LoginRetailMode() {
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
   // mode session.
   current_state_.reset(new AuthAttemptState(
-        UserContext(UserManager::kRetailModeUserName,
-                    std::string(),   // password
-                    std::string()),  // auth_code
-        std::string(),  // login_token
-        std::string(),  // login_captcha
-        User::USER_TYPE_RETAIL_MODE,
-        false));
+      UserContext(UserManager::kRetailModeUserName),
+      User::USER_TYPE_RETAIL_MODE,
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
@@ -331,13 +321,11 @@ void ParallelAuthenticator::LoginRetailMode() {
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   current_state_.reset(new AuthAttemptState(
-      UserContext(UserManager::kGuestUserName,  // username
-                  std::string(),                // password
-                  std::string()),               // auth_code
-      std::string(),  // login_token
-      std::string(),  // login_captcha
+      UserContext(UserManager::kGuestUserName),
       User::USER_TYPE_GUEST,
-      false));
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
@@ -346,14 +334,11 @@ void ParallelAuthenticator::LoginOffTheRecord() {
 
 void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState(
-      UserContext(username,
-                  std::string(),  // password
-                  std::string()),  // auth_code
-      std::string(),  // login_token
-      std::string(),  // login_captcha
-      User::USER_TYPE_PUBLIC_ACCOUNT,
-      false));
+  current_state_.reset(new AuthAttemptState(UserContext(username),
+                                            User::USER_TYPE_PUBLIC_ACCOUNT,
+                                            false,    // unlock
+                                            false,    // online_complete
+                                            false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -370,14 +355,11 @@ void ParallelAuthenticator::LoginAsKioskAccount(
 
   const std::string user_id =
       use_guest_mount ? UserManager::kGuestUserName : app_user_id;
-  current_state_.reset(new AuthAttemptState(
-      UserContext(user_id,
-                  std::string(),  // password
-                  std::string()),  // auth_code
-      std::string(),  // login_token
-      std::string(),  // login_captcha
-      User::USER_TYPE_KIOSK_APP,
-      false));
+  current_state_.reset(new AuthAttemptState(UserContext(user_id),
+                                            User::USER_TYPE_KIOSK_APP,
+                                            false,    // unlock
+                                            false,    // online_complete
+                                            false));  // user_is_new
 
   remove_user_data_on_failure_ = true;
   if (!use_guest_mount) {

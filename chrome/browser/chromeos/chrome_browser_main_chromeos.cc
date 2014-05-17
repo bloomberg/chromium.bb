@@ -140,9 +140,10 @@ class StubLogin : public LoginStatusConsumer,
   StubLogin(std::string username, std::string password)
       : profile_prepared_(false) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-    authenticator_.get()->AuthenticateToLogin(
-        ProfileHelper::GetSigninProfile(),
-        UserContext(username, password, std::string() /* auth_code */));
+    UserContext user_context(username);
+    user_context.SetPassword(password);
+    authenticator_.get()->AuthenticateToLogin(ProfileHelper::GetSigninProfile(),
+                                              user_context);
   }
 
   virtual ~StubLogin() {

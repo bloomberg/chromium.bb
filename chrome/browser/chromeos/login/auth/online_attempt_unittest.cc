@@ -33,7 +33,7 @@ namespace chromeos {
 class OnlineAttemptTest : public testing::Test {
  public:
   OnlineAttemptTest()
-      : state_(UserContext(), "", "", User::USER_TYPE_REGULAR, false),
+      : state_(UserContext(), false),
         attempt_(new OnlineAttempt(&state_, &resolver_)) {
   }
 
@@ -141,8 +141,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<HostedFetcher> factory;
 
-  TestAttemptState local_state(UserContext(), "", "",
-                               User::USER_TYPE_REGULAR, true);
+  TestAttemptState local_state(UserContext(), true);
   attempt_.reset(new OnlineAttempt(&local_state, &resolver_));
   attempt_->Initiate(&profile);
 
@@ -164,8 +163,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   // This is how we inject fake URLFetcher objects, with a factory.
   MockURLFetcherFactory<SuccessFetcher> factory;
 
-  TestAttemptState local_state(UserContext(), "", "",
-                               User::USER_TYPE_REGULAR, true);
+  TestAttemptState local_state(UserContext(), true);
   attempt_.reset(new OnlineAttempt(&local_state, &resolver_));
   attempt_->Initiate(&profile);
 

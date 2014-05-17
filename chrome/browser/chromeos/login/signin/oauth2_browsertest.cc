@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
@@ -225,7 +227,9 @@ class OAuth2Test : public OobeBaseTest {
       return false;
     }
 
-    controller->Login(UserContext(username, password, std::string()));
+    UserContext user_context(username);
+    user_context.SetPassword(password);
+    controller->Login(user_context);
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources()).Wait();

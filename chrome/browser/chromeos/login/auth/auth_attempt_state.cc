@@ -15,17 +15,16 @@ using content::BrowserThread;
 namespace chromeos {
 
 AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   const std::string& login_token,
-                                   const std::string& login_captcha,
-                                   const User::UserType user_type,
-                                   const bool user_is_new)
+                                   User::UserType user_type,
+                                   bool unlock,
+                                   bool online_complete,
+                                   bool user_is_new)
     : user_context(user_context),
-      login_token(login_token),
-      login_captcha(login_captcha),
       user_type(user_type),
-      unlock(false),
-      online_complete_(false),
-      online_outcome_(LoginFailure::NONE),
+      unlock(unlock),
+      online_complete_(online_complete),
+      online_outcome_(online_complete ? LoginFailure::UNLOCK_FAILED :
+                                        LoginFailure::NONE),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
@@ -33,36 +32,6 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       cryptohome_code_(cryptohome::MOUNT_ERROR_NONE),
       username_hash_obtained_(true),
       username_hash_valid_(true) {
-}
-
-AuthAttemptState::AuthAttemptState(const std::string& username,
-                                   const std::string& password)
-    : user_context(username, password, ""),
-      user_type(User::USER_TYPE_REGULAR),
-      unlock(true),
-      online_complete_(true),
-      online_outcome_(LoginFailure::UNLOCK_FAILED),
-      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
-      is_first_time_user_(false),
-      cryptohome_complete_(false),
-      cryptohome_outcome_(false),
-      cryptohome_code_(cryptohome::MOUNT_ERROR_NONE),
-      username_hash_obtained_(true) {
-}
-
-AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   const bool user_is_new)
-    : user_context(user_context),
-      user_type(User::USER_TYPE_REGULAR),
-      unlock(true),
-      online_complete_(false),
-      online_outcome_(LoginFailure::NONE),
-      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
-      is_first_time_user_(user_is_new),
-      cryptohome_complete_(false),
-      cryptohome_outcome_(false),
-      cryptohome_code_(cryptohome::MOUNT_ERROR_NONE),
-      username_hash_obtained_(true) {
 }
 
 AuthAttemptState::~AuthAttemptState() {}

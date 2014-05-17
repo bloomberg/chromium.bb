@@ -88,7 +88,7 @@ void SupervisedUserLoginFlow::ConfigureSync(const std::string& token) {
 
 void SupervisedUserLoginFlow::HandleLoginSuccess(
     const UserContext& login_context) {
-  context_.CopyFrom(login_context);
+  context_ = login_context;
 }
 
 void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(

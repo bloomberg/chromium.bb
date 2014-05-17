@@ -41,32 +41,28 @@ void MockAuthenticator::AuthenticateToUnlock(
 
 void MockAuthenticator::LoginAsLocallyManagedUser(
     const UserContext& user_context) {
-  consumer_->OnLoginSuccess(UserContext(expected_username_,
-                                        std::string(),
-                                        std::string(),
-                                        user_context.GetUserID())); // hash
+  UserContext new_user_context = user_context;
+  new_user_context.SetUserIDHash(user_context.GetUserID());
+  consumer_->OnLoginSuccess(new_user_context);
 }
 
 void MockAuthenticator::LoginRetailMode() {
-  consumer_->OnRetailModeLoginSuccess(UserContext("demo-mode",
-                                                  std::string(),
-                                                  std::string(),
-                                                  "demo-mode"));
+  UserContext user_context("demo-mode");
+  user_context.SetUserIDHash("demo-mode");
+  consumer_->OnRetailModeLoginSuccess(user_context);
 }
 
 void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
-  consumer_->OnLoginSuccess(UserContext(expected_username_,
-                                        std::string(),
-                                        std::string(),
-                                        expected_username_));
+  UserContext user_context(expected_username_);
+  user_context.SetUserIDHash(expected_username_);
+  consumer_->OnLoginSuccess(user_context);
 }
 
 void MockAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,
                                             bool use_guest_mount) {
-  consumer_->OnLoginSuccess(UserContext(expected_username_,
-                                        std::string(),
-                                        std::string(),
-                                        expected_username_));
+  UserContext user_context(expected_username_);
+  user_context.SetUserIDHash(expected_username_);
+  consumer_->OnLoginSuccess(user_context);
 }
 
 void MockAuthenticator::LoginOffTheRecord() {
@@ -74,19 +70,18 @@ void MockAuthenticator::LoginOffTheRecord() {
 }
 
 void MockAuthenticator::OnRetailModeLoginSuccess() {
-  consumer_->OnRetailModeLoginSuccess(UserContext(expected_username_,
-                                                  std::string(),
-                                                  std::string(),
-                                                  expected_username_));
+  UserContext user_context(expected_username_);
+  user_context.SetUserIDHash(expected_username_);
+  consumer_->OnRetailModeLoginSuccess(user_context);
 }
 
 void MockAuthenticator::OnLoginSuccess() {
   // If we want to be more like the real thing, we could save username
   // in AuthenticateToLogin, but there's not much of a point.
-  consumer_->OnLoginSuccess(UserContext(expected_username_,
-                                        expected_password_,
-                                        std::string(),
-                                        expected_username_));
+  UserContext user_context(expected_username_);
+  user_context.SetPassword(expected_password_);
+  user_context.SetUserIDHash(expected_username_);
+  consumer_->OnLoginSuccess(user_context);
 }
 
 void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {

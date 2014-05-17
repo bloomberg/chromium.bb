@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_TEST_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/test/base/in_process_browser_test.h"

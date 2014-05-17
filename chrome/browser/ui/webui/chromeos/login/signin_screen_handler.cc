@@ -1144,14 +1144,12 @@ void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
 
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(sanitized_email);
-  delegate_->CompleteLogin(UserContext(
-      sanitized_email,
-      password,
-      std::string(),  // auth_code
-      std::string(),  // username_hash
-      true,           // using_oauth
-      using_saml ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
-                 : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML));
+  UserContext user_context(sanitized_email);
+  user_context.SetPassword(password);
+  user_context.SetAuthFlow(using_saml ?
+      UserContext::AUTH_FLOW_GAIA_WITH_SAML :
+      UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  delegate_->CompleteLogin(user_context);
 
   if (test_expects_complete_login_) {
     VLOG(2) << "Complete test login for " << typed_email
@@ -1169,18 +1167,20 @@ void SigninScreenHandler::HandleCompleteAuthentication(
     const std::string& auth_code) {
   if (!delegate_)
     return;
-  const std::string sanitized_email = gaia::SanitizeEmail(email);
-  delegate_->SetDisplayEmail(sanitized_email);
-  delegate_->CompleteLogin(UserContext(sanitized_email, password, auth_code));
+  delegate_->SetDisplayEmail(gaia::SanitizeEmail(email));
+  UserContext user_context(email);
+  user_context.SetPassword(password);
+  user_context.SetAuthCode(auth_code);
+  delegate_->CompleteLogin(user_context);
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
                                                  const std::string& password) {
   if (!delegate_)
     return;
-  delegate_->Login(UserContext(gaia::SanitizeEmail(username),
-                               password,
-                               std::string()));  // auth_code
+  UserContext user_context(username);
+  user_context.SetPassword(password);
+  delegate_->Login(user_context);
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser() {

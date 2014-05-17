@@ -5,23 +5,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
 
+class UserContext;
+
 class TestAttemptState : public AuthAttemptState {
  public:
-  TestAttemptState(const UserContext& credentials,
-                   const std::string& login_token,
-                   const std::string& login_captcha,
-                   const User::UserType user_type,
-                   const bool user_is_new);
+  TestAttemptState(const UserContext& credentials, const bool user_is_new);
 
   virtual ~TestAttemptState();
 

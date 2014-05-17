@@ -202,10 +202,9 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
     controller_.reset(new ManagedUserCreationControllerNew(this, manager_id));
   }
 
-  ExistingUserController::current_controller()->
-      Login(UserContext(manager_id,
-                        manager_password,
-                        std::string()  /* auth_code */));
+  UserContext user_context(manager_id);
+  user_context.SetPassword(manager_password);
+  ExistingUserController::current_controller()->Login(user_context);
 }
 
 void LocallyManagedUserCreationScreen::CreateManagedUser(

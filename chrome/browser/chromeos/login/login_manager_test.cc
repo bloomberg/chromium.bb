@@ -81,7 +81,9 @@ bool LoginManagerTest::AddUserToSession(const std::string& username,
     ADD_FAILURE();
     return false;
   }
-  controller->Login(UserContext(username, password, std::string()));
+  UserContext user_context(username);
+  user_context.SetPassword(password);
+  controller->Login(user_context);
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();

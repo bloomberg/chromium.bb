@@ -2014,18 +2014,15 @@ void UserManagerImpl::RestorePendingUserSessions() {
   DCHECK(!user_already_logged_in);
 
   if (!user_already_logged_in) {
+    UserContext user_context(user_id);
+    user_context.SetUserIDHash(user_id_hash);
+    user_context.SetIsUsingOAuth(false);
     // Will call OnProfilePrepared() once profile has been loaded.
-    LoginUtils::Get()->PrepareProfile(
-        UserContext(user_id,
-                    std::string(),  // password
-                    std::string(),  // auth_code
-                    user_id_hash,
-                    false,         // using_oauth
-                    UserContext::AUTH_FLOW_OFFLINE),
-        std::string(),  // display_email
-        false,          // has_cookies
-        true,           // has_active_session
-        this);
+    LoginUtils::Get()->PrepareProfile(user_context,
+                                      std::string(),  // display_email
+                                      false,          // has_cookies
+                                      true,           // has_active_session
+                                      this);
   } else {
     RestorePendingUserSessions();
   }

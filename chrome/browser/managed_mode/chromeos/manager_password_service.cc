@@ -127,7 +127,8 @@ void ManagerPasswordService::GetManagedUsersCallback(
     return;
   }
 
-  UserContext manager_key(user_id, master_key, std::string());
+  UserContext manager_key(user_id);
+  manager_key.SetPassword(master_key);
   manager_key.SetIsUsingOAuth(false);
 
   // As master key can have old label, leave label field empty - it will work
@@ -216,8 +217,7 @@ void ManagerPasswordService::OnContextTransformed(
                                            kCryptohomeMasterKeyLabel,
                                            cryptohome::PRIV_DEFAULT);
   // Use new master key for further actions.
-  UserContext new_master_key_context;
-  new_master_key_context.CopyFrom(master_key_context);
+  UserContext new_master_key_context = master_key_context;
   new_master_key_context.SetKeyLabel(kCryptohomeMasterKeyLabel);
   authenticator_->AddKey(
       master_key_context,

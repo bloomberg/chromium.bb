@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 
@@ -32,17 +31,12 @@ void OnlineAttemptHost::Check(Profile* profile,
     current_attempt_hash_ = attempt_hash;
     current_username_ = user_context.GetUserID();
 
-    state_.reset(
-        new AuthAttemptState(
-            UserContext(gaia::CanonicalizeEmail(user_context.GetUserID()),
-                        user_context.GetPassword(),
-                        user_context.GetAuthCode()),
-            std::string(),  // login_token
-            std::string(),  // login_captcha
-            User::USER_TYPE_REGULAR,
-            false));  // user_is_new.
-    online_attempt_.reset(new OnlineAttempt(state_.get(),
-                                            this));
+    state_.reset(new AuthAttemptState(user_context,
+                                      User::USER_TYPE_REGULAR,
+                                      false,    // unlock
+                                      false,    // online_complete
+                                      false));  // user_is_new
+    online_attempt_.reset(new OnlineAttempt(state_.get(), this));
     online_attempt_->Initiate(profile);
   }
 }

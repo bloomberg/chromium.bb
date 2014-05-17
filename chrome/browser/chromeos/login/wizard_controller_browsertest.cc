@@ -506,8 +506,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       &mock_consumer);
   // This calls StartWizard, destroying the current controller() and its mocks;
   // don't set expectations on those objects.
-  ExistingUserController::current_controller()->CompleteLogin(
-      UserContext(kUsername, kPassword, ""));
+  UserContext user_context(kUsername);
+  user_context.SetPassword(kPassword);
+  ExistingUserController::current_controller()->CompleteLogin(user_context);
   // Run the tasks posted to complete the login:
   base::MessageLoop::current()->RunUntilIdle();
 

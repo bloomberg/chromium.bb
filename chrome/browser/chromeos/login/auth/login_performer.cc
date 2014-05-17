@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/auth/login_performer.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -338,9 +336,7 @@ void LoginPerformer::StartLoginCompletion() {
       base::Bind(&Authenticator::CompleteLogin, authenticator_.get(),
                  profile,
                  user_context_));
-
-  user_context_.SetPassword(std::string());
-  user_context_.SetAuthCode(std::string());
+  user_context_.ClearSecrets();
 }
 
 void LoginPerformer::StartAuthentication() {
@@ -360,8 +356,7 @@ void LoginPerformer::StartAuthentication() {
   } else {
     NOTREACHED();
   }
-  user_context_.SetPassword(std::string());
-  user_context_.SetAuthCode(std::string());
+  user_context_.ClearSecrets();
 }
 
 void LoginPerformer::OnlineWildcardLoginCheckCompleted(

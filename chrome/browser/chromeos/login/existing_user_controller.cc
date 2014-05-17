@@ -422,10 +422,7 @@ void ExistingUserController::PerformLogin(
   is_login_in_progress_ = true;
   if (gaia::ExtractDomainName(user_context.GetUserID()) ==
           UserManager::kLocallyManagedUserDomain) {
-    login_performer_->LoginAsLocallyManagedUser(
-        UserContext(user_context.GetUserID(),
-                    user_context.GetPassword(),
-                    std::string()));  // auth_code
+    login_performer_->LoginAsLocallyManagedUser(user_context);
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);
   }

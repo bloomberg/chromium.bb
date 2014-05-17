@@ -15,24 +15,16 @@
 
 namespace chromeos {
 
-// Tracks the state associated with a single attempt to log in to chromium os.
+// Tracks the state associated with a single attempt to log in to chromium OS.
 // Enforces that methods are only called on the UI thread.
-
 class AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
   AuthAttemptState(const UserContext& user_context,
-                   const std::string& login_token,
-                   const std::string& login_captcha,
-                   const User::UserType user_type,
-                   const bool user_is_new);
-
-  // Used to initialize for a externally authenticated login.
-  AuthAttemptState(const UserContext& user_context,
-                   const bool user_is_new);
-
-  // Used to initialize for a screen unlock attempt.
-  AuthAttemptState(const std::string& username, const std::string& password);
+                   User::UserType user_type,
+                   bool unlock,
+                   bool online_complete,
+                   bool user_is_new);
 
   virtual ~AuthAttemptState();
 

@@ -108,7 +108,8 @@ void ExtendedAuthenticator::CreateMount(
   for (size_t i = 0; i < keys.size(); i++) {
     mount.create_keys.push_back(keys[i]);
   }
-  UserContext context(user_id, keys.front().key, std::string());
+  UserContext context(user_id);
+  context.SetPassword(keys.front().key);
   context.SetKeyLabel(keys.front().label);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
@@ -289,8 +290,7 @@ void ExtendedAuthenticator::OnMountComplete(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RecordEndMarker(time_marker);
-  UserContext copy;
-  copy.CopyFrom(user_context);
+  UserContext copy = user_context;
   copy.SetUserIDHash(mount_hash);
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
     if (!success_callback.is_null())
@@ -381,8 +381,7 @@ void ExtendedAuthenticator::DidTransformContext(
     const ContextCallback& callback,
     const std::string& hashed_password) {
   DCHECK(user_context.DoesNeedPasswordHashing());
-  UserContext context;
-  context.CopyFrom(user_context);
+  UserContext context = user_context;
   context.SetPassword(hashed_password);
   context.SetDoesNeedPasswordHashing(false);
   callback.Run(context);

@@ -59,8 +59,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
       chromeos::ScreenLocker* locker = GetScreenLocker();
       const chromeos::UserList& users = locker->users();
       EXPECT_GE(1u, users.size());
-      GetScreenLocker()->Authenticate(
-          chromeos::UserContext(users[0]->email(), "", ""));
+      GetScreenLocker()->Authenticate(chromeos::UserContext(users[0]->email()));
     }
   }
 
