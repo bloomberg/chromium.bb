@@ -312,15 +312,7 @@ WebView* WebTestProxyBase::GetWebView() const {
   return static_cast<WebView*>(web_widget_);
 }
 
-void WebTestProxyBase::DidForceResize() {
-  InvalidateAll();
-  DiscardBackingStore();
-}
-
 void WebTestProxyBase::Reset() {
-  paint_rect_ = WebRect();
-  canvas_.reset();
-  is_painting_ = false;
   animate_scheduled_ = false;
   resource_identifier_map_.clear();
   log_console_output_ = true;
@@ -428,11 +420,23 @@ void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
 
 void WebTestProxyBase::CapturePixelsForPrinting(
     const base::Callback<void(const SkBitmap&)>& callback) {
-  // TODO(enne): get rid of stateful canvas().
   web_widget_->layout();
-  PaintPagesWithBoundaries();
-  DrawSelectionRect(GetCanvas());
-  SkBaseDevice* device = skia::GetTopDevice(*GetCanvas());
+
+  WebSize pageSizeInPixels = web_widget_->size();
+  WebFrame* webFrame = GetWebView()->mainFrame();
+
+  int pageCount = webFrame->printBegin(pageSizeInPixels);
+  int totalHeight = pageCount * (pageSizeInPixels.height + 1) - 1;
+
+  bool isOpaque = false;
+  skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::TryCreateBitmapCanvas(
+      pageSizeInPixels.width, totalHeight, isOpaque)));
+  if (canvas)
+    webFrame->printPagesWithBoundaries(canvas.get(), pageSizeInPixels);
+  webFrame->printEnd();
+
+  DrawSelectionRect(canvas.get());
+  SkBaseDevice* device = skia::GetTopDevice(*canvas);
   const SkBitmap& bitmap = device->accessBitmap(false);
   callback.Run(bitmap);
 }
@@ -459,48 +463,6 @@ void WebTestProxyBase::SetLogConsoleOutput(bool enabled) {
   log_console_output_ = enabled;
 }
 
-void WebTestProxyBase::PaintPagesWithBoundaries() {
-  DCHECK(!is_painting_);
-  DCHECK(GetCanvas());
-  is_painting_ = true;
-
-  WebSize pageSizeInPixels = web_widget_->size();
-  WebFrame* webFrame = GetWebView()->mainFrame();
-
-  int pageCount = webFrame->printBegin(pageSizeInPixels);
-  int totalHeight = pageCount * (pageSizeInPixels.height + 1) - 1;
-
-  SkCanvas* testCanvas =
-      skia::TryCreateBitmapCanvas(pageSizeInPixels.width, totalHeight, false);
-  if (testCanvas) {
-    DiscardBackingStore();
-    canvas_.reset(testCanvas);
-  } else {
-    webFrame->printEnd();
-    return;
-  }
-
-  webFrame->printPagesWithBoundaries(GetCanvas(), pageSizeInPixels);
-  webFrame->printEnd();
-
-  is_painting_ = false;
-}
-
-SkCanvas* WebTestProxyBase::GetCanvas() {
-  if (canvas_.get()) return canvas_.get();
-  WebSize widgetSize = web_widget_->size();
-  float deviceScaleFactor = GetWebView()->deviceScaleFactor();
-  int scaledWidth = static_cast<int>(
-      ceil(static_cast<float>(widgetSize.width) * deviceScaleFactor));
-  int scaledHeight = static_cast<int>(
-      ceil(static_cast<float>(widgetSize.height) * deviceScaleFactor));
-  // We're allocating the canvas to be non-opaque (third parameter), so we
-  // don't end up with uninitialized memory if a layout test doesn't damage
-  // the entire view.
-  canvas_.reset(skia::CreateBitmapCanvas(scaledWidth, scaledHeight, false));
-  return canvas_.get();
-}
-
 void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
                                        const SkBitmap& bitmap) {
   // Verify we actually composited.
@@ -517,8 +479,6 @@ void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
                                 base::Unretained(this), callback));
 }
 
-void WebTestProxyBase::DiscardBackingStore() { canvas_.reset(); }
-
 WebMIDIClientMock* WebTestProxyBase::GetMIDIClientMock() {
   if (!m_midiClient.get()) m_midiClient.reset(new WebMIDIClientMock);
   return m_midiClient.get();
@@ -531,30 +491,6 @@ MockWebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizerMock() {
   }
   return m_speechRecognizer.get();
 }
-
-void WebTestProxyBase::DidInvalidateRect(const WebRect& rect) {
-  // paint_rect_ = paint_rect_ U rect
-  if (rect.isEmpty()) return;
-  if (paint_rect_.isEmpty()) {
-    paint_rect_ = rect;
-    return;
-  }
-  int left = min(paint_rect_.x, rect.x);
-  int top = min(paint_rect_.y, rect.y);
-  int right = max(paint_rect_.x + paint_rect_.width, rect.x + rect.width);
-  int bottom = max(paint_rect_.y + paint_rect_.height, rect.y + rect.height);
-  paint_rect_ = WebRect(left, top, right - left, bottom - top);
-}
-
-void WebTestProxyBase::DidScrollRect(int, int, const WebRect& clipRect) {
-  DidInvalidateRect(clipRect);
-}
-
-void WebTestProxyBase::InvalidateAll() {
-  paint_rect_ = WebRect(0, 0, INT_MAX, INT_MAX);
-}
-
-void WebTestProxyBase::ScheduleComposite() { InvalidateAll(); }
 
 void WebTestProxyBase::ScheduleAnimation() {
   if (!test_interfaces_->testRunner()->TestIsRunning()) return;
@@ -573,19 +509,6 @@ void WebTestProxyBase::AnimateNow() {
     web_widget_->layout();
   }
 }
-
-bool WebTestProxyBase::IsCompositorFramePending() const {
-  return animate_scheduled_ || !paint_rect_.isEmpty();
-}
-
-void WebTestProxyBase::Show(WebNavigationPolicy) { InvalidateAll(); }
-
-void WebTestProxyBase::SetWindowRect(const WebRect& rect) {
-  InvalidateAll();
-  DiscardBackingStore();
-}
-
-void WebTestProxyBase::DidAutoResize(const WebSize&) { InvalidateAll(); }
 
 void WebTestProxyBase::PostAccessibilityEvent(const blink::WebAXObject& obj,
                                               blink::WebAXEvent event) {

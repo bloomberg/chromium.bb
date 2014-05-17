@@ -2510,7 +2510,6 @@ std::string TestRunner::PathToLocalResource(const std::string& path) {
 void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Handle<v8::Function> callback) {
   delegate_->setDeviceScaleFactor(value);
-  proxy_->DiscardBackingStore();
   delegate_->postTask(new InvokeCallbackTask(this, callback));
 }
 

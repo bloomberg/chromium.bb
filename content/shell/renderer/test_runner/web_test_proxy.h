@@ -111,16 +111,11 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
 
   void SetLogConsoleOutput(bool enabled);
 
-  // FIXME: Make this private again.
-  void ScheduleComposite();
-
   void DidOpenChooser();
   void DidCloseChooser();
   bool IsChooserShown();
 
   void DisplayAsyncThen(const base::Closure& callback);
-
-  void DiscardBackingStore();
 
   blink::WebMIDIClientMock* GetMIDIClientMock();
   MockWebSpeechRecognizer* GetSpeechRecognizerMock();
@@ -128,8 +123,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   WebTaskList* mutable_task_list() { return &task_list_; }
 
   blink::WebView* GetWebView() const;
-
-  void DidForceResize();
 
   void PostSpellCheckEvent(const blink::WebString& eventName);
 
@@ -140,14 +133,7 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   WebTestProxyBase();
   ~WebTestProxyBase();
 
-  void DidInvalidateRect(const blink::WebRect&);
-  void DidScrollRect(int, int, const blink::WebRect&);
   void ScheduleAnimation();
-  bool IsCompositorFramePending() const;
-  // FIXME: Remove once we switch to use didForceResize.
-  void SetWindowRect(const blink::WebRect&);
-  void Show(blink::WebNavigationPolicy);
-  void DidAutoResize(const blink::WebSize&);
   void PostAccessibilityEvent(const blink::WebAXObject&, blink::WebAXEvent);
   void StartDragging(blink::WebLocalFrame*, const blink::WebDragData&,
                      blink::WebDragOperationsMask, const blink::WebImage&,
@@ -224,9 +210,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   template <class, typename, typename>
   friend class WebFrameTestProxy;
   void LocationChangeDone(blink::WebFrame*);
-  void PaintPagesWithBoundaries();
-  SkCanvas* GetCanvas();
-  void InvalidateAll();
   void AnimateNow();
   void DrawSelectionRect(SkCanvas* canvas);
   void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
@@ -242,10 +225,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   scoped_ptr<SpellCheckClient> spellcheck_;
   scoped_ptr<WebUserMediaClientMock> user_media_client_;
 
-  // Painting.
-  scoped_ptr<SkCanvas> canvas_;
-  blink::WebRect paint_rect_;
-  bool is_painting_;
   bool animate_scheduled_;
   std::map<unsigned, std::string> resource_identifier_map_;
   std::deque<base::Callback<void(const SkBitmap&)> >
@@ -271,29 +250,7 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   virtual ~WebTestProxy() {}
 
   // WebViewClient implementation.
-  virtual void didInvalidateRect(const blink::WebRect& rect) {
-    WebTestProxyBase::DidInvalidateRect(rect);
-  }
-  virtual void didScrollRect(int dx, int dy, const blink::WebRect& clipRect) {
-    WebTestProxyBase::DidScrollRect(dx, dy, clipRect);
-  }
-  virtual void scheduleComposite() { WebTestProxyBase::ScheduleComposite(); }
   virtual void scheduleAnimation() { WebTestProxyBase::ScheduleAnimation(); }
-  virtual bool isCompositorFramePending() const {
-    return WebTestProxyBase::IsCompositorFramePending();
-  }
-  virtual void setWindowRect(const blink::WebRect& rect) {
-    WebTestProxyBase::SetWindowRect(rect);
-    Base::setWindowRect(rect);
-  }
-  virtual void show(blink::WebNavigationPolicy policy) {
-    WebTestProxyBase::Show(policy);
-    Base::show(policy);
-  }
-  virtual void didAutoResize(const blink::WebSize& newSize) {
-    WebTestProxyBase::DidAutoResize(newSize);
-    Base::didAutoResize(newSize);
-  }
   virtual void postAccessibilityEvent(const blink::WebAXObject& object,
                                       blink::WebAXEvent event) {
     WebTestProxyBase::PostAccessibilityEvent(object, event);

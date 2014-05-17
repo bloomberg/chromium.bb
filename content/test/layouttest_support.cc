@@ -147,7 +147,6 @@ void ForceResizeRenderView(RenderView* render_view,
                            const WebSize& new_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
   render_view_impl->ForceResizeForTesting(new_size);
-  GetWebTestProxyBase(render_view_impl)->DidForceResize();
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
