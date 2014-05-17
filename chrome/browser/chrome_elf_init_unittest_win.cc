@@ -6,11 +6,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "version.h"  // NOLINT
 
@@ -54,20 +57,47 @@ class ChromeBlacklistTrialTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeBlacklistTrialTest);
 };
 
-
-// Ensure that the default trial deletes any existing blacklist beacons.
+// Ensure that the default trial sets up the blacklist beacons.
 TEST_F(ChromeBlacklistTrialTest, DefaultRun) {
   // Set some dummy values as beacons.
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
+                                      blacklist::BLACKLIST_DISABLED);
+  blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion, L"Data");
+
+  // This setup code should result in the default group, which should have
+  // the blacklist set up.
+  InitializeChromeElf();
+
+  // Ensure the beacon values are now correct, indicating the
+  // blacklist beacon was setup.
+  ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
+  chrome::VersionInfo version_info;
+  base::string16 version(base::UTF8ToUTF16(version_info.Version()));
+  ASSERT_EQ(version, GetBlacklistVersion());
+}
+
+
+// Ensure that the blacklist is disabled for any users in the
+// "BlacklistDisabled" finch group.
+TEST_F(ChromeBlacklistTrialTest, BlacklistDisabledRun) {
+  // Set the beacons to enabled values.
   blacklist_registry_key_->WriteValue(blacklist::kBeaconState,
                                       blacklist::BLACKLIST_ENABLED);
   blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion, L"Data");
 
-  // This setup code should result in the default group, which should remove
-  // all the beacon values.
+  // Create the field trial with the blacklist disabled group.
+  base::FieldTrialList field_trial_list(
+    new metrics::SHA1EntropyProvider("test"));
+
+  scoped_refptr<base::FieldTrial> trial(
+    base::FieldTrialList::CreateFieldTrial(
+      kBrowserBlacklistTrialName, kBrowserBlacklistTrialDisabledGroupName));
+
+  // This setup code should now delete any existing blacklist beacons.
   InitializeChromeElf();
 
-  // Ensure that invalid values are returned to indicate that the
-  // beacon values are gone.
+  // Ensure invalid values are returned to indicate that the beacon
+  // values are indeed gone.
   ASSERT_EQ(blacklist::BLACKLIST_STATE_MAX, GetBlacklistState());
   ASSERT_EQ(base::string16(), GetBlacklistVersion());
 }

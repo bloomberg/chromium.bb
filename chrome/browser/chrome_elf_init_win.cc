@@ -15,10 +15,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "version.h"  // NOLINT
 
-namespace {
-
 const char kBrowserBlacklistTrialName[] = "BrowserBlacklist";
-const char kBrowserBlacklistTrialEnabledGroupName[] = "Enabled";
+const char kBrowserBlacklistTrialDisabledGroupName[] = "NoBlacklist";
+
+namespace {
 
 // How long to wait, in seconds, before reporting for the second (and last
 // time), what dlls were blocked from the browser process.
@@ -82,12 +82,12 @@ void ReportSuccessfulBlocks() {
 
 void InitializeChromeElf() {
   if (base::FieldTrialList::FindFullName(kBrowserBlacklistTrialName) ==
-      kBrowserBlacklistTrialEnabledGroupName) {
-    BrowserBlacklistBeaconSetup();
-  } else {
+      kBrowserBlacklistTrialDisabledGroupName) {
     // Disable the blacklist for all future runs by removing the beacon.
     base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER);
     blacklist_registry_key.DeleteKey(blacklist::kRegistryBeaconPath);
+  } else {
+    BrowserBlacklistBeaconSetup();
   }
 
   // Report all successful blacklist interceptions.
