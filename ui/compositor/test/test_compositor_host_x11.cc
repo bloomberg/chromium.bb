@@ -21,7 +21,8 @@ namespace ui {
 
 class TestCompositorHostX11 : public TestCompositorHost {
  public:
-  TestCompositorHostX11(const gfx::Rect& bounds);
+  TestCompositorHostX11(const gfx::Rect& bounds,
+                        ui::ContextFactory* context_factory);
   virtual ~TestCompositorHostX11();
 
  private:
@@ -33,6 +34,8 @@ class TestCompositorHostX11 : public TestCompositorHost {
 
   gfx::Rect bounds_;
 
+  ui::ContextFactory* context_factory_;
+
   scoped_ptr<ui::Compositor> compositor_;
 
   XID window_;
@@ -40,8 +43,11 @@ class TestCompositorHostX11 : public TestCompositorHost {
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostX11);
 };
 
-TestCompositorHostX11::TestCompositorHostX11(const gfx::Rect& bounds)
-    : bounds_(bounds) {
+TestCompositorHostX11::TestCompositorHostX11(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory)
+    : bounds_(bounds),
+      context_factory_(context_factory) {
 }
 
 TestCompositorHostX11::~TestCompositorHostX11() {
@@ -69,7 +75,7 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.reset(new ui::Compositor(window_));
+  compositor_.reset(new ui::Compositor(window_, context_factory_));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 
@@ -83,8 +89,10 @@ void TestCompositorHostX11::Draw() {
 }
 
 // static
-TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
-  return new TestCompositorHostX11(bounds);
+TestCompositorHost* TestCompositorHost::Create(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostX11(bounds, context_factory);
 }
 
 }  // namespace ui

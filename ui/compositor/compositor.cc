@@ -83,7 +83,8 @@ namespace {
 namespace ui {
 
 Compositor::Compositor(gfx::AcceleratedWidget widget)
-    : root_layer_(NULL),
+    : context_factory_(g_context_factory),
+      root_layer_(NULL),
       widget_(widget),
       compositor_thread_loop_(g_context_factory->GetCompositorMessageLoop()),
       vsync_manager_(new CompositorVSyncManager()),
@@ -97,6 +98,32 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       draw_on_compositing_end_(false),
       swap_state_(SWAP_NONE),
       schedule_draw_factory_(this) {
+  Init();
+}
+
+Compositor::Compositor(gfx::AcceleratedWidget widget,
+                       ui::ContextFactory* context_factory)
+    : context_factory_(context_factory),
+      root_layer_(NULL),
+      widget_(widget),
+      compositor_thread_loop_(context_factory->GetCompositorMessageLoop()),
+      vsync_manager_(new CompositorVSyncManager()),
+      device_scale_factor_(0.0f),
+      last_started_frame_(0),
+      last_ended_frame_(0),
+      disable_schedule_composite_(false),
+      compositor_lock_(NULL),
+      defer_draw_scheduling_(false),
+      waiting_on_compositing_end_(false),
+      draw_on_compositing_end_(false),
+      swap_state_(SWAP_NONE),
+      schedule_draw_factory_(this) {
+  Init();
+}
+
+// Yes, this is the wrong place. I'm leaving here to minimize diffs since this
+// function will be nuked soonish.
+void Compositor::Init() {
   root_web_layer_ = cc::Layer::Create();
   root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
@@ -104,7 +131,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
 
   cc::LayerTreeSettings settings;
   settings.refresh_rate =
-      ContextFactory::GetInstance()->DoesCreateTestContexts()
+      context_factory_->DoesCreateTestContexts()
       ? kTestRefreshRate
       : kDefaultRefreshRate;
   settings.main_frame_before_draw_enabled = false;
@@ -149,12 +176,12 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   if (compositor_thread_loop_) {
     host_ = cc::LayerTreeHost::CreateThreaded(
         this,
-        g_context_factory->GetSharedBitmapManager(),
+        context_factory_->GetSharedBitmapManager(),
         settings,
         compositor_thread_loop_);
   } else {
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, g_context_factory->GetSharedBitmapManager(), settings);
+        this, this, context_factory_->GetSharedBitmapManager(), settings);
   }
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
@@ -175,7 +202,7 @@ Compositor::~Compositor() {
   // down any contexts that the |host_| may rely upon.
   host_.reset();
 
-  ContextFactory::GetInstance()->RemoveCompositor(this);
+  context_factory_->RemoveCompositor(this);
 }
 
 void Compositor::ScheduleDraw() {
@@ -300,7 +327,7 @@ void Compositor::Layout() {
 }
 
 scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface(bool fallback) {
-  return ContextFactory::GetInstance()->CreateOutputSurface(this, fallback);
+  return context_factory_->CreateOutputSurface(this, fallback);
 }
 
 void Compositor::DidCommit() {

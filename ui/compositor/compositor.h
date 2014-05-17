@@ -136,8 +136,14 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
+  // This is deprecated, and will be removed shortly.
+  // TODO(sky): remove this.
   explicit Compositor(gfx::AcceleratedWidget widget);
+  Compositor(gfx::AcceleratedWidget widget,
+             ui::ContextFactory* context_factory);
   virtual ~Compositor();
+
+  ui::ContextFactory* context_factory() { return context_factory_; }
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();
@@ -248,6 +254,11 @@ class COMPOSITOR_EXPORT Compositor
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;
 
+  // Called from both constructors. It's temporary while we have both
+  // constructors.
+  // TODO(sky): nuke this.
+  void Init();
+
   // Called by CompositorLock.
   void UnlockCompositor();
 
@@ -258,6 +269,8 @@ class COMPOSITOR_EXPORT Compositor
   void NotifyEnd();
 
   gfx::Size size_;
+
+  ui::ContextFactory* context_factory_;
 
   // The root of the Layer tree drawn by this compositor.
   Layer* root_layer_;

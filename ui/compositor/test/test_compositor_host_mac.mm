@@ -81,7 +81,8 @@ class AppKitHost : public FoundationHost {
 class TestCompositorHostMac : public TestCompositorHost,
                               public AppKitHost {
  public:
-  TestCompositorHostMac(const gfx::Rect& bounds);
+  TestCompositorHostMac(const gfx::Rect& bounds,
+                        ui::ContextFactory* context_factory);
   virtual ~TestCompositorHostMac();
 
  private:
@@ -90,6 +91,9 @@ class TestCompositorHostMac : public TestCompositorHost,
   virtual ui::Compositor* GetCompositor() OVERRIDE;
 
   gfx::Rect bounds_;
+
+  ui::ContextFactory* context_factory_;
+
   scoped_ptr<ui::Compositor> compositor_;
 
   // Owned.  Released when window is closed.
@@ -98,8 +102,10 @@ class TestCompositorHostMac : public TestCompositorHost,
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostMac);
 };
 
-TestCompositorHostMac::TestCompositorHostMac(const gfx::Rect& bounds)
-    : bounds_(bounds), window_(nil) {
+TestCompositorHostMac::TestCompositorHostMac(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory)
+    : bounds_(bounds), context_factory_(context_factory), window_(nil) {
 }
 
 TestCompositorHostMac::~TestCompositorHostMac() {
@@ -124,7 +130,7 @@ void TestCompositorHostMac::Show() {
                               defer:NO];
   base::scoped_nsobject<AcceleratedTestView> view(
       [[AcceleratedTestView alloc] init]);
-  compositor_.reset(new ui::Compositor(view));
+  compositor_.reset(new ui::Compositor(view, context_factory_));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
   [view setCompositor:compositor_.get()];
   [window_ setContentView:view];
@@ -136,8 +142,10 @@ ui::Compositor* TestCompositorHostMac::GetCompositor() {
 }
 
 // static
-TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
-  return new TestCompositorHostMac(bounds);
+TestCompositorHost* TestCompositorHost::Create(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostMac(bounds, context_factory);
 }
 
 }  // namespace ui

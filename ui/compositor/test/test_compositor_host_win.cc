@@ -14,9 +14,10 @@ namespace ui {
 class TestCompositorHostWin : public TestCompositorHost,
                               public gfx::WindowImpl {
  public:
-  TestCompositorHostWin(const gfx::Rect& bounds) {
+  TestCompositorHostWin(const gfx::Rect& bounds,
+                        ui::ContextFactory* context_factory) {
     Init(NULL, bounds);
-    compositor_.reset(new ui::Compositor(hwnd()));
+    compositor_.reset(new ui::Compositor(hwnd(), context_factory));
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 
@@ -53,8 +54,10 @@ class TestCompositorHostWin : public TestCompositorHost,
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostWin);
 };
 
-TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
-  return new TestCompositorHostWin(bounds);
+TestCompositorHost* TestCompositorHost::Create(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostWin(bounds, context_factory);
 }
 
 }  // namespace ui

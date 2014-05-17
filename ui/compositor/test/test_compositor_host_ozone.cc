@@ -18,7 +18,8 @@ namespace ui {
 
 class TestCompositorHostOzone : public TestCompositorHost {
  public:
-  TestCompositorHostOzone(const gfx::Rect& bounds);
+  TestCompositorHostOzone(const gfx::Rect& bounds,
+                          ui::ContextFactory* context_factory);
   virtual ~TestCompositorHostOzone();
 
  private:
@@ -30,13 +31,18 @@ class TestCompositorHostOzone : public TestCompositorHost {
 
   gfx::Rect bounds_;
 
+  ui::ContextFactory* context_factory_;
+
   scoped_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
 };
 
-TestCompositorHostOzone::TestCompositorHostOzone(const gfx::Rect& bounds)
-    : bounds_(bounds) {}
+TestCompositorHostOzone::TestCompositorHostOzone(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory)
+    : bounds_(bounds),
+      context_factory_(context_factory) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 
@@ -48,7 +54,7 @@ void TestCompositorHostOzone::Show() {
   // with a non-0 widget.
   // TODO(rjkroege): Use a "real" ozone widget when it is
   // available: http://crbug.com/255128
-  compositor_.reset(new ui::Compositor(1));
+  compositor_.reset(new ui::Compositor(1, context_factory_));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 
@@ -62,8 +68,10 @@ void TestCompositorHostOzone::Draw() {
 }
 
 // static
-TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
-  return new TestCompositorHostOzone(bounds);
+TestCompositorHost* TestCompositorHost::Create(
+    const gfx::Rect& bounds,
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostOzone(bounds, context_factory);
 }
 
 }  // namespace ui

@@ -21,7 +21,7 @@ static gfx::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
 namespace ui {
 
 // static
-void InitializeContextFactoryForTests(bool enable_pixel_output) {
+ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output) {
   DCHECK(!g_implicit_factory) <<
       "ContextFactory for tests already initialized.";
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -31,6 +31,7 @@ void InitializeContextFactoryForTests(bool enable_pixel_output) {
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
   g_implicit_factory = new InProcessContextFactory();
   ContextFactory::SetInstance(g_implicit_factory);
+  return g_implicit_factory;
 }
 
 void TerminateContextFactoryForTests() {
