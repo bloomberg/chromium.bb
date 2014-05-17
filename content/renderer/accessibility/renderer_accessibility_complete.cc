@@ -184,7 +184,13 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
 
     WebAXObject obj = document.accessibilityObjectFromID(
         event.id);
+    // Make sure the object still exists.
     if (!obj.updateBackingStoreAndCheckValidity())
+      continue;
+    // Make sure it's a descendant of our root node - exceptions include the
+    // scroll area that's the parent of the main document (we ignore it), and
+    // possibly nodes attached to a different document.
+    if (!tree_source_.IsInTree(obj))
       continue;
 
     // When we get a "selected children changed" event, Blink

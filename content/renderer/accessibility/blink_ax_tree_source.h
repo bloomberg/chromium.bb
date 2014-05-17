@@ -19,6 +19,9 @@ class BlinkAXTreeSource
   BlinkAXTreeSource(RenderViewImpl* render_view);
   virtual ~BlinkAXTreeSource();
 
+  // Walks up the ancestor chain to see if this is a descendant of the root.
+  bool IsInTree(blink::WebAXObject node) const;
+
   // AXTreeSource implementation.
   virtual blink::WebAXObject GetRoot() const OVERRIDE;
   virtual blink::WebAXObject GetFromId(int32 id) const OVERRIDE;

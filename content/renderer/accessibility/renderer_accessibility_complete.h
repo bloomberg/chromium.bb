@@ -72,16 +72,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
   void OnFatalError();
 
-  // Checks if a Blink accessibility object is an editable text node.
-  bool IsEditableText(const blink::WebAXObject& node);
-
-  // Recursively explore the tree of Blink accessibility objects rooted
-  // at |src|, and for each editable text node encountered, add a
-  // corresponding WebAccessibility node as a child of |dst|.
-  void RecursiveAddEditableTextNodesToTree(
-      const blink::WebAXObject& src,
-      ui::AXNodeData* dst);
-
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
 

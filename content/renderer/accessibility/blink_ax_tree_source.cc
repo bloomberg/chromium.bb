@@ -100,6 +100,16 @@ BlinkAXTreeSource::BlinkAXTreeSource(RenderViewImpl* render_view)
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
 
+bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
+  const blink::WebAXObject& root = GetRoot();
+  while (IsValid(node)) {
+    if (node.equals(root))
+      return true;
+    node = GetParent(node);
+  }
+  return false;
+}
+
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
   return GetMainDocument().accessibilityObject();
 }

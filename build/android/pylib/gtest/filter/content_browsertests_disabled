@@ -49,6 +49,7 @@ RendererAccessibilityTest.EditableTextModeFocusEvents
 DumpAccessibilityTreeTest.AccessibilityDialog
 DumpAccessibilityTreeTest.AccessibilityModalDialogClosed
 DumpAccessibilityTreeTest.AccessibilityModalDialogInIframeOpened
+RendererAccessibilityTest.EventOnObjectNotInTree
 
 # http://crbug.com/187500
 RenderViewImplTest.*
