@@ -122,8 +122,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void suppressCompositorScheduling(bool enable);
   virtual void willBeginCompositorFrame();
   virtual void didAutoResize(const blink::WebSize& new_size);
-  virtual void didActivateCompositor() OVERRIDE;
-  virtual void didDeactivateCompositor();
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
   virtual void didBecomeReadyForAdditionalInput();
@@ -640,10 +638,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
-
-  // Set to true if painting to the window is handled by the accelerated
-  // compositor.
-  bool is_accelerated_compositing_active_;
 
   // Properties of the screen hosting this RenderWidget instance.
   blink::WebScreenInfo screen_info_;

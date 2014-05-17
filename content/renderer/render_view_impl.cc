@@ -1938,8 +1938,6 @@ void RenderViewImpl::didActivateCompositor() {
         AsWeakPtr());
   }
 #endif
-
-  RenderWidget::didActivateCompositor();
 }
 
 void RenderViewImpl::didHandleGestureEvent(

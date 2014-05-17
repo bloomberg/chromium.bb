@@ -383,7 +383,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
-      is_accelerated_compositing_active_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       is_threaded_compositing_enabled_(false),
@@ -486,11 +485,8 @@ void RenderWidget::CompleteInit() {
 
   init_complete_ = true;
 
-  if (webwidget_) {
-    if (is_threaded_compositing_enabled_ || ForceCompositingModeEnabled()) {
-      webwidget_->enterForceCompositingMode(true);
-    }
-  }
+  if (webwidget_)
+    webwidget_->enterForceCompositingMode(true);
   if (compositor_)
     StartCompositor();
 
@@ -784,13 +780,9 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
     return;
 
   // Generate a full repaint.
-  if (!is_accelerated_compositing_active_) {
-    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
-  } else {
-    if (compositor_)
-      compositor_->SetNeedsForcedRedraw();
-    scheduleComposite();
-  }
+  if (compositor_)
+    compositor_->SetNeedsForcedRedraw();
+  scheduleComposite();
 }
 
 void RenderWidget::OnWasSwappedOut() {
@@ -1172,19 +1164,6 @@ void RenderWidget::AutoResizeCompositor()  {
     compositor_->setViewportSize(size_, physical_backing_size_);
 }
 
-void RenderWidget::didActivateCompositor() {
-  TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
-
-  is_accelerated_compositing_active_ = true;
-  webwidget_->enterForceCompositingMode(true);
-}
-
-void RenderWidget::didDeactivateCompositor() {
-  TRACE_EVENT0("gpu", "RenderWidget::didDeactivateCompositor");
-
-  is_accelerated_compositing_active_ = false;
-}
-
 void RenderWidget::initializeLayerTreeView() {
   compositor_ = RenderWidgetCompositor::Create(
       this, is_threaded_compositing_enabled_);
@@ -1485,12 +1464,8 @@ void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   }
 
   set_next_paint_is_repaint_ack();
-  if (is_accelerated_compositing_active_ && compositor_) {
+  if (compositor_)
     compositor_->SetNeedsRedrawRect(gfx::Rect(size_to_paint));
-  } else {
-    gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
-    didInvalidateRect(repaint_rect);
-  }
 }
 
 void RenderWidget::OnSyntheticGestureCompleted() {
@@ -1546,12 +1521,7 @@ void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
     return;
 
   device_scale_factor_ = device_scale_factor;
-
-  if (!is_accelerated_compositing_active_) {
-    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
-  } else {
-    scheduleComposite();
-  }
+  scheduleComposite();
 }
 
 void RenderWidget::OnOrientationChange() {

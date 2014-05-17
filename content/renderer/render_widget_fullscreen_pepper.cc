@@ -324,22 +324,16 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 
 void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   layer_ = layer;
-  bool compositing = !!layer_;
-  if (compositing != is_accelerated_compositing_active_) {
-    if (compositing) {
-      if (!layerTreeView())
-        initializeLayerTreeView();
-      if (!layerTreeView())
-        return;
-      layer_->setBounds(blink::WebSize(size()));
-      layer_->setDrawsContent(true);
-      compositor_->setDeviceScaleFactor(device_scale_factor_);
-      compositor_->setRootLayer(*layer_);
-      didActivateCompositor();
-    } else {
-      didDeactivateCompositor();
-    }
+  if (!layer_) {
+    compositor_->clearRootLayer();
+    return;
   }
+  if (!layerTreeView())
+    initializeLayerTreeView();
+  layer_->setBounds(blink::WebSize(size()));
+  layer_->setDrawsContent(true);
+  compositor_->setDeviceScaleFactor(device_scale_factor_);
+  compositor_->setRootLayer(*layer_);
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
