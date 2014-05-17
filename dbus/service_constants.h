@@ -1676,6 +1676,7 @@ const char kCrasControlInterface[] = "org.chromium.cras.Control";
 // Methods.
 const char kSetOutputVolume[] = "SetOutputVolume";
 const char kSetOutputNodeVolume[] = "SetOutputNodeVolume";
+const char kSwapLeftRight[] = "SwapLeftRight";
 const char kSetOutputMute[] = "SetOutputMute";
 const char kSetOutputUserMute[] = "SetOutputUserMute";
 const char kSetInputGain[] = "SetInputGain";
@@ -1701,6 +1702,7 @@ const char kPluggedTimeProperty[] = "PluggedTime";
 // Signals.
 const char kOutputVolumeChanged[] = "OutputVolumeChanged";
 const char kOutputMuteChanged[] = "OutputMuteChanged";
+const char kNodeLeftRightSwappedChanged[] = "NodeLeftRightSwappedChanged";
 const char kInputGainChanged[] = "InputGainChanged";
 const char kInputMuteChanged[] = "InputMuteChanged";
 const char kNodesChanged[] = "NodesChanged";
