@@ -1150,6 +1150,10 @@ std::string SearchProvider::GetSessionToken() {
     std::string raw_data;
     base::RandBytes(WriteInto(&raw_data, kTokenBytes + 1), kTokenBytes);
     base::Base64Encode(raw_data, &current_token_);
+
+    // Make the base64 encoded value URL and filename safe(see RFC 3548).
+    std::replace(current_token_.begin(), current_token_.end(), '+', '-');
+    std::replace(current_token_.begin(), current_token_.end(), '/', '_');
   }
 
   // Extend expiration time another 60 seconds.
