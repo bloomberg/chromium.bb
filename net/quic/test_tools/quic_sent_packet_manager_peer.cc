@@ -109,7 +109,15 @@ bool QuicSentPacketManagerPeer::HasUnackedCryptoPackets(
 // static
 size_t QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
     const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->unacked_packets_.GetNumRetransmittablePackets();
+  size_t num_unacked_packets = 0;
+  for (QuicUnackedPacketMap::const_iterator it =
+           sent_packet_manager->unacked_packets_.begin();
+       it != sent_packet_manager->unacked_packets_.end(); ++it) {
+    if (it->second.retransmittable_frames != NULL) {
+      ++num_unacked_packets;
+    }
+  }
+  return num_unacked_packets;
 }
 
 // static

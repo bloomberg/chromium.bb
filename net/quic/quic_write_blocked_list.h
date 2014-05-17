@@ -27,10 +27,12 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
   QuicWriteBlockedList();
   ~QuicWriteBlockedList();
 
-  bool HasWriteBlockedStreams() const {
-    return crypto_stream_blocked_ ||
-        headers_stream_blocked_ ||
-        base_write_blocked_list_.HasWriteBlockedStreams();
+  bool HasWriteBlockedDataStreams() const {
+    return base_write_blocked_list_.HasWriteBlockedStreams();
+  }
+
+  bool HasWriteBlockedCryptoOrHeadersStream() const {
+    return crypto_stream_blocked_ || headers_stream_blocked_;
   }
 
   size_t NumBlockedStreams() const {
@@ -88,6 +90,9 @@ class NET_EXPORT_PRIVATE QuicWriteBlockedList {
     blocked_streams_.insert(stream_id);
     return;
   }
+
+  bool crypto_stream_blocked() const { return crypto_stream_blocked_; }
+  bool headers_stream_blocked() const { return headers_stream_blocked_; }
 
  private:
   QuicWriteBlockedListBase base_write_blocked_list_;

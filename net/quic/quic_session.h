@@ -25,6 +25,7 @@
 namespace net {
 
 class QuicCryptoStream;
+class QuicFlowController;
 class ReliableQuicStream;
 class SSLInfo;
 class VisitorShim;
@@ -53,6 +54,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   };
 
   QuicSession(QuicConnection* connection,
+              uint32 max_flow_control_receive_window_bytes,
               const QuicConfig& config);
 
   virtual ~QuicSession();
@@ -69,9 +71,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnWriteBlocked() OVERRIDE {}
   virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) OVERRIDE {}
+      const QuicVersion& version) OVERRIDE;
   virtual void OnCanWrite() OVERRIDE;
-  virtual bool HasPendingWrites() const OVERRIDE;
+  virtual bool WillingAndAbleToWrite() const OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
   virtual bool HasOpenDataStreams() const OVERRIDE;
 
@@ -201,6 +203,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   bool is_server() const { return connection_->is_server(); }
 
+  uint32 max_flow_control_receive_window_bytes() {
+    return max_flow_control_receive_window_bytes_;
+  }
+
+  QuicFlowController* flow_controller() { return flow_controller_.get(); }
+
  protected:
   typedef base::hash_map<QuicStreamId, QuicDataStream*> DataStreamMap;
 
@@ -294,6 +302,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Indicate if there is pending data for the crypto stream.
   bool has_pending_handshake_;
+
+  // Used for session level flow control.
+  scoped_ptr<QuicFlowController> flow_controller_;
+
+  // Initial flow control receive window size for new streams.
+  uint32 max_flow_control_receive_window_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

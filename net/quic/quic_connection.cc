@@ -23,7 +23,6 @@
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;
@@ -193,8 +192,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                QuicConnectionHelperInterface* helper,
                                QuicPacketWriter* writer,
                                bool is_server,
-                               const QuicVersionVector& supported_versions,
-                               uint32 max_flow_control_receive_window_bytes)
+                               const QuicVersionVector& supported_versions)
     : framer_(supported_versions, helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
@@ -238,22 +236,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       peer_ip_changed_(false),
       peer_port_changed_(false),
       self_ip_changed_(false),
-      self_port_changed_(false),
-      max_flow_control_receive_window_bytes_(
-          max_flow_control_receive_window_bytes) {
-  if (max_flow_control_receive_window_bytes_ < kDefaultFlowControlSendWindow) {
-    DLOG(ERROR) << "Initial receive window ("
-                << max_flow_control_receive_window_bytes_
-                << ") cannot be set lower than default ("
-                << kDefaultFlowControlSendWindow << ").";
-    max_flow_control_receive_window_bytes_ = kDefaultFlowControlSendWindow;
-  }
-
-  flow_controller_.reset(new QuicFlowController(
-      supported_versions.front(), 0, is_server_,
-      kDefaultFlowControlSendWindow, max_flow_control_receive_window_bytes_,
-      max_flow_control_receive_window_bytes_));
-
+      self_port_changed_(false) {
   if (!is_server_) {
     // Pacing will be enabled if the client negotiates it.
     sent_packet_manager_.MaybeEnablePacing();
@@ -375,10 +358,6 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   // Store the new version.
   framer_.set_version(received_version);
 
-  if (received_version < QUIC_VERSION_19) {
-    flow_controller_->Disable();
-  }
-
   // TODO(satyamshekhar): Store the sequence number of this packet and close the
   // connection if we ever received a packet with incorrect version and whose
   // sequence number is greater.
@@ -494,9 +473,6 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(version());
-        if (version() < QUIC_VERSION_19) {
-          flow_controller_->Disable();
-        }
       }
     } else {
       DCHECK(!header.public_header.version_flag);
@@ -505,9 +481,6 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
       packet_creator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
-      if (version() < QUIC_VERSION_19) {
-        flow_controller_->Disable();
-      }
     }
   }
 
@@ -1184,7 +1157,8 @@ void QuicConnection::OnCanWrite() {
 
   // After the visitor writes, it may have caused the socket to become write
   // blocked or the congestion manager to prohibit sending, so check again.
-  if (visitor_->HasPendingWrites() && !resume_writes_alarm_->IsSet() &&
+  if (visitor_->WillingAndAbleToWrite() &&
+      !resume_writes_alarm_->IsSet() &&
       CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
     // We're not write blocked, but some stream didn't write out all of its
     // bytes. Register for 'immediate' resumption so we'll keep writing after

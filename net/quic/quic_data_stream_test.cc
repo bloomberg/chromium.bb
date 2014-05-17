@@ -30,7 +30,9 @@ namespace net {
 namespace test {
 namespace {
 
-const QuicConnectionId kStreamId = 3;
+// First non-reserved client stream ID.
+const QuicStreamId kStreamId = 5;
+
 const bool kIsServer = true;
 const bool kShouldProcessData = true;
 
@@ -435,9 +437,9 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
                                                  kWindow);
   QuicFlowControllerPeer::SetMaxReceiveWindow(stream2_->flow_controller(),
                                               kWindow);
-  QuicFlowControllerPeer::SetReceiveWindowOffset(connection_->flow_controller(),
+  QuicFlowControllerPeer::SetReceiveWindowOffset(session_->flow_controller(),
                                                  kWindow);
-  QuicFlowControllerPeer::SetMaxReceiveWindow(connection_->flow_controller(),
+  QuicFlowControllerPeer::SetMaxReceiveWindow(session_->flow_controller(),
                                               kWindow);
 
   // Supply headers to both streams so that they are happy to receive data.
@@ -463,7 +465,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
   EXPECT_CALL(*connection_, SendWindowUpdate(kStreamId + 2, _)).Times(0);
   EXPECT_CALL(*connection_,
               SendWindowUpdate(0, QuicFlowControllerPeer::ReceiveWindowOffset(
-                                      connection_->flow_controller()) +
+                                      session_->flow_controller()) +
                                       1 + kWindow / 2));
   QuicStreamFrame frame3(kStreamId, false, (kWindow / 4), MakeIOVector("a"));
   stream_->OnStreamFrame(frame3);
@@ -518,7 +520,7 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   const uint64 kConnectionWindow = 10;
   QuicFlowControllerPeer::SetReceiveWindowOffset(stream_->flow_controller(),
                                                  kStreamWindow);
-  QuicFlowControllerPeer::SetReceiveWindowOffset(connection_->flow_controller(),
+  QuicFlowControllerPeer::SetReceiveWindowOffset(session_->flow_controller(),
                                                  kConnectionWindow);
 
   string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);

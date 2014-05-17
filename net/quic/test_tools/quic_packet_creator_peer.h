@@ -26,6 +26,9 @@ class QuicPacketCreatorPeer {
 
   static void SetIsServer(QuicPacketCreator* creator, bool is_server);
 
+  static bool SwitchFecProtectionOn(QuicPacketCreator* creator,
+                                    size_t max_packets_per_fec_group);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);
 };

@@ -290,16 +290,16 @@ TEST(QuicDispatcherFlowControlTest, NoNewVersion17ConnectionsIfFlagDisabled) {
   // When flag is enabled, new connections should support QUIC_VERSION_17.
   FLAGS_enable_quic_stream_flow_control_2 = true;
   scoped_ptr<QuicConnection> connection_1(
-      QuicDispatcherPeer::CreateQuicConnection(
-          &dispatcher, kCID, client, server, kInitialFlowControlWindowForTest));
+      QuicDispatcherPeer::CreateQuicConnection(&dispatcher, kCID, client,
+                                               server));
   EXPECT_EQ(QUIC_VERSION_17, connection_1->version());
 
 
   // When flag is disabled, new connections should not support QUIC_VERSION_17.
   FLAGS_enable_quic_stream_flow_control_2 = false;
   scoped_ptr<QuicConnection> connection_2(
-      QuicDispatcherPeer::CreateQuicConnection(
-          &dispatcher, kCID, client, server, kInitialFlowControlWindowForTest));
+      QuicDispatcherPeer::CreateQuicConnection(&dispatcher, kCID, client,
+                                               server));
   EXPECT_EQ(QUIC_VERSION_16, connection_2->version());
 }
 

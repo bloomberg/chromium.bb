@@ -57,9 +57,26 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   virtual void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
                                           base::StringPiece payload) OVERRIDE;
 
+  // Turn on FEC protection for subsequently created packets. FEC should
+  // be enabled first (set_max_packets_per_fec_group should be non-zero) for
+  // FEC protection to start.
+  void StartFecProtectingPackets();
+
+  // Turn off FEC protection for subsequently created packets. If the creator
+  // has any open fec group, call will fail. It is the caller's responsibility
+  // to flush out FEC packets in generation, and to verify with ShouldSendFec()
+  // that there is no open FEC group.
+  void StopFecProtectingPackets();
+
   // Checks if it's time to send an FEC packet.  |force_close| forces this to
   // return true if an fec group is open.
   bool ShouldSendFec(bool force_close) const;
+
+  // Returns current max number of packets covered by an FEC group.
+  size_t max_packets_per_fec_group() const;
+
+  // Sets creator's max number of packets covered by an FEC group.
+  void set_max_packets_per_fec_group(size_t max_packets_per_fec_group);
 
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
@@ -109,19 +126,23 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // Re-serializes frames with the original packet's sequence number length.
   // Used for retransmitting packets to ensure they aren't too long.
+  // Caller must ensure that any open FEC group are closed before calling this
+  // method.
   SerializedPacket ReserializeAllFrames(
       const QuicFrames& frames, QuicSequenceNumberLength original_length);
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames();
 
-  // Returns IN_FEC_GROUP or NOT_IN_FEC_GROUP, depending on whether FEC is
-  // enabled or not. Note: This does not mean that an FEC group is currently
-  // active; i.e., fec_group_.get() may still be NULL.
-  // TODO(jri): Straighten out naming: Enabling FEC for the connection
-  // should use FEC_ENABLED/DISABLED, and IN_FEC_GROUP/NOT_IN_FEC_GROUP should
-  // be used if a given packet is in an fec group.
-  InFecGroup IsFecEnabled() const;
+  // Returns whether FEC protection is currently enabled. Note: Enabled does not
+  // mean that an FEC group is currently active; i.e., IsFecProtected() may
+  // still return NOT_IN_FEC_GROUP, and fec_group_.get() may still be NULL.
+  bool IsFecEnabled() const;
+
+  // Returns true if subsequent packets will be FEC protected. Note: True does
+  // not mean that an FEC packet is currently under construction; i.e.,
+  // fec_group_.get() may still be NULL, until MaybeStartFec() is called.
+  bool IsFecProtected() const;
 
   // Returns the number of bytes which are available to be used by additional
   // frames in the packet.  Since stream frames are slightly smaller when they
@@ -202,7 +223,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // Starts a new FEC group with the next serialized packet, if FEC is enabled
   // and there is not already an FEC group open.
-  InFecGroup MaybeStartFEC();
+  InFecGroup MaybeStartFec();
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,
@@ -223,6 +244,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   QuicFramer* framer_;
   scoped_ptr<QuicRandomBoolSource> random_bool_source_;
   QuicPacketSequenceNumber sequence_number_;
+  // If true, any created packets will be FEC protected.
+  bool should_fec_protect_;
   QuicFecGroupNumber fec_group_number_;
   scoped_ptr<QuicFecGroup> fec_group_;
   // bool to keep track if this packet creator is being used the server.

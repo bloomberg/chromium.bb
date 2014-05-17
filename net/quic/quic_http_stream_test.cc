@@ -60,7 +60,7 @@ class TestQuicConnection : public QuicConnection {
                      QuicConnectionHelper* helper,
                      QuicPacketWriter* writer)
       : QuicConnection(connection_id, address, helper, writer, false,
-                       versions, kInitialFlowControlWindowForTest) {
+                       versions) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -212,7 +212,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               make_scoped_ptr((QuicServerInfo*)NULL),
                               QuicServerId(kServerHostname, kServerPort,
                                            false, PRIVACY_MODE_DISABLED),
-                              DefaultQuicConfig(), &crypto_config_, NULL));
+                              DefaultQuicConfig(),
+                              kInitialFlowControlWindowForTest, &crypto_config_,
+                              NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_ ?

@@ -136,9 +136,12 @@ QuicClientSession::QuicClientSession(
     scoped_ptr<QuicServerInfo> server_info,
     const QuicServerId& server_id,
     const QuicConfig& config,
+    uint32 max_flow_control_receive_window_bytes,
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
-    : QuicClientSessionBase(connection, config),
+    : QuicClientSessionBase(connection,
+                            max_flow_control_receive_window_bytes,
+                            config),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),

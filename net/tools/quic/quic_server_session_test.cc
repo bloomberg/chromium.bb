@@ -53,7 +53,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     connection_ =
         new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
     session_.reset(new QuicServerSession(
-        config_, connection_, &owner_));
+        config_, connection_, kInitialFlowControlWindowForTest, &owner_));
     session_->InitializeSession(crypto_config_);
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }

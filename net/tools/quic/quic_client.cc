@@ -189,8 +189,8 @@ bool QuicClient::StartConnect() {
       server_id_,
       config_,
       new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
-                         writer_.get(), false, supported_versions_,
-                         initial_flow_control_window_),
+                         writer_.get(), false, supported_versions_),
+      initial_flow_control_window_,
       &crypto_config_));
   return session_->CryptoConnect();
 }
@@ -218,6 +218,7 @@ void QuicClient::SendRequestsAndWaitForResponse(
     BalsaHeaders headers;
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
     QuicSpdyClientStream* stream = CreateReliableClientStream();
+    DCHECK(stream != NULL);
     stream->SendRequest(headers, "", true);
     stream->set_visitor(this);
   }
@@ -236,7 +237,7 @@ QuicSpdyClientStream* QuicClient::CreateReliableClientStream() {
 void QuicClient::WaitForStreamToClose(QuicStreamId id) {
   DCHECK(connected());
 
-  while (!session_->IsClosedStream(id)) {
+  while (connected() && !session_->IsClosedStream(id)) {
     epoll_server_.WaitForEventsAndExecuteCallbacks();
   }
 }
@@ -244,7 +245,7 @@ void QuicClient::WaitForStreamToClose(QuicStreamId id) {
 void QuicClient::WaitForCryptoHandshakeConfirmed() {
   DCHECK(connected());
 
-  while (!session_->IsCryptoHandshakeConfirmed()) {
+  while (connected() && !session_->IsCryptoHandshakeConfirmed()) {
     epoll_server_.WaitForEventsAndExecuteCallbacks();
   }
 }

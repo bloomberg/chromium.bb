@@ -34,8 +34,7 @@ class QuicDispatcherPeer {
       QuicDispatcher* dispatcher,
       QuicConnectionId connection_id,
       const IPEndPoint& server,
-      const IPEndPoint& client,
-      uint32 initial_flow_control_window_bytes);
+      const IPEndPoint& client);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);

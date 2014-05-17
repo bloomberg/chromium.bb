@@ -41,12 +41,10 @@ QuicConnection* QuicDispatcherPeer::CreateQuicConnection(
     QuicDispatcher* dispatcher,
     QuicConnectionId connection_id,
     const IPEndPoint& server,
-    const IPEndPoint& client,
-    uint32 initial_flow_control_window_bytes) {
+    const IPEndPoint& client) {
   return dispatcher->CreateQuicConnection(connection_id,
                                           server,
-                                          client,
-                                          initial_flow_control_window_bytes);
+                                          client);
 }
 
 }  // namespace test

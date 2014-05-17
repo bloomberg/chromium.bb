@@ -97,6 +97,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
                     scoped_ptr<QuicServerInfo> server_info,
                     const QuicServerId& server_id,
                     const QuicConfig& config,
+                    uint32 max_flow_control_receive_window_bytes,
                     QuicCryptoClientConfig* crypto_config,
                     NetLog* net_log);
 

@@ -52,9 +52,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // frames.
   bool HasUnackedRetransmittableFrames() const;
 
-  // Returns the number of unacked packets which have retransmittable frames.
-  size_t GetNumRetransmittablePackets() const;
-
   // Returns the largest sequence number that has been sent.
   QuicPacketSequenceNumber largest_sent_packet() const {
     return largest_sent_packet_;
@@ -122,8 +119,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // frames, and sets all_transmissions to only include itself.
   void NeuterPacket(QuicPacketSequenceNumber sequence_number);
 
-  // Returns true if the packet has been marked as sent by SetSent.
-  static bool IsSentAndNotPending(const TransmissionInfo& transmission_info);
+  // Returns true if the packet's only purpose is to measure RTT.  It must not
+  // be pending, have retransmittable frames, or be linked to transmissions
+  // with retransmittable frames.
+  static bool IsForRttOnly(const TransmissionInfo& transmission_info);
 
  private:
   void MaybeRemoveRetransmittableFrames(TransmissionInfo* transmission_info);

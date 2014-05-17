@@ -37,7 +37,7 @@ namespace {
 const char kData1[] = "FooAndBar";
 const char kData2[] = "EepAndBaz";
 const size_t kDataLen = 9;
-const QuicConnectionId kStreamId = 3;
+const QuicStreamId kStreamId = 3;
 const bool kIsServer = true;
 const bool kShouldProcessData = true;
 
@@ -134,6 +134,11 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
     initial_flow_control_window_bytes_ = val;
   }
 
+  bool HasWriteBlockedStreams() {
+    return write_blocked_list_->HasWriteBlockedCryptoOrHeadersStream() ||
+           write_blocked_list_->HasWriteBlockedDataStreams();
+  }
+
  protected:
   MockConnection* connection_;
   scoped_ptr<MockSession> session_;
@@ -156,7 +161,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   stream_->WriteOrBufferData(kData1, false, NULL);
-  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
@@ -165,7 +170,7 @@ TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
   // Write no data and no fin.  If we consume nothing we should not be write
   // blocked.
   EXPECT_DFATAL(stream_->WriteOrBufferData(StringPiece(), false, NULL), "");
-  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
@@ -178,7 +183,6 @@ TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
   stream_->WriteOrBufferData(StringPiece(kData1, 2), false, NULL);
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
-
 
 TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
   Initialize(kShouldProcessData);
@@ -207,7 +211,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
 TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   Initialize(kShouldProcessData);
 
-  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_FALSE(HasWriteBlockedStreams());
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
           connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
@@ -215,7 +219,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
   stream_->WriteOrBufferData(kData1, false, NULL);
-  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Queue a bytes_consumed write.
   stream_->WriteOrBufferData(kData2, false, NULL);
@@ -395,7 +399,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   if (FLAGS_enable_quic_connection_flow_control) {
-    connection_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+    session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   }
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
@@ -405,7 +409,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
           &SaveProxyAckNotifierDelegate, &proxy_delegate))),
       Return(QuicConsumedData(kFirstWriteSize, false))));
   stream_->WriteOrBufferData(kData, false, delegate.get());
-  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, proxy_delegate.get())).
       WillOnce(
@@ -450,7 +454,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   if (FLAGS_enable_quic_connection_flow_control) {
-    connection_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
+    session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   }
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
@@ -460,7 +464,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
           &SaveProxyAckNotifierDelegate, &proxy_delegate))),
       Return(QuicConsumedData(kInitialWriteSize, false))));
   stream_->WriteOrBufferData(kData, false, delegate.get());
-  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_TRUE(HasWriteBlockedStreams());
 
   // Handle the ack of the first write.
   proxy_delegate->OnAckNotification(1, 2, 3, 4, zero_);
@@ -491,7 +495,7 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
           &SaveProxyAckNotifierDelegate, &proxy_delegate))),
       Return(QuicConsumedData(kDataLen, true))));
   stream_->WriteOrBufferData(kData1, true, delegate.get());
-  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_FALSE(HasWriteBlockedStreams());
 
   // Handle the ack.
   EXPECT_CALL(*delegate, OnAckNotification(1, 2, 3, 4, zero_));
@@ -510,7 +514,7 @@ TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(0, false)));
   stream_->WriteOrBufferData(kData1, true, delegate.get());
-  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(DoAll(
       WithArgs<4>(Invoke(CreateFunctor(
@@ -538,7 +542,7 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
           &SaveProxyAckNotifierDelegate, &proxy_delegate))),
       Return(QuicConsumedData(kDataLen, false))));
   stream_->WriteOrBufferData(kData1, true, delegate.get());
-  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
+  EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(DoAll(
       WithArgs<4>(Invoke(CreateFunctor(

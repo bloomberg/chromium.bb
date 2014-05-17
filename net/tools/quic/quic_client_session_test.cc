@@ -15,6 +15,7 @@
 
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
+using net::test::kInitialFlowControlWindowForTest;
 using net::test::PacketSavingConnection;
 using net::test::SupportedVersions;
 using testing::_;
@@ -38,6 +39,7 @@ class ToolsQuicClientSessionTest
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
         DefaultQuicConfig(),
         connection_,
+        kInitialFlowControlWindowForTest,
         &crypto_config_));
     session_->config()->SetDefaults();
   }

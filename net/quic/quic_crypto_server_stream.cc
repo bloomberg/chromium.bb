@@ -91,6 +91,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   // If we are returning a SHLO then we accepted the handshake.
   QuicConfig* config = session()->config();
+  OverrideQuicConfigDefaults(config);
   error = config->ProcessPeerHello(message, CLIENT, &error_details);
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
@@ -172,10 +173,13 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
       session()->connection()->peer_address(),
       session()->connection()->version(),
       session()->connection()->supported_versions(),
-      session()->connection()->max_flow_control_receive_window_bytes(),
+      session()->max_flow_control_receive_window_bytes(),
       session()->connection()->clock(),
       session()->connection()->random_generator(),
       &crypto_negotiated_params_, reply, error_details);
+}
+
+void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {
 }
 
 QuicCryptoServerStream::ValidateCallback::ValidateCallback(

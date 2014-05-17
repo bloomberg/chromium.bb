@@ -130,9 +130,9 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
           session_->config()->HasReceivedInitialFlowControlWindowBytes() ?
               session_->config()->ReceivedInitialFlowControlWindowBytes() :
               kDefaultFlowControlSendWindow,
-          session_->connection()->max_flow_control_receive_window_bytes(),
-          session_->connection()->max_flow_control_receive_window_bytes()),
-      connection_flow_controller_(session_->connection()->flow_controller()) {
+          session_->max_flow_control_receive_window_bytes(),
+          session_->max_flow_control_receive_window_bytes()),
+      connection_flow_controller_(session_->flow_controller()) {
 }
 
 ReliableQuicStream::~ReliableQuicStream() {

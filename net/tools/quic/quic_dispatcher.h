@@ -113,8 +113,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   virtual QuicConnection* CreateQuicConnection(
       QuicConnectionId connection_id,
       const IPEndPoint& server_address,
-      const IPEndPoint& client_address,
-      uint32 initial_flow_control_window);
+      const IPEndPoint& client_address);
 
   // Called by |framer_visitor_| when the public header has been parsed.
   virtual bool OnUnauthenticatedPublicHeader(

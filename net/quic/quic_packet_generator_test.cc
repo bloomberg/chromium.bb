@@ -11,6 +11,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -439,7 +440,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFEC) {
   delegate_.SetCanWriteAnything();
 
   // Send FEC every two packets.
-  creator_.options()->max_packets_per_fec_group = 2;
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 2));
 
   {
     InSequence dummy;
@@ -475,8 +476,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
   delegate_.SetCanWriteAnything();
 
   // Send FEC every six packets.
-  creator_.options()->max_packets_per_fec_group = 6;
-
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
   {
     InSequence dummy;
     EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(

@@ -8,6 +8,7 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_headers_stream.h"
 #include "net/ssl/ssl_info.h"
 
@@ -78,8 +79,8 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->OnWriteBlocked();
   }
 
-  virtual bool HasPendingWrites() const OVERRIDE {
-    return session_->HasPendingWrites();
+  virtual bool WillingAndAbleToWrite() const OVERRIDE {
+    return session_->WillingAndAbleToWrite();
   }
 
   virtual bool HasPendingHandshake() const OVERRIDE {
@@ -95,6 +96,7 @@ class VisitorShim : public QuicConnectionVisitorInterface {
 };
 
 QuicSession::QuicSession(QuicConnection* connection,
+                         uint32 max_flow_control_receive_window_bytes,
                          const QuicConfig& config)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
@@ -105,7 +107,20 @@ QuicSession::QuicSession(QuicConnection* connection,
       error_(QUIC_NO_ERROR),
       goaway_received_(false),
       goaway_sent_(false),
-      has_pending_handshake_(false) {
+      has_pending_handshake_(false),
+      max_flow_control_receive_window_bytes_(
+          max_flow_control_receive_window_bytes) {
+  if (max_flow_control_receive_window_bytes_ < kDefaultFlowControlSendWindow) {
+    LOG(ERROR) << "Initial receive window ("
+               << max_flow_control_receive_window_bytes_
+               << ") cannot be set lower than default ("
+               << kDefaultFlowControlSendWindow << ").";
+    max_flow_control_receive_window_bytes_ = kDefaultFlowControlSendWindow;
+  }
+  flow_controller_.reset(new QuicFlowController(
+      connection_->supported_versions().front(), 0, is_server(),
+      kDefaultFlowControlSendWindow, max_flow_control_receive_window_bytes_,
+      max_flow_control_receive_window_bytes_));
 
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
@@ -229,8 +244,7 @@ void QuicSession::OnWindowUpdateFrames(
                << "Received connection level flow control window update with "
                   "byte offset: " << frames[i].byte_offset;
       if (FLAGS_enable_quic_connection_flow_control &&
-          connection()->flow_controller()->UpdateSendWindowOffset(
-              frames[i].byte_offset)) {
+          flow_controller_->UpdateSendWindowOffset(frames[i].byte_offset)) {
         connection_window_updated = true;
       }
       continue;
@@ -261,9 +275,22 @@ void QuicSession::OnBlockedFrames(const vector<QuicBlockedFrame>& frames) {
 
 void QuicSession::OnCanWrite() {
   // We limit the number of writes to the number of pending streams. If more
-  // streams become pending, HasPendingWrites will be true, which will cause
-  // the connection to request resumption before yielding to other connections.
+  // streams become pending, WillingAndAbleToWrite will be true, which will
+  // cause the connection to request resumption before yielding to other
+  // connections.
   size_t num_writes = write_blocked_streams_.NumBlockedStreams();
+  if (flow_controller_->IsBlocked()) {
+    // If we are connection level flow control blocked, then only allow the
+    // crypto and headers streams to try writing as all other streams will be
+    // blocked.
+    num_writes = 0;
+    if (write_blocked_streams_.crypto_stream_blocked()) {
+      num_writes += 1;
+    }
+    if (write_blocked_streams_.headers_stream_blocked()) {
+      num_writes += 1;
+    }
+  }
   if (num_writes == 0) {
     return;
   }
@@ -271,7 +298,8 @@ void QuicSession::OnCanWrite() {
   QuicConnection::ScopedPacketBundler ack_bundler(
       connection_.get(), QuicConnection::NO_ACK);
   for (size_t i = 0; i < num_writes; ++i) {
-    if (!write_blocked_streams_.HasWriteBlockedStreams()) {
+    if (!(write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
+          write_blocked_streams_.HasWriteBlockedDataStreams())) {
       // Writing one stream removed another!? Something's broken.
       LOG(DFATAL) << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
@@ -293,8 +321,14 @@ void QuicSession::OnCanWrite() {
   }
 }
 
-bool QuicSession::HasPendingWrites() const {
-  return write_blocked_streams_.HasWriteBlockedStreams();
+bool QuicSession::WillingAndAbleToWrite() const {
+  // If the crypto or headers streams are blocked, we want to schedule a write -
+  // they don't get blocked by connection level flow control. Otherwise only
+  // schedule a write if we are not flow control blocked at the connection
+  // level.
+  return write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
+         (!flow_controller_->IsBlocked() &&
+          write_blocked_streams_.HasWriteBlockedDataStreams());
 }
 
 bool QuicSession::HasPendingHandshake() const {
@@ -399,8 +433,7 @@ void QuicSession::OnConfigNegotiated() {
     }
 
     // Update connection level window.
-    connection()->flow_controller()->UpdateSendWindowOffset(
-        new_flow_control_send_window);
+    flow_controller_->UpdateSendWindowOffset(new_flow_control_send_window);
   }
 }
 
@@ -591,8 +624,9 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
 }
 
 bool QuicSession::HasDataToWrite() const {
-  return write_blocked_streams_.HasWriteBlockedStreams() ||
-      connection_->HasQueuedData();
+  return write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
+         write_blocked_streams_.HasWriteBlockedDataStreams() ||
+         connection_->HasQueuedData();
 }
 
 bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) const {
@@ -603,6 +637,12 @@ bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) const {
 void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
   closed_streams_.clear();
+}
+
+void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
+  if (version < QUIC_VERSION_19) {
+    flow_controller_->Disable();
+  }
 }
 
 }  // namespace net

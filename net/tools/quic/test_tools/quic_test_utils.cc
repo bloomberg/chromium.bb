@@ -13,6 +13,7 @@
 using base::StringPiece;
 using net::test::kInitialFlowControlWindowForTest;
 using net::test::MockHelper;
+using net::test::QuicConnectionPeer;
 
 namespace net {
 namespace tools {
@@ -23,9 +24,8 @@ MockConnection::MockConnection(bool is_server)
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+                     is_server, QuicSupportedVersions()),
+      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -34,9 +34,8 @@ MockConnection::MockConnection(IPEndPoint address,
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+                     is_server, QuicSupportedVersions()),
+      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -46,9 +45,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+                     is_server, QuicSupportedVersions()),
+      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -58,9 +56,8 @@ MockConnection::MockConnection(bool is_server,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
-      writer_(net::test::QuicConnectionPeer::GetWriter(this)),
+                     is_server, QuicSupportedVersions()),
+      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -81,7 +78,7 @@ uint64 SimpleRandom::RandUint64() {
 
 TestSession::TestSession(QuicConnection* connection,
                          const QuicConfig& config)
-    : QuicSession(connection, config),
+  : QuicSession(connection, kInitialFlowControlWindowForTest, config),
       crypto_stream_(NULL) {
 }
 

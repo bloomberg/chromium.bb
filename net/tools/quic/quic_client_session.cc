@@ -18,8 +18,11 @@ QuicClientSession::QuicClientSession(
     const QuicServerId& server_id,
     const QuicConfig& config,
     QuicConnection* connection,
+    uint32 max_flow_control_receive_window_bytes,
     QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, config),
+    : QuicClientSessionBase(connection,
+                            max_flow_control_receive_window_bytes,
+                            config),
       crypto_stream_(server_id, this, NULL, crypto_config) {
 }
 

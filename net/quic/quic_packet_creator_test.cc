@@ -119,7 +119,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     return QuicFramer::GetMinStreamFrameSize(
         client_framer_.version(), kStreamId, kOffset, true, is_in_fec_group);
   }
-
   static const QuicStreamId kStreamId = 1u;
   static const QuicStreamOffset kOffset = 1u;
 
@@ -139,7 +138,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
 INSTANTIATE_TEST_CASE_P(QuicPacketCreatorTests,
                         QuicPacketCreatorTest,
                         ::testing::ValuesIn(GetTestParams()));
-
 
 TEST_P(QuicPacketCreatorTest, SerializeFrames) {
   frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
@@ -167,7 +165,8 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeWithFEC) {
-  creator_.options()->max_packets_per_fec_group = 6;
+  // Enable FEC protection, and send FEC packet every 6 packets.
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
   // Should return false since we do not have enough packets in the FEC group to
   // trigger an FEC packet.
   ASSERT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
@@ -259,7 +258,9 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   // P1 <change seq num length> P2 FEC,
   // and we expect that sequence number length should not change until the end
   // of the open FEC group.
-  creator_.options()->max_packets_per_fec_group = 6;
+
+  // Enable FEC protection, and send FEC packet every 6 packets.
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
   // Should return false since we do not have enough packets in the FEC group to
   // trigger an FEC packet.
   ASSERT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
@@ -391,6 +392,83 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   delete serialized.packet;
 }
 
+TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithNoGroup) {
+  // Enable FEC protection.
+  creator_.set_max_packets_per_fec_group(6);
+  EXPECT_TRUE(creator_.IsFecEnabled());
+  EXPECT_FALSE(creator_.IsFecProtected());
+
+  // Turn on FEC protection.
+  creator_.StartFecProtectingPackets();
+  EXPECT_TRUE(creator_.IsFecProtected());
+  // We have no packets in the FEC group, so no FEC packet can be created.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/true));
+  // Since no packets are in FEC group yet, we should be able to turn FEC
+  // off with no trouble.
+  creator_.StopFecProtectingPackets();
+  EXPECT_FALSE(creator_.IsFecProtected());
+}
+
+TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithGroupInProgress) {
+  // Enable FEC protection, and send FEC packet every 6 packets.
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
+  delete frames_[0].stream_frame;
+  delete serialized.packet;
+
+  EXPECT_TRUE(creator_.IsFecProtected());
+  // We do not have enough packets in the FEC group to trigger an FEC packet.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
+  // Should return true since there are packets in the FEC group.
+  EXPECT_TRUE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  // Switching FEC off should not change creator state, since there is an
+  // FEC packet under construction.
+  EXPECT_DFATAL(creator_.StopFecProtectingPackets(),
+                "Cannot stop FEC protection with open FEC group.");
+  EXPECT_TRUE(creator_.IsFecProtected());
+  // Confirm that FEC packet is still under construction.
+  EXPECT_TRUE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  serialized = creator_.SerializeFec();
+  delete serialized.packet;
+
+  // Switching FEC on/off should work now.
+  creator_.StopFecProtectingPackets();
+  EXPECT_FALSE(creator_.IsFecProtected());
+  creator_.StartFecProtectingPackets();
+  EXPECT_TRUE(creator_.IsFecProtected());
+}
+
+TEST_P(QuicPacketCreatorTest, SwitchFecOnWithStreamFrameQueued) {
+  // Add a stream frame to the creator.
+  QuicFrame frame;
+  size_t consumed = creator_.CreateStreamFrame(
+      1u, MakeIOVector("test"), 0u, false, &frame);
+  EXPECT_EQ(4u, consumed);
+  ASSERT_TRUE(frame.stream_frame);
+  EXPECT_TRUE(creator_.AddSavedFrame(frame));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+
+   // Enable FEC protection, and send FEC packet every 6 packets.
+  creator_.set_max_packets_per_fec_group(6);
+  EXPECT_TRUE(creator_.IsFecEnabled());
+  EXPECT_DFATAL(creator_.StartFecProtectingPackets(),
+                "Cannot start FEC protection with pending frames.");
+  EXPECT_FALSE(creator_.IsFecProtected());
+
+  // Serialize packet for transmission.
+  SerializedPacket serialized = creator_.SerializePacket();
+  delete serialized.packet;
+  delete serialized.retransmittable_frames;
+  EXPECT_FALSE(creator_.HasPendingFrames());
+
+  // Since all pending frames have been serialized, turning FEC on should work.
+  creator_.StartFecProtectingPackets();
+  EXPECT_TRUE(creator_.IsFecProtected());
+}
+
 TEST_P(QuicPacketCreatorTest, CreateStreamFrame) {
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(1u, MakeIOVector("test"), 0u,
@@ -469,8 +547,8 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
 }
 
 TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
-  // Turn on FEC protection.
-  creator_.options()->max_packets_per_fec_group = 6;
+  // Enable FEC protection, and send FEC packet every 6 packets.
+  EXPECT_TRUE(QuicPacketCreatorPeer::SwitchFecProtectionOn(&creator_, 6));
   // Compute the total overhead for a single frame in packet.
   const size_t overhead = GetPacketHeaderOverhead(IN_FEC_GROUP)
       + GetEncryptionOverhead() + GetStreamFrameOverhead(IN_FEC_GROUP);

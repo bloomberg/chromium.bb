@@ -64,6 +64,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       sequence_number_(0),
+      should_fec_protect_(false),
       fec_group_number_(0),
       is_server_(is_server),
       send_version_in_packet_(!is_server),
@@ -85,12 +86,59 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
 
 bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
   return fec_group_.get() != NULL && fec_group_->NumReceivedPackets() > 0 &&
-      (force_close ||
-       fec_group_->NumReceivedPackets() >= options_.max_packets_per_fec_group);
+      (force_close || fec_group_->NumReceivedPackets() >=
+                      options_.max_packets_per_fec_group);
 }
 
-InFecGroup QuicPacketCreator::MaybeStartFEC() {
-  if (IsFecEnabled() && fec_group_.get() == NULL) {
+void QuicPacketCreator::StartFecProtectingPackets() {
+  if (!IsFecEnabled()) {
+    LOG(DFATAL) << "Cannot start FEC protection when FEC is not enabled.";
+    return;
+  }
+  // TODO(jri): This currently requires that the generator flush out any
+  // pending frames when FEC protection is turned on. If current packet can be
+  // converted to an FEC protected packet, do it. This will require the
+  // generator to check if the resulting expansion still allows the incoming
+  // frame to be added to the packet.
+  if (HasPendingFrames()) {
+    LOG(DFATAL) << "Cannot start FEC protection with pending frames.";
+    return;
+  }
+  DCHECK(!should_fec_protect_);
+  should_fec_protect_ = true;
+}
+
+void QuicPacketCreator::StopFecProtectingPackets() {
+  if (fec_group_.get() != NULL) {
+    LOG(DFATAL) << "Cannot stop FEC protection with open FEC group.";
+    return;
+  }
+  DCHECK(should_fec_protect_);
+  should_fec_protect_ = false;
+  fec_group_number_ = 0;
+}
+
+bool QuicPacketCreator::IsFecProtected() const {
+  return should_fec_protect_;
+}
+
+bool QuicPacketCreator::IsFecEnabled() const {
+  return options_.max_packets_per_fec_group > 0;
+}
+
+size_t QuicPacketCreator::max_packets_per_fec_group() const {
+  return options_.max_packets_per_fec_group;
+}
+
+void QuicPacketCreator::set_max_packets_per_fec_group(
+    size_t max_packets_per_fec_group) {
+  // To turn off FEC protection, use StopFecProtectingPackets().
+  DCHECK_NE(0u, max_packets_per_fec_group);
+  options_.max_packets_per_fec_group = max_packets_per_fec_group;
+}
+
+InFecGroup QuicPacketCreator::MaybeStartFec() {
+  if (should_fec_protect_ && fec_group_.get() == NULL) {
     DCHECK(queued_frames_.empty());
     // Set the fec group number to the sequence number of the next packet.
     fec_group_number_ = sequence_number() + 1;
@@ -134,7 +182,8 @@ bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
   // QuicPacketCreator.
   return BytesFree() >
       QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true,
-                                        IsFecEnabled());
+                                        should_fec_protect_ ? IN_FEC_GROUP :
+                                                              NOT_IN_FEC_GROUP);
 }
 
 // static
@@ -159,7 +208,8 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
             StreamFramePacketOverhead(
                 framer_->version(), PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
-  InFecGroup is_in_fec_group = MaybeStartFEC();
+
+  InFecGroup is_in_fec_group = MaybeStartFec();
 
   LOG_IF(DFATAL, !HasRoomForStreamFrame(id, offset))
       << "No room for Stream frame, BytesFree: " << BytesFree()
@@ -210,25 +260,22 @@ size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const QuicFrames& frames,
     QuicSequenceNumberLength original_length) {
-  const QuicSequenceNumberLength start_length = sequence_number_length_;
-  const QuicSequenceNumberLength start_options_length =
+  DCHECK(fec_group_.get() == NULL);
+  const QuicSequenceNumberLength saved_length = sequence_number_length_;
+  const QuicSequenceNumberLength saved_options_length =
       options_.send_sequence_number_length;
-  const QuicFecGroupNumber start_fec_group = fec_group_number_;
-  const size_t start_max_packets_per_fec_group =
-      options_.max_packets_per_fec_group;
+  const bool saved_should_fec_protect = should_fec_protect_;
 
-  // Temporarily set the sequence number length and disable FEC.
+  // Temporarily set the sequence number length and stop FEC protection.
   sequence_number_length_ = original_length;
   options_.send_sequence_number_length = original_length;
-  fec_group_number_ = 0;
-  options_.max_packets_per_fec_group = 0;
+  should_fec_protect_ = false;
 
-  // Serialize the packet and restore the fec and sequence number length state.
+  // Serialize the packet and restore the FEC and sequence number length state.
   SerializedPacket serialized_packet = SerializeAllFrames(frames);
-  sequence_number_length_ = start_length;
-  options_.send_sequence_number_length = start_options_length;
-  fec_group_number_ = start_fec_group;
-  options_.max_packets_per_fec_group = start_max_packets_per_fec_group;
+  sequence_number_length_ = saved_length;
+  options_.send_sequence_number_length = saved_options_length;
+  should_fec_protect_ = saved_should_fec_protect;
 
   return serialized_packet;
 }
@@ -256,7 +303,7 @@ bool QuicPacketCreator::HasPendingFrames() {
 
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   // If packet is FEC protected, there's no expansion.
-  if (fec_group_.get() != NULL) {
+  if (should_fec_protect_) {
       return 0;
   }
   // If the last frame in the packet is a stream frame, then it will expand to
@@ -274,11 +321,6 @@ size_t QuicPacketCreator::BytesFree() const {
                                   + ExpansionOnNewFrame());
 }
 
-InFecGroup QuicPacketCreator::IsFecEnabled() const {
-  return (options_.max_packets_per_fec_group == 0) ?
-          NOT_IN_FEC_GROUP : IN_FEC_GROUP;
-}
-
 size_t QuicPacketCreator::PacketSize() const {
   if (queued_frames_.empty()) {
     // Only adjust the sequence number length when the FEC group is not open,
@@ -290,7 +332,8 @@ size_t QuicPacketCreator::PacketSize() const {
     packet_size_ = GetPacketHeaderSize(options_.send_connection_id_length,
                                        send_version_in_packet_,
                                        sequence_number_length_,
-                                       IsFecEnabled());
+                                       should_fec_protect_ ? IN_FEC_GROUP :
+                                                             NOT_IN_FEC_GROUP);
   }
   return packet_size_;
 }
@@ -302,8 +345,9 @@ bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
 SerializedPacket QuicPacketCreator::SerializePacket() {
   LOG_IF(DFATAL, queued_frames_.empty())
       << "Attempt to serialize empty packet";
+  DCHECK_GE(sequence_number_ + 1, fec_group_number_);
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, false, &header);
+  FillPacketHeader(should_fec_protect_ ? fec_group_number_ : 0, false, &header);
 
   MaybeAddPadding();
 
@@ -348,7 +392,6 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   fec_data.redundancy = fec_group_->payload_parity();
   SerializedPacket serialized = framer_->BuildFecPacket(header, fec_data);
   fec_group_.reset(NULL);
-  fec_group_number_ = 0;
   packet_size_ = 0;
   LOG_IF(DFATAL, !serialized.packet)
       << "Failed to serialize fec packet for group:" << fec_data.fec_group;
@@ -407,7 +450,7 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   DVLOG(1) << "Adding frame: " << frame;
-  InFecGroup is_in_fec_group = MaybeStartFEC();
+  InFecGroup is_in_fec_group = MaybeStartFec();
   size_t frame_len = framer_->GetSerializedFrameLength(
       frame, BytesFree(), queued_frames_.empty(), true, is_in_fec_group,
       options()->send_sequence_number_length);

@@ -29,6 +29,9 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
       return NULL;
     case kFixRate:
       return new FixRateSender(rtt_stats);
+    case kTCPBBR:
+      LOG(DFATAL) << "BbrTcpSender is not supported.";
+      return NULL;
   }
   return NULL;
 }

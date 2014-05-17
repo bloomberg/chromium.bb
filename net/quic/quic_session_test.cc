@@ -17,6 +17,7 @@
 #include "net/quic/reliable_quic_stream.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_data_stream_peer.h"
+#include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -66,6 +67,15 @@ class TestCryptoStream : public QuicCryptoStream {
   MOCK_METHOD0(OnCanWrite, void());
 };
 
+class TestHeadersStream : public QuicHeadersStream {
+ public:
+  explicit TestHeadersStream(QuicSession* session)
+      : QuicHeadersStream(session) {
+  }
+
+  MOCK_METHOD0(OnCanWrite, void());
+};
+
 class TestStream : public QuicDataStream {
  public:
   TestStream(QuicStreamId id, QuicSession* session)
@@ -104,11 +114,12 @@ class StreamBlocker {
 
 class TestSession : public QuicSession {
  public:
-  explicit TestSession(QuicConnection* connection)
-      : QuicSession(connection, DefaultQuicConfig()),
+  explicit TestSession(QuicConnection* connection,
+                       uint32 max_initial_flow_control_window)
+      : QuicSession(connection, max_initial_flow_control_window,
+                    DefaultQuicConfig()),
         crypto_stream_(this),
-        writev_consumes_all_data_(false) {
-  }
+        writev_consumes_all_data_(false) {}
 
   virtual TestCryptoStream* GetCryptoStream() OVERRIDE {
     return &crypto_stream_;
@@ -156,7 +167,7 @@ class TestSession : public QuicSession {
   }
 
  private:
-  TestCryptoStream crypto_stream_;
+  StrictMock<TestCryptoStream> crypto_stream_;
 
   bool writev_consumes_all_data_;
 };
@@ -165,7 +176,7 @@ class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicSessionTest()
       : connection_(new MockConnection(true, SupportedVersions(GetParam()))),
-        session_(connection_) {
+        session_(connection_, kInitialFlowControlWindowForTest) {
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "http";
@@ -349,7 +360,7 @@ TEST_P(QuicSessionTest, OnCanWrite) {
   EXPECT_CALL(*stream6, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
-  EXPECT_TRUE(session_.HasPendingWrites());
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
 }
 
 TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
@@ -383,7 +394,7 @@ TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
                   Return(WriteResult(WRITE_STATUS_OK, 0)));
   EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _));
   session_.OnCanWrite();
-  EXPECT_FALSE(session_.HasPendingWrites());
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
 
 TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
@@ -413,13 +424,13 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   // stream4->OnCanWrite is not called.
 
   session_.OnCanWrite();
-  EXPECT_TRUE(session_.HasPendingWrites());
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Still congestion-control blocked.
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
   session_.OnCanWrite();
-  EXPECT_TRUE(session_.HasPendingWrites());
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
@@ -427,7 +438,7 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
-  EXPECT_FALSE(session_.HasPendingWrites());
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
 
 TEST_P(QuicSessionTest, BufferedHandshake) {
@@ -474,7 +485,7 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
       InvokeWithoutArgs(&stream4_blocker, &StreamBlocker::MarkWriteBlocked));
 
   session_.OnCanWrite();
-  EXPECT_TRUE(session_.HasPendingWrites());
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
   EXPECT_FALSE(session_.HasPendingHandshake());  // Crypto stream wrote.
 }
 
@@ -492,7 +503,40 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
   EXPECT_CALL(*stream2, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
-  EXPECT_FALSE(session_.HasPendingWrites());
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
+}
+
+TEST_P(QuicSessionTest, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control, true);
+  if (version() < QUIC_VERSION_19) {
+    return;
+  }
+
+  // Ensure connection level flow control blockage.
+  QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
+  EXPECT_TRUE(session_.flow_controller()->IsBlocked());
+
+  // Mark the crypto and headers streams as write blocked, we expect them to be
+  // allowed to write later.
+  session_.MarkWriteBlocked(kCryptoStreamId, kHighestPriority);
+  session_.MarkWriteBlocked(kHeadersStreamId, kHighestPriority);
+
+  // Create a data stream, and although it is write blocked we never expect it
+  // to be allowed to write as we are connection level flow control blocked.
+  TestStream* stream = session_.CreateOutgoingDataStream();
+  session_.MarkWriteBlocked(stream->id(), kSomeMiddlePriority);
+  EXPECT_CALL(*stream, OnCanWrite()).Times(0);
+
+  // The crypto and headers streams should be called even though we are
+  // connection flow control blocked.
+  TestCryptoStream* crypto_stream = session_.GetCryptoStream();
+  EXPECT_CALL(*crypto_stream, OnCanWrite()).Times(1);
+  TestHeadersStream* headers_stream = new TestHeadersStream(&session_);
+  QuicSessionPeer::SetHeadersStream(&session_, headers_stream);
+  EXPECT_CALL(*headers_stream, OnCanWrite()).Times(1);
+
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
 
 TEST_P(QuicSessionTest, SendGoAway) {
@@ -615,6 +659,17 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
 
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
   session_.OnConfigNegotiated();
+}
+
+TEST_P(QuicSessionTest, InvalidFlowControlWindow) {
+  QuicConnection* connection =
+      new MockConnection(true, SupportedVersions(GetParam()));
+
+  const uint32 kSmallerFlowControlWindow = kDefaultFlowControlSendWindow - 1;
+  TestSession session(connection, kSmallerFlowControlWindow);
+
+  EXPECT_EQ(kDefaultFlowControlSendWindow,
+            session.max_flow_control_receive_window_bytes());
 }
 
 }  // namespace

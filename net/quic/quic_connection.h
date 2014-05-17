@@ -49,7 +49,6 @@ class QuicConnection;
 class QuicDecrypter;
 class QuicEncrypter;
 class QuicFecGroup;
-class QuicFlowController;
 class QuicRandom;
 
 namespace test {
@@ -94,10 +93,12 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
 
-  // Called to ask if any writes are pending in this visitor. Writes may be
-  // pending because they were write-blocked, congestion-throttled or
-  // yielded to other connections.
-  virtual bool HasPendingWrites() const = 0;
+  // Called to ask if the visitor wants to schedule write resumption as it has
+  // both has pending data to write, and is able to write (e.g. based on flow
+  // control limits).
+  // Writes may be pending because they were write-blocked, congestion-throttled
+  // or yielded to other connections.
+  virtual bool WillingAndAbleToWrite() const = 0;
 
   // Called to ask if any handshake messages are pending in this visitor.
   virtual bool HasPendingHandshake() const = 0;
@@ -217,8 +218,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicConnectionHelperInterface* helper,
                  QuicPacketWriter* writer,
                  bool is_server,
-                 const QuicVersionVector& supported_versions,
-                 uint32 max_flow_control_receive_window_bytes);
+                 const QuicVersionVector& supported_versions);
   virtual ~QuicConnection();
 
   // Sets connection parameters from the supplied |config|.
@@ -266,8 +266,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
                           const std::string& reason);
-
-  QuicFlowController* flow_controller() { return flow_controller_.get(); }
 
   // Returns statistics tracked for this connection.
   const QuicConnectionStats& GetStats();
@@ -459,10 +457,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool CanWrite(TransmissionType transmission_type,
                 HasRetransmittableData retransmittable);
-
-  uint32 max_flow_control_receive_window_bytes() const {
-    return max_flow_control_receive_window_bytes_;
-  }
 
   // Stores current batch state for connection, puts the connection
   // into batch mode, and destruction restores the stored batch state.
@@ -759,12 +753,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.
   QuicVersionVector server_supported_versions_;
-
-  // Initial flow control receive window size for new streams.
-  uint32 max_flow_control_receive_window_bytes_;
-
-  // Used for connection level flow control.
-  scoped_ptr<QuicFlowController> flow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

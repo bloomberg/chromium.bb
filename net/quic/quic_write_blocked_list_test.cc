@@ -27,7 +27,8 @@ TEST(QuicWriteBlockedListTest, PriorityOrder) {
                               QuicWriteBlockedList::kHighestPriority);
 
   EXPECT_EQ(5u, write_blocked_list.NumBlockedStreams());
-  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedDataStreams());
   // The Crypto stream is highest priority.
   EXPECT_EQ(kCryptoStreamId, write_blocked_list.PopFront());
   // Followed by the Headers stream.
@@ -39,7 +40,8 @@ TEST(QuicWriteBlockedListTest, PriorityOrder) {
   EXPECT_EQ(40u, write_blocked_list.PopFront());
 
   EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
-  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedDataStreams());
 }
 
 TEST(QuicWriteBlockedListTest, CryptoStream) {
@@ -48,10 +50,10 @@ TEST(QuicWriteBlockedListTest, CryptoStream) {
                               QuicWriteBlockedList::kHighestPriority);
 
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
-  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
   EXPECT_EQ(kCryptoStreamId, write_blocked_list.PopFront());
   EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
-  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
 }
 
 TEST(QuicWriteBlockedListTest, HeadersStream) {
@@ -60,10 +62,10 @@ TEST(QuicWriteBlockedListTest, HeadersStream) {
                               QuicWriteBlockedList::kHighestPriority);
 
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
-  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
   EXPECT_EQ(kHeadersStreamId, write_blocked_list.PopFront());
   EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
-  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
 }
 
 TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
@@ -74,13 +76,15 @@ TEST(QuicWriteBlockedListTest, VerifyHeadersStream) {
                               QuicWriteBlockedList::kHighestPriority);
 
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
-  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedDataStreams());
   // In newer QUIC versions, there is a headers stream which is
   // higher priority than data streams.
   EXPECT_EQ(kHeadersStreamId, write_blocked_list.PopFront());
   EXPECT_EQ(5u, write_blocked_list.PopFront());
   EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
-  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedCryptoOrHeadersStream());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedDataStreams());
 }
 
 TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
@@ -99,12 +103,12 @@ TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
 
   // This should only result in one blocked stream being added.
   EXPECT_EQ(1u, write_blocked_list.NumBlockedStreams());
-  EXPECT_TRUE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_TRUE(write_blocked_list.HasWriteBlockedDataStreams());
 
   // There should only be one stream to pop off the front.
   EXPECT_EQ(kBlockedId, write_blocked_list.PopFront());
   EXPECT_EQ(0u, write_blocked_list.NumBlockedStreams());
-  EXPECT_FALSE(write_blocked_list.HasWriteBlockedStreams());
+  EXPECT_FALSE(write_blocked_list.HasWriteBlockedDataStreams());
 }
 
 }  // namespace

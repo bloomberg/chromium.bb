@@ -166,11 +166,11 @@ void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
 }
 
 // static
-bool QuicUnackedPacketMap::IsSentAndNotPending(
+bool QuicUnackedPacketMap::IsForRttOnly(
     const TransmissionInfo& transmission_info) {
   return !transmission_info.pending &&
-      transmission_info.sent_time != QuicTime::Zero() &&
-      transmission_info.bytes_sent == 0;
+      transmission_info.retransmittable_frames == NULL &&
+      transmission_info.all_transmissions->size() == 1;
 }
 
 bool QuicUnackedPacketMap::IsUnacked(
@@ -198,13 +198,7 @@ bool QuicUnackedPacketMap::HasUnackedPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasPendingPackets() const {
-  for (UnackedPacketMap::const_reverse_iterator it =
-           unacked_packets_.rbegin(); it != unacked_packets_.rend(); ++it) {
-    if (it->second.pending) {
-      return true;
-    }
-  }
-  return false;
+  return bytes_in_flight_ > 0;
 }
 
 const TransmissionInfo& QuicUnackedPacketMap::GetTransmissionInfo(
@@ -269,17 +263,6 @@ bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
     }
   }
   return false;
-}
-
-size_t QuicUnackedPacketMap::GetNumRetransmittablePackets() const {
-  size_t num_unacked_packets = 0;
-  for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end(); ++it) {
-    if (it->second.retransmittable_frames != NULL) {
-      ++num_unacked_packets;
-    }
-  }
-  return num_unacked_packets;
 }
 
 QuicPacketSequenceNumber

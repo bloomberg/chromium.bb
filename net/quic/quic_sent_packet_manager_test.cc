@@ -191,6 +191,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     SerializedPacket packet(CreateDataPacket(sequence_number));
     packet.retransmittable_frames->AddStreamFrame(
         new QuicStreamFrame(1, false, 0, IOVector()));
+    packet.retransmittable_frames->set_encryption_level(ENCRYPTION_NONE);
     manager_.OnSerializedPacket(packet);
     manager_.OnPacketSent(sequence_number, clock_.ApproximateNow(),
                           packet.packet->length(), NOT_RETRANSMISSION,
@@ -981,6 +982,41 @@ TEST_F(QuicSentPacketManagerTest,
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 }
 
+TEST_F(QuicSentPacketManagerTest,
+       CryptoHandshakeRetransmissionThenNeuterAndAck) {
+  // Send 1 crypto packet.
+  SendCryptoPacket(1);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+
+  // Retransmit the crypto packet as 2.
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(2);
+
+  // Retransmit the crypto packet as 3.
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(3);
+
+  // Now neuter all unacked unencrypted packets, which occurs when the
+  // connection goes forward secure.
+  manager_.NeuterUnencryptedPackets();
+  QuicPacketSequenceNumber unacked[] = { 1, 2, 3};
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyRetransmittablePackets(NULL, 0);
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+
+  // Ensure both packets get discarded when packet 2 is acked.
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 3;
+  received_info.missing_packets.insert(1);
+  received_info.missing_packets.insert(2);
+  ExpectUpdatedRtt(3);
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+  VerifyUnackedPackets(NULL, 0);
+  VerifyRetransmittablePackets(NULL, 0);
+}
+
 TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeoutUnsentDataPacket) {
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 2);
   // Serialize two data packets and send the latter.
@@ -996,6 +1032,44 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeoutUnsentDataPacket) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, ResetRecentMinRTTWithEmptyWindow) {
+  QuicTime::Delta min_rtt = QuicTime::Delta::FromMilliseconds(50);
+  QuicSentPacketManagerPeer::GetRttStats(&manager_)->UpdateRtt(
+      min_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(min_rtt,
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
+  EXPECT_EQ(min_rtt,
+            QuicSentPacketManagerPeer::GetRttStats(
+                &manager_)->recent_min_rtt());
+
+  // Send two packets with no prior bytes in flight.
+  SendDataPacket(1);
+  SendDataPacket(2);
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
+  // Ack two packets with 100ms RTT observations.
+  ReceivedPacketInfo received_info;
+  received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
+  received_info.largest_observed = 1;
+  ExpectAck(1);
+  manager_.OnIncomingAck(received_info, clock_.Now());
+
+  // First ack does not change recent min rtt.
+  EXPECT_EQ(min_rtt,
+            QuicSentPacketManagerPeer::GetRttStats(
+                &manager_)->recent_min_rtt());
+
+  received_info.largest_observed = 2;
+  ExpectAck(2);
+  manager_.OnIncomingAck(received_info, clock_.Now());
+
+  EXPECT_EQ(min_rtt,
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
+            QuicSentPacketManagerPeer::GetRttStats(
+                &manager_)->recent_min_rtt());
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {

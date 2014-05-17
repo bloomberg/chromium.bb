@@ -27,6 +27,12 @@ QuicHeadersStream* QuicSessionPeer::GetHeadersStream(QuicSession* session) {
 }
 
 // static
+void QuicSessionPeer::SetHeadersStream(QuicSession* session,
+                                       QuicHeadersStream* headers_stream) {
+  session->headers_stream_.reset(headers_stream);
+}
+
+// static
 QuicWriteBlockedList* QuicSessionPeer::GetWriteblockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;

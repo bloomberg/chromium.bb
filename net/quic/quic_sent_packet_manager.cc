@@ -38,6 +38,9 @@ static const size_t kMinHandshakeTimeoutMs = 10;
 static const size_t kDefaultMaxTailLossProbes = 2;
 static const int64 kMinTailLossProbeTimeoutMs = 10;
 
+// Number of samples before we force a new recent min rtt to be captured.
+static const size_t kNumMinRttSamplesAfterQuiescence = 2;
+
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == NULL) {
     return false;
@@ -172,7 +175,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     if (IsAwaitingPacket(received_info, sequence_number)) {
       // Remove any packets not being tracked by the send algorithm, allowing
       // the high water mark to be raised if necessary.
-      if (QuicUnackedPacketMap::IsSentAndNotPending(it->second)) {
+      if (QuicUnackedPacketMap::IsForRttOnly(it->second)) {
         it = MarkPacketHandled(sequence_number, delta_largest_observed);
       } else {
         // Consider it multiple nacks when there is a gap between the missing
@@ -261,10 +264,14 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
       // they are not retransmitted or considered lost from a congestion control
       // perspective.
       pending_retransmissions_.erase(it->first);
-      // TODO(ianswett): This may cause packets to linger forever in the
-      // UnackedPacketMap.
-      unacked_packets_.NeuterPacket(it->first);
       unacked_packets_.SetNotPending(it->first);
+      // TODO(ianswett): Clean this up so UnackedPacketMap maintains the correct
+      // invariants between the various transmissions for NeuterPacket.
+      SequenceNumberSet all_transmissions = *it->second.all_transmissions;
+      for (SequenceNumberSet::const_iterator all_it = all_transmissions.begin();
+           all_it != all_transmissions.end(); ++all_it) {
+        unacked_packets_.NeuterPacket(*all_it);
+      }
     }
   }
 }
@@ -440,24 +447,25 @@ bool QuicSentPacketManager::OnPacketSent(
     return false;
   }
 
-  // Only track packets as pending that the send algorithm wants us to track.
-  if (!send_algorithm_->OnPacketSent(sent_time,
-                                     unacked_packets_.bytes_in_flight(),
-                                     sequence_number,
-                                     bytes,
-                                     has_retransmittable_data)) {
-    unacked_packets_.SetSent(sequence_number, sent_time, bytes, false);
-    // Do not reset the retransmission timer, since the packet isn't tracked.
-    return false;
+  if (unacked_packets_.bytes_in_flight() == 0) {
+    // TODO(ianswett): Consider being less aggressive to force a new
+    // recent_min_rtt, likely by not discarding a relatively new sample.
+    DVLOG(1) << "Sampling a new recent min rtt within 2 samples. currently:"
+             << rtt_stats_.recent_min_rtt().ToMilliseconds() << "ms";
+    rtt_stats_.SampleNewRecentMinRtt(kNumMinRttSamplesAfterQuiescence);
   }
 
-  const bool set_retransmission_timer = !unacked_packets_.HasPendingPackets();
+  // Only track packets as pending that the send algorithm wants us to track.
+  const bool pending =
+      send_algorithm_->OnPacketSent(sent_time,
+                                    unacked_packets_.bytes_in_flight(),
+                                    sequence_number,
+                                    bytes,
+                                    has_retransmittable_data);
+  unacked_packets_.SetSent(sequence_number, sent_time, bytes, pending);
 
-  unacked_packets_.SetSent(sequence_number, sent_time, bytes, true);
-
-  // Reset the retransmission timer anytime a packet is sent in tail loss probe
-  // mode or before the crypto handshake has completed.
-  return set_retransmission_timer || GetRetransmissionMode() != RTO_MODE;
+  // Reset the retransmission timer anytime a pending packet is sent.
+  return pending;
 }
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {

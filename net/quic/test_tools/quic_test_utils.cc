@@ -191,8 +191,7 @@ MockConnection::MockConnection(bool is_server)
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
+                     is_server, QuicSupportedVersions()),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -202,8 +201,7 @@ MockConnection::MockConnection(IPEndPoint address,
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
+                     is_server, QuicSupportedVersions()),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -214,8 +212,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions(),
-                     kInitialFlowControlWindowForTest),
+                     is_server, QuicSupportedVersions()),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -226,8 +223,7 @@ MockConnection::MockConnection(bool is_server,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, supported_versions,
-                     kInitialFlowControlWindowForTest),
+                     is_server, supported_versions),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -266,7 +262,8 @@ bool PacketSavingConnection::SendOrQueuePacket(
 }
 
 MockSession::MockSession(QuicConnection* connection)
-    : QuicSession(connection, DefaultQuicConfig()) {
+    : QuicSession(connection, kInitialFlowControlWindowForTest,
+                  DefaultQuicConfig()) {
   ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -274,11 +271,9 @@ MockSession::MockSession(QuicConnection* connection)
 MockSession::~MockSession() {
 }
 
-TestSession::TestSession(QuicConnection* connection,
-                         const QuicConfig& config)
-    : QuicSession(connection, config),
-      crypto_stream_(NULL) {
-}
+TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
+    : QuicSession(connection, kInitialFlowControlWindowForTest, config),
+      crypto_stream_(NULL) {}
 
 TestSession::~TestSession() {}
 
@@ -292,7 +287,8 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
 
 TestClientSession::TestClientSession(QuicConnection* connection,
                                      const QuicConfig& config)
-    : QuicClientSessionBase(connection, config),
+    : QuicClientSessionBase(connection, kInitialFlowControlWindowForTest,
+                            config),
       crypto_stream_(NULL) {
     EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
 }

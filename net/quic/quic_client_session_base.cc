@@ -6,9 +6,13 @@
 
 namespace net {
 
-QuicClientSessionBase::QuicClientSessionBase(QuicConnection* connection,
-                                             const QuicConfig& config)
-    : QuicSession(connection, config) {}
+QuicClientSessionBase::QuicClientSessionBase(
+    QuicConnection* connection,
+    uint32 max_flow_control_receive_window_bytes,
+    const QuicConfig& config)
+    : QuicSession(connection,
+                  max_flow_control_receive_window_bytes,
+                  config) {}
 
 QuicClientSessionBase::~QuicClientSessionBase() {}
 

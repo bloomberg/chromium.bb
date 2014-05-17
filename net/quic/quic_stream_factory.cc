@@ -736,7 +736,7 @@ int QuicStreamFactory::CreateSession(
 
   QuicConnection* connection =
       new QuicConnection(connection_id, addr, helper_.get(), writer.get(),
-                         false, supported_versions_, kInitialReceiveWindowSize);
+                         false, supported_versions_);
   writer->SetConnection(connection);
   connection->options()->max_packet_length = max_packet_length_;
 
@@ -755,7 +755,7 @@ int QuicStreamFactory::CreateSession(
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
       quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
-      config, &crypto_config_, net_log.net_log());
+      config, kInitialReceiveWindowSize, &crypto_config_, net_log.net_log());
   all_sessions_[*session] = server_id;  // owning pointer
   return OK;
 }

@@ -21,9 +21,6 @@
 
 namespace net {
 
-// Default maximum packet size used in Linux TCP implementations.
-const QuicByteCount kDefaultTCPMSS = 1460;
-
 class RttStats;
 
 namespace test {

@@ -57,6 +57,8 @@ const QuicByteCount kDefaultMaxPacketSize = 1200;
 // additional 8 bytes.  This is a total overhead of 48 bytes.  Ethernet's
 // max packet size is 1500 bytes,  1500 - 48 = 1452.
 const QuicByteCount kMaxPacketSize = 1452;
+// Default maximum packet size used in Linux TCP implementations.
+const QuicByteCount kDefaultTCPMSS = 1460;
 
 // Maximum size of the initial congestion window in packets.
 const size_t kDefaultInitialWindow = 10;
@@ -275,7 +277,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_18,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_19,
+                                                     QUIC_VERSION_18,
                                                      QUIC_VERSION_17,
                                                      QUIC_VERSION_16,
                                                      QUIC_VERSION_15};
@@ -688,6 +691,7 @@ enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.
   kInterArrival,  // Use additional inter arrival information.
   kFixRate,  // Provided for testing.
+  kTCPBBR,  // BBR implementation based on TCP congestion feedback.
 };
 
 enum LossDetectionType {

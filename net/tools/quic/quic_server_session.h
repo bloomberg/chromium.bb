@@ -47,6 +47,7 @@ class QuicServerSession : public QuicSession {
  public:
   QuicServerSession(const QuicConfig& config,
                     QuicConnection *connection,
+                    uint32 max_flow_control_window_bytes,
                     QuicServerSessionVisitor* visitor);
 
   // Override the base class to notify the owner of the connection close.

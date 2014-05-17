@@ -51,6 +51,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
       CryptoHandshakeMessage* reply,
       std::string* error_details);
 
+  // Hook that allows the server to set QuicConfig defaults just
+  // before going through the parameter negotiation step.
+  virtual void OverrideQuicConfigDefaults(QuicConfig* config);
+
  private:
   friend class test::CryptoTestUtils;
 

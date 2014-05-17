@@ -28,6 +28,7 @@ class QuicClientSession : public QuicClientSessionBase {
   QuicClientSession(const QuicServerId& server_id,
                     const QuicConfig& config,
                     QuicConnection* connection,
+                    uint32 max_flow_control_receive_window_bytes,
                     QuicCryptoClientConfig* crypto_config);
   virtual ~QuicClientSession();
 
