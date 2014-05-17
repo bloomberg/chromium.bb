@@ -308,9 +308,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     virtual bool LoadCurrentRow() = 0;
 
    protected:
-    Cursor(scoped_refptr<IndexedDBBackingStore> backing_store,
-           Transaction* transaction,
-           int64 database_id,
+    Cursor(LevelDBTransaction* transaction,
            const CursorOptions& cursor_options);
     explicit Cursor(const IndexedDBBackingStore::Cursor* other);
 
@@ -321,9 +319,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
 
-    IndexedDBBackingStore* backing_store_;
-    Transaction* transaction_;
-    int64 database_id_;
+    LevelDBTransaction* transaction_;
     const CursorOptions cursor_options_;
     scoped_ptr<LevelDBIterator> iterator_;
     scoped_ptr<IndexedDBKey> current_key_;
@@ -403,11 +399,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     LevelDBTransaction* transaction() { return transaction_; }
 
-    leveldb::Status GetBlobInfoForRecord(
-        int64 database_id,
-        const std::string& object_store_data_key,
-        IndexedDBValue* value);
-
     // This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
     // under that key.
     typedef std::vector<std::pair<BlobEntryKey, std::string> >
@@ -483,8 +474,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
   friend class base::RefCounted<IndexedDBBackingStore>;
 
   bool is_incognito() const { return !indexed_db_factory_; }
-
-  bool SetUpMetadata();
 
   virtual bool WriteBlobFile(
       int64 database_id,
