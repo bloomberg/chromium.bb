@@ -128,7 +128,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.error('Test terminated - EOF')
       # We're here because either the device went offline, or the test harness
       # crashed without outputting the CRASHED marker (crbug.com/175538).
-      if not self.device.old_interface.IsOnline():
+      if not self.device.IsOnline():
         raise device_errors.DeviceUnreachableError(
             'Device %s went offline.' % self.device.old_interface.GetDevice())
       if full_test_name:

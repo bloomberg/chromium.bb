@@ -147,7 +147,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def SetUp(self):
     """Sets up the test harness and device before all tests are run."""
     super(TestRunner, self).SetUp()
-    if not self.device.old_interface.IsRootEnabled():
+    if not self.device.HasRoot():
       logging.warning('Unable to enable java asserts for %s, non rooted device',
                       str(self.device))
     else:

@@ -23,11 +23,13 @@ Call tool.CleanUpEnvironment().
 # pylint: disable=R0201
 
 import glob
+import logging
 import os.path
 import subprocess
 import sys
 
 from pylib.constants import DIR_SOURCE_ROOT
+from pylib.device import device_errors
 
 
 def SetChromeTimeoutScale(device, scale):
@@ -132,7 +134,13 @@ class AddressSanitizerTool(BaseTool):
     return self.GetTestWrapper()
 
   def SetupEnvironment(self):
-    self._device.old_interface.EnableAdbRoot()
+    try:
+      self._device.EnableRoot()
+    except device_errors.CommandFailedError as e:
+      # Try to set the timeout scale anyway.
+      # TODO(jbudorick) Handle this exception appropriately after interface
+      #                 conversions are finished.
+      logging.error(str(e))
     SetChromeTimeoutScale(self._device, self.GetTimeoutScale())
 
   def CleanUpEnvironment(self):

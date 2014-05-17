@@ -30,6 +30,7 @@ from pylib import android_commands
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_blacklist
+from pylib.device import device_errors
 from pylib.device import device_utils
 
 def DeviceInfo(serial, options):
@@ -95,7 +96,13 @@ def DeviceInfo(serial, options):
 
   # Turn off devices with low battery.
   if battery_level < 15:
-    device_adb.old_interface.EnableAdbRoot()
+    try:
+      device_adb.EnableRoot()
+    except device_errors.CommandFailedError as e:
+      # Attempt shutdown anyway.
+      # TODO(jbudorick) Handle this exception appropriately after interface
+      #                 conversions are finished.
+      logging.error(str(e))
     device_adb.old_interface.Shutdown()
   full_report = '\n'.join(report)
   return device_type, device_build, battery_level, full_report, errors, True

@@ -7,10 +7,19 @@ Function/method decorators that provide timeout and retry logic.
 """
 
 import functools
+import os
+import sys
 
+from pylib import constants
 from pylib.device import device_errors
 from pylib.utils import reraiser_thread
 from pylib.utils import timeout_retry
+
+# TODO(jbudorick) Remove once the DeviceUtils implementations are no longer
+#                 backed by AndroidCommands / android_testrunner.
+sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
+                             'android_testrunner'))
+import errors as old_errors
 
 
 def _TimeoutRetryWrapper(f, timeout_func, retries_func):
@@ -22,6 +31,10 @@ def _TimeoutRetryWrapper(f, timeout_func, retries_func):
       return f(*args, **kwargs)
     try:
       return timeout_retry.Run(impl, timeout, retries)
+    except old_errors.WaitForResponseTimedOutError as e:
+      raise device_errors.CommandTimeoutError(str(e))
+    except old_errors.DeviceUnresponsiveError as e:
+      raise device_errors.DeviceUnreachableError(str(e))
     except reraiser_thread.TimeoutError as e:
       raise device_errors.CommandTimeoutError(str(e))
   return TimeoutRetryWrapper

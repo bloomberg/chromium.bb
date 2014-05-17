@@ -11,6 +11,7 @@ import datetime
 import glob
 import hashlib
 import json
+import logging
 import os
 import posixpath
 
@@ -26,6 +27,7 @@ from memory_inspector.core import symbol
 # The memory_inspector/__init__ module will add the <CHROME_SRC>/build/android
 # deps to the PYTHONPATH for pylib.
 from pylib import android_commands
+from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.symbols import elf_symbolizer
 
@@ -173,7 +175,13 @@ class AndroidDevice(backends.Device):
 
   def Initialize(self):
     """Starts adb root and deploys the prebuilt binaries on initialization."""
-    self.underlying_device.old_interface.EnableAdbRoot()
+    try:
+      self.underlying_device.EnableRoot()
+    except device_errors.CommandFailedError as e:
+      # Try to deploy memdump and ps_ext anyway.
+      # TODO(jbudorick) Handle this exception appropriately after interface
+      #                 conversions are finished.
+      logging.error(str(e))
 
     # Download (from GCS) and deploy prebuilt helper binaries on the device.
     self._DeployPrebuiltOnDeviceIfNeeded(_MEMDUMP_PREBUILT_PATH,

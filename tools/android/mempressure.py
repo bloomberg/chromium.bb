@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import collections
+import logging
 import optparse
 import os
 import sys
@@ -86,7 +87,13 @@ def main(argv):
 
   device = device_utils.DeviceUtils(None)
 
-  device.old_interface.EnableAdbRoot()
+  try:
+    device.EnableRoot()
+  except device_errors.CommandFailedError as e:
+    # Try to change the flags and start the activity anyway.
+    # TODO(jbudorick) Handle this exception appropriately after interface
+    #                 conversions are finished.
+    logging.error(str(e))
   flags = flag_changer.FlagChanger(device, package_info.cmdline_file)
   if ENABLE_TEST_INTENTS_FLAG not in flags.Get():
     flags.AddFlags([ENABLE_TEST_INTENTS_FLAG])

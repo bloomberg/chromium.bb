@@ -7,7 +7,9 @@ import psutil
 import signal
 
 from pylib import android_commands
+from pylib.device import device_errors
 from pylib.device import device_utils
+
 
 def _KillWebServers():
   for s in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGKILL]:
@@ -41,6 +43,11 @@ def CleanupLeftoverProcesses():
       device_utils.RestartServer()
       did_restart_host_adb = True
     device.old_interface.RestartAdbdOnDevice()
-    device.old_interface.EnableAdbRoot()
+    try:
+      device.EnableRoot()
+    except device_errors.CommandFailedError as e:
+      # TODO(jbudorick) Handle this exception appropriately after interface
+      #                 conversions are finished.
+      logging.error(str(e))
     device.old_interface.WaitForDevicePm()
 
