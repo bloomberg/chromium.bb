@@ -1187,10 +1187,10 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onTapEventNotConsumed(int x, int y) {
+    private void onSingleTapEventAck(boolean consumed, int x, int y) {
         for (mGestureStateListenersIterator.rewind();
                 mGestureStateListenersIterator.hasNext();) {
-            mGestureStateListenersIterator.next().onUnhandledTapEvent(x, y);
+            mGestureStateListenersIterator.next().onSingleTap(consumed, x, y);
         }
     }
 

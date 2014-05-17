@@ -63,7 +63,8 @@ public class GestureStateListener {
     public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {}
 
     /*
-     * Called when a tap event was not handled by the renderer.
+     * Called after a single-tap gesture event was dispatched to the renderer,
+     * indicating whether or not the gesture was consumed.
      */
-    public void onUnhandledTapEvent(int x, int y) {}
+    public void onSingleTap(boolean consumed, int x, int y) {}
 }

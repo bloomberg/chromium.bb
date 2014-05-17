@@ -591,10 +591,12 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
       Java_ContentViewCore_onPinchEndEventAck(env, j_obj.obj());
       break;
     case WebInputEvent::GestureTap:
-      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
-        Java_ContentViewCore_onTapEventNotConsumed(
-            env, j_obj.obj(), event.x * dpi_scale(), event.y * dpi_scale());
-      }
+      Java_ContentViewCore_onSingleTapEventAck(
+          env,
+          j_obj.obj(),
+          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED,
+          event.x * dpi_scale(),
+          event.y * dpi_scale());
       break;
     case WebInputEvent::GestureDoubleTap:
       Java_ContentViewCore_onDoubleTapEventAck(env, j_obj.obj());
