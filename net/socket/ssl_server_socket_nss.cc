@@ -29,6 +29,7 @@
 
 #include <limits>
 
+#include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "crypto/rsa_private_key.h"
@@ -247,6 +248,8 @@ int SSLServerSocketNSS::SetSendBufferSize(int32 size) {
 }
 
 bool SSLServerSocketNSS::IsConnected() const {
+  // TODO(wtc): Find out if we should check transport_socket_->IsConnected()
+  // as well.
   return completed_handshake_;
 }
 
@@ -291,6 +294,7 @@ bool SSLServerSocketNSS::UsingTCPFastOpen() const {
 }
 
 bool SSLServerSocketNSS::WasNpnNegotiated() const {
+  NOTIMPLEMENTED();
   return false;
 }
 
@@ -497,6 +501,8 @@ void SSLServerSocketNSS::OnSendComplete(int result) {
     return;
   }
 
+  // TODO(byungchul): This state machine is not correct. Copy the state machine
+  // of SSLClientSocketNSS::OnSendComplete() which handles it better.
   if (!completed_handshake_)
     return;
 
@@ -529,11 +535,12 @@ void SSLServerSocketNSS::OnRecvComplete(int result) {
 
 void SSLServerSocketNSS::OnHandshakeIOComplete(int result) {
   int rv = DoHandshakeLoop(result);
-  if (rv != ERR_IO_PENDING) {
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_SERVER_HANDSHAKE, rv);
-    if (!user_handshake_callback_.is_null())
-      DoHandshakeCallback(rv);
-  }
+  if (rv == ERR_IO_PENDING)
+    return;
+
+  net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_SERVER_HANDSHAKE, rv);
+  if (!user_handshake_callback_.is_null())
+    DoHandshakeCallback(rv);
 }
 
 // Return 0 for EOF,
@@ -725,7 +732,7 @@ int SSLServerSocketNSS::DoReadLoop(int result) {
 
 int SSLServerSocketNSS::DoWriteLoop(int result) {
   DCHECK(completed_handshake_);
-  DCHECK(next_handshake_state_ == STATE_NONE);
+  DCHECK_EQ(next_handshake_state_, STATE_NONE);
 
   if (result < 0)
     return result;
@@ -772,36 +779,25 @@ int SSLServerSocketNSS::DoHandshake() {
 
 void SSLServerSocketNSS::DoHandshakeCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
-
-  CompletionCallback c = user_handshake_callback_;
-  user_handshake_callback_.Reset();
-  c.Run(rv > OK ? OK : rv);
+  ResetAndReturn(&user_handshake_callback_).Run(rv > OK ? OK : rv);
 }
 
 void SSLServerSocketNSS::DoReadCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_read_callback_.is_null());
 
-  // Since Run may result in Read being called, clear |user_read_callback_|
-  // up front.
-  CompletionCallback c = user_read_callback_;
-  user_read_callback_.Reset();
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  c.Run(rv);
+  ResetAndReturn(&user_read_callback_).Run(rv);
 }
 
 void SSLServerSocketNSS::DoWriteCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_write_callback_.is_null());
 
-  // Since Run may result in Write being called, clear |user_write_callback_|
-  // up front.
-  CompletionCallback c = user_write_callback_;
-  user_write_callback_.Reset();
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  c.Run(rv);
+  ResetAndReturn(&user_write_callback_).Run(rv);
 }
 
 // static

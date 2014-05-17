@@ -82,7 +82,8 @@ class ScopedOpenSSLSafeSizeBuffer {
 };
 
 // Initialize OpenSSL if it isn't already initialized. This must be called
-// before any other OpenSSL functions.
+// before any other OpenSSL functions though it is safe and cheap to call this
+// multiple times.
 // This function is thread-safe, and OpenSSL will only ever be initialized once.
 // OpenSSL will be properly shut down on program exit.
 void CRYPTO_EXPORT EnsureOpenSSLInit();

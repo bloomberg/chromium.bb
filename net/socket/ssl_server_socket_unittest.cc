@@ -361,9 +361,6 @@ class SSLServerSocketTest : public PlatformTest {
   scoped_ptr<net::TransportSecurityState> transport_security_state_;
 };
 
-// SSLServerSocket is only implemented using NSS.
-#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
-
 // This test only executes creation of client and server sockets. This is to
 // test that creation of sockets doesn't crash and have minimal code to run
 // under valgrind in order to help debugging memory problems.
@@ -580,6 +577,5 @@ TEST_F(SSLServerSocketTest, ExportKeyingMaterial) {
   ASSERT_EQ(rv, net::OK);
   EXPECT_NE(0, memcmp(server_out, client_bad, sizeof(server_out)));
 }
-#endif
 
 }  // namespace net

@@ -1,34 +1,36 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_SSL_SERVER_SOCKET_NSS_H_
-#define NET_SOCKET_SSL_SERVER_SOCKET_NSS_H_
-
-#include <certt.h>
-#include <keyt.h>
-#include <nspr.h>
-#include <nss.h>
+#ifndef NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
+#define NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
-#include "net/base/nss_memio.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/ssl/ssl_config_service.h"
 
+// Avoid including misc OpenSSL headers, i.e.:
+// <openssl/bio.h>
+typedef struct bio_st BIO;
+// <openssl/ssl.h>
+typedef struct ssl_st SSL;
+
 namespace net {
 
-class SSLServerSocketNSS : public SSLServerSocket {
+class SSLInfo;
+
+class SSLServerSocketOpenSSL : public SSLServerSocket {
  public:
   // See comments on CreateSSLServerSocket for details of how these
   // parameters are used.
-  SSLServerSocketNSS(scoped_ptr<StreamSocket> socket,
-                     scoped_refptr<X509Certificate> certificate,
-                     crypto::RSAPrivateKey* key,
-                     const SSLConfig& ssl_config);
-  virtual ~SSLServerSocketNSS();
+  SSLServerSocketOpenSSL(scoped_ptr<StreamSocket> socket,
+                         scoped_refptr<X509Certificate> certificate,
+                         crypto::RSAPrivateKey* key,
+                         const SSLConfig& ssl_config);
+  virtual ~SSLServerSocketOpenSSL();
 
   // SSLServerSocket interface.
   virtual int Handshake(const CompletionCallback& callback) OVERRIDE;
@@ -71,16 +73,16 @@ class SSLServerSocketNSS : public SSLServerSocket {
     STATE_HANDSHAKE,
   };
 
-  int InitializeSSLOptions();
-
   void OnSendComplete(int result);
   void OnRecvComplete(int result);
   void OnHandshakeIOComplete(int result);
 
   int BufferSend();
   void BufferSendComplete(int result);
+  void TransportWriteComplete(int result);
   int BufferRecv();
   void BufferRecvComplete(int result);
+  int TransportReadComplete(int result);
   bool DoTransportIO();
   int DoPayloadRead();
   int DoPayloadWrite();
@@ -93,18 +95,14 @@ class SSLServerSocketNSS : public SSLServerSocket {
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
 
-  static SECStatus OwnAuthCertHandler(void* arg,
-                                      PRFileDesc* socket,
-                                      PRBool checksig,
-                                      PRBool is_server);
-  static void HandshakeCallback(PRFileDesc* socket, void* arg);
-
   int Init();
 
   // Members used to send and receive buffer.
   bool transport_send_busy_;
   bool transport_recv_busy_;
+  bool transport_recv_eof_;
 
+  scoped_refptr<DrainableIOBuffer> send_buffer_;
   scoped_refptr<IOBuffer> recv_buffer_;
 
   BoundNetLog net_log_;
@@ -121,11 +119,13 @@ class SSLServerSocketNSS : public SSLServerSocket {
   scoped_refptr<IOBuffer> user_write_buf_;
   int user_write_buf_len_;
 
-  // The NSS SSL state machine
-  PRFileDesc* nss_fd_;
+  // Used by TransportWriteComplete() and TransportReadComplete() to signify an
+  // error writing to the transport socket. A value of OK indicates no error.
+  int transport_write_error_;
 
-  // Buffers for the network end of the SSL state machine
-  memio_Private* nss_bufs_;
+  // OpenSSL stuff
+  SSL* ssl_;
+  BIO* transport_bio_;
 
   // StreamSocket for sending and receiving data.
   scoped_ptr<StreamSocket> transport_socket_;
@@ -142,9 +142,9 @@ class SSLServerSocketNSS : public SSLServerSocket {
   State next_handshake_state_;
   bool completed_handshake_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLServerSocketNSS);
+  DISALLOW_COPY_AND_ASSIGN(SSLServerSocketOpenSSL);
 };
 
 }  // namespace net
 
-#endif  // NET_SOCKET_SSL_SERVER_SOCKET_NSS_H_
+#endif  // NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_

@@ -103,7 +103,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   friend class SSLClientSocket;
   friend class SSLContext;
 
-  bool Init();
+  int Init();
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
 
