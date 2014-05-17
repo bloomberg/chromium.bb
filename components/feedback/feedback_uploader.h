@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
