@@ -19,6 +19,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -830,9 +831,11 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                 int newContentHeightApproximation =
                     (int) Math.ceil(awContents.computeVerticalScrollRange() / newScale);
 
-                assertTrue(String.format("Scale range should increase after zoom (%f) > (%f)",
+                assertTrue(String.format(Locale.ENGLISH,
+                        "Scale range should increase after zoom (%f) > (%f)",
                         newScale, oldScale), newScale > oldScale);
-                assertTrue(String.format("Scroll range should increase after zoom (%d) > (%d)",
+                assertTrue(String.format(Locale.ENGLISH,
+                        "Scroll range should increase after zoom (%d) > (%d)",
                         newScrollRange, oldScrollRange), newScrollRange > oldScrollRange);
                 assertEquals(awContents.getContentHeightCss(), oldContentHeightApproximation);
                 assertEquals(awContents.getContentHeightCss(), newContentHeightApproximation);
