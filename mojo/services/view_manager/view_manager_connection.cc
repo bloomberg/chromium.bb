@@ -70,8 +70,6 @@ void ViewManagerConnection::OnConnectionEstablished() {
       Array<INode>::From(to_send));
 }
 
-void ViewManagerConnection::OnConnectionError() {}
-
 const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
   if (id_ == id.connection_id) {
     NodeMap::const_iterator i = node_map_.find(id.node_id);

@@ -41,8 +41,6 @@ class NativeViewportImpl
     native_viewport_.reset();
   }
 
-  virtual void OnConnectionError() OVERRIDE {}
-
   virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(context_, this);

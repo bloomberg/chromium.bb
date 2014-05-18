@@ -34,10 +34,6 @@ class TestServiceImpl : public InterfaceImpl<TestService> {
     --context_->num_impls;
   }
 
-  // InterfaceImpl<TestService> implementation.
-  virtual void OnConnectionError() OVERRIDE {
-  }
-
   // TestService implementation:
   virtual void Test(const mojo::String& test_string) OVERRIDE {
     context_->last_test_string = test_string.To<std::string>();

@@ -21,17 +21,19 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
   InterfaceImpl() : internal_state_(this) {}
   virtual ~InterfaceImpl() {}
 
-  // Subclasses can override this to handle post connection initialization.
+  // Returns a proxy to the client interface. This is null upon construction,
+  // and becomes non-null after OnClientConnected. NOTE: It remains non-null
+  // until this instance is deleted.
+  Client* client() { return internal_state_.client(); }
+
+  // Called when the client has connected to this instance.
   virtual void OnConnectionEstablished() {}
 
-  // Subclasses must handle connection errors.
-  virtual void OnConnectionError() = 0;
-
-  // We override SetClient here so subclasses don't each have to.
-  virtual void SetClient(Client* client) MOJO_OVERRIDE {
-    internal_state_.set_client(client);
-  }
-  Client* client() { return internal_state_.client(); }
+  // Called when the client is no longer connected to this instance. NOTE: The
+  // client() method continues to return a non-null pointer after this method
+  // is called. After this method is called, any method calls made on client()
+  // will be silently ignored.
+  virtual void OnConnectionError() {}
 
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfaceImplState<Interface>* internal_state() {
@@ -39,6 +41,9 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
   }
 
  private:
+  virtual void SetClient(Client* client) MOJO_OVERRIDE {
+    internal_state_.set_client(client);
+  }
   internal::InterfaceImplState<Interface> internal_state_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfaceImpl);
 };

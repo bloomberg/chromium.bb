@@ -21,8 +21,6 @@ class EchoServiceImpl : public mojo::InterfaceImpl<mojo::EchoService> {
   EchoServiceImpl() {}
   virtual ~EchoServiceImpl() {}
 
-  virtual void OnConnectionError() OVERRIDE {}
-
  protected:
   virtual void Echo(
       const mojo::String& in_to_echo,

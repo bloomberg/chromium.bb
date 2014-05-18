@@ -40,7 +40,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual ~ViewManagerConnection();
 
   virtual void OnConnectionEstablished() MOJO_OVERRIDE;
-  virtual void OnConnectionError() MOJO_OVERRIDE;
 
   TransportConnectionId id() const { return id_; }
 

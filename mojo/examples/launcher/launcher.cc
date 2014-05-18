@@ -206,9 +206,6 @@ class LauncherImpl : public InterfaceImpl<Launcher>,
         base::Bind(&LauncherImpl::HostContextCreated, base::Unretained(this))));
   }
 
-  // Overridden from InterfaceImpl:
-  virtual void OnConnectionError() OVERRIDE {}
-
  private:
   // Overridden from Launcher:
   virtual void Show() OVERRIDE {
