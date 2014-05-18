@@ -114,6 +114,14 @@
           ],
         }],
         ['chromeos==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
+          'conditions': [
+            # TODO(dtseng): Remove use_chromevox_next once ChromeVox Next is ready for testing.
+            ['use_chromevox_next==1', {
+              'dependencies': [
+                'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2_resources',
+              ],
+            }],
+          ],
           'copies' : [
             {
               'destination': '<(PRODUCT_DIR)/resources/chromeos/braille_ime',

@@ -1,0 +1,38 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB",
+  "manifest_version": 2,
+  "name": "ChromeVox",
+  "version": "1.0",
+  "description": "ChromeVox - Giving Voice to Chrome.",
+  "background": {
+    "page": "cvox2/background/background.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "exclude_globs": [ "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/chromevox/background/background.html" ],
+      "all_frames": true,
+      "js": [
+        "cvox2/injected/injected.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "accessibilityPrivate",
+    "automation",
+    "bookmarks",
+    "tabs",
+    "experimental",
+    "history",
+    "tts",
+    "systemPrivate",
+    "brailleDisplayPrivate",
+    "commandLinePrivate",
+    "<all_urls>"
+  ],
+  "automation": {
+    "desktop": true,
+    "interact": true
+  },
+  "default_locale": "en"
+}

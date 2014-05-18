@@ -330,6 +330,11 @@ std::string ComponentLoader::AddChromeVoxExtension() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   int idr = command_line->HasSwitch(chromeos::switches::kGuestSession) ?
       IDR_CHROMEVOX_GUEST_MANIFEST : IDR_CHROMEVOX_MANIFEST;
+
+  // TODO(dtseng): Guest mode manifest for ChromeVox Next pending work to
+  // generate manifests.
+  if (command_line->HasSwitch(chromeos::switches::kEnableChromeVoxNext))
+    idr = IDR_CHROMEVOX2_MANIFEST;
   return Add(idr, base::FilePath(extension_misc::kChromeVoxExtensionPath));
 }
 

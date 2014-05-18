@@ -297,6 +297,7 @@
         <include name="IDR_CRYPTOHOME_JS" file="resources\chromeos\cryptohome.js" type="BINDATA" />
         <!-- manifest file of ChromeVox accessibility extension -->
         <include name="IDR_CHROMEVOX_MANIFEST" file="resources\chromeos\chromevox\manifest.json" type="BINDATA" />
+        <include name="IDR_CHROMEVOX2_MANIFEST" file="resources\chromeos\chromevox2\manifest.json" type="BINDATA" />
         <include name="IDR_CHROMEVOX_GUEST_MANIFEST" file="resources\chromeos\chromevox\manifest_guest.json" type="BINDATA" />
         <!-- manifest file of Connectivity Diagnostics app -->
         <include name="IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST" file="resources\chromeos\connectivity_diagnostics\manifest.json" type="BINDATA" />
