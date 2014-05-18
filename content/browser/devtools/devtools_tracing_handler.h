@@ -27,6 +27,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
   void BeginReadingRecordingResult(const base::FilePath& path);
   void ReadRecordingResult(const scoped_refptr<base::RefCountedString>& result);
   void OnTraceDataCollected(const std::string& trace_fragment);
+  void OnTracingStarted(scoped_refptr<DevToolsProtocol::Command> command);
   void OnBufferUsage(float usage);
 
   scoped_refptr<DevToolsProtocol::Response> OnStart(
