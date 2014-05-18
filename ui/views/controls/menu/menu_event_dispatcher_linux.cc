@@ -4,10 +4,13 @@
 
 #include "ui/views/controls/menu/menu_event_dispatcher_linux.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 namespace internal {
@@ -24,10 +27,27 @@ bool MenuEventDispatcher::CanDispatchEvent(const ui::PlatformEvent& event) {
 uint32_t MenuEventDispatcher::DispatchEvent(const ui::PlatformEvent& event) {
   bool should_quit = false;
   bool should_perform_default = true;
+  bool should_process_event = true;
+
+  // Check if the event should be handled.
+  scoped_ptr<ui::Event> ui_event(ui::EventFromNative(event));
+  if (ui_event && menu_controller_->owner()) {
+    aura::Window* menu_window = menu_controller_->owner()->GetNativeWindow();
+    aura::Window* target_window = static_cast<aura::Window*>(
+        static_cast<ui::EventTarget*>(menu_window->GetRootWindow())->
+            GetEventTargeter()->FindTargetForEvent(menu_window,
+                                                   ui_event.get()));
+    // TODO(flackr): The event shouldn't be handled if target_window is not
+    // menu_window, however the event targeter does not properly target the
+    // open menu. For now, we allow targeters to prevent handling by the menu.
+    if (!target_window)
+      should_process_event = false;
+  }
+
   if (menu_controller_->exit_type() == MenuController::EXIT_ALL ||
       menu_controller_->exit_type() == MenuController::EXIT_DESTROYED) {
     should_quit = true;
-  } else {
+  } else if (should_process_event) {
     switch (ui::EventTypeFromNative(event)) {
       case ui::ET_KEY_PRESSED: {
         if (!menu_controller_->OnKeyDown(ui::KeyboardCodeFromNative(event))) {
