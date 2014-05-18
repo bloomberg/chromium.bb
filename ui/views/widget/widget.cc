@@ -1045,19 +1045,11 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void Widget::OnNativeFocus(gfx::NativeView old_focused_view) {
-  // Ensure the focused view's TextInputClient is used for text input.
-  views::FocusManager* focus_manager = GetFocusManager();
-  focus_manager->FocusTextInputClient(focus_manager->GetFocusedView());
-
   WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(old_focused_view,
                                                         GetNativeView());
 }
 
 void Widget::OnNativeBlur(gfx::NativeView new_focused_view) {
-  // Ensure the focused view's TextInputClient is not used for text input.
-  views::FocusManager* focus_manager = GetFocusManager();
-  focus_manager->BlurTextInputClient(focus_manager->GetFocusedView());
-
   WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(GetNativeView(),
                                                         new_focused_view);
 }

@@ -2,105 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
-#include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/test/test_widget_observer.h"
-#include "ui/views/window/dialog_delegate.h"
-#include "ui/web_dialogs/test/test_web_dialog_delegate.h"
+#include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA) && defined(USE_X11)
-#include <X11/Xlib.h>
-#include "ui/events/test/events_test_utils_x11.h"
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #endif
-
-using web_modal::WebContentsModalDialogManager;
-using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace {
 
-class TestConstrainedDialogContentsView
-    : public views::View,
-      public base::SupportsWeakPtr<TestConstrainedDialogContentsView> {
+class TestDialog : public views::DialogDelegateView {
  public:
-  TestConstrainedDialogContentsView()
-      : text_field_(new views::Textfield) {
-    SetLayoutManager(new views::FillLayout);
-    AddChildView(text_field_);
-  }
+  TestDialog() { SetFocusable(true); }
+  virtual ~TestDialog() {}
 
-  views::View* GetInitiallyFocusedView() {
-    return text_field_;
-  }
-
- private:
-  views::Textfield* text_field_;
-  DISALLOW_COPY_AND_ASSIGN(TestConstrainedDialogContentsView);
-};
-
-class TestConstrainedDialog : public views::DialogDelegate {
- public:
-  TestConstrainedDialog()
-      : contents_((new TestConstrainedDialogContentsView())->AsWeakPtr()),
-        done_(false) {
-  }
-
-  virtual ~TestConstrainedDialog() {}
-
-  virtual views::View* GetInitiallyFocusedView() OVERRIDE {
-    return contents_ ? contents_->GetInitiallyFocusedView() : NULL;
-  }
-
-  virtual views::View* GetContentsView() OVERRIDE {
-    return contents_.get();
-  }
-
-  virtual views::Widget* GetWidget() OVERRIDE {
-    return contents_ ? contents_->GetWidget() : NULL;
-  }
-
-  virtual const views::Widget* GetWidget() const OVERRIDE {
-    return contents_ ? contents_->GetWidget() : NULL;
-  }
-
-  virtual void DeleteDelegate() OVERRIDE {
-    // Don't delete the delegate yet.  We need to keep it around for inspection
-    // later.
-    EXPECT_TRUE(done_);
-  }
-
-  virtual bool Accept() OVERRIDE {
-    done_ = true;
-    return true;
-  }
-
-  virtual bool Cancel() OVERRIDE {
-    done_ = true;
-    return true;
-  }
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE { return this; }
+  // Don't delete the delegate yet. Keep it around for inspection later.
+  virtual void DeleteDelegate() OVERRIDE {}
 
   virtual ui::ModalType GetModalType() const OVERRIDE {
 #if defined(USE_ASH)
@@ -110,363 +44,174 @@ class TestConstrainedDialog : public views::DialogDelegate {
 #endif
   }
 
-  bool done() {
-    return done_;
-  }
-
  private:
-  // contents_ will be freed when the View goes away.
-  base::WeakPtr<TestConstrainedDialogContentsView> contents_;
-  bool done_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConstrainedDialog);
+  DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
+
+// A helper function to create and show a web contents modal dialog.
+scoped_ptr<TestDialog> ShowModalDialog(content::WebContents* web_contents) {
+  scoped_ptr<TestDialog> dialog(new TestDialog());
+  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
+      dialog.get(), web_contents->GetNativeView());
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)->
+      ShowModalDialog(window->GetNativeView());
+  return dialog.Pass();
+}
 
 } // namespace
 
-class ConstrainedWindowViewTest : public InProcessBrowserTest {
- public:
-  ConstrainedWindowViewTest() {
-  }
-};
+typedef InProcessBrowserTest ConstrainedWindowViewTest;
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_FocusTest DISABLED_FocusTest
-#else
-#define MAYBE_FocusTest FocusTest
-#endif
-
-// Tests the following:
-//
-// *) Initially focused view in a constrained dialog receives focus reliably.
-//
-// *) Constrained windows that are queued don't register themselves as
-//    accelerator targets until they are displayed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_FocusTest) {
+// Tests the intial focus of tab-modal dialogs, the restoration of focus to the
+// browser when they close, and that queued dialogs don't register themselves as
+// accelerator targets until they are displayed.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  ASSERT_TRUE(web_contents_modal_dialog_manager != NULL);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  ASSERT_TRUE(modal_delegate != NULL);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  scoped_ptr<TestDialog> dialog1 = ShowModalDialog(web_contents);
 
-  // Create a constrained dialog.  It will attach itself to web_contents.
-  scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
-  views::Widget* window1 = views::Widget::CreateWindowAsFramelessChild(
-      test_dialog1.get(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(window1->GetNativeView());
+  // |dialog1| should be active and focused.
+  EXPECT_TRUE(dialog1->GetWidget()->IsVisible());
+  views::FocusManager* focus_manager = dialog1->GetWidget()->GetFocusManager();
+  EXPECT_EQ(dialog1->GetContentsView(), focus_manager->GetFocusedView());
 
-  views::FocusManager* focus_manager = window1->GetFocusManager();
-  ASSERT_TRUE(focus_manager);
+  // Create a second dialog. This will also be modal to |web_contents|, but will
+  // remain hidden since the |dialog1| is still showing.
+  scoped_ptr<TestDialog> dialog2 = ShowModalDialog(web_contents);
+  EXPECT_FALSE(dialog2->GetWidget()->IsVisible());
+  EXPECT_TRUE(dialog1->GetWidget()->IsVisible());
+  EXPECT_EQ(focus_manager, dialog2->GetWidget()->GetFocusManager());
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_EQ(dialog1->GetContentsView(), focus_manager->GetFocusedView());
 
-  // test_dialog1's text field should be focused.
-  EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
-            focus_manager->GetFocusedView());
-
-  // Now create a second constrained dialog.  This will also be attached to
-  // web_contents, but will remain hidden since the test_dialog1 is still
-  // showing.
-  scoped_ptr<TestConstrainedDialog> test_dialog2(new TestConstrainedDialog);
-  views::Widget* window2 = views::Widget::CreateWindowAsFramelessChild(
-      test_dialog2.get(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(window2->GetNativeView());
-  // Should be the same focus_manager.
-  ASSERT_EQ(focus_manager, window2->GetFocusManager());
-
-  // test_dialog1's text field should still be the view that has focus.
-  EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
-            focus_manager->GetFocusedView());
-  ASSERT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
-
-  // Now send a VKEY_RETURN to the browser.  This should result in closing
-  // test_dialog1.
+  // Pressing return should close |dialog1|.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   content::RunAllPendingInMessageLoop();
+  EXPECT_EQ(NULL, dialog1->GetWidget());
 
-  EXPECT_TRUE(test_dialog1->done());
-  EXPECT_FALSE(test_dialog2->done());
-  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+  // |dialog2| should be visible and focused.
+  EXPECT_TRUE(dialog2->GetWidget()->IsVisible());
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_EQ(dialog2->GetContentsView(), focus_manager->GetFocusedView());
 
-  // test_dialog2 will be shown.  Focus should be on test_dialog2's text field.
-  EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
-            focus_manager->GetFocusedView());
-
-  int tab_with_constrained_window =
-      browser()->tab_strip_model()->active_index();
-
-  // Create a new tab.
+  // Creating a new tab should take focus away from the other tab's dialog.
+  const int tab_with_dialog = browser()->tab_strip_model()->active_index();
   chrome::NewTab(browser());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_NE(dialog2->GetContentsView(), focus_manager->GetFocusedView());
 
-  // The constrained dialog should no longer be selected.
-  EXPECT_NE(test_dialog2->GetInitiallyFocusedView(),
-            focus_manager->GetFocusedView());
+  // Activating the previous tab should bring focus to the dialog.
+  browser()->tab_strip_model()->ActivateTabAt(tab_with_dialog, false);
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_EQ(dialog2->GetContentsView(), focus_manager->GetFocusedView());
 
-  browser()->tab_strip_model()->ActivateTabAt(tab_with_constrained_window,
-                                              false);
-
-  // Activating the previous tab should bring focus to the constrained window.
-  EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
-            focus_manager->GetFocusedView());
-
-  // Send another VKEY_RETURN, closing test_dialog2
+  // Pressing enter again should close |dialog2|.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(test_dialog2->done());
-  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+  EXPECT_EQ(NULL, dialog2->GetWidget());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_TabCloseTest DISABLED_TabCloseTest
-#else
-#define MAYBE_TabCloseTest TabCloseTest
-#endif
-
-// Tests that the constrained window is closed properly when its tab is
-// closed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_TabCloseTest) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  ASSERT_TRUE(web_contents_modal_dialog_manager != NULL);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  ASSERT_TRUE(modal_delegate != NULL);
-
-  // Create a constrained dialog.  It will attach itself to web_contents.
-  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
-      test_dialog.get(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(window->GetNativeView());
-
-  bool closed =
-      browser()->tab_strip_model()->CloseWebContentsAt(
-          browser()->tab_strip_model()->active_index(),
-          TabStripModel::CLOSE_NONE);
-  EXPECT_TRUE(closed);
+// Tests that the tab-modal window is closed properly when its tab is closed.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
+  scoped_ptr<TestDialog> dialog = ShowModalDialog(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
+  chrome::CloseTab(browser());
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(test_dialog->done());
+  EXPECT_EQ(NULL, dialog->GetWidget());
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_TabSwitchTest DISABLED_TabSwitchTest
-#else
-#define MAYBE_TabSwitchTest TabSwitchTest
-#endif
-
-// Tests that the constrained window is hidden when an other tab is selected and
+// Tests that the tab-modal window is hidden when an other tab is selected and
 // shown when its tab is selected again.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_TabSwitchTest) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
+  scoped_ptr<TestDialog> dialog = ShowModalDialog(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 
-  // Create a constrained dialog.  It will attach itself to web_contents.
-  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  ASSERT_TRUE(modal_delegate != NULL);
-  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
-      test_dialog.get(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(window->GetNativeView());
-  EXPECT_TRUE(window->IsVisible());
+  // Open a new tab. The tab-modal window should hide itself.
+  chrome::NewTab(browser());
+  EXPECT_FALSE(dialog->GetWidget()->IsVisible());
 
-  // Open a new tab. The constrained window should hide itself.
-  browser()->tab_strip_model()->AppendWebContents(
-      content::WebContents::Create(
-          content::WebContents::CreateParams(browser()->profile())),
-      true);
-  EXPECT_FALSE(window->IsVisible());
-
-  // Close the new tab. The constrained window should show itself again.
-  bool closed =
-      browser()->tab_strip_model()->CloseWebContentsAt(
-          browser()->tab_strip_model()->active_index(),
-          TabStripModel::CLOSE_NONE);
-  EXPECT_TRUE(closed);
-  EXPECT_TRUE(window->IsVisible());
+  // Close the new tab. The tab-modal window should show itself again.
+  chrome::CloseTab(browser());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 
   // Close the original tab.
-  browser()->tab_strip_model()->CloseWebContentsAt(
-      browser()->tab_strip_model()->active_index(),
-      TabStripModel::CLOSE_NONE);
+  chrome::CloseTab(browser());
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(test_dialog->done());
+  EXPECT_EQ(NULL, dialog->GetWidget());
 }
 
-// Tests that the constrained window behaves properly when moving its tab
-// between browser windows.
+// Tests that tab-modal dialogs follow tabs dragged between browser windows.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
-  // Open a second browser.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  scoped_ptr<TestDialog> dialog = ShowModalDialog(web_contents);
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
+
+  // Move the tab to a second browser window; but first create another tab.
+  // That prevents the first browser window from closing when its tab is moved.
+  chrome::NewTab(browser());
+  browser()->tab_strip_model()->DetachWebContentsAt(
+      browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
   Browser* browser2 = CreateBrowser(browser()->profile());
-
-  // Create a second WebContents in the second browser, so that moving the
-  // WebContents does not trigger the browser to close immediately. This mimics
-  // the behavior when a user drags tabs between browsers.
-  content::WebContents* web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(browser()->profile()));
   browser2->tab_strip_model()->AppendWebContents(web_contents, true);
-  ASSERT_EQ(web_contents, browser2->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 
-  // Create a constrained dialog.  It will attach itself to web_contents.
-  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManagerDelegate* modal_delegate =
-      web_contents_modal_dialog_manager->delegate();
-  ASSERT_TRUE(modal_delegate != NULL);
-  views::Widget* window = views::Widget::CreateWindowAsFramelessChild(
-      test_dialog.get(),
-      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
-  web_contents_modal_dialog_manager->ShowModalDialog(window->GetNativeView());
-  EXPECT_TRUE(window->IsVisible());
-
-  // Detach the web contents from the second browser's tab strip.
-  browser2->tab_strip_model()->DetachWebContentsAt(
-      browser2->tab_strip_model()->GetIndexOfWebContents(web_contents));
-
-  // Append the web contents to the first browser.
-  browser()->tab_strip_model()->AppendWebContents(web_contents, true);
-  EXPECT_TRUE(window->IsVisible());
-
-  // Close the second browser.
-  browser2->tab_strip_model()->CloseAllTabs();
+  // Close the first browser.
+  chrome::CloseWindow(browser());
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 
-  // Close the dialog's tab.
-  bool closed =
-      browser()->tab_strip_model()->CloseWebContentsAt(
-          browser()->tab_strip_model()->GetIndexOfWebContents(web_contents),
-          TabStripModel::CLOSE_NONE);
-  EXPECT_TRUE(closed);
+  // Close the dialog's browser window.
+  chrome::CloseTab(browser2);
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(test_dialog->done());
+  EXPECT_EQ(NULL, dialog->GetWidget());
 }
 
-#if defined(OS_WIN) || (defined(USE_AURA) && defined(USE_X11))
+// Tests that the web contents navigates when backspace is pressed.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, NavigationOnBackspace) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+  const GURL original_url = web_contents->GetURL();
+  EXPECT_NE(GURL(chrome::kChromeUIVersionURL), original_url);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(GURL(chrome::kChromeUIVersionURL), web_contents->GetURL());
 
-// Forwards the key event which has |key_code| to the renderer.
-void ForwardKeyEvent(content::RenderViewHost* host, ui::KeyboardCode key_code) {
+  scoped_ptr<TestDialog> dialog = ShowModalDialog(web_contents);
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
+  EXPECT_EQ(dialog->GetContentsView(),
+            dialog->GetWidget()->GetFocusManager()->GetFocusedView());
+
+  // Pressing backspace should navigate back and close the dialog.
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,
+                                              false, false, false, false));
+  content::RunAllPendingInMessageLoop();
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(NULL, dialog->GetWidget());
+  EXPECT_EQ(original_url, web_contents->GetURL());
+}
+
+// Tests that the dialog closes when the escape key is pressed.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, ClosesOnEscape) {
 #if defined(OS_WIN)
-  MSG native_key_event = { NULL, WM_KEYDOWN, key_code, 0 };
-#elif defined(USE_X11)
-  ui::ScopedXI2Event x_event;
-  x_event.InitKeyEvent(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-  XEvent* native_key_event = x_event;
+  // TODO(msw): The widget is not made NULL on XP. http://crbug.com/177482
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
 #endif
 
-#if defined(USE_AURA)
-  ui::KeyEvent key(native_key_event, false);
-  ui::KeyEvent* native_ui_key_event = &key;
-#elif defined(OS_WIN)
-  MSG native_ui_key_event = native_key_event;
-#endif
-
-  host->ForwardKeyboardEvent(
-      content::NativeWebKeyboardEvent(native_ui_key_event));
-}
-
-// Tests that backspace is not processed before it's sent to the web contents.
-// Flaky on Win Aura and Linux ChromiumOS. See http://crbug.com/170331
-#if defined(USE_AURA)
-#define MAYBE_BackspaceSentToWebContent DISABLED_BackspaceSentToWebContent
-#else
-#define MAYBE_BackspaceSentToWebContent BackspaceSentToWebContent
-#endif
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
-                       MAYBE_BackspaceSentToWebContent) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
-
-  GURL new_tab_url(chrome::kChromeUINewTabURL);
-  ui_test_utils::NavigateToURL(browser(), new_tab_url);
-  GURL about_url(chrome::kChromeUIAboutURL);
-  ui_test_utils::NavigateToURL(browser(), about_url);
-
-  ConstrainedWebDialogDelegate* cwdd = CreateConstrainedWebDialog(
-      browser()->profile(),
-      new ui::test::TestWebDialogDelegate(about_url),
-      NULL,
-      web_contents);
-
-  content::WindowedNotificationObserver back_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
-  content::RenderViewHost* render_view_host =
-      cwdd->GetWebContents()->GetRenderViewHost();
-  ForwardKeyEvent(render_view_host, ui::VKEY_BACK);
-
-  // Backspace is not processed as accelerator before it's sent to web contents.
-  EXPECT_FALSE(web_contents->GetController().GetPendingEntry());
-  EXPECT_EQ(about_url.spec(), web_contents->GetURL().spec());
-
-  // Backspace is processed as accelerator after it's sent to web contents.
+  scoped_ptr<TestDialog> dialog = ShowModalDialog(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(dialog->GetWidget()->IsVisible());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
+                                              false, false, false, false));
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
-
-  // Wait for the navigation to commit, since the URL will not be visible
-  // until then.
-  back_observer.Wait();
-  EXPECT_TRUE(chrome::IsNTPURL(web_contents->GetURL(), browser()->profile()));
+  EXPECT_EQ(NULL, dialog->GetWidget());
 }
-
-// Fails flakily (once per 10-20 runs) on Win Aura only. http://crbug.com/177482
-// Also fails on CrOS.
-// Also fails on linux_aura (http://crbug.com/163931)
-#if defined(TOOLKIT_VIEWS)
-#define MAYBE_EscapeCloseConstrainedWindow DISABLED_EscapeCloseConstrainedWindow
-#else
-#define MAYBE_EscapeCloseConstrainedWindow EscapeCloseConstrainedWindow
-#endif
-
-// Tests that escape closes the constrained window.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
-                       MAYBE_EscapeCloseConstrainedWindow) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
-
-  GURL new_tab_url(chrome::kChromeUINewTabURL);
-  ui_test_utils::NavigateToURL(browser(), new_tab_url);
-  ConstrainedWebDialogDelegate* cwdd = CreateConstrainedWebDialog(
-      browser()->profile(),
-      new ui::test::TestWebDialogDelegate(new_tab_url),
-      NULL,
-      web_contents);
-
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeView(cwdd->GetNativeDialog());
-  views::test::TestWidgetObserver observer(widget);
-
-  content::RenderViewHost* render_view_host =
-      cwdd->GetWebContents()->GetRenderViewHost();
-  ForwardKeyEvent(render_view_host, ui::VKEY_ESCAPE);
-
-  // Escape is not processed as accelerator before it's sent to web contents.
-  EXPECT_FALSE(observer.widget_closed());
-
-  content::RunAllPendingInMessageLoop();
-
-  // Escape is processed as accelerator after it's sent to web contents.
-  EXPECT_TRUE(observer.widget_closed());
-}
-
-#endif  // defined(OS_WIN) || (defined(USE_AURA) && defined(USE_X11))
