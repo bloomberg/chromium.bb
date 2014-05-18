@@ -309,8 +309,8 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/aura/aura.gyp:aura_test_support',
-            '../ui/base/strings/ui_strings.gyp:ui_strings',
             '../ui/events/events.gyp:events',
+            '../ui/strings/ui_strings.gyp:ui_strings',
             '../ui/wm/wm.gyp:wm',
           ],
           'conditions': [
@@ -432,8 +432,8 @@
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
-        '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
+        '<(DEPTH)/ui/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],

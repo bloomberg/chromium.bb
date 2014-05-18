@@ -60,7 +60,7 @@
   "chrome/app/theme/chrome_unscaled_resources.grd": {
     "includes": [7500],
   },
-  "ui/base/strings/app_locale_settings.grd": {
+  "ui/strings/app_locale_settings.grd": {
     "messages": [9000],
   },
   "chrome/app/resources/locale_settings.grd": {
@@ -84,7 +84,7 @@
   "chrome/app/resources/locale_settings_win.grd": {
     "messages": [10500],
   },
-  "ui/base/strings/ui_strings.grd": {
+  "ui/strings/ui_strings.grd": {
     "messages": [11000],
   },
   # Chromium strings and Google Chrome strings must start at the same id.

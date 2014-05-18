@@ -1667,7 +1667,7 @@
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/strings/ui_strings.gyp:ui_strings',
       ],
     }, {
       'sources/': [

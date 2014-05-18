@@ -100,7 +100,7 @@
         ],
         ['toolkit_views==1', {
           'dependencies': [
-            '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/strings/ui_strings.gyp:ui_strings',
             '../ui/views/views.gyp:views',
           ],
         }, {  # toolkit_views==0

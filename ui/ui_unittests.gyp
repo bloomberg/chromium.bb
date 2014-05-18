@@ -19,13 +19,13 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../url/url.gyp:url_lib',
-        'base/strings/ui_strings.gyp:ui_strings',
         'base/ui_base.gyp:ui_base',
         'base/ui_base.gyp:ui_base_test_support',
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
         'resources/ui_resources.gyp:ui_test_pak',
+        'strings/ui_strings.gyp:ui_strings',
       ],
       # iOS uses a small subset of ui. common_sources are the only files that
       # are built on iOS.

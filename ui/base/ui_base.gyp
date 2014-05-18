@@ -25,7 +25,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
-        'strings/ui_strings.gyp:ui_strings',
+        '../strings/ui_strings.gyp:ui_strings',
       ],
       'defines': [
         'UI_BASE_IMPLEMENTATION',

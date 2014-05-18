@@ -58,10 +58,10 @@ group("root") {
     "//third_party:jpeg",
     "//tools/gn",
     "//ui/base:ui_base",
-    "//ui/base/strings",
     "//ui/events",
     "//ui/gfx",
     "//ui/resources",
+    "//ui/strings",
     "//ui/surface",
     "//url",
   ]

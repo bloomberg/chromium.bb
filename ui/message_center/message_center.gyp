@@ -16,11 +16,11 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',
-        '../base/strings/ui_strings.gyp:ui_strings',
         '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
+        '../strings/ui_strings.gyp:ui_strings',
       ],
       'defines': [
         'MESSAGE_CENTER_IMPLEMENTATION',

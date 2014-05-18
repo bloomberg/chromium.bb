@@ -41,7 +41,7 @@
       'target_name': 'ui_test_pak',
       'type': 'none',
       'dependencies': [
-        '../base/strings/ui_strings.gyp:ui_strings',
+        '../strings/ui_strings.gyp:ui_strings',
         'ui_resources',
       ],
       'actions': [

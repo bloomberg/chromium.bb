@@ -389,8 +389,8 @@
         'theme_resources',
         '<(DEPTH)/components/components_strings.gyp:components_strings',
         '<(DEPTH)/net/net.gyp:net_resources',
-        '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
+        '<(DEPTH)/ui/strings/ui_strings.gyp:ui_strings',
       ],
       'actions': [
         {

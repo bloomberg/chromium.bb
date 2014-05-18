@@ -284,8 +284,8 @@ component("ui_base") {
     "//net",
     "//skia",
     "//third_party/icu",
-    "//ui/base/strings",
     "//ui/resources",
+    "//ui/strings",
     "//ui/webui/resources",
     "//url",
   ]

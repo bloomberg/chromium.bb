@@ -82,7 +82,6 @@
         '../third_party/zlib/google/zip.gyp:zip',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
@@ -90,6 +89,7 @@
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+        '../ui/strings/ui_strings.gyp:ui_strings',
       ],
       'include_dirs': [
         '..',
