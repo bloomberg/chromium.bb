@@ -403,6 +403,7 @@ crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
+crbug.com/374230 storage/indexeddb/createIndex-deleteObjectStore.htm [ Pass Failure Timeout Crash ]
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
