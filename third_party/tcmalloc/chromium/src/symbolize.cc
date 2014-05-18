@@ -68,11 +68,6 @@ DEFINE_string(symbolize_pprof,
               EnvToString("PPROF_PATH", "pprof"),
               "Path to pprof to call for reporting function names.");
 
-// heap_profile_table_pprof may be referenced after destructors are
-// called (since that's when leak-checking is done), so we make
-// a more-permanent copy that won't ever get destroyed.
-static string* g_pprof_path = new string(FLAGS_symbolize_pprof);
-
 // Returns NULL if we're on an OS where we can't get the invocation name.
 // Using a static var is ok because we're not called from a thread.
 static char* GetProgramInvocationName() {
@@ -129,7 +124,7 @@ int SymbolTable::Symbolize() {
     PrintError("Cannot figure out the name of this executable (argv0)");
     return 0;
   }
-  if (access(g_pprof_path->c_str(), R_OK) != 0) {
+  if (access(FLAGS_symbolize_pprof, R_OK) != 0) {
     PrintError("Cannot find 'pprof' (is PPROF_PATH set correctly?)");
     return 0;
   }
@@ -191,7 +186,7 @@ int SymbolTable::Symbolize() {
       unsetenv("HEAPPROFILE");
       unsetenv("HEAPCHECK");
       unsetenv("PERFTOOLS_VERBOSE");
-      execlp(g_pprof_path->c_str(), g_pprof_path->c_str(),
+      execlp(FLAGS_symbolize_pprof, FLAGS_symbolize_pprof,
              "--symbols", argv0, NULL);
       _exit(3);  // if execvp fails, it's bad news for us
     }

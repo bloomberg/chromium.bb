@@ -95,3 +95,5 @@ Modifications:
 - Fix sprintf formatting warning in MaybeDumpProfileLocked
 - Added tc_malloc_skip_new_handler.
 - Fix logging issues in android
+- Changed DEFINE_foo macros to ignore envname unless ENABLE_PROFILING is defined
+- Changed DEFINE_string to define const char*s instead of strings
