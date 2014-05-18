@@ -51,7 +51,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   }
 
   // Called by the script reloader when new scripts have been loaded.
-  void NewScriptsAvailable(base::SharedMemory* handle);
+  void NewScriptsAvailable(scoped_ptr<base::SharedMemory> handle);
 
   // Return true if we have any scripts ready.
   bool ScriptsReady() const { return shared_memory_.get() != NULL; }
@@ -105,7 +105,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
     // Runs on the master thread.
     // Notify the master that new scripts are available.
-    void NotifyMaster(base::SharedMemory* memory);
+    void NotifyMaster(scoped_ptr<base::SharedMemory> memory);
 
     // Runs on the File thread.
     // Load the specified user scripts, calling NotifyMaster when done.
