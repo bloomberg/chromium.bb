@@ -82,14 +82,19 @@ public:
         m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
     }
 
-    void beginApply(GraphicsContext* context)
+    // The methods enableCache() and disableCache() are temporary, and we
+    // should address the real issue inside skia, thus simplifying what the
+    // clients have to know, and can remove these.
+    // Also note that this cache should no longer be used by Blink once the
+    // NON impl-side painting path is removed.
+    void enableCache()
     {
         if (!m_cache)
             m_cache = adoptRef(SkImageFilter::Cache::Create(1));
         SkImageFilter::SetExternalCache(m_cache.get());
     }
 
-    void endApply(GraphicsContext* context)
+    void disableCache()
     {
         SkImageFilter::SetExternalCache(0);
     }
