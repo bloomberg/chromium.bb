@@ -952,6 +952,7 @@ sonic = _config(
   images=['base', 'dev'],
   unittests=True,
   upload_hw_test_artifacts=False,
+  perform_paygen_testing=False,
   build_tests=False,
   factory_toolkit=False,
   vm_tests=[],
@@ -1929,6 +1930,7 @@ _config.add_group('x86-alex-release-group',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
+    perform_paygen_testing=False,
   ),
 )
 
@@ -1940,6 +1942,7 @@ _config.add_group('x86-zgb-release-group',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
+    perform_paygen_testing=False,
   ),
 )
 
@@ -2080,6 +2083,9 @@ _brillo_release = _release.derive(brillo,
 
 _brillo_release.add_config('duck-release',
    boards=['duck'],
+
+   # Hw Lab can't test duck, yet.
+   perform_paygen_testing=False,
 )
 
 _brillo_release.add_config('gizmo-release',
@@ -2244,6 +2250,7 @@ _factory_release = _release.derive(
   hw_tests=[],
   chrome_sdk=False,
   description='Factory Builds',
+  paygen=False,
 )
 
 _firmware = _config(
@@ -2263,6 +2270,7 @@ _firmware = _config(
   upload_symbols=False,
   signer_tests=False,
   trybot_list=False,
+  paygen=False,
 )
 
 _firmware_release = _release.derive(_firmware,

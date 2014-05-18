@@ -35,8 +35,10 @@ class ConfigDumpTest(cros_test_lib.TestCase):
                                   'config_dump.json')
     new_dump = cros_build_lib.RunCommand(cmd, capture_output=True).output
     old_dump = osutils.ReadFile(dump_file_path)
-    self.assertTrue(new_dump == old_dump, 'config_dump.json does not match the '
-                    'configs defined in cbuildbot_config.py')
+    self.assertTrue(
+        new_dump == old_dump, 'config_dump.json does not match the '
+        'configs defined in cbuildbot_config.py. Run '
+        'bin/cbuildbot_view_config -d --pretty > buildbot/config_dump.json')
 
 
 class ConfigPickleTest(cros_test_lib.TestCase):
@@ -466,6 +468,20 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         self.assertTrue(config['signer_results'] or
                         config['build_type'] == constants.PAYLOADS_TYPE,
                         '%s has paygen without signer_results' % build_name)
+
+  def testPaygenTestDependancies(self):
+    """Paygen requires SignerResults which requires PushImage."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+
+      # This requirement doesn't apply to payloads builds. Payloads are
+      # using artifacts from a previous build.
+      if build_name.endswith('-payloads'):
+        continue
+
+      if config['paygen'] and config['perform_paygen_testing']:
+        self.assertTrue(config['upload_hw_test_artifacts'],
+                        '%s is trying to do perform_paygen_testing without'
+                        ' upload_hw_test_artifacts' % build_name)
 
 
 class FindFullTest(cros_test_lib.TestCase):
