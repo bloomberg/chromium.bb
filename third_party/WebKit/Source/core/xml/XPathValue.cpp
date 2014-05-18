@@ -40,17 +40,27 @@ namespace XPath {
 
 const Value::AdoptTag Value::adopt = {};
 
+void ValueData::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodeSet);
+}
+
+void Value::trace(Visitor* visitor)
+{
+    visitor->trace(m_data);
+}
+
 const NodeSet& Value::toNodeSet() const
 {
     if (!isNodeSet())
         Expression::evaluationContext().hadTypeConversionError = true;
 
     if (!m_data) {
-        DEFINE_STATIC_LOCAL(NodeSet, emptyNodeSet, ());
-        return emptyNodeSet;
+        DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<NodeSet>, emptyNodeSet, (NodeSet::create()));
+        return *emptyNodeSet;
     }
 
-    return m_data->m_nodeSet;
+    return m_data->nodeSet();
 }
 
 NodeSet& Value::modifiableNodeSet()
@@ -62,14 +72,14 @@ NodeSet& Value::modifiableNodeSet()
         m_data = ValueData::create();
 
     m_type = NodeSetValue;
-    return m_data->m_nodeSet;
+    return m_data->nodeSet();
 }
 
 bool Value::toBoolean() const
 {
     switch (m_type) {
         case NodeSetValue:
-            return !m_data->m_nodeSet.isEmpty();
+            return !m_data->nodeSet().isEmpty();
         case BooleanValue:
             return m_bool;
         case NumberValue:
@@ -116,9 +126,9 @@ String Value::toString() const
 {
     switch (m_type) {
         case NodeSetValue:
-            if (m_data->m_nodeSet.isEmpty())
+            if (m_data->nodeSet().isEmpty())
                 return "";
-            return stringValue(m_data->m_nodeSet.firstNode());
+            return stringValue(m_data->nodeSet().firstNode());
         case StringValue:
             return m_data->m_string;
         case NumberValue:
