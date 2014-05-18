@@ -56,6 +56,17 @@ enum CreateSessionFailure {
 // The initial receive window size for both streams and sessions.
 const int32 kInitialReceiveWindowSize = 10 * 1024 * 1024;  // 10MB
 
+// The suggested initial congestion windows for a server to use.
+// TODO: This should be tested and optimized, and even better, suggest a window
+// that corresponds to historical bandwidth and min-RTT.
+// Larger initial congestion windows can, if we don't overshoot, reduce latency
+// by avoiding the RTT needed for slow start to double (and re-double) from a
+// default of 10.
+// We match SPDY's use of 32 when secure (since we'd compete with SPDY).
+const int32 kServerSecureInitialCongestionWindow = 32;
+// Be conservative, and just use double a typical TCP  ICWND for HTTP.
+const int32 kServerInecureInitialCongestionWindow = 20;
+
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
@@ -743,6 +754,9 @@ int QuicStreamFactory::CreateSession(
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 
   QuicConfig config = config_;
+  config_.SetInitialCongestionWindowToSend(
+      server_id.is_https() ? kServerSecureInitialCongestionWindow
+                           : kServerInecureInitialCongestionWindow);
   if (http_server_properties_) {
     const HttpServerProperties::NetworkStats* stats =
         http_server_properties_->GetServerNetworkStats(
