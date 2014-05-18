@@ -612,15 +612,15 @@ bool Track::Write(IMkvWriter* writer) const {
   if (!writer)
     return false;
 
+  // mandatory elements without a default value.
+  if (!type_ || !codec_id_)
+    return false;
+
   // |size| may be bigger than what is written out in this function because
   // derived classes may write out more data in the Track element.
   const uint64 payload_size = PayloadSize();
 
   if (!WriteEbmlMasterElement(writer, kMkvTrackEntry, payload_size))
-    return false;
-
-  // |type_| has to be specified before the Track can be written.
-  if (!type_)
     return false;
 
   uint64 size = EbmlElementSize(kMkvTrackNumber, number_);
