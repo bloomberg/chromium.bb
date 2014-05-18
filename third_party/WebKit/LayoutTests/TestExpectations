@@ -942,6 +942,10 @@ crbug.com/367814 [ Win Debug ] fast/dom/custom/document-register-reentrant-throw
 crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
+crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass Failure Timeout ]
+crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
+crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
+
 crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-gradient.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
