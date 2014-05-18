@@ -92,10 +92,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Whether or not drag operation is in progress.
   bool drag_in_progress() const { return drag_in_progress_; }
 
-  // Returns the owner of child windows.
-  // WARNING: this may be NULL.
-  Widget* owner() { return owner_; }
-
   // Get the anchor position wich is used to show this menu.
   MenuAnchorPosition GetAnchorPosition() { return state_.anchor; }
 
