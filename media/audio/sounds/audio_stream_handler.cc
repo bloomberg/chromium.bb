@@ -124,12 +124,6 @@ class AudioStreamHandler::AudioStreamContainer
     return dest->frames();
   }
 
-  virtual int OnMoreIOData(AudioBus* /* source */,
-                           AudioBus* dest,
-                           AudioBuffersState state) OVERRIDE {
-    return OnMoreData(dest, state);
-  }
-
   virtual void OnError(AudioOutputStream* /* stream */) OVERRIDE {
     LOG(ERROR) << "Error during system sound reproduction.";
   }

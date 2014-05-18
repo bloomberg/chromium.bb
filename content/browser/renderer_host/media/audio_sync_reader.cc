@@ -58,7 +58,7 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
   ++buffer_index_;
 }
 
-void AudioSyncReader::Read(const AudioBus* source, AudioBus* dest) {
+void AudioSyncReader::Read(AudioBus* dest) {
   ++renderer_callback_count_;
   if (!WaitUntilDataIsReady()) {
     ++renderer_missed_callback_count_;

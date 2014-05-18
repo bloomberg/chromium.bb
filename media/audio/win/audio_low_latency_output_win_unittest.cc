@@ -130,13 +130,6 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
   virtual void OnError(AudioOutputStream* stream) {}
 
   int file_size() { return file_->data_size(); }

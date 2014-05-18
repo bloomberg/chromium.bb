@@ -48,12 +48,6 @@ int SineWaveAudioSource::OnMoreData(AudioBus* audio_bus,
   return max_frames;
 }
 
-int SineWaveAudioSource::OnMoreIOData(AudioBus* source,
-                                      AudioBus* dest,
-                                      AudioBuffersState audio_buffers) {
-  return OnMoreData(dest, audio_buffers);
-}
-
 void SineWaveAudioSource::OnError(AudioOutputStream* stream) {
   errors_++;
 }

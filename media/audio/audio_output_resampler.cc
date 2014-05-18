@@ -31,9 +31,6 @@ class OnMoreDataConverter
   // AudioSourceCallback interface.
   virtual int OnMoreData(AudioBus* dest,
                          AudioBuffersState buffers_state) OVERRIDE;
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
@@ -331,16 +328,6 @@ void OnMoreDataConverter::Stop() {
 
 int OnMoreDataConverter::OnMoreData(AudioBus* dest,
                                     AudioBuffersState buffers_state) {
-  return OnMoreIOData(NULL, dest, buffers_state);
-}
-
-int OnMoreDataConverter::OnMoreIOData(AudioBus* source,
-                                      AudioBus* dest,
-                                      AudioBuffersState buffers_state) {
-  // Note: The input portion of OnMoreIOData() is not supported when a converter
-  // has been injected.  Downstream clients prefer silence to potentially split
-  // apart input data.
-
   current_buffers_state_ = buffers_state;
   audio_converter_.Convert(dest);
 
@@ -360,8 +347,7 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                    buffer_delay.InSecondsF() * input_bytes_per_second_);
 
   // Retrieve data from the original callback.
-  const int frames = source_callback_->OnMoreIOData(
-      NULL, dest, new_buffers_state);
+  const int frames = source_callback_->OnMoreData(dest, new_buffers_state);
 
   // Zero any unfilled frames if anything was filled, otherwise we'll just
   // return a volume of zero and let AudioConverter drop the output.

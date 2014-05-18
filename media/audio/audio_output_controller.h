@@ -91,9 +91,8 @@ class MEDIA_EXPORT AudioOutputController
     virtual void UpdatePendingBytes(uint32 bytes) = 0;
 
     // Attempts to completely fill |dest|, zeroing |dest| if the request can not
-    // be fulfilled (due to timeout).  |source| may optionally be provided for
-    // input data.
-    virtual void Read(const AudioBus* source, AudioBus* dest) = 0;
+    // be fulfilled (due to timeout).
+    virtual void Read(AudioBus* dest) = 0;
 
     // Close this synchronous reader.
     virtual void Close() = 0;
@@ -151,9 +150,6 @@ class MEDIA_EXPORT AudioOutputController
   // AudioSourceCallback implementation.
   virtual int OnMoreData(AudioBus* dest,
                          AudioBuffersState buffers_state) OVERRIDE;
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will
@@ -213,7 +209,7 @@ class MEDIA_EXPORT AudioOutputController
   // Helper method that stops, closes, and NULLs |*stream_|.
   void DoStopCloseAndClearStream();
 
-  // Checks if a stream was started successfully but never calls OnMoreIOData().
+  // Checks if a stream was started successfully but never calls OnMoreData().
   void WedgeCheck();
 
   AudioManager* const audio_manager_;
@@ -244,7 +240,7 @@ class MEDIA_EXPORT AudioOutputController
   const scoped_refptr<base::SingleThreadTaskRunner> message_loop_;
 
 #if defined(AUDIO_POWER_MONITORING)
-  // Scans audio samples from OnMoreIOData() as input to compute power levels.
+  // Scans audio samples from OnMoreData() as input to compute power levels.
   AudioPowerMonitor power_monitor_;
 #endif
 

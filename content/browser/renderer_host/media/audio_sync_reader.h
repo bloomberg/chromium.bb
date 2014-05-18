@@ -35,8 +35,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   // media::AudioOutputController::SyncReader implementations.
   virtual void UpdatePendingBytes(uint32 bytes) OVERRIDE;
-  virtual void Read(const media::AudioBus* source,
-                    media::AudioBus* dest) OVERRIDE;
+  virtual void Read(media::AudioBus* dest) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   bool Init();

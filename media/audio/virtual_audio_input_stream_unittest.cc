@@ -72,15 +72,6 @@ class TestAudioSource : public SineWaveAudioSource {
     return ret;
   }
 
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState audio_buffers) OVERRIDE {
-    const int ret =
-        SineWaveAudioSource::OnMoreIOData(source, dest, audio_buffers);
-    data_pulled_.Signal();
-    return ret;
-  }
-
   void WaitForDataPulls() {
     for (int i = 0; i < 3; ++i) {
       data_pulled_.Wait();

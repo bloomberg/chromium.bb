@@ -377,12 +377,6 @@ class NaivePlayer : public InProcessReceiver,
     return dest->frames();
   }
 
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE {
-    return OnMoreData(dest, buffers_state);
-  }
-
   virtual void OnError(AudioOutputStream* stream) OVERRIDE {
     LOG(ERROR) << "AudioOutputStream reports an error.  "
                << "Playback is unlikely to continue.";

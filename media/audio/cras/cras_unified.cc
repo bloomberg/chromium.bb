@@ -357,8 +357,7 @@ uint32 CrasUnifiedStream::ReadWriteAudio(size_t frames,
   cras_client_calc_playback_latency(output_ts, &latency_ts);
   total_delay_bytes += GetBytesLatency(latency_ts);
 
-  int frames_filled = source_callback_->OnMoreIOData(
-      input_bus_.get(),
+  int frames_filled = source_callback_->OnMoreData(
       output_bus_.get(),
       AudioBuffersState(0, total_delay_bytes));
 

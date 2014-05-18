@@ -22,6 +22,9 @@ class AudioManagerCras;
 
 // Implementation of AudioOuputStream for Chrome OS using the Chrome OS audio
 // server.
+// TODO(dgreid): This class is used for only output, either remove all the
+// relevant input code and change the class to CrasOutputStream or merge
+// cras_input.cc into this unified implementation.
 class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
@@ -104,7 +107,7 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   // Callback to get audio samples.
   AudioSourceCallback* source_callback_;
 
-  // Container for exchanging data with AudioSourceCallback::OnMoreIOData().
+  // Container for exchanging data with AudioSourceCallback::OnMoreData().
   scoped_ptr<AudioBus> input_bus_;
   scoped_ptr<AudioBus> output_bus_;
 

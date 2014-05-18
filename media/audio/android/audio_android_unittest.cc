@@ -207,13 +207,6 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
   virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
 
   int file_size() { return file_->data_size(); }
@@ -379,13 +372,6 @@ class FullDuplexAudioSinkSource
     return dest->frames();
   }
 
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) OVERRIDE {
-    NOTREACHED();
-    return 0;
-  }
-
   virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
 
  private:
@@ -504,7 +490,6 @@ class AudioAndroidOutputTest : public testing::Test {
              DoAll(CheckCountAndPostQuitTask(&count, num_callbacks, loop()),
                    Invoke(RealOnMoreData)));
     EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
-    EXPECT_CALL(source, OnMoreIOData(_, _, _)).Times(0);
 
     OpenAndStartAudioOutputStreamOnAudioThread(&source);
 
@@ -925,7 +910,6 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   EXPECT_CALL(source, OnMoreData(NotNull(), _))
       .WillRepeatedly(Invoke(RealOnMoreData));
   EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
-  EXPECT_CALL(source, OnMoreIOData(_, _, _)).Times(0);
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
   OpenAndStartAudioOutputStreamOnAudioThread(&source);

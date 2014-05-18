@@ -63,10 +63,6 @@ class MEDIA_EXPORT AudioOutputStream {
     virtual int OnMoreData(AudioBus* dest,
                            AudioBuffersState buffers_state) = 0;
 
-    virtual int OnMoreIOData(AudioBus* source,
-                             AudioBus* dest,
-                             AudioBuffersState buffers_state) = 0;
-
     // There was an error while playing a buffer. Audio source cannot be
     // destroyed yet. No direct action needed by the AudioStream, but it is
     // a good place to stop accumulating sound data since is is likely that

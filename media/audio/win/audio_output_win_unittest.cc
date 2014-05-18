@@ -58,12 +58,6 @@ class TestSourceBasic : public AudioOutputStream::AudioSourceCallback {
     audio_bus->Zero();
     return audio_bus->frames();
   }
-  virtual int OnMoreIOData(AudioBus* source,
-                           AudioBus* dest,
-                           AudioBuffersState buffers_state) {
-    NOTREACHED();
-    return 0;
-  }
   // AudioSourceCallback::OnError implementation:
   virtual void OnError(AudioOutputStream* stream) {
     ++had_error_;
