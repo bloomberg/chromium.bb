@@ -78,7 +78,10 @@ component("libssl") {
     ]
     sources += [ "exports_win.def" ]
   } else if (is_linux) {
-    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    if (component_mode == "shared_library") {
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    }
+
     libs = [ "dl" ]
 
     include_dirs = [ "bodge" ]
@@ -116,10 +119,6 @@ component("libssl") {
       "//third_party/nss:nss",
     ]
     forward_dependent_configs_from = deps
-  }
-
-  if (!is_win && component_mode == "shared_library") {
-    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
   }
 
   if (is_clang) {
