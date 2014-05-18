@@ -26,6 +26,7 @@
 #ifndef WidthCache_h
 #define WidthCache_h
 
+#include "platform/geometry/IntRectExtent.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
@@ -36,6 +37,16 @@
 namespace WebCore {
 
 struct GlyphOverflow;
+
+struct WidthCacheEntry {
+    WidthCacheEntry()
+    {
+        width = std::numeric_limits<float>::quiet_NaN();
+    }
+    bool isValid() const { return !std::isnan(width); }
+    float width;
+    IntRectExtent glyphBounds;
+};
 
 class WidthCache {
 private:
@@ -119,7 +130,7 @@ public:
     {
     }
 
-    float* add(const TextRun& run, float entry)
+    WidthCacheEntry* add(const TextRun& run, WidthCacheEntry entry)
     {
         if (static_cast<unsigned>(run.length()) > SmallStringKey::capacity())
             return 0;
@@ -139,11 +150,11 @@ public:
     }
 
 private:
-    float* addSlowCase(const TextRun& run, float entry)
+    WidthCacheEntry* addSlowCase(const TextRun& run, WidthCacheEntry entry)
     {
         int length = run.length();
         bool isNewEntry;
-        float *value;
+        WidthCacheEntry *value;
         if (length == 1) {
             SingleCharMap::AddResult addResult = m_singleCharMap.add(run[0], entry);
             isNewEntry = addResult.isNewEntry;
@@ -180,8 +191,8 @@ private:
         return 0;
     }
 
-    typedef HashMap<SmallStringKey, float, SmallStringKeyHash, SmallStringKeyHashTraits> Map;
-    typedef HashMap<uint32_t, float, DefaultHash<uint32_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<uint32_t> > SingleCharMap;
+    typedef HashMap<SmallStringKey, WidthCacheEntry, SmallStringKeyHash, SmallStringKeyHashTraits> Map;
+    typedef HashMap<uint32_t, WidthCacheEntry, DefaultHash<uint32_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<uint32_t> > SingleCharMap;
     static const int s_minInterval = -3; // A cache hit pays for about 3 cache misses.
     static const int s_maxInterval = 20; // Sampling at this interval has almost no overhead.
     static const unsigned s_maxSize = 500000; // Just enough to guard against pathological growth.
