@@ -4,6 +4,7 @@
 
 """Module containing the various stages that a builder runs."""
 
+import ConfigParser
 import json
 import logging
 import os
@@ -105,6 +106,17 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                       **kwargs)
     self.signing_results = {}
     self.channels = channels
+
+  def _HandleStageException(self, exc_info):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    exc_type = exc_info[0]
+
+    # If Paygen fails to find anything needed in release.conf, treat it
+    # as a warning, not a failure. This is common during new board bring up.
+    if issubclass(exc_type, ConfigParser.Error):
+      return self._HandleExceptionAsWarning(exc_info)
+
+    return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def _JsonFromUrl(self, gs_ctx, url):
     """Fetch a GS Url, and parse it as Json.
