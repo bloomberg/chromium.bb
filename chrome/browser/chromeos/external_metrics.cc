@@ -222,7 +222,7 @@ void ExternalMetrics::RecordSparseHistogram(const char* histogram_data) {
 }
 
 void ExternalMetrics::CollectEvents() {
-  const char* event_file_path = "/var/log/metrics/uma-events";
+  const char* event_file_path = "/var/run/metrics/uma-events";
   struct stat stat_buf;
   int result;
   if (!test_path_.empty()) {
