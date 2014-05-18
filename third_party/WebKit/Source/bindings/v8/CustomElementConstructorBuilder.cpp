@@ -59,7 +59,7 @@ CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* sc
     , m_options(options)
     , m_wrapperType(0)
 {
-    ASSERT(m_scriptState->context() == v8::Isolate::GetCurrent()->GetCurrentContext());
+    ASSERT(m_scriptState->context() == m_scriptState->isolate()->GetCurrentContext());
 }
 
 bool CustomElementConstructorBuilder::isFeatureAllowed() const

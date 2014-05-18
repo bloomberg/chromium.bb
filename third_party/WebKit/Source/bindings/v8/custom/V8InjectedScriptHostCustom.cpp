@@ -332,7 +332,7 @@ void V8InjectedScriptHost::evaluateMethodCustom(const v8::FunctionCallbackInfo<v
         return;
     }
 
-    ASSERT(!isolate->GetCurrentContext().IsEmpty());
+    ASSERT(isolate->InContext());
     v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate());
     if (tryCatch.HasCaught()) {

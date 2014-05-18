@@ -180,8 +180,7 @@ bool ScriptDebugServer::canBreakProgram()
 {
     if (!m_breakpointsActivated)
         return false;
-    v8::HandleScope scope(m_isolate);
-    return !m_isolate->GetCurrentContext().IsEmpty();
+    return m_isolate->InContext();
 }
 
 void ScriptDebugServer::breakProgram()

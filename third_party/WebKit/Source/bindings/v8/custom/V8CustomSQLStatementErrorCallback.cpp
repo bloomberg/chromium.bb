@@ -68,7 +68,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
 
-    v8::Handle<v8::Value> result = ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), isolate->GetCurrentContext()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate);
+    v8::Handle<v8::Value> result = ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate);
 
     // FIXME: This comment doesn't make much sense given what the code is actually doing.
     //

@@ -38,7 +38,7 @@ void MediaQueryListListener::queryChanged(MediaQueryList* query)
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Value> args[] = { toV8(query, m_scriptState->context()->Global(), m_scriptState->isolate()) };
-    invokeCallback(v8::Handle<v8::Function>::Cast(m_function.v8Value()), WTF_ARRAY_LENGTH(args), args, m_scriptState->executionContext(), m_scriptState->isolate());
+    invokeCallback(m_scriptState.get(), v8::Handle<v8::Function>::Cast(m_function.v8Value()), WTF_ARRAY_LENGTH(args), args);
 }
 
 }

@@ -64,9 +64,9 @@ namespace WebCore {
 
     {% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
     {% if method.idl_type == 'boolean' %}
-    return invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    return invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv);
     {% else %}{# void #}
-    invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    invokeCallback(m_scriptState.get(), m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv);
     {% endif %}
 }
 

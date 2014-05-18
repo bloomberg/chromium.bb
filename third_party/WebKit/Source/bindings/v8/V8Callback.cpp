@@ -36,16 +36,16 @@
 
 namespace WebCore {
 
-bool invokeCallback(v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[], ExecutionContext* executionContext, v8::Isolate* isolate)
+bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, int argc, v8::Handle<v8::Value> argv[])
 {
-    return invokeCallback(callback, isolate->GetCurrentContext()->Global(), argc, argv, executionContext, isolate);
+    return invokeCallback(scriptState, callback, scriptState->context()->Global(), argc, argv);
 }
 
-bool invokeCallback(v8::Local<v8::Function> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[], ExecutionContext* executionContext, v8::Isolate* isolate)
+bool invokeCallback(ScriptState* scriptState, v8::Local<v8::Function> callback, v8::Handle<v8::Object> thisObject, int argc, v8::Handle<v8::Value> argv[])
 {
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext, callback, thisObject, argc, argv, isolate);
+    ScriptController::callFunction(scriptState->executionContext(), callback, thisObject, argc, argv, scriptState->isolate());
     return !exceptionCatcher.HasCaught();
 }
 
