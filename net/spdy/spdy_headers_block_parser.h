@@ -31,8 +31,9 @@ class SpdyHeadersHandlerInterface {
                         base::StringPiece value) = 0;
 
   // A callback method which notifies when the parser finishes handling a SPDY
-  // headers block.
-  virtual void OnHeaderBlockEnd(SpdyStreamId stream_id) = 0;
+  // headers block. Also notifies on the total number of bytes in this block.
+  virtual void OnHeaderBlockEnd(SpdyStreamId stream_id,
+                                size_t header_bytes_parsed) = 0;
 };
 
 namespace test {
@@ -115,6 +116,9 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
 
   // The maximal number of headers in a SPDY headers block.
   const size_t max_headers_in_block_;
+
+  // A running total of the bytes parsed since the last call to Reset().
+  size_t total_bytes_received_;
 
   // Number of key-value pairs until we complete handling the current
   // headers block.

@@ -80,8 +80,8 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
     }
   }
   // Walk the reference set, toggling off as needed and clearing encoding state.
-  for (HpackEntry::OrderedSet::const_iterator it =
-          header_table_.reference_set().begin();
+  for (HpackHeaderTable::OrderedEntrySet::const_iterator it =
+           header_table_.reference_set().begin();
        it != header_table_.reference_set().end();) {
     HpackEntry* entry = *(it++);  // Step to prevent invalidation.
     CHECK_NE(kNoState, entry->state());
@@ -114,7 +114,7 @@ bool HpackEncoder::EncodeHeaderSetWithoutCompression(
 void HpackEncoder::EmitDynamicIndex(HpackEntry* entry) {
   DCHECK(!entry->IsStatic());
   output_stream_.AppendPrefix(kIndexedOpcode);
-  output_stream_.AppendUint32(entry->Index());
+  output_stream_.AppendUint32(header_table_.IndexOf(entry));
 
   entry->set_state(kNoState);
   if (header_table_.Toggle(entry)) {
@@ -126,7 +126,7 @@ void HpackEncoder::EmitDynamicIndex(HpackEntry* entry) {
 void HpackEncoder::EmitStaticIndex(HpackEntry* entry) {
   DCHECK(entry->IsStatic());
   output_stream_.AppendPrefix(kIndexedOpcode);
-  output_stream_.AppendUint32(entry->Index());
+  output_stream_.AppendUint32(header_table_.IndexOf(entry));
 
   HpackEntry* new_entry = header_table_.TryAddEntry(entry->name(),
                                                     entry->value());
@@ -160,7 +160,7 @@ void HpackEncoder::EmitNonIndexedLiteral(
 void HpackEncoder::EmitLiteral(const Representation& representation) {
   const HpackEntry* name_entry = header_table_.GetByName(representation.first);
   if (name_entry != NULL) {
-    output_stream_.AppendUint32(name_entry->Index());
+    output_stream_.AppendUint32(header_table_.IndexOf(name_entry));
   } else {
     output_stream_.AppendUint32(0);
     EmitString(representation.first);
@@ -203,7 +203,7 @@ HpackEncoder::Representations HpackEncoder::DetermineEncodingDelta(
   // reference set. Mark each referenced entry with current membership state,
   // and gather representations which must be explicitly emitted.
   Representations::const_iterator r_it = full_set.begin();
-  HpackEntry::OrderedSet::const_iterator s_it =
+  HpackHeaderTable::OrderedEntrySet::const_iterator s_it =
       header_table_.reference_set().begin();
 
   Representations explicit_set;

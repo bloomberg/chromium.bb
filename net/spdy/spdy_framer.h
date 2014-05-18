@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_decoder.h"
@@ -99,6 +101,38 @@ struct NET_EXPORT_PRIVATE SpdySettingsScratch {
   // frame. Used for detecting out-of-order or duplicate keys within a settings
   // frame. Set to -1 before first key/value pair is processed.
   int last_setting_id;
+};
+
+// Scratch space necessary for processing ALTSVC frames.
+struct NET_EXPORT_PRIVATE SpdyAltSvcScratch {
+  SpdyAltSvcScratch();
+  ~SpdyAltSvcScratch();
+
+  void Reset() {
+    max_age = 0;
+    port = 0;
+    pid_len = 0;
+    host_len = 0;
+    origin_len = 0;
+    pid_buf_len = 0;
+    host_buf_len = 0;
+    origin_buf_len = 0;
+    protocol_id.reset();
+    host.reset();
+    origin.reset();
+  }
+
+  uint32 max_age;
+  uint16 port;
+  uint8 pid_len;
+  uint8 host_len;
+  size_t origin_len;
+  size_t pid_buf_len;
+  size_t host_buf_len;
+  size_t origin_buf_len;
+  scoped_ptr<char[]> protocol_id;
+  scoped_ptr<char[]> host;
+  scoped_ptr<char[]> origin;
 };
 
 // SpdyFramerVisitorInterface is a set of callbacks for the SpdyFramer.
@@ -242,6 +276,14 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Note that header block data is not included. See
   // OnControlFrameHeaderData().
   virtual void OnContinuation(SpdyStreamId stream_id, bool end) = 0;
+
+  // Called when an ALTSVC frame has been parsed.
+  virtual void OnAltSvc(SpdyStreamId stream_id,
+                        uint32 max_age,
+                        uint16 port,
+                        base::StringPiece protocol_id,
+                        base::StringPiece host,
+                        base::StringPiece origin) {}
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -291,6 +333,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_GOAWAY_FRAME_PAYLOAD,
     SPDY_RST_STREAM_FRAME_PAYLOAD,
     SPDY_SETTINGS_FRAME_PAYLOAD,
+    SPDY_ALTSVC_FRAME_PAYLOAD,
   };
 
   // SPDY error codes.
@@ -431,6 +474,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeContinuation(
       const SpdyContinuationIR& continuation);
 
+  // Serializes an ALTSVC frame. The ALTSVC frame advertises the
+  // availability of an alternative service to the client.
+  SpdySerializedFrame* SerializeAltSvc(const SpdyAltSvcIR& altsvc);
+
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
 
@@ -476,6 +523,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetBlockedSize() const;
   size_t GetPushPromiseMinimumSize() const;
   size_t GetContinuationMinimumSize() const;
+  size_t GetAltSvcMinimumSize() const;
+  size_t GetPrioritySize() const;
 
   // Returns the minimum size a frame can be (data or control).
   size_t GetFrameMinimumSize() const;
@@ -570,6 +619,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
   size_t ProcessRstStreamFramePayload(const char* data, size_t len);
   size_t ProcessSettingsFramePayload(const char* data, size_t len);
+  size_t ProcessAltSvcFramePayload(const char* data, size_t len);
   size_t ProcessIgnoredControlFramePayload(/*const char* data,*/ size_t len);
 
   // TODO(jgraettinger): To be removed with migration to
@@ -591,6 +641,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Get (and lazily initialize) the ZLib state.
   z_stream* GetHeaderCompressor();
   z_stream* GetHeaderDecompressor();
+
+  // Get (and lazily initialize) the HPACK state.
+  HpackEncoder* GetHpackEncoder();
+  HpackDecoder* GetHpackDecoder();
 
   size_t GetNumberRequiredContinuationFrames(size_t size);
 
@@ -695,6 +749,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // TODO(hkhalil): Unify memory for this scratch space with
   // current_frame_buffer_.
   SpdySettingsScratch settings_scratch_;
+
+  SpdyAltSvcScratch altsvc_scratch_;
 
   bool enable_compression_;  // Controls all compression
   // SPDY header compressors.

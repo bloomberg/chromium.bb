@@ -16,6 +16,7 @@ SpdyHeadersBlockParser::SpdyHeadersBlockParser(
     state_(READING_HEADER_BLOCK_LEN),
     length_field_size_(LengthFieldSizeForVersion(spdy_version)),
     max_headers_in_block_(MaxNumberOfHeadersForVersion(spdy_version)),
+    total_bytes_received_(0),
     remaining_key_value_pairs_for_frame_(0),
     handler_(handler),
     error_(OK) {
@@ -40,6 +41,8 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
     stream_id_ = stream_id;
   }
   CHECK_EQ(stream_id_, stream_id);
+
+  total_bytes_received_ += headers_data_length;
 
   SpdyPinnableBufferPiece prefix, key, value;
   // Simultaneously tie lifetimes to the stack, and clear member variables.
@@ -86,7 +89,7 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
           next_state = READING_KEY_LEN;
         } else {
           next_state = READING_HEADER_BLOCK_LEN;
-          handler_->OnHeaderBlockEnd(stream_id);
+          handler_->OnHeaderBlockEnd(stream_id, total_bytes_received_);
           // Expect to have consumed all buffer.
           if (reader.Available() != 0) {
             error_ = TOO_MUCH_DATA;
@@ -102,6 +105,7 @@ bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
 
       if (next_state == READING_HEADER_BLOCK_LEN) {
         // We completed reading a full header block. Return to caller.
+        total_bytes_received_ = 0;
         break;
       }
     } else if (error_ == NEED_MORE_DATA) {
@@ -164,6 +168,7 @@ void SpdyHeadersBlockParser::Reset() {
   error_ = OK;
   state_ = READING_HEADER_BLOCK_LEN;
   stream_id_ = 0;
+  total_bytes_received_ = 0;
 }
 
 size_t SpdyHeadersBlockParser::LengthFieldSizeForVersion(

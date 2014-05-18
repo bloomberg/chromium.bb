@@ -25,14 +25,22 @@ class HpackEntryTest : public ::testing::Test {
   // These builders maintain the same external table invariants that a "real"
   // table (ie HpackHeaderTable) would.
   HpackEntry StaticEntry() {
-    return HpackEntry(name_, value_, true, total_insertions_++, &table_size_);
+    return HpackEntry(name_, value_, true, total_insertions_++);
   }
   HpackEntry DynamicEntry() {
     ++table_size_;
     size_t index = total_insertions_++;
-    return HpackEntry(name_, value_, false, index, &total_insertions_);
+    return HpackEntry(name_, value_, false, index);
   }
   void DropEntry() { --table_size_; }
+
+  size_t IndexOf(const HpackEntry& entry) const {
+    if (entry.IsStatic()) {
+      return 1 + entry.InsertionIndex() + table_size_;
+    } else {
+      return total_insertions_ - entry.InsertionIndex();
+    }
+  }
 
   size_t Size() {
     return name_.size() + value_.size() + HpackEntry::kSizeOverhead;
@@ -52,7 +60,7 @@ TEST_F(HpackEntryTest, StaticConstructor) {
   EXPECT_EQ(name_, entry.name());
   EXPECT_EQ(value_, entry.value());
   EXPECT_TRUE(entry.IsStatic());
-  EXPECT_EQ(1u, entry.Index());
+  EXPECT_EQ(1u, IndexOf(entry));
   EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
@@ -63,7 +71,7 @@ TEST_F(HpackEntryTest, DynamicConstructor) {
   EXPECT_EQ(name_, entry.name());
   EXPECT_EQ(value_, entry.value());
   EXPECT_FALSE(entry.IsStatic());
-  EXPECT_EQ(1u, entry.Index());
+  EXPECT_EQ(1u, IndexOf(entry));
   EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
@@ -74,7 +82,7 @@ TEST_F(HpackEntryTest, LookupConstructor) {
   EXPECT_EQ(name_, entry.name());
   EXPECT_EQ(value_, entry.value());
   EXPECT_FALSE(entry.IsStatic());
-  EXPECT_EQ(0u, entry.Index());
+  EXPECT_EQ(0u, IndexOf(entry));
   EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
@@ -92,78 +100,29 @@ TEST_F(HpackEntryTest, IndexUpdate) {
   HpackEntry static1(StaticEntry());
   HpackEntry static2(StaticEntry());
 
-  EXPECT_EQ(1u, static1.Index());
-  EXPECT_EQ(2u, static2.Index());
+  EXPECT_EQ(1u, IndexOf(static1));
+  EXPECT_EQ(2u, IndexOf(static2));
 
   HpackEntry dynamic1(DynamicEntry());
   HpackEntry dynamic2(DynamicEntry());
 
-  EXPECT_EQ(1u, dynamic2.Index());
-  EXPECT_EQ(2u, dynamic1.Index());
-  EXPECT_EQ(3u, static1.Index());
-  EXPECT_EQ(4u, static2.Index());
+  EXPECT_EQ(1u, IndexOf(dynamic2));
+  EXPECT_EQ(2u, IndexOf(dynamic1));
+  EXPECT_EQ(3u, IndexOf(static1));
+  EXPECT_EQ(4u, IndexOf(static2));
 
   DropEntry();  // Drops |dynamic1|.
 
-  EXPECT_EQ(1u, dynamic2.Index());
-  EXPECT_EQ(2u, static1.Index());
-  EXPECT_EQ(3u, static2.Index());
+  EXPECT_EQ(1u, IndexOf(dynamic2));
+  EXPECT_EQ(2u, IndexOf(static1));
+  EXPECT_EQ(3u, IndexOf(static2));
 
   HpackEntry dynamic3(DynamicEntry());
 
-  EXPECT_EQ(1u, dynamic3.Index());
-  EXPECT_EQ(2u, dynamic2.Index());
-  EXPECT_EQ(3u, static1.Index());
-  EXPECT_EQ(4u, static2.Index());
-}
-
-TEST_F(HpackEntryTest, ComparatorNameOrdering) {
-  HpackEntry entry1(StaticEntry());
-  name_[0]--;
-  HpackEntry entry2(StaticEntry());
-
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry1, &entry2));
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry2, &entry1));
-}
-
-TEST_F(HpackEntryTest, ComparatorValueOrdering) {
-  HpackEntry entry1(StaticEntry());
-  value_[0]--;
-  HpackEntry entry2(StaticEntry());
-
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry1, &entry2));
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry2, &entry1));
-}
-
-TEST_F(HpackEntryTest, ComparatorIndexOrdering) {
-  HpackEntry entry1(StaticEntry());
-  HpackEntry entry2(StaticEntry());
-
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry1, &entry2));
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry2, &entry1));
-
-  HpackEntry entry3(DynamicEntry());
-  HpackEntry entry4(DynamicEntry());
-
-  // |entry4| has lower index than |entry3|.
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry4, &entry3));
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry3, &entry4));
-
-  // |entry3| has lower index than |entry1|.
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry3, &entry1));
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry1, &entry3));
-
-  // |entry1| & |entry2| ordering is preserved, though each Index() has changed.
-  EXPECT_TRUE(HpackEntry::Comparator()(&entry1, &entry2));
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry2, &entry1));
-}
-
-TEST_F(HpackEntryTest, ComparatorEqualityOrdering) {
-  HpackEntry entry1(StaticEntry());
-  HpackEntry entry2(DynamicEntry());
-
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry1, &entry1));
-  EXPECT_FALSE(HpackEntry::Comparator()(&entry2, &entry2));
+  EXPECT_EQ(1u, IndexOf(dynamic3));
+  EXPECT_EQ(2u, IndexOf(dynamic2));
+  EXPECT_EQ(3u, IndexOf(static1));
+  EXPECT_EQ(4u, IndexOf(static2));
 }
 
 }  // namespace

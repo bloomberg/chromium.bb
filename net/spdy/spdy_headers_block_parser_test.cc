@@ -26,7 +26,7 @@ class MockSpdyHeadersHandler : public SpdyHeadersHandlerInterface {
  public:
   MOCK_METHOD2(OnHeaderBlock, void(SpdyStreamId stream_id,
                                    uint32_t num_of_headers));
-  MOCK_METHOD1(OnHeaderBlockEnd, void(SpdyStreamId stream_id));
+  MOCK_METHOD2(OnHeaderBlockEnd, void(SpdyStreamId stream_id, size_t bytes));
   MOCK_METHOD3(OnHeader, void(SpdyStreamId stream_id,
                               StringPiece,
                               StringPiece));
@@ -120,15 +120,16 @@ TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
   // Sanity test, verify that we parse out correctly a block with
   // a single key-value pair and that we notify when we start and finish
   // handling a headers block.
+  string headers(CreateHeaders(1, false));
+
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
   std::string expect_key = base_key + IntToString(0);
   std::string expect_value = base_value + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
 
-  string headers(CreateHeaders(1, false));
   EXPECT_TRUE(parser_->
       HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
   EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
@@ -137,15 +138,16 @@ TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
 TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
   // Sanity test, verify that we parse out correctly a block with
   // a single key-value pair when the key and value contain null charecters.
+  string headers(CreateHeaders(1, true));
+
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
   std::string expect_key = base_key + string("\0", 1) + IntToString(0);
   std::string expect_value = base_value + string("\0", 1) + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
 
-  string headers(CreateHeaders(1, true));
   EXPECT_TRUE(parser_->
       HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
   EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
@@ -153,6 +155,9 @@ TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
 
 TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
   testing::InSequence s;
+
+  // CreateHeaders is deterministic; we can call it once for the whole test.
+  string headers(CreateHeaders(kNumHeadersInBlock, false));
 
   // The mock doesn't retain storage of arguments, so keep them in scope.
   std::vector<string> retained_arguments;
@@ -169,11 +174,10 @@ TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
           StringPiece(retained_arguments[2 * j]),
           StringPiece(retained_arguments[2 * j + 1]))).Times(1);
     }
-    EXPECT_CALL(handler_, OnHeaderBlockEnd(i)).Times(1);
+    EXPECT_CALL(handler_, OnHeaderBlockEnd(i, headers.length())).Times(1);
   }
   // Parse the header blocks, feeding the parser one byte at a time.
   for (int i = 0; i < kNumHeaderBlocks; i++) {
-    string headers(CreateHeaders(kNumHeadersInBlock, false));
     for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
       if ((it + 1) == headers.end()) {
         // Last byte completes the block.
@@ -190,14 +194,15 @@ TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
 TEST_P(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
+  string headers(CreateHeaders(1, false));
+
   string expect_key = base_key + IntToString(0);
   string expect_value = base_value + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
 
   // Send a header in pieces with intermediate empty calls.
-  string headers(CreateHeaders(1, false));
   for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
     if ((it + 1) == headers.end()) {
       // Last byte completes the block.
@@ -236,15 +241,16 @@ TEST_P(SpdyHeadersBlockParserTest, LargeBlocksDiscardedTest) {
 }
 
 TEST_P(SpdyHeadersBlockParserTest, ExtraDataTest) {
+  string headers = CreateHeaders(1, false) + "foobar";
+
   EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1, headers.length())).Times(1);
 
   string expect_key = base_key + IntToString(0);
   string expect_value = base_value + IntToString(0);
   EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
                                  StringPiece(expect_value))).Times(1);
 
-  string headers = CreateHeaders(1, false) + "foobar";
   EXPECT_FALSE(parser_->
       HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
   EXPECT_EQ(SpdyHeadersBlockParser::TOO_MUCH_DATA, parser_->get_error());

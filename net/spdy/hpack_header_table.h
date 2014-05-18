@@ -36,6 +36,21 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // extended to map to list iterators.
   typedef std::deque<HpackEntry> EntryTable;
 
+  // Implements a total ordering of HpackEntry on name(), value(), then index
+  // ascending. Note that index may change over the lifetime of an HpackEntry,
+  // but the relative index order of two entries will not. This comparator is
+  // composed with the 'lookup' HpackEntry constructor to allow for efficient
+  // lower-bounding of matching entries.
+  struct NET_EXPORT_PRIVATE EntryComparator {
+    explicit EntryComparator(HpackHeaderTable* table) : table_(table) {}
+
+    bool operator() (const HpackEntry* lhs, const HpackEntry* rhs) const;
+
+   private:
+    HpackHeaderTable* table_;
+  };
+  typedef std::set<HpackEntry*, EntryComparator> OrderedEntrySet;
+
   HpackHeaderTable();
 
   ~HpackHeaderTable();
@@ -48,7 +63,7 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t size() const { return size_; }
   size_t max_size() const { return max_size_; }
 
-  const HpackEntry::OrderedSet& reference_set() {
+  const OrderedEntrySet& reference_set() {
     return reference_set_;
   }
 
@@ -61,6 +76,9 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // Returns the lowest-index matching entry, or NULL.
   HpackEntry* GetByNameAndValue(base::StringPiece name,
                                 base::StringPiece value);
+
+  // Returns the index of an entry within this header table.
+  size_t IndexOf(const HpackEntry* entry) const;
 
   // Sets the maximum size of the header table, evicting entries if
   // necessary as described in 3.3.2.
@@ -109,9 +127,9 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   EntryTable static_entries_;
 
   // Full table index, over |dynamic_entries_| and |static_entries_|.
-  HpackEntry::OrderedSet index_;
+  OrderedEntrySet index_;
   // The reference set is strictly a subset of |dynamic_entries_|.
-  HpackEntry::OrderedSet reference_set_;
+  OrderedEntrySet reference_set_;
 
   // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
   size_t settings_size_bound_;
@@ -122,12 +140,8 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t max_size_;
 
   // Total number of table insertions which have occurred. Referenced by
-  // dynamic HpackEntry instances for determination of table index.
+  // IndexOf() for determination of an HpackEntry's table index.
   size_t total_insertions_;
-
-  // Current number of dynamic entries. Referenced by static HpackEntry
-  // instances for determination of table index.
-  size_t dynamic_entries_count_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackHeaderTable);
 };

@@ -96,7 +96,7 @@ class HpackDecoderTest : public ::testing::Test {
     EXPECT_EQ(name, entry->name()) << "index " << index;
     EXPECT_EQ(value, entry->value());
     EXPECT_EQ(size, entry->Size());
-    EXPECT_EQ(index, entry->Index());
+    EXPECT_EQ(index, decoder_peer_.header_table()->IndexOf(entry));
   }
 
   void expectStaticEntry(size_t index) {

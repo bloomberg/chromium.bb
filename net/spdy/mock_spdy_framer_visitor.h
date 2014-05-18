@@ -5,6 +5,7 @@
 #ifndef NET_SPDY_MOCK_SPDY_FRAMER_VISITOR_H_
 #define NET_SPDY_MOCK_SPDY_FRAMER_VISITOR_H_
 
+#include "base/strings/string_piece.h"
 #include "net/spdy/spdy_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -49,6 +50,12 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
                                    SpdyStreamId promised_stream_id,
                                    bool end));
   MOCK_METHOD2(OnContinuation, void(SpdyStreamId stream_id, bool end));
+  MOCK_METHOD6(OnAltSvc, void(SpdyStreamId stream_id,
+                              uint32 max_age,
+                              uint16 port,
+                              base::StringPiece protocol_id,
+                              base::StringPiece host,
+                              base::StringPiece origin));
 };
 
 }  // namespace test

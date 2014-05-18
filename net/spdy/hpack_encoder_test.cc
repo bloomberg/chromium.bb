@@ -112,7 +112,7 @@ class HpackEncoderTest : public ::testing::Test {
   }
   void ExpectIndexedLiteral(HpackEntry* key_entry, StringPiece value) {
     expected_.AppendPrefix(kLiteralIncrementalIndexOpcode);
-    expected_.AppendUint32(key_entry->Index());
+    expected_.AppendUint32(IndexOf(key_entry));
     expected_.AppendPrefix(kStringLiteralIdentityEncoded);
     expected_.AppendUint32(value.size());
     expected_.AppendBytes(value);
@@ -143,6 +143,9 @@ class HpackEncoderTest : public ::testing::Test {
     EXPECT_TRUE(encoder_.EncodeHeaderSet(header_set, &actual_out));
     EXPECT_EQ(expected_out, actual_out);
   }
+  size_t IndexOf(HpackEntry* entry) {
+    return peer_.table()->IndexOf(entry);
+  }
 
   HpackEncoder encoder_;
   test::HpackEncoderPeer peer_;
@@ -157,7 +160,7 @@ class HpackEncoderTest : public ::testing::Test {
 };
 
 TEST_F(HpackEncoderTest, SingleDynamicIndex) {
-  ExpectIndex(key_2_->Index());
+  ExpectIndex(IndexOf(key_2_));
 
   map<string, string> headers;
   headers[key_2_->name()] = key_2_->value();
@@ -168,7 +171,7 @@ TEST_F(HpackEncoderTest, SingleDynamicIndex) {
 }
 
 TEST_F(HpackEncoderTest, SingleStaticIndex) {
-  ExpectIndex(static_->Index());
+  ExpectIndex(IndexOf(static_));
 
   map<string, string> headers;
   headers[static_->name()] = static_->value();
@@ -184,7 +187,7 @@ TEST_F(HpackEncoderTest, SingleStaticIndex) {
 
 TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
   peer_.table()->SetMaxSize(1);  // Also evicts all fixtures.
-  ExpectIndex(static_->Index());
+  ExpectIndex(IndexOf(static_));
 
   map<string, string> headers;
   headers[static_->name()] = static_->value();
@@ -251,7 +254,7 @@ TEST_F(HpackEncoderTest, ExplicitToggleOff) {
   peer_.table()->Toggle(key_2_);
 
   // |key_1_| is explicitly toggled off.
-  ExpectIndex(key_1_->Index());
+  ExpectIndex(IndexOf(key_1_));
 
   map<string, string> headers;
   headers[key_2_->name()] = key_2_->value();
@@ -275,8 +278,8 @@ TEST_F(HpackEncoderTest, ExplicitDoubleToggle) {
   peer_.table()->Toggle(key_1_);
 
   // |key_1_| is double-toggled prior to being evicted.
-  ExpectIndex(key_1_->Index());
-  ExpectIndex(key_1_->Index());
+  ExpectIndex(IndexOf(key_1_));
+  ExpectIndex(IndexOf(key_1_));
   ExpectIndexedLiteral("key3", "value3");
 
   map<string, string> headers;
@@ -288,7 +291,7 @@ TEST_F(HpackEncoderTest, ExplicitDoubleToggle) {
 TEST_F(HpackEncoderTest, EmitThanEvict) {
   // |key_1_| is toggled and placed into the reference set,
   // and then immediately evicted by "key3".
-  ExpectIndex(key_1_->Index());
+  ExpectIndex(IndexOf(key_1_));
   ExpectIndexedLiteral("key3", "value3");
 
   map<string, string> headers;
@@ -302,7 +305,7 @@ TEST_F(HpackEncoderTest, CookieHeaderIsCrumbled) {
 
   // |cookie_a_| is already in the reference set. |cookie_c_| is
   // toggled, and "e=ff" is emitted with an indexed name.
-  ExpectIndex(cookie_c_->Index());
+  ExpectIndex(IndexOf(cookie_c_));
   ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
 
   map<string, string> headers;
@@ -357,8 +360,8 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key1"] = "value1";
     headers["cookie"] = "a=bb";
 
-    ExpectIndex(cookie_a_->Index());
-    ExpectIndex(key_1_->Index());
+    ExpectIndex(IndexOf(cookie_a_));
+    ExpectIndex(IndexOf(key_1_));
     CompareWithExpectedEncoding(headers);
   }
   // Pass 2: |key_1_| is double-toggled and evicted.
@@ -371,12 +374,13 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key2"] = "value2";
     headers["cookie"] = "c=dd; e=ff";
 
-    ExpectIndex(cookie_c_->Index());  // Toggle on.
-    ExpectIndex(key_1_->Index());  // Double-toggle before eviction.
-    ExpectIndex(key_1_->Index());
+    ExpectIndex(IndexOf(cookie_c_));  // Toggle on.
+    ExpectIndex(IndexOf(key_1_));  // Double-toggle before eviction.
+    ExpectIndex(IndexOf(key_1_));
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
-    ExpectIndex(key_2_->Index() + 1);  // Toggle on. Add 1 to reflect insertion.
-    ExpectIndex(cookie_a_->Index() + 1);  // Toggle off.
+
+    ExpectIndex(IndexOf(key_2_) + 1);  // Toggle on. Add 1 to reflect insertion.
+    ExpectIndex(IndexOf(cookie_a_) + 1);  // Toggle off.
     CompareWithExpectedEncoding(headers);
   }
   // Pass 3: |key_2_| is evicted and implicitly toggled off.
@@ -390,7 +394,7 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
 
     ExpectIndexedLiteral("key1", "value1");
     ExpectIndexedLiteral("key3", "value3");
-    ExpectIndex(cookie_c_->Index() + 2);  // Toggle off. Add 1 for insertion.
+    ExpectIndex(IndexOf(cookie_c_) + 2);  // Toggle off. Add 1 for insertion.
 
     CompareWithExpectedEncoding(headers);
   }

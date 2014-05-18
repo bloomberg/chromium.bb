@@ -41,6 +41,7 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolTests,
                         ::testing::Values(SPDY2, SPDY3));
 
 // Test our protocol constants
+// TODO(hkhalil): Remove this test once we no longer rely on exact values.
 TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
@@ -55,7 +56,9 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(11, BLOCKED);
   EXPECT_EQ(12, PUSH_PROMISE);
   EXPECT_EQ(13, CONTINUATION);
-  EXPECT_EQ(13, LAST_CONTROL_TYPE);
+  EXPECT_EQ(14, ALTSVC);
+  EXPECT_EQ(15, PRIORITY);
+  EXPECT_EQ(15, LAST_CONTROL_TYPE);
   EXPECT_EQ(std::numeric_limits<int32>::max(), kSpdyMaximumWindowSize);
 }
 

@@ -98,7 +98,8 @@ SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion version,
           return DATA;
         case 1:
           return HEADERS;
-        // TODO(hkhalil): Add PRIORITY.
+        case 2:
+          return PRIORITY;
         case 3:
           return RST_STREAM;
         case 4:
@@ -114,6 +115,8 @@ SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion version,
         case 9:
           return CONTINUATION;
         case 10:
+          return ALTSVC;
+        case 11:
           return BLOCKED;
       }
       break;
@@ -156,7 +159,8 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
           return 0;
         case HEADERS:
           return 1;
-        // TODO(hkhalil): Add PRIORITY.
+        case PRIORITY:
+          return 2;
         case RST_STREAM:
           return 3;
         case SETTINGS:
@@ -171,8 +175,10 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
           return 8;
         case CONTINUATION:
           return 9;
-        case BLOCKED:
+        case ALTSVC:
           return 10;
+        case BLOCKED:
+          return 11;
         default:
           LOG(DFATAL) << "Serializing unhandled frame type " << frame_type;
           return -1;
@@ -209,9 +215,9 @@ bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
         return false;
       }
 
-      // INITIAL_WINDOW_SIZE is the last valid setting id.
+      // COMPRESS_DATA is the last valid setting id.
       if (setting_id_field >
-          SerializeSettingId(version, SETTINGS_INITIAL_WINDOW_SIZE)) {
+          SerializeSettingId(version, SETTINGS_COMPRESS_DATA)) {
         return false;
       }
 
@@ -255,6 +261,8 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion version,
           return SETTINGS_MAX_CONCURRENT_STREAMS;
         case 4:
           return SETTINGS_INITIAL_WINDOW_SIZE;
+        case 5:
+          return SETTINGS_COMPRESS_DATA;
       }
       break;
   }
@@ -298,6 +306,8 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
           return 3;
         case SETTINGS_INITIAL_WINDOW_SIZE:
           return 4;
+        case SETTINGS_COMPRESS_DATA:
+          return 5;
         default:
           LOG(DFATAL) << "Serializing unhandled setting id " << id;
           return -1;
@@ -786,6 +796,15 @@ void SpdyPushPromiseIR::Visit(SpdyFrameVisitor* visitor) const {
 
 void SpdyContinuationIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitContinuation(*this);
+}
+
+SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id)
+    : SpdyFrameWithStreamIdIR(stream_id),
+      max_age_(0),
+      port_(0) {}
+
+void SpdyAltSvcIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitAltSvc(*this);
 }
 
 }  // namespace net

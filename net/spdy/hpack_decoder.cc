@@ -60,7 +60,7 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
   // Also clear entry state for the next decoded headers block.
   // TODO(jgraettinger): We may need to revisit the order in which headers
   // are emitted (b/14051713).
-  for (HpackEntry::OrderedSet::const_iterator it =
+  for (HpackHeaderTable::OrderedEntrySet::const_iterator it =
           header_table_.reference_set().begin();
        it != header_table_.reference_set().end(); ++it) {
     HpackEntry* entry = *it;
