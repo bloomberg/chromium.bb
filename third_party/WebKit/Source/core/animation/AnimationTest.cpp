@@ -145,7 +145,7 @@ TEST_F(AnimationAnimationV8Test, MismatchedKeyframePropertyRaisesException)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
 
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(NotSupportedError, exceptionState.code());
@@ -165,7 +165,7 @@ TEST_F(AnimationAnimationV8Test, MissingOffsetZeroRaisesException)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
 
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(NotSupportedError, exceptionState.code());
@@ -185,7 +185,7 @@ TEST_F(AnimationAnimationV8Test, MissingOffsetOneRaisesException)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
 
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(NotSupportedError, exceptionState.code());
@@ -205,7 +205,7 @@ TEST_F(AnimationAnimationV8Test, MissingOffsetZeroAndOneRaisesException)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
+    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
 
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(NotSupportedError, exceptionState.code());
@@ -456,7 +456,7 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
     timing.iterationDuration = 5;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
     EXPECT_EQ(element.get(), animation->target());
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document->timeline().play(animation.get());
+    document->timeline().play(animation.get());
     document.clear();
     element.clear();
     Heap::collectAllGarbage();
