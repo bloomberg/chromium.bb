@@ -491,7 +491,7 @@ bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const Pai
         return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
-    extraParams.innerSpin.spinUp = (controlStatesForRenderer(o) & SpinUpState);
+    extraParams.innerSpin.spinUp = (controlStatesForRenderer(o) & SpinUpControlState);
     extraParams.innerSpin.readOnly = isReadOnlyControl(o);
 
     blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartInnerSpinButton, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);

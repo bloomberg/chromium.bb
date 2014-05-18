@@ -149,7 +149,7 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
             setNeedsWillValidateCheck();
             setNeedsStyleRecalc(SubtreeStyleChange);
             if (renderer() && renderer()->style()->hasAppearance())
-                RenderTheme::theme().stateChanged(renderer(), ReadOnlyState);
+                RenderTheme::theme().stateChanged(renderer(), ReadOnlyControlState);
         }
     } else if (name == requiredAttr) {
         bool wasRequired = m_isRequired;
@@ -169,7 +169,7 @@ void HTMLFormControlElement::disabledAttributeChanged()
     setNeedsWillValidateCheck();
     didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), EnabledState);
+        RenderTheme::theme().stateChanged(renderer(), EnabledControlState);
     if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.

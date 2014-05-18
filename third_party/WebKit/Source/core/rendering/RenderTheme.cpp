@@ -629,11 +629,11 @@ bool RenderTheme::supportsFocusRing(const RenderStyle* style) const
 bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
 {
     // Default implementation assumes the controls don't respond to changes in :hover state
-    if (state == HoverState && !supportsHover(o->style()))
+    if (state == HoverControlState && !supportsHover(o->style()))
         return false;
 
     // Assume pressed state is only responded to if the control is enabled.
-    if (state == PressedState && !isEnabled(o))
+    if (state == PressedControlState && !isEnabled(o))
         return false;
 
     // Repaint the control.
@@ -645,27 +645,27 @@ ControlStates RenderTheme::controlStatesForRenderer(const RenderObject* o) const
 {
     ControlStates result = 0;
     if (isHovered(o)) {
-        result |= HoverState;
+        result |= HoverControlState;
         if (isSpinUpButtonPartHovered(o))
-            result |= SpinUpState;
+            result |= SpinUpControlState;
     }
     if (isPressed(o)) {
-        result |= PressedState;
+        result |= PressedControlState;
         if (isSpinUpButtonPartPressed(o))
-            result |= SpinUpState;
+            result |= SpinUpControlState;
     }
     if (isFocused(o) && o->style()->outlineStyleIsAuto())
-        result |= FocusState;
+        result |= FocusControlState;
     if (isEnabled(o))
-        result |= EnabledState;
+        result |= EnabledControlState;
     if (isChecked(o))
-        result |= CheckedState;
+        result |= CheckedControlState;
     if (isReadOnlyControl(o))
-        result |= ReadOnlyState;
+        result |= ReadOnlyControlState;
     if (!isActive(o))
-        result |= WindowInactiveState;
+        result |= WindowInactiveControlState;
     if (isIndeterminate(o))
-        result |= IndeterminateState;
+        result |= IndeterminateControlState;
     return result;
 }
 

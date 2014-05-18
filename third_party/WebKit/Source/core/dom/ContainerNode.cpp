@@ -839,7 +839,7 @@ void ContainerNode::focusStateChanged()
     }
 
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), FocusState);
+        RenderTheme::theme().stateChanged(renderer(), FocusControlState);
 }
 
 void ContainerNode::setFocus(bool received)
@@ -880,7 +880,7 @@ void ContainerNode::setActive(bool down)
         }
 
         if (renderStyle()->hasAppearance())
-            RenderTheme::theme().stateChanged(renderer(), PressedState);
+            RenderTheme::theme().stateChanged(renderer(), PressedControlState);
     }
 }
 
@@ -912,7 +912,7 @@ void ContainerNode::setHovered(bool over)
     }
 
     if (renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), HoverState);
+        RenderTheme::theme().stateChanged(renderer(), HoverControlState);
 }
 
 PassRefPtr<HTMLCollection> ContainerNode::children()

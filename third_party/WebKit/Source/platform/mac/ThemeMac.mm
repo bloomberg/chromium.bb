@@ -158,28 +158,28 @@ static void updateStates(NSCell* cell, ControlStates states)
     
     // Pressed state
     bool oldPressed = [cell isHighlighted];
-    bool pressed = states & PressedState;
+    bool pressed = states & PressedControlState;
     if (pressed != oldPressed)
         [cell setHighlighted:pressed];
     
     // Enabled state
     bool oldEnabled = [cell isEnabled];
-    bool enabled = states & EnabledState;
+    bool enabled = states & EnabledControlState;
     if (enabled != oldEnabled)
         [cell setEnabled:enabled];
     
 #if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     // Focused state
     bool oldFocused = [cell showsFirstResponder];
-    bool focused = states & FocusState;
+    bool focused = states & FocusControlState;
     if (focused != oldFocused)
         [cell setShowsFirstResponder:focused];
 #endif
 
     // Checked and Indeterminate
     bool oldIndeterminate = [cell state] == NSMixedState;
-    bool indeterminate = (states & IndeterminateState);
-    bool checked = states & CheckedState;
+    bool indeterminate = (states & IndeterminateControlState);
+    bool checked = states & CheckedControlState;
     bool oldChecked = [cell state] == NSOnState;
     if (oldIndeterminate != indeterminate || checked != oldChecked)
         [cell setState:indeterminate ? NSMixedState : (checked ? NSOnState : NSOffState)];
@@ -190,15 +190,15 @@ static void updateStates(NSCell* cell, ControlStates states)
 
 static ThemeDrawState convertControlStatesToThemeDrawState(ThemeButtonKind kind, ControlStates states)
 {
-    if (states & ReadOnlyState)
+    if (states & ReadOnlyControlState)
         return kThemeStateUnavailableInactive;
-    if (!(states & EnabledState))
+    if (!(states & EnabledControlState))
         return kThemeStateUnavailableInactive;
 
-    // Do not process PressedState if !EnabledState or ReadOnlyState.
-    if (states & PressedState) {
+    // Do not process PressedState if !EnabledControlState or ReadOnlyControlState.
+    if (states & PressedControlState) {
         if (kind == kThemeIncDecButton || kind == kThemeIncDecButtonSmall || kind == kThemeIncDecButtonMini)
-            return states & SpinUpState ? kThemeStatePressedUp : kThemeStatePressedDown;
+            return states & SpinUpControlState ? kThemeStatePressedUp : kThemeStatePressedDown;
         return kThemeStatePressed;
     }
     return kThemeStateActive;
@@ -298,7 +298,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     NSView *view = ThemeMac::ensuredView(scrollView);
     [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
-    if (states & FocusState)
+    if (states & FocusControlState)
         [checkboxCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
 #endif
     [checkboxCell setControlView:nil];
@@ -379,7 +379,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
     NSView *view = ThemeMac::ensuredView(scrollView);
     [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
-    if (states & FocusState)
+    if (states & FocusControlState)
         [radioCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
 #endif
     [radioCell setControlView:nil];

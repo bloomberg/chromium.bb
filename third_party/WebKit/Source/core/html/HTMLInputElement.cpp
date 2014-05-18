@@ -845,7 +845,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         scope->updateCheckedState(this);
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), CheckedState);
+        RenderTheme::theme().stateChanged(renderer(), CheckedControlState);
 
     setNeedsValidityCheck();
 
@@ -882,7 +882,7 @@ void HTMLInputElement::setIndeterminate(bool newValue)
     didAffectSelector(AffectedSelectorIndeterminate);
 
     if (renderer() && renderer()->style()->hasAppearance())
-        RenderTheme::theme().stateChanged(renderer(), CheckedState);
+        RenderTheme::theme().stateChanged(renderer(), CheckedControlState);
 }
 
 int HTMLInputElement::size() const
