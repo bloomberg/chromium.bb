@@ -23,6 +23,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
@@ -193,7 +194,8 @@ bool LaunchProcess(const string16& cmdline,
                             &temp_process_info);
     DestroyEnvironmentBlock(enviroment_block);
     if (!launched) {
-      DPLOG(ERROR);
+      DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
+                   << std::endl;;
       return false;
     }
   } else {
@@ -201,7 +203,8 @@ bool LaunchProcess(const string16& cmdline,
                        const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
                        inherit_handles, flags, NULL, NULL,
                        startup_info, &temp_process_info)) {
-      DPLOG(ERROR);
+      DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
+                   << std::endl;;
       return false;
     }
   }
