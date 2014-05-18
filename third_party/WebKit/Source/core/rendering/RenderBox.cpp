@@ -2424,38 +2424,43 @@ void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, Layo
     if (avoidsFloats() && containingBlock->containsFloats())
         availableWidth = containingBlockAvailableLineWidth();
 
-    // Case One: The object is being centered in the containing block's available logical width.
-    if ((marginStartLength.isAuto() && marginEndLength.isAuto() && childWidth < availableWidth)
+    LayoutUnit marginStartWidth = minimumValueForLength(marginStartLength, containerWidth);
+    LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
+
+    // CSS 2.1 (10.3.3): "If 'width' is not 'auto' and 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width'
+    // (plus any of 'margin-left' or 'margin-right' that are not 'auto') is larger than the width of the containing block, then any 'auto'
+    // values for 'margin-left' or 'margin-right' are, for the following rules, treated as zero.
+    LayoutUnit marginBoxWidth = childWidth + (!style()->width().isAuto() ? marginStartWidth + marginEndWidth : LayoutUnit());
+
+    // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
+    // with respect to the edges of the containing block."
+    if ((marginStartLength.isAuto() && marginEndLength.isAuto() && marginBoxWidth < availableWidth)
         || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlock->style()->textAlign() == WEBKIT_CENTER)) {
         // Other browsers center the margin box for align=center elements so we match them here.
-        LayoutUnit marginStartWidth = minimumValueForLength(marginStartLength, containerWidth);
-        LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
         LayoutUnit centeredMarginBoxStart = max<LayoutUnit>(0, (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
         marginStart = centeredMarginBoxStart + marginStartWidth;
         marginEnd = availableWidth - childWidth - marginStart + marginEndWidth;
         return;
     }
 
-    // Case Two: The object is being pushed to the start of the containing block's available logical width.
-    if (marginEndLength.isAuto() && childWidth < availableWidth) {
-        marginStart = valueForLength(marginStartLength, containerWidth);
+    // CSS 2.1: "If there is exactly one value specified as 'auto', its used value follows from the equality."
+    if (marginEndLength.isAuto() && marginBoxWidth < availableWidth) {
+        marginStart = marginStartWidth;
         marginEnd = availableWidth - childWidth - marginStart;
         return;
     }
 
-    // Case Three: The object is being pushed to the end of the containing block's available logical width.
     bool pushToEndFromTextAlign = !marginEndLength.isAuto() && ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
         || (containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_RIGHT));
-    if ((marginStartLength.isAuto() && childWidth < availableWidth) || pushToEndFromTextAlign) {
-        marginEnd = valueForLength(marginEndLength, containerWidth);
+    if ((marginStartLength.isAuto() && marginBoxWidth < availableWidth) || pushToEndFromTextAlign) {
+        marginEnd = marginEndWidth;
         marginStart = availableWidth - childWidth - marginEnd;
         return;
     }
 
-    // Case Four: Either no auto margins, or our width is >= the container width (css2.1, 10.3.3).  In that case
-    // auto margins will just turn into 0.
-    marginStart = minimumValueForLength(marginStartLength, containerWidth);
-    marginEnd = minimumValueForLength(marginEndLength, containerWidth);
+    // Either no auto margins, or our margin box width is >= the container width, auto margins will just turn into 0.
+    marginStart = marginStartWidth;
+    marginEnd = marginEndWidth;
 }
 
 static bool shouldFlipBeforeAfterMargins(const RenderStyle* containingBlockStyle, const RenderStyle* childStyle)
