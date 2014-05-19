@@ -2220,9 +2220,11 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CREATE_SHORTCUTS_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications menu.">
         Applications menu
       </message>
-      <message name="IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications folder.">
-        Applications folder
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications folder.">
+          Applications folder
+        </message>
+      </if>
       <if expr="is_win">
         <message name="IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the start menu.">
           Start menu
@@ -2392,9 +2394,11 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_ALL" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using *a specific set* of plug-ins, displayed in bubble when a page tries to use plug-ins.">
-        Always allow these plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using *a specific set* of plug-ins, displayed in bubble when a page tries to use plug-ins.">
+          Always allow these plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+        </message>
+      </if>
       <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Continue blocking plug-ins
       </message>
@@ -4357,9 +4361,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR" desc="Permission string for access to an icon in the system indicator area, such as the taskbar or system tray.">
-        Display an icon in the system indicator area
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM" desc="Permission string for synchronizing files to the user's Google Drive">
         Store data in your Google Drive account
       </message>
@@ -4398,9 +4399,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ" desc="Permission string for modifying acccessibility settings via extension API shown when a extension utilizing the API is installed.">
         Read your accessibility settings
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOMATION" desc="Permission string for access to accessibility tree. TODO(aboxhall/dtseng): write more accurate description; write different versions for different permission levels">
-        Access and interact with all web pages
       </message>
 
       <!-- Extension/App error messages -->
@@ -7173,18 +7171,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Browser Hung Plugin Detector -->
-      <message name="IDS_UNKNOWN_PLUGIN_NAME" desc="Name for a plugin whose name could not be determined">
-        Unknown
-      </message>
-
-      <message name="IDS_BROWSER_HANGMONITOR_TITLE" desc="Title for the hung plugin message">
-        Plug-in Unresponsive
-      </message>
-      <message name="IDS_BROWSER_HANGMONITOR" desc="A plugin on a page has hung">
-The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
-<ex>Shockwave
-</ex></ph>Would you like to stop it?
-      </message>
+      <if expr="is_win">
+        <message name="IDS_UNKNOWN_PLUGIN_NAME" desc="Name for a plugin whose name could not be determined">
+          Unknown
+        </message>
+        <message name="IDS_BROWSER_HANGMONITOR_TITLE" desc="Title for the hung plugin message">
+          Plug-in Unresponsive
+        </message>
+        <message name="IDS_BROWSER_HANGMONITOR" desc="A plugin on a page has hung">
+  The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
+  <ex>Shockwave
+  </ex></ph>Would you like to stop it?
+        </message>
+      </if>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_TITLE" desc="The title of the 'A renderer has hung' dialog">
         Page(s) Unresponsive
       </message>
@@ -7889,12 +7888,16 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_CHECK_STARTED" desc="Status label: About to start checking for updates">
         Checking for updates...
       </message>
-      <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
-        Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
-      </message>
-      <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
-        Updates are disabled by the administrator
-      </message>
+      <if expr="is_win or is_macosx">
+        <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
+          Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
+        </message>
+      </if>
+      <if expr="is_win or chromeos">
+        <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
+          Updates are disabled by the administrator
+        </message>
+      </if>
       <if expr="is_win">
         <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades disabled by policy, automatic upgrades ok">
           Manual updates are disabled by the administrator.  Automatic updates are enabled.
@@ -11263,9 +11266,6 @@ Chrome ran out of memory.
       <message name="IDS_SAFE_BROWSING_MALWARE_DIAGNOSTIC_PAGE" desc="SafeBrowsing Malware diagnostic page">
         Safe Browsing diagnostic page
       </message>
-      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE" desc="Label for the link to SafeBrowsing Privacy policy page">
-        Safe Browsing privacy policies
-      </message>
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2" desc="Label for the link to SafeBrowsing Privacy policy page v2">
         Privacy policy
       </message>
@@ -11608,9 +11608,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start chrome as root">
         Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
       </message>
-      <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when she is running Chrome on Windows with a profile located on a network share.">
-        Warning: your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings are stored on a network drive. This may result in slowdowns, crashes, or even loss of data.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when she is running Chrome on Windows with a profile located on a network share.">
+          Warning: your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings are stored on a network drive. This may result in slowdowns, crashes, or even loss of data.
+        </message>
+      </if>
 
       <!-- Can't write to user data directory dialog -->
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">
@@ -11666,9 +11668,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_DEFAULT_DOWNLOAD_FILENAME" desc="Default name for downloaded files when we have no idea what they could be.">
         download
       </message>
-      <message name="IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED" desc="Tabs and windows on MacOS with no title use this string.">
-        Untitled
-      </message>
+      <if expr="is_macosx or chromeos">
+        <message name="IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED" desc="Tabs and windows on MacOS with no title use this string.">
+          Untitled
+        </message>
+      </if>
 
       <message name="IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL" desc="The label of the 'set as default' button on the default browser infobar.">
         Set as default
@@ -11723,9 +11727,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification.">
         Sync Error
       </message>
-      <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
-        Update sync passphrase
-      </message>
+      <if expr="use_ash">
+        <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
+          Update sync passphrase
+        </message>
+      </if>
 
       <if expr="not use_titlecase">
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
@@ -14089,10 +14095,10 @@ Do you accept?
       <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
         Command unavailable. Press control-N to open a new window.
       </message>
+      <message name="IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED" desc="The accessible text read when the user enters window overview mode in Ash.">
+        Entered window overview mode
+      </message>
     </if>
-    <message name="IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED" desc="The accessible text read when the user enters window overview mode in Ash.">
-      Entered window overview mode
-    </message>
 
     <message name="IDS_DESKTOP_MEDIA_PICKER_SHARE" desc="Used for Share on buttons">
       Share
