@@ -282,6 +282,10 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     DocumentAnimations::startPendingAnimations(m_renderView.document());
     // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
     // ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
+
+    assertNoUnresolvedDirtyBits();
+    for (LocalFrame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling())
+        child->contentRenderer()->compositor()->assertNoUnresolvedDirtyBits();
 }
 
 void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
@@ -308,11 +312,13 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 
 void RenderLayerCompositor::scheduleAnimationIfNeeded()
 {
+    // FIXME: This function should not exist. crbug.com/354100.
     LocalFrame* localFrame = &m_renderView.frameView()->frame();
     for (LocalFrame* currentFrame = localFrame; currentFrame; currentFrame = currentFrame->tree().traverseNext(localFrame)) {
         if (currentFrame->contentRenderer()) {
             RenderLayerCompositor* childCompositor = currentFrame->contentRenderer()->compositor();
-            if (childCompositor && childCompositor->hasUnresolvedDirtyBits()) {
+            childCompositor->assertNoUnresolvedDirtyBits();
+            if (childCompositor && childCompositor->m_needsToRecomputeCompositingRequirements) {
                 m_renderView.frameView()->scheduleAnimation();
                 return;
             }
@@ -320,9 +326,14 @@ void RenderLayerCompositor::scheduleAnimationIfNeeded()
     }
 }
 
-bool RenderLayerCompositor::hasUnresolvedDirtyBits()
+void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
-    return m_needsToRecomputeCompositingRequirements || compositingLayersNeedRebuild() || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType != CompositingUpdateNone;
+    ASSERT(!compositingLayersNeedRebuild());
+    ASSERT(!m_needsUpdateCompositingRequirementsState);
+    ASSERT(m_pendingUpdateType == CompositingUpdateNone);
+    ASSERT(!m_rootShouldAlwaysCompositeDirty);
+    // FIXME: This should assert !m_needsToRecomputeCompositingRequirements.
+    // crbug.com/354100.
 }
 
 void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
