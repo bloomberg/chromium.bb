@@ -322,6 +322,8 @@ def EscapeJson(data):
 def Main():
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
   build_number = os.environ.get('BUILDBOT_BUILDNUMBER')
+  build_revision = os.environ.get('BUILDBOT_GOT_REVISION',
+                                  os.environ.get('BUILDBOT_REVISION'))
   slave_type = os.environ.get('BUILDBOT_SLAVE_TYPE')
   cmd = BOT_ASSIGNMENT.get(builder)
   if not cmd:
@@ -399,6 +401,7 @@ def Main():
     # perf data if relevant.
     cmd = ' '.join([
         python, runtest,
+        '--revision=' + build_revision,
         '--build-dir=src/out',
         '--results-url=https://chromeperf.appspot.com',
         '--annotate=graphing',
