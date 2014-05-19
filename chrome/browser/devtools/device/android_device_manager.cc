@@ -15,6 +15,8 @@ namespace {
 
 const int kBufferSize = 16 * 1024;
 
+static const char kHttpGetRequest[] = "GET %s HTTP/1.1\r\n\r\n";
+
 static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "Upgrade: WebSocket\r\n"
     "Connection: Upgrade\r\n"
@@ -190,6 +192,14 @@ AndroidDeviceManager::Device::Device(const std::string& serial,
       is_connected_(is_connected) {
 }
 
+void AndroidDeviceManager::Device::HttpQuery(const std::string& socket_name,
+                                             const std::string& path,
+                                             const CommandCallback& callback) {
+  std::string request(base::StringPrintf(kHttpGetRequest, path.c_str()));
+  OpenSocket(socket_name,
+             base::Bind(&HttpRequest::CommandRequest, request, callback));
+}
+
 AndroidDeviceManager::Device::~Device() {
 }
 
@@ -255,8 +265,7 @@ void AndroidDeviceManager::HttpQuery(
   DCHECK(CalledOnValidThread());
   Device* device = FindDevice(serial);
   if (device)
-    device->OpenSocket(socket_name,
-        base::Bind(&HttpRequest::CommandRequest, request, callback));
+    device->HttpQuery(socket_name, request, callback);
   else
     callback.Run(net::ERR_CONNECTION_FAILED, std::string());
 }

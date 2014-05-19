@@ -43,13 +43,12 @@ namespace {
 
 const char kModelOffline[] = "Offline";
 
-const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
-const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
-const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
-const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
-const char kNewPageRequestWithURL[] = "GET /json/new?%s HTTP/1.1\r\n\r\n";
-const char kActivatePageRequest[] =
-    "GET /json/activate/%s HTTP/1.1\r\n\r\n";
+const char kPageListRequest[] = "/json";
+const char kVersionRequest[] = "/json/version";
+const char kClosePageRequest[] = "/json/close/%s";
+const char kNewPageRequest[] = "/json/new";
+const char kNewPageRequestWithURL[] = "/json/new?%s";
+const char kActivatePageRequest[] = "/json/activate/%s";
 const char kBrowserTargetSocket[] = "/devtools/browser";
 const int kAdbPollingIntervalMs = 1000;
 

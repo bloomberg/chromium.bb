@@ -65,6 +65,10 @@ class AndroidDeviceManager
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
 
+    virtual void HttpQuery(const std::string& socket_name,
+                           const std::string& request,
+                           const CommandCallback& callback);
+
     std::string serial() { return serial_; }
     bool is_connected() { return is_connected_; }
 
