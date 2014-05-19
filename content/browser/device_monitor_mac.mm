@@ -11,6 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/threading/thread_checker.h"
+#include "content/public/browser/browser_thread.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
 
 namespace {
@@ -208,22 +210,21 @@ void QTKitMonitorImpl::OnDeviceChanged() {
 }
 
 // Forward declaration for use by CrAVFoundationDeviceObserver.
-class AVFoundationMonitorImpl;
+class SuspendObserverDelegate;
 
 }  // namespace
 
 // This class is a Key-Value Observer (KVO) shim. It is needed because C++
-// classes cannot observe Key-Values directly. This class is used by
-// AVfoundationMonitorImpl and executed in its |device_task_runner_|, a.k.a.
-// "Device Thread". -stopObserving is called dutifully on -dealloc on UI thread.
+// classes cannot observe Key-Values directly. Created, manipulated, and
+// destroyed on the Device Thread by SuspendedObserverDelegate.
 @interface CrAVFoundationDeviceObserver : NSObject {
  @private
-  AVFoundationMonitorImpl* receiver_;
+  SuspendObserverDelegate* receiver_;  // weak
   // Member to keep track of the devices we are already monitoring.
   std::set<CrAVCaptureDevice*> monitoredDevices_;
 }
 
-- (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver;
+- (id)initWithChangeReceiver:(SuspendObserverDelegate*)receiver;
 - (void)startObserving:(CrAVCaptureDevice*)device;
 - (void)stopObserving:(CrAVCaptureDevice*)device;
 
@@ -231,78 +232,37 @@ class AVFoundationMonitorImpl;
 
 namespace {
 
-// AVFoundation implementation of the Mac Device Monitor, registers as a global
-// device connect/disconnect observer and plugs suspend/wake up device observers
-// per device. This class is created and lives in UI thread; device enumeration
-// and operations involving |suspend_observer_| happen on |device_task_runner_|.
-class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
+// This class owns and manages the lifetime of a CrAVFoundationDeviceObserver.
+// Provides a callback for this device observer to indicate that there has been
+// a device change of some kind. Created by AVFoundationMonitorImpl in UI thread
+// but living in Device Thread.
+class SuspendObserverDelegate :
+    public base::RefCountedThreadSafe<SuspendObserverDelegate> {
  public:
-  AVFoundationMonitorImpl(
-      content::DeviceMonitorMac* monitor,
-      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
-  virtual ~AVFoundationMonitorImpl();
+  explicit SuspendObserverDelegate(DeviceMonitorMacImpl* monitor)
+      : avfoundation_monitor_impl_(monitor) {
+    device_thread_checker_.DetachFromThread();
+  }
 
-  virtual void OnDeviceChanged() OVERRIDE;
+  void OnDeviceChanged();
+  void StartObserver();
+  void ResetDeviceMonitorOnUIThread();
 
  private:
-  void OnDeviceChangedOnDeviceThread(
-      const scoped_refptr<base::MessageLoopProxy>& ui_thread);
-  void StartObserverOnDeviceThread();
+  friend class base::RefCountedThreadSafe<SuspendObserverDelegate>;
 
-  base::ThreadChecker thread_checker_;
+  virtual ~SuspendObserverDelegate() {}
 
-  // {Video,AudioInput}DeviceManager's "Device" thread task runner used for
-  // device enumeration, valid after MediaStreamManager calls StartMonitoring().
-  const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
+  void OnDeviceChangedOnUIThread(
+      const std::vector<DeviceInfo>& snapshot_devices);
 
-  // Created and executed in |device_task_runnner_|.
+  base::ThreadChecker device_thread_checker_;
   base::scoped_nsobject<CrAVFoundationDeviceObserver> suspend_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(AVFoundationMonitorImpl);
+  DeviceMonitorMacImpl* avfoundation_monitor_impl_;
 };
 
-AVFoundationMonitorImpl::AVFoundationMonitorImpl(
-    content::DeviceMonitorMac* monitor,
-    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner)
-    : DeviceMonitorMacImpl(monitor),
-      device_task_runner_(device_task_runner) {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  device_arrival_ =
-      [nc addObserverForName:AVFoundationGlue::
-          AVCaptureDeviceWasConnectedNotification()
-                      object:nil
-                       queue:nil
-                  usingBlock:^(NSNotification* notification) {
-                      OnDeviceChanged();}];
-  device_removal_ =
-      [nc addObserverForName:AVFoundationGlue::
-          AVCaptureDeviceWasDisconnectedNotification()
-                      object:nil
-                       queue:nil
-                  usingBlock:^(NSNotification* notification) {
-                      OnDeviceChanged();}];
-  device_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&AVFoundationMonitorImpl::StartObserverOnDeviceThread,
-          base::Unretained(this)));
-}
-
-AVFoundationMonitorImpl::~AVFoundationMonitorImpl() {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:device_arrival_];
-  [nc removeObserver:device_removal_];
-}
-
-void AVFoundationMonitorImpl::OnDeviceChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  device_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&AVFoundationMonitorImpl::OnDeviceChangedOnDeviceThread,
-          base::Unretained(this),
-          base::MessageLoop::current()->message_loop_proxy()));
-}
-
-void AVFoundationMonitorImpl::OnDeviceChangedOnDeviceThread(
-    const scoped_refptr<base::MessageLoopProxy>& ui_thread) {
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
+void SuspendObserverDelegate::OnDeviceChanged() {
+  DCHECK(device_thread_checker_.CalledOnValidThread());
   NSArray* devices = [AVCaptureDeviceGlue devices];
   std::vector<DeviceInfo> snapshot_devices;
   for (CrAVCaptureDevice* device in devices) {
@@ -323,24 +283,108 @@ void AVFoundationMonitorImpl::OnDeviceChangedOnDeviceThread(
                                           device_type));
   }
   // Post the consolidation of enumerated devices to be done on UI thread.
-  ui_thread->PostTask(FROM_HERE,
-      base::Bind(&DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify,
-          base::Unretained(this), snapshot_devices));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&SuspendObserverDelegate::OnDeviceChangedOnUIThread,
+          this, snapshot_devices));
 }
 
-void AVFoundationMonitorImpl::StartObserverOnDeviceThread() {
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
+void SuspendObserverDelegate::StartObserver() {
+  DCHECK(device_thread_checker_.CalledOnValidThread());
   suspend_observer_.reset([[CrAVFoundationDeviceObserver alloc]
                                initWithChangeReceiver:this]);
   for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
     [suspend_observer_ startObserving:device];
 }
 
+void SuspendObserverDelegate::ResetDeviceMonitorOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  avfoundation_monitor_impl_ = NULL;
+}
+
+void SuspendObserverDelegate::OnDeviceChangedOnUIThread(
+    const std::vector<DeviceInfo>& snapshot_devices) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // |avfoundation_monitor_impl_| might have been NULLed asynchronously before
+  // arriving at this line.
+  if (avfoundation_monitor_impl_) {
+    avfoundation_monitor_impl_->ConsolidateDevicesListAndNotify(
+        snapshot_devices);
+  }
+}
+
+// AVFoundation implementation of the Mac Device Monitor, registers as a global
+// device connect/disconnect observer and plugs suspend/wake up device observers
+// per device. Owns a SuspendObserverDelegate living in |device_task_runner_|
+// and gets notified when a device is suspended/resumed. This class is created
+// and lives in UI thread;
+class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
+ public:
+  AVFoundationMonitorImpl(
+      content::DeviceMonitorMac* monitor,
+      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
+  virtual ~AVFoundationMonitorImpl();
+
+  virtual void OnDeviceChanged() OVERRIDE;
+
+ private:
+  base::ThreadChecker thread_checker_;
+
+  // {Video,AudioInput}DeviceManager's "Device" thread task runner used for
+  // posting tasks to |suspend_observer_delegate_|; valid after
+  // MediaStreamManager calls StartMonitoring().
+  const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
+
+  scoped_refptr<SuspendObserverDelegate> suspend_observer_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(AVFoundationMonitorImpl);
+};
+
+AVFoundationMonitorImpl::AVFoundationMonitorImpl(
+    content::DeviceMonitorMac* monitor,
+    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner)
+    : DeviceMonitorMacImpl(monitor),
+      device_task_runner_(device_task_runner),
+      suspend_observer_delegate_(new SuspendObserverDelegate(this)) {
+  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+  device_arrival_ =
+      [nc addObserverForName:AVFoundationGlue::
+          AVCaptureDeviceWasConnectedNotification()
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification* notification) {
+                      OnDeviceChanged();}];
+  device_removal_ =
+      [nc addObserverForName:AVFoundationGlue::
+          AVCaptureDeviceWasDisconnectedNotification()
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification* notification) {
+                      OnDeviceChanged();}];
+  device_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&SuspendObserverDelegate::StartObserver,
+                 suspend_observer_delegate_));
+}
+
+AVFoundationMonitorImpl::~AVFoundationMonitorImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  suspend_observer_delegate_->ResetDeviceMonitorOnUIThread();
+  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+  [nc removeObserver:device_arrival_];
+  [nc removeObserver:device_removal_];
+}
+
+void AVFoundationMonitorImpl::OnDeviceChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  device_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&SuspendObserverDelegate::OnDeviceChanged,
+                 suspend_observer_delegate_));
+}
+
 }  // namespace
 
 @implementation CrAVFoundationDeviceObserver
 
-- (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver {
+- (id)initWithChangeReceiver:(SuspendObserverDelegate*)receiver {
   if ((self = [super init])) {
     DCHECK(receiver != NULL);
     receiver_ = receiver;
