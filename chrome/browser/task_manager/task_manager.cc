@@ -751,16 +751,16 @@ bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
   Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
-  const ResourceList* group = iter->second;
-  return ((*group)[0] == resource);
+  const ResourceList& group = iter->second;
+  return (group[0] == resource);
 }
 
 bool TaskManagerModel::IsResourceLastInGroup(int index) const {
   Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
-  const ResourceList* group = iter->second;
-  return (group->back() == resource);
+  const ResourceList& group = iter->second;
+  return (group.back() == resource);
 }
 
 gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
@@ -779,14 +779,13 @@ TaskManagerModel::GetGroupRangeForResource(int index) const {
   GroupMap::const_iterator group_iter =
       group_map_.find(resource->GetProcess());
   DCHECK(group_iter != group_map_.end());
-  ResourceList* group = group_iter->second;
-  DCHECK(group);
-  if (group->size() == 1) {
+  const ResourceList& group = group_iter->second;
+  if (group.size() == 1) {
     return std::make_pair(index, 1);
   } else {
     for (int i = index; i >= 0; --i) {
-      if (GetResource(i) == (*group)[0])
-        return std::make_pair(i, group->size());
+      if (GetResource(i) == group[0])
+        return std::make_pair(i, group.size());
     }
     NOTREACHED();
     return std::make_pair(-1, -1);
@@ -978,19 +977,16 @@ WebContents* TaskManagerModel::GetResourceWebContents(int index) const {
 void TaskManagerModel::AddResource(Resource* resource) {
   base::ProcessHandle process = resource->GetProcess();
 
-  ResourceList* group_entries = NULL;
-  GroupMap::const_iterator group_iter = group_map_.find(process);
+  GroupMap::iterator group_iter = group_map_.find(process);
   int new_entry_index = 0;
   if (group_iter == group_map_.end()) {
-    group_entries = new ResourceList();
-    group_map_[process] = group_entries;
-    group_entries->push_back(resource);
+    group_map_.insert(make_pair(process, ResourceList(1, resource)));
 
     // Not part of a group, just put at the end of the list.
     resources_.push_back(resource);
     new_entry_index = static_cast<int>(resources_.size() - 1);
   } else {
-    group_entries = group_iter->second;
+    ResourceList* group_entries = &(group_iter->second);
     group_entries->push_back(resource);
 
     // Insert the new entry right after the last entry of its group.
@@ -1027,19 +1023,18 @@ void TaskManagerModel::RemoveResource(Resource* resource) {
   // Find the associated group.
   GroupMap::iterator group_iter = group_map_.find(process);
   DCHECK(group_iter != group_map_.end());
-  ResourceList* group_entries = group_iter->second;
+  ResourceList& group_entries = group_iter->second;
 
   // Remove the entry from the group map.
-  ResourceList::iterator iter = std::find(group_entries->begin(),
-                                          group_entries->end(),
+  ResourceList::iterator iter = std::find(group_entries.begin(),
+                                          group_entries.end(),
                                           resource);
-  DCHECK(iter != group_entries->end());
-  group_entries->erase(iter);
+  DCHECK(iter != group_entries.end());
+  group_entries.erase(iter);
 
   // If there are no more entries for that process, do the clean-up.
-  if (group_entries->empty()) {
-    delete group_entries;
-    group_map_.erase(process);
+  if (group_entries.empty()) {
+    group_map_.erase(group_iter);
 
     // Nobody is using this process, we don't need the process metrics anymore.
     MetricsMap::iterator pm_iter = metrics_map_.find(process);
@@ -1155,7 +1150,7 @@ void TaskManagerModel::Clear() {
     resources_.clear();
 
     // Clear the groups.
-    STLDeleteValues(&group_map_);
+    group_map_.clear();
 
     // Clear the process related info.
     STLDeleteValues(&metrics_map_);

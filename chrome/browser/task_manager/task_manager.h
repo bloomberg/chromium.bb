@@ -418,7 +418,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   typedef std::vector<task_manager::Resource*> ResourceList;
   typedef std::vector<scoped_refptr<task_manager::ResourceProvider> >
       ResourceProviderList;
-  typedef std::map<base::ProcessHandle, ResourceList*> GroupMap;
+  typedef std::map<base::ProcessHandle, ResourceList> GroupMap;
   typedef std::map<base::ProcessHandle, base::ProcessMetrics*> MetricsMap;
   typedef std::map<task_manager::Resource*, int64> ResourceValueMap;
   typedef std::map<task_manager::Resource*,
