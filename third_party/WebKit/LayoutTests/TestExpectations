@@ -890,6 +890,10 @@ crbug.com/371886 virtual/softwarecompositing/geometry/assert-marquee-timer.html 
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
+crbug.com/238449 fast/repaint/list-marker-2.html [ NeedsRebaseline ]
+crbug.com/238449 fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
+crbug.com/238449 fast/repaint/box-inline-resize.html [ NeedsRebaseline ]
+
 crbug.com/361588 inspector/jump-to-previous-editing-location.html [ Pass Failure ]
 
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]

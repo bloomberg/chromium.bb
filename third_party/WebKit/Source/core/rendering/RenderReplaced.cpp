@@ -575,7 +575,15 @@ void RenderReplaced::setSelectionState(SelectionState state)
     // The selection state for our containing block hierarchy is updated by the base class call.
     RenderBox::setSelectionState(state);
 
-    if (inlineBoxWrapper() && canUpdateSelectionOnRootLineBoxes())
+    if (!inlineBoxWrapper())
+        return;
+
+    // We only include the space below the baseline in our layer's cached repaint rect if the
+    // image is selected. Since the selection state has changed update the rect.
+    if (hasLayer())
+        layer()->repainter().computeRepaintRects(containerForRepaint());
+
+    if (canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(isSelected());
 }
 
@@ -601,7 +609,6 @@ bool RenderReplaced::isSelected() const
     ASSERT(0);
     return false;
 }
-
 LayoutRect RenderReplaced::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
@@ -609,7 +616,7 @@ LayoutRect RenderReplaced::clippedOverflowRectForRepaint(const RenderLayerModelO
 
     // The selectionRect can project outside of the overflowRect, so take their union
     // for repainting to avoid selection painting glitches.
-    LayoutRect r = unionRect(localSelectionRect(false), visualOverflowRect());
+    LayoutRect r = isSelected() ? localSelectionRect() : visualOverflowRect();
 
     RenderView* v = view();
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && v) {
