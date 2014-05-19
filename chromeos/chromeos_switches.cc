@@ -33,10 +33,6 @@ const char kDisableBootAnimation[]          = "disable-boot-animation";
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[]               = "disable-demo-mode";
 
-// Disables reporting recently logged in users for enterprise-managed devices.
-const char kDisableEnterpriseUserReporting[] =
-    "disable-enterprise-user-reporting";
-
 // Disable Genius App and use the original Help App instead.
 const char kDisableGeniusApp[]              = "disable-genius-app";
 
