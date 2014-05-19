@@ -205,6 +205,8 @@ bool ParseServerResponse(const GURL& server_url,
     // Ignore result (code defaults to zero).
     error_object->GetIntegerWithoutPathExpansion(kCodeString,
                                                  &(position->error_code));
+  } else {
+    position->error_message.erase();
   }
 
   if (location_object) {
@@ -272,6 +274,10 @@ SimpleGeolocationRequest::SimpleGeolocationRequest(
     base::TimeDelta timeout)
     : url_context_getter_(url_context_getter),
       service_url_(service_url),
+      retry_sleep_on_server_error_(base::TimeDelta::FromSeconds(
+          kResolveGeolocationRetrySleepOnServerErrorSeconds)),
+      retry_sleep_on_bad_response_(base::TimeDelta::FromSeconds(
+          kResolveGeolocationRetrySleepBadResponseSeconds)),
       timeout_(timeout),
       retries_(0) {
 }
@@ -314,9 +320,8 @@ void SimpleGeolocationRequest::MakeRequest(const ResponseCallback& callback) {
 }
 
 void SimpleGeolocationRequest::Retry(bool server_error) {
-  const base::TimeDelta delay = base::TimeDelta::FromSeconds(
-      server_error ? kResolveGeolocationRetrySleepOnServerErrorSeconds
-                   : kResolveGeolocationRetrySleepBadResponseSeconds);
+  base::TimeDelta delay(server_error ? retry_sleep_on_server_error_
+                                     : retry_sleep_on_bad_response_);
   request_scheduled_.Start(
       FROM_HERE, delay, this, &SimpleGeolocationRequest::StartRequest);
 }

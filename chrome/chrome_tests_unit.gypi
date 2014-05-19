@@ -718,6 +718,7 @@
         'browser/chromeos/file_system_provider/service_unittest.cc',
         'browser/chromeos/fileapi/file_access_permissions_unittest.cc',
         'browser/chromeos/fileapi/file_system_backend_unittest.cc',
+        'browser/chromeos/geolocation/simple_geolocation_unittest.cc',
         'browser/chromeos/imageburner/burn_device_handler_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/browser_state_monitor_unittest.cc',

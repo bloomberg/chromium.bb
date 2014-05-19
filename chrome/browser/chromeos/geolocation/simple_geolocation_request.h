@@ -55,6 +55,16 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
   // request will be silently cancelled.
   void MakeRequest(const ResponseCallback& callback);
 
+  void set_retry_sleep_on_server_error_for_testing(
+      const base::TimeDelta value) {
+    retry_sleep_on_server_error_ = value;
+  }
+
+  void set_retry_sleep_on_bad_response_for_testing(
+      const base::TimeDelta value) {
+    retry_sleep_on_bad_response_ = value;
+  }
+
  private:
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -85,6 +95,10 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
   // When request was actually started.
   base::Time request_started_at_;
+
+  base::TimeDelta retry_sleep_on_server_error_;
+
+  base::TimeDelta retry_sleep_on_bad_response_;
 
   const base::TimeDelta timeout_;
 

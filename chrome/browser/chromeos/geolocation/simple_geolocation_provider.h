@@ -41,6 +41,8 @@ class SimpleGeolocationProvider {
   static GURL DefaultGeolocationProviderURL();
 
  private:
+  friend class TestGeolocationAPIURLFetcherCallback;
+
   // Geolocation response callback. Deletes request from requests_.
   void OnGeolocationResponse(
       SimpleGeolocationRequest* request,
