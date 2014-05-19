@@ -1115,7 +1115,7 @@ void RenderInline::computeRectForRepaint(const RenderLayerModelObject* repaintCo
     o->computeRectForRepaint(repaintContainer, rect, fixed);
 }
 
-LayoutSize RenderInline::offsetFromContainer(RenderObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {
     ASSERT(container == this->container());
 

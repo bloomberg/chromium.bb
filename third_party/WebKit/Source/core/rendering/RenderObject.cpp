@@ -2435,7 +2435,7 @@ FloatPoint RenderObject::localToContainerPoint(const FloatPoint& localPoint, con
     return transformState.lastPlanarPoint();
 }
 
-LayoutSize RenderObject::offsetFromContainer(RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize RenderObject::offsetFromContainer(const RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {
     ASSERT(o == container());
 
@@ -2450,13 +2450,13 @@ LayoutSize RenderObject::offsetFromContainer(RenderObject* o, const LayoutPoint&
     return offset;
 }
 
-LayoutSize RenderObject::offsetFromAncestorContainer(RenderObject* container) const
+LayoutSize RenderObject::offsetFromAncestorContainer(const RenderObject* container) const
 {
     LayoutSize offset;
     LayoutPoint referencePoint;
     const RenderObject* currContainer = this;
     do {
-        RenderObject* nextContainer = currContainer->container();
+        const RenderObject* nextContainer = currContainer->container();
         ASSERT(nextContainer);  // This means we reached the top without finding container.
         if (!nextContainer)
             break;
