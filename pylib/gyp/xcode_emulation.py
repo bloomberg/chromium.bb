@@ -794,6 +794,8 @@ class XcodeSettings(object):
     for directory in framework_dirs:
       ldflags.append('-F' + directory.replace('$(SDKROOT)', sdk_root))
 
+    self._Appendf(ldflags, 'CLANG_CXX_LIBRARY', '-stdlib=%s')
+
     self.configname = None
     return ldflags
 
