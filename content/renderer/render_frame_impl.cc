@@ -165,6 +165,10 @@ namespace {
 
 const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
+typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
+static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 
@@ -358,6 +362,15 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
 }
 
 // static
+RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
+  RoutingIDFrameMap::iterator iter =
+      g_routing_id_frame_map.Get().find(routing_id);
+  if (iter != g_routing_id_frame_map.Get().end())
+    return iter->second;
+  return NULL;
+}
+
+// static
 RenderFrame* RenderFrame::FromWebFrame(blink::WebFrame* web_frame) {
   return RenderFrameImpl::FromWebFrame(web_frame);
 }
@@ -382,6 +395,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
       is_swapped_out_(false),
+      render_frame_proxy_(NULL),
       is_detaching_(false),
       cookie_jar_(this),
       selection_text_offset_(0),
@@ -392,6 +406,10 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       web_user_media_client_(NULL),
       weak_factory_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
+
+  std::pair<RoutingIDFrameMap::iterator, bool> result =
+      g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
+  CHECK(result.second) << "Inserting a duplicate item.";
 
 #if defined(OS_ANDROID)
   new JavaBridgeDispatcher(this);
@@ -405,6 +423,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
+  g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
@@ -624,11 +643,20 @@ void RenderFrameImpl::SetMediaStreamClientForTesting(
 }
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
-  if (is_detaching_ ||
-      ((is_swapped_out_ || render_view_->is_swapped_out()) &&
-       !SwappedOutMessages::CanSendWhileSwappedOut(message))) {
+  if (is_detaching_) {
     delete message;
     return false;
+  }
+  if (is_swapped_out_ || render_view_->is_swapped_out()) {
+    if (!SwappedOutMessages::CanSendWhileSwappedOut(message)) {
+      delete message;
+      return false;
+    }
+    // In most cases, send IPCs through the proxy when swapped out. In some
+    // calls the associated RenderViewImpl routing id is used to send
+    // messages, so don't use the proxy.
+    if (render_frame_proxy_ && message->routing_id() == routing_id_)
+      return render_frame_proxy_->Send(message);
   }
 
   return RenderThread::Get()->Send(message);
@@ -883,7 +911,9 @@ void RenderFrameImpl::OnBeforeUnload() {
                                          before_unload_end_time));
 }
 
-void RenderFrameImpl::OnSwapOut() {
+void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
+  RenderFrameProxy* proxy = NULL;
+
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
     // Swap this RenderFrame out so the frame can navigate to a page rendered by
@@ -891,8 +921,11 @@ void RenderFrameImpl::OnSwapOut() {
     // clearing the page.  Once WasSwappedOut is called, we also allow this
     // process to exit if there are no other active RenderFrames in it.
 
-    // Send an UpdateState message before we get swapped out.
+    // Send an UpdateState message before we get swapped out. Create the
+    // RenderFrameProxy as well so its routing id is registered for receiving
+    // IPC messages.
     render_view_->SyncNavigationState();
+    proxy = RenderFrameProxy::CreateFrameProxy(proxy_routing_id, routing_id_);
 
     // Synchronously run the unload handler before sending the ACK.
     // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
@@ -945,6 +978,11 @@ void RenderFrameImpl::OnSwapOut() {
     render_view_->suppress_dialogs_until_swap_out_ = false;
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
+
+  // Now that all of the cleanup is complete and the browser side is notified,
+  // start using the RenderFrameProxy, if one is created.
+  if (proxy)
+    set_render_frame_proxy(proxy);
 }
 
 void RenderFrameImpl::OnBuffersSwapped(

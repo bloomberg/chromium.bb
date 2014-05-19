@@ -34,6 +34,7 @@ struct CONTENT_EXPORT RenderViewImplParams {
                        const base::string16& frame_name,
                        bool is_renderer_created,
                        bool swapped_out,
+                       int32 proxy_routing_id,
                        bool hidden,
                        bool never_visible,
                        int32 next_page_id,
@@ -52,6 +53,7 @@ struct CONTENT_EXPORT RenderViewImplParams {
   const base::string16& frame_name;
   bool is_renderer_created;
   bool swapped_out;
+  int32 proxy_routing_id;
   bool hidden;
   bool never_visible;
   int32 next_page_id;

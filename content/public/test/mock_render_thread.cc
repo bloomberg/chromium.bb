@@ -220,7 +220,7 @@ void MockRenderThread::OnCreateWindow(
 void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
                                           const std::string& frame_name,
                                           int* new_render_frame_id) {
-  *new_render_frame_id = new_frame_routing_id_;
+  *new_render_frame_id = new_frame_routing_id_++;
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {

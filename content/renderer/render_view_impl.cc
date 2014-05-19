@@ -96,6 +96,7 @@
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/push_messaging_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl_params.h"
@@ -693,6 +694,14 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame);
   main_render_frame->SetWebFrame(web_frame);
 
+  if (params->proxy_routing_id != MSG_ROUTING_NONE) {
+    CHECK(params->swapped_out);
+    RenderFrameProxy* proxy =
+        RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id,
+                                           params->main_frame_routing_id);
+    main_render_frame->set_render_frame_proxy(proxy);
+  }
+
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
@@ -908,6 +917,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const base::string16& frame_name,
     bool is_renderer_created,
     bool swapped_out,
+    int32 proxy_routing_id,
     bool hidden,
     bool never_visible,
     int32 next_page_id,
@@ -925,6 +935,7 @@ RenderViewImpl* RenderViewImpl::Create(
                               frame_name,
                               is_renderer_created,
                               swapped_out,
+                              proxy_routing_id,
                               hidden,
                               never_visible,
                               next_page_id,
@@ -1464,6 +1475,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
       base::string16(),  // WebCore will take care of setting the correct name.
       true,              // is_renderer_created
       false,             // swapped_out
+      MSG_ROUTING_NONE,  // proxy_routing_id
       params.disposition == NEW_BACKGROUND_TAB,  // hidden
       never_visible,
       1,  // next_page_id

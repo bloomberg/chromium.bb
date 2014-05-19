@@ -58,12 +58,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // process is not shared, then the WebContentsImpl will act as though the
     // renderer is not running (i.e., it will render "sad tab"). This method is
     // automatically called from LoadURL.
-    //
-    // If you are attaching to an already-existing RenderView, you should call
-    // InitWithExistingID.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         int opener_route_id,
+        int proxy_routing_id,
         CrossProcessFrameConnector* cross_process_frame_connector) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
@@ -373,11 +371,15 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                                         bool hidden);
 
   // Sets up the necessary state for a new RenderViewHost with the given opener,
-  // if necessary.  Returns early if the RenderViewHost has already been
+  // if necessary.  It creates a RenderFrameProxy in the target renderer process
+  // with the given |proxy_routing_id|, which is used to route IPC messages when
+  // in swapped out state.  Returns early if the RenderViewHost has already been
   // initialized for another RenderFrameHost.
   // TODO(creis): opener_route_id is currently for the RenderViewHost but should
   // be for the RenderFrame, since frames can have openers.
-  bool InitRenderView(RenderViewHost* render_view_host, int opener_route_id);
+  bool InitRenderView(RenderViewHost* render_view_host,
+                      int opener_route_id,
+                      int proxy_routing_id);
 
   // Sets the pending RenderFrameHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_frame_host_ pointer to be non-NULL,

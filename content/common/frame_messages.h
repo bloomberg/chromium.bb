@@ -301,9 +301,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)
 IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
 
 // Instructs the frame to swap out for a cross-site transition, including
-// running the unload event handler. Expects a SwapOut_ACK message when
-// finished.
-IPC_MESSAGE_ROUTED0(FrameMsg_SwapOut)
+// running the unload event handler and creating a RenderFrameProxy with the
+// given |proxy_routing_id|. Expects a SwapOut_ACK message when finished.
+IPC_MESSAGE_ROUTED1(FrameMsg_SwapOut,
+                    int /* proxy_routing_id */)
 
 // Request for the renderer to insert CSS into the frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,
@@ -352,6 +353,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidChooseColorResponse, unsigned, SkColor)
 
 // Notifies the color chooser client that the color chooser has ended.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidEndColorChooser, unsigned)
+
+// Notifies the corresponding RenderFrameProxy object to replace itself with the
+// RenderFrame object it is associated with.
+IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

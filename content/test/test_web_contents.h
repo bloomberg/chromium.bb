@@ -59,6 +59,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
       int opener_route_id,
+      int proxy_routing_id,
       CrossProcessFrameConnector* frame_connector) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE {}
 

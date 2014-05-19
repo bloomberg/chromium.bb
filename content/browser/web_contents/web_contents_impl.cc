@@ -3766,6 +3766,7 @@ NavigationEntry*
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
+    int proxy_routing_id,
     CrossProcessFrameConnector* frame_connector) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
@@ -3795,6 +3796,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   if (!static_cast<RenderViewHostImpl*>(
           render_view_host)->CreateRenderView(base::string16(),
                                               opener_route_id,
+                                              proxy_routing_id,
                                               max_page_id,
                                               created_with_opener_)) {
     return false;
@@ -3829,6 +3831,7 @@ WebContentsImpl::GetJavaWebContents() {
 
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
   return CreateRenderViewForRenderManager(GetRenderViewHost(),
+                                          MSG_ROUTING_NONE,
                                           MSG_ROUTING_NONE,
                                           NULL);
 }

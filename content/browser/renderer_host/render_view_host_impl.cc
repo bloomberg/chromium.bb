@@ -263,6 +263,7 @@ SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
 bool RenderViewHostImpl::CreateRenderView(
     const base::string16& frame_name,
     int opener_route_id,
+    int proxy_route_id,
     int32 max_page_id,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host", "RenderViewHostImpl::CreateRenderView");
@@ -301,6 +302,7 @@ bool RenderViewHostImpl::CreateRenderView(
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;
   params.swapped_out = !IsRVHStateActive(rvh_state_);
+  params.proxy_routing_id = proxy_route_id;
   params.hidden = is_hidden();
   params.never_visible = delegate_->IsNeverVisible();
   params.window_was_created_with_opener = window_was_created_with_opener;

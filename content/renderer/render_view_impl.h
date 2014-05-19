@@ -174,7 +174,9 @@ class CONTENT_EXPORT RenderViewImpl
   // Creates a new RenderView. |opener_id| is the routing ID of the RenderView
   // responsible for creating this RenderView. Note that if the original opener
   // has been closed, |window_was_created_with_opener| will be true and
-  // |opener_id| will be MSG_ROUTING_NONE.
+  // |opener_id| will be MSG_ROUTING_NONE. When |swapped_out| is true, the
+  // |proxy_routing_id| is specified, so a RenderFrameProxy can be created for
+  // this RenderView's main RenderFrame.
   static RenderViewImpl* Create(int32 opener_id,
                                 bool window_was_created_with_opener,
                                 const RendererPreferences& renderer_prefs,
@@ -186,6 +188,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 const base::string16& frame_name,
                                 bool is_renderer_created,
                                 bool swapped_out,
+                                int32 proxy_routing_id,
                                 bool hidden,
                                 bool never_visible,
                                 int32 next_page_id,

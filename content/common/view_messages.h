@@ -462,6 +462,10 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Whether the RenderView should initially be swapped out.
   IPC_STRUCT_MEMBER(bool, swapped_out)
 
+  // The ID of the proxy object for the main frame in this view. It is only
+  // used if |swapped_out| is true.
+  IPC_STRUCT_MEMBER(int32, proxy_routing_id)
+
   // Whether the RenderView should initially be hidden.
   IPC_STRUCT_MEMBER(bool, hidden)
 

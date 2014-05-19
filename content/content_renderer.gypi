@@ -449,6 +449,8 @@
     'renderer/push_messaging_dispatcher.h',
     'renderer/render_frame_impl.cc',
     'renderer/render_frame_impl.h',
+    'renderer/render_frame_proxy.cc',
+    'renderer/render_frame_proxy.h',
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',

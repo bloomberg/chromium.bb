@@ -8,7 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 
+class FrameTreeNode;
 class RenderProcessHost;
 class RenderFrameHostImpl;
 class RenderViewHostImpl;
@@ -28,9 +31,8 @@ namespace content {
 // asynchronous JavaScript calls, such as postMessage.
 //
 // For now, RenderFrameProxyHost is created when a RenderFrameHost is swapped
-// out and acts just as a wrapper. If a RenderFrameHost can be deleted, no
-// proxy object is created. It is destroyed when the RenderFrameHost is swapped
-// back in or is no longer referenced and is therefore deleted.
+// out and acts just as a wrapper. It is destroyed when the RenderFrameHost is
+// swapped back in or is no longer referenced and is therefore deleted.
 //
 // Long term, RenderFrameProxyHost will be created whenever a cross-site
 // navigation occurs and a reference to the frame navigating needs to be kept
@@ -47,37 +49,57 @@ namespace content {
 // forward. It also instructs the RenderFrameHost to run the unload event
 // handler and is kept alive for the duration. Once the event handling is
 // complete, the RenderFrameHost is deleted.
-class RenderFrameProxyHost {
+class RenderFrameProxyHost
+    : public IPC::Listener,
+      public IPC::Sender {
  public:
-  explicit RenderFrameProxyHost(
-       scoped_ptr<RenderFrameHostImpl> render_frame_host);
-  ~RenderFrameProxyHost();
+  RenderFrameProxyHost(SiteInstance* site_instance,
+                       FrameTreeNode* frame_tree_node);
+  virtual ~RenderFrameProxyHost();
 
   RenderProcessHost* GetProcess() {
-    return render_frame_host_->GetProcess();
+    return site_instance_->GetProcess();
+  }
+
+  int GetRoutingID() {
+    return routing_id_;
   }
 
   SiteInstance* GetSiteInstance() {
     return site_instance_.get();
   }
 
-  // TODO(nasko): The following methods should be removed when swapping out
-  // of RenderFrameHosts is no longer used.
+  // TODO(nasko): The following methods should be removed once we don't have a
+  // swapped out state on RenderFrameHosts. See https://crbug.com/357747.
   RenderFrameHostImpl* render_frame_host() {
     return render_frame_host_.get();
   }
-  RenderViewHostImpl* render_view_host() {
-    return render_frame_host_->render_view_host();
+  RenderViewHostImpl* GetRenderViewHost();
+
+  void TakeFrameHostOwnership(
+      scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+    render_frame_host_ = render_frame_host.Pass();
   }
-  scoped_ptr<RenderFrameHostImpl> PassFrameHost() {
-    return render_frame_host_.Pass();
-  }
+  scoped_ptr<RenderFrameHostImpl> PassFrameHostOwnership();
+
+  // IPC::Sender
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
+  // IPC::Listener
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  // This RenderFrameProxyHost's routing id.
+  int routing_id_;
+
+  // The SiteInstance this proxy is associated with.
   scoped_refptr<SiteInstance> site_instance_;
 
-  // TODO(nasko): For now, hide the RenderFrameHost inside the proxy, but remove
-  // it once we have all the code support for proper proxy objects.
+  // The node in the frame tree where this proxy is located.
+  FrameTreeNode* frame_tree_node_;
+
+  // TODO(nasko): This can be removed once we don't have a swapped out state on
+  // RenderFrameHosts. See https://crbug.com/357747.
   scoped_ptr<RenderFrameHostImpl> render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);

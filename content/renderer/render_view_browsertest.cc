@@ -82,6 +82,8 @@ namespace content {
 
 namespace {
 
+static const int kProxyRoutingId = 13;
+
 #if (defined(USE_AURA) && defined(USE_X11)) || defined(USE_OZONE)
 // Converts MockKeyboard::Modifiers to ui::EventFlags.
 int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
@@ -488,7 +490,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   int initial_page_id = view()->GetPageId();
 
   // Respond to a swap out request.
-  view()->main_render_frame()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view()->GetPageId());
@@ -501,7 +503,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->main_render_frame()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -557,7 +559,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->main_render_frame()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(

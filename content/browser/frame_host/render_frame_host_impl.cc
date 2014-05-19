@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -148,6 +149,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     : render_view_host_(render_view_host),
       delegate_(delegate),
       cross_process_frame_connector_(NULL),
+      render_frame_proxy_host_(NULL),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
@@ -242,6 +244,11 @@ bool RenderFrameHostImpl::Send(IPC::Message* message) {
   if (IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart) {
     return render_view_host_->input_router()->SendInput(
         make_scoped_ptr(message));
+  }
+
+  if (render_view_host_->IsSwappedOut()) {
+    DCHECK(render_frame_proxy_host_);
+    return render_frame_proxy_host_->Send(message);
   }
 
   return GetProcess()->Send(message);
@@ -500,7 +507,7 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
       should_replace_current_entry);
 }
 
-void RenderFrameHostImpl::SwapOut() {
+void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
   // TODO(creis): Move swapped out state to RFH.  Until then, only update it
   // when swapping out the main frame.
   if (!GetParent()) {
@@ -516,8 +523,10 @@ void RenderFrameHostImpl::SwapOut() {
             RenderViewHostImpl::kUnloadTimeoutMS));
   }
 
+  set_render_frame_proxy_host(proxy);
+
   if (render_view_host_->IsRenderViewLive())
-    Send(new FrameMsg_SwapOut(routing_id_));
+    Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID()));
 
   if (!GetParent())
     delegate_->SwappedOut(this);

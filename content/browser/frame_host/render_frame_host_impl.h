@@ -36,6 +36,7 @@ class CrossSiteTransferringRequest;
 class FrameTree;
 class FrameTreeNode;
 class RenderFrameHostDelegate;
+class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 struct ContextMenuParams;
@@ -92,6 +93,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
     cross_process_frame_connector_ = cross_process_frame_connector;
   }
 
+  void set_render_frame_proxy_host(RenderFrameProxyHost* proxy) {
+    render_frame_proxy_host_ = proxy;
+  }
+
   // Returns a bitwise OR of bindings types that have been enabled for this
   // RenderFrameHostImpl's RenderView. See BindingsPolicy for details.
   // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
@@ -110,12 +115,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       bool should_replace_current_entry);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
-  // different renderer process.  It should run its unload handler and move to
-  // a blank document.  The renderer should preserve the Frame object until it
-  // exits, in case we come back.  The renderer can exit if it has no other
-  // active RenderFrames, but not until WasSwappedOut is called (when it is no
-  // longer visible).
-  void SwapOut();
+  // different renderer process.  It should run its unload handler, move to
+  // a blank document and create a RenderFrameProxy to replace the RenderFrame.
+  // The renderer should preserve the Proxy object until it exits, in case we
+  // come back.  The renderer can exit if it has no other active RenderFrames,
+  // but not until WasSwappedOut is called (when it is no longer visible).
+  void SwapOut(RenderFrameProxyHost* proxy);
 
   void OnSwappedOut(bool timed_out);
   bool is_swapped_out() { return is_swapped_out_; }
@@ -260,6 +265,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   //
   // This will move to RenderFrameProxyHost when that class is created.
   CrossProcessFrameConnector* cross_process_frame_connector_;
+
+  // The proxy created for this RenderFrameHost. It is used to send and receive
+  // IPC messages while in swapped out state.
+  // TODO(nasko): This can be removed once we don't have a swapped out state on
+  // RenderFrameHosts. See https://crbug.com/357747.
+  RenderFrameProxyHost* render_frame_proxy_host_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to

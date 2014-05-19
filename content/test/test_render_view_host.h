@@ -309,6 +309,7 @@ class TestRenderViewHost
 
   virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
+                                int proxy_route_id,
                                 int32 max_page_id,
                                 bool window_was_created_with_opener) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;

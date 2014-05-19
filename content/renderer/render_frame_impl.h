@@ -18,6 +18,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -74,6 +75,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(creis): We should structure this so that |SetWebFrame| isn't needed.
   static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
 
+  // Returns the RenderFrameImpl for the given routing ID.
+  static RenderFrameImpl* FromRoutingID(int routing_id);
+
   // Just like RenderFrame::FromWebFrame but returns the implementation.
   static RenderFrameImpl* FromWebFrame(blink::WebFrame* web_frame);
 
@@ -86,6 +90,12 @@ class CONTENT_EXPORT RenderFrameImpl
 
   bool is_swapped_out() const {
     return is_swapped_out_;
+  }
+
+  // TODO(nasko): This can be removed once we don't have a swapped out state on
+  // RenderFrames. See https://crbug.com/357747.
+  void set_render_frame_proxy(RenderFrameProxy* proxy) {
+    render_frame_proxy_ = proxy;
   }
 
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
@@ -412,7 +422,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
   void OnBeforeUnload();
-  void OnSwapOut();
+  void OnSwapOut(int proxy_routing_id);
   void OnChildFrameProcessGone();
   void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
@@ -522,6 +532,10 @@ class CONTENT_EXPORT RenderFrameImpl
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
   bool is_swapped_out_;
+  // RenderFrameProxy exists only when is_swapped_out_ is true.
+  // TODO(nasko): This can be removed once we don't have a swapped out state on
+  // RenderFrame. See https://crbug.com/357747.
+  RenderFrameProxy* render_frame_proxy_;
   bool is_detaching_;
 
 #if defined(ENABLE_PLUGINS)

@@ -577,6 +577,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(base::string16(),
                                       MSG_ROUTING_NONE,
+                                      MSG_ROUTING_NONE,
                                       max_page_id,
                                       false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(

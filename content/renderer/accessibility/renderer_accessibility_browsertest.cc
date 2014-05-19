@@ -304,6 +304,7 @@ TEST_F(RendererAccessibilityTest,
       "  <p>Hello, world.</p>"
       "</body>";
   LoadHTML(html.c_str());
+  static const int kProxyRoutingId = 13;
 
   // Creating a RendererAccessibilityComplete should send the tree
   // to the browser.
@@ -321,7 +322,7 @@ TEST_F(RendererAccessibilityTest,
   accessibility->HandleAXEvent(
       root_obj,
       ui::AX_EVENT_VALUE_CHANGED);
-  view()->main_render_frame()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut(kProxyRoutingId);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_FALSE(sink_->GetUniqueMessageMatching(
       AccessibilityHostMsg_Events::ID));

@@ -1251,6 +1251,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
                          params.frame_name,
                          false,
                          params.swapped_out,
+                         params.proxy_routing_id,
                          params.hidden,
                          params.never_visible,
                          params.next_page_id,

@@ -232,8 +232,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderView is told to start issuing page IDs at |max_page_id| + 1.
   // |window_was_created_with_opener| is true if this top-level frame was
   // created with an opener. (The opener may have been closed since.)
+  // The |proxy_route_id| is only used when creating a RenderView in swapped out
+  // state.
   virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
+                                int proxy_route_id,
                                 int32 max_page_id,
                                 bool window_was_created_with_opener);
 
