@@ -693,7 +693,7 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartRev
 
 TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 {
-    RefPtrWillBeRawPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+    RefPtrWillBePersistent<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
 
     Timing timing;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
@@ -703,6 +703,7 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
 
     player.release();
+    Heap::collectAllGarbage();
     EXPECT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 

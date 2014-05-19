@@ -125,6 +125,7 @@ TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > interpolations;
 
     updateTimeline(11);
+    Heap::collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
     EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
     EXPECT_EQ(3u, effects().size());
@@ -134,6 +135,7 @@ TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
     EXPECT_EQ(6, effects()[2]->sortInfo().startTime());
 
     updateTimeline(13);
+    Heap::collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
     EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
     EXPECT_EQ(3u, effects().size());
@@ -142,6 +144,7 @@ TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
     EXPECT_EQ(6, effects()[2]->sortInfo().startTime());
 
     updateTimeline(15);
+    Heap::collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
     EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
     EXPECT_EQ(2u, effects().size());
@@ -149,6 +152,7 @@ TEST_F(AnimationAnimationStackTest, ForwardsFillDiscarding)
     EXPECT_EQ(6, effects()[1]->sortInfo().startTime());
 
     updateTimeline(17);
+    Heap::collectAllGarbage();
     interpolations = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
     EXPECT_TRUE(interpolationValue(interpolations.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(2).get()));
     EXPECT_EQ(1u, effects().size());

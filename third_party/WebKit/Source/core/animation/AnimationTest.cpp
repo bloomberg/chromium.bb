@@ -458,8 +458,9 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
     document->timeline().play(animation.get());
     document.clear();
     element.clear();
-    Heap::collectAllGarbage();
+#if !ENABLE(OILPAN)
     EXPECT_EQ(0, animation->target());
+#endif
 }
 
 } // namespace WebCore
