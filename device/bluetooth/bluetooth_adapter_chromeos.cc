@@ -393,11 +393,18 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
   // When a device becomes paired, mark it as trusted so that the user does
   // not need to approve every incoming connection
   if (property_name == properties->paired.name() &&
-      properties->paired.value())
+      properties->paired.value() && !properties->trusted.value())
     device_chromeos->SetTrusted();
 
   // UMA connection counting
   if (property_name == properties->connected.name()) {
+    // PlayStation joystick tries to reconnect after disconnection from USB.
+    // If it is still not trusted, set it, so it becomes available on the
+    // list of known devices.
+    if (properties->connected.value() && device_chromeos->IsTrustable() &&
+        !properties->trusted.value())
+      device_chromeos->SetTrusted();
+
     int count = 0;
 
     for (DevicesMap::iterator iter = devices_.begin();

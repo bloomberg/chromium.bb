@@ -167,9 +167,22 @@ bool BluetoothDevice::IsPairable() const {
   // Microsoft "Microsoft Bluetooth Notebook Mouse 5000", model X807028-001
   if (type == DEVICE_MOUSE && vendor == "7C:ED:8D")
     return false;
+  // Sony PlayStation Dualshock3
+  if (IsTrustable())
+    return false;
+
   // TODO: Move this database into a config file.
 
   return true;
+}
+
+bool BluetoothDevice::IsTrustable() const {
+  // Sony PlayStation Dualshock3
+  if ((GetVendorID() == 0x054c && GetProductID() == 0x0268 &&
+       GetDeviceName() == "PLAYSTATION(R)3 Controller"))
+    return true;
+
+  return false;
 }
 
 std::vector<BluetoothGattService*>

@@ -277,6 +277,10 @@ class BluetoothDevice {
   // were called after the corresponding call to Connect().
   virtual bool IsConnecting() const = 0;
 
+  // Indicates whether the device can be trusted, based on device properties,
+  // such as vendor and product id.
+  bool IsTrustable() const;
+
   // Returns the set of UUIDs that this device supports. For classic Bluetooth
   // devices this data is collected from both the EIR data and SDP tables,
   // for Low Energy devices this data is collected from AD and GATT primary
