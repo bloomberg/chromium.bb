@@ -47,11 +47,8 @@ HTMLParserOptions::HTMLParserOptions(Document* document)
     // See LayoutTests/loader/iframe-sync-loads.html
     // FIXME: threadedHTMLParser() setting should be removed but currently many
     // webkit_unit_tests depend on parsing being synchronous. crbug.com/366354
-    // FIXME: useThreadedHTMLParserForDataURLs() setting should be removed but
-    // currently many browser_tests depend on data: urls being synchronous! crbug.com/308321
     Settings* settings = document ? document->settings() : 0;
-    useThreading = settings && settings->threadedHTMLParser() && !document->url().isAboutBlankURL()
-        && (settings->useThreadedHTMLParserForDataURLs() || !document->url().protocolIsData());
+    useThreading = settings && settings->threadedHTMLParser() && !document->url().isAboutBlankURL();
 }
 
 }

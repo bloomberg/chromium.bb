@@ -718,7 +718,7 @@ void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
 
 void WebSettingsImpl::setUseThreadedHTMLParserForDataURLs(bool enabled)
 {
-    m_settings->setUseThreadedHTMLParserForDataURLs(enabled);
+    // FIXME: Remove once Chrome dependencies are gone.
 }
 
 void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
