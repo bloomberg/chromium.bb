@@ -1,10 +1,30 @@
 Canvas log: 
 {
     0 : {
-        name : "drawRect"
+        method : "drawRect"
+        params : {
+            paint : {
+            }
+            rect : {
+                bottom : 100
+                left : 0
+                right : 100
+                top : 0
+            }
+        }
     }
     1 : {
-        name : "drawRect"
+        method : "drawRect"
+        params : {
+            paint : {
+            }
+            rect : {
+                bottom : 50
+                left : 0
+                right : 50
+                top : 0
+            }
+        }
     }
 }
 

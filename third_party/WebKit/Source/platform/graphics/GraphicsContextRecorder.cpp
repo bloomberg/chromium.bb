@@ -180,80 +180,131 @@ public:
         m_log = JSONArray::create();
     }
 
-    void clear(SkColor) OVERRIDE
+    void clear(SkColor color) OVERRIDE
     {
-        addItem("clear");
+        addItemWithParams("clear")->setNumber("color", color);
     }
 
     void drawPaint(const SkPaint& paint) OVERRIDE
     {
-        addItem("drawPaint");
+        addItemWithParams("drawPaint")->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint&) OVERRIDE
+    void drawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) OVERRIDE
     {
-        addItem("drawPoints");
+        RefPtr<JSONObject> params = addItemWithParams("drawPoints");
+        params->setString("pointMode", pointModeName(mode));
+        params->setArray("points", arrayForSkPoints(count, pts));
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawPicture(SkPicture&) OVERRIDE
+    void drawPicture(SkPicture& picture) OVERRIDE
     {
-        addItem("drawPicture");
+        addItemWithParams("drawPicture")->setObject("picture", objectForSkPicture(picture));
     }
 
     void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE
     {
-        addItem("drawRect");
+        RefPtr<JSONObject> params = addItemWithParams("drawRect");
+        params->setObject("rect", objectForSkRect(rect));
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawOval(const SkRect&, const SkPaint&) OVERRIDE
+    void drawOval(const SkRect& oval, const SkPaint& paint) OVERRIDE
     {
-        addItem("drawOval");
+        RefPtr<JSONObject> params = addItemWithParams("drawOval");
+        params->setObject("oval", objectForSkRect(oval));
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawRRect(const SkRRect&, const SkPaint&) OVERRIDE
+    void drawRRect(const SkRRect& rrect, const SkPaint& paint) OVERRIDE
     {
-        addItem("drawRRect");
+        RefPtr<JSONObject> params = addItemWithParams("drawRRect");
+        params->setObject("rrect", objectForSkRRect(rrect));
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawPath(const SkPath& path, const SkPaint&) OVERRIDE
+    void drawPath(const SkPath& path, const SkPaint& paint) OVERRIDE
     {
-        addItem("drawPath");
+        RefPtr<JSONObject> params = addItemWithParams("drawPath");
+        params->setObject("path", objectForSkPath(path));
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
-    void drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint*) OVERRIDE
+    void drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint) OVERRIDE
     {
-        addItem("drawBitmap");
+        RefPtr<JSONObject> params = addItemWithParams("drawBitmap");
+        params->setNumber("left", left);
+        params->setNumber("top", top);
+        params->setObject("bitmap", objectForSkBitmap(bitmap));
+        params->setObject("paint", objectForSkPaint(*paint));
     }
 
     void drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, DrawBitmapRectFlags flags) OVERRIDE
     {
-        addItem("drawBitmapRectToRect");
+        RefPtr<JSONObject> params = addItemWithParams("drawBitmapRectToRect");
+        params->setObject("bitmap", objectForSkBitmap(bitmap));
+        params->setObject("src", objectForSkRect(*src));
+        params->setObject("dst", objectForSkRect(dst));
+        params->setObject("paint", objectForSkPaint(*paint));
+        params->setNumber("flags", flags);
     }
 
-    void drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, const SkPaint*) OVERRIDE
+    void drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, const SkPaint* paint) OVERRIDE
     {
-        addItem("drawBitmapMatrix");
+        RefPtr<JSONObject> params = addItemWithParams("drawBitmapMatrix");
+        params->setObject("bitmap", objectForSkBitmap(bitmap));
+        params->setArray("matrix", arrayForSkMatrix(m));
+        params->setObject("paint", objectForSkPaint(*paint));
     }
 
-    void drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint = 0) OVERRIDE
+    void drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint) OVERRIDE
     {
-        addItem("drawBitmapNine");
+        RefPtr<JSONObject> params = addItemWithParams("drawBitmapNine");
+        params->setObject("bitmap", objectForSkBitmap(bitmap));
+        params->setObject("center", objectForSkIRect(center));
+        params->setObject("dst", objectForSkRect(dst));
+        params->setObject("paint", objectForSkPaint(*paint));
     }
 
-    void drawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint*) OVERRIDE
+    void drawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint) OVERRIDE
     {
-        addItem("drawSprite");
+        RefPtr<JSONObject> params = addItemWithParams("drawSprite");
+        params->setObject("bitmap", objectForSkBitmap(bitmap));
+        params->setNumber("left", left);
+        params->setNumber("top", top);
+        params->setObject("paint", objectForSkPaint(*paint));
     }
 
     void drawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[], const SkColor colors[], SkXfermode* xmode,
-        const uint16_t indices[], int indexCount, const SkPaint&) OVERRIDE
+        const uint16_t indices[], int indexCount, const SkPaint& paint) OVERRIDE
     {
-        addItem("drawVertices");
+        RefPtr<JSONObject> params = addItemWithParams("drawVertices");
+        params->setObject("paint", objectForSkPaint(paint));
     }
 
     void drawData(const void* data, size_t length) OVERRIDE
     {
-        addItem("drawData");
+        RefPtr<JSONObject> params = addItemWithParams("drawData");
+        params->setNumber("length", length);
+    }
+
+    void beginCommentGroup(const char* description) OVERRIDE
+    {
+        RefPtr<JSONObject> params = addItemWithParams("beginCommentGroup");
+        params->setString("description", description);
+    }
+
+    void addComment(const char* keyword, const char* value) OVERRIDE
+    {
+        RefPtr<JSONObject> params = addItemWithParams("addComment");
+        params->setString("key", keyword);
+        params->setString("value", value);
+    }
+
+    void endCommentGroup() OVERRIDE
+    {
+        addItem("endCommentGroup");
     }
 
     PassRefPtr<JSONArray> log()
@@ -264,11 +315,260 @@ public:
 private:
     RefPtr<JSONArray> m_log;
 
-    void addItem(const String& name)
+    PassRefPtr<JSONObject> addItem(const String& name)
     {
         RefPtr<JSONObject> item = JSONObject::create();
-        item->setString("name", name);
-        m_log->pushObject(item.release());
+        item->setString("method", name);
+        m_log->pushObject(item);
+        return item.release();
+    }
+
+    PassRefPtr<JSONObject> addItemWithParams(const String& name)
+    {
+        RefPtr<JSONObject> item = addItem(name);
+        RefPtr<JSONObject> params = JSONObject::create();
+        item->setObject("params", params);
+        return params.release();
+    }
+
+    PassRefPtr<JSONObject> objectForSkRect(const SkRect& rect)
+    {
+        RefPtr<JSONObject> rectItem = JSONObject::create();
+        rectItem->setNumber("left", rect.left());
+        rectItem->setNumber("top", rect.top());
+        rectItem->setNumber("right", rect.right());
+        rectItem->setNumber("bottom", rect.bottom());
+        return rectItem.release();
+    }
+
+    PassRefPtr<JSONObject> objectForSkIRect(const SkIRect& rect)
+    {
+        RefPtr<JSONObject> rectItem = JSONObject::create();
+        rectItem->setNumber("left", rect.left());
+        rectItem->setNumber("top", rect.top());
+        rectItem->setNumber("right", rect.right());
+        rectItem->setNumber("bottom", rect.bottom());
+        return rectItem.release();
+    }
+
+    String pointModeName(PointMode mode)
+    {
+        switch (mode) {
+        case SkCanvas::kPoints_PointMode: return "Points";
+        case SkCanvas::kLines_PointMode: return "Lines";
+        case SkCanvas::kPolygon_PointMode: return "Polygon";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    PassRefPtr<JSONObject> objectForSkPoint(const SkPoint& point)
+    {
+        RefPtr<JSONObject> pointItem = JSONObject::create();
+        pointItem->setNumber("x", point.x());
+        pointItem->setNumber("y", point.y());
+        return pointItem.release();
+    }
+
+    PassRefPtr<JSONArray> arrayForSkPoints(size_t count, const SkPoint points[])
+    {
+        RefPtr<JSONArray> pointsArrayItem = JSONArray::create();
+        for (size_t i = 0; i < count; ++i)
+            pointsArrayItem->pushObject(objectForSkPoint(points[i]));
+        return pointsArrayItem.release();
+    }
+
+    PassRefPtr<JSONObject> objectForSkPicture(const SkPicture& picture)
+    {
+        RefPtr<JSONObject> pictureItem = JSONObject::create();
+        pictureItem->setNumber("width", picture.width());
+        pictureItem->setNumber("height", picture.height());
+        return pictureItem.release();
+    }
+
+    PassRefPtr<JSONObject> objectForRadius(const SkRRect& rrect, SkRRect::Corner corner)
+    {
+        RefPtr<JSONObject> radiusItem = JSONObject::create();
+        SkVector radius = rrect.radii(corner);
+        radiusItem->setNumber("xRadius", radius.x());
+        radiusItem->setNumber("yRadius", radius.y());
+        return radiusItem.release();
+    }
+
+    String rrectTypeName(SkRRect::Type type)
+    {
+        switch (type) {
+        case SkRRect::kEmpty_Type: return "Empty";
+        case SkRRect::kRect_Type: return "Rect";
+        case SkRRect::kOval_Type: return "Oval";
+        case SkRRect::kSimple_Type: return "Simple";
+        case SkRRect::kNinePatch_Type: return "Nine-patch";
+        case SkRRect::kComplex_Type: return "Complex";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    String radiusName(SkRRect::Corner corner)
+    {
+        switch (corner) {
+        case SkRRect::kUpperLeft_Corner: return "upperLeftRadius";
+        case SkRRect::kUpperRight_Corner: return "upperRightRadius";
+        case SkRRect::kLowerRight_Corner: return "lowerRightRadius";
+        case SkRRect::kLowerLeft_Corner: return "lowerLeftRadius";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        }
+    }
+
+    PassRefPtr<JSONObject> objectForSkRRect(const SkRRect& rrect)
+    {
+        RefPtr<JSONObject> rrectItem = JSONObject::create();
+        rrectItem->setString("type", rrectTypeName(rrect.type()));
+        rrectItem->setNumber("left", rrect.rect().left());
+        rrectItem->setNumber("top", rrect.rect().top());
+        rrectItem->setNumber("right", rrect.rect().right());
+        rrectItem->setNumber("bottom", rrect.rect().bottom());
+        for (int i = 0; i < 4; ++i)
+            rrectItem->setObject(radiusName((SkRRect::Corner) i), objectForRadius(rrect, (SkRRect::Corner) i));
+        return rrectItem.release();
+    }
+
+    String fillTypeName(SkPath::FillType type)
+    {
+        switch (type) {
+        case SkPath::kWinding_FillType: return "Winding";
+        case SkPath::kEvenOdd_FillType: return "EvenOdd";
+        case SkPath::kInverseWinding_FillType: return "InverseWinding";
+        case SkPath::kInverseEvenOdd_FillType: return "InverseEvenOdd";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    String convexityName(SkPath::Convexity convexity)
+    {
+        switch (convexity) {
+        case SkPath::kUnknown_Convexity: return "Unknown";
+        case SkPath::kConvex_Convexity: return "Convex";
+        case SkPath::kConcave_Convexity: return "Concave";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    String verbName(SkPath::Verb verb)
+    {
+        switch (verb) {
+        case SkPath::kMove_Verb: return "Move";
+        case SkPath::kLine_Verb: return "Line";
+        case SkPath::kQuad_Verb: return "Quad";
+        case SkPath::kConic_Verb: return "Conic";
+        case SkPath::kCubic_Verb: return "Cubic";
+        case SkPath::kClose_Verb: return "Close";
+        case SkPath::kDone_Verb: return "Done";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    struct VerbParams {
+        String name;
+        unsigned pointCount;
+        unsigned pointOffset;
+
+        VerbParams(const String& name, unsigned pointCount, unsigned pointOffset)
+            : name(name)
+            , pointCount(pointCount)
+            , pointOffset(pointOffset) { }
+    };
+
+    VerbParams segmentParams(SkPath::Verb verb)
+    {
+        switch (verb) {
+        case SkPath::kMove_Verb: return VerbParams("Move", 1, 0);
+        case SkPath::kLine_Verb: return VerbParams("Line", 1, 1);
+        case SkPath::kQuad_Verb: return VerbParams("Quad", 2, 1);
+        case SkPath::kConic_Verb: return VerbParams("Conic", 2, 1);
+        case SkPath::kCubic_Verb: return VerbParams("Cubic", 3, 1);
+        case SkPath::kClose_Verb: return VerbParams("Close", 0, 0);
+        case SkPath::kDone_Verb: return VerbParams("Done", 0, 0);
+        default:
+            ASSERT_NOT_REACHED();
+            return VerbParams("?", 0, 0);
+        };
+    }
+
+    PassRefPtr<JSONObject> objectForSkPath(const SkPath& path)
+    {
+        RefPtr<JSONObject> pathItem = JSONObject::create();
+        pathItem->setString("fillType", fillTypeName(path.getFillType()));
+        pathItem->setString("convexity", convexityName(path.getConvexity()));
+        pathItem->setBoolean("isRect", path.isRect(0));
+        SkPath::Iter iter(path, false);
+        SkPoint points[4];
+        RefPtr<JSONArray> pathPointsArray = JSONArray::create();
+        for (SkPath::Verb verb = iter.next(points, false); verb != SkPath::kDone_Verb; verb = iter.next(points, false)) {
+            VerbParams verbParams = segmentParams(verb);
+            RefPtr<JSONObject> pathPointItem = JSONObject::create();
+            pathPointItem->setString("verb", verbParams.name);
+            ASSERT(verbParams.pointCount + verbParams.pointOffset <= WTF_ARRAY_LENGTH(points));
+            pathPointItem->setArray("points", arrayForSkPoints(verbParams.pointCount, points + verbParams.pointOffset));
+            if (SkPath::kConic_Verb == verb)
+                pathPointItem->setNumber("conicWeight", iter.conicWeight());
+            pathPointsArray->pushObject(pathPointItem);
+        }
+        pathItem->setArray("pathPoints", pathPointsArray);
+        pathItem->setObject("bounds", objectForSkRect(path.getBounds()));
+        return pathItem.release();
+    }
+
+    String configName(SkBitmap::Config config)
+    {
+        switch (config) {
+        case SkBitmap::kNo_Config: return "None";
+        case SkBitmap::kA8_Config: return "A8";
+        case SkBitmap::kIndex8_Config: return "Index8";
+        case SkBitmap::kRGB_565_Config: return "RGB565";
+        case SkBitmap::kARGB_4444_Config: return "ARGB4444";
+        case SkBitmap::kARGB_8888_Config: return "ARGB8888";
+        default:
+            ASSERT_NOT_REACHED();
+            return "?";
+        };
+    }
+
+    PassRefPtr<JSONObject> objectForSkBitmap(const SkBitmap& bitmap)
+    {
+        RefPtr<JSONObject> bitmapItem = JSONObject::create();
+        bitmapItem->setNumber("width", bitmap.width());
+        bitmapItem->setNumber("height", bitmap.height());
+        bitmapItem->setString("config", configName(bitmap.config()));
+        bitmapItem->setBoolean("opaque", bitmap.isOpaque());
+        bitmapItem->setBoolean("immutable", bitmap.isImmutable());
+        bitmapItem->setBoolean("volatile", bitmap.isVolatile());
+        bitmapItem->setNumber("genID", bitmap.getGenerationID());
+        return bitmapItem.release();
+    }
+
+    PassRefPtr<JSONObject> objectForSkPaint(const SkPaint& paint)
+    {
+        RefPtr<JSONObject> paintItem = JSONObject::create();
+        return paintItem.release();
+    }
+
+    PassRefPtr<JSONArray> arrayForSkMatrix(const SkMatrix& matrix)
+    {
+        RefPtr<JSONArray> matrixArray = JSONArray::create();
+        for (int i = 0; i < 9; ++i)
+            matrixArray->pushNumber(matrix[i]);
+        return matrixArray.release();
     }
 };
 
