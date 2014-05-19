@@ -45,7 +45,11 @@ const int kAdLikelyInjected   = 1 << UmaPolicy::AD_LIKELY_INJECTED;
 const int kAdLikelyReplaced   = 1 << UmaPolicy::AD_LIKELY_REPLACED;
 
 // A mask of all the ad injection flags.
-const int kAnyAdActivity = kAdInjected | kAdRemoved | kAdReplaced;
+const int kAnyAdActivity = kAdInjected |
+                           kAdRemoved |
+                           kAdReplaced |
+                           kAdLikelyInjected |
+                           kAdLikelyReplaced;
 
 }  // namespace
 
