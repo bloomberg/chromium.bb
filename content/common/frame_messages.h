@@ -414,17 +414,18 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
                     int /* error_code */,
                     base::string16 /* error_description */)
 
-// Sent when the renderer starts loading the page. This corresponds to
-// Blink's notion of the throbber starting. Note that sometimes you may get
-// duplicates of these during a single load.
-// |to_different_document| will be true unless the load is a fragment
-// navigation, or triggered by history.pushState/replaceState.
+// Sent when the renderer starts loading the page. |to_different_document| will
+// be true unless the load is a fragment navigation, or triggered by
+// history.pushState/replaceState.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartLoading,
                     bool /* to_different_document */)
 
-// Sent when the renderer is done loading a page. This corresponds to Blink's
-// notion of the throbber stopping.
+// Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
+
+// Sent when the renderer changed the progress of a load.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
+                    double /* load_progress */)
 
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)

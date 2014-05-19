@@ -3063,28 +3063,17 @@ WebElement RenderFrameImpl::GetFocusedElement() {
 }
 
 void RenderFrameImpl::didStartLoading(bool to_different_document) {
-  bool view_was_loading = render_view_->is_loading();
   render_view_->FrameDidStartLoading(frame_);
-  if (!view_was_loading)
-    Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
+  Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
 }
 
 void RenderFrameImpl::didStopLoading() {
-  if (!render_view_->is_loading())
-    return;
   render_view_->FrameDidStopLoading(frame_);
-
-  // NOTE: For now we're doing the safest thing, and sending out notification
-  // when done loading. This currently isn't an issue as the favicon is only
-  // displayed when done loading. Ideally we would send notification when
-  // finished parsing the head, but webkit doesn't support that yet.
-  // The feed discovery code would also benefit from access to the head.
-  if (!render_view_->is_loading())
-    Send(new FrameHostMsg_DidStopLoading(routing_id_));
+  Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 
 void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
-  render_view_->FrameDidChangeLoadProgress(frame_, load_progress);
+  Send(new FrameHostMsg_DidChangeLoadProgress(routing_id_, load_progress));
 }
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(

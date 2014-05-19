@@ -160,6 +160,12 @@
 namespace content {
 namespace {
 
+const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
+
+// This matches what Blink's ProgressTracker has traditionally used for a
+// minimum progress value.
+const double kMinimumLoadingProgress = 0.1;
+
 const char kDotGoogleDotCom[] = ".google.com";
 
 #if defined(OS_ANDROID)
@@ -332,6 +338,9 @@ WebContentsImpl::WebContentsImpl(
       crashed_error_code_(0),
       waiting_for_response_(false),
       load_state_(net::LOAD_STATE_IDLE, base::string16()),
+      loading_total_progress_(0.0),
+      loading_weak_factory_(this),
+      loading_frames_in_progress_(0),
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
@@ -501,6 +510,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
+                        OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenColorChooser, OnOpenColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetSelectedColorInColorChooser,
@@ -2311,8 +2324,6 @@ void WebContentsImpl::DidStartProvisionalLoad(
     bool is_error_page,
     bool is_iframe_srcdoc) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  if (is_main_frame)
-    DidChangeLoadProgress(0);
 
   // Notify observers about the start of the provisional load.
   int render_frame_id = render_frame_host->GetRoutingID();
@@ -2615,6 +2626,91 @@ void WebContentsImpl::OnDidFinishLoad(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishLoad(render_frame_id, validated_url,
                                   is_main_frame, render_view_host));
+}
+
+void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
+
+  // It is possible to get multiple calls to OnDidStartLoading that don't have
+  // corresponding calls to OnDidStopLoading:
+  // - With "swappedout://" URLs, this happens when a RenderView gets swapped
+  //   out for a cross-process navigation, and it turns into a placeholder for
+  //   one being rendered in a different process.
+  // - Also, there might be more than one RenderFrameHost sharing the same
+  //   FrameTreeNode (and thus sharing its ID) each sending a start.
+  // - But in the future, once clamy@ moves navigation network requests to the
+  //   browser process, there's a good chance that callbacks about starting and
+  //   stopping will all be handled by the browser. When that happens, there
+  //   should no longer be a start/stop call imbalance. TODO(avi): When this
+  //   future arrives, update this code to not allow this case.
+  DCHECK_GE(loading_frames_in_progress_, 0);
+  if (loading_progresses_.find(render_frame_id) == loading_progresses_.end()) {
+    if (loading_frames_in_progress_ == 0)
+      DidStartLoading(rfh, to_different_document);
+    ++loading_frames_in_progress_;
+  }
+
+  loading_progresses_[render_frame_id] = kMinimumLoadingProgress;
+  SendLoadProgressChanged();
+}
+
+void WebContentsImpl::OnDidStopLoading() {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
+
+  if (loading_progresses_.find(render_frame_id) != loading_progresses_.end()) {
+    // Load stopped while we were still tracking load.  Make sure we update
+    // progress based on this frame's completion.
+    loading_progresses_[render_frame_id] = 1.0;
+    SendLoadProgressChanged();
+    // Then we clean-up our states.
+    if (loading_total_progress_ == 1.0)
+      ResetLoadProgressState();
+  }
+
+  // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
+  // calls DidStopLoading() without a matching DidStartLoading().
+  if (loading_frames_in_progress_ == 0)
+    return;
+  --loading_frames_in_progress_;
+  if (loading_frames_in_progress_ == 0)
+    DidStopLoading(rfh);
+}
+
+void WebContentsImpl::OnDidChangeLoadProgress(double load_progress) {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+  int64 render_frame_id = rfh->frame_tree_node()->frame_tree_node_id();
+
+  loading_progresses_[render_frame_id] = load_progress;
+
+  // We notify progress change immediately for the first and last updates.
+  // Also, since the message loop may be pretty busy when a page is loaded, it
+  // might not execute a posted task in a timely manner so we make sure to
+  // immediately send progress report if enough time has passed.
+  base::TimeDelta min_delay =
+      base::TimeDelta::FromMilliseconds(kMinimumDelayBetweenLoadingUpdatesMS);
+  if (load_progress == 1.0 || loading_last_progress_update_.is_null() ||
+      base::TimeTicks::Now() - loading_last_progress_update_ > min_delay) {
+    // If there is a pending task to send progress, it is now obsolete.
+    loading_weak_factory_.InvalidateWeakPtrs();
+    SendLoadProgressChanged();
+    if (loading_total_progress_ == 1.0)
+      ResetLoadProgressState();
+    return;
+  }
+
+  if (loading_weak_factory_.HasWeakPtrs())
+    return;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebContentsImpl::SendLoadProgressChanged,
+                 loading_weak_factory_.GetWeakPtr()),
+      min_delay);
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
@@ -3002,6 +3098,37 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   return true;
 }
 
+void WebContentsImpl::SendLoadProgressChanged() {
+  loading_last_progress_update_ = base::TimeTicks::Now();
+  double progress = 0.0;
+  int frame_count = 0;
+
+  for (LoadingProgressMap::iterator it = loading_progresses_.begin();
+       it != loading_progresses_.end();
+       ++it) {
+    progress += it->second;
+    ++frame_count;
+  }
+  if (frame_count == 0)
+    return;
+  progress /= frame_count;
+  DCHECK(progress <= 1.0);
+
+  if (progress <= loading_total_progress_)
+    return;
+  loading_total_progress_ = progress;
+
+  if (delegate_)
+    delegate_->LoadProgressChanged(this, progress);
+}
+
+void WebContentsImpl::ResetLoadProgressState() {
+  loading_progresses_.clear();
+  loading_total_progress_ = 0.0;
+  loading_weak_factory_.InvalidateWeakPtrs();
+  loading_last_progress_update_ = base::TimeTicks();
+}
+
 void WebContentsImpl::NotifySwapped(RenderViewHost* old_host,
                                     RenderViewHost* new_host) {
   // After sending out a swap notification, we need to send a disconnect
@@ -3282,6 +3409,13 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
 
+  // Reset the loading progress. TODO(avi): What does it mean to have a
+  // "renderer crash" when there is more than one renderer process serving a
+  // webpage? Once this function is called at a more granular frame level, we
+  // probably will need to more granularly reset the state here.
+  ResetLoadProgressState();
+  loading_frames_in_progress_ = 0;
+
 #if defined(OS_ANDROID)
   if (GetRenderViewHostImpl()->media_player_manager())
     GetRenderViewHostImpl()->media_player_manager()->DestroyAllMediaPlayers();
@@ -3399,11 +3533,6 @@ void WebContentsImpl::DidCancelLoading() {
 
   // Update the URL display.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
-}
-
-void WebContentsImpl::DidChangeLoadProgress(double progress) {
-  if (delegate_)
-    delegate_->LoadProgressChanged(this, progress);
 }
 
 void WebContentsImpl::DidAccessInitialDocument() {

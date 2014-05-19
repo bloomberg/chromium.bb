@@ -136,7 +136,6 @@ class GeolocationDispatcher;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
-class LoadProgressTracker;
 class MidiDispatcher;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
@@ -280,8 +279,6 @@ class CONTENT_EXPORT RenderViewImpl
   void FrameDidStartLoading(blink::WebFrame* frame);
   void FrameDidStopLoading(blink::WebFrame* frame);
 
-  void FrameDidChangeLoadProgress(blink::WebFrame* frame,
-                                  double load_progress);
   void FrameDidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                      bool is_new_navigation);
 
@@ -993,10 +990,9 @@ class CONTENT_EXPORT RenderViewImpl
   // process.
   int history_list_length_;
 
-  // Counter to track how many frames have sent start notifications but not
-  // stop notifications.
-  // TODO(japhet): This state will need to move to the browser process
-  // (probably WebContents) for site isolation.
+  // Counter to track how many frames have sent start notifications but not stop
+  // notifications. TODO(avi): Remove this once DidStartLoading/DidStopLoading
+  // are gone.
   int frames_in_progress_;
 
   // The list of page IDs for each history item this RenderView knows about.
@@ -1170,9 +1166,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The current directory enumeration callback
   std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;
   int enumeration_completion_id_;
-
-  // Reports load progress to the browser.
-  scoped_ptr<LoadProgressTracker> load_progress_tracker_;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and

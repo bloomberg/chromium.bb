@@ -297,8 +297,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
                                 OnNavigate(msg))
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
@@ -533,14 +531,6 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   // Allow the navigation to proceed.
   frame_tree_node_->render_manager()->SwappedOut(this);
-}
-
-void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
-  delegate_->DidStartLoading(this, to_different_document);
-}
-
-void RenderFrameHostImpl::OnDidStopLoading() {
-  delegate_->DidStopLoading(this);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(

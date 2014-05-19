@@ -192,8 +192,6 @@
     'renderer/java/java_bridge_channel.h',
     'renderer/java/java_bridge_dispatcher.cc',
     'renderer/java/java_bridge_dispatcher.h',
-    'renderer/load_progress_tracker.cc',
-    'renderer/load_progress_tracker.h',
     'renderer/media/active_loader.cc',
     'renderer/media/active_loader.h',
     'renderer/media/android/audio_decoder_android.cc',

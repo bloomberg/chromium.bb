@@ -985,8 +985,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateInspectorSetting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
-                        OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
@@ -1186,10 +1184,6 @@ void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
   if (IsRVHStateActive(rvh_state_))
     delegate_->RequestMove(pos);
   Send(new ViewMsg_Move_ACK(GetRoutingID()));
-}
-
-void RenderViewHostImpl::OnDidChangeLoadProgress(double load_progress) {
-  delegate_->DidChangeLoadProgress(load_progress);
 }
 
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame() {

@@ -158,7 +158,7 @@ class LoadingStateChangedDelegate : public WebContentsDelegate {
       , loadingStateToDifferentDocumentCount_(0) {
   }
 
-  // WebContentsDelgate:
+  // WebContentsDelegate:
   virtual void LoadingStateChanged(WebContents* contents,
                                    bool to_different_document) OVERRIDE {
       loadingStateChangedCount_++;
@@ -454,6 +454,65 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WebContents* new_web_contents = new_web_contents_observer.GetWebContents();
   WaitForLoadStop(new_web_contents);
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
+}
+
+struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
+                                         public WebContentsObserver {
+  LoadProgressDelegateAndObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()),
+        did_start_loading(false),
+        did_stop_loading(false) {
+    web_contents()->SetDelegate(this);
+  }
+
+  // WebContentsDelegate:
+  virtual void LoadProgressChanged(WebContents* source,
+                                   double progress) OVERRIDE {
+    EXPECT_TRUE(did_start_loading);
+    EXPECT_FALSE(did_stop_loading);
+    progresses.push_back(progress);
+  }
+
+  // WebContentsObserver:
+  virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE {
+    EXPECT_FALSE(did_start_loading);
+    EXPECT_EQ(0U, progresses.size());
+    EXPECT_FALSE(did_stop_loading);
+    did_start_loading = true;
+  }
+
+  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE {
+    EXPECT_TRUE(did_start_loading);
+    EXPECT_GE(progresses.size(), 1U);
+    EXPECT_FALSE(did_stop_loading);
+    did_stop_loading = true;
+  }
+
+  bool did_start_loading;
+  std::vector<double> progresses;
+  bool did_stop_loading;
+};
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  scoped_ptr<LoadProgressDelegateAndObserver> delegate(
+      new LoadProgressDelegateAndObserver(shell()));
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  const std::vector<double>& progresses = delegate->progresses;
+  // All updates should be in order ...
+  if (std::adjacent_find(progresses.begin(),
+                         progresses.end(),
+                         std::greater<double>()) != progresses.end()) {
+    ADD_FAILURE() << "Progress values should be in order: "
+                  << ::testing::PrintToString(progresses);
+  }
+
+  // ... and the last one should be 1.0, meaning complete.
+  ASSERT_GE(progresses.size(), 1U)
+      << "There should be at least one progress update";
+  EXPECT_EQ(1.0, *progresses.rbegin());
 }
 
 }  // namespace content

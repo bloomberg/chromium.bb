@@ -328,7 +328,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
                                bool to_different_document) OVERRIDE;
-  virtual void DidStopLoading(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void SwappedOut(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
@@ -377,7 +376,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
-  virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void RouteCloseEvent(RenderViewHost* rvh) OVERRIDE;
@@ -704,6 +702,9 @@ class CONTENT_EXPORT WebContentsImpl
                                const GURL& target_url);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);
+  void OnDidStartLoading(bool to_different_document);
+  void OnDidStopLoading();
+  void OnDidChangeLoadProgress(double load_progress);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
@@ -821,6 +822,17 @@ class CONTENT_EXPORT WebContentsImpl
   // renderer-initiated creation, and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
   WebContentsImpl* GetCreatedWindow(int route_id);
+
+  // Tracking loading progress -------------------------------------------------
+
+  // Resets the tracking state of the current load.
+  void ResetLoadProgressState();
+
+  // Calculates the progress of the current load and notifies the delegate.
+  void SendLoadProgressChanged();
+
+  // Called once when the last frame on the page has stopped loading.
+  void DidStopLoading(RenderFrameHost* render_frame_host);
 
   // Misc non-view stuff -------------------------------------------------------
 
@@ -945,6 +957,21 @@ class CONTENT_EXPORT WebContentsImpl
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;
   base::string16 load_state_host_;
+
+  // LoadingProgressMap maps FrameTreeNode IDs to a double representing that
+  // frame's completion (from 0 to 1).
+  typedef base::hash_map<int64, double> LoadingProgressMap;
+  LoadingProgressMap loading_progresses_;
+  double loading_total_progress_;
+
+  base::TimeTicks loading_last_progress_update_;
+
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
+
+  // Counter to track how many frames have sent start notifications but not
+  // stop notifications.
+  int loading_frames_in_progress_;
+
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.
   uint64 upload_size_;

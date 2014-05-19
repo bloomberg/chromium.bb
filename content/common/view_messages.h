@@ -1136,10 +1136,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,
                     int32,
                     GURL)
 
-// Sent when the renderer main frame has made progress loading.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
-                    double /* load_progress */)
-
 // Sent when the document element is available for the top-level frame.  This
 // happens after the page starts loading, but before all resources are
 // finished.

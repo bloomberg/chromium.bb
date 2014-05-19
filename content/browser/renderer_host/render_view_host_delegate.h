@@ -124,11 +124,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The pending page load was canceled.
   virtual void DidCancelLoading() {}
 
-  // The RenderView made progress loading a page's top frame.
-  // |progress| is a value between 0 (nothing loaded) to 1.0 (top frame
-  // entirely loaded).
-  virtual void DidChangeLoadProgress(double progress) {}
-
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}

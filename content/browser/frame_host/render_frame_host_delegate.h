@@ -52,10 +52,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
                                bool to_different_document) {}
 
-  // The top-level RenderFrame stopped loading a page. This corresponds to
-  // Blink's notion of the throbber stopping.
-  virtual void DidStopLoading(RenderFrameHost* render_frame_host) {}
-
   // The RenderFrameHost has been swapped out.
   virtual void SwappedOut(RenderFrameHost* render_frame_host) {}
 

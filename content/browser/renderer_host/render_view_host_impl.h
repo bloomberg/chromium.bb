@@ -488,7 +488,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateTargetURL(int32 page_id, const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
-  void OnDidChangeLoadProgress(double load_progress);
   void OnDocumentAvailableInMainFrame();
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);

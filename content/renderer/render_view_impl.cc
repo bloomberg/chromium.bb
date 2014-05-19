@@ -86,7 +86,6 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
-#include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/midi_dispatcher.h"
@@ -673,7 +672,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       pepper_last_mouse_event_target_(NULL),
 #endif
       enumeration_completion_id_(0),
-      load_progress_tracker_(new LoadProgressTracker(this)),
       session_storage_namespace_id_(params->session_storage_namespace_id),
       next_snapshot_id_(0) {
 }
@@ -1547,10 +1545,6 @@ bool RenderViewImpl::enumerateChosenDirectory(
 }
 
 void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
-  if (load_progress_tracker_ != NULL) {
-    load_progress_tracker_->DidStartLoading(
-        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
-  }
   DCHECK_GE(frames_in_progress_, 0);
   if (frames_in_progress_ == 0)
     FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
@@ -1558,10 +1552,6 @@ void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
 }
 
 void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
-  if (load_progress_tracker_ != NULL) {
-    load_progress_tracker_->DidStopLoading(
-        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
-  }
   // TODO(japhet): This should be a DCHECK, but the pdf plugin sometimes
   // calls DidStopLoading() without a matching DidStartLoading().
   if (frames_in_progress_ == 0)
@@ -1570,14 +1560,6 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
   if (frames_in_progress_ == 0) {
     DidStopLoadingIcons();
     FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
-  }
-}
-
-void RenderViewImpl::FrameDidChangeLoadProgress(WebFrame* frame,
-                                                double load_progress) {
-  if (load_progress_tracker_ != NULL) {
-    load_progress_tracker_->DidChangeLoadProgress(
-        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID(), load_progress);
   }
 }
 
