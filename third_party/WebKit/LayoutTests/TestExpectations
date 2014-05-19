@@ -971,3 +971,16 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
+
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
+
+crbug.com/374939 [ XP ] virtual/softwarecompositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
