@@ -32,4 +32,20 @@ BeginFrameArgs CreateExpiredBeginFrameArgsForTesting() {
                                 BeginFrameArgs::DefaultInterval());
 }
 
+bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs) {
+  return (lhs.frame_time == rhs.frame_time) && (lhs.deadline == rhs.deadline) &&
+         (lhs.interval == rhs.interval);
+}
+
+::std::ostream& operator<<(::std::ostream& os, const BeginFrameArgs& args) {
+  PrintTo(args, &os);
+  return os;
+}
+
+void PrintTo(const BeginFrameArgs& args, ::std::ostream* os) {
+  *os << "BeginFrameArgs(" << args.frame_time.ToInternalValue() << ", "
+      << args.deadline.ToInternalValue() << ", "
+      << args.interval.InMicroseconds() << "us)";
+}
+
 }  // namespace cc

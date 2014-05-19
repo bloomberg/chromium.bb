@@ -37,12 +37,13 @@ scoped_ptr<base::Value> BeginFrameArgs::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
-BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor() {
+BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor(
+    base::TimeTicks now) {
   // For WebView/SynchronousCompositor, we always want to draw immediately,
   // so we set the deadline to 0 and guess that the interval is 16 milliseconds.
-  return BeginFrameArgs(gfx::FrameTime::Now(),
-                        base::TimeTicks(),
-                        DefaultInterval());
+  if (now.is_null())
+    now = gfx::FrameTime::Now();
+  return BeginFrameArgs(now, base::TimeTicks(), DefaultInterval());
 }
 
 // This is a hard-coded deadline adjustment that assumes 60Hz, to be used in

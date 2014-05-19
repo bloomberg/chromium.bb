@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 
@@ -18,6 +19,18 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
                                               int64 deadline,
                                               int64 interval);
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting();
+
+// gtest helpers -- these *must* be in the same namespace as the types they
+// operate on.
+
+// Allow "EXPECT_EQ(args1, args2);"
+// We don't define operator!= because EXPECT_NE(args1, args2) isn't all that
+// sensible.
+bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs);
+
+// Allow gtest to pretty print begin frame args.
+::std::ostream& operator<<(::std::ostream& os, const BeginFrameArgs& args);
+void PrintTo(const BeginFrameArgs& args, ::std::ostream* os);
 
 }  // namespace cc
 
