@@ -125,8 +125,8 @@
                   '|chrome/browser/resources/bookmark_manager/' \
                   '|chrome/browser/ui/bookmarks/' \
                   '|chrome/browser/ui/cocoa/bookmarks/' \
-                  '|chrome/browser/ui/gtk/bookmarks/' \
-                  '|chrome/browser/ui/views/bookmarks/'
+                  '|chrome/browser/ui/views/bookmarks/' \
+                  '|components/bookmarks'
     },
     'browser': {
       'filepath': 'chrome/browser/',
