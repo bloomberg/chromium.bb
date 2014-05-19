@@ -91,6 +91,12 @@ function getChildren(entry) {
   return readEntries();
 }
 
+/**
+ * Promise to be fulfilled with single application window.
+ * @param {AppWindow}
+ */
+var appWindowPromise = null;
+
 chrome.app.runtime.onLaunched.addListener(function(launchData) {
   // Skip if files are not selected.
   if (!launchData || !launchData.items || launchData.items.length == 0)
@@ -130,18 +136,50 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
         });
       });
 
-  // Open application window.
-  chrome.app.window.create(
-      'gallery.html',
-      {
-        id: 'gallery',
-        minWidth: 160,
-        minHeight: 100,
-        frame: 'none'
-      },
-      function(appWindow) {
-        appWindow.contentWindow.launchData = launchData;
-        appWindow.contentWindow.backgroundComponentsPromise =
-            backgroundComponentsPromise;
+  // Close previous window.
+  var closePromise;
+  if (appWindowPromise) {
+    closePromise = appWindowPromise.then(function(appWindow) {
+      return new Promise(function(fulfill) {
+        appWindow.close();
+        appWindow.onClosed.addListener(fulfill);
       });
+    });
+  } else {
+    closePromise = Promise.resolve();
+  }
+  var createdWindowPromise = closePromise.then(function() {
+    return new Promise(function(fulfill) {
+      chrome.app.window.create(
+          'gallery.html',
+          {
+            id: 'gallery',
+            minWidth: 160,
+            minHeight: 100,
+            frame: 'none'
+          },
+          function(appWindow) {
+            appWindow.contentWindow.addEventListener(
+                'load', fulfill.bind(null, appWindow));
+          });
+    });
+  });
+  appWindowPromise = Promise.all([
+    createdWindowPromise,
+    backgroundComponentsPromise,
+  ]).then(function(args) {
+    args[0].contentWindow.initialize(args[1]);
+    return args[0];
+  });
+
+  // Open entries.
+  Promise.all([
+    appWindowPromise,
+    allEntriesPromise,
+    selectedEntriesPromise
+  ]).then(function(args) {
+    args[0].contentWindow.loadEntries(args[1], args[2]);
+  }).catch(function(error) {
+    console.error(error.stack || error);
+  });
 });

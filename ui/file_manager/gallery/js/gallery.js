@@ -860,17 +860,24 @@ Gallery.prototype.updateButtons_ = function() {
   }
 };
 
-window.addEventListener('load', function() {
-  Promise.all([
-    window.backgroundComponentsPromise,
-    window.launchData.entriesPromise
-  ]).then(function(args) {
-    var backgroundComponents = args[0];
-    var entries = args[1];
-    window.loadTimeData.data = backgroundComponents.stringData;
-    var gallery = new Gallery(backgroundComponents.volumeManager);
-    gallery.load(entries.allEntries, entries.selectedEntries);
-  }).catch(function(error) {
-    console.error(error.stack || error);
-  });
-});
+/**
+ * Singleton gallery.
+ * @type {Gallery}
+ */
+var gallery = null;
+
+/**
+ * Initialize the window.
+ * @param {Object} backgroundComponents Background components.
+ */
+window.initialize = function(backgroundComponents) {
+  window.loadTimeData.data = backgroundComponents.stringData;
+  gallery = new Gallery(backgroundComponents.volumeManager);
+};
+
+/**
+ * Loads entries.
+ */
+window.loadEntries = function(entries, selectedEntries) {
+  gallery.load(entries, selectedEntries);
+};
