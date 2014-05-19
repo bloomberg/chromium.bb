@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_tab.h"
 
+#include "apps/app_load_service.h"
+#include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,19 +21,23 @@
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
-// A view to display a title with an expandable permissions list section.
+// A view to display a title with an expandable permissions list section and an
+// optional 'revoke' button below the list.
 class ExpandableContainerView : public views::View,
                                 public views::ButtonListener,
                                 public gfx::AnimationDelegate {
@@ -39,7 +45,8 @@ class ExpandableContainerView : public views::View,
   ExpandableContainerView(
       views::View* owner,
       const base::string16& title,
-      const std::vector<base::string16>& permission_messages);
+      const std::vector<base::string16>& permission_messages,
+      views::Button* button);
   virtual ~ExpandableContainerView();
 
   // views::View:
@@ -57,10 +64,13 @@ class ExpandableContainerView : public views::View,
   void ToggleDetailLevel();
 
  private:
-  // A view which displays the permission messages as a bulleted list.
+  // A view which displays the permission messages as a bulleted list, with an
+  // optional button underneath (such as to revoke the permissions). |button|
+  // may be NULL.
   class DetailsView : public views::View {
    public:
-    explicit DetailsView(std::vector<base::string16> messages);
+    explicit DetailsView(const std::vector<base::string16>& messages,
+                         views::Button* button);
     virtual ~DetailsView() {}
 
     // views::View:
@@ -96,15 +106,17 @@ class ExpandableContainerView : public views::View,
 };
 
 ExpandableContainerView::DetailsView::DetailsView(
-    std::vector<base::string16> messages)
+    const std::vector<base::string16>& messages,
+    views::Button* button)
     : visible_ratio_(0) {
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
-  // Create 2 columns: one for the bullet, one for the bullet text.
+  // Create 2 columns: one for the bullet, one for the bullet text. Also inset
+  // the whole bulleted list by kPanelHorizMargin on either side.
   static const int kColumnSet = 1;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSet);
-  column_set->AddPaddingColumn(0, 10);
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         1,
@@ -118,8 +130,23 @@ ExpandableContainerView::DetailsView::DetailsView(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
 
-  // Add permissions to scrollable view.
+  // Create a right-aligned column (just for the button at the bottom) that
+  // aligns all the way to the right of the view.
+  static const int kButtonColumnSet = 2;
+  views::ColumnSet* button_column_set = layout->AddColumnSet(kButtonColumnSet);
+  button_column_set->AddColumn(views::GridLayout::TRAILING,
+                               views::GridLayout::LEADING,
+                               1,
+                               views::GridLayout::USE_PREF,
+                               0,
+                               0);
+
+  // Add padding above the permissions.
+  layout->AddPaddingRow(0, views::kPanelVertMargin);
+
+  // Add the permissions.
   for (std::vector<base::string16>::const_iterator it = messages.begin();
        it != messages.end();
        ++it) {
@@ -128,6 +155,11 @@ ExpandableContainerView::DetailsView::DetailsView(
     permission_label->SetMultiLine(true);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
+    // Add a row of padding before every item except the first.
+    if (it != messages.begin()) {
+      layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    }
+
     layout->StartRow(0, kColumnSet);
     // Extract only the bullet from the IDS_EXTENSION_PERMISSION_LINE text.
     layout->AddView(new views::Label(l10n_util::GetStringFUTF16(
@@ -135,9 +167,17 @@ ExpandableContainerView::DetailsView::DetailsView(
     // Place the text second, so multi-lined permissions line up below the
     // bullet.
     layout->AddView(permission_label);
-
-    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   }
+
+  // Add the button, if one was provided.
+  if (button) {
+    layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
+    layout->StartRow(0, kButtonColumnSet);
+    layout->AddView(button);
+  }
+
+  // Add the bottom padding.
+  layout->AddPaddingRow(0, views::kPanelVertMargin);
 }
 
 gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() {
@@ -154,7 +194,8 @@ void ExpandableContainerView::DetailsView::AnimateToRatio(double ratio) {
 ExpandableContainerView::ExpandableContainerView(
     views::View* owner,
     const base::string16& title,
-    const std::vector<base::string16>& permission_messages)
+    const std::vector<base::string16>& permission_messages,
+    views::Button* button)
     : owner_(owner),
       details_view_(NULL),
       slide_animation_(this),
@@ -218,7 +259,7 @@ ExpandableContainerView::ExpandableContainerView(
   layout->AddView(title_view);
   layout->AddView(arrow_toggle_);
 
-  details_view_ = new DetailsView(permission_messages);
+  details_view_ = new DetailsView(permission_messages, button);
   layout->StartRow(0, kMainColumnSetId);
   layout->AddView(details_view_);
 }
@@ -275,7 +316,8 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
     Profile* profile,
     const extensions::Extension* app,
     const base::Closure& close_callback)
-    : AppInfoTab(parent_window, profile, app, close_callback) {
+    : AppInfoTab(parent_window, profile, app, close_callback),
+      revoke_file_permissions_button_(NULL) {
   this->SetLayoutManager(new views::FillLayout);
 
   // Create a scrollview and add it to the tab.
@@ -323,7 +365,8 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
           this,
           l10n_util::GetStringUTF16(
               IDS_APPLICATION_INFO_REQUIRED_PERMISSIONS_TEXT),
-          required_permission_messages);
+          required_permission_messages,
+          NULL);
       // Required permissions are visible by default.
       details_container->ToggleDetailLevel();
 
@@ -337,7 +380,8 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
           this,
           l10n_util::GetStringUTF16(
               IDS_APPLICATION_INFO_OPTIONAL_PERMISSIONS_TEXT),
-          optional_permission_messages);
+          optional_permission_messages,
+          NULL);
 
       layout->StartRow(0, kMainColumnSetId);
       layout->AddView(details_container);
@@ -345,11 +389,18 @@ AppInfoPermissionsTab::AppInfoPermissionsTab(
     }
 
     if (!retained_file_permission_messages.empty()) {
+      revoke_file_permissions_button_ = new views::LabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT));
+      revoke_file_permissions_button_->SetStyle(views::Button::STYLE_BUTTON);
+
       ExpandableContainerView* details_container = new ExpandableContainerView(
           this,
           l10n_util::GetStringUTF16(
               IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT),
-          retained_file_permission_messages);
+          retained_file_permission_messages,
+          revoke_file_permissions_button_);
 
       layout->StartRow(0, kMainColumnSetId);
       layout->AddView(details_container);
@@ -369,6 +420,25 @@ void AppInfoPermissionsTab::Layout() {
   int content_height = contents_view->GetHeightForWidth(content_width);
   contents_view->SetBounds(0, 0, content_width, content_height);
   scroll_view_->SetBounds(0, 0, width(), height());
+}
+
+void AppInfoPermissionsTab::ButtonPressed(views::Button* sender,
+                                          const ui::Event& event) {
+  if (sender == revoke_file_permissions_button_)
+    RevokeFilePermissions();
+  else
+    NOTREACHED();
+}
+
+void AppInfoPermissionsTab::RevokeFilePermissions() {
+  apps::SavedFilesService::Get(profile_)->ClearQueue(app_);
+
+  // TODO(benwells): Fix this to call something like
+  // AppLoadService::RestartApplicationIfRunning.
+  if (apps::AppRestoreService::Get(profile_)->IsAppRestorable(app_->id()))
+    apps::AppLoadService::Get(profile_)->RestartApplication(app_->id());
+
+  GetWidget()->Close();
 }
 
 const extensions::PermissionSet* AppInfoPermissionsTab::GetRequiredPermissions()
