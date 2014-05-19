@@ -43,16 +43,6 @@ struct WebServiceWorkerError {
         ErrorTypeActivate,
         ErrorTypeNotFound,
         ErrorTypeUnknown,
-
-        // FIXME: Remove these when the embedder starts using the
-        // correctly-named members.
-        DisabledError = ErrorTypeDisabled,
-        SecurityError = ErrorTypeSecurity,
-        InstallError = ErrorTypeInstall,
-        ActivateError = ErrorTypeActivate,
-        NotFoundError = ErrorTypeNotFound,
-        UnknownError = ErrorTypeUnknown,
-
         ErrorTypeLast = ErrorTypeUnknown
     };
 
