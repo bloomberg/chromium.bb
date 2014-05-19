@@ -2198,7 +2198,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyTextAlignLast:
             return cssValuePool().createValue(style->textAlignLast());
         case CSSPropertyTextDecoration:
-            return valuesForShorthandProperty(textDecorationShorthand());
+            if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+                return valuesForShorthandProperty(textDecorationShorthand());
+            // Fall through.
         case CSSPropertyTextDecorationLine:
             return renderTextDecorationFlagsToCSSValue(style->textDecoration());
         case CSSPropertyTextDecorationStyle:
