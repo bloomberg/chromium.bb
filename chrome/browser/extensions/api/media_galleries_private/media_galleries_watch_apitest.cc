@@ -32,14 +32,14 @@ const char kTestExtensionPath[] = "media_galleries_private/gallerywatch";
 const char kGetAllWatchedGalleryIdsCmd[] = "getAllWatchedGalleryIds()";
 const char kGetMediaFileSystemsCmd[] = "getMediaFileSystems()";
 const char kSetupWatchOnValidGalleriesCmd[] = "setupWatchOnValidGalleries()";
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryChangedListenerCmd[] = "addGalleryChangedListener()";
 const char kRemoveAllGalleryWatchCmd[] = "removeAllGalleryWatch()";
 const char kRemoveGalleryChangedListenerCmd[] =
     "removeGalleryChangedListener()";
 const char kRemoveGalleryWatchCmd[] = "removeGalleryWatch()";
 const char kSetupWatchOnInvalidGalleryCmd[] = "setupWatchOnInvalidGallery()";
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 // And JS reply messages.
 const char kAddGalleryWatchOK[] = "add_gallery_watch_ok";
@@ -47,23 +47,23 @@ const char kGetAllGalleryWatchOK[] = "get_all_gallery_watch_ok";
 const char kGetMediaFileSystemsCallbackOK[] =
     "get_media_file_systems_callback_ok";
 const char kGetMediaFileSystemsOK[] = "get_media_file_systems_ok";
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryChangedListenerOK[] = "add_gallery_changed_listener_ok";
 const char kRemoveAllGalleryWatchOK[] = "remove_all_gallery_watch_ok";
 const char kRemoveGalleryChangedListenerOK[] =
     "remove_gallery_changed_listener_ok";
 const char kRemoveGalleryWatchOK[] = "remove_gallery_watch_ok";
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 // Test reply messages.
 const char kGetAllGalleryWatchResultA[] = "gallery_watchers_does_not_exists";
 const char kAddGalleryWatchRequestFailed[] = "add_watch_request_failed";
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 const char kAddGalleryWatchRequestSucceeded[] = "add_watch_request_succeeded";
 const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 const char kGetAllGalleryWatchResultB[] =
     "watchers_for_galleries_{1, 2, 3}_found";
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
@@ -129,10 +129,7 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
 };
 
 
-///////////////////////////////////////////////////////////////////////////////
-//                               TESTS                                       //
-///////////////////////////////////////////////////////////////////////////////
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        BasicGalleryWatch) {
   EnsureMediaDirectoriesExists media_directories;
@@ -378,11 +375,10 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                           kGetAllGalleryWatchOK);
   EXPECT_TRUE(final_get_all_check_finished.WaitUntilSatisfied());
 }
-#endif
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
-#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
-// Gallery watch request is not enabled on non-windows platforms.
-// Please refer to crbug.com/144491.
+#if defined(OS_MACOSX)
+// Gallery watch request is not enabled on Mac: crbug.com/144491.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        SetupGalleryWatch) {
   EnsureMediaDirectoriesExists media_directories;
@@ -405,8 +401,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
   EXPECT_TRUE(gallery_watch_request_finished.WaitUntilSatisfied());
 }
 
-// Gallery watch request is not enabled on non-windows platforms.
-// Please refer to crbug.com/144491.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                        GetAllGalleryWatch) {
   EnsureMediaDirectoriesExists media_directories;
@@ -433,4 +427,4 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateGalleryWatchApiTest,
                           kGetAllGalleryWatchOK);
   EXPECT_TRUE(get_all_gallery_watch_finished.WaitUntilSatisfied());
 }
-#endif
+#endif  // defined(OS_MACOSX)

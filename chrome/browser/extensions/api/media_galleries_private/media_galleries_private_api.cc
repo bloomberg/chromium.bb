@@ -194,7 +194,7 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
     return;
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   MediaGalleriesPrivateEventRouter* router =
       MediaGalleriesPrivateAPI::Get(GetProfile())->GetEventRouter();
   DCHECK(router);
@@ -211,8 +211,8 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
                  this,
                  gallery_pref_id));
 #else
-  // Recursive gallery watch operation is not currently supported on
-  // non-windows platforms. Please refer to crbug.com/144491 for more details.
+  // Recursive gallery watch operation is not currently supported on Mac:
+  // crbug.com/144491
   HandleResponse(gallery_pref_id, false);
 #endif
 }
@@ -250,8 +250,8 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunAsync() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  // Remove gallery watch operation is currently supported on windows platforms.
-  // Please refer to crbug.com/144491 for more details.
+  // Remove gallery watch operation is currently supported on Mac:
+  // crbug.com/144491
   scoped_ptr<RemoveGalleryWatch::Params> params(
       RemoveGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -268,7 +268,7 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunAsync() {
 
 void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(pref_id,
@@ -320,7 +320,7 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunAsync() {
 
 void MediaGalleriesPrivateGetAllGalleryWatchFunction::OnPreferencesInit() {
   std::vector<std::string> result;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   GalleryWatchStateTracker* state_tracker = MediaGalleriesPrivateAPI::Get(
       GetProfile())->GetGalleryWatchStateTracker();
   MediaGalleryPrefIdSet gallery_ids =
@@ -357,7 +357,7 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunAsync() {
 }
 
 void MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           GetProfile());

@@ -92,9 +92,8 @@ GalleryWatchStateTracker::~GalleryWatchStateTracker() {
 GalleryWatchStateTracker* GalleryWatchStateTracker::GetForProfile(
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if defined(OS_WIN)
-  // Gallery watch operation is supported only on windows.
-  // Please refer to crbug.com/144491 for more details.
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Gallery watch operation is not supported on Mac: crbug.com/144491.
   DCHECK(profile);
   MediaGalleriesPrivateAPI* private_api =
       MediaGalleriesPrivateAPI::Get(profile);
