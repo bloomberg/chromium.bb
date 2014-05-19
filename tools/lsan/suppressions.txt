@@ -112,8 +112,8 @@ leak:content::SetProcessTitleFromCommandLine
 
 # http://crbug.com/354881
 leak:LoginUtilsBlockingLoginTest_EnterpriseLoginBlocksForEnterpriseUser
-leak:LoginUtilsParamTest
 leak:LoginUtilsTest::SetUp
+leak:LoginUtilsTest::PrepareProfile
 
 # http://crbug.com/371974
 leak:base::ImportantFileWriter::PostWriteTask
