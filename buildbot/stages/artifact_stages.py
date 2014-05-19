@@ -13,6 +13,7 @@ import os
 import shutil
 
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
@@ -413,6 +414,7 @@ class CPEExportStage(generic_stages.BoardSpecificBuilderStage,
 
   config_name = 'cpe_export'
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -442,6 +444,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
   config_name = 'debug_symbols'
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -548,6 +551,7 @@ class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
 
     return args
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Syncs prebuilt binhosts for slave builders."""
     # Common args we generate for all types of builds.
@@ -647,6 +651,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
     return args
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Uploads prebuilts for master and slave builders."""
     prebuilt_type = self._prebuilt_type
@@ -713,6 +718,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 
   config_name = 'dev_installer_prebuilts'
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     generated_args = generated_args = self.GenerateCommonArgs()
     commands.UploadDevInstallerPrebuilts(
@@ -784,6 +790,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Upload any needed HWTest artifacts."""
     steps = []

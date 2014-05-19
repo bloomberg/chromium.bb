@@ -10,6 +10,7 @@ import os
 import sys
 
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.buildbot.stages import artifact_stages
@@ -41,6 +42,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
     self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self).HandleSkip()
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None

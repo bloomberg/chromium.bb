@@ -313,6 +313,7 @@ class SyncStage(generic_stages.BuilderStage):
     print >> sys.stderr, self.repo.ExportManifest(
         mark_revision=self.output_manifest_sha1)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
     with osutils.TempDir() as tempdir:
@@ -475,6 +476,7 @@ class ManifestVersionedSyncStage(SyncStage):
     else:
       yield manifest
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
     if self._run.options.force_version:
@@ -702,6 +704,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
     return True
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
     if self._run.options.force_version:
@@ -731,6 +734,7 @@ class PreCQSyncStage(SyncStage):
       self.pool = validation_pool.ValidationPool.Load(filename,
           metadata=self._run.attrs.metadata)
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
@@ -960,6 +964,7 @@ class PreCQLauncherStage(SyncStage):
     # its internal timeout.
     return [], []
 
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     # Setup and initialize the repo.
     super(PreCQLauncherStage, self).PerformStage()

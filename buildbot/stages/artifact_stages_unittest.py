@@ -11,6 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot.stages import artifact_stages
 from chromite.buildbot.stages import build_stages_unittest
@@ -425,7 +426,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
-    class TestError(Exception):
+    class TestError(failures_lib.CrashCollectionFailure):
       """Unique test exception"""
 
     self.upload_mock.side_effect = TestError('mew')
