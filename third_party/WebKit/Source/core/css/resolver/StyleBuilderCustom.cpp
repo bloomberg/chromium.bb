@@ -156,22 +156,21 @@ void StyleBuilderFunctions::applyInheritCSSPropertyClip(StyleResolverState& stat
 
 void StyleBuilderFunctions::applyValueCSSPropertyClip(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-    if (Rect* rect = primitiveValue->getRectValue()) {
-        Length top = clipConvertToLength(state, rect->top());
-        Length right = clipConvertToLength(state, rect->right());
-        Length bottom = clipConvertToLength(state, rect->bottom());
-        Length left = clipConvertToLength(state, rect->left());
-        state.style()->setClip(top, right, bottom, left);
-        state.style()->setHasClip(true);
-    } else if (primitiveValue->getValueID() == CSSValueAuto) {
+    if (primitiveValue->getValueID() == CSSValueAuto) {
         state.style()->setClip(Length(), Length(), Length(), Length());
         state.style()->setHasClip(false);
+        return;
     }
+
+    Rect* rect = primitiveValue->getRectValue();
+    Length top = clipConvertToLength(state, rect->top());
+    Length right = clipConvertToLength(state, rect->right());
+    Length bottom = clipConvertToLength(state, rect->bottom());
+    Length left = clipConvertToLength(state, rect->left());
+    state.style()->setClip(top, right, bottom, left);
+    state.style()->setHasClip(true);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyColor(StyleResolverState& state)
@@ -233,16 +232,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
                 if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
                     state.style()->setUnique();
                 state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpot());
-            } else if (item->isPrimitiveValue()) {
-                CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
-                if (primitiveValue->isValueID())
-                    state.style()->setCursor(*primitiveValue);
+            } else {
+                state.style()->setCursor(*toCSSPrimitiveValue(item));
             }
         }
-    } else if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue->isValueID() && state.style()->cursor() != ECursor(*primitiveValue))
-            state.style()->setCursor(*primitiveValue);
+    } else {
+        state.style()->setCursor(*toCSSPrimitiveValue(value));
     }
 }
 
@@ -271,14 +266,9 @@ void StyleBuilderFunctions::applyInheritCSSPropertyDisplay(StyleResolverState& s
 
 void StyleBuilderFunctions::applyValueCSSPropertyDisplay(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     EDisplay display = *toCSSPrimitiveValue(value);
-
     if (!isValidDisplayValue(state, display))
         return;
-
     state.style()->setDisplay(display);
 }
 
@@ -324,8 +314,6 @@ void StyleBuilderFunctions::applyInheritCSSPropertyFontWeight(StyleResolverState
 
 void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     switch (primitiveValue->getValueID()) {
     case CSSValueInvalid:
@@ -391,9 +379,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolver
 
 void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Length lineHeight;
 
@@ -446,20 +431,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyOutlineStyle(StyleResolverState
 
 void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     EResize r = RESIZE_NONE;
-    switch (primitiveValue->getValueID()) {
-    case 0:
-        return;
-    case CSSValueAuto:
+    if (primitiveValue->getValueID() == CSSValueAuto) {
         if (Settings* settings = state.document().settings())
             r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
-        break;
-    default:
+    } else {
         r = *primitiveValue;
     }
     state.style()->setResize(r);
