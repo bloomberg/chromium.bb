@@ -343,6 +343,10 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
+  // Win8+ adds a device DeviceApi that we don't need.
+  if (base::win::GetVersion() > base::win::VERSION_WIN7)
+    policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
+
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     // On 2003/Vista the initial token has to be restricted if the main
