@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
@@ -21,8 +22,8 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
   MOCK_METHOD3(StartCapture,
                void(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
-                    const StartedCallback& started_callback));
-  MOCK_METHOD0(StopCapture,void());
+                    const RunningCallback& running_callback));
+  MOCK_METHOD0(StopCapture, void());
 
  private:
   virtual ~MockVideoCapturerDelegate() {}
@@ -60,14 +61,19 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
             enabled);
   }
 
+  MockVideoCapturerDelegate& mock_delegate() {
+    return *static_cast<MockVideoCapturerDelegate*>(delegate_.get());
+  }
+
  protected:
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
   }
 
+  base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.
-  scoped_refptr<MockVideoCapturerDelegate> delegate_;
+  scoped_refptr<VideoCapturerDelegate> delegate_;
 };
 
 TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
@@ -75,13 +81,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
-  EXPECT_CALL(*delegate_, StartCapture(
+  EXPECT_CALL(mock_delegate(), StartCapture(
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
-  EXPECT_CALL(*delegate_, StopCapture());
+  EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest,
@@ -90,13 +96,39 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
-  EXPECT_CALL(*delegate_, StartCapture(
+  EXPECT_CALL(mock_delegate(), StartCapture(
       testing::Field(&media::VideoCaptureParams::allow_resolution_change, true),
       testing::_,
       testing::_)).Times(1);
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
-  EXPECT_CALL(*delegate_, StopCapture());
+  EXPECT_CALL(mock_delegate(), StopCapture());
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
+  StreamDeviceInfo device_info;
+  device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
+  delegate_ = new VideoCapturerDelegate(device_info);
+  source_ = new MediaStreamVideoCapturerSource(
+      device_info,
+      MediaStreamSource::SourceStoppedCallback(),
+      delegate_);
+  webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+                            blink::WebMediaStreamSource::TypeVideo,
+                            base::UTF8ToUTF16("dummy_source_name"));
+  webkit_source_.setExtraData(source_);
+  blink::WebMediaStreamTrack track = StartSource();
+  message_loop_.RunUntilIdle();
+
+  delegate_->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_STARTED);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
+            webkit_source_.readyState());
+
+  delegate_->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_ERROR);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
+            webkit_source_.readyState());
 }
 
 }  // namespace content

@@ -98,10 +98,10 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
 void VideoCapturerDelegate::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureDeliverFrameCB& new_frame_callback,
-    const StartedCallback& started_callback) {
+    const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
   DCHECK(thread_checker_.CalledOnValidThread());
-  started_callback_ = started_callback;
+  running_callback_ = running_callback;
   got_first_frame_ = false;
 
   // NULL in unit test.
@@ -127,7 +127,7 @@ void VideoCapturerDelegate::StopCapture() {
   if (!stop_capture_cb_.is_null()) {
     base::ResetAndReturn(&stop_capture_cb_).Run();
   }
-  started_callback_.Reset();
+  running_callback_.Reset();
   source_formats_callback_.Reset();
 }
 
@@ -135,9 +135,12 @@ void VideoCapturerDelegate::OnStateUpdateOnRenderThread(
     VideoCaptureState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "OnStateUpdateOnRenderThread state = " << state;
-  if (state > VIDEO_CAPTURE_STATE_STARTING && !started_callback_.is_null()) {
-    base::ResetAndReturn(&started_callback_).Run(
-        state == VIDEO_CAPTURE_STATE_STARTED);
+  if (state == VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
+    running_callback_.Run(true);
+    return;
+  }
+  if (state > VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
+    base::ResetAndReturn(&running_callback_).Run(false);
   }
 }
 

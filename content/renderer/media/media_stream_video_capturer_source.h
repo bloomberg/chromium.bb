@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
@@ -21,7 +22,7 @@ namespace content {
 class CONTENT_EXPORT VideoCapturerDelegate
     : public base::RefCountedThreadSafe<VideoCapturerDelegate> {
  public:
-  typedef base::Callback<void(bool running)> StartedCallback;
+  typedef base::Callback<void(bool running)> RunningCallback;
 
   explicit VideoCapturerDelegate(
       const StreamDeviceInfo& device_info);
@@ -37,18 +38,21 @@ class CONTENT_EXPORT VideoCapturerDelegate
 
   // Starts capturing frames using the resolution in |params|.
   // |new_frame_callback| is triggered when a new video frame is available.
-  // |started_callback| is triggered before the first video frame is received
-  // or if the underlying video capturer fails to start.
+  // If capturing is started successfully then |running_callback| will be
+  // called with a parameter of true.
+  // If capturing fails to start or stopped due to an external event then
+  // |running_callback| will be called with a parameter of false.
   virtual void StartCapture(
       const media::VideoCaptureParams& params,
       const VideoCaptureDeliverFrameCB& new_frame_callback,
-      const StartedCallback& started_callback);
+      const RunningCallback& running_callback);
 
   // Stops capturing frames and clears all callbacks including the
   // SupportedFormatsCallback callback.
   virtual void StopCapture();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, Ended);
   friend class base::RefCountedThreadSafe<VideoCapturerDelegate>;
   friend class MockVideoCapturerDelegate;
 
@@ -68,9 +72,9 @@ class CONTENT_EXPORT VideoCapturerDelegate
   bool is_screen_cast_;
   bool got_first_frame_;
 
-  // |started_callback| is provided to this class in StartCapture and must be
+  // |running_callback| is provided to this class in StartCapture and must be
   // valid until StopCapture is called.
-  StartedCallback started_callback_;
+  RunningCallback running_callback_;
 
   VideoCaptureDeviceFormatsCB source_formats_callback_;
 
