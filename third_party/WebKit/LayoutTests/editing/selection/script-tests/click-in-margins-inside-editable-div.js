@@ -3,7 +3,7 @@ description("Ensure cursor placement matches IE6/IE7/FF3 when clicking above/bel
 document.body.style.margin = 0;
 
 var div = document.createElement("div");
-div.style.cssText = "font-family: ahem; font-size: 20px; -webkit-text-fill-color: yellow; width: 40px; height: 80px; padding: 20px; background-color: green;";
+div.style.cssText = "font-family: Ahem; font-size: 20px; -webkit-text-fill-color: yellow; width: 40px; height: 80px; padding: 20px; background-color: green;";
 div.contentEditable = true;
 
 var firstText = document.createTextNode("XX");
