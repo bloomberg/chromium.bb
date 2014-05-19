@@ -57,12 +57,14 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // corresponding to this view host. If this method is not called and the
     // process is not shared, then the WebContentsImpl will act as though the
     // renderer is not running (i.e., it will render "sad tab"). This method is
-    // automatically called from LoadURL.
+    // automatically called from LoadURL. |for_main_frame| indicates whether
+    // this RenderViewHost is used to render a top-level frame, so the
+    // appropriate RenderWidgetHostView type is used.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         int opener_route_id,
         int proxy_routing_id,
-        CrossProcessFrameConnector* cross_process_frame_connector) = 0;
+        bool for_main_frame) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
@@ -379,7 +381,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // be for the RenderFrame, since frames can have openers.
   bool InitRenderView(RenderViewHost* render_view_host,
                       int opener_route_id,
-                      int proxy_routing_id);
+                      int proxy_routing_id,
+                      bool for_main_frame);
 
   // Sets the pending RenderFrameHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_frame_host_ pointer to be non-NULL,

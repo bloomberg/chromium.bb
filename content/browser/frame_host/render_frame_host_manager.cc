@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_switches.h"
@@ -176,7 +178,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // soon anyway, and we don't have the NavigationEntry for this host.
     delegate_->CreateRenderViewForRenderManager(
         render_frame_host_->render_view_host(), MSG_ROUTING_NONE,
-        MSG_ROUTING_NONE, NULL);
+        MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame());
   }
 
   // If the renderer crashed, then try to create a new one to satisfy this
@@ -186,7 +188,9 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
         dest_render_frame_host->GetSiteInstance());
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
-                        opener_route_id, MSG_ROUTING_NONE))
+                        opener_route_id,
+                        MSG_ROUTING_NONE,
+                        frame_tree_node_->IsMainFrame()))
       return NULL;
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
@@ -501,6 +505,9 @@ void RenderFrameHostManager::SwapOutOldPage() {
     // process navigations, but it will be destroyed if the Frame is
     // navigated back to the same site instance as its parent.
     // TODO(kenrb): This will change when RenderFrameProxyHost is created.
+    // TODO(nasko): Move CrossProcessFrameConnector to be owned by
+    // RenderFrameProxyHost instead of RenderFrameHostManager once proxy
+    // support lands.
     if (!cross_process_frame_connector_) {
       cross_process_frame_connector_ =
           new CrossProcessFrameConnector(render_frame_host_.get());
@@ -965,7 +972,8 @@ int RenderFrameHostManager::CreateRenderFrame(
     }
 
     bool success = InitRenderView(
-        render_view_host, opener_route_id, proxy_routing_id);
+        render_view_host, opener_route_id, proxy_routing_id,
+        frame_tree_node_->IsMainFrame());
     if (success && frame_tree_node_->IsMainFrame()) {
       // Don't show the main frame's view until we get a DidNavigate from it.
       render_view_host->GetView()->Hide();
@@ -984,7 +992,8 @@ int RenderFrameHostManager::CreateRenderFrame(
 
 bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
                                             int opener_route_id,
-                                            int proxy_routing_id) {
+                                            int proxy_routing_id,
+                                            bool for_main_frame) {
   // We may have initialized this RenderViewHost for another RenderFrameHost.
   if (render_view_host->IsRenderViewLive())
     return true;
@@ -1006,8 +1015,7 @@ bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
   }
 
   return delegate_->CreateRenderViewForRenderManager(
-      render_view_host, opener_route_id, proxy_routing_id,
-      cross_process_frame_connector_);
+      render_view_host, opener_route_id, proxy_routing_id, for_main_frame);
 }
 
 void RenderFrameHostManager::CommitPending() {
@@ -1164,8 +1172,20 @@ void RenderFrameHostManager::CommitPending() {
     // this RFH was the last active one in the SiteInstance. Now that we
     // know that all RFHs are swapped out, we can delete all the RFHs and RVHs
     // in this SiteInstance.
-    if (!active_view_count)
+    if (!active_view_count) {
       ShutdownRenderFrameHostsInSiteInstance(old_site_instance_id);
+    } else {
+      // If this is a subframe, it should have a CrossProcessFrameConnector
+      // created already and we just need to link it to the proper view in the
+      // new process.
+      if (!is_main_frame) {
+        RenderWidgetHostView* rwhv =
+            render_frame_host_->render_view_host()->GetView();
+        RenderWidgetHostViewChildFrame* rwhv_child =
+            static_cast<RenderWidgetHostViewChildFrame*>(rwhv);
+        cross_process_frame_connector_->set_view(rwhv_child);
+      }
+    }
   }
 }
 

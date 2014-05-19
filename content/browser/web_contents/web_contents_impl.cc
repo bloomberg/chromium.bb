@@ -3896,7 +3896,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
     int proxy_routing_id,
-    CrossProcessFrameConnector* frame_connector) {
+    bool for_main_frame) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
   RenderWidgetHostViewBase* rwh_view;
@@ -3904,10 +3904,9 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // until RenderWidgetHost is attached to RenderFrameHost. We need to special
   // case this because RWH is still a base class of RenderViewHost, and child
   // frame RWHVs are unique in that they do not have their own WebContents.
-  if (frame_connector) {
+  if (!for_main_frame) {
     RenderWidgetHostViewChildFrame* rwh_view_child =
         new RenderWidgetHostViewChildFrame(render_view_host);
-    frame_connector->set_view(rwh_view_child);
     rwh_view = rwh_view_child;
   } else {
     rwh_view = view_->CreateViewForWidget(render_view_host);
