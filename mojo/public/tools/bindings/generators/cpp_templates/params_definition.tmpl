@@ -32,7 +32,7 @@ class {{class_name}} {
  private:
   {{class_name}}() {
     _header_.num_bytes = sizeof(*this);
-    _header_.num_fields = 3;
+    _header_.num_fields = {{struct.packed.packed_fields|length}};
   }
 
   mojo::internal::StructHeader _header_;
