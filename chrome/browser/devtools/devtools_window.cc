@@ -753,6 +753,11 @@ void DevToolsWindow::AddNewContents(WebContents* source,
 
 void DevToolsWindow::CloseContents(WebContents* source) {
   CHECK(is_docked_);
+  // Do this first so that when GetDockedInstanceForInspectedTab is called
+  // from UpdateDevTools it won't return this instance
+  // see crbug.com/372504
+  content::DevToolsManager::GetInstance()->ClientHostClosing(
+      bindings_->frontend_host());
   // This will prevent any activity after frontend is loaded.
   action_on_load_ = DevToolsToggleAction::NoOp();
   ignore_set_is_docked_ = true;
@@ -1023,6 +1028,7 @@ InfoBarService* DevToolsWindow::GetInfoBarService() {
 void DevToolsWindow::RenderProcessGone() {
   // Docked DevToolsWindow owns its web_contents_ and must delete it.
   // Undocked web_contents_ are owned and handled by browser.
+  // see crbug.com/369932
   if (is_docked_)
     CloseContents(web_contents_);
 }
