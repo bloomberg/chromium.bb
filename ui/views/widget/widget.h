@@ -162,6 +162,14 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       TRANSLUCENT_WINDOW,
     };
 
+    enum Activatable {
+      // Infer whether the window should be activatable from the window type.
+      ACTIVATABLE_DEFAULT,
+
+      ACTIVATABLE_YES,
+      ACTIVATABLE_NO
+    };
+
     enum Ownership {
       // Default. Creator is not responsible for managing the lifetime of the
       // Widget, it is destroyed when the corresponding NativeWidget is
@@ -187,7 +195,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // non-window widgets.
     WindowOpacity opacity;
     bool accept_events;
-    bool can_activate;
+    Activatable activatable;
     bool keep_on_top;
     bool visible_on_all_workspaces;
     Ownership ownership;
@@ -873,6 +881,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // The restored bounds used for the initial show. This is only used if
   // |saved_show_state_| is maximized.
   gfx::Rect initial_restored_bounds_;
+
+  // True if the widget can be activated.
+  bool can_activate_;
 
   // Focus is automatically set to the view provided by the delegate
   // when the widget is shown. Set this value to false to override

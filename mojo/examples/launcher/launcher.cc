@@ -150,7 +150,7 @@ class LauncherController : public views::TextfieldController {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.parent = parent;
     params.bounds = parent->bounds();
-    params.can_activate = true;
+    params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
     widget->Init(params);
 
     views::View* container = new views::View;

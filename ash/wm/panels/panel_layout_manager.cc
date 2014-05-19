@@ -229,7 +229,6 @@ class PanelCalloutWidget : public views::Widget {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.can_activate = false;
     params.keep_on_top = true;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = parent;
@@ -237,7 +236,6 @@ class PanelCalloutWidget : public views::Widget {
     params.bounds.set_width(kArrowWidth);
     params.bounds.set_height(kArrowHeight);
     params.accept_events = false;
-    // Why do we need this and can_activate = false?
     set_focus_on_creation(false);
     Init(params);
     DCHECK_EQ(GetNativeView()->GetRootWindow(), parent->GetRootWindow());

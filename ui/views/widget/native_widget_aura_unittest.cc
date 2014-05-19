@@ -432,9 +432,9 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
   parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
   scoped_ptr<Widget> widget(new Widget());
-  NativeWidgetAura* window = Init(parent.get(), widget.get());
-  window->Show();
-  window->Close();
+  Init(parent.get(), widget.get());
+  widget->Show();
+  widget->Close();
   base::MessageLoop::current()->RunUntilIdle();
   widget->GetNativeTheme();  // Shouldn't crash.
 }

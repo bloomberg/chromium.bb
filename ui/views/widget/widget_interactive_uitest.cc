@@ -736,7 +736,7 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.can_activate = false;
+  init_params.activatable = Widget::InitParams::ACTIVATABLE_NO;
 #if !defined(OS_CHROMEOS)
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
 #endif  // !defined(OS_CHROMEOS)

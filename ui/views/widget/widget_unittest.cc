@@ -2349,7 +2349,6 @@ TEST_F(WidgetTest, InactiveWidgetDoesNotGrabActivation) {
 
   Widget widget2;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.can_activate = false;
   params.native_widget = new DesktopNativeWidgetAura(&widget2);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget2.Init(params);
