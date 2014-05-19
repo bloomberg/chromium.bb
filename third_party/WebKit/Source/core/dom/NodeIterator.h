@@ -28,6 +28,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIteratorBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -35,16 +36,18 @@ namespace WebCore {
 
 class ExceptionState;
 
-class NodeIterator : public ScriptWrappable, public RefCounted<NodeIterator>, public NodeIteratorBase {
+class NodeIterator FINAL : public RefCountedWillBeGarbageCollectedFinalized<NodeIterator>, public ScriptWrappable, public NodeIteratorBase {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 public:
-    static PassRefPtr<NodeIterator> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
+    static PassRefPtrWillBeRawPtr<NodeIterator> create(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
     {
-        return adoptRef(new NodeIterator(rootNode, whatToShow, filter));
+        return adoptRefWillBeNoop(new NodeIterator(rootNode, whatToShow, filter));
     }
-    ~NodeIterator();
 
-    PassRefPtr<Node> nextNode(ExceptionState&);
-    PassRefPtr<Node> previousNode(ExceptionState&);
+    virtual ~NodeIterator();
+
+    PassRefPtrWillBeRawPtr<Node> nextNode(ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> previousNode(ExceptionState&);
     void detach();
 
     Node* referenceNode() const { return m_referenceNode.node.get(); }
@@ -53,17 +56,28 @@ public:
     // This function is called before any node is removed from the document tree.
     void nodeWillBeRemoved(Node&);
 
-private:
-    NodeIterator(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+    virtual void trace(Visitor*) OVERRIDE;
 
-    struct NodePointer {
-        RefPtr<Node> node;
-        bool isPointerBeforeNode;
+private:
+    NodeIterator(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
+
+    class NodePointer {
+        DISALLOW_ALLOCATION();
+    public:
         NodePointer();
-        NodePointer(PassRefPtr<Node>, bool);
+        NodePointer(PassRefPtrWillBeRawPtr<Node>, bool);
+
         void clear();
         bool moveToNext(Node* root);
         bool moveToPrevious(Node* root);
+
+        RefPtrWillBeMember<Node> node;
+        bool isPointerBeforeNode;
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(node);
+        }
     };
 
     void updateForNodeRemoval(Node& nodeToBeRemoved, NodePointer&) const;

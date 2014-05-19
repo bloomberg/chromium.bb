@@ -29,7 +29,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 
@@ -37,7 +36,7 @@ NodeIterator::NodePointer::NodePointer()
 {
 }
 
-NodeIterator::NodePointer::NodePointer(PassRefPtr<Node> n, bool b)
+NodeIterator::NodePointer::NodePointer(PassRefPtrWillBeRawPtr<Node> n, bool b)
     : node(n)
     , isPointerBeforeNode(b)
 {
@@ -72,7 +71,7 @@ bool NodeIterator::NodePointer::moveToPrevious(Node* root)
     return node;
 }
 
-NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
+NodeIterator::NodeIterator(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
 {
@@ -82,19 +81,21 @@ NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassR
 
 NodeIterator::~NodeIterator()
 {
+#if !ENABLE(OILPAN)
     root()->document().detachNodeIterator(this);
+#endif
 }
 
-PassRefPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
 {
-    RefPtr<Node> result;
+    RefPtrWillBeRawPtr<Node> result = nullptr;
 
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToNext(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
         // In other words, FILTER_REJECT does not pass over descendants
         // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
-        RefPtr<Node> provisionalResult = m_candidateNode.node;
+        RefPtrWillBeRawPtr<Node> provisionalResult = m_candidateNode.node;
         bool nodeWasAccepted = acceptNode(provisionalResult.get(), exceptionState) == NodeFilter::FILTER_ACCEPT;
         if (exceptionState.hadException())
             break;
@@ -109,16 +110,16 @@ PassRefPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
     return result.release();
 }
 
-PassRefPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
 {
-    RefPtr<Node> result;
+    RefPtrWillBeRawPtr<Node> result = nullptr;
 
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToPrevious(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
         // In other words, FILTER_REJECT does not pass over descendants
         // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
-        RefPtr<Node> provisionalResult = m_candidateNode.node;
+        RefPtrWillBeRawPtr<Node> provisionalResult = m_candidateNode.node;
         bool nodeWasAccepted = acceptNode(provisionalResult.get(), exceptionState) == NodeFilter::FILTER_ACCEPT;
         if (exceptionState.hadException())
             break;
@@ -152,7 +153,7 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenc
     // or if removed node is not the reference node, or the ancestor of the reference node.
     if (!removedNode.isDescendantOf(root()))
         return;
-    bool willRemoveReferenceNode = removedNode == referenceNode.node;
+    bool willRemoveReferenceNode = removedNode == referenceNode.node.get();
     bool willRemoveReferenceNodeAncestor = referenceNode.node && referenceNode.node->isDescendantOf(&removedNode);
     if (!willRemoveReferenceNode && !willRemoveReferenceNodeAncestor)
         return;
@@ -210,5 +211,11 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenc
     }
 }
 
+void NodeIterator::trace(Visitor* visitor)
+{
+    visitor->trace(m_referenceNode);
+    visitor->trace(m_candidateNode);
+    NodeIteratorBase::trace(visitor);
+}
 
 } // namespace WebCore

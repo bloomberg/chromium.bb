@@ -21,6 +21,7 @@
 // Introduced in DOM Level 2
 [
     SetWrapperReferenceTo(NodeFilter filter),
+    WillBeGarbageCollected,
 ] interface TreeWalker {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;

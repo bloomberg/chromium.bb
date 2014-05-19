@@ -28,6 +28,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIteratorBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -35,15 +36,16 @@ namespace WebCore {
 
 class ExceptionState;
 
-class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public NodeIteratorBase {
+class TreeWalker FINAL : public RefCountedWillBeGarbageCollectedFinalized<TreeWalker>, public ScriptWrappable, public NodeIteratorBase {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 public:
-    static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
+    static PassRefPtrWillBeRawPtr<TreeWalker> create(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
     {
-        return adoptRef(new TreeWalker(rootNode, whatToShow, filter));
+        return adoptRefWillBeNoop(new TreeWalker(rootNode, whatToShow, filter));
     }
 
     Node* currentNode() const { return m_current.get(); }
-    void setCurrentNode(PassRefPtr<Node>, ExceptionState&);
+    void setCurrentNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
 
     Node* parentNode(ExceptionState&);
     Node* firstChild(ExceptionState&);
@@ -53,12 +55,14 @@ public:
     Node* previousNode(ExceptionState&);
     Node* nextNode(ExceptionState&);
 
+    void trace(Visitor*);
+
 private:
-    TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+    TreeWalker(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
 
-    Node* setCurrent(PassRefPtr<Node>);
+    Node* setCurrent(PassRefPtrWillBeRawPtr<Node>);
 
-    RefPtr<Node> m_current;
+    RefPtrWillBeMember<Node> m_current;
 };
 
 } // namespace WebCore

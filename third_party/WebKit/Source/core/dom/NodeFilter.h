@@ -27,11 +27,12 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilterCondition.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class NodeFilter : public RefCounted<NodeFilter>, public ScriptWrappable {
+class NodeFilter FINAL : public RefCountedWillBeGarbageCollectedFinalized<NodeFilter>, public ScriptWrappable {
 public:
     /**
      * The following constants are returned by the acceptNode()
@@ -65,25 +66,27 @@ public:
         SHOW_NOTATION                  = 0x00000800
     };
 
-    static PassRefPtr<NodeFilter> create(PassRefPtr<NodeFilterCondition> condition)
+    static PassRefPtrWillBeRawPtr<NodeFilter> create(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition)
     {
-        return adoptRef(new NodeFilter(condition));
+        return adoptRefWillBeNoop(new NodeFilter(condition));
     }
 
-    static PassRefPtr<NodeFilter> create()
+    static PassRefPtrWillBeRawPtr<NodeFilter> create()
     {
-        return adoptRef(new NodeFilter());
+        return adoptRefWillBeNoop(new NodeFilter());
     }
 
     short acceptNode(Node*, ExceptionState&) const;
 
-    void setCondition(PassRefPtr<NodeFilterCondition> condition)
+    void setCondition(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition)
     {
         m_condition = condition;
     }
 
+    void trace(Visitor*);
+
 private:
-    explicit NodeFilter(PassRefPtr<NodeFilterCondition> condition) : m_condition(condition)
+    explicit NodeFilter(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition) : m_condition(condition)
     {
         ScriptWrappable::init(this);
     }
@@ -93,7 +96,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    RefPtr<NodeFilterCondition> m_condition;
+    RefPtrWillBeMember<NodeFilterCondition> m_condition;
 };
 
 } // namespace WebCore

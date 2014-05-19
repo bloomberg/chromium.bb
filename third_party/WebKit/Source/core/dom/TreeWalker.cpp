@@ -33,14 +33,14 @@
 
 namespace WebCore {
 
-TreeWalker::TreeWalker(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
+TreeWalker::TreeWalker(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_current(root())
 {
     ScriptWrappable::init(this);
 }
 
-void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionState& exceptionState)
+void TreeWalker::setCurrentNode(PassRefPtrWillBeRawPtr<Node> node, ExceptionState& exceptionState)
 {
     if (!node) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
@@ -49,7 +49,7 @@ void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionState& exception
     m_current = node;
 }
 
-inline Node* TreeWalker::setCurrent(PassRefPtr<Node> node)
+inline Node* TreeWalker::setCurrent(PassRefPtrWillBeRawPtr<Node> node)
 {
     m_current = node;
     return m_current.get();
@@ -57,7 +57,7 @@ inline Node* TreeWalker::setCurrent(PassRefPtr<Node> node)
 
 Node* TreeWalker::parentNode(ExceptionState& exceptionState)
 {
-    RefPtr<Node> node = m_current;
+    RefPtrWillBeRawPtr<Node> node = m_current;
     while (node != root()) {
         node = node->parentNode();
         if (!node)
@@ -73,7 +73,7 @@ Node* TreeWalker::parentNode(ExceptionState& exceptionState)
 
 Node* TreeWalker::firstChild(ExceptionState& exceptionState)
 {
-    for (RefPtr<Node> node = m_current->firstChild(); node; ) {
+    for (RefPtrWillBeRawPtr<Node> node = m_current->firstChild(); node; ) {
         short acceptNodeResult = acceptNode(node.get(), exceptionState);
         if (exceptionState.hadException())
             return 0;
@@ -106,7 +106,7 @@ Node* TreeWalker::firstChild(ExceptionState& exceptionState)
 
 Node* TreeWalker::lastChild(ExceptionState& exceptionState)
 {
-    for (RefPtr<Node> node = m_current->lastChild(); node; ) {
+    for (RefPtrWillBeRawPtr<Node> node = m_current->lastChild(); node; ) {
         short acceptNodeResult = acceptNode(node.get(), exceptionState);
         if (exceptionState.hadException())
             return 0;
@@ -139,11 +139,11 @@ Node* TreeWalker::lastChild(ExceptionState& exceptionState)
 
 Node* TreeWalker::previousSibling(ExceptionState& exceptionState)
 {
-    RefPtr<Node> node = m_current;
+    RefPtrWillBeRawPtr<Node> node = m_current;
     if (node == root())
         return 0;
     while (1) {
-        for (RefPtr<Node> sibling = node->previousSibling(); sibling; ) {
+        for (RefPtrWillBeRawPtr<Node> sibling = node->previousSibling(); sibling; ) {
             short acceptNodeResult = acceptNode(sibling.get(), exceptionState);
             if (exceptionState.hadException())
                 return 0;
@@ -176,11 +176,11 @@ Node* TreeWalker::previousSibling(ExceptionState& exceptionState)
 
 Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
 {
-    RefPtr<Node> node = m_current;
+    RefPtrWillBeRawPtr<Node> node = m_current;
     if (node == root())
         return 0;
     while (1) {
-        for (RefPtr<Node> sibling = node->nextSibling(); sibling; ) {
+        for (RefPtrWillBeRawPtr<Node> sibling = node->nextSibling(); sibling; ) {
             short acceptNodeResult = acceptNode(sibling.get(), exceptionState);
             if (exceptionState.hadException())
                 return 0;
@@ -213,7 +213,7 @@ Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
 
 Node* TreeWalker::previousNode(ExceptionState& exceptionState)
 {
-    RefPtr<Node> node = m_current;
+    RefPtrWillBeRawPtr<Node> node = m_current;
     while (node != root()) {
         while (Node* previousSibling = node->previousSibling()) {
             node = previousSibling;
@@ -252,7 +252,7 @@ Node* TreeWalker::previousNode(ExceptionState& exceptionState)
 
 Node* TreeWalker::nextNode(ExceptionState& exceptionState)
 {
-    RefPtr<Node> node = m_current;
+    RefPtrWillBeRawPtr<Node> node = m_current;
 Children:
     while (Node* firstChild = node->firstChild()) {
         node = firstChild;
@@ -275,6 +275,12 @@ Children:
             goto Children;
     }
     return 0;
+}
+
+void TreeWalker::trace(Visitor* visitor)
+{
+    visitor->trace(m_current);
+    NodeIteratorBase::trace(visitor);
 }
 
 } // namespace WebCore

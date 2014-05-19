@@ -20,6 +20,7 @@
 
 [
     DependentLifetime,
+    WillBeGarbageCollected,
 ] interface NodeFilter {
     // Constants returned by acceptNode
     const short               FILTER_ACCEPT                  = 1;

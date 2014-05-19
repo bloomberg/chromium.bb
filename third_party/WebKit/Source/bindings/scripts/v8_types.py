@@ -108,6 +108,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
     'MediaQueryListListener': 'RefPtrWillBeRawPtr<MediaQueryListListener>',
+    'NodeFilter': 'RefPtrWillBeRawPtr<NodeFilter>',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529

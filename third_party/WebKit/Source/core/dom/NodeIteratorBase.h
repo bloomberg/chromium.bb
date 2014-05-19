@@ -25,6 +25,7 @@
 #ifndef NodeIteratorBase_h
 #define NodeIteratorBase_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -33,8 +34,10 @@ class ExceptionState;
 class Node;
 class NodeFilter;
 
-class NodeIteratorBase {
+class NodeIteratorBase : public WillBeGarbageCollectedMixin {
 public:
+    virtual ~NodeIteratorBase() { }
+
     Node* root() const { return m_root.get(); }
     unsigned whatToShow() const { return m_whatToShow; }
     NodeFilter* filter() const { return m_filter.get(); }
@@ -43,14 +46,16 @@ public:
     // Document.createNodeIterator() and Document.createTreeWalker().
     bool expandEntityReferences() const { return false; }
 
+    virtual void trace(Visitor*);
+
 protected:
-    NodeIteratorBase(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+    NodeIteratorBase(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
     short acceptNode(Node*, ExceptionState&) const;
 
 private:
-    RefPtr<Node> m_root;
+    RefPtrWillBeMember<Node> m_root;
     unsigned m_whatToShow;
-    RefPtr<NodeFilter> m_filter;
+    RefPtrWillBeMember<NodeFilter> m_filter;
 };
 
 } // namespace WebCore

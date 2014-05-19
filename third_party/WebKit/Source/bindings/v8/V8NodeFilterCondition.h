@@ -34,6 +34,7 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/NodeFilterCondition.h"
+#include "platform/heap/Handle.h"
 #include <v8.h>
 #include "wtf/PassRefPtr.h"
 
@@ -61,9 +62,9 @@ class ExceptionState;
 // (V8)
 class V8NodeFilterCondition FINAL : public NodeFilterCondition {
 public:
-    static PassRefPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
+    static PassRefPtrWillBeRawPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     {
-        return adoptRef(new V8NodeFilterCondition(filter, owner, isolate));
+        return adoptRefWillBeNoop(new V8NodeFilterCondition(filter, owner, isolate));
     }
 
     virtual ~V8NodeFilterCondition();

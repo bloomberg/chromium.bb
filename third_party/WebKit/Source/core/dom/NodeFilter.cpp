@@ -33,4 +33,9 @@ short NodeFilter::acceptNode(Node* node, ExceptionState& exceptionState) const
     return m_condition ? m_condition->acceptNode(node, exceptionState) : static_cast<short>(FILTER_ACCEPT);
 }
 
+void NodeFilter::trace(Visitor* visitor)
+{
+    visitor->trace(m_condition);
+}
+
 } // namespace WebCore

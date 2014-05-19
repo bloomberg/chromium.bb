@@ -25,6 +25,7 @@
 #ifndef NodeFilterCondition_h
 #define NodeFilterCondition_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -32,10 +33,12 @@ namespace WebCore {
 class ExceptionState;
 class Node;
 
-class NodeFilterCondition : public RefCounted<NodeFilterCondition> {
+class NodeFilterCondition : public RefCountedWillBeGarbageCollectedFinalized<NodeFilterCondition> {
 public:
     virtual ~NodeFilterCondition() { }
     virtual short acceptNode(Node*, ExceptionState&) const = 0;
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

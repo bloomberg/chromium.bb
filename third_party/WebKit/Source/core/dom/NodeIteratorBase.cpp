@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-NodeIteratorBase::NodeIteratorBase(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> nodeFilter)
+NodeIteratorBase::NodeIteratorBase(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> nodeFilter)
     : m_root(rootNode)
     , m_whatToShow(whatToShow)
     , m_filter(nodeFilter)
@@ -47,6 +47,12 @@ short NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState) c
     if (!m_filter)
         return NodeFilter::FILTER_ACCEPT;
     return m_filter->acceptNode(node, exceptionState);
+}
+
+void NodeIteratorBase::trace(Visitor* visitor)
+{
+    visitor->trace(m_root);
+    visitor->trace(m_filter);
 }
 
 } // namespace WebCore
