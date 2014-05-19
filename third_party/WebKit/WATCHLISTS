@@ -251,6 +251,12 @@
                   '|LayoutTests/platform/.*/fast/css-grid-layout/' \
                   '|LayoutTests/platform/.*/ietestcenter/css3/grid/'
     },
+    'css_flexbox': {
+      'filepath': 'Source/core/rendering/.*Flex' \
+                  '|LayoutTests/fast/flexbox/' \
+                  '|LayoutTests/css3/flexbox/' \
+                  '|LayoutTests/ietestcenter/css3/flexbox/'
+    },
     'fragment_layout': {
       'filepath': 'Source/core/rendering/.*(FlowThread|MultiCol|Region)' \
                   '|Source/core/rendering/ColumnInfo' \
@@ -376,6 +382,7 @@
               'skal@google.com',
               'vikasa@google.com' ],
     'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
+    'css_flexbox': [ 'cbiesinger@chromium.org' ],
     'fragment_layout': [ 'mstensho+blink@opera.com' ],
     'table_layout': [ 'mstensho+blink@opera.com' ],
     'battery_status': [ 'timvolodine@chromium.org' ],
