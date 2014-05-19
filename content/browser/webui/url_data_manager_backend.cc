@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
@@ -341,6 +342,11 @@ bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
 void URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size,
                                        int* bytes_read) {
+  // http://crbug.com/373841
+  char url_buf[128];
+  base::strlcpy(url_buf, request_->url().spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+
   int remaining = static_cast<int>(data_->size()) - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
