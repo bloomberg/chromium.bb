@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -825,6 +826,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
   active_entry->SetHttpStatusCode(params.http_status_code);
   active_entry->SetPageState(params.page_state);
   active_entry->SetRedirectChain(params.redirects);
+
+  // Use histogram to track memory impact of redirect chain because it's now
+  // not cleared for committed entries.
+  size_t redirect_chain_size = 0;
+  for (size_t i = 0; i < params.redirects.size(); ++i) {
+    redirect_chain_size += params.redirects[i].spec().length();
+  }
+  UMA_HISTOGRAM_COUNTS("Navigation.RedirectChainSize", redirect_chain_size);
 
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.

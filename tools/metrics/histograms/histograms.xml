@@ -11101,6 +11101,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
+<histogram name="Navigation.RedirectChainSize" units="characters">
+  <owner>haitaol@chromium.org</owner>
+  <owner>donnd@chromium.org</owner>
+  <summary>
+    Total length of the redirect URL strings in navigation entry. Logged when
+    entry is committed.
+  </summary>
+</histogram>
+
 <histogram name="NCN.NetworkOperatorMCCMNC">
   <owner>bolian@chromium.org</owner>
   <owner>bengr@google.com</owner>
