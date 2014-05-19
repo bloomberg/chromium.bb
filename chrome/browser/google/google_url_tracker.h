@@ -39,9 +39,9 @@ class InfoBar;
 //
 // Most consumers should only call GoogleURL(), which is guaranteed to
 // synchronously return a value at all times (even during startup or in unittest
-// mode).  Consumers who need to be notified when things change should register
-// a callback that provides the original and updated values via
-// RegisterCallback().
+// mode).  Consumers who need to be notified when things change should listen to
+// the notification service for NOTIFICATION_GOOGLE_URL_UPDATED, which provides
+// the original and updated values.
 //
 // To protect users' privacy and reduce server load, no updates will be
 // performed (ever) unless at least one consumer registers interest by calling
@@ -55,6 +55,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   typedef base::Callback<void(GURL, GURL)> OnGoogleURLUpdatedCallback;
   typedef base::CallbackList<void(GURL, GURL)> CallbackList;
   typedef CallbackList::Subscription Subscription;
+
+  // The contents of the Details for a NOTIFICATION_GOOGLE_URL_UPDATED.
+  typedef std::pair<GURL, GURL> UpdatedDetails;
 
   // The constructor does different things depending on which of these values
   // you pass it.  Hopefully these are self-explanatory.
@@ -208,8 +211,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   bool need_to_fetch_;     // True if a consumer actually wants us to fetch an
                            // updated URL.  If this is never set, we won't
                            // bother to fetch anything.
-                           // Consumers should register a callback via
-                           // RegisterCallback().
+                           // Consumers should observe
+                           // chrome::NOTIFICATION_GOOGLE_URL_UPDATED.
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.

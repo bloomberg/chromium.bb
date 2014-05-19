@@ -6,12 +6,12 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -36,13 +36,8 @@ NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
                    base::Unretained(this)));
   }
 
-  GoogleURLTracker* google_url_tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile_);
-  if (google_url_tracker) {
-    google_url_updated_subscription_ = google_url_tracker->RegisterCallback(
-        base::Bind(&NavigationCorrectionTabObserver::OnGoogleURLUpdated,
-                   base::Unretained(this)));
-  }
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 NavigationCorrectionTabObserver::~NavigationCorrectionTabObserver() {
@@ -65,12 +60,18 @@ void NavigationCorrectionTabObserver::RenderViewCreated(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Internal helpers
+// content::NotificationObserver overrides
 
-void NavigationCorrectionTabObserver::OnGoogleURLUpdated(GURL old_url,
-                                                         GURL new_url) {
+void NavigationCorrectionTabObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
   UpdateNavigationCorrectionInfo(web_contents()->GetRenderViewHost());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Internal helpers
 
 GURL NavigationCorrectionTabObserver::GetNavigationCorrectionURL() const {
   // Disable navigation corrections when the preference is disabled or when in

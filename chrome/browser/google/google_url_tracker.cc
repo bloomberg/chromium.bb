@@ -102,13 +102,19 @@ void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
 }
 
 void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
-  GURL old_google_url = google_url_;
+  UpdatedDetails urls(google_url_, fetched_google_url_);
   google_url_ = fetched_google_url_;
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
   prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
-  NotifyGoogleURLUpdated(old_google_url, google_url_);
+  NotifyGoogleURLUpdated(urls.first, urls.second);
 
+  // TODO(blundell): Convert all clients to use the callback interface and
+  // eliminate this notification. crbug.com/373237
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      content::Source<Profile>(profile_),
+      content::Details<UpdatedDetails>(&urls));
   need_to_prompt_ = false;
   CloseAllEntries(redo_searches);
 }
