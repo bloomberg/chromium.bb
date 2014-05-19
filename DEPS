@@ -31,6 +31,7 @@ vars = {
   "webkit_revision": "174243",
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
+  "pdfium_git": "https://pdfium.googlesource.com",
   "skia_git": "https://skia.googlesource.com",
   "swig_revision": "230490",
   "nacl_revision": "13181",
@@ -73,6 +74,10 @@ vars = {
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
   "buildtools_revision": "8349035e86305fc9e4fd871610821336120a4bad",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling PDFIum
+  # and whatever else without interference from each other.
+  "pdfium_revision": "5110c4743751145c4ae1934cd1d83bc6c55bb43f",
 }
 
 deps = {
@@ -317,6 +322,9 @@ deps = {
 
   "src/third_party/openssl":
     "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
+
+  "src/third_party/pdfium":
+    Var("pdfium_git") + "/pdfium.git@" + Var("pdfium_revision"),
 }
 
 

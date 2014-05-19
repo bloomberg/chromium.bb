@@ -294,6 +294,7 @@ v8.log
 /third_party/opus/src
 /third_party/ots
 /third_party/pdfsqueeze
+/third_party/pdfium
 /third_party/pefile
 /third_party/perl
 /third_party/platformsdk_win7
