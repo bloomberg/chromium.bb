@@ -20,6 +20,8 @@ function requestMoreResources() {
     document.getElementById("images").appendChild(createdImage);
 
     document.getElementById("with-background").style.backgroundImage = "url(../images/resources/palatted-color-png-gamma-one-color-profile.png)";
+    // Force a style recalc so the background image starts loading.
+    getComputedStyle(document.getElementById("with-background"));
 
     document.getElementById("more-images").innerHTML = "<img id='img-created-2' src='../images/resources/png_per_row_alpha.png'>";
 
@@ -56,11 +58,11 @@ p
 }
 </style>
 </head>
-<body onload="setTimeout(requestMoreResources, 100);">
+<body onload="requestMoreResources()">
 <div id="with-background">
 <p>
     This test checks that the correct callbacks for resource requests are
-    invoked. It passes if you see the callbacks for 12 resources.
+    invoked. It passes if you see the callbacks for 11 resources.
 </p>
 </div>
 <div id="images">
