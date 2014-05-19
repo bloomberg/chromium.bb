@@ -20,7 +20,8 @@ namespace content {
 // infrastructure.
 class DevToolsTracingHandler : public DevToolsProtocol::Handler {
  public:
-  DevToolsTracingHandler();
+  enum Target { Browser, Renderer };
+  explicit DevToolsTracingHandler(Target target);
   virtual ~DevToolsTracingHandler();
 
  private:
@@ -39,6 +40,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
 
   base::WeakPtrFactory<DevToolsTracingHandler> weak_factory_;
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;
+  Target target_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsTracingHandler);
 };
 

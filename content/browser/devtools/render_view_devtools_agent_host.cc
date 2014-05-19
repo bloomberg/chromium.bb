@@ -160,13 +160,12 @@ bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
   return agent_host && agent_host->DispatchIPCMessage(message);
 }
 
-RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
-    RenderViewHost* rvh)
+RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
       overrides_handler_(new RendererOverridesHandler(this)),
-      tracing_handler_(new DevToolsTracingHandler()),
-      power_handler_(new DevToolsPowerHandler())
- {
+      tracing_handler_(
+          new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
+      power_handler_(new DevToolsPowerHandler()) {
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
       &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,

@@ -46,8 +46,9 @@ void ReadFile(
 
 }  // namespace
 
-DevToolsTracingHandler::DevToolsTracingHandler()
-    : weak_factory_(this) {
+DevToolsTracingHandler::DevToolsTracingHandler(
+    DevToolsTracingHandler::Target target)
+    : weak_factory_(this), target_(target) {
   RegisterCommandHandler(devtools::Tracing::start::kName,
                          base::Bind(&DevToolsTracingHandler::OnStart,
                                     base::Unretained(this)));
@@ -166,6 +167,14 @@ DevToolsTracingHandler::OnStart(
           true));
       buffer_usage_poll_timer_->Reset();
     }
+  }
+
+  // If inspected target is a render process Tracing.start will be handled by
+  // tracing agent in the renderer.
+  if (target_ == Renderer) {
+    TracingController::GetInstance()->EnableRecording(
+        categories, options, TracingController::EnableRecordingDoneCallback());
+    return NULL;
   }
 
   TracingController::GetInstance()->EnableRecording(
