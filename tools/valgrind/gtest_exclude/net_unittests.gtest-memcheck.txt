@@ -24,3 +24,6 @@ DiskCacheBackendTest.ShutdownWithPendingIO_Fast
 # flaky failure on Linux Tests (valgrind)(2), 
 # see http://code.google.com/p/chromium/issues/detail?id=117196
 SSLClientSocketTest.VerifyReturnChainProperlyOrdered
+
+# Flaky: http://crbug.com/374871
+EndToEndTests/EndToEndTest.LargePostSmallBandwidthLargeBuffer*
