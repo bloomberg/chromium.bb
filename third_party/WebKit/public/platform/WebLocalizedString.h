@@ -124,6 +124,7 @@ struct WebLocalizedString {
         SearchMenuClearRecentSearchesText, // Deprecated.
         SearchMenuNoRecentSearchesText, // Deprecated.
         SearchMenuRecentSearchesText, // Deprecated.
+        SelectMenuListText,
         SubmitButtonDefaultLabel,
         ThisMonthButtonLabel,
         ThisWeekButtonLabel,
