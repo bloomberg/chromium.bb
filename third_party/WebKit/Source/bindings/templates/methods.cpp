@@ -196,10 +196,6 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {# Local variables #}
-{% if method.is_partial_interface_member and not method.is_static %}
-{# instance members (non-static members) in partial interface take |impl| #}
-ASSERT(impl);
-{% endif %}
 {% if method.is_call_with_script_state %}
 ScriptState* state = ScriptState::current(info.GetIsolate());
 {% endif %}

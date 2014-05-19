@@ -485,7 +485,6 @@ static void implements2StringAttributeAttributeGetter(const v8::PropertyCallback
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     v8SetReturnValueString(info, TestImplements2::implements2StringAttribute(*impl), info.GetIsolate());
 }
 
@@ -500,7 +499,6 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
@@ -516,7 +514,6 @@ static void implements3StringAttributeAttributeGetter(const v8::PropertyCallback
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StringAttribute(*impl), info.GetIsolate());
 }
 
@@ -531,7 +528,6 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
@@ -573,7 +569,6 @@ static void partialLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     v8SetReturnValueInt(info, TestPartialInterface::partialLongAttribute(*impl));
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -593,7 +588,6 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterface::setPartialLongAttribute(*impl, cppValue);
 }
@@ -647,7 +641,6 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueInt(info, TestPartialInterface::partialCallWithExecutionContextLongAttribute(scriptContext, *impl));
 }
@@ -668,7 +661,6 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(scriptContext, *impl, cppValue);
@@ -689,7 +681,6 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::PropertyCal
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     v8SetReturnValueString(info, TestPartialInterface::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -708,7 +699,6 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     String string = cppValue;
     if (!(string == "foo" || string == "bar"))
@@ -730,7 +720,6 @@ static void partial2LongAttributeAttributeGetter(const v8::PropertyCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2LongAttribute(*impl));
 }
 
@@ -746,7 +735,6 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
-    ASSERT(impl);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
     TestPartialInterfaceImplementation::setPartial2LongAttribute(*impl, cppValue);
 }
@@ -963,7 +951,6 @@ static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackI
 static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ASSERT(impl);
     TestImplements2::implements2VoidMethod(*impl);
 }
 
@@ -977,7 +964,6 @@ static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ASSERT(impl);
     TestImplements3Implementation::implements3VoidMethod(*impl);
 }
 
@@ -1004,7 +990,6 @@ static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallback
 static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ASSERT(impl);
     TestPartialInterface::partialVoidMethod(*impl);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -1044,7 +1029,6 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    ASSERT(impl);
     TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -1063,7 +1047,6 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ASSERT(impl);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *impl, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -1089,7 +1072,6 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
     TONATIVE_VOID(ScriptValue, partialCallbackTypeArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
-    ASSERT(impl);
     TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -1106,7 +1088,6 @@ static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::Func
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
-    ASSERT(impl);
     TestPartialInterfaceImplementation::partial2VoidMethod(*impl);
 }
 

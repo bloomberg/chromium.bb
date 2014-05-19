@@ -87,7 +87,6 @@ void animate1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     Element* impl = V8Element::toNative(info.Holder());
     TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect)), impl);
 }
 
@@ -97,7 +96,6 @@ void animate2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
     Element* impl = V8Element::toNative(info.Holder());
     TONATIVE_VOID(Vector<Dictionary>, keyframes, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
-    ASSERT(impl);
     RefPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -110,7 +108,6 @@ void animate3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     Element* impl = V8Element::toNative(info.Holder());
     TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     TONATIVE_VOID(double, duration, static_cast<double>(info[1]->NumberValue()));
-    ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect, duration)), impl);
 }
 
@@ -124,7 +121,6 @@ void animate4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("animate", "Element", "parameter 2 ('timingInput') is not an object."), info.GetIsolate());
         return;
     }
-    ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect, timingInput)), impl);
 }
 
@@ -135,7 +131,6 @@ void animate5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     Element* impl = V8Element::toNative(info.Holder());
     TONATIVE_VOID(Vector<Dictionary>, keyframes, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
     TONATIVE_VOID(double, duration, static_cast<double>(info[1]->NumberValue()));
-    ASSERT(impl);
     RefPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, duration, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -154,7 +149,6 @@ void animate6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    ASSERT(impl);
     RefPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, timingInput, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

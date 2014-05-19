@@ -36,10 +36,6 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% elif not attribute.is_static %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     {% endif %}
-    {% if attribute.is_partial_interface_member and not attribute.is_static %}
-    {# instance members (non-static members) in partial interface take |impl| #}
-    ASSERT(impl);
-    {% endif %}
     {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
     if (!impl->document())
         return;
@@ -242,10 +238,6 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
         return;
     {% elif not attribute.is_static %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
-    {% endif %}
-    {% if attribute.is_partial_interface_member and not attribute.is_static %}
-    {# instance members (non-static members) in partial interface take |impl| #}
-    ASSERT(impl);
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
     if (!impl->document())
