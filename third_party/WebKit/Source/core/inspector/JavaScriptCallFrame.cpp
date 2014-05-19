@@ -176,7 +176,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String&
         v8String(m_isolate, variableName),
         newValue.v8Value()
     };
-    return ScriptValue(setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv), m_isolate);
+    return ScriptValue(ScriptState::current(m_isolate), setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv));
 }
 
 } // namespace WebCore

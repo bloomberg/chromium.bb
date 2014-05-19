@@ -72,7 +72,7 @@ static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWill
     if (imageBitmap) {
         resolver->resolve(imageBitmap);
     } else {
-        resolver->reject(ScriptValue(v8::Null(scriptState->isolate()), scriptState->isolate()));
+        resolver->reject(ScriptValue(scriptState, v8::Null(scriptState->isolate())));
     }
     return promise;
 }

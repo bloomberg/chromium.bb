@@ -16,7 +16,7 @@ void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& arg
     ScriptFunction* function = ScriptFunction::Cast(args.Data());
     v8::Local<v8::Value> value = args.Length() > 0 ? args[0] : v8::Local<v8::Value>(v8::Undefined(isolate));
 
-    ScriptValue result = function->call(ScriptValue(value, isolate));
+    ScriptValue result = function->call(ScriptValue(ScriptState::current(isolate), value));
 
     v8SetReturnValue(args, result.v8Value());
 }

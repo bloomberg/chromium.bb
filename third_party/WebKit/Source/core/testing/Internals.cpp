@@ -2281,7 +2281,7 @@ private:
         v8::Isolate* isolate = value.isolate();
         ASSERT(v8Value->IsNumber());
         int intValue = v8Value.As<v8::Integer>()->Value();
-        ScriptValue result  = ScriptValue(v8::Integer::New(isolate, intValue + 1), isolate);
+        ScriptValue result  = ScriptValue(value.scriptState(), v8::Integer::New(isolate, intValue + 1));
         return result;
     }
 };

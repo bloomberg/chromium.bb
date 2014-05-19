@@ -52,15 +52,6 @@ public:
 
     virtual ~ScriptValue();
 
-    // FIXME: This method is deprecated and will be removed soon.
-    // We should always pass a ScriptState when creating a new ScriptValue.
-    ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-        : m_isolate(isolate)
-        , m_scriptState(nullptr)
-        , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, isolate))
-    {
-    }
-
     ScriptValue(ScriptState* scriptState, v8::Handle<v8::Value> value)
         : m_isolate(scriptState->isolate())
         , m_scriptState(scriptState)

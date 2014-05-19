@@ -147,7 +147,7 @@ TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
 
-    ScriptValue foozoo(object, isolate);
+    ScriptValue foozoo(scriptState, object);
     checkInjection(scriptState, IDBKey::createString("myNewKey"), foozoo, "bar");
     checkInjection(scriptState, IDBKey::createNumber(1234), foozoo, "bar");
 
@@ -163,7 +163,7 @@ TEST_F(InjectIDBKeyTest, SubProperty)
     subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
     object->Set(v8AtomicString(isolate, "foo"), subProperty);
 
-    ScriptValue scriptObject(object, isolate);
+    ScriptValue scriptObject(scriptState, object);
     checkInjection(scriptState, IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
     checkInjection(scriptState, IDBKey::createNumber(789), scriptObject, "foo.baz");
     checkInjection(scriptState, IDBKey::createDate(4567), scriptObject, "foo.baz");
