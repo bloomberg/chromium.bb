@@ -30,16 +30,29 @@ class TestViewsDelegate : public ViewsDelegate {
     use_transparent_windows_ = transparent;
   }
 
+#if defined(USE_AURA)
+  void set_context_factory(ui::ContextFactory* context_factory) {
+    context_factory_ = context_factory;
+  }
+#endif
+
   // ViewsDelegate:
   virtual void OnBeforeWidgetInit(
       Widget::InitParams* params,
       internal::NativeWidgetDelegate* delegate) OVERRIDE;
+#if defined(USE_AURA)
+  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
+#endif
 
  private:
   bool use_desktop_native_widgets_;
+
   bool use_transparent_windows_;
+
 #if defined(USE_AURA)
   scoped_ptr<wm::WMState> wm_state_;
+
+  ui::ContextFactory* context_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);

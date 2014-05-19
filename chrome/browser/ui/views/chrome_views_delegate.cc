@@ -33,6 +33,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "content/public/browser/context_factory.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #endif
@@ -368,6 +369,12 @@ bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   // windows.
   views::LinuxUI* ui = views::LinuxUI::instance();
   return maximized && ui && ui->UnityIsRunning();
+}
+#endif
+
+#if defined(USE_AURA)
+ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
+  return content::GetContextFactory();
 }
 #endif
 

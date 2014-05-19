@@ -81,6 +81,12 @@ bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
   return false;
 }
 
+#if defined(USE_AURA)
+ui::ContextFactory* ViewsDelegate::GetContextFactory() {
+  return NULL;
+}
+#endif
+
 #if defined(OS_WIN)
 int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
                                           const base::Closure& callback) {

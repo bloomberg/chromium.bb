@@ -51,6 +51,9 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   virtual bool WindowManagerProvidesTitleBar(bool maximized) OVERRIDE;
 #endif
+#if defined(USE_AURA)
+  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
+#endif
 #if defined(OS_WIN)
   virtual int GetAppbarAutohideEdges(HMONITOR monitor,
                                      const base::Closure& callback) OVERRIDE;
