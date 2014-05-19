@@ -18,12 +18,14 @@ class DevToolsContentsResizingStrategy {
   DevToolsContentsResizingStrategy(
       const gfx::Insets& insets,
       const gfx::Size& min_size);
+  explicit DevToolsContentsResizingStrategy(const gfx::Rect& bounds);
 
   void CopyFrom(const DevToolsContentsResizingStrategy& strategy);
   bool Equals(const DevToolsContentsResizingStrategy& strategy);
 
   const gfx::Insets& insets() const { return insets_; }
   const gfx::Size& min_size() const { return min_size_; }
+  const gfx::Rect& bounds() const { return bounds_; }
 
  private:
   // Insets of contents inside DevTools.
@@ -31,6 +33,9 @@ class DevToolsContentsResizingStrategy {
 
   // Minimum size of contents.
   gfx::Size min_size_;
+
+  // Contents bounds. When non-empty, used instead of insets.
+  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsContentsResizingStrategy);
 };

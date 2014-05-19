@@ -2375,14 +2375,10 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (!render_widget_host_ || render_widget_host_->is_hidden())
     return;
 
-  // Pausing for the overlay view prevents the underlay from receiving
-  // frames. This may lead to large delays, causing overlaps. If both
-  // overlay and underlay resize at the same time, let them both to have
-  // some time waiting. See crbug.com/352020.
-  if (underlay_view_ &&
-      underlay_view_->render_widget_host_ &&
-      !underlay_view_->render_widget_host_->
-          CanPauseForPendingResizeOrRepaints())
+  // Pausing for the overlay/underlay view prevents the other one from receiving
+  // frames. This may lead to large delays, causing overlaps.
+  // See crbug.com/352020.
+  if (underlay_view_ || overlay_view_)
     return;
 
   // Ensure that all frames are acked before waiting for a frame to come in.

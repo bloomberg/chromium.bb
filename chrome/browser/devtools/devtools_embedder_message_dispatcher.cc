@@ -51,6 +51,23 @@ bool GetValue(const base::ListValue& list, int pos, gfx::Size& size) {
   return true;
 }
 
+bool GetValue(const base::ListValue& list, int pos, gfx::Rect& rect) {
+  const base::DictionaryValue* dict;
+  if (!list.GetDictionary(pos, &dict))
+    return false;
+  int x = 0;
+  int y = 0;
+  int width = 0;
+  int height = 0;
+  if (!dict->GetInteger("x", &x) ||
+      !dict->GetInteger("y", &y) ||
+      !dict->GetInteger("width", &width) ||
+      !dict->GetInteger("height", &height))
+    return false;
+  rect.SetRect(x, y, width, height);
+  return true;
+}
+
 template <typename T>
 struct StorageTraits {
   typedef T StorageType;
@@ -239,8 +256,8 @@ DevToolsEmbedderMessageDispatcher*
 
   d->RegisterHandler("bringToFront", &Delegate::ActivateWindow, delegate);
   d->RegisterHandler("closeWindow", &Delegate::CloseWindow, delegate);
-  d->RegisterHandler("setContentsInsets",
-                     &Delegate::SetContentsInsets, delegate);
+  d->RegisterHandler("setInspectedPageBounds",
+                     &Delegate::SetInspectedPageBounds, delegate);
   d->RegisterHandler("setContentsResizingStrategy",
                      &Delegate::SetContentsResizingStrategy, delegate);
   d->RegisterHandler("inspectElementCompleted",

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace base {
@@ -30,8 +31,7 @@ class DevToolsEmbedderMessageDispatcher {
 
     virtual void ActivateWindow() = 0;
     virtual void CloseWindow() = 0;
-    virtual void SetContentsInsets(
-        int top, int left, int bottom, int right) = 0;
+    virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
     virtual void SetContentsResizingStrategy(
         const gfx::Insets& insets, const gfx::Size& min_size) = 0;
     virtual void InspectElementCompleted() = 0;

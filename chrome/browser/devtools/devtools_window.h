@@ -270,8 +270,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // content::DevToolsUIBindings::Delegate overrides
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
-  virtual void SetContentsInsets(
-      int left, int top, int right, int bottom) OVERRIDE;
+  virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE;
   virtual void SetContentsResizingStrategy(
       const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;

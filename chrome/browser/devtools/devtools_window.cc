@@ -882,10 +882,18 @@ void DevToolsWindow::CloseWindow() {
   web_contents_->DispatchBeforeUnload(false);
 }
 
-void DevToolsWindow::SetContentsInsets(
-    int top, int left, int bottom, int right) {
-  gfx::Insets insets(top, left, bottom, right);
-  SetContentsResizingStrategy(insets, contents_resizing_strategy_.min_size());
+void DevToolsWindow::SetInspectedPageBounds(const gfx::Rect& rect) {
+  DevToolsContentsResizingStrategy strategy(rect);
+  if (contents_resizing_strategy_.Equals(strategy))
+    return;
+
+  contents_resizing_strategy_.CopyFrom(strategy);
+  if (is_docked_) {
+    // Update inspected window.
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->UpdateDevTools();
+  }
 }
 
 void DevToolsWindow::SetContentsResizingStrategy(

@@ -188,8 +188,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
 
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE {}
-  virtual void SetContentsInsets(
-      int left, int top, int right, int bottom) OVERRIDE {}
+  virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE {}
   virtual void SetContentsResizingStrategy(
       const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE {}
   virtual void InspectElementCompleted() OVERRIDE {}
@@ -415,9 +414,8 @@ void DevToolsUIBindings::CloseWindow() {
   delegate_->CloseWindow();
 }
 
-void DevToolsUIBindings::SetContentsInsets(
-    int top, int left, int bottom, int right) {
-  delegate_->SetContentsInsets(top, left, bottom, right);
+void DevToolsUIBindings::SetInspectedPageBounds(const gfx::Rect& rect) {
+  delegate_->SetInspectedPageBounds(rect);
 }
 
 void DevToolsUIBindings::SetContentsResizingStrategy(

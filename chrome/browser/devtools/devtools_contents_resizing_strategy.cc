@@ -15,15 +15,23 @@ DevToolsContentsResizingStrategy::DevToolsContentsResizingStrategy(
       min_size_(min_size) {
 }
 
+DevToolsContentsResizingStrategy::DevToolsContentsResizingStrategy(
+    const gfx::Rect& bounds)
+    : bounds_(bounds) {
+}
+
+
 void DevToolsContentsResizingStrategy::CopyFrom(
     const DevToolsContentsResizingStrategy& strategy) {
   insets_ = strategy.insets();
   min_size_ = strategy.min_size();
+  bounds_ = strategy.bounds();
 }
 
 bool DevToolsContentsResizingStrategy::Equals(
     const DevToolsContentsResizingStrategy& strategy) {
-  return insets_ == strategy.insets() && min_size_ == strategy.min_size();
+  return insets_ == strategy.insets() && min_size_ == strategy.min_size() &&
+      bounds_ == strategy.bounds();
 }
 
 void ApplyDevToolsContentsResizingStrategy(
@@ -38,6 +46,16 @@ void ApplyDevToolsContentsResizingStrategy(
 
   const gfx::Insets& insets = strategy.insets();
   const gfx::Size& min_size = strategy.min_size();
+  const gfx::Rect& bounds = strategy.bounds();
+
+  if (!bounds.size().IsEmpty()) {
+    int left = std::min(bounds.x(), container_size.width());
+    int top = std::min(bounds.y(), container_size.height());
+    int width = std::min(bounds.width(), container_size.width() - left);
+    int height = std::min(bounds.height(), container_size.height() - top);
+    new_contents_bounds->SetRect(left, top, width, height);
+    return;
+  }
 
   int width = std::max(0, container_size.width() - insets.width());
   int left = insets.left();
