@@ -263,9 +263,11 @@ race:SkFontConfigInterface::GetSingletonDirectInterface
 # http://crbug.com/372807
 deadlock:net::X509Certificate::CreateCertificateListFromBytes
 deadlock:net::X509Certificate::CreateFromBytes
+deadlock:net::SSLClientSocketNSS::Core::DoHandshakeLoop
 
 # http://crbug.com/374135
 race:media::AlsaWrapper::PcmWritei
+deadlock:media::AudioOutputDispatcherImpl::StopStream
 
 # http://crbug.com/374151
 deadlock:media::FakeAudioConsumer::Worker::DoRead
