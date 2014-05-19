@@ -37,21 +37,18 @@
 
 namespace WebCore {
 
-PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
+PassRefPtr<EventListener> V8EventListenerList::getEventListener(ScriptState* scriptState, v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-    if (context.IsEmpty())
-        return nullptr;
+    ASSERT(!scriptState->contextIsEmpty());
     if (lookup == ListenerFindOnly) {
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod
         ASSERT(!isAttribute);
-        return V8EventListenerList::findWrapper(value, isolate);
+        return V8EventListenerList::findWrapper(value, scriptState->isolate());
     }
-    if (toDOMWindow(context))
-        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, isolate);
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, isolate);
+    if (toDOMWindow(scriptState->context()))
+        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, scriptState->isolate());
+    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState->isolate());
 }
 
 } // namespace WebCore

@@ -109,7 +109,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceNode* impl = V8TestInterfaceNode::toNative(holder);
-    impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(v8Value, true, ListenerFindOrCreate));
+    impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
 }
 
 static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)

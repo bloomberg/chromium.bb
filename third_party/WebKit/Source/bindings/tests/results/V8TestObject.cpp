@@ -1632,7 +1632,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     moveEventListenerToNewWrapper(holder, impl->eventHandlerAttribute(), v8Value, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
-    impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(v8Value, true, ListenerFindOrCreate));
+    impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
 }
 
 static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -5926,7 +5926,7 @@ static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    RefPtr<EventListener> eventListenerArg = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
+    RefPtr<EventListener> eventListenerArg = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
     impl->voidMethodEventListenerArg(eventListenerArg);
     if (listener && !impl->toNode())
         removeHiddenValueFromArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());

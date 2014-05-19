@@ -65,7 +65,7 @@ public:
         listenerObject->DeleteHiddenValue(wrapperProperty);
     }
 
-    static PassRefPtr<EventListener> getEventListener(v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
+    static PassRefPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
     static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty, v8::Isolate* isolate)
