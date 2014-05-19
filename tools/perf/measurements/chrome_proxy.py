@@ -96,7 +96,7 @@ class ChromeProxyHeaders(ChromeProxyValidation):
   """Correctness measurement for response headers."""
 
   def __init__(self):
-    super(ChromeProxyHeaders, self).__init__()
+    super(ChromeProxyHeaders, self).__init__(restart_after_each_page=True)
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHeaderValidation(tab, results)

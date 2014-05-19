@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import datetime
+import logging
 import os
 
 from telemetry.page import page_measurement
@@ -51,8 +52,14 @@ class ChromeProxyResponse(network.HTTPResponse):
     # Ignore https and data url
     if resp.url.startswith('https') or resp.url.startswith('data:'):
       return False
-    # Ignore 304 Not Modified.
-    if resp.status == 304:
+    # Ignore 304 Not Modified and cache hit.
+    if resp.status == 304 or resp.served_from_cache:
+      return False
+    # Ignore invalid responses that don't have any header. Log a warning.
+    if not resp.headers:
+      logging.warning('response for %s does not any have header '
+                      '(refer=%s, status=%s)',
+                      resp.url, resp.GetHeader('Referer'), resp.status)
       return False
     return True
 
@@ -122,15 +129,32 @@ class ChromeProxyMetric(network.NetworkMetric):
 
   def AddResultsForHeaderValidation(self, tab, results):
     via_count = 0
+    bypass_count = 0
     for resp in self.IterResponses(tab):
       if resp.IsValidByViaHeader():
         via_count += 1
+      elif tab and self.IsProxyBypassed(tab):
+        logging.warning('Proxy bypassed for %s', resp.response.url)
+        bypass_count += 1
       else:
         r = resp.response
         raise ChromeProxyMetricException, (
             '%s: Via header (%s) is not valid (refer=%s, status=%d)' % (
                 r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
     results.Add('checked_via_header', 'count', via_count)
+    results.Add('request_bypassed', 'count', bypass_count)
+
+  def IsProxyBypassed(self, tab):
+    """ Returns True if all configured proxies are bypassed."""
+    info = GetProxyInfoFromNetworkInternals(tab)
+    if not info['enabled']:
+      raise ChromeProxyMetricException, (
+          'Chrome proxy should be enabled. proxy info: %s' % info)
+
+    bad_proxies = [str(p['proxy']) for p in info['badProxies']].sort()
+    proxies = [self.effective_proxies['proxy'],
+               self.effective_proxies['fallback']].sort()
+    return bad_proxies == proxies
 
   @staticmethod
   def VerifyBadProxies(
