@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "base/task_runner.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
