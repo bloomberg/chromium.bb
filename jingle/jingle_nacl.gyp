@@ -24,11 +24,6 @@
       'sources': [
         '<@(jingle_glue_sources)',
       ],
-      'sources!': [
-        'glue/chrome_async_socket.cc',
-        'glue/proxy_resolving_client_socket.cc',
-        'glue/xmpp_client_socket_factory.cc',
-      ],
       'dependencies': [
         '../base/base_nacl.gyp:base_nacl',
         '../native_client/tools.gyp:prep_toolchain',

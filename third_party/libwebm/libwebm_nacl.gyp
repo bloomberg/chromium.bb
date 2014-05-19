@@ -23,11 +23,6 @@
       'sources': [
         '<@(libwebm_sources)',
       ],
-      'defines': [
-        # LLONG_MIN and UULONG_MAX are defined in newlib only for C++11.
-        'LLONG_MIN=LONG_LONG_MIN',
-        'ULLONG_MAX=ULONG_LONG_MAX',
-      ],
     },  # target libwebm_nacl
   ]
 }
