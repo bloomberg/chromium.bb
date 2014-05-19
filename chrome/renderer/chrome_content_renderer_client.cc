@@ -303,8 +303,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
 
   if (command_line->HasSwitch(switches::kPlaybackMode) ||
-      command_line->HasSwitch(switches::kRecordMode) ||
-      command_line->HasSwitch(switches::kNoJsRandomness)) {
+      command_line->HasSwitch(switches::kRecordMode)) {
     thread->RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
 

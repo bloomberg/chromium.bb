@@ -256,7 +256,6 @@ extern const char kNoDisplayingInsecureContent[];
 extern const char kNoEvents[];
 extern const char kNoExperiments[];
 extern const char kNoFirstRun[];
-extern const char kNoJsRandomness[];
 extern const char kNoNetworkProfileWarning[];
 extern const char kNoProxyServer[];
 extern const char kNoPings[];

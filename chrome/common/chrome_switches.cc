@@ -920,13 +920,6 @@ const char kNoExperiments[]                 = "no-experiments";
 // flag.
 const char kNoFirstRun[]                    = "no-first-run";
 
-// Support a separate switch that enables the v8 playback extension.
-// The extension causes javascript calls to Date.now() and Math.random()
-// to return consistent values, such that subsequent loads of the same
-// page will result in consistent js-generated data and XHR requests.
-// Pages may still be able to generate inconsistent data from plugins.
-const char kNoJsRandomness[]                = "no-js-randomness";
-
 // Whether or not the browser should warn if the profile is on a network share.
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";

@@ -1661,7 +1661,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableWebBasedSignin,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
-      switches::kNoJsRandomness,
       switches::kOutOfProcessPdf,
       switches::kPlaybackMode,
       switches::kPpapiFlashArgs,
