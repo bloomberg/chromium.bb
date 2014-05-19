@@ -367,7 +367,10 @@
 
             # included by allocator_shim.cc
             'debugallocation_shim.cc',
-
+          ],
+        }],
+        ['OS=="win" or profiling!=1', {
+          'sources!': [
             # cpuprofiler
             '<(tcmalloc_dir)/src/base/thread_lister.c',
             '<(tcmalloc_dir)/src/base/thread_lister.h',
