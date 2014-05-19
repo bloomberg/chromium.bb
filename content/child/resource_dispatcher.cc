@@ -293,18 +293,6 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
     return true;
   }
 
-  // If the request has been canceled, only dispatch
-  // ResourceMsg_RequestComplete (otherwise resource leaks) and drop other
-  // messages.
-  if (request_info->is_canceled) {
-    if (message.type() == ResourceMsg_RequestComplete::ID) {
-      DispatchMessage(message);
-    } else {
-      ReleaseResourcesInDataMessage(message);
-    }
-    return true;
-  }
-
   if (request_info->is_deferred) {
     request_info->deferred_message_queue.push_back(new IPC::Message(message));
     return true;
@@ -605,46 +593,6 @@ void ResourceDispatcher::CancelPendingRequest(int request_id) {
     return;
   }
 
-  PendingRequestInfo& request_info = it->second;
-  request_info.is_canceled = true;
-
-  // Because message handlers could result in request_info being destroyed,
-  // we need to work with a stack reference to the deferred queue.
-  MessageQueue queue;
-  queue.swap(request_info.deferred_message_queue);
-  // Removes pending requests. If ResourceMsg_RequestComplete was queued,
-  // dispatch it.
-  bool first_message = true;
-  while (!queue.empty()) {
-    IPC::Message* message = queue.front();
-    if (message->type() == ResourceMsg_RequestComplete::ID) {
-      if (first_message) {
-        // Dispatch as-is.
-        DispatchMessage(*message);
-      } else {
-        // If we skip some ResourceMsg_DataReceived and then dispatched the
-        // original ResourceMsg_RequestComplete(status=success), chrome will
-        // crash because it entered an unexpected state. So replace
-        // ResourceMsg_RequestComplete with failure status.
-        ResourceMsg_RequestCompleteData request_complete_data;
-        request_complete_data.error_code = net::ERR_ABORTED;
-        request_complete_data.was_ignored_by_handler = false;
-        request_complete_data.exists_in_cache = false;
-        request_complete_data.completion_time = base::TimeTicks();
-        request_complete_data.encoded_data_length = 0;
-
-        ResourceMsg_RequestComplete error_message(request_id,
-            request_complete_data);
-        DispatchMessage(error_message);
-      }
-    } else {
-      ReleaseResourcesInDataMessage(*message);
-    }
-    first_message = false;
-    queue.pop_front();
-    delete message;
-  }
-
   // |request_id| will be removed from |pending_requests_| when
   // OnRequestComplete returns with ERR_ABORTED.
   message_sender()->Send(new ResourceHostMsg_CancelRequest(request_id));
@@ -684,7 +632,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
     : peer(NULL),
       resource_type(ResourceType::SUB_RESOURCE),
       is_deferred(false),
-      is_canceled(false),
       download_to_file(false),
       blocked_response(false),
       buffer_size(0) {
@@ -701,7 +648,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       resource_type(resource_type),
       origin_pid(origin_pid),
       is_deferred(false),
-      is_canceled(false),
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
