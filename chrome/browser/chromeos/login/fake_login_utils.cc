@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"

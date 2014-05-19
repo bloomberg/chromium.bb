@@ -12,6 +12,8 @@
 
 namespace chromeos {
 
+class UserContext;
+
 class LoginDisplayHost;
 // Defines possible variants of user flow upon logging in.
 // See UserManager::SetUserFlow for usage contract.

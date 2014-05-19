@@ -18,6 +18,8 @@
 
 namespace chromeos {
 
+class UserContext;
+
 // Handles managed user password change that is detected while manager is
 // signed in.
 // It uses manager's master key to authorize update of managed user's key.

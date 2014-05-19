@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"

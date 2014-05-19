@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/extensions/extension_apitest.h"

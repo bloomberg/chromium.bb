@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/parallel_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"

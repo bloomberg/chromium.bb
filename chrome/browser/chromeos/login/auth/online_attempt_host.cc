@@ -8,6 +8,7 @@
 #include "base/sha1.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/online_attempt.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"

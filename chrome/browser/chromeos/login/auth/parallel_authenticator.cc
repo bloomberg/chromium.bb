@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

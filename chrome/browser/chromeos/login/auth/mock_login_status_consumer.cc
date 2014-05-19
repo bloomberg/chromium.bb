@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

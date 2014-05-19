@@ -12,13 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 class LoginStatusConsumer;
+class UserContext;
 
 // Interaction with cryptohome : mounting home dirs, create new home dirs,
 // udpate passwords.

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 
 namespace chromeos {
 

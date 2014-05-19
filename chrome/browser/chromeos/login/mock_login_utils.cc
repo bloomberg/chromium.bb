@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
 
+#include "chrome/browser/chromeos/login/auth/user_context.h"
+
 using namespace testing;
 
 namespace chromeos {

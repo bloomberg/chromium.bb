@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/user.h"
 
 class Profile;
 

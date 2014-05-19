@@ -20,6 +20,8 @@
 
 namespace chromeos {
 
+class UserContext;
+
 // TODO(nkostylev): Extract interface, create a BaseLoginDisplay class.
 // An abstract class that defines login UI implementation.
 class LoginDisplay : public RemoveUserDelegate {

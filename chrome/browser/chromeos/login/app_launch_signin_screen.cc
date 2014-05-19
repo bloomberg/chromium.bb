@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"

@@ -514,6 +514,8 @@
         'browser/chromeos/login/auth/test_attempt_state.h',
         'browser/chromeos/login/auth/tpm_password_fetcher.cc',
         'browser/chromeos/login/auth/tpm_password_fetcher.h',
+        'browser/chromeos/login/auth/user_context.cc',
+        'browser/chromeos/login/auth/user_context.h',
         'browser/chromeos/login/authentication_notification_details.h',
         'browser/chromeos/login/chrome_restart_request.cc',
         'browser/chromeos/login/chrome_restart_request.h',

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"

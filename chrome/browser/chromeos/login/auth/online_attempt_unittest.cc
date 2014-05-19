@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/auth/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/auth/online_attempt.h"
 #include "chrome/browser/chromeos/login/auth/test_attempt_state.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"

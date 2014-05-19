@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"

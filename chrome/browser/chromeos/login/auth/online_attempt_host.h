@@ -36,8 +36,7 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   // check result (whether authentication was successful). Note, only one
   // checking at a time (the newest call stops the old one, if called with
   // another username and password combination).
-  void Check(Profile* profile,
-             const UserContext& user_context);
+  void Check(Profile* profile, const UserContext& user_context);
 
   // Resets the checking process.
   void Reset();

@@ -32,6 +32,7 @@ namespace chromeos {
 
 class CrosSettings;
 class LoginDisplayHost;
+class UserContext;
 
 namespace login {
 class NetworkStateHelper;

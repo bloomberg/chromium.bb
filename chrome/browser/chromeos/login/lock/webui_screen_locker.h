@@ -30,7 +30,6 @@ namespace chromeos {
 
 class ScreenLocker;
 class WebUILoginDisplay;
-class UserContext;
 
 namespace login {
 class NetworkStateHelper;

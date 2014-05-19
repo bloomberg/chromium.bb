@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_new.h"

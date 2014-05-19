@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
