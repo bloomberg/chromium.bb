@@ -38,6 +38,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderTheme.h"
+#include "wtf/LeakAnnotations.h"
 
 namespace WebCore {
 
@@ -70,6 +71,9 @@ static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str
 {
     RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
     sheet->parseString(str);
+    // User Agent stylesheets are parsed once for the lifetime of the renderer
+    // and are intentionally leaked.
+    WTF_ANNOTATE_LEAKING_OBJECT_PTR(sheet.get());
     return sheet.release();
 }
 
