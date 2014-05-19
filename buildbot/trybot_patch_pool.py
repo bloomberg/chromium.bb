@@ -25,7 +25,7 @@ def IntManifestFilter(patch):
 
 def ManifestFilter(patch):
   """Used with FilterFn to isolate patches to the manifest."""
-  return ExtManifestFilter(patch.project) or IntManifestFilter(patch.project)
+  return ExtManifestFilter(patch) or IntManifestFilter(patch)
 
 
 def BranchFilter(branch, patch):
