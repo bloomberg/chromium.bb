@@ -165,13 +165,13 @@ a:focus {
 }
 
 .dialog-navigation-list-header #app-name {
-  -webkit-margin-start: 15px;
   color: #303030;
   font-size: 130%;
+  margin: 0 15px;
 }
 
 .dialog-navigation-list-header #profile-badge:not([hidden]) + #app-name {
-  -webkit-margin-start: 0;
+  margin: 0;
 }
 
 .dialog-navigation-list-contents {
@@ -620,6 +620,10 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   height: 10px;
   overflow: hidden;
   width: 25px;
+}
+
+html[dir='rtl'] .breadcrumbs .separator {
+  -webkit-transform: scaleX(-1);
 }
 
 #filename-input-box input {
