@@ -151,8 +151,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerDatabase::Status status);
   void DidReadRegistrationForId(
       const FindRegistrationCallback& callback,
-      const ServiceWorkerDatabase::RegistrationData& registration,
-      const ResourceList& resources,
+      ServiceWorkerDatabase::RegistrationData* registration,
+      ResourceList* resources,
       ServiceWorkerDatabase::Status status);
   void DidGetAllRegistrations(
       const GetAllRegistrationInfosCallback& callback,
@@ -161,7 +161,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DidStoreRegistration(
       const GURL& origin,
       const StatusCallback& callback,
-      bool success);
+      ServiceWorkerDatabase::Status status);
+  void DidUpdateToActiveState(
+      const StatusCallback& callback,
+      ServiceWorkerDatabase::Status status);
   void DidDeleteRegistration(
       const GURL& origin,
       const StatusCallback& callback,
