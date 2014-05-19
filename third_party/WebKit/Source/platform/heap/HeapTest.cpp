@@ -3963,4 +3963,19 @@ TEST(HeapTest, GCParkingTimeout)
     GCParkingThreadTester::test();
 }
 
+TEST(HeapTest, NeedsAdjustAndMark)
+{
+    // class Mixin : public GarbageCollectedMixin {};
+    EXPECT_TRUE(NeedsAdjustAndMark<Mixin>::value);
+    EXPECT_TRUE(NeedsAdjustAndMark<const Mixin>::value);
+
+    // class SimpleObject : public GarbageCollected<SimpleObject> {};
+    EXPECT_FALSE(NeedsAdjustAndMark<SimpleObject>::value);
+    EXPECT_FALSE(NeedsAdjustAndMark<const SimpleObject>::value);
+
+    // class UseMixin : public SimpleObject, public Mixin {};
+    EXPECT_FALSE(NeedsAdjustAndMark<UseMixin>::value);
+    EXPECT_FALSE(NeedsAdjustAndMark<const UseMixin>::value);
+}
+
 } // WebCore namespace
