@@ -150,7 +150,7 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/ots/",
         "License": "BSD",
     },
-    os.path.join('third_party', 'pdf'): {
+    os.path.join('third_party', 'pdfium'): {
         "Name": "PDFium",
         "URL": "http://code.google.com/p/pdfium/",
         "License": "BSD",
