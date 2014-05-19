@@ -65,6 +65,8 @@ class EventFactoryWriter(name_macros.Writer):
 
     def __init__(self, in_file_path):
         super(EventFactoryWriter, self).__init__(in_file_path)
+        if self.namespace == 'EventTarget':
+            return
         self._outputs[(self.namespace + self.suffix + ".cpp")] = self.generate_implementation
 
     @template_expander.use_jinja('EventFactory.cpp.tmpl', filters=filters)
