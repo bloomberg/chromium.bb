@@ -172,6 +172,7 @@ void FileDefinitionListConverter::OnResolvedURL(
                         iterator,
                         CreateEntryDefinitionWithError(
                             base::File::FILE_ERROR_NOT_A_DIRECTORY));
+    return;
   }
   if (!iterator->is_directory &&
       type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY) {
@@ -179,6 +180,7 @@ void FileDefinitionListConverter::OnResolvedURL(
                         iterator,
                         CreateEntryDefinitionWithError(
                             base::File::FILE_ERROR_NOT_A_FILE));
+    return;
   }
 
   EntryDefinition entry_definition;
