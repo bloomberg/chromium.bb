@@ -170,6 +170,8 @@
         'browser/ui/app_list/app_list_view_delegate.h',
         'browser/ui/app_list/chrome_signin_delegate.cc',
         'browser/ui/app_list/chrome_signin_delegate.h',
+        'browser/ui/app_list/drive/drive_app_converter.cc',
+        'browser/ui/app_list/drive/drive_app_converter.h',
         'browser/ui/app_list/extension_app_item.cc',
         'browser/ui/app_list/extension_app_item.h',
         'browser/ui/app_list/extension_app_model_builder.cc',
