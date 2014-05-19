@@ -1177,6 +1177,8 @@
         'browser/metrics/chrome_browser_main_extra_parts_metrics.h',
         'browser/metrics/cloned_install_detector.cc',
         'browser/metrics/cloned_install_detector.h',
+        'browser/metrics/chrome_metrics_service_client.cc',
+        'browser/metrics/chrome_metrics_service_client.h',
         'browser/metrics/compression_utils.cc',
         'browser/metrics/compression_utils.h',
         'browser/metrics/extension_metrics.cc',
