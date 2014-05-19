@@ -270,18 +270,18 @@ TEST_F(SocketTestUDP, SendRcvUnbound) {
 
   // The first send hasn't occurred, so the socket is not yet bound.
   socklen_t out_addrlen = sizeof(addr);
-  ASSERT_EQ(0, getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
+  ASSERT_EQ(0, ki_getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
   EXPECT_EQ(addrlen, out_addrlen);
   EXPECT_EQ(0, htonl(addr.sin_addr.s_addr));
   EXPECT_EQ(0, htons(addr.sin_port));
 
   int len1 =
-     sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr2, addrlen);
+     ki_sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr2, addrlen);
   EXPECT_EQ(sizeof(outbuf), len1);
 
   // After the first send, the socket should be bound; the port is set, but
   // the address is still 0.
-  ASSERT_EQ(0, getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
+  ASSERT_EQ(0, ki_getsockname(sock1_, (sockaddr*)&addr, &out_addrlen));
   EXPECT_EQ(addrlen, out_addrlen);
   EXPECT_EQ(0, htonl(addr.sin_addr.s_addr));
   EXPECT_NE(0, htons(addr.sin_port));
@@ -291,7 +291,7 @@ TEST_F(SocketTestUDP, SendRcvUnbound) {
 
   // Try to receive the previously sent packet
   int len2 =
-    recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
+    ki_recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
   EXPECT_EQ(sizeof(outbuf), len2);
   EXPECT_EQ(sizeof(sockaddr_in), addrlen);
   EXPECT_EQ(LOCAL_HOST, htonl(addr.sin_addr.s_addr));
@@ -426,14 +426,14 @@ TEST_F(SocketTest, Sockopt_TCP_NODELAY) {
   int option = 0;
   socklen_t len = sizeof(option);
   // Getting and setting TCP_NODELAY on UDP socket should fail
-  sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
+  sock1_ = ki_socket(AF_INET, SOCK_DGRAM, 0);
   ASSERT_EQ(-1, ki_setsockopt(sock1_, IPPROTO_TCP, TCP_NODELAY, &option, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
   ASSERT_EQ(-1, ki_getsockopt(sock1_, IPPROTO_TCP, TCP_NODELAY, &option, &len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 
   // Getting and setting TCP_NODELAY on TCP socket should preserve value
-  sock2_ = socket(AF_INET, SOCK_STREAM, 0);
+  sock2_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   ASSERT_EQ(0, ki_getsockopt(sock2_, IPPROTO_TCP, TCP_NODELAY, &option, &len));
   ASSERT_EQ(0, option);
   ASSERT_EQ(sizeof(option), len);
@@ -595,7 +595,7 @@ TEST_F(SocketTestTCP, Listen) {
   int server_sock = sock1_;
 
   // Accept before listen should fail
-  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+  ASSERT_EQ(-1, ki_accept(server_sock, (sockaddr*)&addr, &addrlen));
 
   // Listen should fail on unbound socket
   ASSERT_EQ(-1,  ki_listen(server_sock, 10));
@@ -618,7 +618,7 @@ TEST_F(SocketTestTCP, Listen) {
   // Pass in addrlen that is larger than our actual address to make
   // sure that it is correctly set back to sizeof(sockaddr_in)
   addrlen = sizeof(addr) + 10;
-  int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  int new_socket = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_GT(new_socket, -1)
     << "accept failed with " << errno << ": " << strerror(errno);
 
@@ -660,7 +660,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   // connection.
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
-  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+  ASSERT_EQ(-1, ki_accept(server_sock, (sockaddr*)&addr, &addrlen));
   ASSERT_EQ(EAGAIN, errno);
 
   // If we poll the listening socket it should also return
@@ -682,13 +682,13 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   ASSERT_EQ(1, ki_poll(&pollfd, 1, -1));
 
   // Now non-blocking accept should return the new socket
-  int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  int new_socket = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_socket)
     << "accept failed with: " << strerror(errno);
   ASSERT_EQ(0, ki_close(new_socket));
 
   // Accept calls should once again fail with EAGAIN
-  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+  ASSERT_EQ(-1, ki_accept(server_sock, (sockaddr*)&addr, &addrlen));
   ASSERT_EQ(EAGAIN, errno);
 
   // As should polling the listening socket
@@ -715,7 +715,7 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
     << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
-  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  int new_sock = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_sock);
 
   const char* send_buf = "hello world";
@@ -757,7 +757,7 @@ TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {
     << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
-  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  int new_sock = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_sock);
 
   // Close the new socket
@@ -789,7 +789,7 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
     << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
-  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  int new_sock = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_sock);
 
   // send a fairly large amount of data and immediately close
