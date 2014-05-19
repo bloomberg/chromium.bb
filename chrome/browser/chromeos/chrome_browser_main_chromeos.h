@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
+#include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/version_loader.h"
 
 namespace content {
@@ -70,6 +71,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<internal::DBusServices> dbus_services_;
 
   scoped_ptr<EventRewriterController> keyboard_event_rewriters_;
+
+  scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   VersionLoader cros_version_loader_;
   base::CancelableTaskTracker tracker_;

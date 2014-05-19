@@ -704,7 +704,10 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before MetricsService::LogNeedForCleanShutdown().
 
-  g_browser_process->metrics_service()->StartExternalMetrics();
+  // Start the external metrics service, which collects metrics from Chrome OS
+  // and passes them to the browser process.
+  external_metrics_ = new chromeos::ExternalMetrics;
+  external_metrics_->Start();
 
 #if defined(USE_X11)
   // Listen for system key events so that the user will be able to adjust the

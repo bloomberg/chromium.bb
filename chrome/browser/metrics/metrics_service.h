@@ -36,8 +36,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/activity_type_ids.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/external_metrics.h"
 #endif
 
 class ChromeBrowserMetricsServiceObserver;
@@ -256,10 +254,6 @@ class MetricsService
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
-  // Start the external metrics service, which collects metrics from Chrome OS
-  // and passes them to UMA.
-  void StartExternalMetrics();
-
   // Records a Chrome OS crash.
   void LogChromeOSCrash(const std::string &crash_type);
 #endif
@@ -573,11 +567,6 @@ class MetricsService
 
   // Number of async histogram fetch requests in progress.
   int num_async_histogram_fetches_in_progress_;
-
-#if defined(OS_CHROMEOS)
-  // The external metric service is used to log ChromeOS UMA events.
-  scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
-#endif
 
   // Stores the time of the first call to |GetUptimes()|.
   base::TimeTicks first_updated_time_;

@@ -226,7 +226,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
@@ -1914,13 +1913,6 @@ bool MetricsService::IsPluginProcess(int process_type) {
           process_type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
           process_type == content::PROCESS_TYPE_PPAPI_BROKER);
 }
-
-#if defined(OS_CHROMEOS)
-void MetricsService::StartExternalMetrics() {
-  external_metrics_ = new chromeos::ExternalMetrics;
-  external_metrics_->Start();
-}
-#endif
 
 // static
 bool MetricsServiceHelper::IsMetricsReportingEnabled() {
