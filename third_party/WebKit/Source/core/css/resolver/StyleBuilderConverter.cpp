@@ -107,13 +107,13 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
 GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSSValue* value)
 {
     // We accept the specification's grammar:
-    // 'auto' | [ <integer> || <string> ] | [ span && [ <integer> || string ] ] | <ident>
+    // 'auto' | [ <integer> || <custom-ident> ] | [ span && [ <integer> || <custom-ident> ] ] | <custom-ident>
 
     GridPosition position;
 
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        // We translate <ident> to <string> during parsing as it
+        // We translate <custom-ident> to <string> during parsing as it
         // makes handling it more simple.
         if (primitiveValue->isString()) {
             position.setNamedGridArea(primitiveValue->getStringValue());

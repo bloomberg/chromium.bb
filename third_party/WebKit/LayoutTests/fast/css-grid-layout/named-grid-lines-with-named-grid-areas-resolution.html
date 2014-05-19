@@ -56,47 +56,47 @@
 <!-- Check positioning using unique grid-line names -->
 <div style="position: relative">
   <div class="grid gridUniqueNames">
-    <div class="sizedToGridArea" style="grid-column: 'b';" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: 'e';" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-column: 'b-start';" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: 'g-start';" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: b;" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: e;" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-column: b-start;" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: g-start;" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
   </div>
 </div>
 
 <div style="position: relative">
   <div class="grid gridUniqueNames">
-    <div class="sizedToGridArea" style="grid-column: 'b' / 'd';" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: 'g' / 'h';" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: 'c'; grid-row: 'f';" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: b / d;" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: g / h;" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: c; grid-row: f;" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
   </div>
 </div>
 
 <!-- Check positioning using unique grid-line names mixed with integers -->
 <div style="position: relative">
   <div class="grid gridUniqueNames">
-    <div class="sizedToGridArea" style="grid-column: 'b' / 4;" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: 3 / 'h';" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: 2; grid-row: 'g';" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: 'a'; grid-row: 2;" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: b / 4;" data-offset-x="50" data-offset-y="0" data-expected-width="300" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: 3 / h;" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: 2; grid-row: g;" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: a; grid-row: 2;" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
   </div>
 </div>
 
 <!-- Check that without named gridAreas there are no implicit grid-line names defined -->
 <div style="position: relative">
   <div class="grid gridUniqueNames">
-    <div class="sizedToGridArea" style="grid-column: 'c-start';" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: 'f-start';" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-column: 'c-start'; grid-row: 'f-end'" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-column: 'b-end'; grid-row: 'h-start'" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-column: c-start;" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: f-start;" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-column: c-start; grid-row: f-end" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-column: b-end; grid-row: h-start" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
   </div>
 </div>
 
 <!-- Check that gridArea's implicit names are well defined -->
 <div style="position: relative">
   <div class="grid gridAreas gridNoLineNames">
-    <div class="sizedToGridArea" style="grid-column: 'a-start'; grid-row: 'd-start';" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: 'a-start'; grid-row: d;" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: 'd-start'; grid-row: 'c-start';" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: a-start; grid-row: d-start;" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: a-start; grid-row: d;" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: d-start; grid-row: c-start;" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
   </div>
 </div>
 
@@ -130,8 +130,8 @@
 
 <div style="position: relative">
   <div class="grid gridAreas gridWithNamedLineAfterGridArea">
-    <div class="sizedToGridArea" style="grid-column-start: 'a-start';" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row-start: 'c-start';" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column-start: a-start;" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row-start: c-start;" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
   </div>
 </div>
 
@@ -155,8 +155,8 @@
 
 <div style="position: relative">
   <div class="grid gridAreas gridWithNamedLineBeforeGridArea">
-    <div class="sizedToGridArea" style="grid-column-start: 'd-start';" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row-start: 'd-start';" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column-start: d-start;" data-offset-x="50" data-offset-y="0" data-expected-width="100" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row-start: d-start;" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
   </div>
 </div>
 
@@ -171,10 +171,10 @@
 <!-- Check that a "-start" ident in a end column or a "-end" ident in a start column is not treated as a implicit grid line of a grid area -->
 <div style="position: relative">
   <div class="grid gridAreas gridNoLineNames">
-    <div class="sizedToGridArea" style="grid-column: a / 'a-start'; grid-row: 'd-start';" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
-    <div class="sizedToGridArea" style="grid-column: d / 'd-start'; grid-row: 'c-start';" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
-    <div class="sizedToGridArea" style="grid-column: c; grid-row: a / 'a-start';" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-column: d; grid-row: c / 'c-start';" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: a / a-start; grid-row: d-start;" data-offset-x="50" data-offset-y="150" data-expected-width="100" data-expected-height="200"></div>
+    <div class="sizedToGridArea" style="grid-column: d / d-start; grid-row: c-start;" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: c; grid-row: a / a-start;" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-column: d; grid-row: c / c-start;" data-offset-x="150" data-offset-y="50" data-expected-width="200" data-expected-height="100"></div>
   </div>
 </div>
 
@@ -192,7 +192,7 @@
 <div style="position: relative">
   <div class="grid gridAreas gridRepeatedNames">
     <div class="sizedToGridArea" style="grid-column: d; grid-row: c" data-offset-x="0" data-offset-y="50" data-expected-width="350" data-expected-height="100"></div>
-    <div class="sizedToGridArea" style="grid-column: 'd-start' / 'd-end'; grid-row: 'c-start' / 'c-end'" data-offset-x="0" data-offset-y="50" data-expected-width="350" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: d-start / d-end; grid-row: c-start / c-end" data-offset-x="0" data-offset-y="50" data-expected-width="350" data-expected-height="100"></div>
     <div class="sizedToGridArea" style="grid-column: c; grid-row: d" data-offset-x="0" data-offset-y="150" data-expected-width="50" data-expected-height="200"></div>
   </div>
 </div>
@@ -233,9 +233,9 @@
 <!-- Check behavior with lines named *-start or *-end -->
 <div style="position: relative">
   <div class="grid gridAreasSpecial gridUniqueNames">
-    <div class="sizedToGridArea" style="grid-column: '-start';" data-offset-x="150" data-offset-y="0" data-expected-width="200" data-expected-height="50"></div>
-    <div class="sizedToGridArea" style="grid-row: '-end';" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
-    <div class="sizedToGridArea" style="grid-column-end: '-start'; grid-row-start: '-end';" data-offset-x="50" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column: -start;" data-offset-x="150" data-offset-y="0" data-expected-width="200" data-expected-height="50"></div>
+    <div class="sizedToGridArea" style="grid-row: -end;" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100"></div>
+    <div class="sizedToGridArea" style="grid-column-end: -start; grid-row-start: -end;" data-offset-x="50" data-offset-y="50" data-expected-width="100" data-expected-height="100"></div>
   </div>
 </div>
 

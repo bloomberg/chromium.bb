@@ -19,43 +19,38 @@
 }
 
 .gridItemBToD {
-    grid-column: 'b' / 'd';
+    grid-column: b / d;
     grid-row: 1;
 }
 
 .gridItemGToH {
     grid-column: 1;
-    grid-row: 'g' / 'h';
-}
-
-.gridItemInvalidPositiveGridLine {
-    grid-column: "nonexistent" / span 2;
-    grid-row: span 2 / "nonexistent";
+    grid-row: g / h;
 }
 
 .gridItemInvalidNegativeGridLine {
-    grid-column: 1 / -1 "nonexistent";
-    grid-row: span 2 / -10 "nonexistent";
+    grid-column: 1 / -1 nonexistent;
+    grid-row: span 2 / -10 nonexistent;
 }
 
 .gridItemAToSpanC {
-    grid-column: 'a' / span 'c';
+    grid-column: a / span c;
     grid-row: 1;
 }
 
 .gridItemFToSpanH {
     grid-column: 1;
-    grid-row: 'f' span / 'h';
+    grid-row: f span / h;
 }
 
 .gridItem2BSpan2B {
-    grid-column: 2 'b' / span 2 'b';
+    grid-column: 2 b / span 2 b;
     grid-row: 1;
 }
 
 .gridItemSpan2GNegativeG {
     grid-column: 1;
-    grid-row: span 2 'g' / -1 'g';
+    grid-row: span 2 g / -1 g;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>
@@ -87,14 +82,6 @@
     <div class="grid gridWithRepeat">
         <div class="sizedToGridArea gridItemGToH" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50"></div>
     </div>
-</div>
-
-
-<div style="position: relative">
-    <div class="grid gridWithoutRepeat">
-        <div class="sizedToGridArea gridItemInvalidPositiveGridLine" data-offset-x="0" data-offset-y="0" data-expected-width="150" data-expected-height="50"></div>
-    </div>
-</div>
 </div>
 
 <div style="position: relative">
@@ -172,37 +159,37 @@
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: 'C' / 'C' -1;" data-offset-x="30px" data-expected-width="330px"></div>
+      <div class="sizedToGridArea" style="grid-column: C / C -1;" data-offset-x="30px" data-expected-width="330px"></div>
     </div>
 </div>
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: 'C' / span 'C';" data-offset-x="30px" data-expected-width="120px"></div>
+      <div class="sizedToGridArea" style="grid-column: C / span C;" data-offset-x="30px" data-expected-width="120px"></div>
     </div>
 </div>
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: span 'C' / 'C' -1;" data-offset-x="150px" data-expected-width="210px"></div>
+      <div class="sizedToGridArea" style="grid-column: span C / C -1;" data-offset-x="150px" data-expected-width="210px"></div>
     </div>
 </div>
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: span 'C' / span 'C';" data-offset-x="0px" data-expected-width="10px"></div>
+      <div class="sizedToGridArea" style="grid-column: span C / span C;" data-offset-x="0px" data-expected-width="10px"></div>
     </div>
 </div>
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: 5 / 'C' -1;" data-offset-x="100px" data-expected-width="260px"></div>
+      <div class="sizedToGridArea" style="grid-column: 5 / C -1;" data-offset-x="100px" data-expected-width="260px"></div>
     </div>
 </div>
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: 5 / span 'C';" data-offset-x="100px" data-expected-width="50px"></div>
+      <div class="sizedToGridArea" style="grid-column: 5 / span C;" data-offset-x="100px" data-expected-width="50px"></div>
     </div>
 </div>
 
@@ -214,7 +201,7 @@
 
 <div style="position: relative">
     <div class="grid gridFromSpecs">
-      <div class="sizedToGridArea" style="grid-column: 'B' 2 / span 1;" data-offset-x="100px" data-expected-width="50px"></div>
+      <div class="sizedToGridArea" style="grid-column: B 2 / span 1;" data-offset-x="100px" data-expected-width="50px"></div>
     </div>
 </div>
 

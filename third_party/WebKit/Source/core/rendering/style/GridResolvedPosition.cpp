@@ -17,6 +17,16 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromAutoPlacementPosition(con
     return GridSpan(initialPosition, initialPosition);
 }
 
+static const NamedGridLinesMap& gridLinesForSide(const RenderStyle& style, GridPositionSide side)
+{
+    return (side == ColumnStartSide || side == ColumnEndSide) ? style.namedGridColumnLines() : style.namedGridRowLines();
+}
+
+static inline bool isNonExistentNamedLineOrArea(const String& lineName, const RenderStyle& style, GridPositionSide side)
+{
+    return !style.namedGridArea().contains(lineName) && !gridLinesForSide(style, side).contains(lineName);
+}
+
 PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const RenderStyle& gridContainerStyle, const RenderBox& gridItem, GridTrackSizingDirection direction)
 {
     GridPosition initialPosition = (direction == ForColumns) ? gridItem.style()->gridColumnStart() : gridItem.style()->gridRowStart();
@@ -29,10 +39,10 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveGridPositionsFromStyle(const R
     if (initialPosition.isSpan() && finalPosition.isSpan())
         finalPosition.setAutoPosition();
 
-    if (initialPosition.isNamedGridArea() && !gridContainerStyle.namedGridArea().contains(initialPosition.namedGridLine()))
+    if (initialPosition.isNamedGridArea() && isNonExistentNamedLineOrArea(initialPosition.namedGridLine(), gridContainerStyle, initialPositionSide))
         initialPosition.setAutoPosition();
 
-    if (finalPosition.isNamedGridArea() && !gridContainerStyle.namedGridArea().contains(finalPosition.namedGridLine()))
+    if (finalPosition.isNamedGridArea() && isNonExistentNamedLineOrArea(finalPosition.namedGridLine(), gridContainerStyle, finalPositionSide))
         finalPosition.setAutoPosition();
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition()) {
@@ -78,11 +88,6 @@ size_t GridResolvedPosition::explicitGridRowCount(const RenderStyle& gridContain
 size_t GridResolvedPosition::explicitGridSizeForSide(const RenderStyle& gridContainerStyle, GridPositionSide side)
 {
     return (side == ColumnStartSide || side == ColumnEndSide) ? explicitGridColumnCount(gridContainerStyle) : explicitGridRowCount(gridContainerStyle);
-}
-
-static const NamedGridLinesMap& gridLinesForSide(const RenderStyle& style, GridPositionSide side)
-{
-    return (side == ColumnStartSide || side == ColumnEndSide) ? style.namedGridColumnLines() : style.namedGridRowLines();
 }
 
 GridResolvedPosition GridResolvedPosition::resolveNamedGridLinePositionFromStyle(const RenderStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
