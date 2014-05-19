@@ -2899,6 +2899,20 @@
           ],
         },
         {
+          'target_name': 'tab_capture_end2end_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'browser_tests_run',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'tab_capture_end2end_tests.isolate',
+          ],
+          'sources': [
+            'tab_capture_end2end_tests.isolate',
+          ],
+        },
+        {
           'target_name': 'tab_capture_performance_tests_run',
           'type': 'none',
           'dependencies': [
