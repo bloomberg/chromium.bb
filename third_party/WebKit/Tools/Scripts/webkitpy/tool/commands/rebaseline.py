@@ -875,6 +875,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
     def execute(self, options, args, tool):
         while True:
             try:
+                old_branch_name = tool.scm().current_branch()
                 tool.executive.run_command(['git', 'pull'])
                 rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline', '--log-server', 'blinkrebaseline.appspot.com']
                 if options.verbose:
@@ -883,5 +884,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
                 tool.executive.call(rebaseline_command)
             except:
                 traceback.print_exc(file=sys.stderr)
+                # Sometimes git crashes and leaves us on a detached head.
+                tool.scm().checkout_branch(old_branch_name)
 
             time.sleep(self.SLEEP_TIME_IN_SECONDS)
