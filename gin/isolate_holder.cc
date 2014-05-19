@@ -40,7 +40,7 @@ void EnsureV8Initialized(gin::IsolateHolder::ScriptMode mode,
   v8::V8::InitializePlatform(V8Platform::Get());
   v8::V8::SetArrayBufferAllocator(ArrayBufferAllocator::SharedInstance());
   if (mode == gin::IsolateHolder::kStrictMode) {
-    static const char v8_flags[] = "--use_strict --harmony_promises";
+    static const char v8_flags[] = "--use_strict";
     v8::V8::SetFlagsFromString(v8_flags, sizeof(v8_flags) - 1);
   }
   v8::V8::SetEntropySource(&GenerateEntropy);
