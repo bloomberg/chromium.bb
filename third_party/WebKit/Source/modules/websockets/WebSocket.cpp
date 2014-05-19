@@ -279,19 +279,6 @@ PassRefPtrWillBeRawPtr<WebSocket> WebSocket::create(ExecutionContext* context, c
     return create(context, url, protocols, exceptionState);
 }
 
-void WebSocket::connect(const String& url, ExceptionState& exceptionState)
-{
-    Vector<String> protocols;
-    connect(url, protocols, exceptionState);
-}
-
-void WebSocket::connect(const String& url, const String& protocol, ExceptionState& exceptionState)
-{
-    Vector<String> protocols;
-    protocols.append(protocol);
-    connect(url, protocols, exceptionState);
-}
-
 void WebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
 {
     WTF_LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());

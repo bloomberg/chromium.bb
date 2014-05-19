@@ -70,8 +70,6 @@ public:
         CLOSED = 3
     };
 
-    void connect(const String& url, ExceptionState&);
-    void connect(const String& url, const String& protocol, ExceptionState&);
     void connect(const String& url, const Vector<String>& protocols, ExceptionState&);
 
     void send(const String& message, ExceptionState&);
