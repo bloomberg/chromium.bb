@@ -38,7 +38,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '18aa25e10e0ca4807c3913edb9291137e811a831'
+BIONIC_VERSION = '92a6eb7644a83947eefb198e3704b18b3ad14c17'
 ARCHES = ['arm']
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
