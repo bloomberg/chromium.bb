@@ -13,6 +13,9 @@ function test()
     var sourcesView = panel._sourcesView;
     var historyManager = sourcesView._historyManager;
     var editorContainer = sourcesView._editorContainer;
+    InspectorTest.addSniffer(historyManager._historyManager, "filterOut", function() {
+        InspectorTest.addResult("executed SimpleHistoryManager.filterOut; activeEntryIndex = " + historyManager._historyManager._activeEntryIndex);
+    }, true);
 
     function rollback()
     {
@@ -182,7 +185,7 @@ function test()
                 var simpleHistoryManager = historyManager._historyManager;
                 var entries = simpleHistoryManager._entries;
                 InspectorTest.addResult("=== SimpleHistoryManager state " + title + " ===");
-                InspectorTest.addResult("entries count: " + entries.length);
+                InspectorTest.addResult("entries count: " + entries.length + " active entry index: " + simpleHistoryManager._activeEntryIndex);
                 for (var i = entries.length - 1; i >= 0; --i) {
                     var position = entries[i]._positionHandle.resolve();
                     var positionText = position ? "{line: " + position.lineNumber + ", column: " + position.columnNumber + "}" : position + "";
