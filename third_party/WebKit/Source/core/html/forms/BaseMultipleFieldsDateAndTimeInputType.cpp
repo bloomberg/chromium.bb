@@ -36,6 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -158,6 +159,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
 
     if (containsFocusedShadowElement())
         return;
+    EventQueueScope scope;
     RefPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
     element().setFocus(false);
