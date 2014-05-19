@@ -57,6 +57,7 @@ const AtomicString& TrackEvent::interfaceName() const
 
 void TrackEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_track);
     Event::trace(visitor);
 }
 

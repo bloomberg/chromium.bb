@@ -103,7 +103,7 @@ public:
     bool isActive() const { return m_active; }
 
     // error state
-    PassRefPtr<MediaError> error() const;
+    PassRefPtrWillBeRawPtr<MediaError> error() const;
 
     // network state
     void setSrc(const AtomicString&);
@@ -366,7 +366,7 @@ private:
     void clearMediaPlayerAndAudioSourceProviderClient();
     bool havePotentialSourceChild();
     void noneSupported();
-    void mediaEngineError(PassRefPtr<MediaError> err);
+    void mediaEngineError(PassRefPtrWillBeRawPtr<MediaError>);
     void cancelPendingEventsAndCallbacks();
     void waitForSourceChange();
     void prepareToPlay();
@@ -433,7 +433,7 @@ private:
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
 
-    RefPtr<MediaError> m_error;
+    RefPtrWillBeMember<MediaError> m_error;
 
     double m_volume;
     double m_lastSeekTime;

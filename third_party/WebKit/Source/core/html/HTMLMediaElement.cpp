@@ -556,7 +556,7 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
     m_pendingActionFlags = 0;
 }
 
-PassRefPtr<MediaError> HTMLMediaElement::error() const
+PassRefPtrWillBeRawPtr<MediaError> HTMLMediaElement::error() const
 {
     return m_error;
 }
@@ -1431,7 +1431,7 @@ void HTMLMediaElement::noneSupported()
         renderer()->updateFromElement();
 }
 
-void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
+void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
 {
     WTF_LOG(Media, "HTMLMediaElement::mediaEngineError(%d)", static_cast<int>(err->code()));
 
@@ -3632,6 +3632,7 @@ bool HTMLMediaElement::isInteractiveContent() const
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_error);
     visitor->trace(m_currentSourceNode);
     visitor->trace(m_nextChildNodeToConsider);
     visitor->trace(m_textTracks);

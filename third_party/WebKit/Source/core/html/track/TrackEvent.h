@@ -61,7 +61,7 @@ private:
     TrackEvent();
     TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
 
-    RefPtr<TrackBase> m_track;
+    RefPtrWillBeMember<TrackBase> m_track;
 };
 
 } // namespace WebCore

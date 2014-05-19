@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class MediaError : public RefCounted<MediaError>, public ScriptWrappable {
+class MediaError FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaError>, public ScriptWrappable {
 public:
     enum Code {
         MEDIA_ERR_ABORTED = 1,
@@ -42,9 +42,14 @@ public:
         MEDIA_ERR_ENCRYPTED
     };
 
-    static PassRefPtr<MediaError> create(Code code) { return adoptRef(new MediaError(code)); }
+    static PassRefPtrWillBeRawPtr<MediaError> create(Code code)
+    {
+        return adoptRefWillBeNoop(new MediaError(code));
+    }
 
     Code code() const { return m_code; }
+
+    void trace(Visitor*) { }
 
 private:
     MediaError(Code code) : m_code(code)
