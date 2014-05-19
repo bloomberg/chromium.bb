@@ -532,7 +532,7 @@ def GetUploadPackageTargets():
 
   # Host components
   host_packages = {}
-  for os_name, arch in (('win', 'x86-32'),
+  for os_name, arch in (('cygwin', 'x86-32'),
                         ('mac', 'x86-64'),
                         ('linux', 'x86-32'),
                         ('linux', 'x86-64')):
