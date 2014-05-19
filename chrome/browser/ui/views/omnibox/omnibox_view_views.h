@@ -69,9 +69,6 @@ class OmniboxViewViews
   }
 #endif
 
-  // View:
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
-
   // OmniboxView:
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;
@@ -89,16 +86,14 @@ class OmniboxViewViews
   virtual void SetFocus() OVERRIDE;
   virtual int GetTextWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
+
+  // views::Textfield:
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
-
-  // Return the number of characers in the current buffer.
-  virtual int GetOmniboxTextLength() const OVERRIDE;
-
-  // Try to parse the current text as a URL and colorize the components.
-  virtual void EmphasizeURLComponents() OVERRIDE;
 
   // Update the field with |text| and set the selection.
   void SetTextAndSelectedRange(const base::string16& text,
@@ -147,25 +142,27 @@ class OmniboxViewViews
   virtual void OnMatchOpened(const AutocompleteMatch& match,
                              Profile* profile,
                              content::WebContents* web_contents) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual int GetOmniboxTextLength() const OVERRIDE;
+  virtual void EmphasizeURLComponents() OVERRIDE;
 
   // views::Textfield:
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual base::string16 GetSelectionClipboardText() const OVERRIDE;
 
   // gfx::AnimationDelegate:

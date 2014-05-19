@@ -292,6 +292,10 @@ class LocationBarView : public LocationBar,
   typedef std::vector<ExtensionAction*> PageActions;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
+  // Helper for GetMinimumWidth().  Calculates the incremental minimum width
+  // |view| should add to the trailing width after the omnibox.
+  static int IncrementalMinimumWidth(views::View* view);
+
   // Returns the thickness of any visible left and right edge, in pixels.
   int GetHorizontalEdgeThickness() const;
 
@@ -336,6 +340,9 @@ class LocationBarView : public LocationBar,
 
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
+
+  bool ShouldShowKeywordBubble() const;
+  bool ShouldShowEVBubble() const;
 
   // Origin chip animation control methods.
   void OnShowURLAnimationEnded();

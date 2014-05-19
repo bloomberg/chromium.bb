@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "grit/theme_resources.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 
 
@@ -25,11 +26,7 @@ EVBubbleView::~EVBubbleView() {
 }
 
 gfx::Size EVBubbleView::GetMinimumSize() {
-  // Height will be ignored by the LocationBarView.
-  gfx::Size minimum(GetPreferredSize());
-  static const int kMinBubbleWidth = 150;
-  minimum.SetToMax(gfx::Size(kMinBubbleWidth, 0));
-  return minimum;
+  return GetMinimumSizeForPreferredSize(GetPreferredSize());
 }
 
 bool EVBubbleView::OnMousePressed(const ui::MouseEvent& event) {
@@ -47,4 +44,18 @@ void EVBubbleView::OnGestureEvent(ui::GestureEvent* event) {
     page_info_helper_.ProcessEvent(*event);
     event->SetHandled();
   }
+}
+
+gfx::Size EVBubbleView::GetMinimumSizeForLabelText(
+    const base::string16& text) const {
+  views::Label label(text, font_list());
+  return GetMinimumSizeForPreferredSize(
+      GetSizeForLabelWidth(label.GetPreferredSize().width()));
+}
+
+gfx::Size EVBubbleView::GetMinimumSizeForPreferredSize(gfx::Size size) const {
+  const int kMinCharacters = 10;
+  size.SetToMin(
+      GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
+  return size;
 }

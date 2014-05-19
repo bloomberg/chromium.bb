@@ -541,32 +541,32 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 gfx::Size ToolbarView::GetPreferredSize() {
   gfx::Size size(location_bar_->GetPreferredSize());
   if (is_display_mode_normal()) {
-    size.Enlarge(
-        kLeftEdgeSpacing + back_->GetPreferredSize().width() +
-            forward_->GetPreferredSize().width() +
-            reload_->GetPreferredSize().width() + kStandardSpacing +
-            (show_home_button_.GetValue() ?
-                home_->GetPreferredSize().width() : 0) +
-            (origin_chip_view_->visible() ?
-                (origin_chip_view_->GetPreferredSize().width() +
-                    2 * kStandardSpacing) :
-                0) +
-            browser_actions_->GetPreferredSize().width() +
-            app_menu_->GetPreferredSize().width() + kRightEdgeSpacing,
-        0);
-    gfx::ImageSkia* normal_background =
-        GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    size.SetToMax(
-        gfx::Size(0, normal_background->height() - content_shadow_height()));
-  } else {
-    const int kPopupBottomSpacingGlass = 1;
-    const int kPopupBottomSpacingNonGlass = 2;
-    size.Enlarge(
-        0,
-        PopupTopSpacing() + (GetWidget()->ShouldWindowContentsBeTransparent() ?
-            kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass));
+    int content_width = kLeftEdgeSpacing + back_->GetPreferredSize().width() +
+        forward_->GetPreferredSize().width() +
+        reload_->GetPreferredSize().width() +
+        (show_home_button_.GetValue() ? home_->GetPreferredSize().width() : 0) +
+        kStandardSpacing + browser_actions_->GetPreferredSize().width() +
+        app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
+    content_width += origin_chip_view_->visible() ?
+        (origin_chip_view_->GetPreferredSize().width() + kStandardSpacing) : 0;
+    size.Enlarge(content_width, 0);
   }
-  return size;
+  return SizeForContentSize(size);
+}
+
+gfx::Size ToolbarView::GetMinimumSize() {
+  gfx::Size size(location_bar_->GetMinimumSize());
+  if (is_display_mode_normal()) {
+    int content_width = kLeftEdgeSpacing + back_->GetMinimumSize().width() +
+        forward_->GetMinimumSize().width() + reload_->GetMinimumSize().width() +
+        (show_home_button_.GetValue() ? home_->GetMinimumSize().width() : 0) +
+        kStandardSpacing + browser_actions_->GetMinimumSize().width() +
+        app_menu_->GetMinimumSize().width() + kRightEdgeSpacing;
+    content_width += origin_chip_view_->visible() ?
+        (origin_chip_view_->GetMinimumSize().width() + kStandardSpacing) : 0;
+    size.Enlarge(content_width, 0);
+  }
+  return SizeForContentSize(size);
 }
 
 void ToolbarView::Layout() {
@@ -780,9 +780,25 @@ bool ToolbarView::ShouldShowIncompatibilityWarning() {
 
 int ToolbarView::PopupTopSpacing() const {
   const int kPopupTopSpacingNonGlass = 3;
-  return GetWidget()->ShouldWindowContentsBeTransparent()
-             ? 0
-             : kPopupTopSpacingNonGlass;
+  return GetWidget()->ShouldWindowContentsBeTransparent() ?
+      0 : kPopupTopSpacingNonGlass;
+}
+
+gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
+  if (is_display_mode_normal()) {
+    gfx::ImageSkia* normal_background =
+        GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
+    size.SetToMax(
+        gfx::Size(0, normal_background->height() - content_shadow_height()));
+  } else {
+    const int kPopupBottomSpacingGlass = 1;
+    const int kPopupBottomSpacingNonGlass = 2;
+    size.Enlarge(
+        0,
+        PopupTopSpacing() + (GetWidget()->ShouldWindowContentsBeTransparent() ?
+            kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass));
+  }
+  return size;
 }
 
 void ToolbarView::LoadImages() {

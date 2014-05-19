@@ -208,19 +208,23 @@ void BrowserActionsContainer::RemoveObserver(
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
-  if (browser_action_views_.empty())
-    return gfx::Size(ToolbarView::kStandardSpacing, 0);
-
   // We calculate the size of the view by taking the current width and
   // subtracting resize_amount_ (the latter represents how far the user is
   // resizing the view or, if animating the snapping, how far to animate it).
   // But we also clamp it to a minimum size and the maximum size, so that the
   // container can never shrink too far or take up more space than it needs. In
-  // other words: ContainerMinSize() < width() - resize < ClampTo(MAX).
-  int clamped_width = std::min(
-      std::max(ContainerMinSize(), container_width_ - resize_amount_),
+  // other words: MinimumNonemptyWidth() < width() - resize < ClampTo(MAX).
+  int preferred_width = std::min(
+      std::max(MinimumNonemptyWidth(), container_width_ - resize_amount_),
       IconCountToWidth(-1, false));
-  return gfx::Size(clamped_width, 0);
+  // Height will be ignored by the ToolbarView.
+  return gfx::Size(preferred_width, 0);
+}
+
+gfx::Size BrowserActionsContainer::GetMinimumSize() {
+  int min_width = std::min(MinimumNonemptyWidth(), IconCountToWidth(-1, false));
+  // Height will be ignored by the ToolbarView.
+  return gfx::Size(min_width, 0);
 }
 
 void BrowserActionsContainer::Layout() {
@@ -853,7 +857,7 @@ size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
       std::max(0, available_space + kItemSpacing) / IconWidth(true));
 }
 
-int BrowserActionsContainer::ContainerMinSize() const {
+int BrowserActionsContainer::MinimumNonemptyWidth() const {
   return ToolbarView::kStandardSpacing + kChevronSpacing +
       chevron_->GetPreferredSize().width() + ToolbarView::kStandardSpacing;
 }

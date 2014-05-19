@@ -19,15 +19,19 @@ class EVBubbleView : public IconLabelBubbleView {
                LocationBarView* parent);
   virtual ~EVBubbleView();
 
-  // Overridden from View.
+  // IconLabelBubbleView:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-
-  // Overridden from ui::EventHandler.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
+  // Returns what the minimum size would be if the label text were |text|.
+  gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;
+
  private:
+  // Returns what the minimum size would be if the preferred size were |size|.
+  gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
+
   PageInfoHelper page_info_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EVBubbleView);
