@@ -154,6 +154,18 @@ try:
     # Don't upload packages from the 32-bit linux bot to avoid racing on
     # uploading the same packages as the 64-bit linux bot
     if host_os != 'linux' or pynacl.platform.IsArch64Bit():
+      if host_os == 'win':
+        # Since we are currently running the build in cygwin, the filenames in
+        # TEMP_PACKAGES_FILE will have cygwin paths. Convert them to system
+        # paths so we dont' have to worry about running package_version tools
+        # in cygwin.
+        converted = []
+        with open(TEMP_PACKAGES_FILE) as f:
+          for line in f:
+            converted.append(
+              subprocess.check_output(['cygpath', '-w', line]).strip())
+        with open(TEMP_PACKAGES_FILE, 'w') as f:
+          f.write('\n'.join(converted))
       packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
 except subprocess.CalledProcessError:
