@@ -1,0 +1,25 @@
+This directory contains a static copy of the contents of the CLD2 CRX file.
+The ID of the extension (as well as other relevant information) can be found
+in the following file:
+  src/chrome/browser/component_updater/cld_component_installer.cc 
+
+In general there should be little need to modify the data here. CLD2 updates
+are rare and consist of incremental improvements to language detection
+accuracy. All such updates are expected to be backwards-compatible from CLD2
+revision 160 onwards, which was the initial version to be checked in. Any
+future format-breaking changes are likely to result in a "CLD3".
+
+For the sake of maintainability and clarity of purpose, the subdirectory that
+contains the CRX extract is named for the version that is contained within it.
+This mimics the behavior of the component updater and makes it obvious at a
+glance which version of the CRX is checked in here; if you DO update the
+content here, make sure to make a new directory and update the constant in the
+test utilities class:
+  src/chrome/browser/translate/translate_browser_test_utils.cc
+
+If backwards compatibility is required, you'll have to add tests to try with
+both the old version and the new.
+
+For more information please refer to:
+  src/third_party/cld_2/README.chromium
+
