@@ -703,6 +703,20 @@ class TestAutoRebaseline(_BaseTestCase):
         abs_path = self.tool.filesystem.join(port.layout_tests_dir(), path)
         self.tool.filesystem.write_text_file(abs_path, contents)
 
+    def _setup_test_port(self):
+        test_port = self.tool.port_factory.get('test')
+        original_get = self.tool.port_factory.get
+
+        def get_test_port(port_name=None, options=None, **kwargs):
+            if not port_name:
+                return test_port
+            return original_get(port_name, options, **kwargs)
+        # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
+        # FIXME: crbug.com/279494 - we shouldn't be doing this.
+        self.tool.port_factory.get = get_test_port
+
+        return test_port
+
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
         self.command.latest_revision_processed_on_all_bots = lambda log_server: 9000
@@ -806,16 +820,7 @@ TBR=foo@chromium.org
 """
         self.tool.scm().blame = blame
 
-        test_port = self.tool.port_factory.get('test')
-        original_get = self.tool.port_factory.get
-
-        def get_test_port(port_name=None, options=None, **kwargs):
-            if not port_name:
-                return test_port
-            return original_get(port_name, options, **kwargs)
-        # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
-        # FIXME: crbug.com/279494 - we shouldn't be doing this.
-        self.tool.port_factory.get = get_test_port
+        test_port = self._setup_test_port()
 
         old_builder_data = self.command.builder_data
 
@@ -873,9 +878,9 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             self.assertEqual(self.tool.executive.calls, [])
 
             self.command.tree_status = lambda: 'open'
-
             self.tool.executive.calls = []
             self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+
             self.assertEqual(self.tool.executive.calls, [
                 [
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
@@ -892,7 +897,10 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ['echo', 'optimize-baselines', '--suffixes', 'txt,png', 'fast/dom/prototype-chocolate.html'],
                 ['echo', 'optimize-baselines', '--suffixes', 'png', 'fast/dom/prototype-strawberry.html'],
                 ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
+                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'set_close'],
             ])
 
             # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -906,6 +914,68 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
         finally:
             builders._exact_matches = old_exact_matches
 
+    def test_execute_git_cl_hangs(self):
+        def blame(path):
+            return """
+6469e754a1 path/to/TestExpectations                   (foobarbaz1@chromium.org 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+"""
+        self.tool.scm().blame = blame
+
+        test_port = self._setup_test_port()
+
+        old_builder_data = self.command.builder_data
+
+        def builder_data():
+            old_builder_data()
+            # have prototype-chocolate only fail on "MOCK Leopard".
+            self.command._builder_data['MOCK SnowLeopard'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "fast": {
+            "dom": {
+                "prototype-taco.html": {
+                    "expected": "PASS",
+                    "actual": "PASS TEXT",
+                    "is_unexpected": true
+                }
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
+Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
+""")
+
+        self._write_test_file(test_port, 'fast/dom/prototype-taco.html', "Dummy test contents")
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK SnowLeopard": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+            }
+
+            self.command.SECONDS_BEFORE_GIVING_UP = 0
+            self.command.tree_status = lambda: 'open'
+            self.tool.executive.calls = []
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
+
+            self.assertEqual(self.tool.executive.calls, [
+                [
+                    ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
+                ],
+                [
+                    ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
+                ],
+                ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                ['git', 'cl', 'upload', '-f'],
+                ['git', 'cl', 'set_close'],
+            ])
+        finally:
+            builders._exact_matches = old_exact_matches
+
     def test_execute_test_passes_everywhere(self):
         def blame(path):
             return """
@@ -913,16 +983,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 """
         self.tool.scm().blame = blame
 
-        test_port = self.tool.port_factory.get('test')
-        original_get = self.tool.port_factory.get
-
-        def get_test_port(port_name=None, options=None, **kwargs):
-            if not port_name:
-                return test_port
-            return original_get(port_name, options, **kwargs)
-        # Need to make sure all the ports grabbed use the test checkout path instead of the mock checkout path.
-        # FIXME: crbug.com/279494 - we shouldn't be doing this.
-        self.tool.port_factory.get = get_test_port
+        test_port = self._setup_test_port()
 
         old_builder_data = self.command.builder_data
 
@@ -969,7 +1030,10 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     ['echo', 'rebaseline-test-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
                 ['echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
+                ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'cl', 'set_close'],
             ])
 
             # The mac ports should both be removed since they're the only ones in builders._exact_matches.

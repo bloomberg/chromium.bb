@@ -46,6 +46,12 @@ class MockProcess(object):
     def wait(self):
         return
 
+    def poll(self):
+        # Consider the process completed when all the stdout and stderr has been read.
+        if self.stdout.len != self.stdout.tell() or self.stderr.len != self.stderr.tell():
+            return None
+        return self.returncode
+
 # FIXME: This should be unified with MockExecutive2
 class MockExecutive(object):
     PIPE = "MOCK PIPE"
@@ -145,6 +151,7 @@ class MockExecutive(object):
         return self._proc
 
     def call(self, args, **kwargs):
+        self.calls.append(args)
         _log.info('Mock call: %s' % args)
 
     def run_in_parallel(self, commands):
