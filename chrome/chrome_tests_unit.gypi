@@ -1039,6 +1039,7 @@
         'browser/local_discovery/privet_url_fetcher_unittest.cc',
         'browser/local_discovery/storage/path_util_unittest.cc',
         'browser/local_discovery/cloud_print_printer_list_unittest.cc',
+        'browser/local_discovery/cloud_device_list_unittest.cc',
         'browser/local_discovery/service_discovery_client_mac_unittest.mm',
         'browser/logging_chrome_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',

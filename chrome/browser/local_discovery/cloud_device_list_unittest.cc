@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/local_discovery/cloud_print_printer_list.h"
+#include "chrome/browser/local_discovery/cloud_device_list.h"
 
 #include <set>
 
@@ -25,29 +25,42 @@ namespace local_discovery {
 namespace {
 
 const char kSampleSuccessResponseOAuth[] = "{"
-    "   \"success\": true,"
-    "   \"printers\": ["
-    "     {\"id\" : \"someID\","
-    "      \"displayName\": \"someDisplayName\","
-    "      \"description\": \"someDescription\"}"
-    "    ]"
-    "}";
+   "\"kind\": \"clouddevices#devicesListResponse\","
+   "\"devices\": [{"
+   "  \"kind\": \"clouddevices#device\","
+   "  \"id\": \"someID\","
+   "  \"deviceKind\": \"someType\","
+   "  \"creationTimeMs\": \"123\","
+   "  \"systemName\": \"someDisplayName\","
+   "  \"owner\": \"user@domain.com\","
+   "  \"description\": \"someDescription\","
+   "  \"state\": {"
+   "  \"base\": {"
+   "    \"connectionStatus\": \"offline\""
+   "   }"
+   "  },"
+   "  \"channel\": {"
+   "  \"supportedType\": \"xmpp\""
+   "  },"
+   "  \"personalizedInfo\": {"
+   "   \"maxRole\": \"owner\""
+   "  }}]}";
 
 class MockDelegate : public CloudDeviceListDelegate {
  public:
-  MOCK_METHOD0(OnDeviceListUnavailable, void());
   MOCK_METHOD0(OnDeviceListReady, void());
+  MOCK_METHOD0(OnDeviceListUnavailable, void());
 };
 
-class CloudPrintPrinterListTest : public testing::Test {
+class CloudDeviceListTest : public testing::Test {
  public:
-  CloudPrintPrinterListTest()
+  CloudDeviceListTest()
       : ui_thread_(content::BrowserThread::UI, &loop_),
         request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
         fetcher_factory_(NULL),
-        printer_list_(request_context_.get(), &token_service_, "account_id",
-                      &delegate_) {
+        device_list_(request_context_.get(), &token_service_, "account_id",
+                     &delegate_) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -63,21 +76,21 @@ class CloudPrintPrinterListTest : public testing::Test {
   net::FakeURLFetcherFactory fetcher_factory_;
   FakeOAuth2TokenService token_service_;
   StrictMock<MockDelegate> delegate_;
-  CloudPrintPrinterList printer_list_;
+  CloudDeviceList device_list_;
 };
 
-TEST_F(CloudPrintPrinterListTest, List) {
+TEST_F(CloudDeviceListTest, List) {
   fetcher_factory_.SetFakeResponse(
-      cloud_devices::GetCloudPrintRelativeURL("search"),
+      cloud_devices::GetCloudDevicesRelativeURL("devices"),
       kSampleSuccessResponseOAuth,
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 
-  GCDBaseApiFlow* cloudprint_flow = printer_list_.GetOAuth2ApiFlowForTests();
+  GCDBaseApiFlow* oauth2_api_flow = device_list_.GetOAuth2ApiFlowForTests();
 
-  printer_list_.Start();
+  device_list_.Start();
 
-  cloudprint_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
+  oauth2_api_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
 
   EXPECT_CALL(delegate_, OnDeviceListReady());
 
@@ -89,17 +102,17 @@ TEST_F(CloudPrintPrinterListTest, List) {
   std::set<std::string> ids_expected;
   ids_expected.insert("someID");
 
-  for (CloudPrintPrinterList::iterator i = printer_list_.printer_list().begin();
-       i != printer_list_.printer_list().end(); i++) {
+  for (CloudDeviceList::iterator i = device_list_.device_list().begin();
+       i != device_list_.device_list().end(); i++) {
     ids_found.insert(i->id);
   }
 
   ASSERT_EQ(ids_expected, ids_found);
 
-  EXPECT_EQ("someID", printer_list_.printer_list()[0].id);
-  EXPECT_EQ("someDisplayName", printer_list_.printer_list()[0].display_name);
-  EXPECT_EQ("someDescription", printer_list_.printer_list()[0].description);
-  EXPECT_EQ("printer", printer_list_.printer_list()[0].type);
+  EXPECT_EQ("someID", device_list_.device_list()[0].id);
+  EXPECT_EQ("someDisplayName", device_list_.device_list()[0].display_name);
+  EXPECT_EQ("someDescription", device_list_.device_list()[0].description);
+  EXPECT_EQ("someType", device_list_.device_list()[0].type);
 }
 
 }  // namespace

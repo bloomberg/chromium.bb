@@ -11,6 +11,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/prefs/pref_member.h"
+#include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
@@ -35,7 +36,7 @@ class ServiceDiscoverySharedClient;
 class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public PrivetRegisterOperation::Delegate,
                                 public PrivetDeviceLister::Delegate,
-                                public CloudPrintPrinterList::Delegate,
+                                public CloudDeviceListDelegate,
                                 public SigninManagerBase::Observer {
  public:
   LocalDiscoveryUIHandler();
@@ -72,10 +73,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   virtual void DeviceCacheFlushed() OVERRIDE;
 
-  // CloudPrintPrinterList::Delegate implementation.
-  virtual void OnCloudPrintPrinterListReady() OVERRIDE;
-
-  virtual void OnCloudPrintPrinterListUnavailable() OVERRIDE;
+  // CloudDeviceListDelegate implementation.
+  virtual void OnDeviceListReady() OVERRIDE;
+  virtual void OnDeviceListUnavailable() OVERRIDE;
 
   // SigninManagerBase::Observer implementation.
   virtual void GoogleSigninSucceeded(const std::string& username,
@@ -96,11 +96,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // For when a user choice is made.
   void HandleRegisterDevice(const base::ListValue* args);
 
-  // For when a cancelation is made.
+  // For when a cancellation is made.
   void HandleCancelRegistration(const base::ListValue* args);
 
-  // For requesting the printer list.
-  void HandleRequestPrinterList(const base::ListValue* args);
+  // For requesting the device list.
+  void HandleRequestDeviceList(const base::ListValue* args);
 
   // For opening URLs (relative to the Google Cloud Print base URL) in a new
   // tab.
@@ -133,15 +133,14 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
 
-  scoped_ptr<base::DictionaryValue> CreatePrinterInfo(
-      const CloudPrintPrinterList::PrinterDetails& description);
-
   // Announcement hasn't been sent for a certain time after registration
   // finished. Consider it failed.
   // TODO(noamsml): Re-resolve service first.
   void OnAnnouncementTimeoutReached();
 
   void CheckUserLoggedIn();
+
+  void CheckListingDone();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();
@@ -182,6 +181,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // List of printers from cloud print.
   scoped_ptr<CloudPrintPrinterList> cloud_print_printer_list_;
+  scoped_ptr<CloudDeviceList> cloud_device_list_;
+  int failed_list_count_;
+  int succeded_list_count_;
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StringPrefMember cloud_print_connector_email_;

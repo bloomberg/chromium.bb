@@ -36,14 +36,15 @@ void GCDBaseApiFlow::Delegate::GetUploadData(std::string* upload_type,
 GCDBaseApiFlow::GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                                OAuth2TokenService* token_service,
                                const std::string& account_id,
-                               const GURL& automated_claim_url,
+                               const GURL& url,
                                Delegate* delegate)
     : OAuth2TokenService::Consumer("cloud_print"),
       request_context_(request_context),
       token_service_(token_service),
       account_id_(account_id),
-      url_(automated_claim_url),
-      delegate_(delegate) {}
+      url_(url),
+      delegate_(delegate) {
+}
 
 GCDBaseApiFlow::~GCDBaseApiFlow() {}
 

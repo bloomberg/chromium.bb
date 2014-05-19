@@ -53,21 +53,21 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
   GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                  OAuth2TokenService* token_service,
                  const std::string& account_id,
-                 const GURL& automated_claim_url,
+                 const GURL& url,
                  Delegate* delegate);
 
   // Create a cookie-based confirmation.
   GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                  int user_index,
                  const std::string& xsrf_token,
-                 const GURL& automated_claim_url,
+                 const GURL& url,
                  Delegate* delegate);
 
   // Create a cookie-based confirmation with no XSRF token (for requests that
   // don't need an XSRF token).
   GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                  int user_index,
-                 const GURL& automated_claim_url,
+                 const GURL& url,
                  Delegate* delegate);
 
   virtual ~GCDBaseApiFlow();

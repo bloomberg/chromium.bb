@@ -13990,8 +13990,11 @@ Do you accept?
       <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE" desc="Message for error page">
         An error has occured. Please check your printer and try again.
       </message>
-      <message name="IDS_LOCAL_DISCOVERY_NO_DESCRIPTION" desc="Description for devices with an empty description">
+      <message name="IDS_LOCAL_DISCOVERY_NO_DESCRIPTION_PRINTER" desc="Description for printer with an empty description">
         Printer on Google Cloud Print
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_NO_DESCRIPTION_DEVICE" desc="Description for device with an empty description">
+        Device on Google Cloud Devices
       </message>
       <message name="IDS_LOCAL_DISCOVERY_PRINTERS_ON_NETWORK_ZERO" desc="'Zero' case for number indicator for locally discoverable printers">
         No other available devices.

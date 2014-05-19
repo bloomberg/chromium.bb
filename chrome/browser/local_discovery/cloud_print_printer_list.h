@@ -5,41 +5,23 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_CLOUD_PRINT_PRINTER_LIST_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_CLOUD_PRINT_PRINTER_LIST_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
+#include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "chrome/browser/local_discovery/gcd_base_api_flow.h"
 
 namespace local_discovery {
 
 class CloudPrintPrinterList : public GCDBaseApiFlow::Delegate {
  public:
-  class Delegate {
-   public:
-    ~Delegate() {}
-
-    virtual void OnCloudPrintPrinterListReady() = 0;
-    virtual void OnCloudPrintPrinterListUnavailable() = 0;
-  };
-
-  struct PrinterDetails {
-    PrinterDetails();
-    ~PrinterDetails();
-
-    std::string id;
-    std::string display_name;
-    std::string description;
-    // TODO(noamsml): std::string user;
-  };
-
-  typedef std::vector<PrinterDetails> PrinterList;
+  typedef std::vector<CloudDeviceListDelegate::Device> PrinterList;
   typedef PrinterList::const_iterator iterator;
 
   CloudPrintPrinterList(net::URLRequestContextGetter* request_context,
                         OAuth2TokenService* token_service,
                         const std::string& account_id,
-                        Delegate* delegate);
+                        CloudDeviceListDelegate* delegate);
   virtual ~CloudPrintPrinterList();
 
   void Start();
@@ -47,30 +29,25 @@ class CloudPrintPrinterList : public GCDBaseApiFlow::Delegate {
   virtual void OnGCDAPIFlowError(GCDBaseApiFlow* flow,
                                  GCDBaseApiFlow::Status status) OVERRIDE;
 
-  virtual void OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
-                                    const base::DictionaryValue* value)
-      OVERRIDE;
+  virtual void OnGCDAPIFlowComplete(
+      GCDBaseApiFlow* flow,
+      const base::DictionaryValue* value) OVERRIDE;
 
   virtual bool GCDIsCloudPrint() OVERRIDE;
 
-  const PrinterDetails* GetDetailsFor(const std::string& id);
-
-  iterator begin() { return printer_list_.begin(); }
-  iterator end() { return printer_list_.end(); }
-
   GCDBaseApiFlow* GetOAuth2ApiFlowForTests() { return &api_flow_; }
 
- private:
-  typedef std::map<std::string /*ID*/, int /* index in printer_list_ */>
-      PrinterIDMap;
+  const PrinterList& printer_list() const {
+    return printer_list_;
+  }
 
+ private:
   bool FillPrinterDetails(const base::DictionaryValue* printer_value,
-                          PrinterDetails* printer_details);
+                          CloudDeviceListDelegate::Device* printer_details);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  PrinterIDMap printer_id_map_;
   PrinterList printer_list_;
-  Delegate* delegate_;
+  CloudDeviceListDelegate* delegate_;
   GCDBaseApiFlow api_flow_;
 };
 

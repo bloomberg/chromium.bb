@@ -329,7 +329,10 @@ cr.define('local_discovery', function() {
 
     var description;
     if (device.description == '') {
-      description = loadTimeData.getString('noDescription');
+      if (device.type == 'printer')
+        description = loadTimeData.getString('noDescriptionPrinter');
+      else
+        description = loadTimeData.getString('noDescriptionDevice');
     } else {
       description = device.description;
     }
@@ -431,15 +434,15 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * Request the printer list.
+   * Request the device list.
    */
-  function requestPrinterList() {
+  function requestDeviceList() {
     if (isUserLoggedIn) {
       clearElement($('cloud-devices'));
       $('cloud-devices-loading').hidden = false;
       $('cloud-devices-unavailable').hidden = true;
 
-      chrome.send('requestPrinterList');
+      chrome.send('requestDeviceList');
     }
   }
 
@@ -475,7 +478,7 @@ cr.define('local_discovery', function() {
    * Retry loading the devices from Google Cloud Print.
    */
   function retryLoadCloudDevices() {
-    requestPrinterList();
+    requestDeviceList();
   }
 
   /**
@@ -489,7 +492,7 @@ cr.define('local_discovery', function() {
     $('register-continue-button').disabled = !isUserLoggedIn;
 
     if (isUserLoggedIn) {
-      requestPrinterList();
+      requestDeviceList();
       $('register-login-promo').hidden = true;
     } else {
       $('cloud-devices-loading').hidden = true;
@@ -552,7 +555,7 @@ cr.define('local_discovery', function() {
       } else {
         $('cloudPrintConnectorSetupButton').onclick = function(event) {
           chrome.send('disableCloudPrintConnector');
-          requestPrinterList();
+          requestDeviceList();
         };
       }
     }

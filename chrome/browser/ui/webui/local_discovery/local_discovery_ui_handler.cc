@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -49,11 +50,44 @@
 namespace local_discovery {
 
 namespace {
-const char kDeviceTypePrinter[] = "printer";
+
 int g_num_visible = 0;
+
+scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
+    const CloudDeviceListDelegate::Device& description) {
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
+
+  return_value->SetString("id", description.id);
+  return_value->SetString("display_name", description.display_name);
+  return_value->SetString("description", description.description);
+  return_value->SetString("type", description.type);
+
+  return return_value.Pass();
+}
+
+void ReadDevicesList(
+    const std::vector<CloudDeviceListDelegate::Device>& devices,
+    const std::set<std::string>& local_ids,
+    base::ListValue* devices_list) {
+  for (CloudDeviceList::iterator i = devices.begin(); i != devices.end(); i++) {
+    if (local_ids.count(i->id) > 0) {
+      devices_list->Append(CreateDeviceInfo(*i).release());
+    }
+  }
+
+  for (CloudDeviceList::iterator i = devices.begin(); i != devices.end(); i++) {
+    if (local_ids.count(i->id) == 0) {
+      devices_list->Append(CreateDeviceInfo(*i).release());
+    }
+  }
+}
+
 }  // namespace
 
-LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
+LocalDiscoveryUIHandler::LocalDiscoveryUIHandler()
+    : is_visible_(false),
+      failed_list_count_(0),
+      succeded_list_count_(0) {
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 #if !defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
   // On Windows, we need the PDF plugin which is only guaranteed to exist on
@@ -98,9 +132,10 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("cancelRegistration", base::Bind(
       &LocalDiscoveryUIHandler::HandleCancelRegistration,
       base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestPrinterList", base::Bind(
-      &LocalDiscoveryUIHandler::HandleRequestPrinterList,
-      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestDeviceList",
+      base::Bind(&LocalDiscoveryUIHandler::HandleRequestDeviceList,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("openCloudPrintURL", base::Bind(
       &LocalDiscoveryUIHandler::HandleOpenCloudPrintURL,
       base::Unretained(this)));
@@ -179,7 +214,7 @@ void LocalDiscoveryUIHandler::HandleCancelRegistration(
   ResetCurrentRegistration();
 }
 
-void LocalDiscoveryUIHandler::HandleRequestPrinterList(
+void LocalDiscoveryUIHandler::HandleRequestDeviceList(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileOAuth2TokenService* token_service =
@@ -188,12 +223,26 @@ void LocalDiscoveryUIHandler::HandleRequestPrinterList(
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
 
+  failed_list_count_ = 0;
+  succeded_list_count_ = 0;
+
   cloud_print_printer_list_.reset(
       new CloudPrintPrinterList(profile->GetRequestContext(),
                                 token_service,
                                 signin_manager->GetAuthenticatedAccountId(),
                                 this));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCloudDevices)) {
+    cloud_device_list_.reset(
+        new CloudDeviceList(profile->GetRequestContext(),
+                            token_service,
+                            signin_manager->GetAuthenticatedAccountId(),
+                            this));
+  }
+
   cloud_print_printer_list_->Start();
+  if (cloud_device_list_)
+    cloud_device_list_->Start();
 }
 
 void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
@@ -382,39 +431,14 @@ void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
   privet_lister_->DiscoverNewDevices(false);
 }
 
-void LocalDiscoveryUIHandler::OnCloudPrintPrinterListReady() {
-  base::ListValue printer_object_list;
-  std::set<std::string> local_ids;
-
-  for (DeviceDescriptionMap::iterator i = device_descriptions_.begin();
-       i != device_descriptions_.end();
-       i++) {
-    std::string device_id = i->second.id;
-    if (!device_id.empty()) {
-      const CloudPrintPrinterList::PrinterDetails* details =
-          cloud_print_printer_list_->GetDetailsFor(device_id);
-
-      if (details) {
-        local_ids.insert(device_id);
-        printer_object_list.Append(CreatePrinterInfo(*details).release());
-      }
-    }
-  }
-
-  for (CloudPrintPrinterList::iterator i = cloud_print_printer_list_->begin();
-       i != cloud_print_printer_list_->end(); i++) {
-    if (local_ids.count(i->id) == 0) {
-      printer_object_list.Append(CreatePrinterInfo(*i).release());
-    }
-  }
-
-  web_ui()->CallJavascriptFunction(
-      "local_discovery.onCloudDeviceListAvailable", printer_object_list);
+void LocalDiscoveryUIHandler::OnDeviceListReady() {
+  ++succeded_list_count_;
+  CheckListingDone();
 }
 
-void LocalDiscoveryUIHandler::OnCloudPrintPrinterListUnavailable() {
-  web_ui()->CallJavascriptFunction(
-      "local_discovery.onCloudDeviceListUnavailable");
+void LocalDiscoveryUIHandler::OnDeviceListUnavailable() {
+  ++failed_list_count_;
+  CheckListingDone();
 }
 
 void LocalDiscoveryUIHandler::GoogleSigninSucceeded(
@@ -475,22 +499,49 @@ void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
   current_http_client_.reset();
 }
 
-scoped_ptr<base::DictionaryValue> LocalDiscoveryUIHandler::CreatePrinterInfo(
-    const CloudPrintPrinterList::PrinterDetails& description) {
-  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
-
-  return_value->SetString("id", description.id);
-  return_value->SetString("display_name", description.display_name);
-  return_value->SetString("description", description.description);
-  return_value->SetString("type", "printer");
-
-  return return_value.Pass();
-}
-
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   base::FundamentalValue logged_in_value(!GetSyncAccount().empty());
   web_ui()->CallJavascriptFunction("local_discovery.setUserLoggedIn",
                                    logged_in_value);
+}
+
+void LocalDiscoveryUIHandler::CheckListingDone() {
+  int started = 0;
+  if (cloud_print_printer_list_)
+    ++started;
+  if (cloud_device_list_)
+    ++started;
+
+  if (started > failed_list_count_ + succeded_list_count_)
+    return;
+
+  if (succeded_list_count_ <= 0) {
+    web_ui()->CallJavascriptFunction(
+        "local_discovery.onCloudDeviceListUnavailable");
+    return;
+  }
+
+  base::ListValue devices_list;
+  std::set<std::string> local_ids;
+
+  for (DeviceDescriptionMap::iterator i = device_descriptions_.begin();
+       i != device_descriptions_.end(); i++) {
+    local_ids.insert(i->second.id);
+  }
+
+  if (cloud_print_printer_list_) {
+    ReadDevicesList(cloud_print_printer_list_->printer_list(), local_ids,
+                    &devices_list);
+  }
+  if (cloud_device_list_) {
+    ReadDevicesList(cloud_device_list_->device_list(), local_ids,
+                    &devices_list);
+  }
+
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.onCloudDeviceListAvailable", devices_list);
+  cloud_print_printer_list_.reset();
+  cloud_device_list_.reset();
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
