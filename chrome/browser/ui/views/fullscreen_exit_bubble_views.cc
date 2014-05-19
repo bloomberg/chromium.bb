@@ -281,6 +281,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   popup_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.can_activate = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
   params.bounds = GetPopupRect(false);

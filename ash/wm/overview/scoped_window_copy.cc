@@ -35,6 +35,7 @@ views::Widget* CreateCopyOfWindow(aura::Window* target_root,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = src_window->parent();
+  params.can_activate = false;
   params.keep_on_top = true;
   widget->set_focus_on_creation(false);
   widget->Init(params);

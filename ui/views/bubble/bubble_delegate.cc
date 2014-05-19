@@ -35,8 +35,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
     bubble_params.parent = bubble->anchor_widget()->GetNativeView();
-  bubble_params.activatable = bubble->CanActivate() ?
-      Widget::InitParams::ACTIVATABLE_YES : Widget::InitParams::ACTIVATABLE_NO;
+  bubble_params.can_activate = bubble->CanActivate();
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   bubble_widget->Init(bubble_params);
   return bubble_widget;

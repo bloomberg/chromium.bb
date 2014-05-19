@@ -86,7 +86,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // An approximate window size. After Layout() we'll get better bounds.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.can_activate = true;
   params.bounds = gfx::Rect(310, 200);
   popup_ = new views::Widget;
   popup_->Init(params);

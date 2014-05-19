@@ -386,6 +386,7 @@ void MultiWindowResizeController::ShowNow() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
                                       kShellWindowId_AlwaysOnTopContainer);
+  params.can_activate = false;
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
   resize_widget_->Init(params);

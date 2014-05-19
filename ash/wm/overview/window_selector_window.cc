@@ -26,6 +26,7 @@ views::Widget* CreateCloseWindowButton(aura::Window* root_window,
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.can_activate = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =

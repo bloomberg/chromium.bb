@@ -95,9 +95,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = aura::WINDOW_LAYER_NOT_DRAWN;
-    init_params.activatable = full_screen ?
-        Widget::InitParams::ACTIVATABLE_YES :
-        Widget::InitParams::ACTIVATABLE_NO;
+    init_params.can_activate = full_screen;
     init_params.keep_on_top = root_is_always_on_top;
 
     // This widget instance will get deleted when the window is
@@ -253,6 +251,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     : desktop_window_tree_host_(NULL),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       close_widget_factory_(this),
+      can_activate_(true),
       content_window_container_(NULL),
       content_window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
@@ -1052,7 +1051,7 @@ void DesktopNativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
 // DesktopNativeWidgetAura, aura::client::ActivationDelegate implementation:
 
 bool DesktopNativeWidgetAura::ShouldActivate() const {
-  return native_widget_delegate_->CanActivate();
+  return can_activate_ && native_widget_delegate_->CanActivate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

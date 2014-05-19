@@ -76,6 +76,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       window_(new aura::Window(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       close_widget_factory_(this),
+      can_activate_(true),
       destroying_(false),
       cursor_(gfx::kNullCursor),
       saved_window_state_(ui::SHOW_STATE_DEFAULT) {
@@ -160,6 +161,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   else
     SetBounds(window_bounds);
   window_->set_ignore_events(!params.accept_events);
+  can_activate_ = params.can_activate &&
+      params.type != Widget::InitParams::TYPE_CONTROL &&
+      params.type != Widget::InitParams::TYPE_TOOLTIP;
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
@@ -483,7 +487,7 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
     window_->SetProperty(aura::client::kShowStateKey, state);
   window_->Show();
-  if (delegate_->CanActivate()) {
+  if (can_activate_) {
     if (state != ui::SHOW_STATE_INACTIVE)
       Activate();
     // SetInitialFocus() should be always be called, even for
@@ -769,7 +773,7 @@ bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool NativeWidgetAura::CanFocus() {
-  return ShouldActivate();
+  return can_activate_;
 }
 
 void NativeWidgetAura::OnCaptureLost() {
@@ -866,7 +870,7 @@ void NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
 // NativeWidgetAura, aura::client::ActivationDelegate implementation:
 
 bool NativeWidgetAura::ShouldActivate() const {
-  return delegate_->CanActivate();
+  return can_activate_ && delegate_->CanActivate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

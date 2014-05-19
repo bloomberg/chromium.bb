@@ -66,6 +66,7 @@ void DragWindowController::CreateDragWidget(const gfx::Rect& bounds) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = window_->parent();
+  params.can_activate = false;
   params.keep_on_top = true;
   drag_widget_->set_focus_on_creation(false);
   drag_widget_->Init(params);
