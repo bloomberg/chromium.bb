@@ -628,7 +628,13 @@ static struct TestParams const tests[] = {
     BasicPWriteReadTest,
     NACL_ABI_O_RDWR,
     (void *) &g_RealPReadWriteImpl,
-  }, {
+  },
+#if !NACL_WINDOWS
+  /*
+   * Windows doesn't have a way to drop O_APPEND, which the simulated pwrite
+   * implementation relies on, so skip these tests.
+   */
+  {
     "Using simulated pread/pwrite: write too (O_APPEND)",
     BasicPWriteReadTest,
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
@@ -638,7 +644,9 @@ static struct TestParams const tests[] = {
     BasicPWriteReadTest,
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
     (void *) &g_RealPReadSimulatedPWriteImpl,
-  }, {
+  },
+#endif
+  {
     "Using simulated pread, real pwrite: write too (O_APPEND)",
     BasicPWriteReadTest,
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
