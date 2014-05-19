@@ -25,6 +25,7 @@
 
 #include "core/rendering/BidiRun.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 
@@ -189,7 +190,7 @@ static bool isEmptyInline(RenderObject* object)
     if (!object->isRenderInline())
         return false;
 
-    for (RenderObject* curr = object->firstChild(); curr; curr = curr->nextSibling()) {
+    for (RenderObject* curr = toRenderInline(object)->firstChild(); curr; curr = curr->nextSibling()) {
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
         if (curr->isText() && toRenderText(curr)->isAllCollapsibleWhitespace())
@@ -215,7 +216,7 @@ static inline RenderObject* bidiNextShared(RenderObject* root, RenderObject* cur
     while (current) {
         next = 0;
         if (!oldEndOfInline && !isIteratorTarget(current)) {
-            next = current->firstChild();
+            next = current->slowFirstChild();
             notifyObserverEnteredObject(observer, next);
         }
 
@@ -282,7 +283,7 @@ static inline RenderObject* bidiNextIncludingEmptyInlines(RenderObject* root, Re
     return bidiNextShared(root, current, observer, IncludeEmptyInlines, endOfInlinePtr);
 }
 
-static inline RenderObject* bidiFirstSkippingEmptyInlines(RenderObject* root, InlineBidiResolver* resolver = 0)
+static inline RenderObject* bidiFirstSkippingEmptyInlines(RenderBlockFlow* root, InlineBidiResolver* resolver = 0)
 {
     RenderObject* o = root->firstChild();
     if (!o)
@@ -310,7 +311,7 @@ static inline RenderObject* bidiFirstSkippingEmptyInlines(RenderObject* root, In
 }
 
 // FIXME: This method needs to be renamed when bidiNext finds a good name.
-static inline RenderObject* bidiFirstIncludingEmptyInlines(RenderObject* root)
+static inline RenderObject* bidiFirstIncludingEmptyInlines(RenderBlock* root)
 {
     RenderObject* o = root->firstChild();
     // If either there are no children to walk, or the first one is correct
@@ -334,7 +335,7 @@ inline void InlineIterator::fastIncrementInTextNode()
 // it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
 public:
-    InlineWalker(RenderObject* root)
+    InlineWalker(RenderBlock* root)
         : m_root(root)
         , m_current(0)
         , m_atEndOfInline(false)
@@ -343,7 +344,7 @@ public:
         m_current = bidiFirstIncludingEmptyInlines(m_root);
     }
 
-    RenderObject* root() { return m_root; }
+    RenderBlock* root() { return m_root; }
     RenderObject* current() { return m_current; }
 
     bool atEndOfInline() { return m_atEndOfInline; }
@@ -356,7 +357,7 @@ public:
         return m_current;
     }
 private:
-    RenderObject* m_root;
+    RenderBlock* m_root;
     RenderObject* m_current;
     bool m_atEndOfInline;
 };

@@ -153,7 +153,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
 
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
 
-    if (!renderer->firstChild() && renderer->style()) {
+    if (!renderer->slowFirstChild() && renderer->style()) {
         m_visibleContentStatusDirty = false;
         m_hasVisibleContent = renderer->style()->visibility() == VISIBLE;
     }
@@ -798,7 +798,7 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateScrollingStateAfterCompositingChange");
     m_hasVisibleNonLayerContent = false;
-    for (RenderObject* r = renderer()->firstChild(); r; r = r->nextSibling()) {
+    for (RenderObject* r = renderer()->slowFirstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {
             m_hasVisibleNonLayerContent = true;
             break;
@@ -870,14 +870,15 @@ void RenderLayer::updateDescendantDependentFlags()
         else {
             // layer may be hidden but still have some visible content, check for this
             m_hasVisibleContent = false;
-            RenderObject* r = renderer()->firstChild();
+            RenderObject* r = renderer()->slowFirstChild();
             while (r) {
                 if (r->style()->visibility() == VISIBLE && !r->hasLayer()) {
                     m_hasVisibleContent = true;
                     break;
                 }
-                if (r->firstChild() && !r->hasLayer())
-                    r = r->firstChild();
+                RenderObject* rendererFirstChild = r->slowFirstChild();
+                if (rendererFirstChild && !r->hasLayer())
+                    r = rendererFirstChild;
                 else if (r->nextSibling())
                     r = r->nextSibling();
                 else {
@@ -1549,7 +1550,7 @@ void RenderLayer::insertOnlyThisLayer()
     }
 
     // Remove all descendant layers from the hierarchy and add them to the new position.
-    for (RenderObject* curr = renderer()->firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = renderer()->slowFirstChild(); curr; curr = curr->nextSibling())
         curr->moveLayers(m_parent, this);
 
     // Clear out all the clip rects.
@@ -3317,7 +3318,7 @@ LayoutRect RenderLayer::logicalBoundingBox() const
         result = toRenderInline(renderer())->linesVisualOverflowBoundingBox();
     } else if (renderer()->isTableRow()) {
         // Our bounding box is just the union of all of our cells' border/overflow rects.
-        for (RenderObject* child = renderer()->firstChild(); child; child = child->nextSibling()) {
+        for (RenderObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
             if (child->isTableCell()) {
                 LayoutRect bbox = toRenderBox(child)->borderBoxRect();
                 result.unite(bbox);
@@ -3651,7 +3652,7 @@ bool RenderLayer::hasNonEmptyChildRenderers() const
     // <img src=...>
     // </div>
     // so test for 0x0 RenderTexts here
-    for (RenderObject* child = renderer()->firstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = renderer()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->hasLayer()) {
             if (child->isRenderInline() || !child->isBox())
                 return true;

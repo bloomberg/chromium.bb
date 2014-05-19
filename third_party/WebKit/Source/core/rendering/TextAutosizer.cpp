@@ -460,7 +460,7 @@ void TextAutosizer::setMultiplierForList(RenderObject* renderer, float multiplie
     setMultiplier(renderer, multiplier);
 
     // Make sure all list items are autosized consistently.
-    for (RenderObject* child = renderer->firstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isListItem() && child->style()->textAutosizingMultiplier() == 1)
             setMultiplier(child, multiplier);
     }
@@ -795,7 +795,7 @@ const RenderBlock* TextAutosizer::findDeepestBlockContainingAllText(const Render
     return containingBlock;
 }
 
-const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderObject* parent, size_t& depth, TraversalDirection direction)
+const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderBlock* parent, size_t& depth, TraversalDirection direction)
 {
     if (parent->isText())
         return parent;
@@ -804,7 +804,7 @@ const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderObj
     const RenderObject* child = (direction == FirstToLast) ? parent->firstChild() : parent->lastChild();
     while (child) {
         if (!isAutosizingContainer(child) || !isIndependentDescendant(toRenderBlock(child))) {
-            const RenderObject* leaf = findFirstTextLeafNotInCluster(child, depth, direction);
+            const RenderObject* leaf = findFirstTextLeafNotInCluster(toRenderBlock(child), depth, direction);
             if (leaf)
                 return leaf;
         }

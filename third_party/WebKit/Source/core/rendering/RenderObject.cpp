@@ -356,7 +356,7 @@ void RenderObject::removeChild(RenderObject* oldChild)
 
 RenderObject* RenderObject::nextInPreOrder() const
 {
-    if (RenderObject* o = firstChild())
+    if (RenderObject* o = slowFirstChild())
         return o;
 
     return nextInPreOrderAfterChildren();
@@ -378,7 +378,7 @@ RenderObject* RenderObject::nextInPreOrderAfterChildren() const
 
 RenderObject* RenderObject::nextInPreOrder(const RenderObject* stayWithin) const
 {
-    if (RenderObject* o = firstChild())
+    if (RenderObject* o = slowFirstChild())
         return o;
 
     return nextInPreOrderAfterChildren(stayWithin);
@@ -402,8 +402,8 @@ RenderObject* RenderObject::nextInPreOrderAfterChildren(const RenderObject* stay
 RenderObject* RenderObject::previousInPreOrder() const
 {
     if (RenderObject* o = previousSibling()) {
-        while (o->lastChild())
-            o = o->lastChild();
+        while (RenderObject* lastChild = o->slowLastChild())
+            o = lastChild;
         return o;
     }
 
@@ -420,7 +420,7 @@ RenderObject* RenderObject::previousInPreOrder(const RenderObject* stayWithin) c
 
 RenderObject* RenderObject::childAt(unsigned index) const
 {
-    RenderObject* child = firstChild();
+    RenderObject* child = slowFirstChild();
     for (unsigned i = 0; child && i < index; i++)
         child = child->nextSibling();
     return child;
@@ -428,10 +428,10 @@ RenderObject* RenderObject::childAt(unsigned index) const
 
 RenderObject* RenderObject::lastLeafChild() const
 {
-    RenderObject* r = lastChild();
+    RenderObject* r = slowLastChild();
     while (r) {
         RenderObject* n = 0;
-        n = r->lastChild();
+        n = r->slowLastChild();
         if (!n)
             break;
         r = n;
@@ -454,7 +454,7 @@ static void addLayers(RenderObject* obj, RenderLayer* parentLayer, RenderObject*
         return;
     }
 
-    for (RenderObject* curr = obj->firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = obj->slowFirstChild(); curr; curr = curr->nextSibling())
         addLayers(curr, parentLayer, newObject, beforeChild);
 }
 
@@ -478,7 +478,7 @@ void RenderObject::removeLayers(RenderLayer* parentLayer)
         return;
     }
 
-    for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
         curr->removeLayers(parentLayer);
 }
 
@@ -496,7 +496,7 @@ void RenderObject::moveLayers(RenderLayer* oldParent, RenderLayer* newParent)
         return;
     }
 
-    for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
         curr->moveLayers(oldParent, newParent);
 }
 
@@ -515,7 +515,7 @@ RenderLayer* RenderObject::findNextLayer(RenderLayer* parentLayer, RenderObject*
     // Step 2: If we don't have a layer, or our layer is the desired parent, then descend
     // into our siblings trying to find the next layer whose parent is the desired parent.
     if (!ourLayer || ourLayer == parentLayer) {
-        for (RenderObject* curr = startPoint ? startPoint->nextSibling() : firstChild();
+        for (RenderObject* curr = startPoint ? startPoint->nextSibling() : slowFirstChild();
              curr; curr = curr->nextSibling()) {
             RenderLayer* nextLayer = curr->findNextLayer(parentLayer, 0, false);
             if (nextLayer)
@@ -1331,7 +1331,7 @@ void RenderObject::addAbsoluteRectForLayer(LayoutRect& result)
 {
     if (hasLayer())
         result.unite(absoluteBoundingBoxRectIgnoringTransforms());
-    for (RenderObject* current = firstChild(); current; current = current->nextSibling())
+    for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling())
         current->addAbsoluteRectForLayer(result);
 }
 
@@ -1339,7 +1339,7 @@ LayoutRect RenderObject::paintingRootRect(LayoutRect& topLevelRect)
 {
     LayoutRect result = absoluteBoundingBoxRectIgnoringTransforms();
     topLevelRect = result;
-    for (RenderObject* current = firstChild(); current; current = current->nextSibling())
+    for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling())
         current->addAbsoluteRectForLayer(result);
     return result;
 }
@@ -1546,7 +1546,7 @@ void RenderObject::repaintTreeAfterLayout(const RenderLayerModelObject& repaintC
 
     clearRepaintState();
 
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
             child->repaintTreeAfterLayout(repaintContainer);
     }
@@ -1828,7 +1828,7 @@ void RenderObject::showRenderTreeAndMark(const RenderObject* markedObject1, cons
     if (!this)
         return;
 
-    for (const RenderObject* child = firstChild(); child; child = child->nextSibling())
+    for (const RenderObject* child = slowFirstChild(); child; child = child->nextSibling())
         child->showRenderTreeAndMark(markedObject1, markedLabel1, markedObject2, markedLabel2, depth + 1);
 }
 
@@ -1986,7 +1986,7 @@ inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependen
 {
     if (style()->hasBorder() || style()->hasOutline())
         return true;
-    for (const RenderObject* r = firstChild(); r; r = r->nextSibling()) {
+    for (const RenderObject* r = slowFirstChild(); r; r = r->nextSibling()) {
         if (r->isText() && !toRenderText(r)->isAllCollapsibleWhitespace())
             return true;
         if (r->style()->hasOutline() || r->style()->hasBorder())
@@ -2241,7 +2241,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
 void RenderObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
 {
     // FIXME: We could save this call when the change only affected non-inherited properties.
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isAnonymous() || child->style()->styleType() != NOPSEUDO)
             continue;
 
@@ -2550,7 +2550,7 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     // partially redundant rectangles. If we find examples where this is expensive, then we could
     // rewrite Region to be more efficient. See https://bugs.webkit.org/show_bug.cgi?id=100814.
     if (!isRenderView()) {
-        for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
+        for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling()) {
             curr->addLayerHitTestRects(layerRects, currentLayer,  layerOffset, newContainerRect);
         }
     }
@@ -2718,7 +2718,7 @@ void RenderObject::insertedIntoTree()
     // Keep our layer hierarchy updated. Optimize for the common case where we don't have any children
     // and don't have a layer attached to ourselves.
     RenderLayer* layer = 0;
-    if (firstChild() || hasLayer()) {
+    if (slowFirstChild() || hasLayer()) {
         layer = parent()->enclosingLayer();
         addLayers(layer);
     }
@@ -2749,7 +2749,7 @@ void RenderObject::willBeRemovedFromTree()
     }
 
     // Keep our layer hierarchy updated.
-    if (firstChild() || hasLayer()) {
+    if (slowFirstChild() || hasLayer()) {
         if (!layer)
             layer = parent()->enclosingLayer();
         removeLayers(layer);
@@ -2805,7 +2805,7 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
         if (destroyRootParent->isRenderFlowThread() || destroyRootParent->isAnonymousColumnSpanBlock())
             break;
 
-        if (destroyRootParent->firstChild() != this || destroyRootParent->lastChild() != this)
+        if (destroyRootParent->slowFirstChild() != this || destroyRootParent->slowLastChild() != this)
             break;
     }
 
@@ -2869,7 +2869,7 @@ void RenderObject::updateDragState(bool dragOn)
         else if (style()->affectedByDrag())
             node()->setNeedsStyleRecalc(LocalStyleChange);
     }
-    for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
         curr->updateDragState(dragOn);
 }
 
@@ -3178,7 +3178,7 @@ void RenderObject::collectAnnotatedRegions(Vector<AnnotatedRegionValue>& regions
         return;
 
     addAnnotatedRegions(regions);
-    for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling())
+    for (RenderObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
         curr->collectAnnotatedRegions(regions);
 }
 

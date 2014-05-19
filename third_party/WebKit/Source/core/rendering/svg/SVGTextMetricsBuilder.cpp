@@ -21,6 +21,7 @@
 
 #include "core/rendering/svg/SVGTextMetricsBuilder.h"
 
+#include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGTextMetrics.h"
@@ -234,7 +235,7 @@ static void measureTextRenderer(RenderSVGInlineText* text, MeasureTextData* data
     data->valueListPosition += textPosition - skippedCharacters;
 }
 
-static void walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
+static void walkTree(RenderSVGText* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
     RenderObject* child = start->firstChild();
     while (child) {
@@ -245,7 +246,7 @@ static void walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, Measu
                 return;
         } else if (child->isSVGInline()) {
             // Visit children of text content elements.
-            if (RenderObject* inlineChild = child->firstChild()) {
+            if (RenderObject* inlineChild = toRenderSVGInline(child)->firstChild()) {
                 child = inlineChild;
                 continue;
             }

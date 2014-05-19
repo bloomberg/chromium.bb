@@ -280,7 +280,7 @@ RenderBoxModelObject* RenderInline::continuationBefore(RenderObject* beforeChild
     RenderBoxModelObject* last = this;
     while (curr) {
         if (beforeChild && beforeChild->parent() == curr) {
-            if (curr->firstChild() == beforeChild)
+            if (curr->slowFirstChild() == beforeChild)
                 return last;
             return curr;
         }
@@ -290,7 +290,7 @@ RenderBoxModelObject* RenderInline::continuationBefore(RenderObject* beforeChild
         curr = nextContinuation(curr);
     }
 
-    if (!beforeChild && !last->firstChild())
+    if (!beforeChild && !last->slowFirstChild())
         return nextToLast;
     return last;
 }
@@ -812,7 +812,7 @@ PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
     RenderBoxModelObject* c = continuation();
     while (c) {
         RenderBox* contBlock = c->isInline() ? c->containingBlock() : toRenderBlock(c);
-        if (c->isInline() || c->firstChild())
+        if (c->isInline() || c->slowFirstChild())
             return c->positionForPoint(parentBlockPoint - contBlock->locationOffset());
         c = toRenderBlock(c)->inlineElementContinuation();
     }

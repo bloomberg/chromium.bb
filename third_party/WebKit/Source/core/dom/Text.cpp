@@ -277,7 +277,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
         // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
         unsigned maxSiblingsToVisit = 50;
 
-        RenderObject* first = parent.firstChild();
+        RenderObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
         if (!first || NodeRenderingTraversal::nextSiblingRenderer(this) == first)

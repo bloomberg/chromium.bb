@@ -801,7 +801,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
                 || beforeChildAnonymousContainer->isRenderFullScreenPlaceholder()
                 ) {
                 // Insert the child into the anonymous block box instead of here.
-                if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->firstChild() != beforeChild)
+                if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->slowFirstChild() != beforeChild)
                     beforeChild->parent()->addChild(newChild, beforeChild);
                 else
                     addChild(newChild, beforeChild->parent());
@@ -2681,7 +2681,7 @@ void RenderBlock::removePercentHeightDescendantIfNeeded(RenderBox* descendant)
 void RenderBlock::clearPercentHeightDescendantsFrom(RenderBox* parent)
 {
     ASSERT(gPercentHeightContainerMap);
-    for (RenderObject* curr = parent->firstChild(); curr; curr = curr->nextInPreOrder(parent)) {
+    for (RenderObject* curr = parent->slowFirstChild(); curr; curr = curr->nextInPreOrder(parent)) {
         if (!curr->isBox())
             continue;
 
@@ -3881,10 +3881,12 @@ RenderBlock* RenderBlock::firstLineBlock() const
         // FIXME: Remove when buttons are implemented with align-items instead
         // of flexbox.
         if (firstLineBlock->isReplaced() || firstLineBlock->isFloating()
-            || !parentBlock || parentBlock->firstChild() != firstLineBlock
+            || !parentBlock
             || (!parentBlock->isRenderBlockFlow() && !parentBlock->isRenderButton()))
             break;
         ASSERT_WITH_SECURITY_IMPLICATION(parentBlock->isRenderBlock());
+        if (toRenderBlock(parentBlock)->firstChild() != firstLineBlock)
+            break;
         firstLineBlock = toRenderBlock(parentBlock);
     }
 
@@ -3939,8 +3941,12 @@ static inline RenderObject* findFirstLetterBlock(RenderBlock* start)
             return firstLetterBlock;
 
         RenderObject* parentBlock = firstLetterBlock->parent();
-        if (firstLetterBlock->isReplaced() || !parentBlock || parentBlock->firstChild() != firstLetterBlock ||
-            (!parentBlock->isRenderBlockFlow() && !parentBlock->isRenderButton()))
+        if (firstLetterBlock->isReplaced() || !parentBlock
+            || (!parentBlock->isRenderBlockFlow() && !parentBlock->isRenderButton())) {
+            return 0;
+        }
+        ASSERT(parentBlock->isRenderBlock());
+        if (toRenderBlock(parentBlock)->firstChild() != firstLetterBlock)
             return 0;
         firstLetterBlock = parentBlock;
     }
@@ -3966,7 +3972,7 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
 
         // Move the first letter into the new renderer.
         LayoutStateDisabler layoutStateDisabler(*this);
-        while (RenderObject* child = firstLetter->firstChild()) {
+        while (RenderObject* child = firstLetter->slowFirstChild()) {
             if (child->isText())
                 toRenderText(child)->removeAndDestroyTextBoxes();
             firstLetter->removeChild(child);
@@ -3989,7 +3995,7 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     } else
         firstLetter->setStyle(pseudoStyle);
 
-    for (RenderObject* genChild = firstLetter->firstChild(); genChild; genChild = genChild->nextSibling()) {
+    for (RenderObject* genChild = firstLetter->slowFirstChild(); genChild; genChild = genChild->nextSibling()) {
         if (genChild->isText())
             genChild->setStyle(pseudoStyle);
     }
@@ -4092,7 +4098,7 @@ void RenderBlock::updateFirstLetter()
         return;
 
     // Drill into inlines looking for our first text child.
-    RenderObject* currChild = firstLetterBlock->firstChild();
+    RenderObject* currChild = firstLetterBlock->slowFirstChild();
     unsigned length = 0;
     while (currChild) {
         if (currChild->isText()) {
@@ -4106,18 +4112,19 @@ void RenderBlock::updateFirstLetter()
             currChild = currChild->nextSibling();
         } else if (currChild->isFloatingOrOutOfFlowPositioned()) {
             if (currChild->style()->styleType() == FIRST_LETTER) {
-                currChild = currChild->firstChild();
+                currChild = currChild->slowFirstChild();
                 break;
             }
             currChild = currChild->nextSibling();
-        } else if (currChild->isReplaced() || currChild->isRenderButton() || currChild->isMenuList())
+        } else if (currChild->isReplaced() || currChild->isRenderButton() || currChild->isMenuList()) {
             break;
-        else if (currChild->style()->hasPseudoStyle(FIRST_LETTER) && currChild->canHaveGeneratedChildren())  {
+        } else if (currChild->style()->hasPseudoStyle(FIRST_LETTER) && currChild->canHaveGeneratedChildren())  {
             // We found a lower-level node with first-letter, which supersedes the higher-level style
             firstLetterBlock = currChild;
-            currChild = currChild->firstChild();
-        } else
-            currChild = currChild->firstChild();
+            currChild = currChild->slowFirstChild();
+        } else {
+            currChild = currChild->slowFirstChild();
+        }
     }
 
     if (!currChild)

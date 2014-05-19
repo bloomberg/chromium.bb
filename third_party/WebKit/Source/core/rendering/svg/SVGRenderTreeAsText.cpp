@@ -473,7 +473,7 @@ static void writeStandardPrefix(TextStream& ts, const RenderObject& object, int 
 
 static void writeChildren(TextStream& ts, const RenderObject& object, int indent)
 {
-    for (RenderObject* child = object.firstChild(); child; child = child->nextSibling())
+    for (RenderObject* child = object.slowFirstChild(); child; child = child->nextSibling())
         write(ts, *child, indent + 1);
 }
 

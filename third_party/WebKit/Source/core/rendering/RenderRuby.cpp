@@ -58,27 +58,27 @@ static inline bool isRubyBeforeBlock(const RenderObject* object)
 {
     return isAnonymousRubyInlineBlock(object)
         && !object->previousSibling()
-        && object->firstChild()
-        && object->firstChild()->style()->styleType() == BEFORE;
+        && toRenderBlock(object)->firstChild()
+        && toRenderBlock(object)->firstChild()->style()->styleType() == BEFORE;
 }
 
 static inline bool isRubyAfterBlock(const RenderObject* object)
 {
     return isAnonymousRubyInlineBlock(object)
         && !object->nextSibling()
-        && object->firstChild()
-        && object->firstChild()->style()->styleType() == AFTER;
+        && toRenderBlock(object)->firstChild()
+        && toRenderBlock(object)->firstChild()->style()->styleType() == AFTER;
 }
 
 static inline RenderBlock* rubyBeforeBlock(const RenderObject* ruby)
 {
-    RenderObject* child = ruby->firstChild();
+    RenderObject* child = ruby->slowFirstChild();
     return isRubyBeforeBlock(child) ? toRenderBlock(child) : 0;
 }
 
 static inline RenderBlock* rubyAfterBlock(const RenderObject* ruby)
 {
-    RenderObject* child = ruby->lastChild();
+    RenderObject* child = ruby->slowLastChild();
     return isRubyAfterBlock(child) ? toRenderBlock(child) : 0;
 }
 
@@ -92,7 +92,7 @@ static RenderBlockFlow* createAnonymousRubyInlineBlock(RenderObject* ruby)
 
 static RenderRubyRun* lastRubyRun(const RenderObject* ruby)
 {
-    RenderObject* child = ruby->lastChild();
+    RenderObject* child = ruby->slowLastChild();
     if (child && !child->isRubyRun())
         child = child->previousSibling();
     ASSERT(!child || child->isRubyRun() || child->isBeforeContent() || child == rubyBeforeBlock(ruby));

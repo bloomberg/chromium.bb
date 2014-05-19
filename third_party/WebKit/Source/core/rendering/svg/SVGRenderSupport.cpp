@@ -135,7 +135,7 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
     // When computing the strokeBoundingBox, we use the repaintRects of the container's children so that the container's stroke includes
     // the resources applied to the children (such as clips and filters). This allows filters applied to containers to correctly bound
     // the children, and also improves inlining of SVG content, as the stroke bound is used in that situation also.
-    for (RenderObject* current = container->firstChild(); current; current = current->nextSibling()) {
+    for (RenderObject* current = container->slowFirstChild(); current; current = current->nextSibling()) {
         if (current->isSVGHiddenContainer())
             continue;
 
@@ -169,7 +169,7 @@ static inline void invalidateResourcesOfChildren(RenderObject* start)
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(start))
         resources->removeClientFromCache(start, false);
 
-    for (RenderObject* child = start->firstChild(); child; child = child->nextSibling())
+    for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling())
         invalidateResourcesOfChildren(child);
 }
 
@@ -205,7 +205,7 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
     bool transformChanged = transformToRootChanged(start);
     HashSet<RenderObject*> notlayoutedObjects;
 
-    for (RenderObject* child = start->firstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
         bool needsLayout = selfNeedsLayout;
         bool childEverHadLayout = child->everHadLayout();
 

@@ -412,10 +412,10 @@ void FastTextAutosizer::inflateAutoTable(RenderTable* table)
     for (RenderObject* section = table->firstChild(); section; section = section->nextSibling()) {
         if (!section->isTableSection())
             continue;
-        for (RenderObject* row = section->firstChild(); row; row = row->nextSibling()) {
+        for (RenderObject* row = toRenderTableSection(section)->firstChild(); row; row = row->nextSibling()) {
             if (!row->isTableRow())
                 continue;
-            for (RenderObject* cell = row->firstChild(); cell; cell = cell->nextSibling()) {
+            for (RenderObject* cell = toRenderTableRow(row)->firstChild(); cell; cell = cell->nextSibling()) {
                 if (!cell->isTableCell() || !cell->needsLayout())
                     continue;
                 RenderTableCell* renderTableCell = toRenderTableCell(cell);
@@ -921,7 +921,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
         return parent;
 
     ++depth;
-    const RenderObject* child = (firstOrLast == First) ? parent->firstChild() : parent->lastChild();
+    const RenderObject* child = (firstOrLast == First) ? parent->slowFirstChild() : parent->slowLastChild();
     while (child) {
         // Note: At this point clusters may not have been created for these blocks so we cannot rely
         //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.

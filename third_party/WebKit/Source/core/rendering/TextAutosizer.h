@@ -118,7 +118,7 @@ private:
 
     // Depending on the traversal direction specified, finds the first or the last leaf text node child that doesn't
     // belong to any cluster.
-    static const RenderObject* findFirstTextLeafNotInCluster(const RenderObject*, size_t& depth, TraversalDirection);
+    static const RenderObject* findFirstTextLeafNotInCluster(const RenderBlock*, size_t& depth, TraversalDirection);
 
     // Returns groups of narrow descendants of a given autosizing cluster. The groups are combined
     // by the difference between the width of the descendant and the width of the parent cluster's

@@ -755,12 +755,12 @@ inline RenderBox* RenderBox::parentBox() const
 
 inline RenderBox* RenderBox::firstChildBox() const
 {
-    return toRenderBox(firstChild());
+    return toRenderBox(slowFirstChild());
 }
 
 inline RenderBox* RenderBox::lastChildBox() const
 {
-    return toRenderBox(lastChild());
+    return toRenderBox(slowLastChild());
 }
 
 inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)

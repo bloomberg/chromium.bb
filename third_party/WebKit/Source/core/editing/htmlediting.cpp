@@ -52,6 +52,7 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderTableCell.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -770,7 +771,7 @@ bool isEmptyTableCell(const Node* node)
         return false;
 
     // Check that the table cell contains no child renderers except for perhaps a single <br>.
-    RenderObject* childRenderer = renderer->firstChild();
+    RenderObject* childRenderer = toRenderTableCell(renderer)->firstChild();
     if (!childRenderer)
         return true;
     if (!childRenderer->isBR())

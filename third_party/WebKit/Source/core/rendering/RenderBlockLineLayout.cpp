@@ -64,7 +64,7 @@ static RenderObject* firstRenderObjectForDirectionalityDetermination(RenderObjec
     }
 
     if (!current)
-        current = root->firstChild();
+        current = root->slowFirstChild();
 
     while (current) {
         next = 0;
@@ -72,7 +72,7 @@ static RenderObject* firstRenderObjectForDirectionalityDetermination(RenderObjec
             break;
 
         if (!isIteratorTarget(current) && !isIsolated(current->style()->unicodeBidi()))
-            next = current->firstChild();
+            next = current->slowFirstChild();
 
         if (!next) {
             while (current && current != root) {
@@ -599,7 +599,7 @@ void RenderBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     // box is only affected if it is the first child of its parent element."
     // CSS3 "text-indent", "each-line" affects the first line of the block container as well as each line after a forced line break,
     // but does not affect lines after a soft wrap break.
-    bool isFirstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->firstChild() != this);
+    bool isFirstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->slowFirstChild() != this);
     bool isAfterHardLineBreak = lineBox->prevRootBox() && lineBox->prevRootBox()->endsWithBreak();
     IndentTextOrNot shouldIndentText = requiresIndent(isFirstLine, isAfterHardLineBreak, style());
     float lineLogicalLeft;
@@ -1261,7 +1261,7 @@ RenderObject* InlineMinMaxIterator::next()
     endOfInline = false;
     while (current || current == parent) {
         if (!oldEndOfInline && (current == parent || (!current->isFloating() && !current->isReplaced() && !current->isOutOfFlowPositioned())))
-            result = current->firstChild();
+            result = current->slowFirstChild();
 
         if (!result) {
             // We hit the end of our inline. (It was empty, e.g., <span></span>.)

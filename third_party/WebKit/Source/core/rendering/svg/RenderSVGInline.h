@@ -61,6 +61,8 @@ private:
     virtual void removeChild(RenderObject*) OVERRIDE FINAL;
 };
 
+DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGInline, isSVGInline());
+
 }
 
 #endif // !RenderSVGTSpan_H

@@ -781,7 +781,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
             RenderTextFragment* textFragment = toRenderTextFragment(renderer);
             if (textFragment->firstLetter()) {
                 RenderObject* firstLetter = textFragment->firstLetter();
-                for (RenderObject* current = firstLetter->firstChild(); current; current = current->nextSibling()) {
+                for (RenderObject* current = firstLetter->slowFirstChild(); current; current = current->nextSibling()) {
                     if (current->isText())
                         collectPlatformFontsForRenderer(toRenderText(current), &fontStats);
                 }

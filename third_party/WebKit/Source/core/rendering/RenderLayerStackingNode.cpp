@@ -168,7 +168,7 @@ void RenderLayerStackingNode::rebuildZOrderLists()
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
     // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
-        RenderObject* view = renderer()->view();
+        RenderView* view = renderer()->view();
         for (RenderObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {

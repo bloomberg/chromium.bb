@@ -263,7 +263,7 @@ void RenderListItem::updateValue()
 
 static RenderObject* firstNonMarkerChild(RenderObject* parent)
 {
-    RenderObject* result = parent->firstChild();
+    RenderObject* result = parent->slowFirstChild();
     while (result && result->isListMarker())
         result = result->nextSibling();
     return result;
@@ -303,7 +303,7 @@ void RenderListItem::updateMarkerLocation()
             lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
             m_marker->updateMarginsAndContent();
             // If markerParent is an anonymous block that has lost all its children, destroy it.
-            if (markerParent && markerParent->isAnonymousBlock() && !markerParent->firstChild() && !toRenderBlock(markerParent)->continuation())
+            if (markerParent && markerParent->isAnonymousBlock() && !toRenderBlock(markerParent)->firstChild() && !toRenderBlock(markerParent)->continuation())
                 markerParent->destroy();
 
             // If the marker is inside we need to redo the preferred width calculations

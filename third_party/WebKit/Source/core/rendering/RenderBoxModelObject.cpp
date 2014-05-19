@@ -2643,7 +2643,7 @@ void RenderBoxModelObject::setFirstLetterRemainingText(RenderTextFragment* remai
 
 LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset)
 {
-    ASSERT(!firstChild());
+    ASSERT(!slowFirstChild());
 
     // FIXME: This does not take into account either :first-line or :first-letter
     // However, as soon as some content is entered, the line boxes will be

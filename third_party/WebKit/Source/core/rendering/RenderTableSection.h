@@ -65,6 +65,7 @@ public:
     RenderTableSection(Element*);
     virtual ~RenderTableSection();
 
+    // FIXME: These methods should return a RenderTableRow.
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 

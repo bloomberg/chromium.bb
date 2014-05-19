@@ -294,7 +294,7 @@ public:
     }
     void moveAllChildrenTo(RenderBoxModelObject* toBoxModelObject, RenderObject* beforeChild, bool fullRemoveInsert = false)
     {
-        moveChildrenTo(toBoxModelObject, firstChild(), 0, beforeChild, fullRemoveInsert);
+        moveChildrenTo(toBoxModelObject, slowFirstChild(), 0, beforeChild, fullRemoveInsert);
     }
     // Move all of the kids from |startChild| up to but excluding |endChild|. 0 can be passed as the |endChild| to denote
     // that all the kids from |startChild| onwards should be moved.
