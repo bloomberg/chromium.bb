@@ -18,5 +18,6 @@ separation between the metrics upload logic (protbuf generation, retry, etc...),
 the chrome part (gathering histogram from all the threads, populating the
 log with hardware characteristics, plugin state, etc.).
 
-It is a plus if the component stays in a single directory as it would be easier
+It is a plus if the code currently in the component (i.e., the code that can
+depend only on //base) stays in a single directory as it would be easier
 for ChromeOS to pull it :).

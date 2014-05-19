@@ -26,6 +26,13 @@
         'metrics/persisted_logs.cc',
         'metrics/persisted_logs.h',
       ],
+      'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            'metrics_chromeos',
+          ],
+        }],
+      ],
     },
     {
       # Protobuf compiler / generator for UMA (User Metrics Analysis).
@@ -47,5 +54,24 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
+  ],
+  'conditions': [
+    ['chromeos==1', {
+      'targets': [
+        {
+          'target_name': 'metrics_chromeos',
+          'type': 'static_library',
+          'sources': [
+            'metrics/chromeos/serialization_utils.cc',
+            'metrics/chromeos/serialization_utils.h',
+            'metrics/chromeos/metric_sample.cc',
+            'metrics/chromeos/metric_sample.h',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+        },
+      ],
+    }],
   ],
 }

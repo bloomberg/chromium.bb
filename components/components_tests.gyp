@@ -443,11 +443,15 @@
               ]
             }],
             ['chromeos==1', {
+              'sources': [
+                'metrics/chromeos/serialization_utils_unittest.cc',
+              ],
               'sources!': [
                 'storage_monitor/storage_monitor_linux_unittest.cc',
               ],
               'dependencies': [
                 '../chromeos/chromeos.gyp:chromeos_test_support',
+                'components.gyp:metrics_chromeos',
               ],
             }],
             ['OS=="linux"', {
