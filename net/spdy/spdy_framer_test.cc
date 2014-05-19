@@ -2912,7 +2912,7 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
   SpdyFramer framer(spdy_version_);
 
   const char kDescription[] = "BLOCKED frame";
-  const char kType = static_cast<unsigned char>(
+  const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, BLOCKED));
   const unsigned char kFrameData[] = {
     0x00, 0x00, kType, 0x00,
@@ -2978,7 +2978,7 @@ TEST_P(SpdyFramerTest, CreateAltSvc) {
   SpdyFramer framer(spdy_version_);
 
   const char kDescription[] = "ALTSVC frame";
-  const char kType = static_cast<unsigned char>(
+  const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, ALTSVC));
   const unsigned char kFrameData[] = {
     0x00, 0x17, kType, 0x00,
@@ -5224,7 +5224,7 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
     return;
   }
 
-  const char kType = static_cast<unsigned char>(
+  const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, ALTSVC));
   {
     TestSpdyVisitor visitor(spdy_version_);
