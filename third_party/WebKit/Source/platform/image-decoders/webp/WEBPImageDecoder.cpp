@@ -229,8 +229,12 @@ bool WEBPImageDecoder::updateDemuxer()
         // This is because ANIM chunk always precedes ANMF chunks.
         m_repetitionCount = WebPDemuxGetI(m_demux, WEBP_FF_LOOP_COUNT);
         ASSERT(m_repetitionCount == (m_repetitionCount & 0xffff)); // Loop count is always <= 16 bits.
-        if (!m_repetitionCount)
-            m_repetitionCount = cAnimationLoopInfinite;
+        // |m_repetitionCount| is the total number of animation cycles to show,
+        // with 0 meaning "infinite". But ImageSource::repetitionCount()
+        // returns -1 for "infinite", and 0 and up for "show the animation one
+        // cycle more than this value". By subtracting one here, we convert
+        // both finite and infinite cases correctly.
+        --m_repetitionCount;
         m_haveReadAnimationParameters = true;
     }
 

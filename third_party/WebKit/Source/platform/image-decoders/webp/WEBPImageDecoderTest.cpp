@@ -357,7 +357,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 TEST(AnimatedWebPTests, parseAndDecodeByteByByte)
 {
     testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite);
-    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 32000);
+    testByteByByteDecode("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 31999);
 }
 
 TEST(AnimatedWebPTests, invalidImages)
