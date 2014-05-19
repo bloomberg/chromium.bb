@@ -67,6 +67,20 @@ list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
       url('chrome://theme/IDR_FILETYPE_FOLDER@2x') 2x);
 }
 
+.shared[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_FILETYPE_FOLDER_SHARED') 1x,
+      url('chrome://theme/IDR_FILETYPE_FOLDER_SHARED@2x') 2x);
+}
+
+tree:focus .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'],
+list:focus [selected] .shared[file-type-icon='folder'],
+list.autocomplete-suggestions [selected] .shared[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_FILETYPE_FOLDER_SHARED_WHITE') 1x,
+      url('chrome://theme/IDR_FILETYPE_FOLDER_SHARED_WHITE@2x') 2x);
+}
+
 tree:focus .tree-item[selected] > .tree-row > [file-type-icon='folder'],
 list:focus [selected] [file-type-icon='folder'],
 list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
@@ -310,6 +324,12 @@ list.autocomplete-suggestions [selected] [file-type-icon='word'] {
   background-image: -webkit-image-set(
       url('chrome://theme/IDR_FILETYPE_LARGE_FOLDER') 1x,
       url('chrome://theme/IDR_FILETYPE_LARGE_FOLDER@2x') 2x);
+}
+
+.shared[generic-thumbnail='folder'] {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_FILETYPE_LARGE_FOLDER_SHARED') 1x,
+      url('chrome://theme/IDR_FILETYPE_LARGE_FOLDER_SHARED@2x') 2x);
 }
 
 [generic-thumbnail='image'] {

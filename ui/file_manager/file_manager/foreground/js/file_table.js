@@ -821,10 +821,13 @@ filelist.updateListItemDriveProps = function(li, driveProps) {
     // crbug.com/246611.
   }
 
-  if (driveProps.customIconUrl) {
-    var iconDiv = li.querySelector('.detail-icon');
-    if (!iconDiv)
-      return;
+  var iconDiv = li.querySelector('.detail-icon');
+  if (!iconDiv)
+    return;
+
+  if (driveProps.customIconUrl)
     iconDiv.style.backgroundImage = 'url(' + driveProps.customIconUrl + ')';
-  }
+
+  if (li.classList.contains('directory'))
+    iconDiv.classList.toggle('shared', driveProps.shared);
 };
