@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
+#include "components/variations/caching_permuted_entropy_provider.h"
 
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "components/variations/pref_names.h"
 
 namespace metrics {
 
@@ -29,13 +29,13 @@ CachingPermutedEntropyProvider::~CachingPermutedEntropyProvider() {
 // static
 void CachingPermutedEntropyProvider::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kMetricsPermutedEntropyCache,
+  registry->RegisterStringPref(prefs::kVariationsPermutedEntropyCache,
                                std::string());
 }
 
 // static
 void CachingPermutedEntropyProvider::ClearCache(PrefService* local_state) {
-  local_state->ClearPref(prefs::kMetricsPermutedEntropyCache);
+  local_state->ClearPref(prefs::kVariationsPermutedEntropyCache);
 }
 
 uint16 CachingPermutedEntropyProvider::GetPermutedValue(
@@ -52,11 +52,11 @@ uint16 CachingPermutedEntropyProvider::GetPermutedValue(
 
 void CachingPermutedEntropyProvider::ReadFromLocalState() const {
   const std::string base64_cache_data =
-      local_state_->GetString(prefs::kMetricsPermutedEntropyCache);
+      local_state_->GetString(prefs::kVariationsPermutedEntropyCache);
   std::string cache_data;
   if (!base::Base64Decode(base64_cache_data, &cache_data) ||
       !cache_.ParseFromString(cache_data)) {
-    local_state_->ClearPref(prefs::kMetricsPermutedEntropyCache);
+    local_state_->ClearPref(prefs::kVariationsPermutedEntropyCache);
     NOTREACHED();
   }
 }
@@ -67,7 +67,8 @@ void CachingPermutedEntropyProvider::UpdateLocalState() const {
 
   std::string base64_encoded;
   base::Base64Encode(serialized, &base64_encoded);
-  local_state_->SetString(prefs::kMetricsPermutedEntropyCache, base64_encoded);
+  local_state_->SetString(prefs::kVariationsPermutedEntropyCache,
+                          base64_encoded);
 }
 
 void CachingPermutedEntropyProvider::AddToCache(uint32 randomization_seed,

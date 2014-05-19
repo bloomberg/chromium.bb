@@ -253,8 +253,6 @@
         'common/media/webrtc_logging_message_data.cc',
         'common/media/webrtc_logging_message_data.h',
         'common/media_galleries/metadata_types.h',
-        'common/metrics/caching_permuted_entropy_provider.cc',
-        'common/metrics/caching_permuted_entropy_provider.h',
         'common/metrics/metrics_service_base.cc',
         'common/metrics/metrics_service_base.h',
         'common/metrics/variations/experiment_labels.cc',
@@ -684,7 +682,6 @@
       'type': 'static_library',
       'sources': [
         'common/metrics/proto/chrome_experiments.proto',
-        'common/metrics/proto/permuted_entropy_cache.proto',
       ],
       'variables': {
         'proto_in_dir': 'common/metrics/proto',

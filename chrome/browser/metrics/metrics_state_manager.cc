@@ -16,8 +16,8 @@
 #include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/machine_id_provider.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/pref_names.h"
+#include "components/variations/caching_permuted_entropy_provider.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"

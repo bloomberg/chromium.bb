@@ -428,7 +428,6 @@ extern const char kEulaAccepted[];
 extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
 extern const char kMetricsLowEntropySource[];
-extern const char kMetricsPermutedEntropyCache[];
 extern const char kMetricsOldClientID[];
 extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsReportingEnabled[];

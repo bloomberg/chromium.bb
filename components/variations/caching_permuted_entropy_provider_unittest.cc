@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
+#include "components/variations/caching_permuted_entropy_provider.h"
 
 #include <string>
 
@@ -17,8 +17,8 @@ namespace metrics {
 const size_t kMaxLowEntropySize = 8000;
 
 // Field trial names used in unit tests.
-const char* const kTestTrialNames[] = { "TestTrial", "AnotherTestTrial",
-                                        "NewTabButton" };
+const char* const kTestTrialNames[] = {"TestTrial", "AnotherTestTrial",
+                                       "NewTabButton"};
 
 TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   TestingPrefServiceSimple prefs;
@@ -30,8 +30,8 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   // expected results.
   PermutedEntropyProvider provider(kEntropyValue, kMaxLowEntropySize);
   for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
-    CachingPermutedEntropyProvider cached_provider(&prefs, kEntropyValue,
-                                                   kMaxLowEntropySize);
+    CachingPermutedEntropyProvider cached_provider(
+        &prefs, kEntropyValue, kMaxLowEntropySize);
     const std::string trial_name =
         kTestTrialNames[i % arraysize(kTestTrialNames)];
     EXPECT_DOUBLE_EQ(provider.GetEntropyForTrial(trial_name, 0),
@@ -39,8 +39,8 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   }
 
   // Now, do the same test re-using the same caching provider.
-  CachingPermutedEntropyProvider cached_provider(&prefs, kEntropyValue,
-                                                 kMaxLowEntropySize);
+  CachingPermutedEntropyProvider cached_provider(
+      &prefs, kEntropyValue, kMaxLowEntropySize);
   for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
     const std::string trial_name =
         kTestTrialNames[i % arraysize(kTestTrialNames)];

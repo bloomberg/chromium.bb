@@ -1349,8 +1349,6 @@ const char kMetricsClientID[] = "user_experience_metrics.client_id2";
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
 const char kMetricsLowEntropySource[] =
     "user_experience_metrics.low_entropy_source2";
-const char kMetricsPermutedEntropyCache[] =
-    "user_experience_metrics.permuted_entropy_cache";
 
 // Old client id and low entropy source values, cleared the first time this
 // version is launched.

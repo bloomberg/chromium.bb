@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
-#define CHROME_COMMON_METRICS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/metrics/proto/permuted_entropy_cache.pb.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/proto/permuted_entropy_cache.pb.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -62,4 +62,4 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
 
 }  // namespace metrics
 
-#endif  // CHROME_COMMON_METRICS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
