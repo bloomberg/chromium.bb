@@ -238,6 +238,7 @@ v8.log
 /third_party/cygwin
 /third_party/directxsdk
 /third_party/drmemory
+/third_party/elfutils/src
 /third_party/eyesfree/src
 /third_party/ffmpeg
 /third_party/findbugs
