@@ -70,21 +70,3 @@ const char *__asan_default_options() {
 }
 #endif  // OS_LINUX || OS_MACOSX
 #endif  // ADDRESS_SANITIZER
-
-#if defined(THREAD_SANITIZER) && defined(OS_LINUX)
-// Default options for ThreadSanitizer in various configurations:
-//   detect_deadlocks=1 - enable deadlock (lock inversion) detection.
-//   second_deadlock_stack=1 - more verbose deadlock reports.
-const char kTsanDefaultOptions[] = "detect_deadlocks=1 second_deadlock_stack=1";
-
-extern "C"
-__attribute__((no_sanitize_thread))
-__attribute__((visibility("default")))
-// The function isn't referenced from the executable itself. Make sure it isn't
-// stripped by the linker.
-__attribute__((used))
-const char *__tsan_default_options() {
-  return kTsanDefaultOptions;
-}
-
-#endif  // THREAD_SANITIZER && OS_LINUX
