@@ -25,12 +25,7 @@ import traceback
 import urlparse
 import base64
 
-# API Client ID and Secret for Device manufacturers.
-_OAUTH_CLIENT_ID = ''
-_OAUTH_SECRET = ''
-
 _OAUTH_SCOPE = 'https://www.googleapis.com/auth/clouddevices'
-_API_KEY = ''
 
 DEVICE_DRAFT = {
     "systemName": "LEDFlasher",
@@ -50,7 +45,7 @@ DEVICE_DRAFT = {
             "name": "flashLED",
             "parameter" : [{
                 "name": "times",
-                "type": "int"
+                "type": "string"
             }]
           }
         ]
@@ -77,7 +72,6 @@ wpa_supplicant_template = """network={
        group=CCMP TKIP
        psk="%s"
 }"""
-
 
 led_path = "/sys/class/leds/ath9k_htc-phy0/"
 
@@ -126,7 +120,7 @@ class CloudCommandHandlerFake(object):
         if command_name == "flashLED":
             times = 1
             if "times" in args:
-                times = args["times"]
+                times = int(args["times"])
             print "Flashing LED %d times" % times
 
 class CloudCommandHandlerReal(object):
@@ -136,7 +130,7 @@ class CloudCommandHandlerReal(object):
         if command_name == "flashLED":
             times = 1
             if "times" in args:
-                times = args["times"]
+                times = int(args["times"])
             print "Really flashing LED %d times" % times
             self.flash_led(times)
     @ignore_errors
@@ -361,11 +355,20 @@ class CloudDevice:
     def __init__(self, ioloop, state, delegate):
         self.state = state
         self.http = httplib2.Http()
+
+        credentials_f = open("api_client.json")
+        credentials = json.load(credentials_f)
+        credentials_f.close()
+
+        self.oauth_client_id = credentials["oauth_client_id"]
+        self.oauth_secret = credentials["oauth_secret"]
+        self.api_key = credentials["api_key"]
+
         f = open("clouddevices.json")
         discovery = f.read()
         f.close()
         self.gcd = build_from_document(
-            discovery, developerKey=_API_KEY, http=self.http)
+            discovery, developerKey=self.api_key, http=self.http)
 
         self.ioloop = ioloop
         self.active = True
@@ -381,11 +384,12 @@ class CloudDevice:
         elif token:
             self.register(token)
         else:
-            print "Device not registered and has no credentials. Shutting down."
+            print "Device not registered and has no credentials."
+            print "Waiting for registration."
     def register(self, token):
         resource = {
             'deviceDraft': DEVICE_DRAFT,
-            'oauthClientId': _OAUTH_CLIENT_ID
+            'oauthClientId': self.oauth_client_id
         }
 
         self.gcd.registrationTickets().patch(registrationTicketId=token,
@@ -396,7 +400,8 @@ class CloudDevice:
 
         authorization_code = finalTicket['robotAccountAuthorizationCode']
         flow = OAuth2WebServerFlow(
-            _OAUTH_CLIENT_ID, _OAUTH_SECRET, _OAUTH_SCOPE, redirect_uri='oob')
+            self.oauth_client_id, self.oauth_secret, _OAUTH_SCOPE,
+            redirect_uri='oob')
         self.credentials = flow.step2_exchange(authorization_code)
         self.device_id = finalTicket['deviceDraft']['id']
         self.state.set_credentials(self.credentials, self.device_id)
@@ -433,27 +438,24 @@ class CloudDevice:
 
             for command in commands["commands"]:
                 try:
-                    vendorCommand = command["base"]["vendorCommand"]
-                    vendorCommandName = vendorCommand["name"]
-
-                    if "parameters" in vendorCommand:
-                        for parameter in vendorCommand["parameters"]:
-                            value = None
-                            if "intValue" in parameter:
-                                value = int(parameter["intValue"])
-                            elif "stringValue" in parameter:
-                                value = parameter["stringValue"]
-                            else:
-                                pass
-
-                            args[parameter["name"]] = value
+                    if command["name"].startswith("base._"):
+                        vendorCommandName = command["name"][
+                            len("base._"):]
+                        if "parameters" in command:
+                            parameters = command["parameters"]
+                        else:
+                            parameters = {}
+                    else:
+                        vendorCommandName = None
                 except KeyError:
                     print "Could not parse vendor command ",
                     print repr(command)
                     vendorCommandName = None
 
                 if vendorCommandName:
-                    self.command_handler.handle_command(vendorCommandName, args)
+                    self.command_handler.handle_command(
+                        vendorCommandName,
+                        parameters)
 
                 self.gcd.commands().patch(commandId = command["id"],
                                           body={"state": "done"}).execute()
@@ -570,14 +572,17 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         self.in_session = False
         self.ioloop = ioloop
         self.handlers = {
-            "/privet/ping": self.do_ping,
+            "/internal/ping": self.do_ping,
             "/privet/info": self.do_info,
-            "/privet/wifi/switch": self.do_wifi_switch,
-            "/privet/session/handshake": self.do_session_handshake,
-            "/privet/session/cancel": self.do_session_cancel,
-            "/privet/session/api": self.do_session_api,
-            "/privet/v2/setup": self.get_insecure_api_handler(
-                self.do_secure_setup)
+            "/deprecated/wifi/switch": self.do_wifi_switch,
+            "/privet/v2/session/handshake": self.do_session_handshake,
+            "/privet/v2/session/cancel": self.do_session_cancel,
+            "/privet/v2/session/api": self.do_session_api,
+            "/privet/v2/setup/start": self.get_insecure_api_handler(
+                self.do_secure_setup),
+            "/privet/v2/setup/status": self.get_insecure_api_handler(
+                self.do_secure_status),
+
         }
 
         self.current_session = None
@@ -587,7 +592,8 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         }
 
         self.secure_handlers = {
-            "/privet/v2/setup" : self.do_secure_setup
+            "/privet/v2/setup/start" : self.do_secure_setup,
+            "/privet/v2/setup/status" : self.do_secure_status
         }
     def start(self):
         self.wifi_handler.start()
@@ -612,19 +618,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
     def do_info(self, request, response_func):
         specific_info = {
             "x-privet-token": "sample",
-            "setup" : {
-            }
         }
-
-        if self.on_wifi:
-            specific_info["setup"]["wifi"] = "complete";
-        else:
-            specific_info["setup"]["wifi"] = "available";
-
-        if self.cloud_device.get_device_id():
-            specific_info["setup"]["registration"] = "complete"
-        else:
-            specific_info["setup"]["registration"] = "available"
 
         info = merge_dictionary(
             self.get_common_info(),
@@ -783,6 +777,27 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
             return
 
         setup[params["action"]](request, response_func, params)
+    def do_secure_status(self, request, response_func, params):
+        setup = {
+            "registration" : {
+                "required" : True
+            },
+            "wifi" : {
+                "required" : True
+            }
+        }
+        if self.on_wifi:
+            setup["wifi"]["status"] = "complete"
+            setup["wifi"]["ssid"] = ""  # TODO(noamsml): Add SSID to status
+        else:
+            setup["wifi"]["status"] = "available"
+
+        if self.cloud_device.get_device_id():
+            setup["registration"]["status"] = "complete"
+            setup["registration"]["id"] = self.cloud_device.get_device_id()
+        else:
+            specific_info["setup"]["registration"] = "available"
+
     def do_setup_start(self, request, response_func, params):
         has_wifi = False
         token = None
