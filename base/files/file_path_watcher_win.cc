@@ -97,6 +97,12 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   recursive_watch_ = recursive;
   MessageLoop::current()->AddDestructionObserver(this);
 
+  File::Info file_info;
+  if (GetFileInfo(target_, &file_info)) {
+    last_modified_ = file_info.last_modified;
+    first_notification_ = Time::Now();
+  }
+
   if (!UpdateWatch())
     return false;
 
@@ -151,12 +157,21 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
   // Check whether the event applies to |target_| and notify the callback.
   File::Info file_info;
   bool file_exists = GetFileInfo(target_, &file_info);
-  if (file_exists && (last_modified_.is_null() ||
-      last_modified_ != file_info.last_modified)) {
+  if (recursive_watch_) {
+    // Only the mtime of |target_| is tracked but in a recursive watch,
+    // some other file or directory may have changed so all notifications
+    // are passed through. It is possible to figure out which file changed
+    // using ReadDirectoryChangesW() instead of FindFirstChangeNotification(),
+    // but that function is quite complicated:
+    // http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
+    callback_.Run(target_, false);
+  } else if (file_exists && (last_modified_.is_null() ||
+             last_modified_ != file_info.last_modified)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = Time::Now();
     callback_.Run(target_, false);
-  } else if (file_exists && !first_notification_.is_null()) {
+  } else if (file_exists && last_modified_ == file_info.last_modified &&
+             !first_notification_.is_null()) {
     // The target's last modification time is equal to what's on record. This
     // means that either an unrelated event occurred, or the target changed
     // again (file modification times only have a resolution of 1s). Comparing
@@ -229,12 +244,6 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
 bool FilePathWatcherImpl::UpdateWatch() {
   if (handle_ != INVALID_HANDLE_VALUE)
     DestroyWatch();
-
-  File::Info file_info;
-  if (GetFileInfo(target_, &file_info)) {
-    last_modified_ = file_info.last_modified;
-    first_notification_ = Time::Now();
-  }
 
   // Start at the target and walk up the directory chain until we succesfully
   // create a watch handle in |handle_|. |child_dirs| keeps a stack of child
