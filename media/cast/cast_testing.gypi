@@ -20,6 +20,10 @@
       'sources': [
         'test/fake_single_thread_task_runner.cc',
         'test/fake_single_thread_task_runner.h',
+        'test/skewed_single_thread_task_runner.cc',
+        'test/skewed_single_thread_task_runner.h',
+        'test/skewed_tick_clock.cc',
+        'test/skewed_tick_clock.h',
         'test/utility/audio_utility.cc',
         'test/utility/audio_utility.h',
         'test/utility/barcode.cc',

@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/time/default_tick_clock.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_socket.h"
@@ -22,10 +23,12 @@ const size_t kMaxPacketSize = 65536;
 PacketPipe::PacketPipe() {}
 PacketPipe::~PacketPipe() {}
 void PacketPipe::InitOnIOThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::TickClock* clock) {
   task_runner_ = task_runner;
+  clock_ = clock;
   if (pipe_) {
-    pipe_->InitOnIOThread(task_runner);
+    pipe_->InitOnIOThread(task_runner, clock);
   }
 }
 void PacketPipe::AppendToPipe(scoped_ptr<PacketPipe> pipe) {
@@ -183,8 +186,9 @@ class RandomSortedDelay : public PacketPipe {
     }
   }
   virtual void InitOnIOThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) OVERRIDE {
-    PacketPipe::InitOnIOThread(task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::TickClock* clock) OVERRIDE {
+    PacketPipe::InitOnIOThread(task_runner, clock);
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
     ScheduleExtraDelay(1.0);
@@ -202,7 +206,7 @@ class RandomSortedDelay : public PacketPipe {
   }
 
   void CauseExtraDelay() {
-    block_until_ = base::TimeTicks::Now() +
+    block_until_ = clock_->NowTicks() +
         base::TimeDelta::FromMicroseconds(
             static_cast<int64>(extra_delay_ * 1E6));
     // An extra delay just happened, wait up to seconds_between_extra_delay_*2
@@ -264,8 +268,9 @@ class NetworkGlitchPipe : public PacketPipe {
         weak_factory_(this) {}
 
   virtual void InitOnIOThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) OVERRIDE {
-    PacketPipe::InitOnIOThread(task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::TickClock* clock) OVERRIDE {
+    PacketPipe::InitOnIOThread(task_runner, clock);
     Flip();
   }
 
@@ -466,8 +471,10 @@ class UDPProxyImpl : public UDPProxy {
     BuildPipe(&to_dest_pipe_, new PacketSender(socket_.get(), &destination_));
     BuildPipe(&from_dest_pipe_,
               new PacketSender(socket_.get(), &return_address_));
-    to_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current());
-    from_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current());
+    to_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
+                                  &tick_clock_);
+    from_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
+                                    &tick_clock_);
 
     VLOG(0) << "From:" << local_port_.ToString();
     VLOG(0) << "To:" << destination_.ToString();
@@ -531,6 +538,7 @@ class UDPProxyImpl : public UDPProxy {
   }
 
 
+  base::DefaultTickClock tick_clock_;
   net::IPEndPoint local_port_;
   net::IPEndPoint destination_;
   bool destination_is_mutable_;

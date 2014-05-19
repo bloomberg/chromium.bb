@@ -30,7 +30,7 @@ bool FakeSoftwareVideoEncoder::Encode(
   encoded_image->key_frame = next_frame_is_key_;
   next_frame_is_key_ = false;
   encoded_image->frame_id = frame_id_++;
-  encoded_image->last_referenced_frame_id = frame_id_to_reference_;
+  encoded_image->last_referenced_frame_id = encoded_image->frame_id - 1;
 
   base::DictionaryValue values;
   values.Set("key", base::Value::CreateBooleanValue(encoded_image->key_frame));

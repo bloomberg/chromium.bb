@@ -31,6 +31,8 @@
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/skewed_single_thread_task_runner.h"
+#include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/udp_proxy.h"
@@ -158,14 +160,10 @@ std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
   return event_counter_for_packet;
 }
 
-void CountVideoFrame(int* counter,
-                     const scoped_refptr<media::VideoFrame>& video_frame,
-                     const base::TimeTicks& render_time, bool continuous) {
-  ++*counter;
-}
-
 }  // namespace
 
+// Shim that turns forwards packets from a test::PacketPipe to a
+// PacketReceiverCallback.
 class LoopBackPacketPipe : public test::PacketPipe {
  public:
   LoopBackPacketPipe(const transport::PacketReceiverCallback& packet_receiver)
@@ -192,7 +190,9 @@ class LoopBackTransport : public transport::PacketSender {
         cast_environment_(cast_environment) {}
 
   void SetPacketReceiver(
-      const transport::PacketReceiverCallback& packet_receiver) {
+      const transport::PacketReceiverCallback& packet_receiver,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::TickClock* clock) {
     scoped_ptr<test::PacketPipe> loopback_pipe(
         new LoopBackPacketPipe(packet_receiver));
     if (packet_pipe_) {
@@ -200,6 +200,7 @@ class LoopBackTransport : public transport::PacketSender {
     } else {
       packet_pipe_ = loopback_pipe.Pass();
     }
+    packet_pipe_->InitOnIOThread(task_runner, clock);
   }
 
   virtual bool SendPacket(transport::PacketRef packet,
@@ -435,27 +436,28 @@ class End2EndTest : public ::testing::Test {
  protected:
   End2EndTest()
       : start_time_(),
-        testing_clock_sender_(new base::SimpleTestTickClock()),
-        testing_clock_receiver_(new base::SimpleTestTickClock()),
-        task_runner_(
-            new test::FakeSingleThreadTaskRunner(testing_clock_sender_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
+        testing_clock_sender_(new test::SkewedTickClock(&testing_clock_)),
+        task_runner_sender_(
+            new test::SkewedSingleThreadTaskRunner(task_runner_)),
+        testing_clock_receiver_(new test::SkewedTickClock(&testing_clock_)),
+        task_runner_receiver_(
+            new test::SkewedSingleThreadTaskRunner(task_runner_)),
         cast_environment_sender_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
-            task_runner_,
-            task_runner_,
-            task_runner_)),
+            task_runner_sender_,
+            task_runner_sender_,
+            task_runner_sender_)),
         cast_environment_receiver_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
-            task_runner_,
-            task_runner_,
-            task_runner_)),
+            task_runner_receiver_,
+            task_runner_receiver_,
+            task_runner_receiver_)),
         receiver_to_sender_(cast_environment_receiver_),
         sender_to_receiver_(cast_environment_sender_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
         test_receiver_video_callback_(new TestReceiverVideoCallback()) {
-    testing_clock_sender_->Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    testing_clock_receiver_->Advance(
+    testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     cast_environment_sender_->Logging()->AddRawEventSubscriber(
         &event_subscriber_sender_);
@@ -513,6 +515,16 @@ class End2EndTest : public ::testing::Test {
     video_receiver_config_.codec = video_sender_config_.codec;
   }
 
+  void SetSenderSkew(double skew, base::TimeDelta offset) {
+    testing_clock_sender_->SetSkew(skew, offset);
+    task_runner_sender_->SetSkew(1.0 / skew);
+  }
+
+  void SetReceiverSkew(double skew, base::TimeDelta offset) {
+    testing_clock_receiver_->SetSkew(skew, offset);
+    task_runner_receiver_->SetSkew(1.0 / skew);
+  }
+
   void FeedAudioFrames(int count, bool will_be_checked) {
     for (int i = 0; i < count; ++i) {
       scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
@@ -562,7 +574,7 @@ class End2EndTest : public ::testing::Test {
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
         base::TimeDelta::FromSeconds(1),
-        task_runner_,
+        task_runner_sender_,
         &sender_to_receiver_));
 
     cast_sender_ =
@@ -576,8 +588,12 @@ class End2EndTest : public ::testing::Test {
                                   CreateDefaultVideoEncodeAcceleratorCallback(),
                                   CreateDefaultVideoEncodeMemoryCallback());
 
-    receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver());
-    sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver());
+    receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver(),
+                                          task_runner_,
+                                          &testing_clock_);
+    sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver(),
+                                          task_runner_,
+                                          &testing_clock_);
 
     audio_frame_input_ = cast_sender_->audio_frame_input();
     video_frame_input_ = cast_sender_->video_frame_input();
@@ -621,13 +637,39 @@ class End2EndTest : public ::testing::Test {
         media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2)), capture_time);
   }
 
-  void RunTasks(int during_ms) {
-    for (int i = 0; i < during_ms; ++i) {
-      // Call process the timers every 1 ms.
-      testing_clock_sender_->Advance(base::TimeDelta::FromMilliseconds(1));
-      testing_clock_receiver_->Advance(base::TimeDelta::FromMilliseconds(1));
-      task_runner_->RunTasks();
-    }
+  void RunTasks(int ms) {
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(ms));
+  }
+
+  void BasicPlayerGotVideoFrame(
+      const scoped_refptr<media::VideoFrame>& video_frame,
+      const base::TimeTicks& render_time, bool continuous) {
+    video_ticks_.push_back(std::make_pair(
+        testing_clock_receiver_->NowTicks(),
+        render_time));
+    frame_receiver_->GetRawVideoFrame(
+        base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
+                   base::Unretained(this)));
+  }
+
+  void BasicPlayerGotAudioFrame(scoped_ptr<AudioBus> audio_bus,
+                                const base::TimeTicks& playout_time,
+                                bool is_continuous) {
+    audio_ticks_.push_back(std::make_pair(
+        testing_clock_receiver_->NowTicks(),
+        playout_time));
+    frame_receiver_->GetRawAudioFrame(
+        base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
+                   base::Unretained(this)));
+  }
+
+  void StartBasicPlayer() {
+    frame_receiver_->GetRawVideoFrame(
+        base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
+                   base::Unretained(this)));
+    frame_receiver_->GetRawAudioFrame(
+        base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
+                   base::Unretained(this)));
   }
 
   void LogRawEvents(const std::vector<PacketEvent>& packet_events) {
@@ -653,9 +695,19 @@ class End2EndTest : public ::testing::Test {
   VideoSenderConfig video_sender_config_;
 
   base::TimeTicks start_time_;
-  base::SimpleTestTickClock* testing_clock_sender_;
-  base::SimpleTestTickClock* testing_clock_receiver_;
+
+  // These run in "test time"
+  base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+
+  // These run on the sender timeline.
+  test::SkewedTickClock* testing_clock_sender_;
+  scoped_refptr<test::SkewedSingleThreadTaskRunner> task_runner_sender_;
+
+  // These run on the receiver timeline.
+  test::SkewedTickClock* testing_clock_receiver_;
+  scoped_refptr<test::SkewedSingleThreadTaskRunner> task_runner_receiver_;
+
   scoped_refptr<CastEnvironment> cast_environment_sender_;
   scoped_refptr<CastEnvironment> cast_environment_receiver_;
 
@@ -677,6 +729,8 @@ class End2EndTest : public ::testing::Test {
   SimpleEventSubscriber event_subscriber_sender_;
   std::vector<FrameEvent> frame_events_;
   std::vector<PacketEvent> packet_events_;
+  std::vector<std::pair<base::TimeTicks, base::TimeTicks> > audio_ticks_;
+  std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
   base::MessageLoop message_loop_;
 };
@@ -1239,17 +1293,63 @@ TEST_F(End2EndTest, AudioLogging) {
 TEST_F(End2EndTest, BasicFakeSoftwareVideo) {
   Configure(transport::kFakeSoftwareVideo, transport::kPcm16, 32000, false, 1);
   Create();
+  StartBasicPlayer();
 
   int frames_counter = 0;
-  int received_counter = 0;
   for (; frames_counter < 1000; ++frames_counter) {
     SendFakeVideoFrame(testing_clock_sender_->NowTicks());
-    frame_receiver_->GetRawVideoFrame(
-        base::Bind(&CountVideoFrame, &received_counter));
     RunTasks(kFrameTimerMs);
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
-  EXPECT_EQ(1000, received_counter);
+  EXPECT_EQ(1000ul, video_ticks_.size());
+}
+
+TEST_F(End2EndTest, ReceiverClockFast) {
+  Configure(transport::kFakeSoftwareVideo, transport::kPcm16, 32000, false, 1);
+  Create();
+  StartBasicPlayer();
+  SetReceiverSkew(2.0, base::TimeDelta());
+
+  int frames_counter = 0;
+  for (; frames_counter < 10000; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_EQ(10000ul, video_ticks_.size());
+}
+
+TEST_F(End2EndTest, ReceiverClockSlow) {
+  Configure(transport::kFakeSoftwareVideo, transport::kPcm16, 32000, false, 1);
+  Create();
+  StartBasicPlayer();
+  SetReceiverSkew(0.5, base::TimeDelta());
+
+  int frames_counter = 0;
+  for (; frames_counter < 10000; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_EQ(10000ul, video_ticks_.size());
+}
+
+TEST_F(End2EndTest, EvilNetwork) {
+  Configure(transport::kFakeSoftwareVideo, transport::kPcm16, 32000, false, 1);
+  receiver_to_sender_.SetPacketPipe(test::EvilNetwork().Pass());
+  sender_to_receiver_.SetPacketPipe(test::EvilNetwork().Pass());
+  Create();
+  StartBasicPlayer();
+
+  int frames_counter = 0;
+  for (; frames_counter < 10000; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  base::TimeTicks test_end = testing_clock_receiver_->NowTicks();
+  RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_GT(video_ticks_.size(), 100ul);
+  EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
 // TODO(pwestin): Add repeatable packet loss test.

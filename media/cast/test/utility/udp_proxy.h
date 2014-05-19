@@ -18,6 +18,10 @@ namespace net {
 class NetLog;
 };
 
+namespace base {
+class TickClock;
+};
+
 namespace media {
 namespace cast {
 namespace test {
@@ -29,12 +33,14 @@ class PacketPipe {
   virtual void Send(scoped_ptr<transport::Packet> packet) = 0;
   // Allows injection of fake test runner for testing.
   virtual void InitOnIOThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::TickClock* clock);
   virtual void AppendToPipe(scoped_ptr<PacketPipe> pipe);
  protected:
   scoped_ptr<PacketPipe> pipe_;
   // Allows injection of fake task runner for testing.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::TickClock* clock_;
 };
 
 // A UDPProxy will set up a UDP socket and bind to |local_port|.

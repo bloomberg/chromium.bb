@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
-#define MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
+#ifndef MEDIA_CAST_TEST_SKEWED_TASK_RUNNER_H_
+#define MEDIA_CAST_TEST_SKEWED_TASK_RUNNER_H_
 
 #include <map>
 
@@ -16,16 +16,17 @@ namespace media {
 namespace cast {
 namespace test {
 
-typedef base::TestPendingTask PostedTask;
-
-class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
+// This class wraps a SingleThreadTaskRunner, and allows you to scale
+// the delay for any posted task by a factor. The factor is changed by
+// calling SetSkew(). A skew of 2.0 means that all delayed task will
+// have to wait twice as long.
+class SkewedSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
-  explicit FakeSingleThreadTaskRunner(base::SimpleTestTickClock* clock);
+  explicit SkewedSingleThreadTaskRunner(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  void RunTasks();
-
-  // Note: Advances |clock_|.
-  void Sleep(base::TimeDelta t);
+  // Set the delay multiplier to |skew|.
+  void SetSkew(double skew);
 
   // base::SingleThreadTaskRunner implementation.
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -41,18 +42,17 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
       base::TimeDelta delay) OVERRIDE;
 
  protected:
-  virtual ~FakeSingleThreadTaskRunner();
+  virtual ~SkewedSingleThreadTaskRunner();
 
  private:
-  base::SimpleTestTickClock* const clock_;
-  std::multimap<base::TimeTicks, PostedTask> tasks_;
-  bool fail_on_next_task_;
+  double skew_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSingleThreadTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(SkewedSingleThreadTaskRunner);
 };
 
 }  // namespace test
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
+#endif  // MEDIA_CAST_TEST_SKEWED_TASK_RUNNER_H_
