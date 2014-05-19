@@ -21,6 +21,12 @@ class PrefNotifier {
 
   // Broadcasts the intialization completed notification.
   virtual void OnInitializationCompleted(bool succeeded) = 0;
+
+  // TODO(battre): Remove this function, the purpose is to understand whether a
+  // crash in PrefChangeRegistrar::~PrefChangeRegistrar() is caused by a
+  // PrefService already being dead. See crbug.com/373435.
+  virtual void BroadcastPrefServiceDestructionTrace(
+      const std::string& stack_trace) = 0;
 };
 
 #endif  // BASE_PREFS_PREF_NOTIFIER_H_

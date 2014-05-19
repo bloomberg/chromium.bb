@@ -80,6 +80,9 @@ class PrefObserverMock : public PrefObserver {
   virtual ~PrefObserverMock() {}
 
   MOCK_METHOD2(OnPreferenceChanged, void(PrefService*, const std::string&));
+
+  // TODO(battre) Remove function. See crbug.com/373435.
+  MOCK_METHOD1(SetPrefServiceDestructionTrace, void(const std::string&));
 };
 
 // Test fixture class.

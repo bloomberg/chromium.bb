@@ -43,6 +43,9 @@ class BASE_PREFS_EXPORT PrefNotifierImpl
   // PrefNotifier overrides.
   virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
   virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+  // TODO(battre): Delete this. See crbug.com/373435.
+  virtual void BroadcastPrefServiceDestructionTrace(
+      const std::string& stack_trace) OVERRIDE;
 
   // A map from pref names to a list of observers. Observers get fired in the
   // order they are added. These should only be accessed externally for unit

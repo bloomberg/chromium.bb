@@ -117,6 +117,9 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   // PrefObserver
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
+  // TODO(battre): Remove function (debugging tool for crbug.com/373435).
+  virtual void SetPrefServiceDestructionTrace(
+      const std::string& stack_trace) OVERRIDE;
 
   void VerifyValuePrefName() const {
     DCHECK(!pref_name_.empty());
@@ -144,6 +147,8 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   std::string pref_name_;
   NamedChangeCallback observer_;
   PrefService* prefs_;
+  // TODO(battre): Remove attribute (debugging tool for crbug.com/373435).
+  std::string pref_service_destruction_;
 
  protected:
   bool setting_value_;
