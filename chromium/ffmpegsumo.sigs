@@ -31,6 +31,8 @@ void av_frame_unref(AVFrame *frame);
 void av_frame_free(AVFrame **frame);
 void avcodec_free_frame(AVFrame **frame);
 AVFrame* av_frame_alloc();
+int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
+void av_packet_move_ref(AVPacket *dst, AVPacket *src);
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
