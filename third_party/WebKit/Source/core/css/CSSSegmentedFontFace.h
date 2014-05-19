@@ -78,8 +78,7 @@ private:
     bool isLoading() const;
     bool isLoaded() const;
 
-    // FIXME: Oilpan: Replace by HeapLinkedHashSet or HeapListHashSet.
-    typedef ListHashSet<RefPtrWillBeMember<FontFace> > FontFaceList;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> > FontFaceList;
 
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     FontTraits m_traits;
