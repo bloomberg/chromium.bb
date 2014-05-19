@@ -94,7 +94,12 @@ public:
     // Constructs and returns a ScriptPromise from |value|.
     // if |value| is not a Promise object, returns a Promise object
     // resolved with |value|.
+    // Returns |value| itself if it is a Promise.
     static ScriptPromise cast(const ScriptValue& /*value*/);
+    static ScriptPromise cast(ScriptState*, v8::Handle<v8::Value> /*value*/);
+
+    static ScriptPromise reject(const ScriptValue&);
+    static ScriptPromise reject(ScriptState*, v8::Handle<v8::Value>);
 
 private:
     RefPtr<ScriptState> m_scriptState;
