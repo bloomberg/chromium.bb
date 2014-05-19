@@ -6,7 +6,9 @@
 description("Regression test to ensure that IndexedDB connections don't leak");
 
 setDBNameFromPath();
-doFirstOpen();
+waitForRequests([
+    indexedDB.deleteDatabase(dbname)
+], doFirstOpen);
 
 function doFirstOpen()
 {

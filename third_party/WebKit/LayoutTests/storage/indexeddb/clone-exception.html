@@ -9,7 +9,11 @@ var NON_CLONEABLE = self;
 var INVALID_KEY = {};
 
 setDBNameFromPath();
-doFirstOpen();
+waitForRequests([
+    indexedDB.deleteDatabase(dbname + '1'),
+    indexedDB.deleteDatabase(dbname + '2'),
+    indexedDB.deleteDatabase(dbname + '3')
+], doFirstOpen);
 
 function doFirstOpen()
 {
