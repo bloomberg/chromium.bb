@@ -53,11 +53,7 @@ static_library("nrd_xfer") {
   ]
 
   if (os == "linux") {
-    sources += [
-      "linux/nacl_desc_sysv_shm.c",
-      "linux/nacl_desc_sysv_shm.h",
-      "posix/nacl_desc.c",
-    ]
+    sources += ["posix/nacl_desc.c"]
   }
 
   if (os == "mac") {

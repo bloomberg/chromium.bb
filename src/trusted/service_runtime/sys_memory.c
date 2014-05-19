@@ -403,8 +403,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
      * can't do it.
      */
     if (!NACL_ABI_S_ISREG(stbuf.nacl_abi_st_mode) &&
-        !NACL_ABI_S_ISSHM(stbuf.nacl_abi_st_mode) &&
-        !NACL_ABI_S_ISSHM_SYSV(stbuf.nacl_abi_st_mode)) {
+        !NACL_ABI_S_ISSHM(stbuf.nacl_abi_st_mode)) {
       map_result = -NACL_ABI_ENODEV;
       goto cleanup;
     }

@@ -6,12 +6,6 @@
 
 #include <fcntl.h>
 #include <string.h>
-#if NACL_LINUX && !NACL_ANDROID
-// for shmem cleanup
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-#endif
 
 #include <map>
 #include <string>
@@ -26,38 +20,6 @@ using std::stringstream;
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
-
-namespace {
-
-// The main point of this class is to ensure automatic cleanup.
-// If the destructor is not invoked you need to manually cleanup
-// the shared memory descriptors via "ipcs -m" and "ipcrm -m <id>"
-class AddressMap {
- public:
-  AddressMap() {}
-
-  ~AddressMap() {
-    // NOTE: you CANNOT call NaClLog - this is called too late
-    // NaClLog(1, "cleanup\n");
-#if NACL_LINUX && !NACL_ANDROID
-    typedef map<NaClDesc*, uintptr_t>::iterator IT;
-    for (IT it = map_.begin(); it != map_.end(); ++it) {
-      shmctl(reinterpret_cast<NaClDescSysvShm*>(it->first)->id, IPC_RMID, NULL);
-    }
-#endif
-  }
-
-  void Add(NaClDesc* desc, uintptr_t addr) { map_[desc] = addr; }
-
-  uintptr_t Get(NaClDesc* desc) { return map_[desc]; }
-
- private:
-  map<NaClDesc*, uintptr_t> map_;
-};
-
-AddressMap GlobalAddressMap;
-
-}  // namespace
 
 bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
                              const vector<string>& args) {

@@ -23,9 +23,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
-#if NACL_LINUX
-#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-#endif  /* NACL_LINUX */
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
@@ -207,11 +204,6 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescInternalizeNotImplemented,  /* bound sockets cannot be transferred */
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
-#if NACL_LINUX && !NACL_ANDROID
-  NaClDescSysvShmInternalize,
-#else
-  NULL,
-#endif  /* NACL_LINUX */
   NaClDescInternalizeNotImplemented,  /* mutex */
   NaClDescInternalizeNotImplemented,  /* condvar */
   NaClDescInternalizeNotImplemented,  /* semaphore */
@@ -237,7 +229,6 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_BOUND_SOCKET);
     MAP(NACL_DESC_CONNECTED_SOCKET);
     MAP(NACL_DESC_SHM);
-    MAP(NACL_DESC_SYSV_SHM);
     MAP(NACL_DESC_MUTEX);
     MAP(NACL_DESC_CONDVAR);
     MAP(NACL_DESC_SEMAPHORE);

@@ -17,7 +17,7 @@
  * 3 b/octal digit, 30 bits:   1234567890
  */
 #define NACL_ABI_S_IFMT        0000370000  /* for now */
-#define NACL_ABI_S_IFSHM_SYSV  0000300000  /* must map all-or-nothing */
+/* Removed NACL_ABI_S_IFSHM_SYSV, which was 0000300000. */
 #define NACL_ABI_S_IFSEMA      0000270000
 #define NACL_ABI_S_IFCOND      0000260000
 #define NACL_ABI_S_IFMUTEX     0000250000
@@ -46,12 +46,6 @@
  * preprocessor symbols will compile.  The semantics of having a new
  * "unsupported" file type should enable code to run in a reasonably
  * sane way, but YMMV.
- *
- * NB: sysv shm is only available when host OS is linux, and cannot be
- * created by untrusted code.  The only use is in Pepper2d, and other
- * trusted code is responsible for their creation -- essentially,
- * these objects wrap sysv shm used by the MIT-SHM extension to X11,
- * where the X server creates a SysV shm object to hold pixmap data.
  */
 
 #define NACL_ABI_S_ISUID      0004000
@@ -91,7 +85,5 @@
 #define NACL_ABI_S_ISCHR(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFCHR)
 #define NACL_ABI_S_ISFIFO(m)  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFIFO)
 #define NACL_ABI_S_ISSHM(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM)
-#define NACL_ABI_S_ISSHM_SYSV(m) \
-  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM_SYSV)
 
 #endif

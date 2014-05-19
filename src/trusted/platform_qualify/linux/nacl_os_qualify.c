@@ -10,7 +10,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/platform_qualify/kernel_version.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-#include "native_client/src/trusted/platform_qualify/linux/sysv_shm_and_mmap.h"
 
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
@@ -55,15 +54,7 @@ int NaClOsIsSupported(void) {
   }
 #endif
 
-#if NACL_ANDROID
-  /*
-   * Android has no System V shared memory API, so we don't need qualification
-   * checks for that.
-   */
   return 1;
-#else
-  return !NaClPlatformQualifySysVShmAndMmapHasProblems();
-#endif
 }
 
 

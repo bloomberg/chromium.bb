@@ -438,8 +438,6 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   printf("    print the table of variables and their values\n");
   printf("  set_variable <name> <value>\n");
   printf("    set variable to the given value\n");
-  printf("  sysv\n");
-  printf("    create a descriptor for an SysV shared memory (Linux only)\n");
   printf("  rpc method_name <in_args> * <out_args>\n");
   printf("    Invoke method_name.\n");
   printf("    Each in_arg is of form 'type(value)', e.g. i(42), s(\"foo\").\n");

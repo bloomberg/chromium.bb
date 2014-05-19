@@ -23,7 +23,6 @@
           ['OS=="linux"', {
             'sources': [
               'linux/nacl_os_qualify.c',
-              'linux/sysv_shm_and_mmap.c',
               'posix/nacl_dep_qualify.c',
             ],
           }],

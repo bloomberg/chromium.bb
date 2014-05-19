@@ -97,17 +97,12 @@
           ]
         },
         'conditions': [
-          ['OS=="linux"', {
+          ['OS=="linux" or OS=="mac"', {
             'sources': [
-              'linux/nacl_desc_sysv_shm.c',
-              'linux/nacl_desc_sysv_shm.h',
               'posix/nacl_desc.c',
             ],
           }],
           ['OS=="mac"', {
-            'sources': [
-              'posix/nacl_desc.c',
-            ],
             # Turning -pedantic off is a hack.  Without it, clang
             # complains that macro arguments are empty, which is
             # only permitted in c99 and c++0x modes.  This is true

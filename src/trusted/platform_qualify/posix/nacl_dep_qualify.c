@@ -16,7 +16,6 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
-#include "native_client/src/trusted/platform_qualify/linux/sysv_shm_and_mmap.h"
 
 #if NACL_OSX
 #include <mach/mach.h>

@@ -11,9 +11,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#if defined(NACL_LINUX)
-#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-#endif  // defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
@@ -212,37 +209,6 @@ DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
   }
   return MakeGenericCleanup(desc);
 }
-
-#if NACL_LINUX && !NACL_ANDROID
-DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
-  if (NACL_ABI_SIZE_T_MAX - NACL_PAGESIZE + 1 <= size) {
-    // Avoid overflow when rounding to the nearest 4K and casting to
-    // nacl_off64_t by preventing negative size.
-    return NULL;
-  }
-  // HACK: there's an inlining issue with using NaClRoundPage. (See above.)
-  // rounded_size = NaClRoundPage(size);
-  size_t rounded_size =
-      (size + NACL_PAGESIZE - 1) & ~static_cast<size_t>(NACL_PAGESIZE - 1);
-  struct NaClDescSysvShm* desc =
-    reinterpret_cast<NaClDescSysvShm*>(calloc(1, sizeof *desc));
-  if (NULL == desc) {
-    return NULL;
-  }
-
-  if (!NaClDescSysvShmImportCtor(desc,
-                                 key,
-                                 static_cast<nacl_off64_t>(rounded_size))) {
-    // If rounded_size is negative due to overflow from rounding, it will be
-    // rejected here by NaClDescSysvShmImportCtor.
-    free(desc);
-    return NULL;
-  }
-
-  return
-    MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
-}
-#endif  // NACL_LINUX
 
 DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
   CHECK(common_data_->is_initialized());

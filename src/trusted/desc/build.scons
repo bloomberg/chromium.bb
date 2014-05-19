@@ -57,9 +57,6 @@ if env.Bit('windows'):
 else:
   nrd_lib_inputs += ['posix/nacl_desc.c']
 
-if env.Bit('linux') and not env.Bit('android'):
-  nrd_lib_inputs += ['linux/nacl_desc_sysv_shm.c']
-
 if env.Bit('windows'):
   nrd_lib_inputs += [
       'nacl_desc_conn_cap.c',

@@ -631,11 +631,6 @@ nacl_glibc_skiplist = set([
     'run_timefuncs_test',
     # Needs further investigation.
     'sdk_minimal_test',
-    # run_srpc_sysv_shm_test fails because:
-    # 1) it uses fstat(), while we only have an fstat64() wrapper;
-    # 2) the test needs an explicit fflush(stdout) call because the
-    # process is killed without exit() being called.
-    'run_srpc_sysv_shm_test',
     # This test fails with nacl-glibc: glibc reports an internal
     # sanity check failure in free().
     # TODO(robertm): This needs further investigation.
