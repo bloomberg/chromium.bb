@@ -19,6 +19,7 @@ special_tests=(
   # Tests that need to run inside the chroot.
   ['cros/commands/cros_build_unittest.py']=inside
   ['lib/upgrade_table_unittest.py']=inside
+  ['scripts/cros_list_modified_packages_unittest.py']=inside
   ['scripts/cros_mark_as_stable_unittest.py']=inside
   ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
   ['scripts/sync_package_status_unittest.py']=inside
