@@ -647,11 +647,15 @@ DirectoryModel.prototype.createDirectory = function(name,
 };
 
 /**
- * Change the current directory to the directory represented by
+ * Changes the current directory to the directory represented by
  * a DirectoryEntry or a fake entry.
  *
  * Dispatches the 'directory-changed' event when the directory is successfully
  * changed.
+ *
+ * Note : if this is called from UI, please consider to use DirectoryModel.
+ * activateDirectoryEntry instead of this, which is higher-level function and
+ * cares about the selection.
  *
  * @param {DirectoryEntry|Object} dirEntry The entry of the new directory to
  *     be opened.
@@ -692,6 +696,31 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           this.dispatchEvent(event);
         }.bind(this));
       }.bind(this, this.changeDirectorySequence_));
+};
+
+/**
+ * Activates the given directry.
+ * This method:
+ *  - Changes the current directory, if the given directory is the current
+ *    directory.
+ *  - Clears the selection, if the given directory is the current directory.
+ *
+ * @param {DirectoryEntry|Object} dirEntry The entry of the new directory to
+ *     be opened.
+ * @param {function()=} opt_callback Executed if the directory loads
+ *     successfully.
+ */
+DirectoryModel.prototype.activateDirectoryEntry = function(
+    dirEntry, opt_callback) {
+  var currentDirectoryEntry = this.getCurrentDirEntry();
+  if (currentDirectoryEntry &&
+      util.isSameEntry(dirEntry, currentDirectoryEntry)) {
+    // On activating the current directory, clear the selection on the filelist.
+    this.clearSelection();
+  } else {
+    // Otherwise, changes the current directory.
+    this.changeDirectoryEntry(dirEntry, opt_callback);
+  }
 };
 
 /**

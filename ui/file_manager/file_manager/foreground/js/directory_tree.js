@@ -256,19 +256,8 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  */
 DirectoryItem.prototype.handleClick = function(e) {
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
-
-  if (e.target.classList.contains('expand-icon'))
-    return;
-
-  var currentDirectoryEntry = this.directoryModel_.getCurrentDirEntry();
-  if (currentDirectoryEntry &&
-      util.isSameEntry(this.entry, currentDirectoryEntry)) {
-    // On clicking the current directory, clears the selection on the file list.
-    this.directoryModel_.clearSelection();
-  } else {
-    // Otherwise, changes the current directory.
-    this.directoryModel_.changeDirectoryEntry(this.entry);
-  }
+  if (!e.target.classList.contains('expand-icon'))
+    this.directoryModel_.activateDirectoryEntry(this.entry);
 };
 
 /**
@@ -492,6 +481,12 @@ DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
+
+  // Add a handler for directory change.
+  this.addEventListener('change', function() {
+    if (this.selectedItem)
+      this.directoryModel_.activateDirectoryEntry(this.selectedItem.entry);
+  }.bind(this));
 
   this.privateOnDirectoryChangedBound_ =
       this.onDirectoryContentChanged_.bind(this);
