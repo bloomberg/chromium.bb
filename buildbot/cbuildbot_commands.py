@@ -609,7 +609,7 @@ def ListFailedTests(results_path):
             failed_tests.append((test_name, rel_path))
             processed_tests.append(test_name)
 
-    return failed_tests
+  return failed_tests
 
 
 def GetTestResultsDir(buildroot, test_results_dir):

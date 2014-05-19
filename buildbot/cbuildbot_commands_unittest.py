@@ -451,23 +451,33 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
   def testListFaliedTests(self):
     """Tests if we can list failed tests."""
-    test_report = """
+    test_report_1 = """
 /tmp/taco/taste_tests/all/results-01-has_salsa              [  PASSED  ]
 /tmp/taco/taste_tests/all/results-01-has_salsa/has_salsa    [  PASSED  ]
 /tmp/taco/taste_tests/all/results-02-has_cheese             [  FAILED  ]
 /tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese  [  FAILED  ]
 /tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese   FAIL: No cheese.
 """
+    test_report_2 = """
+/tmp/taco/verify_tests/all/results-01-has_salsa              [  PASSED  ]
+/tmp/taco/verify_tests/all/results-01-has_salsa/has_salsa    [  PASSED  ]
+/tmp/taco/verify_tests/all/results-02-has_cheese             [  PASSED  ]
+/tmp/taco/verify_tests/all/results-02-has_cheese/has_cheese  [  PASSED  ]
+"""
     results_path = os.path.join(self.tempdir, 'tmp/taco')
     os.makedirs(results_path)
     # Create two reports with the same content to test that we don't
     # list the same test twice.
     osutils.WriteFile(
-        os.path.join(results_path, 'all', 'test_report.log'),
-        test_report, makedirs=True)
+        os.path.join(results_path, 'taste_tests', 'all', 'test_report.log'),
+        test_report_1, makedirs=True)
     osutils.WriteFile(
-        os.path.join(results_path, 'failed', 'test_report.log'),
-        test_report, makedirs=True)
+        os.path.join(results_path, 'taste_tests', 'failed', 'test_report.log'),
+        test_report_1, makedirs=True)
+    osutils.WriteFile(
+        os.path.join(results_path, 'verify_tests', 'all', 'test_report.log'),
+        test_report_2, makedirs=True)
+
     self.assertEquals(
         commands.ListFailedTests(results_path),
         [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
