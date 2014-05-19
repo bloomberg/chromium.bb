@@ -171,12 +171,6 @@ void EnsureSafeExtension(const std::string& mime_type,
   if ((ignore_extension || extension.empty()) && !mime_type.empty()) {
     base::FilePath::StringType preferred_mime_extension;
     std::vector<base::FilePath::StringType> all_mime_extensions;
-    // The GetPreferredExtensionForMimeType call will end up going to disk.  Do
-    // this on another thread to avoid slowing the IO thread.
-    // http://crbug.com/61827
-    // TODO(asanka): Remove this ScopedAllowIO once all callers have switched
-    // over to IO safe threads.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
     net::GetPreferredExtensionForMimeType(mime_type, &preferred_mime_extension);
     net::GetExtensionsForMimeType(mime_type, &all_mime_extensions);
     // If the existing extension is in the list of valid extensions for the
