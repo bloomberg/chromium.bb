@@ -373,6 +373,18 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
 void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
 {
     ASSERT(m_frame->page());
+
+    // In a back/forward navigation, we sometimes restore history state to iframes, even though the state was generated
+    // dynamically and JS will try to put something different in the iframe. In this case, we will load stale things
+    // and/or confuse the JS when it shortly thereafter tries to schedule a location change. Let the JS have its way.
+    // FIXME: This check seems out of place.
+    if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() && m_frame->loader().provisionalDocumentLoader()) {
+        RefPtr<Frame> protect(m_frame);
+        m_frame->loader().provisionalDocumentLoader()->stopLoading();
+        if (!m_frame->host())
+            return;
+    }
+
     cancel();
     m_redirect = redirect;
     startTimer();
