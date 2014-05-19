@@ -147,7 +147,6 @@ static bool isPotentialClusterRoot(const RenderObject* renderer)
     // - Must not be inline, as different multipliers on one line looks terrible.
     //   Exceptions are inline-block and alike elements (inline-table, -webkit-inline-*),
     //   as they often contain entire multi-line columns of text.
-    // - Must not be list items, as items in the same list should look consistent (*).
     // - Must not be normal list items, as items in the same list should look
     //   consistent, unless they are floating or position:absolute/fixed.
     Node* node = renderer->generatingNode();
@@ -183,9 +182,6 @@ static bool isIndependentDescendant(const RenderBlock* renderer)
         || renderer->style()->isDisplayReplacedType()
         || renderer->isTextArea()
         || renderer->style()->userModify() != READ_ONLY;
-    // FIXME: Tables need special handling to multiply all their columns by
-    // the same amount even if they're different widths; so do hasColumns()
-    // containers, and probably flexboxes...
 }
 
 static bool blockIsRowOfLinks(const RenderBlock* block)
