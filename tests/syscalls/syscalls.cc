@@ -69,6 +69,17 @@ static char *split_name(char *full_name) {
   return basename + 1;
 }
 
+// In case a previous run of this test failed and left the file behind,
+// remove the file first.
+// TODO(mseaborn): It would be cleaner to create a guaranteed-empty temp
+// directory instead of doing this.
+static void ensure_file_is_absent(const char *filename) {
+  int result = unlink(filename);
+  if (result != 0) {
+    ASSERT_EQ(errno, ENOENT);
+  }
+}
+
 /*
  * function test*()
  *
@@ -253,6 +264,9 @@ bool test_link(const char *test_file) {
   snprintf(target_filename, PATH_MAX, "%s.target", test_file);
   snprintf(link_filename, PATH_MAX, "%s.link", test_file);
 
+  ensure_file_is_absent(target_filename);
+  ensure_file_is_absent(link_filename);
+
   // Create link target with some dummy data
   int fd = open(target_filename, O_WRONLY | O_CREAT, S_IRWXU);
   ASSERT(fd >= 0);
@@ -260,8 +274,12 @@ bool test_link(const char *test_file) {
   ASSERT_EQ(close(fd), 0);
 
   int rtn = link(target_filename, link_filename);
-  if (rtn != 0 || errno == ENOSYS)
+  if (rtn != 0 && errno == ENOSYS) {
+    // If we get ENOSYS, assume we are on Windows, where link() is expected
+    // to fail.
     return passed("test_link", "all");
+  }
+  ASSERT_EQ(rtn, 0);
 
   // Verify that the new file is a regular file and that changes to it are
   // mirrored in the original file.
@@ -292,9 +310,7 @@ bool test_link(const char *test_file) {
   return passed("test_link", "all");
 }
 
-// This tests symlink/readlink and lstat.  symlink and readlink
-// are expected to return ENOSYS on win32 so we handle this case
-// and bail out early.
+// This tests symlink/readlink and lstat.
 bool test_symlinks(const char *test_file) {
   char dirname[PATH_MAX];
   char link_filename[PATH_MAX];
@@ -310,11 +326,15 @@ bool test_symlinks(const char *test_file) {
 
   snprintf(link_filename, PATH_MAX, "%s.link", test_file);
 
+  ensure_file_is_absent(link_filename);
+
   // Create this link
   int rtn = symlink(basename, link_filename);
-  if (rtn != 0 || errno == ENOSYS)
+  if (rtn != 0 && errno == ENOSYS) {
+    // If we get ENOSYS, assume we are on Windows, where symlink() and
+    // readlink() are expected to fail.
     return passed("test_symlinks", "all");
-
+  }
   ASSERT_EQ(rtn, 0);
 
   // Check the lstat() and stat of the link
