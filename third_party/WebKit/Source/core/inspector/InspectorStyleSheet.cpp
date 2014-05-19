@@ -1000,7 +1000,7 @@ bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionS
     if (listener())
         listener()->didReparseStyleSheet();
     fireStyleSheetChanged();
-    m_pageStyleSheet->ownerDocument()->styleResolverChanged(RecalcStyleImmediately, FullStyleUpdate);
+    m_pageStyleSheet->ownerDocument()->styleResolverChanged(RecalcStyleDeferred, FullStyleUpdate);
     return true;
 }
 
