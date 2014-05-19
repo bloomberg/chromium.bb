@@ -35,8 +35,10 @@
 #include "net/url_request/url_request_context.h"
 
 using base::FilePath;
+using base::WaitableEvent;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 using net::CookieList;
 using net::CookieMonster;
@@ -46,14 +48,66 @@ using net::CookieMonster;
 // depending on the URLRequestContext.
 // See issue http://crbug.com/157683
 
-// All functions on the CookieManager can be called from any thread, including
-// threads without a message loop. BrowserThread::IO is used to call methods
-// on CookieMonster that needs to be called, and called back, on a chrome
-// thread.
+// On the CookieManager methods without a callback and methods with a callback
+// when that callback is null can be called from any thread, including threads
+// without a message loop. Methods with a non-null callback must be called on
+// a thread with a running message loop.
 
 namespace android_webview {
 
 namespace {
+
+typedef base::Callback<void(bool)> BoolCallback;
+typedef base::Callback<void(int)> IntCallback;
+
+// Holds a Java BooleanCookieCallback, knows how to invoke it and turn it
+// into a base callback.
+class BoolCookieCallbackHolder {
+ public:
+  BoolCookieCallbackHolder(JNIEnv* env, jobject callback) {
+    callback_.Reset(env, callback);
+  }
+
+  void Invoke(bool result) {
+    if (!callback_.is_null()) {
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_AwCookieManager_invokeBooleanCookieCallback(
+          env, callback_.obj(), result);
+    }
+  }
+
+  static BoolCallback ConvertToCallback(
+      scoped_ptr<BoolCookieCallbackHolder> me) {
+    return base::Bind(&BoolCookieCallbackHolder::Invoke,
+                      base::Owned(me.release()));
+  }
+
+ private:
+  ScopedJavaGlobalRef<jobject> callback_;
+  DISALLOW_COPY_AND_ASSIGN(BoolCookieCallbackHolder);
+};
+
+// Construct a closure which signals a waitable event if and when the closure
+// is called the waitable event must still exist.
+static base::Closure SignalEventClosure(WaitableEvent* completion) {
+  return base::Bind(&WaitableEvent::Signal, base::Unretained(completion));
+}
+
+static void DiscardBool(const base::Closure& f, bool b) {
+  f.Run();
+}
+
+static BoolCallback BoolCallbackAdapter(const base::Closure& f) {
+  return base::Bind(&DiscardBool, f);
+}
+
+static void DiscardInt(const base::Closure& f, int i) {
+  f.Run();
+}
+
+static IntCallback IntCallbackAdapter(const base::Closure& f) {
+  return base::Bind(&DiscardInt, f);
+}
 
 // Are cookies allowed for file:// URLs by default?
 const bool kDefaultFileSchemeAllowed = false;
@@ -98,11 +152,17 @@ class CookieManager {
   bool AcceptCookie();
   void SetAcceptThirdPartyCookie(bool accept);
   bool AcceptThirdPartyCookie();
-  void SetCookie(const GURL& host, const std::string& cookie_value);
+  void SetCookie(const GURL& host,
+                 const std::string& cookie_value,
+                 scoped_ptr<BoolCookieCallbackHolder> callback);
+  void SetCookieSync(const GURL& host,
+                 const std::string& cookie_value);
   std::string GetCookie(const GURL& host);
-  void RemoveSessionCookie();
-  void RemoveAllCookie();
-  void RemoveExpiredCookie();
+  void RemoveSessionCookies(scoped_ptr<BoolCookieCallbackHolder> callback);
+  void RemoveAllCookies(scoped_ptr<BoolCookieCallbackHolder> callback);
+  void RemoveAllCookiesSync();
+  void RemoveSessionCookiesSync();
+  void RemoveExpiredCookies();
   void FlushCookieStore();
   bool HasCookies();
   bool AllowFileSchemeCookies();
@@ -114,32 +174,31 @@ class CookieManager {
   CookieManager();
   ~CookieManager();
 
-  typedef base::Callback<void(base::WaitableEvent*)> CookieTask;
-  void ExecCookieTask(const CookieTask& task);
+  void ExecCookieTaskSync(const base::Callback<void(BoolCallback)>& task);
+  void ExecCookieTaskSync(const base::Callback<void(IntCallback)>& task);
+  void ExecCookieTaskSync(const base::Callback<void(base::Closure)>& task);
+  void ExecCookieTask(const base::Closure& task);
 
-  void SetCookieAsyncHelper(
+  void SetCookieHelper(
       const GURL& host,
       const std::string& value,
-      base::WaitableEvent* completion);
-  void SetCookieCompleted(base::WaitableEvent* completion, bool success);
+      BoolCallback callback);
 
-  void GetCookieValueAsyncHelper(
-      const GURL& host,
-      std::string* result,
-      base::WaitableEvent* completion);
-  void GetCookieValueCompleted(base::WaitableEvent* completion,
+  void GetCookieValueAsyncHelper(const GURL& host,
+                                 std::string* result,
+                                 base::Closure complete);
+  void GetCookieValueCompleted(base::Closure complete,
                                std::string* result,
                                const std::string& value);
 
-  void RemoveSessionCookieAsyncHelper(base::WaitableEvent* completion);
-  void RemoveAllCookieAsyncHelper(base::WaitableEvent* completion);
-  void RemoveCookiesCompleted(base::WaitableEvent* completion, int num_deleted);
+  void RemoveSessionCookiesHelper(BoolCallback callback);
+  void RemoveAllCookiesHelper(BoolCallback callback);
+  void RemoveCookiesCompleted(BoolCallback callback, int num_deleted);
 
-  void FlushCookieStoreAsyncHelper(base::WaitableEvent* completion);
+  void FlushCookieStoreAsyncHelper(base::Closure complete);
 
-  void HasCookiesAsyncHelper(bool* result,
-                             base::WaitableEvent* completion);
-  void HasCookiesCompleted(base::WaitableEvent* completion,
+  void HasCookiesAsyncHelper(bool* result, base::Closure complete);
+  void HasCookiesCompleted(base::Closure complete,
                            bool* result,
                            const CookieList& cookies);
 
@@ -221,20 +280,51 @@ void CookieManager::EnsureCookieMonsterExistsLocked() {
                       cookie_monster_backend_thread_->message_loop_proxy());
 }
 
-// Executes the |task| on the |cookie_monster_proxy_| message loop.
-void CookieManager::ExecCookieTask(const CookieTask& task) {
-  base::WaitableEvent completion(false, false);
-  base::AutoLock lock(cookie_monster_lock_);
+// Executes the |task| on the |cookie_monster_proxy_| message loop and
+// waits for it to complete before returning.
 
-  EnsureCookieMonsterExistsLocked();
+// To execute a CookieTask synchronously you must arrange for Signal to be
+// called on the waitable event at some point. You can call the bool or int
+// versions of ExecCookieTaskSync, these will supply the caller with a dummy
+// callback which takes an int/bool, throws it away and calls Signal.
+// Alternatively you can call the version which supplies a Closure in which
+// case you must call Run on it when you want the unblock the calling code.
 
-  cookie_monster_proxy_->PostTask(FROM_HERE, base::Bind(task, &completion));
-
-  // We always wait for the posted task to complete, even when it doesn't return
-  // a value, because previous versions of the CookieManager API were
-  // synchronous in most/all cases and the caller may be relying on this.
+// Ignore a bool callback.
+void CookieManager::ExecCookieTaskSync(
+    const base::Callback<void(BoolCallback)>& task) {
+  WaitableEvent completion(false, false);
+  ExecCookieTask(
+      base::Bind(task, BoolCallbackAdapter(SignalEventClosure(&completion))));
   ScopedAllowWaitForLegacyWebViewApi wait;
   completion.Wait();
+}
+
+// Ignore an int callback.
+void CookieManager::ExecCookieTaskSync(
+    const base::Callback<void(IntCallback)>& task) {
+  WaitableEvent completion(false, false);
+  ExecCookieTask(
+      base::Bind(task, IntCallbackAdapter(SignalEventClosure(&completion))));
+  ScopedAllowWaitForLegacyWebViewApi wait;
+  completion.Wait();
+}
+
+// Call the supplied closure when you want to signal that the blocked code can
+// continue.
+void CookieManager::ExecCookieTaskSync(
+    const base::Callback<void(base::Closure)>& task) {
+  WaitableEvent completion(false, false);
+  ExecCookieTask(base::Bind(task, SignalEventClosure(&completion)));
+  ScopedAllowWaitForLegacyWebViewApi wait;
+  completion.Wait();
+}
+
+// Executes the |task| on the |cookie_monster_proxy_| message loop.
+void CookieManager::ExecCookieTask(const base::Closure& task) {
+  base::AutoLock lock(cookie_monster_lock_);
+  EnsureCookieMonsterExistsLocked();
+  cookie_monster_proxy_->PostTask(FROM_HERE, task);
 }
 
 scoped_refptr<net::CookieStore> CookieManager::CreateBrowserThreadCookieStore(
@@ -283,49 +373,51 @@ bool CookieManager::AcceptThirdPartyCookie() {
   return AwCookieAccessPolicy::GetInstance()->GetThirdPartyAllowAccess();
 }
 
-void CookieManager::SetCookie(const GURL& host,
+void CookieManager::SetCookie(
+    const GURL& host,
+    const std::string& cookie_value,
+    scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
+  BoolCallback callback =
+      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+  ExecCookieTask(base::Bind(&CookieManager::SetCookieHelper,
+                            base::Unretained(this),
+                            host,
+                            cookie_value,
+                            callback));
+}
+
+void CookieManager::SetCookieSync(const GURL& host,
                               const std::string& cookie_value) {
-  ExecCookieTask(base::Bind(&CookieManager::SetCookieAsyncHelper,
+  ExecCookieTaskSync(base::Bind(&CookieManager::SetCookieHelper,
                             base::Unretained(this),
                             host,
                             cookie_value));
 }
 
-void CookieManager::SetCookieAsyncHelper(
+void CookieManager::SetCookieHelper(
     const GURL& host,
     const std::string& value,
-    base::WaitableEvent* completion) {
+    const BoolCallback callback) {
   net::CookieOptions options;
   options.set_include_httponly();
 
   cookie_monster_->SetCookieWithOptionsAsync(
-      host, value, options,
-      base::Bind(&CookieManager::SetCookieCompleted,
-                 base::Unretained(this),
-                 completion));
-}
-
-void CookieManager::SetCookieCompleted(base::WaitableEvent* completion,
-                                       bool success) {
-  // The CookieManager API does not return a value for SetCookie,
-  // so we don't need to propagate the |success| value back to the caller.
-  completion->Signal();
+      host, value, options, callback);
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
   std::string cookie_value;
-  ExecCookieTask(base::Bind(&CookieManager::GetCookieValueAsyncHelper,
+  ExecCookieTaskSync(base::Bind(&CookieManager::GetCookieValueAsyncHelper,
                             base::Unretained(this),
                             host,
                             &cookie_value));
-
   return cookie_value;
 }
 
 void CookieManager::GetCookieValueAsyncHelper(
     const GURL& host,
     std::string* result,
-    base::WaitableEvent* completion) {
+    base::Closure complete) {
   net::CookieOptions options;
   options.set_include_httponly();
 
@@ -334,70 +426,85 @@ void CookieManager::GetCookieValueAsyncHelper(
       options,
       base::Bind(&CookieManager::GetCookieValueCompleted,
                  base::Unretained(this),
-                 completion,
+                 complete,
                  result));
 }
 
-void CookieManager::GetCookieValueCompleted(base::WaitableEvent* completion,
+void CookieManager::GetCookieValueCompleted(base::Closure complete,
                                             std::string* result,
                                             const std::string& value) {
   *result = value;
-  completion->Signal();
+  complete.Run();
 }
 
-void CookieManager::RemoveSessionCookie() {
-  ExecCookieTask(base::Bind(&CookieManager::RemoveSessionCookieAsyncHelper,
+void CookieManager::RemoveSessionCookies(
+    scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
+  BoolCallback callback =
+      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+  ExecCookieTask(base::Bind(&CookieManager::RemoveSessionCookiesHelper,
+                            base::Unretained(this),
+                            callback));
+}
+
+void CookieManager::RemoveSessionCookiesSync() {
+  ExecCookieTaskSync(base::Bind(&CookieManager::RemoveSessionCookiesHelper,
                             base::Unretained(this)));
 }
 
-void CookieManager::RemoveSessionCookieAsyncHelper(
-    base::WaitableEvent* completion) {
+void CookieManager::RemoveSessionCookiesHelper(
+    BoolCallback callback) {
   cookie_monster_->DeleteSessionCookiesAsync(
       base::Bind(&CookieManager::RemoveCookiesCompleted,
                  base::Unretained(this),
-                 completion));
+                 callback));
 }
 
-void CookieManager::RemoveCookiesCompleted(base::WaitableEvent* completion,
-                                           int num_deleted) {
-  // The CookieManager API does not return a value for removeSessionCookie or
-  // removeAllCookie, so we don't need to propagate the |num_deleted| value back
-  // to the caller.
-  completion->Signal();
+void CookieManager::RemoveCookiesCompleted(
+    BoolCallback callback,
+    int num_deleted) {
+  callback.Run(num_deleted > 0);
 }
 
-void CookieManager::RemoveAllCookie() {
-  ExecCookieTask(base::Bind(&CookieManager::RemoveAllCookieAsyncHelper,
+void CookieManager::RemoveAllCookies(
+    scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
+  BoolCallback callback =
+      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+  ExecCookieTask(base::Bind(&CookieManager::RemoveAllCookiesHelper,
+                            base::Unretained(this),
+                            callback));
+}
+
+void CookieManager::RemoveAllCookiesSync() {
+  ExecCookieTaskSync(base::Bind(&CookieManager::RemoveAllCookiesHelper,
                             base::Unretained(this)));
 }
 
-void CookieManager::RemoveAllCookieAsyncHelper(
-    base::WaitableEvent* completion) {
+void CookieManager::RemoveAllCookiesHelper(
+    const BoolCallback callback) {
   cookie_monster_->DeleteAllAsync(
       base::Bind(&CookieManager::RemoveCookiesCompleted,
                  base::Unretained(this),
-                 completion));
+                 callback));
 }
 
-void CookieManager::RemoveExpiredCookie() {
+void CookieManager::RemoveExpiredCookies() {
   // HasCookies will call GetAllCookiesAsync, which in turn will force a GC.
   HasCookies();
 }
 
-void CookieManager::FlushCookieStoreAsyncHelper(
-    base::WaitableEvent* completion) {
-  cookie_monster_->FlushStore(base::Bind(&base::WaitableEvent::Signal,
-                                         base::Unretained(completion)));
+void CookieManager::FlushCookieStore() {
+  ExecCookieTaskSync(base::Bind(&CookieManager::FlushCookieStoreAsyncHelper,
+                            base::Unretained(this)));
 }
 
-void CookieManager::FlushCookieStore() {
-  ExecCookieTask(base::Bind(&CookieManager::FlushCookieStoreAsyncHelper,
-                            base::Unretained(this)));
+void CookieManager::FlushCookieStoreAsyncHelper(
+    base::Closure complete) {
+  cookie_monster_->FlushStore(complete);
 }
 
 bool CookieManager::HasCookies() {
   bool has_cookies;
-  ExecCookieTask(base::Bind(&CookieManager::HasCookiesAsyncHelper,
+  ExecCookieTaskSync(base::Bind(&CookieManager::HasCookiesAsyncHelper,
                             base::Unretained(this),
                             &has_cookies));
   return has_cookies;
@@ -406,19 +513,19 @@ bool CookieManager::HasCookies() {
 // TODO(kristianm): Simplify this, copying the entire list around
 // should not be needed.
 void CookieManager::HasCookiesAsyncHelper(bool* result,
-                                  base::WaitableEvent* completion) {
+                                          base::Closure complete) {
   cookie_monster_->GetAllCookiesAsync(
       base::Bind(&CookieManager::HasCookiesCompleted,
                  base::Unretained(this),
-                 completion,
+                 complete,
                  result));
 }
 
-void CookieManager::HasCookiesCompleted(base::WaitableEvent* completion,
+void CookieManager::HasCookiesCompleted(base::Closure complete,
                                         bool* result,
                                         const CookieList& cookies) {
   *result = cookies.size() != 0;
-  completion->Signal();
+  complete.Run();
 }
 
 bool CookieManager::AllowFileSchemeCookies() {
@@ -467,11 +574,26 @@ static jboolean AcceptThirdPartyCookie(JNIEnv* env, jobject obj) {
   return CookieManager::GetInstance()->AcceptThirdPartyCookie();
 }
 
-static void SetCookie(JNIEnv* env, jobject obj, jstring url, jstring value) {
+static void SetCookie(JNIEnv* env,
+                      jobject obj,
+                      jstring url,
+                      jstring value,
+                      jobject java_callback) {
+  GURL host(ConvertJavaStringToUTF16(env, url));
+  std::string cookie_value(ConvertJavaStringToUTF8(env, value));
+  scoped_ptr<BoolCookieCallbackHolder> callback(
+      new BoolCookieCallbackHolder(env, java_callback));
+  CookieManager::GetInstance()->SetCookie(host, cookie_value, callback.Pass());
+}
+
+static void SetCookieSync(JNIEnv* env,
+                      jobject obj,
+                      jstring url,
+                      jstring value) {
   GURL host(ConvertJavaStringToUTF16(env, url));
   std::string cookie_value(ConvertJavaStringToUTF8(env, value));
 
-  CookieManager::GetInstance()->SetCookie(host, cookie_value);
+  CookieManager::GetInstance()->SetCookieSync(host, cookie_value);
 }
 
 static jstring GetCookie(JNIEnv* env, jobject obj, jstring url) {
@@ -482,16 +604,30 @@ static jstring GetCookie(JNIEnv* env, jobject obj, jstring url) {
       CookieManager::GetInstance()->GetCookie(host)).Release();
 }
 
-static void RemoveSessionCookie(JNIEnv* env, jobject obj) {
-  CookieManager::GetInstance()->RemoveSessionCookie();
+static void RemoveSessionCookies(JNIEnv* env,
+                                jobject obj,
+                                jobject java_callback) {
+  scoped_ptr<BoolCookieCallbackHolder> callback(
+      new BoolCookieCallbackHolder(env, java_callback));
+  CookieManager::GetInstance()->RemoveSessionCookies(callback.Pass());
 }
 
-static void RemoveAllCookie(JNIEnv* env, jobject obj) {
-  CookieManager::GetInstance()->RemoveAllCookie();
+static void RemoveSessionCookiesSync(JNIEnv* env, jobject obj) {
+    CookieManager::GetInstance()->RemoveSessionCookiesSync();
 }
 
-static void RemoveExpiredCookie(JNIEnv* env, jobject obj) {
-  CookieManager::GetInstance()->RemoveExpiredCookie();
+static void RemoveAllCookies(JNIEnv* env, jobject obj, jobject java_callback) {
+  scoped_ptr<BoolCookieCallbackHolder> callback(
+      new BoolCookieCallbackHolder(env, java_callback));
+  CookieManager::GetInstance()->RemoveAllCookies(callback.Pass());
+}
+
+static void RemoveAllCookiesSync(JNIEnv* env, jobject obj) {
+  CookieManager::GetInstance()->RemoveAllCookiesSync();
+}
+
+static void RemoveExpiredCookies(JNIEnv* env, jobject obj) {
+  CookieManager::GetInstance()->RemoveExpiredCookies();
 }
 
 static void FlushCookieStore(JNIEnv* env, jobject obj) {

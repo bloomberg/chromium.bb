@@ -6,11 +6,13 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.ContentMain;
 import org.chromium.net.test.util.TestWebServer;
@@ -64,10 +66,11 @@ public class CookieManagerStartupTest extends AwTestBase {
             String path = "/cookie_test.html";
             String url = webServer.setResponse(path, CommonResources.ABOUT_HTML, null);
 
+            CookieUtils.clearCookies(this, mCookieManager);
+
             mCookieManager.setAcceptCookie(true);
-            mCookieManager.removeAllCookie();
             assertTrue(mCookieManager.acceptCookie());
-            assertFalse(mCookieManager.hasCookies());
+
             mCookieManager.setCookie(url, "count=41");
 
             startChromium();
@@ -83,4 +86,23 @@ public class CookieManagerStartupTest extends AwTestBase {
         }
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAllowFileSchemeCookies() throws Throwable {
+        assertFalse(mCookieManager.allowFileSchemeCookies());
+        mCookieManager.setAcceptFileSchemeCookies(true);
+        assertTrue(mCookieManager.allowFileSchemeCookies());
+        mCookieManager.setAcceptFileSchemeCookies(false);
+        assertFalse(mCookieManager.allowFileSchemeCookies());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAllowCookies() throws Throwable {
+        assertTrue(mCookieManager.acceptCookie());
+        mCookieManager.setAcceptCookie(false);
+        assertFalse(mCookieManager.acceptCookie());
+        mCookieManager.setAcceptCookie(true);
+        assertTrue(mCookieManager.acceptCookie());
+    }
 }
