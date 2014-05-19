@@ -259,6 +259,8 @@
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_EXCEL_WHITE" file="cros/file_types/excel_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER" file="cros/file_types/folder.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER_WHITE" file="cros/file_types/folder_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER_SHARED" file="cros/file_types/folder_shared.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER_SHARED_WHITE" file="cros/file_types/folder_shared_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_FORM" file="cros/file_types/form.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_FORM_WHITE" file="cros/file_types/form_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GDOC" file="cros/file_types/gdoc.png" />
@@ -291,6 +293,7 @@
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_WORD_WHITE" file="cros/file_types/word_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_AUDIO" file="cros/file_types/thumbnails/audio.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_FOLDER" file="cros/file_types/thumbnails/folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_FOLDER_SHARED" file="cros/file_types/thumbnails/folder_shared.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_GENERIC" file="cros/file_types/thumbnails/generic.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_IMAGE" file="cros/file_types/thumbnails/image.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_VIDEO" file="cros/file_types/thumbnails/video.png" />
