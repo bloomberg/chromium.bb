@@ -137,7 +137,7 @@ bool PasswordGenerationPopupControllerImpl::PossiblyAcceptPassword() {
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
-  if (!display_password_)
+  if (!display_password_ || selected == password_selected_)
     return;
 
   password_selected_ = selected;
@@ -289,8 +289,7 @@ void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
     const gfx::Point& point) {
-  if (password_bounds_.Contains(point))
-    PasswordSelected(true);
+  PasswordSelected(password_bounds_.Contains(point));
 }
 
 bool PasswordGenerationPopupControllerImpl::AcceptSelectedLine() {
