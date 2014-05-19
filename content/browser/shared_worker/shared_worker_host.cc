@@ -31,14 +31,27 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
     host->delegate()->WorkerCrashed(host);
 }
 
-void NotifyWorkerScriptLoadedOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void NotifyWorkerContextStarted(int worker_process_id, int worker_route_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(
+            NotifyWorkerContextStarted, worker_process_id, worker_route_id));
+    return;
+  }
   EmbeddedWorkerDevToolsManager::GetInstance()->WorkerContextStarted(
       worker_process_id, worker_route_id);
 }
 
-void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(NotifyWorkerDestroyed, worker_process_id, worker_route_id));
+    return;
+  }
   EmbeddedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
       worker_process_id, worker_route_id);
 }
@@ -78,11 +91,8 @@ SharedWorkerHost::~SharedWorkerHost() {
                                          parent_iter->render_frame_id()));
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
+  if (!closed_)
+    NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
       worker_process_id_, worker_route_id_);
 }
@@ -154,6 +164,7 @@ void SharedWorkerHost::WorkerContextClosed() {
   // being sent to the worker (messages can still be sent from the worker,
   // for exception reporting, etc).
   closed_ = true;
+  NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
 }
 
 void SharedWorkerHost::WorkerContextDestroyed() {
@@ -166,11 +177,7 @@ void SharedWorkerHost::WorkerContextDestroyed() {
 void SharedWorkerHost::WorkerScriptLoaded() {
   UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoaded",
                       base::TimeTicks::Now() - creation_time_);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NotifyWorkerScriptLoadedOnUI, worker_process_id_, worker_route_id_));
+  NotifyWorkerContextStarted(worker_process_id_, worker_route_id_);
 }
 
 void SharedWorkerHost::WorkerScriptLoadFailed() {
