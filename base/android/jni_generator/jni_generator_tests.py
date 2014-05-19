@@ -1033,6 +1033,25 @@ class Foo {
     # Ensure it's fine with the import.
     generate('import java.lang.Runnable;')
 
+  def testJNIAdditionalImport(self):
+    test_data = """
+    package org.chromium.foo;
+
+    @JNIAdditionalImport(Bar.class)
+    class Foo {
+
+    @CalledByNative
+    private static void calledByNative(Bar.Callback callback) {
+    }
+
+    private static native void nativeDoSomething(Bar.Callback callback);
+    }
+    """
+    jni_from_java = jni_generator.JNIFromJavaSource(test_data,
+                                                    'org/chromium/foo/Foo',
+                                                    TestOptions())
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
 
 if __name__ == '__main__':
   unittest.main()

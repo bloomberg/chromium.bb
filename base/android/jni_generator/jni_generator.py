@@ -163,6 +163,9 @@ class JniParams(object):
 
   @staticmethod
   def ExtractImportsAndInnerClasses(contents):
+    if not JniParams._package:
+      raise RuntimeError('SetFullyQualifiedClass must be called before '
+                         'ExtractImportsAndInnerClasses')
     contents = contents.replace('\n', '')
     re_import = re.compile(r'import.*?(?P<class>\S*?);')
     for match in re.finditer(re_import, contents):
@@ -174,6 +177,19 @@ class JniParams(object):
       if not JniParams._fully_qualified_class.endswith(inner):
         JniParams._inner_classes += [JniParams._fully_qualified_class + '$' +
                                      inner]
+
+    re_additional_imports = re.compile(
+        r'@JNIAdditionalImport\((?P<class_name>\w+?)\.class\)')
+    for match in re.finditer(re_additional_imports, contents):
+      class_name = match.group('class_name')
+      if '.' in class_name:
+        raise SyntaxError('*.class cannot be used in @JNIAdditionalImport. '
+                          'Only import unqualified outer classes.' % class_name)
+      new_import = 'L%s/%s' % (JniParams._package, class_name)
+      if new_import in JniParams._imports:
+        raise SyntaxError('Do not use JNIAdditionalImport on an already '
+                          'imported class: %s' % (new_import.replace('/', '.')))
+      JniParams._imports += [new_import]
 
   @staticmethod
   def ParseJavaPSignature(signature_line):
