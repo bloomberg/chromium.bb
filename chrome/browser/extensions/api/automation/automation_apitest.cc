@@ -86,13 +86,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_TRUE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 }
 
-// TODO(dtseng): See crbug.com/360297.
-#if defined(OS_MACOSX)
-#define MAYBE_SanityCheck DISABLED_SanityCheck
-#else
-#define MAYBE_SanityCheck SanityCheck
-#endif  // defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_SanityCheck) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "sanity_check.html"))
       << message_;
