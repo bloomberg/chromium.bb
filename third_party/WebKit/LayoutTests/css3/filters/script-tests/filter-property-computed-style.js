@@ -141,7 +141,7 @@ testComputedFilterRule("Degrees float value converts to integer",
 testComputedFilterRule("Radians value",
                        "hue-rotate(10rad)", 1,
                        ["WebKitCSSFilterValue.CSS_FILTER_HUE_ROTATE"],
-                       ["hue-rotate(572.9577951308232deg)"]);
+                       ["hue-rotate(572.957795130823deg)"]);
 
 testComputedFilterRule("Gradians value",
                        "hue-rotate(10grad)", 1,

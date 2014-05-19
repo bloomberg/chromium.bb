@@ -31,8 +31,8 @@
 #include "config.h"
 #include "platform/JSONValues.h"
 
-#include "wtf/DecimalNumber.h"
-#include "wtf/dtoa.h"
+#include "platform/Decimal.h"
+#include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -214,25 +214,11 @@ void JSONBasicValue::writeJSON(StringBuilder* output) const
         else
             output->append(falseString, 5);
     } else if (type() == TypeNumber) {
-        NumberToLStringBuffer buffer;
         if (!std::isfinite(m_doubleValue)) {
             output->append(nullString, 4);
             return;
         }
-        DecimalNumber decimal = m_doubleValue;
-        unsigned length = 0;
-        if (decimal.bufferLengthForStringDecimal() > WTF::NumberToStringBufferLength) {
-            // Not enough room for decimal. Use exponential format.
-            if (decimal.bufferLengthForStringExponential() > WTF::NumberToStringBufferLength) {
-                // Fallback for an abnormal case if it's too little even for exponential.
-                output->append("NaN", 3);
-                return;
-            }
-            length = decimal.toStringExponential(buffer, WTF::NumberToStringBufferLength);
-        } else {
-            length = decimal.toStringDecimal(buffer, WTF::NumberToStringBufferLength);
-        }
-        output->append(buffer, length);
+        output->append(Decimal::fromDouble(m_doubleValue).toString());
     }
 }
 

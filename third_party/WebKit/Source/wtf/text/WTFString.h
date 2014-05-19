@@ -286,9 +286,10 @@ public:
 
     void append(const String&);
     void append(LChar);
-    void append(char c) { append(static_cast<LChar>(c)); };
+    void append(char c) { append(static_cast<LChar>(c)); }
     void append(UChar);
     void append(const LChar*, unsigned length);
+    void append(const char* charactersToAppend, unsigned length) { append(reinterpret_cast<const LChar*>(charactersToAppend), length); }
     void append(const UChar*, unsigned length);
     void insert(const String&, unsigned pos);
     void insert(const LChar*, unsigned length, unsigned pos);

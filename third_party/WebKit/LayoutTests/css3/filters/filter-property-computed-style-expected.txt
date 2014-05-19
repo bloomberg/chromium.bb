@@ -136,7 +136,7 @@ PASS subRule.cssText is 'hue-rotate(10deg)'
 Radians value : hue-rotate(10rad)
 PASS filterStyle.length is 1
 PASS subRule.operationType is WebKitCSSFilterValue.CSS_FILTER_HUE_ROTATE
-PASS subRule.cssText is 'hue-rotate(572.9577951308232deg)'
+PASS subRule.cssText is 'hue-rotate(572.957795130823deg)'
 
 Gradians value : hue-rotate(10grad)
 PASS filterStyle.length is 1

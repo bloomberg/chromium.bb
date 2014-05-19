@@ -34,7 +34,7 @@
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/DecimalNumber.h"
+#include "platform/Decimal.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -298,12 +298,9 @@ String MediaQueryExp::serialize() const
     return result.toString();
 }
 
-static String printNumber(double number)
+static inline String printNumber(double number)
 {
-    DecimalNumber decimal(number);
-    StringBuffer<LChar> buffer(decimal.bufferLengthForStringDecimal());
-    decimal.toStringDecimal(buffer.characters(), buffer.length());
-    return String::adopt(buffer);
+    return Decimal::fromDouble(number).toString();
 }
 
 String MediaQueryExpValue::cssText() const

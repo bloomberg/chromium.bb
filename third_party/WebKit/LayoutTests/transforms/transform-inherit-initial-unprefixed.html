@@ -38,8 +38,8 @@ e = document.getElementById('inherit');
 computedStyle = window.getComputedStyle(e, null);
 
 debug("Testing inherit.");
-shouldBe("computedStyle.transform", "'matrix(0.5000000000000001, 0.8660254037844386, -0.8660254037844386, 0.5000000000000001, 0, 0)'");
-shouldBe("computedStyle.webkitTransform", "'matrix(0.5000000000000001, 0.8660254037844386, -0.8660254037844386, 0.5000000000000001, 0, 0)'");
+shouldBe("computedStyle.transform", "'matrix(0.5, 0.866025403784439, -0.866025403784439, 0.5, 0, 0)'");
+shouldBe("computedStyle.webkitTransform", "'matrix(0.5, 0.866025403784439, -0.866025403784439, 0.5, 0, 0)'");
 shouldBe("computedStyle.transformOrigin", "'100px 0px'");
 shouldBe("computedStyle.webkitTransformOrigin", "'100px 0px'");
 shouldBe("computedStyle.transformStyle", "'preserve-3d'");

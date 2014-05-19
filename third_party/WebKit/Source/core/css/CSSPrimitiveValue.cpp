@@ -35,8 +35,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/Decimal.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/DecimalNumber.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
@@ -1040,16 +1040,10 @@ Pair* CSSPrimitiveValue::getPairValue(ExceptionState& exceptionState) const
 
 static String formatNumber(double number, const char* suffix, unsigned suffixLength)
 {
-    DecimalNumber decimal(number);
-
-    StringBuffer<LChar> buffer(decimal.bufferLengthForStringDecimal() + suffixLength);
-    unsigned length = decimal.toStringDecimal(buffer.characters(), buffer.length());
-    ASSERT(length + suffixLength == buffer.length());
-
-    for (unsigned i = 0; i < suffixLength; ++i)
-        buffer[length + i] = static_cast<LChar>(suffix[i]);
-
-    return String::adopt(buffer);
+    Decimal decimal = Decimal::fromDouble(number);
+    String result = decimal.toString();
+    result.append(suffix, suffixLength);
+    return result;
 }
 
 template <unsigned characterCount>

@@ -37,8 +37,6 @@
             'DataLog.h',
             'DateMath.cpp',
             'DateMath.h',
-            'DecimalNumber.cpp',
-            'DecimalNumber.h',
             'DefaultAllocator.cpp',
             'DefaultAllocator.h',
             'Deque.h',

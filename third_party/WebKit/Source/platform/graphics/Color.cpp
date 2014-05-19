@@ -26,10 +26,11 @@
 #include "config.h"
 #include "platform/graphics/Color.h"
 
+#include "platform/Decimal.h"
 #include "wtf/Assertions.h"
-#include "wtf/DecimalNumber.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MathExtras.h"
+#include "wtf/dtoa.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace std;
@@ -243,9 +244,7 @@ String Color::serialized() const
     if (!alpha())
         result.append('0');
     else {
-        NumberToLStringBuffer buffer;
-        unsigned length = DecimalNumber(alpha() / 255.0).toStringDecimal(buffer, WTF::NumberToStringBufferLength);
-        result.append(buffer, length);
+        result.append(Decimal::fromDouble(alpha() / 255.0).toString());
     }
 
     result.append(')');

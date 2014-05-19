@@ -94,7 +94,7 @@ TEST(MediaQuerySetTest, Basic)
         {"handheld and (min-width: 20em), \nscreen and (min-width: 20em)", "handheld and (min-width: 20em), screen and (min-width: 20em)", true},
         {"print and (min-resolution: 300dpi)", 0, true},
         {"print and (min-resolution: 118dpcm)", 0, true},
-        {"(resolution: 0.83333333333333333333dppx)", "(resolution: 0.8333333333333334dppx)", true},
+        {"(resolution: 0.83333333333333333333dppx)", "(resolution: 0.833333333333333dppx)", true},
         {"(resolution: 2.4dppx)", 0, true},
         {"all and(color)", "not all", true},
         {"all and (", "not all", true},
