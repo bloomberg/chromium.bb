@@ -54,7 +54,7 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
     skia::RefPtr<SkShader> shader = skia::AdoptRef(
         SkGradientShader::CreateLinear(
             gradient_points, gradient_colors, NULL, arraysize(gradient_points),
-            SkShader::kClamp_TileMode, NULL));
+            SkShader::kClamp_TileMode));
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
@@ -76,8 +76,7 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
       shader = skia::AdoptRef(
           SkGradientShader::CreateLinear(
               selected_gradient_points, selected_gradient_colors, NULL,
-              arraysize(selected_gradient_points),
-              SkShader::kClamp_TileMode, NULL));
+              arraysize(selected_gradient_points), SkShader::kClamp_TileMode));
       paint.setShader(shader.get());
       paint.setStyle(SkPaint::kFill_Style);
       canvas->sk_canvas()->drawCircle(radius, radius,

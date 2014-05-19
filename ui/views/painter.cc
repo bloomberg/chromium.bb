@@ -151,7 +151,7 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
     p[1].iset(0, size.height());
 
   skia::RefPtr<SkShader> s = skia::AdoptRef(SkGradientShader::CreateLinear(
-      p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode, NULL));
+      p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setShader(s.get());
 

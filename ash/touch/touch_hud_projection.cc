@@ -90,8 +90,7 @@ class TouchPointView : public views::View,
         gradient_colors_,
         gradient_pos_,
         arraysize(gradient_colors_),
-        SkShader::kMirror_TileMode,
-        NULL);
+        SkShader::kMirror_TileMode);
     fill_paint_.setShader(shader);
     shader->unref();
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),

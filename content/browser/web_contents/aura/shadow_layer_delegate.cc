@@ -42,7 +42,7 @@ void ShadowLayerDelegate::OnPaintLayer(gfx::Canvas* canvas) {
 
   skia::RefPtr<SkShader> shader = skia::AdoptRef(
       SkGradientShader::CreateLinear(points, kShadowColors, NULL,
-          arraysize(points), SkShader::kRepeat_TileMode, NULL));
+          arraysize(points), SkShader::kRepeat_TileMode));
 
   gfx::Rect paint_rect = gfx::Rect(0, 0, kShadowThick,
                                    layer_->bounds().height());

@@ -605,7 +605,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
   skia::RefPtr<SkShader> shader = skia::AdoptRef(
       SkGradientShader::CreateLinear(
-          gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode, NULL));
+          gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode));
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setShader(shader.get());
@@ -692,7 +692,7 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
 
   skia::RefPtr<SkShader> shader = skia::AdoptRef(
       SkGradientShader::CreateLinear(
-          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode, NULL));
+          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
   paint.setShader(shader.get());
