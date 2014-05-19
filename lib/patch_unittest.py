@@ -51,8 +51,8 @@ GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '2'
 
 
-class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
-  """Unittests for git patch related methods."""
+class GitRepoPatchTestCase(cros_test_lib.TempDirTestCase):
+  """Helper TestCase class for writing test cases."""
 
   # No mock bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
@@ -158,6 +158,31 @@ I am the first commit.
     git2 = self._MakeRepo('git2', self.source)
     patch = self.CommitFile(git1, 'monkeys', 'foon')
     return git1, git2, patch
+
+  def MakeChangeId(self, how_many=1):
+    l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
+    if how_many == 1:
+      return l[0]
+    return l
+
+  def CommitChangeIdFile(self, repo, changeid=None, extra=None,
+                         filename='monkeys', content='flinging',
+                         raw_changeid_text=None, **kwargs):
+    template = self.COMMIT_TEMPLATE
+    if changeid is None:
+      changeid = self.MakeChangeId()
+    if raw_changeid_text is None:
+      raw_changeid_text = 'Change-Id: %s' % (changeid,)
+    if extra is None:
+      extra = ''
+    commit = template % {'change-id': raw_changeid_text, 'extra':extra}
+
+    return self.CommitFile(repo, filename, content, commit=commit,
+                           ChangeId=changeid, **kwargs)
+
+
+class TestGitRepoPatch(GitRepoPatchTestCase):
+  """Unittests for git patch related methods."""
 
   def testGetDiffStatus(self):
     git1, _, patch1 = self._CommonGitSetup()
@@ -335,27 +360,6 @@ I am the first commit.
   def testInternalLookupAliases(self):
     self._assertLookupAliases(constants.INTERNAL_REMOTE)
 
-  def MakeChangeId(self, how_many=1):
-    l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
-    if how_many == 1:
-      return l[0]
-    return l
-
-  def CommitChangeIdFile(self, repo, changeid=None, extra=None,
-                         filename='monkeys', content='flinging',
-                         raw_changeid_text=None, **kwargs):
-    template = self.COMMIT_TEMPLATE
-    if changeid is None:
-      changeid = self.MakeChangeId()
-    if raw_changeid_text is None:
-      raw_changeid_text = 'Change-Id: %s' % (changeid,)
-    if extra is None:
-      extra = ''
-    commit = template % {'change-id': raw_changeid_text, 'extra':extra}
-
-    return self.CommitFile(repo, filename, content, commit=commit,
-                           ChangeId=changeid, **kwargs)
-
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
         repo, master_id, extra=extra,
@@ -434,14 +438,13 @@ I am the first commit.
                       git1, cid1, [], 'CQ_DEPEND=1')
 
 
-class TestLocalPatchGit(TestGitRepoPatch):
+class TestLocalPatchGit(GitRepoPatchTestCase):
   """Test Local patch handling."""
 
   patch_kls = cros_patch.LocalPatch
 
   def setUp(self):
     self.sourceroot = os.path.join(self.tempdir, 'sourceroot')
-
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     remote = kwargs.pop('remote', constants.EXTERNAL_REMOTE)
@@ -489,7 +492,7 @@ class TestLocalPatchGit(TestGitRepoPatch):
         self._run(base + ['refs/testing/test2'], git2))
 
 
-class TestUploadedLocalPatch(TestGitRepoPatch):
+class TestUploadedLocalPatch(GitRepoPatchTestCase):
   """Test uploading of local git patches."""
 
   PROJECT = 'chromiumos/chromite'
@@ -514,7 +517,7 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
                       msg="Couldn't find %s in %s" % (element, str_rep))
 
 
-class TestGerritPatch(TestGitRepoPatch):
+class TestGerritPatch(GitRepoPatchTestCase):
   """Test Gerrit patch handling."""
 
   has_native_change_id = True
