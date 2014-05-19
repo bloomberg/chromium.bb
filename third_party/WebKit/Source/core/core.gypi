@@ -675,8 +675,6 @@
             'animation/CompositorPendingAnimations.h',
             'animation/css/CSSPropertyEquality.cpp',
             'animation/css/CSSPropertyEquality.h',
-            'animation/css/TransitionTimeline.cpp',
-            'animation/css/TransitionTimeline.h',
             'clipboard/Clipboard.cpp',
             'clipboard/Clipboard.h',
             'clipboard/DataObject.cpp',

@@ -25,7 +25,6 @@ protected:
         , element(document->createElement("foo", ASSERT_NO_EXCEPTION))
     {
         document->animationClock().resetTimeForTesting();
-        document->timeline().setZeroTime(0);
         EXPECT_EQ(0, document->timeline().currentTime());
     }
 

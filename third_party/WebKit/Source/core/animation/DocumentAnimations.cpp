@@ -49,7 +49,6 @@ namespace {
 void updateAnimationTiming(Document& document, TimingUpdateReason reason)
 {
     document.timeline().serviceAnimations(reason);
-    document.transitionTimeline().serviceAnimations(reason);
 }
 
 } // namespace
@@ -82,7 +81,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
 
 bool DocumentAnimations::needsOutdatedAnimationPlayerUpdate(const Document& document)
 {
-    return document.timeline().hasOutdatedAnimationPlayer() || document.transitionTimeline().hasOutdatedAnimationPlayer();
+    return document.timeline().hasOutdatedAnimationPlayer();
 }
 
 void DocumentAnimations::startPendingAnimations(Document& document)

@@ -1030,7 +1030,6 @@ public:
 
     AnimationClock& animationClock() { return *m_animationClock; }
     DocumentTimeline& timeline() const { return *m_timeline; }
-    DocumentTimeline& transitionTimeline() const { return *m_transitionTimeline; }
     CompositorPendingAnimations& compositorPendingAnimations() { return m_compositorPendingAnimations; }
 
     void addToTopLayer(Element*, const Element* before = 0);
@@ -1377,7 +1376,6 @@ private:
 
     OwnPtr<AnimationClock> m_animationClock;
     RefPtrWillBeMember<DocumentTimeline> m_timeline;
-    RefPtrWillBeMember<DocumentTimeline> m_transitionTimeline;
     CompositorPendingAnimations m_compositorPendingAnimations;
 
     RefPtrWillBeMember<Document> m_templateDocument;

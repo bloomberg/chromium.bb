@@ -228,7 +228,7 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Elemen
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
     calculateAnimationActiveInterpolations(update.get(), element, parentElement.document().timeline().currentTimeInternal());
     calculateTransitionUpdate(update.get(), element, style);
-    calculateTransitionActiveInterpolations(update.get(), element, parentElement.document().transitionTimeline().currentTimeInternal());
+    calculateTransitionActiveInterpolations(update.get(), element, parentElement.document().timeline().currentTimeInternal());
     return update->isEmpty() ? nullptr : update.release();
 }
 
@@ -373,7 +373,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const std::pair<RefPtrWillBeMember<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
             RefPtrWillBeRawPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
-            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTimeInternal() - oldStartTime;
+            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().timeline().currentTimeInternal() - oldStartTime;
 
             AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(inertAnimation->effect());
             const KeyframeVector& frames = oldEffect->getFrames();
@@ -392,7 +392,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         }
 
         RefPtrWillBeRawPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
-        RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
+        RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(transition.get());
         element->document().compositorPendingAnimations().add(player.get());
         player->update(TimingUpdateOnDemand);
         runningTransition.player = player;

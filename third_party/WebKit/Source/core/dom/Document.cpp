@@ -45,7 +45,6 @@
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/animation/css/TransitionTimeline.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -478,7 +477,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 #endif
     , m_animationClock(AnimationClock::create())
     , m_timeline(DocumentTimeline::create(this))
-    , m_transitionTimeline(TransitionTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_hasViewportUnits(false)
@@ -573,7 +571,6 @@ Document::~Document()
 
 #if !ENABLE(OILPAN)
     m_timeline->detachFromDocument();
-    m_transitionTimeline->detachFromDocument();
 
     // We need to destroy CSSFontSelector before destroying m_fetcher.
     if (m_styleEngine)
@@ -1126,7 +1123,6 @@ void Document::setReadyState(ReadyState readyState)
     case Loading:
         if (!m_documentTiming.domLoading) {
             m_documentTiming.domLoading = monotonicallyIncreasingTime();
-            m_timeline->setZeroTime(m_documentTiming.domLoading);
         }
         break;
     case Interactive:
@@ -1864,7 +1860,6 @@ void Document::updateRenderTree(StyleRecalcChange change)
 #endif
 
     ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
-    ASSERT(!m_transitionTimeline->hasOutdatedAnimationPlayer());
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
@@ -5728,7 +5723,6 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_userActionElements);
     visitor->trace(m_svgExtensions);
     visitor->trace(m_timeline);
-    visitor->trace(m_transitionTimeline);
     visitor->trace(m_compositorPendingAnimations);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);

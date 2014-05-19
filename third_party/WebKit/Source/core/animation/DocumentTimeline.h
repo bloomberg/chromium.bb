@@ -77,12 +77,8 @@ public:
     }
 #endif
 
-    // Called from setReadyState() in Document.cpp to set m_zeroTime to
-    // performance.timing.domInteractive
-    void setZeroTime(double);
-    bool hasStarted() const { return !isNull(m_zeroTime); }
     bool hasPendingUpdates() const { return !m_playersNeedingUpdate.isEmpty(); }
-    double zeroTime() const { return m_zeroTime; }
+    double zeroTime() const { return 0; }
     double currentTime(bool& isNull);
     double currentTime();
     double currentTimeInternal(bool& isNull);
@@ -106,7 +102,6 @@ protected:
     DocumentTimeline(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming>);
 
 private:
-    double m_zeroTime;
     RawPtrWillBeMember<Document> m_document;
     // AnimationPlayers which will be updated on the next frame
     // i.e. current, in effect, or had timing changed

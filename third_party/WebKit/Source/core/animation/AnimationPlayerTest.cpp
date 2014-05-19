@@ -64,7 +64,6 @@ protected:
 
     void startTimeline()
     {
-        timeline->setZeroTime(0);
         updateTimeline(0);
     }
 
@@ -93,7 +92,6 @@ TEST_F(AnimationAnimationPlayerTest, InitialState)
 {
     setUpWithoutStartingTimeline();
     player = timeline->createAnimationPlayer(0);
-    EXPECT_TRUE(isNull(timeline->currentTimeInternal()));
     EXPECT_EQ(0, player->currentTimeInternal());
     EXPECT_FALSE(player->paused());
     EXPECT_EQ(1, player->playbackRate());

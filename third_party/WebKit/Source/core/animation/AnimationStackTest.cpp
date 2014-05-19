@@ -21,7 +21,6 @@ protected:
         document = Document::create();
         document->animationClock().resetTimeForTesting();
         timeline = DocumentTimeline::create(document.get());
-        timeline->setZeroTime(0);
         element = document->createElement("foo", ASSERT_NO_EXCEPTION);
     }
 

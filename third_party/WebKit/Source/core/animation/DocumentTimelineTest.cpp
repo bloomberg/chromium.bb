@@ -93,7 +93,6 @@ protected:
         element = Element::create(nullQName() , document.get());
         platformTiming = new MockPlatformTiming;
         timeline = DocumentTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
-        timeline->setZeroTime(0);
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
@@ -130,9 +129,6 @@ protected:
 TEST_F(AnimationDocumentTimelineTest, HasStarted)
 {
     timeline = DocumentTimeline::create(document.get());
-    EXPECT_FALSE(timeline->hasStarted());
-    timeline->setZeroTime(0);
-    EXPECT_TRUE(timeline->hasStarted());
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
@@ -176,21 +172,14 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime)
     bool isNull;
 
     document->animationClock().updateTime(100);
-    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal()));
-    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal(isNull)));
-    EXPECT_TRUE(isNull);
-
-    document->animationClock().updateTime(200);
-    EXPECT_TRUE(std::isnan(timeline->currentTimeInternal()));
-
-    timeline->setZeroTime(300);
-    document->animationClock().updateTime(300);
-    EXPECT_EQ(0, timeline->currentTimeInternal());
-    EXPECT_EQ(0, timeline->currentTimeInternal(isNull));
+    EXPECT_EQ(100, timeline->currentTimeInternal());
+    EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
-    document->animationClock().updateTime(400);
-    EXPECT_EQ(100, timeline->currentTimeInternal());
+    document->animationClock().updateTime(200);
+    EXPECT_EQ(200, timeline->currentTimeInternal());
+    EXPECT_EQ(200, timeline->currentTimeInternal(isNull));
+    EXPECT_FALSE(isNull);
 }
 
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting)

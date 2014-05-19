@@ -51,8 +51,7 @@ PassRefPtrWillBeRawPtr<DocumentTimeline> DocumentTimeline::create(Document* docu
 }
 
 DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
-    : m_zeroTime(nullValue())
-    , m_document(document)
+    : m_document(document)
 {
     if (!timing)
         m_timing = adoptPtrWillBeNoop(new DocumentTimelineTiming(this));
@@ -123,14 +122,6 @@ void DocumentTimeline::serviceAnimations(TimingUpdateReason reason)
     ASSERT(!hasOutdatedAnimationPlayer());
 }
 
-void DocumentTimeline::setZeroTime(double zeroTime)
-{
-    ASSERT(isNull(m_zeroTime));
-    m_zeroTime = zeroTime;
-    ASSERT(!isNull(m_zeroTime));
-    serviceAnimations(TimingUpdateOnDemand);
-}
-
 void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
 {
     m_timer.startOneShot(duration, FROM_HERE);
@@ -164,7 +155,7 @@ double DocumentTimeline::currentTimeInternal(bool& isNull)
         isNull = true;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    double result = m_document->animationClock().currentTime() - m_zeroTime;
+    double result = m_document->animationClock().currentTime() - zeroTime();
     isNull = std::isnan(result);
     return result;
 }
@@ -214,8 +205,6 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 {
     // Includes all players whose directly associated timed items
     // are current or in effect.
-    if (isNull(m_zeroTime))
-        return 0;
     size_t count = 0;
     for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
         const TimedItem* timedItem = (*it)->source();
