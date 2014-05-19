@@ -672,6 +672,7 @@ void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
 
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape_) {
+    widget()->SetShape(new SkRegion(*shape_));
     native_window->layer()->SetAlphaShape(
         make_scoped_ptr(new SkRegion(*shape_)));
     if (!had_shape) {
