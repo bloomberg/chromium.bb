@@ -58,6 +58,18 @@
     "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
   },
   {
+    "test": "ash_unittests",
+    "chromium_configs": ["chromium_chromeos"]
+  },
+  {
+    "test": "ash_unittests",
+    "platforms": ["win"]
+  },
+  {
+    "test": "aura_unittests",
+    "platforms": ["linux", "win"]
+  },
+  {
     "test": "mojo_view_manager_unittests",
     "platforms": ["linux"]
   },
