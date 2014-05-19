@@ -8,30 +8,22 @@
 
 #include "base/values.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/webui/web_ui_util.h"
 
 namespace extensions {
 
-IdentityPrivateGetResourcesFunction::IdentityPrivateGetResourcesFunction() {}
+IdentityPrivateGetStringsFunction::IdentityPrivateGetStringsFunction() {}
 
-IdentityPrivateGetResourcesFunction::~IdentityPrivateGetResourcesFunction() {}
+IdentityPrivateGetStringsFunction::~IdentityPrivateGetStringsFunction() {}
 
-bool IdentityPrivateGetResourcesFunction::RunSync() {
-  base::DictionaryValue* result = new base::DictionaryValue;
+bool IdentityPrivateGetStringsFunction::RunSync() {
+  base::DictionaryValue* dict = new base::DictionaryValue;
+  SetResult(dict);
 
-  result->SetString("IDR_CLOSE_DIALOG",
-                    webui::GetBitmapDataUrlFromResource(IDR_CLOSE_DIALOG));
-  result->SetString("IDR_CLOSE_DIALOG_H",
-                    webui::GetBitmapDataUrlFromResource(IDR_CLOSE_DIALOG_H));
-  result->SetString("IDR_CLOSE_DIALOG_P",
-                    webui::GetBitmapDataUrlFromResource(IDR_CLOSE_DIALOG_P));
-  result->SetString(
-      "IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE",
+  dict->SetString(
+      "window-title",
       l10n_util::GetStringUTF16(IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE));
 
-  SetResult(result);
   return true;
 }
 

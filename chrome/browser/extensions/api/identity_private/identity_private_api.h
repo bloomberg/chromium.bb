@@ -9,20 +9,20 @@
 
 namespace extensions {
 
-class IdentityPrivateGetResourcesFunction : public SyncExtensionFunction {
+class IdentityPrivateGetStringsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("identityPrivate.getResources",
-                             IDENTITYPRIVATE_GETRESOURCES);
-  IdentityPrivateGetResourcesFunction();
+  DECLARE_EXTENSION_FUNCTION("identityPrivate.getStrings",
+                             IDENTITYPRIVATE_GETSTRINGS);
+  IdentityPrivateGetStringsFunction();
 
  protected:
-  virtual ~IdentityPrivateGetResourcesFunction();
+  virtual ~IdentityPrivateGetStringsFunction();
 
   // ExtensionFunction:
   virtual bool RunSync() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IdentityPrivateGetResourcesFunction);
+  DISALLOW_COPY_AND_ASSIGN(IdentityPrivateGetStringsFunction);
 };
 
 }  // namespace extensions

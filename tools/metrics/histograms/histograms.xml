@@ -34384,7 +34384,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="467" label="RUNTIME_GETPLATFORMINFO"/>
   <int value="468" label="WEBVIEW_INSERTCSS"/>
   <int value="469" label="METRICSPRIVATE_GETISCRASHRECORDINGENABLED"/>
-  <int value="470" label="IDENTITYPRIVATE_GETRESOURCES"/>
+  <int value="470" label="IDENTITYPRIVATE_GETSTRINGS"/>
   <int value="471" label="NOTIFICATIONS_GET_ALL"/>
   <int value="472" label="USB_LISTINTERFACES"/>
   <int value="473" label="FILESYSTEM_RETAINENTRY"/>

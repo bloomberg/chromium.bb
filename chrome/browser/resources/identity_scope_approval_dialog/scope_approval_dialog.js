@@ -47,19 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.close();
   };
 
-  chrome.identityPrivate.getResources(function(resources) {
-    var style = document.styleSheets[0];
-
-    function insertRule(selector, url) {
-      style.insertRule(selector + ' { background-image: url(' + url + '); }',
-                       style.cssRules.length);
-    }
-
-    insertRule('.titlebar-close-button', resources.IDR_CLOSE_DIALOG);
-    insertRule('.titlebar-close-button:hover', resources.IDR_CLOSE_DIALOG_H);
-    insertRule('.titlebar-close-button:active', resources.IDR_CLOSE_DIALOG_P);
-
-    document.title = resources.IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE;
+  chrome.identityPrivate.getStrings(function(strings) {
+    document.title = strings['window-title'];
   });
 });
 
