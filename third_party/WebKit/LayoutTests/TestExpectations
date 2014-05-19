@@ -711,6 +711,8 @@ crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFai
 
 crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 
+crbug.com/350840 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ NeedsRebaseline ]
+
 crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
 
 crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]

@@ -3077,23 +3077,6 @@ bool RenderObject::hasBlendMode() const
     return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasBlendMode();
 }
 
-static Color decorationColor(const RenderObject* object, RenderStyle* style)
-{
-    // Check for text decoration color first.
-    StyleColor result = style->visitedDependentDecorationColor();
-    if (!result.isCurrentColor())
-        return result.color();
-
-    if (style->textStrokeWidth() > 0) {
-        // Prefer stroke color if possible but not if it's fully transparent.
-        Color textStrokeColor = object->resolveColor(style, CSSPropertyWebkitTextStrokeColor);
-        if (textStrokeColor.alpha())
-            return textStrokeColor;
-    }
-
-    return object->resolveColor(style, CSSPropertyWebkitTextFillColor);
-}
-
 void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     RenderObject* curr = this;
@@ -3105,7 +3088,7 @@ void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
         styleToUse = curr->style(firstlineStyle);
         currDecs = styleToUse->textDecoration();
         currDecs &= decorations;
-        resultColor = decorationColor(this, styleToUse);
+        resultColor = styleToUse->visitedDependentDecorationColor();
         resultStyle = styleToUse->textDecorationStyle();
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
@@ -3135,7 +3118,7 @@ void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
     if (decorations && curr) {
         styleToUse = curr->style(firstlineStyle);
-        resultColor = decorationColor(this, styleToUse);
+        resultColor = styleToUse->visitedDependentDecorationColor();
         if (decorations & TextDecorationUnderline) {
             underline.color = resultColor;
             underline.style = resultStyle;

@@ -1512,7 +1512,8 @@ public:
     bool lastChildState() const { return noninherited_flags.lastChildState; }
     void setLastChildState() { setUnique(); noninherited_flags.lastChildState = true; }
 
-    StyleColor visitedDependentDecorationColor() const;
+    StyleColor visitedDependentDecorationStyleColor() const;
+    Color visitedDependentDecorationColor() const;
     Color visitedDependentColor(int colorProperty) const;
 
     void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }

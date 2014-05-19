@@ -1270,20 +1270,25 @@ void RenderStyle::applyTextDecorations()
     if (textDecoration() == TextDecorationNone)
         return;
 
+    TextDecorationStyle style = textDecorationStyle();
+    StyleColor styleColor = visitedDependentDecorationStyleColor();
+
     int decorations = textDecoration();
 
     if (decorations & TextDecorationUnderline) {
         // To save memory, we don't use AppliedTextDecoration objects in the
-        // common case of a single underline.
-        if (!rareInheritedData->appliedTextDecorations)
+        // common case of a single simple underline.
+        AppliedTextDecoration underline(TextDecorationUnderline, style, styleColor);
+
+        if (!rareInheritedData->appliedTextDecorations && underline.isSimpleUnderline())
             inherited_flags.m_textUnderline = true;
         else
-            addAppliedTextDecoration(AppliedTextDecoration(TextDecorationUnderline));
+            addAppliedTextDecoration(underline);
     }
     if (decorations & TextDecorationOverline)
-        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationOverline));
+        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationOverline, style, styleColor));
     if (decorations & TextDecorationLineThrough)
-        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationLineThrough));
+        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationLineThrough, style, styleColor));
 }
 
 void RenderStyle::clearAppliedTextDecorations()
@@ -1371,10 +1376,29 @@ void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUn
     }
 }
 
-StyleColor RenderStyle::visitedDependentDecorationColor() const
+StyleColor RenderStyle::visitedDependentDecorationStyleColor() const
 {
-    // Text decoration color fallback is handled in RenderObject::decorationColor.
-    return insideLink() == InsideVisitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
+    bool isVisited = insideLink() == InsideVisitedLink;
+
+    StyleColor styleColor = isVisited ? visitedLinkTextDecorationColor() : textDecorationColor();
+
+    if (!styleColor.isCurrentColor())
+        return styleColor;
+
+    if (textStrokeWidth()) {
+        // Prefer stroke color if possible, but not if it's fully transparent.
+        StyleColor textStrokeStyleColor = isVisited ? visitedLinkTextStrokeColor() : textStrokeColor();
+        if (!textStrokeStyleColor.isCurrentColor() && textStrokeStyleColor.color().alpha())
+            return textStrokeStyleColor;
+    }
+
+    return isVisited ? visitedLinkTextFillColor() : textFillColor();
+}
+
+Color RenderStyle::visitedDependentDecorationColor() const
+{
+    bool isVisited = insideLink() == InsideVisitedLink;
+    return visitedDependentDecorationStyleColor().resolve(isVisited ? visitedLinkColor() : color());
 }
 
 Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
