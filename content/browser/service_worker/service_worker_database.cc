@@ -211,16 +211,16 @@ bool ParseResourceRecord(const std::string& serialized,
   return true;
 }
 
-ServiceWorkerStatusCode LevelDBStatusToServiceWorkerStatusCode(
+ServiceWorkerDatabase::Status LevelDBStatusToStatus(
     const leveldb::Status& status) {
   if (status.ok())
-    return SERVICE_WORKER_OK;
+    return ServiceWorkerDatabase::STATUS_OK;
   else if (status.IsNotFound())
-    return SERVICE_WORKER_ERROR_NOT_FOUND;
+    return ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND;
   else if (status.IsCorruption())
-    return SERVICE_WORKER_ERROR_DB_CORRUPTED;
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
   else
-    return SERVICE_WORKER_ERROR_FAILED;
+    return ServiceWorkerDatabase::STATUS_ERROR_FAILED;
 }
 
 }  // namespace
@@ -251,7 +251,7 @@ ServiceWorkerDatabase::~ServiceWorkerDatabase() {
   db_.reset();
 }
 
-ServiceWorkerStatusCode ServiceWorkerDatabase::GetNextAvailableIds(
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetNextAvailableIds(
     int64* next_avail_registration_id,
     int64* next_avail_version_id,
     int64* next_avail_resource_id) {
@@ -260,52 +260,49 @@ ServiceWorkerStatusCode ServiceWorkerDatabase::GetNextAvailableIds(
   DCHECK(next_avail_version_id);
   DCHECK(next_avail_resource_id);
 
-  if (!LazyOpen(false)) {
-    if (is_disabled_)
-      return SERVICE_WORKER_ERROR_FAILED;
-    // Database has never been used.
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status)) {
     *next_avail_registration_id = 0;
     *next_avail_version_id = 0;
     *next_avail_resource_id = 0;
-    return SERVICE_WORKER_OK;
+    return STATUS_OK;
   }
+  if (status != STATUS_OK)
+    return status;
 
-  ServiceWorkerStatusCode status =
-      ReadNextAvailableId(kNextRegIdKey, &next_avail_registration_id_);
-  if (status != SERVICE_WORKER_OK)
+  status = ReadNextAvailableId(kNextRegIdKey, &next_avail_registration_id_);
+  if (status != STATUS_OK)
     return status;
   status = ReadNextAvailableId(kNextVerIdKey, &next_avail_version_id_);
-  if (status != SERVICE_WORKER_OK)
+  if (status != STATUS_OK)
     return status;
   status = ReadNextAvailableId(kNextResIdKey, &next_avail_resource_id_);
-  if (status != SERVICE_WORKER_OK)
+  if (status != STATUS_OK)
     return status;
 
   *next_avail_registration_id = next_avail_registration_id_;
   *next_avail_version_id = next_avail_version_id_;
   *next_avail_resource_id = next_avail_resource_id_;
-  return SERVICE_WORKER_OK;
+  return STATUS_OK;
 }
 
-ServiceWorkerStatusCode ServiceWorkerDatabase::GetOriginsWithRegistrations(
-    std::set<GURL>* origins) {
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  DCHECK(origins);
+  DCHECK(origins->empty());
 
-  if (!LazyOpen(false)) {
-    if (is_disabled_)
-      return SERVICE_WORKER_ERROR_FAILED;
-    // Database has never been used.
-    origins->clear();
-    return SERVICE_WORKER_OK;
-  }
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kUniqueOriginKey); itr->Valid(); itr->Next()) {
     if (!itr->status().ok()) {
       HandleError(FROM_HERE, itr->status());
       origins->clear();
-      return LevelDBStatusToServiceWorkerStatusCode(itr->status());
+      return LevelDBStatusToStatus(itr->status());
     }
 
     std::string origin;
@@ -313,22 +310,20 @@ ServiceWorkerStatusCode ServiceWorkerDatabase::GetOriginsWithRegistrations(
       break;
     origins->insert(GURL(origin));
   }
-  return SERVICE_WORKER_OK;
+  return STATUS_OK;
 }
 
-bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     const GURL& origin,
     std::vector<RegistrationData>* registrations) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  DCHECK(registrations);
+  DCHECK(registrations->empty());
 
-  if (!LazyOpen(false)) {
-    if (is_disabled_)
-      return false;
-    // Database has never been used.
-    registrations->clear();
-    return true;
-  }
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
 
   // Create a key prefix for registrations.
   std::string prefix = base::StringPrintf(
@@ -339,7 +334,7 @@ bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
     if (!itr->status().ok()) {
       HandleError(FROM_HERE, itr->status());
       registrations->clear();
-      return false;
+      return LevelDBStatusToStatus(itr->status());
     }
 
     if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
@@ -349,32 +344,30 @@ bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
     if (!ParseRegistrationData(itr->value().ToString(), &registration)) {
       HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
       registrations->clear();
-      return false;
+      return STATUS_ERROR_CORRUPTED;
     }
     registrations->push_back(registration);
   }
-  return true;
+  return STATUS_OK;
 }
 
-bool ServiceWorkerDatabase::GetAllRegistrations(
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
     std::vector<RegistrationData>* registrations) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  DCHECK(registrations);
+  DCHECK(registrations->empty());
 
-  if (!LazyOpen(false)) {
-    if (is_disabled_)
-      return false;
-    // Database has never been used.
-    registrations->clear();
-    return true;
-  }
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
     if (!itr->status().ok()) {
       HandleError(FROM_HERE, itr->status());
       registrations->clear();
-      return false;
+      return LevelDBStatusToStatus(itr->status());
     }
 
     if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, NULL))
@@ -384,11 +377,11 @@ bool ServiceWorkerDatabase::GetAllRegistrations(
     if (!ParseRegistrationData(itr->value().ToString(), &registration)) {
       HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
       registrations->clear();
-      return false;
+      return STATUS_ERROR_CORRUPTED;
     }
     registrations->push_back(registration);
   }
-  return true;
+  return STATUS_OK;
 }
 
 bool ServiceWorkerDatabase::ReadRegistration(
@@ -400,7 +393,8 @@ bool ServiceWorkerDatabase::ReadRegistration(
   DCHECK(registration);
   DCHECK(resources);
 
-  if (!LazyOpen(false) || is_disabled_)
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
     return false;
 
   RegistrationData value;
@@ -418,7 +412,7 @@ bool ServiceWorkerDatabase::WriteRegistration(
     const RegistrationData& registration,
     const std::vector<ResourceRecord>& resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (!LazyOpen(true) || is_disabled_)
+  if (LazyOpen(true) != STATUS_OK)
     return false;
 
   leveldb::WriteBatch batch;
@@ -474,7 +468,8 @@ bool ServiceWorkerDatabase::WriteRegistration(
 bool ServiceWorkerDatabase::UpdateVersionToActive(int64 registration_id,
                                                   const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (!LazyOpen(false) || is_disabled_)
+  ServiceWorkerDatabase::Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
     return false;
 
   RegistrationData registration;
@@ -492,7 +487,8 @@ bool ServiceWorkerDatabase::UpdateLastCheckTime(int64 registration_id,
                                                 const GURL& origin,
                                                 const base::Time& time) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (!LazyOpen(false) || is_disabled_)
+  ServiceWorkerDatabase::Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status) || status != STATUS_OK)
     return false;
 
   RegistrationData registration;
@@ -509,7 +505,10 @@ bool ServiceWorkerDatabase::UpdateLastCheckTime(int64 registration_id,
 bool ServiceWorkerDatabase::DeleteRegistration(int64 registration_id,
                                                const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (!LazyOpen(false) || is_disabled_)
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK || !origin.is_valid())
     return false;
 
   leveldb::WriteBatch batch;
@@ -518,7 +517,7 @@ bool ServiceWorkerDatabase::DeleteRegistration(int64 registration_id,
   // |registration_id| is the only one for |origin|.
   // TODO(nhiroki): Check the uniqueness by more efficient way.
   std::vector<RegistrationData> registrations;
-  if (!GetRegistrationsForOrigin(origin, &registrations))
+  if (GetRegistrationsForOrigin(origin, &registrations) != STATUS_OK)
     return false;
   if (registrations.size() == 1 &&
       registrations[0].registration_id == registration_id) {
@@ -571,7 +570,10 @@ bool ServiceWorkerDatabase::ClearPurgeableResourceIds(
 
 bool ServiceWorkerDatabase::DeleteAllDataForOrigin(const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (!LazyOpen(true) || is_disabled_ || !origin.is_valid())
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK || !origin.is_valid())
     return false;
 
   leveldb::WriteBatch batch;
@@ -580,7 +582,7 @@ bool ServiceWorkerDatabase::DeleteAllDataForOrigin(const GURL& origin) {
   batch.Delete(CreateUniqueOriginKey(origin));
 
   std::vector<RegistrationData> registrations;
-  if (!GetRegistrationsForOrigin(origin, &registrations))
+  if (GetRegistrationsForOrigin(origin, &registrations) != STATUS_OK)
     return false;
 
   // Delete registrations and resource records.
@@ -594,54 +596,66 @@ bool ServiceWorkerDatabase::DeleteAllDataForOrigin(const GURL& origin) {
   return WriteBatch(&batch);
 }
 
-bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
+    bool create_if_missing) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (IsOpen())
-    return true;
 
   // Do not try to open a database if we tried and failed once.
   if (is_disabled_)
-    return false;
+    return STATUS_ERROR_FAILED;
+  if (IsOpen())
+    return STATUS_OK;
 
   // When |path_| is empty, open a database in-memory.
   bool use_in_memory_db = path_.empty();
 
-  if (!create_if_needed) {
+  if (!create_if_missing) {
     // Avoid opening a database if it does not exist at the |path_|.
     if (use_in_memory_db ||
         !base::PathExists(path_) ||
         base::IsDirectoryEmpty(path_)) {
-      return false;
+      return STATUS_ERROR_NOT_FOUND;
     }
   }
 
   leveldb::Options options;
-  options.create_if_missing = create_if_needed;
+  options.create_if_missing = create_if_missing;
   if (use_in_memory_db) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();
   }
 
   leveldb::DB* db = NULL;
-  leveldb::Status status =
+  leveldb::Status db_status =
       leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db);
-  if (!status.ok()) {
+  if (!db_status.ok()) {
     DCHECK(!db);
     // TODO(nhiroki): Should we retry to open the database?
-    HandleError(FROM_HERE, status);
-    return false;
+    HandleError(FROM_HERE, db_status);
+    return LevelDBStatusToStatus(db_status);
   }
   db_.reset(db);
 
   int64 db_version;
-  if (!ReadDatabaseVersion(&db_version))
-    return false;
+  Status status = ReadDatabaseVersion(&db_version);
+  if (status != STATUS_OK)
+    return status;
+  DCHECK_LE(0, db_version);
   if (db_version > 0)
     is_initialized_ = true;
-  return true;
+  return STATUS_OK;
 }
 
-ServiceWorkerStatusCode ServiceWorkerDatabase::ReadNextAvailableId(
+bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
+    ServiceWorkerDatabase::Status status) {
+  if (status == STATUS_ERROR_NOT_FOUND)
+    return true;
+  if (status == STATUS_OK && !is_initialized_)
+    return true;
+  return false;
+}
+
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(
     const char* id_key,
     int64* next_avail_id) {
   DCHECK(id_key);
@@ -652,22 +666,22 @@ ServiceWorkerStatusCode ServiceWorkerDatabase::ReadNextAvailableId(
   if (status.IsNotFound()) {
     // Nobody has gotten the next resource id for |id_key|.
     *next_avail_id = 0;
-    return SERVICE_WORKER_OK;
+    return STATUS_OK;
   }
 
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    return LevelDBStatusToServiceWorkerStatusCode(status);
+    return LevelDBStatusToStatus(status);
   }
 
   int64 parsed;
   if (!base::StringToInt64(value, &parsed)) {
     HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
-    return SERVICE_WORKER_ERROR_DB_CORRUPTED;
+    return STATUS_ERROR_CORRUPTED;
   }
 
   *next_avail_id = parsed;
-  return SERVICE_WORKER_OK;
+  return STATUS_OK;
 }
 
 bool ServiceWorkerDatabase::ReadRegistrationData(
@@ -762,9 +776,12 @@ bool ServiceWorkerDatabase::ReadResourceIds(const char* id_key_prefix,
                                             std::set<int64>* ids) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(id_key_prefix);
-  DCHECK(ids);
+  DCHECK(ids->empty());
 
-  if (!LazyOpen(false) || is_disabled_)
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return true;
+  if (status != STATUS_OK)
     return false;
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
@@ -795,7 +812,7 @@ bool ServiceWorkerDatabase::WriteResourceIds(const char* id_key_prefix,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(id_key_prefix);
 
-  if (!LazyOpen(true) || is_disabled_)
+  if (LazyOpen(true) != STATUS_OK)
     return false;
   if (ids.empty())
     return true;
@@ -814,8 +831,12 @@ bool ServiceWorkerDatabase::DeleteResourceIds(const char* id_key_prefix,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(id_key_prefix);
 
-  if (!LazyOpen(true) || is_disabled_)
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return true;
+  if (status != STATUS_OK)
     return false;
+
   if (ids.empty())
     return true;
 
@@ -827,34 +848,35 @@ bool ServiceWorkerDatabase::DeleteResourceIds(const char* id_key_prefix,
   return WriteBatch(&batch);
 }
 
-bool ServiceWorkerDatabase::ReadDatabaseVersion(int64* db_version) {
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
+    int64* db_version) {
   std::string value;
   leveldb::Status status =
       db_->Get(leveldb::ReadOptions(), kDatabaseVersionKey, &value);
   if (status.IsNotFound()) {
     // The database hasn't been initialized yet.
     *db_version = 0;
-    return true;
+    return STATUS_OK;
   }
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    return false;
+    return LevelDBStatusToStatus(status);
   }
 
   int64 parsed;
   if (!base::StringToInt64(value, &parsed)) {
     HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
-    return false;
+    return STATUS_ERROR_CORRUPTED;
   }
 
   const int kFirstValidVersion = 1;
   if (parsed < kFirstValidVersion || kCurrentSchemaVersion < parsed) {
     HandleError(FROM_HERE, leveldb::Status::Corruption("invalid DB version"));
-    return false;
+    return STATUS_ERROR_CORRUPTED;
   }
 
   *db_version = parsed;
-  return true;
+  return STATUS_OK;
 }
 
 bool ServiceWorkerDatabase::WriteBatch(leveldb::WriteBatch* batch) {

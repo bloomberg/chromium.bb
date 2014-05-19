@@ -30,8 +30,6 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "ServiceWorker failed to activate";
     case SERVICE_WORKER_ERROR_IPC_FAILED:
       return "IPC connection was closed or IPC error has occured";
-    case SERVICE_WORKER_ERROR_DB_CORRUPTED:
-      return "Database has been corrupted";
   }
   NOTREACHED();
   return "";

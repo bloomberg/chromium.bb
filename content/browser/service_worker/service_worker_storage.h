@@ -138,26 +138,26 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const base::Closure& callback);
   void DidReadInitialData(
       InitialData* data,
-      ServiceWorkerStatusCode status);
+      ServiceWorkerDatabase::Status status);
   void DidGetRegistrationsForPattern(
       const GURL& scope,
       const FindRegistrationCallback& callback,
       RegistrationList* registrations,
-      bool succcess);
+      ServiceWorkerDatabase::Status status);
   void DidGetRegistrationsForDocument(
       const GURL& scope,
       const FindRegistrationCallback& callback,
       RegistrationList* registrations,
-      bool succcess);
+      ServiceWorkerDatabase::Status status);
   void DidReadRegistrationForId(
       const FindRegistrationCallback& callback,
       const ServiceWorkerDatabase::RegistrationData& registration,
       const ResourceList& resources,
-      ServiceWorkerStatusCode status);
+      ServiceWorkerDatabase::Status status);
   void DidGetAllRegistrations(
       const GetAllRegistrationInfosCallback& callback,
       RegistrationList* registrations,
-      bool success);
+      ServiceWorkerDatabase::Status status);
   void DidStoreRegistration(
       const GURL& origin,
       const StatusCallback& callback,
@@ -166,7 +166,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const GURL& origin,
       const StatusCallback& callback,
       bool origin_is_deletable,
-      ServiceWorkerStatusCode status);
+      ServiceWorkerDatabase::Status status);
 
   scoped_refptr<ServiceWorkerRegistration> CreateRegistration(
       const ServiceWorkerDatabase::RegistrationData& data);

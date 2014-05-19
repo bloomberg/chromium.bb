@@ -80,35 +80,39 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
       CreateDatabase(database_dir.path()));
 
   // Should be false because the database does not exist at the path.
-  EXPECT_FALSE(database->LazyOpen(false));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->LazyOpen(false));
 
-  EXPECT_TRUE(database->LazyOpen(true));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
   database.reset(CreateDatabase(database_dir.path()));
-  EXPECT_TRUE(database->LazyOpen(false));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(false));
 }
 
 TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   // Should be false because the database does not exist in memory.
-  EXPECT_FALSE(database->LazyOpen(false));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->LazyOpen(false));
 
-  EXPECT_TRUE(database->LazyOpen(true));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
   database.reset(CreateDatabaseInMemory());
 
   // Should be false because the database is not persistent.
-  EXPECT_FALSE(database->LazyOpen(false));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->LazyOpen(false));
 }
 
 TEST(ServiceWorkerDatabaseTest, DatabaseVersion) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  EXPECT_TRUE(database->LazyOpen(true));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
   // Opening a new database does not write anything, so its schema version
   // should be 0.
   int64 db_version = -1;
-  EXPECT_TRUE(database->ReadDatabaseVersion(&db_version));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadDatabaseVersion(&db_version));
   EXPECT_EQ(0u, db_version);
 
   // First writing triggers database initialization and bumps the schema
@@ -117,7 +121,8 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion) {
   ServiceWorkerDatabase::RegistrationData data;
   ASSERT_TRUE(database->WriteRegistration(data, resources));
 
-  EXPECT_TRUE(database->ReadDatabaseVersion(&db_version));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadDatabaseVersion(&db_version));
   EXPECT_LT(0, db_version);
 }
 
@@ -131,14 +136,14 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
 
   // The database has never been used, so returns initial values.
   AvailableIds ids;
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetNextAvailableIds(
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
   EXPECT_EQ(0, ids.reg_id);
   EXPECT_EQ(0, ids.ver_id);
   EXPECT_EQ(0, ids.res_id);
 
-  ASSERT_TRUE(database->LazyOpen(true));
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetNextAvailableIds(
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
   EXPECT_EQ(0, ids.reg_id);
   EXPECT_EQ(0, ids.ver_id);
@@ -153,7 +158,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   data1.version_id = 200;
   ASSERT_TRUE(database->WriteRegistration(data1, resources));
 
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetNextAvailableIds(
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
   EXPECT_EQ(101, ids.reg_id);
   EXPECT_EQ(201, ids.ver_id);
@@ -171,7 +176,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   // Close and reopen the database to verify the stored values.
   database.reset(CreateDatabase(database_dir.path()));
 
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetNextAvailableIds(
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
   EXPECT_EQ(101, ids.reg_id);
   EXPECT_EQ(201, ids.ver_id);
@@ -182,7 +187,8 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::set<GURL> origins;
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetOriginsWithRegistrations(&origins));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithRegistrations(&origins));
   EXPECT_TRUE(origins.empty());
 
   std::vector<Resource> resources;
@@ -220,7 +226,8 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
   origins.clear();
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetOriginsWithRegistrations(&origins));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(3U, origins.size());
   EXPECT_TRUE(ContainsKey(origins, origin1));
   EXPECT_TRUE(ContainsKey(origins, origin2));
@@ -231,7 +238,8 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   ASSERT_TRUE(database->DeleteRegistration(data4.registration_id, origin3));
 
   origins.clear();
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetOriginsWithRegistrations(&origins));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(3U, origins.size());
   EXPECT_TRUE(ContainsKey(origins, origin1));
   EXPECT_TRUE(ContainsKey(origins, origin2));
@@ -241,7 +249,8 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   ASSERT_TRUE(database->DeleteRegistration(data3.registration_id, origin3));
 
   origins.clear();
-  EXPECT_EQ(SERVICE_WORKER_OK, database->GetOriginsWithRegistrations(&origins));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetOriginsWithRegistrations(&origins));
   EXPECT_EQ(2U, origins.size());
   EXPECT_TRUE(ContainsKey(origins, origin1));
   EXPECT_TRUE(ContainsKey(origins, origin2));
@@ -255,7 +264,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   GURL origin3("https://example.org");
 
   std::vector<RegistrationData> registrations;
-  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin1, &registrations));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetRegistrationsForOrigin(origin1, &registrations));
   EXPECT_TRUE(registrations.empty());
 
   std::vector<Resource> resources;
@@ -290,7 +300,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
   registrations.clear();
-  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin3, &registrations));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetRegistrationsForOrigin(origin3, &registrations));
   EXPECT_EQ(2U, registrations.size());
   VerifyRegistrationData(data3, registrations[0]);
   VerifyRegistrationData(data4, registrations[1]);
@@ -300,7 +311,8 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::vector<RegistrationData> registrations;
-  EXPECT_TRUE(database->GetAllRegistrations(&registrations));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetAllRegistrations(&registrations));
   EXPECT_TRUE(registrations.empty());
 
   std::vector<Resource> resources;
@@ -338,7 +350,8 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
   registrations.clear();
-  EXPECT_TRUE(database->GetAllRegistrations(&registrations));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetAllRegistrations(&registrations));
   EXPECT_EQ(4U, registrations.size());
   VerifyRegistrationData(data1, registrations[0]);
   VerifyRegistrationData(data2, registrations[1]);
@@ -728,14 +741,15 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
 
   // |origin1| should be removed from the unique origin list.
   std::set<GURL> unique_origins;
-  EXPECT_EQ(SERVICE_WORKER_OK,
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetOriginsWithRegistrations(&unique_origins));
   EXPECT_EQ(1u, unique_origins.size());
   EXPECT_TRUE(ContainsKey(unique_origins, origin2));
 
   // The registrations for |origin1| should be removed.
   std::vector<RegistrationData> registrations;
-  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin1, &registrations));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->GetRegistrationsForOrigin(origin1, &registrations));
   EXPECT_TRUE(registrations.empty());
 
   // The registration for |origin2| should not be removed.

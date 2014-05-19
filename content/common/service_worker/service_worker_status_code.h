@@ -42,9 +42,6 @@ enum ServiceWorkerStatusCode {
   // Sending an IPC to the worker failed (often due to child process is
   // terminated).
   SERVICE_WORKER_ERROR_IPC_FAILED,
-
-  // Database corruption has occured.
-  SERVICE_WORKER_ERROR_DB_CORRUPTED,
 };
 
 CONTENT_EXPORT const char* ServiceWorkerStatusToString(

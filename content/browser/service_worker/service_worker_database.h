@@ -39,6 +39,13 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   explicit ServiceWorkerDatabase(const base::FilePath& path);
   ~ServiceWorkerDatabase();
 
+  enum Status {
+    STATUS_OK,
+    STATUS_ERROR_NOT_FOUND,
+    STATUS_ERROR_CORRUPTED,
+    STATUS_ERROR_FAILED,
+  };
+
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.
     int64 registration_id;
@@ -62,19 +69,28 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     GURL url;
   };
 
-  // For use during initialization.
-  ServiceWorkerStatusCode GetNextAvailableIds(
+  // Reads next available ids from the database. Returns OK if they are
+  // successfully read. Fills the arguments with an initial value and returns
+  // OK if they are not found in the database. Otherwise, returns an error.
+  Status GetNextAvailableIds(
       int64* next_avail_registration_id,
       int64* next_avail_version_id,
       int64* next_avail_resource_id);
-  ServiceWorkerStatusCode GetOriginsWithRegistrations(
-      std::set<GURL>* origins);
 
-  // For use when first handling a request in an origin with registrations.
-  bool GetRegistrationsForOrigin(const GURL& origin,
-                                 std::vector<RegistrationData>* registrations);
+  // Reads origins that have one or more than one registration from the
+  // database. Returns OK if they are successfully read or not found.
+  // Otherwise, returns an error.
+  Status GetOriginsWithRegistrations(std::set<GURL>* origins);
 
-  bool GetAllRegistrations(std::vector<RegistrationData>* registrations);
+  // Reads registrations for |origin| from the database. Returns OK if they are
+  // successfully read or not found. Otherwise, returns an error.
+  Status GetRegistrationsForOrigin(
+      const GURL& origin,
+      std::vector<RegistrationData>* registrations);
+
+  // Reads all registrations from the database. Returns OK if successfully read
+  // or not found. Otherwise, returns an error.
+  Status GetAllRegistrations(std::vector<RegistrationData>* registrations);
 
   // Saving, retrieving, and updating registration data.
   // (will bump next_avail_xxxx_ids as needed)
@@ -136,14 +152,23 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
  private:
   // Opens the database at the |path_|. This is lazily called when the first
-  // database API is called. Returns true if the database was opened. Returns
-  // false if the opening failed or was not neccessary, that is, the database
-  // does not exist and |create_if_needed| is false.
-  bool LazyOpen(bool create_if_needed);
+  // database API is called. Returns OK if the database is successfully opened.
+  // Returns NOT_FOUND if the database does not exist and |create_if_missing| is
+  // false. Otherwise, returns an error.
+  Status LazyOpen(bool create_if_missing);
 
-  ServiceWorkerStatusCode ReadNextAvailableId(
+  // Helper for LazyOpen(). |status| must be the return value from LazyOpen()
+  // and this must be called just after LazyOpen() is called. Returns true if
+  // the database is new or nonexistent, that is, it has never been used.
+  bool IsNewOrNonexistentDatabase(Status status);
+
+  // Reads the next available id for |id_key|. Returns OK if it's successfully
+  // read. Fills |next_avail_id| with an initial value and returns OK if it's
+  // not found in the database. Otherwise, returns an error.
+  Status ReadNextAvailableId(
       const char* id_key,
       int64* next_avail_id);
+
   bool ReadRegistrationData(int64 registration_id,
                             const GURL& origin,
                             RegistrationData* registration);
@@ -159,8 +184,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
                          const std::set<int64>& ids);
 
   // Reads the current schema version from the database. If the database hasn't
-  // been written anything yet, sets |db_version| to 0 and returns true.
-  bool ReadDatabaseVersion(int64* db_version);
+  // been written anything yet, sets |db_version| to 0 and returns OK.
+  Status ReadDatabaseVersion(int64* db_version);
 
   // Write a batch into the database.
   // NOTE: You must call this when you want to put something into the database
@@ -204,9 +229,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DatabaseVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Basic);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Overwrite);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, Registration_Multiple);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };

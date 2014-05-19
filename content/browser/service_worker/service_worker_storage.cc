@@ -27,14 +27,14 @@ namespace {
 
 typedef base::Callback<void(
     ServiceWorkerStorage::InitialData* data,
-    ServiceWorkerStatusCode status)> InitializeCallback;
+    ServiceWorkerDatabase::Status status)> InitializeCallback;
 typedef base::Callback<void(
     const ServiceWorkerDatabase::RegistrationData& data,
     const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources,
-    ServiceWorkerStatusCode status)> ReadRegistrationCallback;
+    ServiceWorkerDatabase::Status status)> ReadRegistrationCallback;
 typedef base::Callback<void(
     bool origin_is_deletable,
-    ServiceWorkerStatusCode status)> DeleteRegistrationCallback;
+    ServiceWorkerDatabase::Status status)> DeleteRegistrationCallback;
 
 void RunSoon(const tracked_objects::Location& from_here,
              const base::Closure& closure) {
@@ -65,6 +65,18 @@ const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 
 void EmptyCompletionCallback(int) {}
 
+ServiceWorkerStatusCode DatabaseStatusToStatusCode(
+    ServiceWorkerDatabase::Status status) {
+  switch (status) {
+    case ServiceWorkerDatabase::STATUS_OK:
+      return SERVICE_WORKER_OK;
+    case ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND:
+      return SERVICE_WORKER_ERROR_NOT_FOUND;
+    default:
+      return SERVICE_WORKER_ERROR_FAILED;
+  }
+}
+
 void ReadInitialDataFromDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
@@ -73,11 +85,11 @@ void ReadInitialDataFromDB(
   scoped_ptr<ServiceWorkerStorage::InitialData> data(
       new ServiceWorkerStorage::InitialData());
 
-  ServiceWorkerStatusCode status =
+  ServiceWorkerDatabase::Status status =
       database->GetNextAvailableIds(&data->next_registration_id,
                                     &data->next_version_id,
                                     &data->next_resource_id);
-  if (status != SERVICE_WORKER_OK) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
         FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
     return;
@@ -100,10 +112,11 @@ void ReadRegistrationFromDB(
 
   // TODO(nhiroki): The database should return more detailed status like
   // ServiceWorkerStatusCode instead of bool value.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
+  ServiceWorkerDatabase::Status status = ServiceWorkerDatabase::STATUS_OK;
   if (!database->ReadRegistration(registration_id, origin, &data, &resources)) {
-    status = database->is_disabled() ? SERVICE_WORKER_ERROR_FAILED
-                                     : SERVICE_WORKER_ERROR_NOT_FOUND;
+    status = database->is_disabled()
+        ? ServiceWorkerDatabase::STATUS_ERROR_FAILED
+        : ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND;
   }
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, data, resources, status));
@@ -118,22 +131,26 @@ void DeleteRegistrationFromDB(
   DCHECK(database);
   if (!database->DeleteRegistration(registration_id, origin)) {
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, false, SERVICE_WORKER_ERROR_FAILED));
+        FROM_HERE, base::Bind(callback, false,
+                              ServiceWorkerDatabase::STATUS_ERROR_FAILED));
     return;
   }
 
   // TODO(nhiroki): Add convenient method to ServiceWorkerDatabase to check the
   // unique origin list.
   std::vector<ServiceWorkerDatabase::RegistrationData> registrations;
-  if (!database->GetRegistrationsForOrigin(origin, &registrations)) {
+  ServiceWorkerDatabase::Status status =
+      database->GetRegistrationsForOrigin(origin, &registrations);
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, false, SERVICE_WORKER_ERROR_FAILED));
+        FROM_HERE, base::Bind(callback, false, status));
     return;
   }
 
   bool deletable = registrations.empty();
   original_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, deletable, SERVICE_WORKER_OK));
+      FROM_HERE, base::Bind(callback, deletable,
+                            ServiceWorkerDatabase::STATUS_OK));
 }
 
 void UpdateToActiveStateInDB(
@@ -499,21 +516,20 @@ bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {
 
 void ServiceWorkerStorage::DidReadInitialData(
     InitialData* data,
-    ServiceWorkerStatusCode status) {
+    ServiceWorkerDatabase::Status status) {
   DCHECK(data);
   DCHECK_EQ(INITIALIZING, state_);
 
-  if (status == SERVICE_WORKER_OK) {
+  if (status == ServiceWorkerDatabase::STATUS_OK) {
     next_registration_id_ = data->next_registration_id;
     next_version_id_ = data->next_version_id;
     next_resource_id_ = data->next_resource_id;
     registered_origins_.swap(data->origins);
     state_ = INITIALIZED;
   } else {
-    // TODO(nhiroki): If status==SERVICE_WORKER_ERROR_DB_CORRUPTED, do
-    // corruption recovery (http://crbug.com/371675).
-    DLOG(WARNING) << "Failed to initialize: "
-                  << ServiceWorkerStatusToString(status);
+    // TODO(nhiroki): If status==STATUS_ERROR_CORRUPTED, do corruption recovery
+    // (http://crbug.com/371675).
+    DLOG(WARNING) << "Failed to initialize: " << status;
     state_ = DISABLED;
   }
 
@@ -528,9 +544,10 @@ void ServiceWorkerStorage::DidGetRegistrationsForPattern(
     const GURL& scope,
     const FindRegistrationCallback& callback,
     RegistrationList* registrations,
-    bool success) {
+    ServiceWorkerDatabase::Status status) {
   DCHECK(registrations);
-  if (!success) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    // TODO(nhiroki): Handle database error (http://crbug.com/371675).
     callback.Run(SERVICE_WORKER_ERROR_FAILED,
                  scoped_refptr<ServiceWorkerRegistration>());
     return;
@@ -565,9 +582,10 @@ void ServiceWorkerStorage::DidGetRegistrationsForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback,
     RegistrationList* registrations,
-    bool success) {
+    ServiceWorkerDatabase::Status status) {
   DCHECK(registrations);
-  if (!success) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    // TODO(nhiroki): Handle database error (http://crbug.com/371675).
     callback.Run(SERVICE_WORKER_ERROR_FAILED,
                  scoped_refptr<ServiceWorkerRegistration>());
     return;
@@ -608,13 +626,13 @@ void ServiceWorkerStorage::DidReadRegistrationForId(
     const FindRegistrationCallback& callback,
     const ServiceWorkerDatabase::RegistrationData& registration,
     const ResourceList& resources,
-    ServiceWorkerStatusCode status) {
-  if (status == SERVICE_WORKER_OK) {
-    callback.Run(status, CreateRegistration(registration));
+    ServiceWorkerDatabase::Status status) {
+  if (status == ServiceWorkerDatabase::STATUS_OK) {
+    callback.Run(SERVICE_WORKER_OK, CreateRegistration(registration));
     return;
   }
 
-  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status == ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     // Look for somthing currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForId(registration.registration_id);
@@ -627,16 +645,18 @@ void ServiceWorkerStorage::DidReadRegistrationForId(
     return;
   }
 
-  callback.Run(status, scoped_refptr<ServiceWorkerRegistration>());
+  callback.Run(DatabaseStatusToStatusCode(status),
+               scoped_refptr<ServiceWorkerRegistration>());
   return;
 }
 
 void ServiceWorkerStorage::DidGetAllRegistrations(
     const GetAllRegistrationInfosCallback& callback,
     RegistrationList* registrations,
-    bool success) {
+    ServiceWorkerDatabase::Status status) {
   DCHECK(registrations);
-  if (!success) {
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    // TODO(nhiroki): Handle database error (http://crbug.com/371675).
     callback.Run(std::vector<ServiceWorkerRegistrationInfo>());
     return;
   }
@@ -692,10 +712,10 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     const GURL& origin,
     const StatusCallback& callback,
     bool origin_is_deletable,
-    ServiceWorkerStatusCode status) {
+    ServiceWorkerDatabase::Status status) {
   if (origin_is_deletable)
     registered_origins_.erase(origin);
-  callback.Run(status);
+  callback.Run(DatabaseStatusToStatusCode(status));
 }
 
 scoped_refptr<ServiceWorkerRegistration>
