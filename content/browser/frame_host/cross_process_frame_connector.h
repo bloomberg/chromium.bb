@@ -101,9 +101,6 @@ class CrossProcessFrameConnector {
   void OnForwardInputEvent(const blink::WebInputEvent* event);
   void OnInitializeChildFrame(gfx::Rect frame_rect, float scale_factor);
 
-  void SetDeviceScaleFactor(float scale_factor);
-  void SetSize(gfx::Rect frame_rect);
-
   // The RenderFrameHost that routes messages to the parent frame's renderer
   // process.
   // TODO(kenrb): The type becomes RenderFrameProxyHost when that class comes

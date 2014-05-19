@@ -60,7 +60,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       RenderViewHost* render_view_host,
       int opener_route_id,
       int proxy_routing_id,
-      bool for_main_frame) OVERRIDE;
+      CrossProcessFrameConnector* frame_connector) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE {}
 
   // Returns a clone of this TestWebContents. The returned object is also a
