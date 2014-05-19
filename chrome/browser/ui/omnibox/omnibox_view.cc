@@ -178,6 +178,7 @@ void OmniboxView::HideURL() {
 }
 
 void OmniboxView::RevertAll() {
+  controller_->GetToolbarModel()->set_origin_chip_enabled(true);
   controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   RevertWithoutResettingSearchTermReplacement();
 }
