@@ -3,19 +3,28 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include <string>
+#include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
+#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/common/test/multiprocess_test_helper.h"
+#include "mojo/common/test/test_utils.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
+#include "mojo/system/platform_handle_dispatcher.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/test_utils.h"
@@ -177,7 +186,6 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
              MOJO_RESULT_OK);
   }
 
-
   mp->Close(0);
   return rv;
 }
@@ -270,6 +278,111 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
 
   EXPECT_EQ(static_cast<int>(kNumMessages % 100),
             helper()->WaitForChildShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
+  ChannelThread channel_thread;
+  embedder::ScopedPlatformHandle client_platform_handle =
+      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
+  CHECK(client_platform_handle.is_valid());
+  scoped_refptr<MessagePipe> mp(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  channel_thread.Start(client_platform_handle.Pass(), mp);
+
+  CHECK_EQ(WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE), MOJO_RESULT_OK);
+
+  std::string read_buffer(100, '\0');
+  uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
+  DispatcherVector dispatchers;
+  uint32_t num_dispatchers = 10;  // Maximum number to receive.
+  CHECK_EQ(mp->ReadMessage(0,
+                           &read_buffer[0], &num_bytes,
+                           &dispatchers, &num_dispatchers,
+                           MOJO_READ_MESSAGE_FLAG_NONE),
+           MOJO_RESULT_OK);
+  mp->Close(0);
+
+  read_buffer.resize(num_bytes);
+  CHECK_EQ(read_buffer, std::string("hello"));
+  CHECK_EQ(num_dispatchers, 1u);
+
+  CHECK_EQ(dispatchers[0]->GetType(), Dispatcher::kTypePlatformHandle);
+
+  scoped_refptr<PlatformHandleDispatcher> dispatcher(
+      static_cast<PlatformHandleDispatcher*>(dispatchers[0].get()));
+  embedder::ScopedPlatformHandle h = dispatcher->PassPlatformHandle().Pass();
+  CHECK(h.is_valid());
+  dispatcher->Close();
+
+  base::ScopedFILE fp(mojo::test::FILEFromPlatformHandle(h.Pass(), "r"));
+  CHECK(fp);
+  std::string fread_buffer(100, '\0');
+  size_t bytes_read = fread(&fread_buffer[0], 1, fread_buffer.size(), fp.get());
+  fread_buffer.resize(bytes_read);
+  CHECK_EQ(fread_buffer, "world");
+
+  return 0;
+}
+
+#if defined(OS_POSIX)
+#if defined(OS_MACOSX)
+// TODO(vtl): Apparently, cmsgs on SOCK_STREAM AF_UNIX sockets don't work the
+// way I thought they work, at least on Mac. (The non-control data gets merged
+// with subsequent data.)
+#define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
+#else
+#define MAYBE_PlatformHandlePassing PlatformHandlePassing
+#endif
+#else
+// Not yet implemented (on Windows).
+#define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
+#endif
+TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
+  helper()->StartChild("CheckPlatformHandleFile");
+
+  scoped_refptr<MessagePipe> mp(new MessagePipe(
+      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  Init(mp);
+
+  base::FilePath unused;
+  base::ScopedFILE fp(CreateAndOpenTemporaryFile(&unused));
+  const std::string world("world");
+  ASSERT_EQ(fwrite(&world[0], 1, world.size(), fp.get()), world.size());
+  fflush(fp.get());
+  rewind(fp.get());
+
+  embedder::ScopedPlatformHandle h(
+      mojo::test::PlatformHandleFromFILE(fp.Pass()));
+  scoped_refptr<PlatformHandleDispatcher> dispatcher(
+      new PlatformHandleDispatcher(h.Pass()));
+
+  const std::string hello("hello");
+  DispatcherTransport transport(
+      test::DispatcherTryStartTransport(dispatcher.get()));
+  ASSERT_TRUE(transport.is_valid());
+
+  std::vector<DispatcherTransport> transports;
+  transports.push_back(transport);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp->WriteMessage(0,
+                             &hello[0],
+                             static_cast<uint32_t>(hello.size()),
+                             &transports,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  transport.End();
+
+  EXPECT_TRUE(dispatcher->HasOneRef());
+  dispatcher = NULL;
+
+  // Wait for it to become readable, which should fail.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            WaitIfNecessary(mp, MOJO_WAIT_FLAG_READABLE));
+
+  mp->Close(0);
+
+  EXPECT_EQ(0, helper()->WaitForChildShutdown());
 }
 
 }  // namespace
