@@ -298,22 +298,43 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
 }
 
 void NetworkStateHandler::GetFavoriteList(FavoriteStateList* list) const {
-  GetFavoriteListByType(NetworkTypePattern::Default(), list);
+  GetFavoriteListByType(NetworkTypePattern::Default(),
+                        true /* configured_only */,
+                        false /* visible_only */,
+                        0 /* no limit */,
+                        list);
 }
 
 void NetworkStateHandler::GetFavoriteListByType(const NetworkTypePattern& type,
+                                                bool configured_only,
+                                                bool visible_only,
+                                                int limit,
                                                 FavoriteStateList* list) const {
   DCHECK(list);
+  std::set<std::string> visible_networks;
+  if (visible_only) {
+    // Prepare a set of visible network service paths for fast lookup.
+    for (ManagedStateList::const_iterator iter = network_list_.begin();
+         iter != network_list_.end(); ++iter) {
+      visible_networks.insert((*iter)->path());
+    }
+  }
   FavoriteStateList result;
   list->clear();
+  int count = 0;
   for (ManagedStateList::const_iterator iter = favorite_list_.begin();
        iter != favorite_list_.end(); ++iter) {
     const FavoriteState* favorite = (*iter)->AsFavoriteState();
     DCHECK(favorite);
-    if (favorite->update_received() && favorite->IsInProfile() &&
-        favorite->Matches(type)) {
-      list->push_back(favorite);
-    }
+    if (!favorite->update_received() || !favorite->Matches(type))
+      continue;
+    if (configured_only && !favorite->IsInProfile())
+      continue;
+    if (visible_only && !ContainsKey(visible_networks, favorite->path()))
+      continue;
+    list->push_back(favorite);
+    if (limit > 0 && ++count >= limit)
+      break;
   }
 }
 
@@ -418,6 +439,9 @@ const FavoriteState* NetworkStateHandler::GetEAPForEthernet(
 
   FavoriteStateList list;
   GetFavoriteListByType(NetworkTypePattern::Primitive(shill::kTypeEthernetEap),
+                        true /* configured_only */,
+                        false /* visible_only */,
+                        1 /* limit */,
                         &list);
   if (list.empty()) {
     NET_LOG_ERROR("GetEAPForEthernet",
@@ -427,7 +451,6 @@ const FavoriteState* NetworkStateHandler::GetEAPForEthernet(
                       service_path.c_str()));
     return NULL;
   }
-  DCHECK(list.size() == 1);
   return list.front();
 }
 

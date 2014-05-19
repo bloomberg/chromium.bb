@@ -61,11 +61,12 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     virtual void SetManagerProperty(const std::string& key,
                                     const base::Value& value) = 0;
 
-    // Add/Remove/ClearService should only be called from ShillServiceClient.
+    // Modify services in the Manager's list.
     virtual void AddManagerService(const std::string& service_path,
                                    bool add_to_visible_list,
                                    bool add_to_watch_list) = 0;
-    virtual void RemoveManagerService(const std::string& service_path) = 0;
+    virtual void RemoveManagerService(const std::string& service_path,
+                                      bool remove_from_complete_list) = 0;
     virtual void ClearManagerServices() = 0;
 
     // Called by ShillServiceClient when a service's State property changes,

@@ -390,7 +390,7 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      RemoveManagerService(service_path);
+      RemoveManagerService(service_path, true);
 
   stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
   connect_behavior_.erase(service_path);

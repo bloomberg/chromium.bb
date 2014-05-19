@@ -351,6 +351,45 @@
       </span>
       Indicates which kind of connection this is.
     </dd>
+
+    <dt class="field">ConnectionState</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The current connection state for this network, provided by the system.
+      <span class="rule">
+        <span class="rule_id"></span>
+        Allowed values are:
+        <span class="value">Connected</span>,
+        <span class="value">Connecting</span>,
+        <span class="value">NotConnected</span>
+      </span>
+    </dd>
+
+    <dt class="field">Connectable</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">boolean</span>
+      </span>
+      True if the system indicates that the network can be connected to without
+      any additional configuration.
+    </dd>
+
+    <dt class="field">ErrorState</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">string</span>
+      </span>
+      The current error state for this network. Error states are provided by
+      the system and are not explicitly defined here. They may or may not be
+      human-readable. This field will be empty or absent if the network is not
+      in an error state.
+    </dd>
+
   </dl>
 
 <section>
@@ -552,6 +591,17 @@
         <span class="type">string</span>
       </span>
       SSID of the network.
+    </dd>
+
+    <dt class="field">SignalStrength</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, read-only)
+        <span class="type">integer</span>
+      </span>
+      The current signal strength for this network in the range [0, 100],
+      provided by the system. If the network is not in range this field will
+      be set to '0' or not present.
     </dd>
   </dl>
 </section>

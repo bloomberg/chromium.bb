@@ -58,7 +58,7 @@ void SetUIData(const NetworkUIData& ui_data,
                base::DictionaryValue* shill_dictionary);
 
 // Copy configuration properties required by Shill to identify a network.
-// Only WiFi, VPN, Ethernet and EthernetEAP are supported. WiMax and Cellular
+// Only WiFi, VPN, Ethernet and EthernetEAP are supported. Wimax and Cellular
 // are not supported. Returns true only if all required properties could be
 // copied.
 bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
@@ -67,7 +67,7 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
 // Compares the identifying configuration properties of |properties_a| and
 // |properties_b|, returns true if they are identical. See also
 // CopyIdentifyingProperties. Only WiFi, VPN, Ethernet and EthernetEAP are
-// supported. WiMax and Cellular are not supported.
+// supported. Wimax and Cellular are not supported.
 bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& properties_a,
                                   const base::DictionaryValue& properties_b);
 

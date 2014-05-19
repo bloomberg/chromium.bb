@@ -460,24 +460,26 @@ void FakeShillManagerClient::AddManagerService(const std::string& service_path,
 }
 
 void FakeShillManagerClient::RemoveManagerService(
-    const std::string& service_path) {
+    const std::string& service_path,
+    bool remove_from_complete_list) {
   base::StringValue service_path_value(service_path);
+  if (remove_from_complete_list) {
+    GetListProperty(shill::kServiceCompleteListProperty)->Remove(
+        service_path_value, NULL);
+  }
   if (GetListProperty(shill::kServicesProperty)->Remove(
       service_path_value, NULL)) {
     CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   }
-  GetListProperty(shill::kServiceCompleteListProperty)->Remove(
-      service_path_value, NULL);
   if (GetListProperty(shill::kServiceWatchListProperty)->Remove(
       service_path_value, NULL)) {
-    CallNotifyObserversPropertyChanged(
-        shill::kServiceWatchListProperty);
+    CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
   }
 }
 
 void FakeShillManagerClient::ClearManagerServices() {
-  GetListProperty(shill::kServicesProperty)->Clear();
   GetListProperty(shill::kServiceCompleteListProperty)->Clear();
+  GetListProperty(shill::kServicesProperty)->Clear();
   GetListProperty(shill::kServiceWatchListProperty)->Clear();
   CallNotifyObserversPropertyChanged(shill::kServicesProperty);
   CallNotifyObserversPropertyChanged(shill::kServiceWatchListProperty);
@@ -495,6 +497,11 @@ void FakeShillManagerClient::ServiceStateChanged(
 }
 
 void FakeShillManagerClient::SortManagerServices() {
+  SortServiceList(shill::kServicesProperty);
+  SortServiceList(shill::kServiceCompleteListProperty);
+}
+
+void FakeShillManagerClient::SortServiceList(const std::string& property) {
   static const char* ordered_types[] = {
     shill::kTypeEthernet,
     shill::kTypeWifi,
@@ -502,28 +509,26 @@ void FakeShillManagerClient::SortManagerServices() {
     shill::kTypeWimax,
     shill::kTypeVPN
   };
-  base::ListValue* service_list = GetListProperty(shill::kServicesProperty);
-  if (!service_list || service_list->empty()) {
-    if (!default_service_.empty()) {
-      default_service_.clear();
-      base::StringValue empty_value("");
-      SetManagerProperty(shill::kDefaultServiceProperty, empty_value);
-    }
-    return;
-  }
+
+  base::ListValue* service_list = GetListProperty(property);
   std::vector<std::string> active_services;
   std::vector<std::string> inactive_services;
-  for (size_t i = 0; i < arraysize(ordered_types); ++i) {
-    AppendServicesForType(service_list, ordered_types[i],
-                          &active_services, &inactive_services);
+  if (service_list && !service_list->empty()) {
+    for (size_t i = 0; i < arraysize(ordered_types); ++i) {
+      AppendServicesForType(service_list, ordered_types[i],
+                            &active_services, &inactive_services);
+    }
+    service_list->Clear();
+    for (size_t i = 0; i < active_services.size(); ++i)
+      service_list->AppendString(active_services[i]);
+    for (size_t i = 0; i < inactive_services.size(); ++i)
+      service_list->AppendString(inactive_services[i]);
   }
-  service_list->Clear();
-  for (size_t i = 0; i < active_services.size(); ++i)
-    service_list->AppendString(active_services[i]);
-  for (size_t i = 0; i < inactive_services.size(); ++i)
-    service_list->AppendString(inactive_services[i]);
 
-  CallNotifyObserversPropertyChanged(shill::kServicesProperty);
+  if (property != shill::kServicesProperty)
+    return;
+
+  CallNotifyObserversPropertyChanged(property);
 
   // Set the first active service as the Default service.
   std::string new_default_service;
@@ -548,7 +553,6 @@ void FakeShillManagerClient::SortManagerServices() {
     SetManagerProperty(shill::kDefaultServiceProperty, default_service_value);
   }
 }
-
 
 int FakeShillManagerClient::GetInteractiveDelay() const {
   return interactive_delay_;

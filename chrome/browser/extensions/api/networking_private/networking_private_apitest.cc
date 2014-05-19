@@ -139,7 +139,8 @@ class ExtensionNetworkingPrivateApiTest
   ExtensionNetworkingPrivateApiTest()
 #if defined(OS_CHROMEOS)
       : detector_(NULL),
-        service_test_(NULL)
+        service_test_(NULL),
+        manager_test_(NULL)
 #endif
   {
   }
@@ -222,16 +223,15 @@ class ExtensionNetworkingPrivateApiTest
     InitializeSanitizedUsername();
 
     DBusThreadManager* dbus_manager = DBusThreadManager::Get();
-    ShillManagerClient::TestInterface* manager_test =
-        dbus_manager->GetShillManagerClient()->GetTestInterface();
+    manager_test_ = dbus_manager->GetShillManagerClient()->GetTestInterface();
+    service_test_ = dbus_manager->GetShillServiceClient()->GetTestInterface();
+
     ShillIPConfigClient::TestInterface* ip_config_test =
         dbus_manager->GetShillIPConfigClient()->GetTestInterface();
     ShillDeviceClient::TestInterface* device_test =
         dbus_manager->GetShillDeviceClient()->GetTestInterface();
     ShillProfileClient::TestInterface* profile_test =
         dbus_manager->GetShillProfileClient()->GetTestInterface();
-
-    service_test_ = dbus_manager->GetShillServiceClient()->GetTestInterface();
 
     device_test->ClearDevices();
     service_test_->ClearServices();
@@ -324,7 +324,7 @@ class ExtensionNetworkingPrivateApiTest
 
     AddService("stub_vpn1", "vpn1", shill::kTypeVPN, shill::kStateOnline);
 
-    manager_test->SortManagerServices();
+    manager_test_->SortManagerServices();
 
     content::RunAllPendingInMessageLoop();
   }
@@ -359,6 +359,7 @@ class ExtensionNetworkingPrivateApiTest
 
   NetworkPortalDetectorTestImpl* detector_;
   ShillServiceClient::TestInterface* service_test_;
+  ShillManagerClient::TestInterface* manager_test_;
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
 #endif
@@ -393,7 +394,16 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 }
 
 #if defined(OS_CHROMEOS)
-// Non-Chrome OS only supports wifi currently.
+// TODO(stevenjb/mef): Fix these on non-Chrome OS, crbug.com/371442.
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetNetworks) {
+  // Remove "stub_wifi2" from the visible list.
+  manager_test_->RemoveManagerService("stub_wifi2", false);
+  // Add a couple of additional networks that are not configured (saved).
+  AddService("stub_wifi3", "wifi3", shill::kTypeWifi, shill::kStateIdle);
+  AddService("stub_wifi4", "wifi4", shill::kTypeWifi, shill::kStateIdle);
+  EXPECT_TRUE(RunNetworkingSubtest("getNetworks")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }

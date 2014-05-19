@@ -126,6 +126,26 @@ class NetworkingPrivateCreateNetworkFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCreateNetworkFunction);
 };
 
+// Implements the chrome.networkingPrivate.getNetworks method.
+class NetworkingPrivateGetNetworksFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  NetworkingPrivateGetNetworksFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getNetworks",
+                             NETWORKINGPRIVATE_GETNETWORKS);
+
+ protected:
+  virtual ~NetworkingPrivateGetNetworksFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void ResultCallback(const base::ListValue& network_list);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetNetworksFunction);
+};
+
 // Implements the chrome.networkingPrivate.getVisibleNetworks method.
 class NetworkingPrivateGetVisibleNetworksFunction
     : public ChromeAsyncExtensionFunction {

@@ -685,8 +685,8 @@ cr.define('network.status', function() {
           this.onNetworkListChanged_.bind(this));
       chrome.networkingPrivate.onNetworksChanged.addListener(
           this.onNetworksChanged_.bind(this));
-      chrome.networkingPrivate.getVisibleNetworks(
-          'All',
+      chrome.networkingPrivate.getNetworks(
+          { 'networkType': 'All', 'visible': true },
           this.setVisibleNetworks.bind(this));
     }
   };

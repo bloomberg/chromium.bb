@@ -68,6 +68,8 @@ const char kCellular[] = "Cellular";
 const char kEthernet[] = "Ethernet";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
+const char kWimax[] = "Wimax";
+const char kWireless[] = "Wireless";
 }  // namespace network_type
 
 namespace cellular {

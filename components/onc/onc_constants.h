@@ -79,11 +79,14 @@ ONC_EXPORT extern std::string WifiProperty(const std::string& property);
 }  // namespace network_config
 
 namespace network_type {
-ONC_EXPORT extern const char kAllTypes[];
 ONC_EXPORT extern const char kCellular[];
 ONC_EXPORT extern const char kEthernet[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
+ONC_EXPORT extern const char kWimax[];
+// Patterns matching multiple types, not part of the ONC spec.
+ONC_EXPORT extern const char kAllTypes[];
+ONC_EXPORT extern const char kWireless[];
 }  // namespace network_type
 
 namespace cellular {

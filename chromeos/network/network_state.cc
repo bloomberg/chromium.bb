@@ -130,12 +130,22 @@ bool NetworkState::InitialPropertiesReceived(
   if (!properties.HasKey(shill::kTypeProperty)) {
     NET_LOG_ERROR("NetworkState has no type",
                   shill_property_util::GetNetworkIdFromProperties(properties));
-  } else {
-    changed |= UpdateName(properties);
+    return false;
   }
+  // Ensure that the network has a valid name.
+  changed |= UpdateName(properties);
+
+  // Set the has_ca_cert_nss_ property.
   bool had_ca_cert_nss = has_ca_cert_nss_;
   has_ca_cert_nss_ = IsCaCertNssSet(properties);
   changed |= had_ca_cert_nss != has_ca_cert_nss_;
+
+  // By convention, all visible WiFi networks have a SignalStrength > 0.
+  if (type() == shill::kTypeWifi) {
+    if (signal_strength_ <= 0)
+      signal_strength_ = 1;
+  }
+
   return changed;
 }
 

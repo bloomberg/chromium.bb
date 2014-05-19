@@ -183,8 +183,15 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // favorite is visible and retrieve the complete properties (and vice-versa).
   void GetFavoriteList(FavoriteStateList* list) const;
 
-  // Like GetFavoriteList() but only returns favorites with matching |type|.
+  // Like GetFavoriteList() but only returns favorites with matching |type| and
+  // the following properties:
+  // |configured_only| - if true only include networks where IsInProfile is true
+  // |visible_only| - if true only include networks in the visible Services list
+  // |limit| - if > 0 limits the number of results.
   void GetFavoriteListByType(const NetworkTypePattern& type,
+                             bool configured_only,
+                             bool visible_only,
+                             int limit,
                              FavoriteStateList* list) const;
 
   // Finds and returns the FavoriteState associated with |service_path| or NULL

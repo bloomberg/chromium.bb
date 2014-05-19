@@ -210,6 +210,35 @@ void NetworkingPrivateCreateNetworkFunction::ResultCallback(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetNetworksFunction
+
+NetworkingPrivateGetNetworksFunction::
+  ~NetworkingPrivateGetNetworksFunction() {
+}
+
+bool NetworkingPrivateGetNetworksFunction::RunAsync() {
+  scoped_ptr<api::GetNetworks::Params> params =
+      api::GetNetworks::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // TODO(stevenjb/mef): Apply filters (visible, configured).
+  NetworkingPrivateServiceClient* service_client =
+      NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
+
+  service_client->GetVisibleNetworks(
+      api::ToString(params->filter.network_type),
+      base::Bind(&NetworkingPrivateGetNetworksFunction::ResultCallback, this));
+
+  return true;
+}
+
+void NetworkingPrivateGetNetworksFunction::ResultCallback(
+    const base::ListValue& network_list) {
+  SetResult(network_list.DeepCopy());
+  SendResponse(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateGetVisibleNetworksFunction
 
 NetworkingPrivateGetVisibleNetworksFunction::
@@ -225,7 +254,7 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunAsync() {
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
 
   service_client->GetVisibleNetworks(
-      api::GetVisibleNetworks::Params::ToString(params->type),
+      api::ToString(params->network_type),
       base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::ResultCallback,
                  this));
 

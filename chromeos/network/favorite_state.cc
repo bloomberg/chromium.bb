@@ -74,9 +74,12 @@ void FavoriteState::GetStateProperties(
   ManagedState::GetStateProperties(dictionary);
 
   dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
+  dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
+                                            security_);
+
+  // Note: The following are added for debugging, but do not translate to ONC.
   dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                             profile_path());
-  // Add ONCSource for debugging.
   dictionary->SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
                                             ui_data_.GetONCSourceAsString());
 }
