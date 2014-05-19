@@ -21,29 +21,13 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
-using content::FaviconURL;
+using favicon::FaviconURL;
 
 namespace {
 
 // Size (along each axis) of a touch icon. This currently corresponds to
 // the apple touch icon for iPad.
 const int kTouchIconSize = 144;
-
-// Returns favicon_base::IconType the given icon_type corresponds to.
-favicon_base::IconType ToChromeIconType(FaviconURL::IconType icon_type) {
-  switch (icon_type) {
-    case FaviconURL::FAVICON:
-      return favicon_base::FAVICON;
-    case FaviconURL::TOUCH_ICON:
-      return favicon_base::TOUCH_ICON;
-    case FaviconURL::TOUCH_PRECOMPOSED_ICON:
-      return favicon_base::TOUCH_PRECOMPOSED_ICON;
-    case FaviconURL::INVALID_ICON:
-      return favicon_base::INVALID_ICON;
-  }
-  NOTREACHED();
-  return favicon_base::INVALID_ICON;
-}
 
 // Get the maximal icon size in pixels for a icon of type |icon_type| for the
 // current platform.
@@ -68,8 +52,7 @@ int GetMaximalIconSize(favicon_base::IconType icon_type) {
 bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
                        const GURL& url,
                        favicon_base::IconType icon_type) {
-  return favicon_url.icon_url == url &&
-      ToChromeIconType(favicon_url.icon_type) == icon_type;
+  return favicon_url.icon_url == url && favicon_url.icon_type == icon_type;
 }
 
 // Returns true if all of the icon URLs and icon types in |bitmap_results| are
@@ -81,8 +64,7 @@ bool DoUrlsAndIconsMatch(
   if (bitmap_results.empty())
     return false;
 
-  const favicon_base::IconType icon_type =
-      ToChromeIconType(favicon_url.icon_type);
+  const favicon_base::IconType icon_type = favicon_url.icon_type;
 
   for (size_t i = 0; i < bitmap_results.size(); ++i) {
     if (favicon_url.icon_url != bitmap_results[i].icon_url ||
@@ -393,7 +375,7 @@ void FaviconHandler::ProcessCurrentUrl() {
   if (PageChangedSinceFaviconWasRequested() || !current_candidate())
     return;
 
-  if (current_candidate()->icon_type == FaviconURL::FAVICON) {
+  if (current_candidate()->icon_type == favicon_base::FAVICON) {
     if (!favicon_expired_or_incomplete_ &&
         driver_->GetActiveFaviconValidity() &&
         DoUrlAndIconMatch(*current_candidate(),
@@ -407,10 +389,9 @@ void FaviconHandler::ProcessCurrentUrl() {
   }
 
   if (got_favicon_from_history_)
-    DownloadFaviconOrAskFaviconService(
-        driver_->GetActiveURL(),
-        current_candidate()->icon_url,
-        ToChromeIconType(current_candidate()->icon_type));
+    DownloadFaviconOrAskFaviconService(driver_->GetActiveURL(),
+                                       current_candidate()->icon_url,
+                                       current_candidate()->icon_type);
 }
 
 void FaviconHandler::OnDidDownloadFavicon(
@@ -592,19 +573,17 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       // Mapping in the database is wrong. DownloadFavIconOrAskHistory will
       // update the mapping for this url and download the favicon if we don't
       // already have it.
-      DownloadFaviconOrAskFaviconService(
-          driver_->GetActiveURL(),
-          current_candidate()->icon_url,
-          ToChromeIconType(current_candidate()->icon_type));
+      DownloadFaviconOrAskFaviconService(driver_->GetActiveURL(),
+                                         current_candidate()->icon_url,
+                                         current_candidate()->icon_type);
     }
   } else if (current_candidate()) {
     // We know the official url for the favicon, but either don't have the
     // favicon or it's expired. Continue on to DownloadFaviconOrAskHistory to
     // either download or check history again.
-    DownloadFaviconOrAskFaviconService(
-        driver_->GetActiveURL(),
-        current_candidate()->icon_url,
-        ToChromeIconType(current_candidate()->icon_type));
+    DownloadFaviconOrAskFaviconService(driver_->GetActiveURL(),
+                                       current_candidate()->icon_url,
+                                       current_candidate()->icon_type);
   }
   // else we haven't got the icon url. When we get it we'll ask the
   // renderer to download the icon.
@@ -669,7 +648,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
     // one got from page. Request the current one.
     ScheduleDownload(driver_->GetActiveURL(),
                      current_candidate()->icon_url,
-                     ToChromeIconType(current_candidate()->icon_type));
+                     current_candidate()->icon_type);
   }
   history_results_ = favicon_bitmap_results;
 }
@@ -699,7 +678,7 @@ void FaviconHandler::SortAndPruneImageUrls() {
       ++i;
       continue;
     }
-    int max_size = GetMaximalIconSize(ToChromeIconType(i->icon_type));
+    int max_size = GetMaximalIconSize(i->icon_type);
     int index = GetLargestSizeIndex(i->icon_sizes, max_size * max_size);
     if (index == -1) {
       i = image_urls_.erase(i);

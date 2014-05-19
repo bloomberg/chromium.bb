@@ -15,7 +15,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "content/public/common/favicon_url.h"
+#include "components/favicon/core/favicon_url.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -92,7 +92,7 @@ class FaviconHandler {
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
-  void OnUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates);
+  void OnUpdateFaviconURL(const std::vector<favicon::FaviconURL>& candidates);
 
   // Processes the current image_irls_ entry, requesting the image from the
   // history / download service.
@@ -110,7 +110,7 @@ class FaviconHandler {
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // For testing.
-  const std::vector<content::FaviconURL>& image_urls() const {
+  const std::vector<favicon::FaviconURL>& image_urls() const {
     return image_urls_;
   }
 
@@ -229,7 +229,7 @@ class FaviconHandler {
   void SetFaviconOnActivePage(const GURL& icon_url, const gfx::Image& image);
 
   // Return the current candidate if any.
-  content::FaviconURL* current_candidate() {
+  favicon::FaviconURL* current_candidate() {
     return (!image_urls_.empty()) ? &image_urls_.front() : NULL;
   }
 
@@ -275,7 +275,7 @@ class FaviconHandler {
   const bool download_largest_icon_;
 
   // The prioritized favicon candidates from the page back from the renderer.
-  std::vector<content::FaviconURL> image_urls_;
+  std::vector<favicon::FaviconURL> image_urls_;
 
   // The FaviconBitmapResults from history.
   std::vector<favicon_base::FaviconBitmapResult> history_results_;
