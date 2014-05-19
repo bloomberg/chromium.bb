@@ -1,22 +1,16 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="tracing-test.js"></script>
 
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("timeline");
-    var tracingModel = new WebInspector.TracingModel();
-    tracingModel.start(WebInspector.TracingModel.DevToolsMetadataEventCategory + ",-*", "", onTracingStarted);
-
-    function onTracingStarted(error)
-    {
-        tracingModel.stop(processTracingEvents)
-    }
+    InspectorTest.invokeWithTracing("-*," + WebInspector.TracingModel.DevToolsMetadataEventCategory, "(function(callback) { callback(); })", processTracingEvents);
 
     function processTracingEvents()
     {
-        tracingModel.sortedProcesses().forEach(function(process) {
+        InspectorTest.tracingModel.sortedProcesses().forEach(function(process) {
             process.sortedThreads().forEach(function(thread) {
                 thread.events().forEach(processEvent);
             });
@@ -30,7 +24,7 @@ function test()
             Object.values(WebInspector.TracingModel.DevToolsMetadataEvent).indexOf(event.name) < 0) {
             return;
         }
-        InspectorTest.assertEquals(tracingModel.sessionId(), event.args["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.tracingModel.sessionId(), event.args["sessionId"]);
         InspectorTest.addResult("Got DevTools metadata event: " + event.name);
     }
 }

@@ -984,6 +984,3 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
-
-# This started failing when we moved core/animations to oilpan.
-crbug.com/374411 inspector/tracing-session-id.html [ Failure ]
