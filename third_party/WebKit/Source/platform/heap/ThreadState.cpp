@@ -814,27 +814,28 @@ void ThreadState::copyStackUntilSafePointScope()
 
 void ThreadState::performPendingSweep()
 {
+    if (!sweepRequested())
+        return;
+
     TRACE_EVENT0("Blink", "ThreadState::performPendingSweep");
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
     if (isMainThread())
         TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkGCSweeping");
 
-    if (sweepRequested()) {
-        m_sweepInProgress = true;
-        // Disallow allocation during weak processing.
-        enterNoAllocationScope();
-        // Perform thread-specific weak processing.
-        while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
-        leaveNoAllocationScope();
-        // Perform sweeping and finalization.
-        m_stats.clear(); // Sweeping will recalculate the stats
-        for (int i = 0; i < NumberOfHeaps; i++)
-            m_heaps[i]->sweep();
-        getStats(m_statsAfterLastGC);
-        m_sweepInProgress = false;
-        clearGCRequested();
-        clearSweepRequested();
-    }
+    m_sweepInProgress = true;
+    // Disallow allocation during weak processing.
+    enterNoAllocationScope();
+    // Perform thread-specific weak processing.
+    while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+    leaveNoAllocationScope();
+    // Perform sweeping and finalization.
+    m_stats.clear(); // Sweeping will recalculate the stats
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->sweep();
+    getStats(m_statsAfterLastGC);
+    m_sweepInProgress = false;
+    clearGCRequested();
+    clearSweepRequested();
 
     if (isMainThread())
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
