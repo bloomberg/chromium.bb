@@ -482,8 +482,8 @@ TEST_F(DecimalTest, Constructor)
     EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(99999999999999998), 0, Negative, encode(UINT64_C(99999999999999998), 0, Negative));
     EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(99999999999999999), 0, Positive, encode(UINT64_C(99999999999999999), 0, Positive));
     EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(99999999999999999), 0, Negative, encode(UINT64_C(99999999999999999), 0, Negative));
-    EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(10000000000000000), 1, Positive, encode(UINT64_C(100000000000000000), 0, Positive));
-    EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(10000000000000000), 1, Negative, encode(UINT64_C(100000000000000000), 0, Negative));
+    EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(100000000000000000), 0, Positive, encode(UINT64_C(100000000000000000), 0, Positive));
+    EXPECT_DECIMAL_ENCODED_DATA_EQ(UINT64_C(100000000000000000), 0, Negative, encode(UINT64_C(100000000000000000), 0, Negative));
 }
 
 TEST_F(DecimalTest, Division)
@@ -493,7 +493,7 @@ TEST_F(DecimalTest, Division)
     EXPECT_EQ(encode(5, -1, Negative), Decimal(-1) / Decimal(2));
     EXPECT_EQ(encode(99, 0, Positive), Decimal(99) / Decimal(1));
     EXPECT_EQ(Decimal(1), Decimal(-50) / Decimal(-50));
-    EXPECT_EQ(encode(UINT64_C(3333333333333333), -16, Positive), Decimal(1) / Decimal(3));
+    EXPECT_EQ(encode(UINT64_C(33333333333333333), -17, Positive), Decimal(1) / Decimal(3));
     EXPECT_EQ(encode(UINT64_C(12345678901234), -1, Positive), encode(UINT64_C(12345678901234), 0, Positive) / Decimal(10));
 }
 
@@ -920,7 +920,7 @@ TEST_F(DecimalTest, Remainder)
     EXPECT_EQ(encode(2, -1, Positive), encode(102, -1, Positive).remainder(1));
     EXPECT_EQ(encode(1, -1, Positive), Decimal(10).remainder(encode(3, -1, Positive)));
     EXPECT_EQ(Decimal(1), encode(36, -1, Positive).remainder(encode(13, -1, Positive)));
-    EXPECT_EQ(encode(1, 87, Positive), (encode(1234, 100, Positive).remainder(Decimal(3))));
+    EXPECT_EQ(encode(1, 86, Positive), (encode(1234, 100, Positive).remainder(Decimal(3))));
     EXPECT_EQ(Decimal(500), (Decimal(500).remainder(1000)));
     EXPECT_EQ(Decimal(-500), (Decimal(-500).remainder(1000)));
 }
