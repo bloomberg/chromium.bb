@@ -87,9 +87,8 @@ public:
     class MicrotaskSuppression {
     public:
         MicrotaskSuppression(v8::Isolate* isolate)
-            : m_v8scope(isolate)
 #ifndef NDEBUG
-            , m_isolate(isolate)
+            : m_isolate(isolate)
 #endif
         {
             ASSERT(!ScriptForbiddenScope::isScriptForbidden());
@@ -106,7 +105,6 @@ public:
         }
 
     private:
-        v8::Isolate::SuppressMicrotaskExecutionScope m_v8scope;
 #ifndef NDEBUG
         v8::Isolate* m_isolate;
 #endif
