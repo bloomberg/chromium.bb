@@ -31,8 +31,9 @@
 #ifndef V8NPObject_h
 #define V8NPObject_h
 
-#include <bindings/npruntime.h>
 #include <v8.h>
+
+struct NPObject;
 
 namespace WebCore {
 
