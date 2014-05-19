@@ -353,18 +353,6 @@ enum NotificationType {
   // This is sent from Instant when the omnibox focus state changes.
   NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
 
-  // Sent when the Google URL for a profile has been updated.  Some services
-  // cache this value and need to update themselves when it changes.  See
-  // google_util::GetGoogleURLAndUpdateIfNecessary().  The source is the
-  // Profile, the details a GoogleURLTracker::UpdatedDetails containing the old
-  // and new URLs.
-  //
-  // Note that because incognito mode requests for the GoogleURLTracker are
-  // redirected to the non-incognito profile's copy, this notification will only
-  // ever fire on non-incognito profiles; thus listeners should use
-  // GetOriginalProfile() when constructing a Source to filter against.
-  NOTIFICATION_GOOGLE_URL_UPDATED,
-
   // Printing ----------------------------------------------------------------
 
   // Notification from PrintJob that an event occurred. It can be that a page
