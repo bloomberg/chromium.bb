@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -28,6 +30,159 @@ void DoRunLoop() {
 
 void QuitRunLoop() {
   current_run_loop->Quit();
+}
+
+void QuitRunLoopOnChangesAcked() {
+  QuitRunLoop();
+}
+
+void WaitForAllChangesToBeAcked(ViewManager* manager) {
+  ViewManagerPrivate(manager).synchronizer()->set_changes_acked_callback(
+      base::Bind(&QuitRunLoopOnChangesAcked));
+  DoRunLoop();
+  ViewManagerPrivate(manager).synchronizer()->ClearChangesAckedCallback();
+}
+
+class ActiveViewChangedObserver : public ViewTreeNodeObserver {
+ public:
+  explicit ActiveViewChangedObserver(ViewTreeNode* node)
+      : node_(node) {}
+  virtual ~ActiveViewChangedObserver() {}
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeActiveViewChange(ViewTreeNode* node,
+                                      View* old_view,
+                                      View* new_view,
+                                      DispositionChangePhase phase) OVERRIDE {
+    DCHECK_EQ(node, node_);
+    QuitRunLoop();
+  }
+
+  ViewTreeNode* node_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveViewChangedObserver);
+};
+
+// Waits until the active view id of the supplied node changes.
+void WaitForActiveViewToChange(ViewTreeNode* node) {
+  ActiveViewChangedObserver observer(node);
+  node->AddObserver(&observer);
+  DoRunLoop();
+  node->RemoveObserver(&observer);
+}
+
+// Spins a runloop until the tree beginning at |root| has |tree_size| nodes
+// (including |root|).
+class TreeSizeMatchesObserver : public ViewTreeNodeObserver {
+ public:
+  TreeSizeMatchesObserver(ViewTreeNode* tree, size_t tree_size)
+      : tree_(tree),
+        tree_size_(tree_size) {}
+  virtual ~TreeSizeMatchesObserver() {}
+
+  bool IsTreeCorrectSize() {
+    return CountNodes(tree_) == tree_size_;
+  }
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnTreeChange(const TreeChangeParams& params) OVERRIDE {
+    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return;
+    if (IsTreeCorrectSize())
+      QuitRunLoop();
+  }
+
+  size_t CountNodes(const ViewTreeNode* node) const {
+    size_t count = 1;
+    ViewTreeNode::Children::const_iterator it = node->children().begin();
+    for (; it != node->children().end(); ++it)
+      count += CountNodes(*it);
+    return count;
+  }
+
+  ViewTreeNode* tree_;
+  size_t tree_size_;
+  DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
+};
+
+void WaitForTreeSizeToMatch(ViewTreeNode* node, size_t tree_size) {
+  TreeSizeMatchesObserver observer(node, tree_size);
+  if (observer.IsTreeCorrectSize())
+    return;
+  node->AddObserver(&observer);
+  DoRunLoop();
+  node->RemoveObserver(&observer);
+}
+
+
+// Utility class that waits for the destruction of some number of nodes and
+// views.
+class DestructionObserver : public ViewTreeNodeObserver,
+                            public ViewObserver {
+ public:
+  // |nodes| or |views| can be NULL.
+  DestructionObserver(std::set<TransportNodeId>* nodes,
+                      std::set<TransportViewId>* views)
+      : nodes_(nodes),
+        views_(views) {}
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeDestroy(
+      ViewTreeNode* node,
+      ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
+    if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return;
+    std::set<TransportNodeId>::const_iterator it = nodes_->find(node->id());
+    if (it != nodes_->end())
+      nodes_->erase(it);
+    if (CanQuit())
+      QuitRunLoop();
+  }
+
+  // Overridden from ViewObserver:
+  virtual void OnViewDestroy(
+      View* view,
+      ViewObserver::DispositionChangePhase phase) OVERRIDE {
+    if (phase != ViewObserver::DISPOSITION_CHANGED)
+      return;
+    std::set<TransportViewId>::const_iterator it = views_->find(view->id());
+    if (it != views_->end())
+      views_->erase(it);
+    if (CanQuit())
+      QuitRunLoop();
+  }
+
+  bool CanQuit() {
+    return (!nodes_ || nodes_->empty()) && (!views_ || views_->empty());
+  }
+
+  std::set<TransportNodeId>* nodes_;
+  std::set<TransportViewId>* views_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
+};
+
+void WaitForDestruction(ViewManager* view_manager,
+                        std::set<TransportNodeId>* nodes,
+                        std::set<TransportViewId>* views) {
+  DestructionObserver observer(nodes, views);
+  DCHECK(nodes || views);
+  if (nodes) {
+    for (std::set<TransportNodeId>::const_iterator it = nodes->begin();
+          it != nodes->end(); ++it) {
+      view_manager->GetNodeById(*it)->AddObserver(&observer);
+    }
+  }
+  if (views) {
+    for (std::set<TransportViewId>::const_iterator it = views->begin();
+          it != views->end(); ++it) {
+      view_manager->GetViewById(*it)->AddObserver(&observer);
+    }
+  }
+  DoRunLoop();
 }
 
 // ViewManager -----------------------------------------------------------------
@@ -101,38 +256,6 @@ class TreeObserverBase : public ViewTreeNodeObserver {
   DISALLOW_COPY_AND_ASSIGN(TreeObserverBase);
 };
 
-// Spins a runloop until the tree beginning at |root| has |tree_size| nodes
-// (including |root|).
-class TreeSizeMatchesWaiter : public TreeObserverBase {
- public:
-  TreeSizeMatchesWaiter(ViewManager* view_manager, size_t tree_size)
-      : TreeObserverBase(view_manager),
-        tree_size_(tree_size) {
-    DoRunLoop();
-  }
-  virtual ~TreeSizeMatchesWaiter() {}
-
- private:
-  // Overridden from TreeObserverBase:
-  virtual bool ShouldQuitRunLoop(const TreeChangeParams& params) OVERRIDE {
-    if (params.phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
-      return false;
-    return CountNodes(view_manager()->tree()) == tree_size_;
-  }
-
-  size_t CountNodes(ViewTreeNode* node) const {
-    size_t count = 1;
-    ViewTreeNode::Children::const_iterator it = node->children().begin();
-    for (; it != node->children().end(); ++it)
-      count += CountNodes(*it);
-    return count;
-  }
-
-  size_t tree_size_;
-  DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesWaiter);
-};
-
-
 class HierarchyChanged_NodeCreatedObserver : public TreeObserverBase {
  public:
   explicit HierarchyChanged_NodeCreatedObserver(ViewManager* view_manager)
@@ -193,7 +316,7 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeMoved) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
   ViewTreeNode* node2 = CreateNodeInParent(view_manager_1()->tree());
   ViewTreeNode* node21 = CreateNodeInParent(node2);
-  TreeSizeMatchesWaiter waiter(view_manager_2(), 4);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 4);
 
   HierarchyChanged_NodeMovedObserver observer(view_manager_2(),
                                               node2->id(),
@@ -234,7 +357,7 @@ class HierarchyChanged_NodeRemovedObserver : public TreeObserverBase {
 
 TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   HierarchyChanged_NodeRemovedObserver observer(view_manager_2());
 
@@ -246,73 +369,9 @@ TEST_F(ViewManagerTest, HierarchyChanged_NodeRemoved) {
   EXPECT_TRUE(tree2->children().empty());
 }
 
-// Utility class that waits for the destruction of some number of nodes and
-// views.
-class DestructionWaiter : public ViewTreeNodeObserver,
-                          public ViewObserver {
- public:
-  // |nodes| or |views| can be NULL.
-  DestructionWaiter(ViewManager* view_manager,
-                    std::set<TransportNodeId>* nodes,
-                    std::set<TransportViewId>* views)
-      : nodes_(nodes),
-        views_(views) {
-    DCHECK(nodes || views);
-    if (nodes) {
-      for (std::set<TransportNodeId>::const_iterator it = nodes->begin();
-           it != nodes->end(); ++it) {
-        view_manager->GetNodeById(*it)->AddObserver(this);
-      }
-    }
-    if (views) {
-      for (std::set<TransportViewId>::const_iterator it = views->begin();
-           it != views->end(); ++it) {
-        view_manager->GetViewById(*it)->AddObserver(this);
-      }
-    }
-    DoRunLoop();
-  }
-
- private:
-  // Overridden from ViewTreeNodeObserver:
-  virtual void OnNodeDestroy(
-      ViewTreeNode* node,
-      ViewTreeNodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
-      return;
-    std::set<TransportNodeId>::const_iterator it = nodes_->find(node->id());
-    if (it != nodes_->end())
-      nodes_->erase(it);
-    if (CanQuit())
-      QuitRunLoop();
-  }
-
-  // Overridden from ViewObserver:
-  virtual void OnViewDestroy(
-      View* view,
-      ViewObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != ViewObserver::DISPOSITION_CHANGED)
-      return;
-    std::set<TransportViewId>::const_iterator it = views_->find(view->id());
-    if (it != views_->end())
-      views_->erase(it);
-    if (CanQuit())
-      QuitRunLoop();
-  }
-
-  bool CanQuit() {
-    return (!nodes_ || nodes_->empty()) && (!views_ || views_->empty());
-  }
-
-  std::set<TransportNodeId>* nodes_;
-  std::set<TransportViewId>* views_;
-
-  DISALLOW_COPY_AND_ASSIGN(DestructionWaiter);
-};
-
 TEST_F(ViewManagerTest, NodeDestroyed) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   // |node1| will be deleted after calling Destroy() below.
   TransportNodeId id = node1->id();
@@ -320,7 +379,7 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
 
   std::set<TransportNodeId> nodes;
   nodes.insert(id);
-  DestructionWaiter destroyed_waiter(view_manager_2(), &nodes, NULL);
+  WaitForDestruction(view_manager_2(), &nodes, NULL);
 
   EXPECT_TRUE(view_manager_2()->tree()->children().empty());
   EXPECT_EQ(NULL, view_manager_2()->GetNodeById(id));
@@ -328,74 +387,47 @@ TEST_F(ViewManagerTest, NodeDestroyed) {
 
 TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNode) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   TransportNodeId id = node1->id();
   DestroyViewManager1();
   std::set<TransportNodeId> nodes;
   nodes.insert(id);
-  DestructionWaiter destroyed_waiter(view_manager_2(), &nodes, NULL);
+  WaitForDestruction(view_manager_2(), &nodes, NULL);
 
   // tree() should still be valid, since it's owned by neither connection.
   EXPECT_TRUE(view_manager_2()->tree()->children().empty());
 }
 
-// Waits until the active view id of the supplied node changes.
-class ActiveViewChangedWaiter : public ViewTreeNodeObserver {
- public:
-  explicit ActiveViewChangedWaiter(ViewTreeNode* node)
-      : node_(node) {
-    node_->AddObserver(this);
-    DoRunLoop();
-  }
-  virtual ~ActiveViewChangedWaiter() {
-    node_->RemoveObserver(this);
-  }
-
- private:
-  // Overridden from ViewTreeNodeObserver:
-  virtual void OnNodeActiveViewChange(ViewTreeNode* node,
-                                      View* old_view,
-                                      View* new_view,
-                                      DispositionChangePhase phase) OVERRIDE {
-    DCHECK_EQ(node, node_);
-    QuitRunLoop();
-  }
-
-  ViewTreeNode* node_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveViewChangedWaiter);
-};
-
 TEST_F(ViewManagerTest, SetActiveView) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   View* view1 = View::Create(view_manager_1());
   node1->SetActiveView(view1);
 
   ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
-  ActiveViewChangedWaiter waiter(node1_2);
+  WaitForActiveViewToChange(node1_2);
 
   EXPECT_EQ(node1_2->active_view()->id(), view1->id());
 }
 
 TEST_F(ViewManagerTest, DestroyView) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   View* view1 = View::Create(view_manager_1());
   node1->SetActiveView(view1);
 
   ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
-  ActiveViewChangedWaiter active_view_waiter(node1_2);
+  WaitForActiveViewToChange(node1_2);
 
   TransportViewId view1_id = view1->id();
   view1->Destroy();
 
   std::set<TransportViewId> views;
   views.insert(view1_id);
-  DestructionWaiter destruction_waiter(view_manager_2(), NULL, &views);
+  WaitForDestruction(view_manager_2(), NULL, &views);
   EXPECT_EQ(NULL, node1_2->active_view());
   EXPECT_EQ(NULL, view_manager_2()->GetViewById(view1_id));
 }
@@ -404,15 +436,13 @@ TEST_F(ViewManagerTest, DestroyView) {
 // node and view disappearing from all connections that see them.
 TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   View* view1 = View::Create(view_manager_1());
   node1->SetActiveView(view1);
 
   ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
-  {
-    ActiveViewChangedWaiter active_view_waiter(node1_2);
-  }
+  WaitForActiveViewToChange(node1_2);
 
   TransportNodeId node1_id = node1->id();
   TransportViewId view1_id = view1->id();
@@ -422,9 +452,7 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
   observed_nodes.insert(node1_id);
   std::set<TransportViewId> observed_views;
   observed_views.insert(view1_id);
-  DestructionWaiter destruction_waiter(view_manager_2(),
-                                       &observed_nodes,
-                                       &observed_views);
+  WaitForDestruction(view_manager_2(), &observed_nodes, &observed_views);
 
   // tree() should still be valid, since it's owned by neither connection.
   EXPECT_TRUE(view_manager_2()->tree()->children().empty());
@@ -441,15 +469,12 @@ TEST_F(ViewManagerTest, ViewManagerDestroyed_CleanupNodeAndView) {
 TEST_F(ViewManagerTest,
        ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   View* view1_2 = View::Create(view_manager_2());
   ViewTreeNode* node1_2 = view_manager_2()->tree()->GetChildById(node1->id());
   node1_2->SetActiveView(view1_2);
-
-  {
-    ActiveViewChangedWaiter active_view_waiter(node1);
-  }
+  WaitForActiveViewToChange(node1);
 
   TransportNodeId node1_id = node1->id();
   TransportViewId view1_2_id = view1_2->id();
@@ -457,7 +482,7 @@ TEST_F(ViewManagerTest,
   DestroyViewManager1();
   std::set<TransportNodeId> nodes;
   nodes.insert(node1_id);
-  DestructionWaiter destruction_waiter(view_manager_2(), &nodes, NULL);
+  WaitForDestruction(view_manager_2(), &nodes, NULL);
 
   // tree() should still be valid, since it's owned by neither connection.
   EXPECT_TRUE(view_manager_2()->tree()->children().empty());
@@ -476,10 +501,31 @@ TEST_F(ViewManagerTest,
 //             Contains().
 TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
   ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
-  TreeSizeMatchesWaiter init_waiter(view_manager_2(), 2);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
 
   View* view1_2 = View::Create(view_manager_2());
   EXPECT_DEATH(node1->SetActiveView(view1_2), "");
+}
+
+// This test verifies that a node hierarchy constructed in one connection
+// becomes entirely visible to the second connection when the hierarchy is
+// attached.
+TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
+  ViewTreeNode* node1 = ViewTreeNode::Create(view_manager_1());
+  ViewTreeNode* node11 = CreateNodeInParent(node1);
+  View* view11 = View::Create(view_manager_1());
+  node11->SetActiveView(view11);
+  WaitForAllChangesToBeAcked(view_manager_1());
+
+  // Now attach this node tree to the root & wait for it to show up in the
+  // second connection.
+  view_manager_1()->tree()->AddChild(node1);
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 3);
+
+  ViewTreeNode* node11_2 = view_manager_2()->GetNodeById(node11->id());
+  View* view11_2 = view_manager_2()->GetViewById(view11->id());
+  EXPECT_TRUE(node11_2 != NULL);
+  EXPECT_EQ(view11_2, node11_2->active_view());
 }
 
 }  // namespace view_manager

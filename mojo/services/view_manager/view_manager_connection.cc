@@ -119,12 +119,14 @@ void ViewManagerConnection::ProcessNodeViewReplaced(
     bool originated_change) {
   if (originated_change)
     return;
-  const TransportViewId new_view_id = new_view ?
-      ViewIdToTransportId(new_view->id()) : 0;
-  const TransportViewId old_view_id = old_view ?
-      ViewIdToTransportId(old_view->id()) : 0;
-  client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
-                               new_view_id, old_view_id);
+  if (known_nodes_.count(NodeIdToTransportId(node->id())) > 0) {
+    const TransportViewId new_view_id = new_view ?
+        ViewIdToTransportId(new_view->id()) : 0;
+    const TransportViewId old_view_id = old_view ?
+        ViewIdToTransportId(old_view->id()) : 0;
+    client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
+                                 new_view_id, old_view_id);
+  }
 }
 
 void ViewManagerConnection::ProcessNodeDeleted(
@@ -270,6 +272,7 @@ void ViewManagerConnection::CreateNode(
     return;
   }
   node_map_[node_id.node_id] = new Node(this, node_id);
+  known_nodes_.insert(transport_node_id);
   callback.Run(true);
 }
 

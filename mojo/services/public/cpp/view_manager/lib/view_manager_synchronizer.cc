@@ -51,6 +51,30 @@ ViewTreeNode* AddNodeToViewManager(ViewManager* manager,
   return node;
 }
 
+ViewTreeNode* BuildNodeTree(ViewManager* manager,
+                            const Array<INode>& nodes) {
+  std::vector<ViewTreeNode*> parents;
+  ViewTreeNode* root = NULL;
+  ViewTreeNode* last_node = NULL;
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    if (last_node && nodes[i].parent_id() == last_node->id()) {
+      parents.push_back(last_node);
+    } else if (!parents.empty()) {
+      while (parents.back()->id() != nodes[i].parent_id())
+        parents.pop_back();
+    }
+    ViewTreeNode* node = AddNodeToViewManager(
+        manager,
+        !parents.empty() ? parents.back() : NULL,
+        nodes[i].node_id(),
+        nodes[i].view_id());
+    if (!last_node)
+      root = node;
+    last_node = node;
+  }
+  return root;
+}
+
 class ViewManagerTransaction {
  public:
   virtual ~ViewManagerTransaction() {}
@@ -62,13 +86,6 @@ class ViewManagerTransaction {
   }
 
   bool committed() const { return committed_; }
-
-  // General callback to be used for commits to the service.
-  void OnActionCompleted(bool success) {
-    DCHECK(success);
-    DoActionCompleted(success);
-    synchronizer_->RemoveFromPendingQueue(this);
-  }
 
  protected:
   enum TransactionType {
@@ -105,7 +122,19 @@ class ViewManagerTransaction {
     return synchronizer_->next_server_change_id_++;
   }
 
+  base::Callback<void(bool)> ActionCompletedCallback() {
+    return base::Bind(&ViewManagerTransaction::OnActionCompleted,
+                      base::Unretained(this));
+  }
+
  private:
+  // General callback to be used for commits to the service.
+  void OnActionCompleted(bool success) {
+    DCHECK(success);
+    DoActionCompleted(success);
+    synchronizer_->RemoveFromPendingQueue(this);
+  }
+
   const TransactionType transaction_type_;
   bool committed_;
   ViewManagerSynchronizer* synchronizer_;
@@ -124,10 +153,7 @@ class CreateViewTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->CreateView(
-        view_id_,
-        base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                   base::Unretained(this)));
+    service()->CreateView(view_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): failure.
@@ -149,10 +175,7 @@ class DestroyViewTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->DeleteView(
-        view_id_,
-        base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                   base::Unretained(this)));
+    service()->DeleteView(view_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
@@ -174,10 +197,7 @@ class CreateViewTreeNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->CreateNode(
-        node_id_,
-        base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                   base::Unretained(this)));
+    service()->CreateNode(node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): Failure means we tried to create with an extant id for this
@@ -202,10 +222,7 @@ class DestroyViewTreeNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->DeleteNode(
-        node_id_,
-        base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                   base::Unretained(this)));
+    service()->DeleteNode(node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
@@ -240,15 +257,13 @@ class HierarchyTransaction : public ViewManagerTransaction {
             parent_id_,
             child_id_,
             GetAndAdvanceNextServerChangeId(),
-            base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                       base::Unretained(this)));
+            ActionCompletedCallback());
         break;
       case TYPE_REMOVE:
         service()->RemoveNodeFromParent(
             child_id_,
             GetAndAdvanceNextServerChangeId(),
-            base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                       base::Unretained(this)));
+            ActionCompletedCallback());
         break;
     }
   }
@@ -278,11 +293,7 @@ class SetActiveViewTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->SetView(
-        node_id_,
-        view_id_,
-        base::Bind(&ViewManagerTransaction::OnActionCompleted,
-                   base::Unretained(this)));
+    service()->SetView(node_id_, view_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
@@ -394,32 +405,13 @@ void ViewManagerSynchronizer::SetActiveView(TransportNodeId node_id,
 void ViewManagerSynchronizer::OnConnectionEstablished(
     TransportConnectionId connection_id,
     TransportChangeId next_server_change_id,
-    const mojo::Array<INode>& nodes) {
+    const Array<INode>& nodes) {
   connected_ = true;
   connection_id_ = connection_id;
   next_server_change_id_ = next_server_change_id;
 
-  ViewManagerPrivate private_manager(view_manager_);
-  std::vector<ViewTreeNode*> parents;
-  ViewTreeNode* root = NULL;
-  ViewTreeNode* last_node = NULL;
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    if (last_node && nodes[i].parent_id() == last_node->id()) {
-      parents.push_back(last_node);
-    } else if (!parents.empty()) {
-      while (parents.back()->id() != nodes[i].parent_id())
-        parents.pop_back();
-    }
-    ViewTreeNode* node =
-        AddNodeToViewManager(view_manager_,
-                             !parents.empty() ? parents.back() : NULL,
-                             nodes[i].node_id(),
-                             nodes[i].view_id());
-    if (!last_node)
-      root = node;
-    last_node = node;
-  }
-  private_manager.set_root(root);
+  ViewManagerPrivate(view_manager_).set_root(
+      BuildNodeTree(view_manager_, nodes));
   if (init_loop_)
     init_loop_->Quit();
 
@@ -436,30 +428,15 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(
     uint32_t new_parent_id,
     uint32_t old_parent_id,
     TransportChangeId server_change_id,
-    const mojo::Array<INode>& nodes) {
+    const Array<INode>& nodes) {
   // TODO: deal with |nodes|.
   next_server_change_id_ = server_change_id + 1;
 
-  ViewTreeNode* new_parent =
-      view_manager_->tree()->GetChildById(new_parent_id);
-  ViewTreeNode* old_parent =
-      view_manager_->tree()->GetChildById(old_parent_id);
-  ViewTreeNode* node = NULL;
-  if (old_parent) {
-    // Existing node, mapped in this connection's tree.
-    // TODO(beng): verify this is actually true.
-    node = view_manager_->GetNodeById(node_id);
-    DCHECK_EQ(node->parent(), old_parent);
-  } else {
-    // New node, originating from another connection.
-    node = ViewTreeNodePrivate::LocalCreate();
-    ViewTreeNodePrivate private_node(node);
-    private_node.set_view_manager(view_manager_);
-    private_node.set_id(node_id);
-    ViewManagerPrivate(view_manager_).AddNode(node->id(), node);
+  BuildNodeTree(view_manager_, nodes);
 
-    // TODO(beng): view changes.
-  }
+  ViewTreeNode* new_parent = view_manager_->GetNodeById(new_parent_id);
+  ViewTreeNode* old_parent = view_manager_->GetNodeById(old_parent_id);
+  ViewTreeNode* node = view_manager_->GetNodeById(node_id);
   if (new_parent)
     ViewTreeNodePrivate(new_parent).LocalAddChild(node);
   else
@@ -520,6 +497,8 @@ void ViewManagerSynchronizer::RemoveFromPendingQueue(
     ViewManagerTransaction* transaction) {
   DCHECK_EQ(transaction, pending_transactions_.front());
   pending_transactions_.erase(pending_transactions_.begin());
+  if (pending_transactions_.empty() && !changes_acked_callback_.is_null())
+    changes_acked_callback_.Run();
 }
 
 }  // namespace view_manager

@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_MANAGER_SYNCHRONIZER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
@@ -47,6 +48,13 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   bool OwnsView(TransportViewId id) const;
 
   void SetActiveView(TransportNodeId node_id, TransportViewId view_id);
+
+  void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
+    changes_acked_callback_ = callback;
+  }
+  void ClearChangesAckedCallback() {
+    changes_acked_callback_ = base::Callback<void(void)>();
+  }
 
  private:
   friend class ViewManagerTransaction;
@@ -93,6 +101,8 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   // Non-NULL while blocking on the connection to |service_| during
   // construction.
   base::RunLoop* init_loop_;
+
+  base::Callback<void(void)> changes_acked_callback_;
 
   IViewManagerPtr service_;
 

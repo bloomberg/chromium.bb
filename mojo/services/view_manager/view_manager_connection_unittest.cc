@@ -891,6 +891,8 @@ TEST_F(ViewManagerConnectionTest, SetView) {
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
   ASSERT_TRUE(CreateView(view_manager_.get(), 1, 11));
+  ASSERT_TRUE(AddNode(view_manager_.get(), 1, CreateNodeId(1, 1), 1));
+  ASSERT_TRUE(AddNode(view_manager_.get(), 1, CreateNodeId(1, 2), 2));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
   EstablishSecondConnection();
@@ -946,17 +948,17 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
   EstablishSecondConnection();
   EXPECT_TRUE(client2_.GetAndClearChanges().empty());
 
-  // Delete node 1.
+  // Delete node 1. The second connection should not see this because the node
+  // was not known to it.
   {
     ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     Changes changes(client_.GetAndClearChanges());
     ASSERT_TRUE(changes.empty());
 
-    client2_.DoRunLoopUntilChangesCount(2);
+    client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
-    ASSERT_EQ(2u, changes.size());
-    EXPECT_EQ("ViewReplaced node=1,1 new_view=null old_view=1,11", changes[0]);
-    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[1]);
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Parent 2 to the root.
