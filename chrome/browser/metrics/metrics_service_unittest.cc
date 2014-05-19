@@ -124,12 +124,12 @@ class MetricsServiceTest : public testing::Test {
   // Returns true if there is a synthetic trial in the given vector that matches
   // the given trial name and trial group; returns false otherwise.
   bool HasSyntheticTrial(
-      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
+      const std::vector<variations::ActiveGroupId>& synthetic_trials,
       const std::string& trial_name,
       const std::string& trial_group) {
     uint32 trial_name_hash = metrics::HashName(trial_name);
     uint32 trial_group_hash = metrics::HashName(trial_group);
-    for (std::vector<chrome_variations::ActiveGroupId>::const_iterator it =
+    for (std::vector<variations::ActiveGroupId>::const_iterator it =
              synthetic_trials.begin();
          it != synthetic_trials.end(); ++it) {
       if ((*it).name == trial_name_hash && (*it).group == trial_group_hash)
@@ -195,7 +195,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   TestMetricsLog log("client", 1);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
@@ -254,7 +254,7 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   // value changes).
   const base::TimeTicks begin_log_time = base::TimeTicks::Now();
 
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(2U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group1"));

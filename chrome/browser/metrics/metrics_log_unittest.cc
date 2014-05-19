@@ -24,12 +24,12 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
@@ -89,12 +89,12 @@ const int kScreenHeight = 768;
 const int kScreenCount = 3;
 const float kScreenScaleFactor = 2;
 const char kBrandForTesting[] = "brand_for_testing";
-const chrome_variations::ActiveGroupId kFieldTrialIds[] = {
+const variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
   {23, 17}
 };
-const chrome_variations::ActiveGroupId kSyntheticTrials[] = {
+const variations::ActiveGroupId kSyntheticTrials[] = {
   {55, 15},
   {66, 16}
 };
@@ -183,7 +183,7 @@ class TestMetricsLog : public MetricsLog {
   }
 
   virtual void GetFieldTrialIds(
-      std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const
+      std::vector<variations::ActiveGroupId>* field_trial_ids) const
       OVERRIDE {
     ASSERT_TRUE(field_trial_ids->empty());
 
@@ -319,7 +319,7 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
 
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   // Add two synthetic trials.
   synthetic_trials.push_back(kSyntheticTrials[0]);
   synthetic_trials.push_back(kSyntheticTrials[1]);
@@ -359,7 +359,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &prefs);
     log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                           GoogleUpdateMetrics(),
-                          std::vector<chrome_variations::ActiveGroupId>());
+                          std::vector<variations::ActiveGroupId>());
     EXPECT_FALSE(prefs.GetString(kSystemProfilePref).empty());
     EXPECT_FALSE(prefs.GetString(kSystemProfileHashPref).empty());
   }
@@ -381,7 +381,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                           GoogleUpdateMetrics(),
-                          std::vector<chrome_variations::ActiveGroupId>());
+                          std::vector<variations::ActiveGroupId>());
   }
 
   {
@@ -399,7 +399,7 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::INITIAL_STABILITY_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
   log.RecordStabilityMetrics(base::TimeDelta(), base::TimeDelta());
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
@@ -418,7 +418,7 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
   log.RecordStabilityMetrics(base::TimeDelta(), base::TimeDelta());
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
@@ -443,7 +443,7 @@ TEST_F(MetricsLogTest, Plugins) {
   plugins.push_back(CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"),
                                          "2.0", false));
   log.RecordEnvironment(plugins, GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
 
   const metrics::SystemProfileProto& system_profile = log.system_profile();
   ASSERT_EQ(2, system_profile.plugin_size());
@@ -675,7 +675,7 @@ TEST_F(MetricsLogTest, MultiProfileUserCount) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   std::vector<content::WebPluginInfo> plugins;
   GoogleUpdateMetrics google_update_metrics;
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   log.RecordEnvironment(plugins, google_update_metrics, synthetic_trials);
   EXPECT_EQ(2u, log.system_profile().multi_profile_user_count());
 }
@@ -698,7 +698,7 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
   EXPECT_EQ(1u, log.system_profile().multi_profile_user_count());
 
   user_manager->LoginUser(user2);
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(), synthetic_trials);
   EXPECT_EQ(0u, log.system_profile().multi_profile_user_count());
@@ -708,7 +708,7 @@ TEST_F(MetricsLogTest, BluetoothHardwareDisabled) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
 
   EXPECT_TRUE(log.system_profile().has_hardware());
   EXPECT_TRUE(log.system_profile().hardware().has_bluetooth());
@@ -726,7 +726,7 @@ TEST_F(MetricsLogTest, BluetoothHardwareEnabled) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
 
   EXPECT_TRUE(log.system_profile().has_hardware());
   EXPECT_TRUE(log.system_profile().hardware().has_bluetooth());
@@ -756,7 +756,7 @@ TEST_F(MetricsLogTest, BluetoothPairedDevices) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG);
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
-                        std::vector<chrome_variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>());
 
   ASSERT_TRUE(log.system_profile().has_hardware());
   ASSERT_TRUE(log.system_profile().hardware().has_bluetooth());

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
+#include "components/variations/active_field_trials.h"
 
 // This file provides various helpers that extend the functionality around
 // base::FieldTrial.
@@ -45,30 +46,6 @@ namespace chrome_variations {
 typedef int VariationID;
 
 const VariationID EMPTY_ID = 0;
-
-// The Unique ID of a trial and its active group, where the name and group
-// identifiers are hashes of the trial and group name strings.
-struct ActiveGroupId {
-  uint32 name;
-  uint32 group;
-};
-
-// Returns an ActiveGroupId struct for the given trial and group names.
-ActiveGroupId MakeActiveGroupId(const std::string& trial_name,
-                                const std::string& group_name);
-
-// We need to supply a Compare class for templates since ActiveGroupId is a
-// user-defined type.
-struct ActiveGroupIdCompare {
-  bool operator() (const ActiveGroupId& lhs, const ActiveGroupId& rhs) const {
-    // The group and name fields are just SHA-1 Hashes, so we just need to treat
-    // them as IDs and do a less-than comparison. We test group first, since
-    // name is more likely to collide.
-    if (lhs.group != rhs.group)
-      return lhs.group < rhs.group;
-    return lhs.name < rhs.name;
-  }
-};
 
 // A key into the Associate/Get methods for VariationIDs. This is used to create
 // separate ID associations for separate parties interested in VariationIDs.

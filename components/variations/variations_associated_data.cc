@@ -9,9 +9,13 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "components/variations/metrics_util.h"
 
 namespace chrome_variations {
+
+// TODO(asvitkine): Delete these when this file moves to variations namespace.
+using variations::ActiveGroupId;
+using variations::ActiveGroupIdCompare;
+using variations::MakeActiveGroupId;
 
 namespace {
 
@@ -172,14 +176,6 @@ class VariationsParamAssociator {
 };
 
 }  // namespace
-
-ActiveGroupId MakeActiveGroupId(const std::string& trial_name,
-                                const std::string& group_name) {
-  ActiveGroupId id;
-  id.name = metrics::HashName(trial_name);
-  id.group = metrics::HashName(group_name);
-  return id;
-}
 
 void AssociateGoogleVariationID(IDCollectionKey key,
                                 const std::string& trial_name,

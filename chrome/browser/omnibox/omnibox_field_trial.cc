@@ -16,8 +16,9 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace {
 

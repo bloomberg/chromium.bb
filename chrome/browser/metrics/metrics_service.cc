@@ -1166,7 +1166,7 @@ void MetricsService::CloseCurrentLog() {
   MetricsLog* current_log =
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   current_log->RecordEnvironment(plugins_, google_update_metrics_,
                                  synthetic_trials);
@@ -1452,7 +1452,7 @@ void MetricsService::PrepareInitialMetricsLog() {
   DCHECK(state_ == INIT_TASK_DONE || state_ == SENDING_INITIAL_STABILITY_LOG);
   initial_metrics_log_->set_hardware_class(hardware_class_);
 
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   initial_metrics_log_->RecordEnvironment(plugins_, google_update_metrics_,
                                           synthetic_trials);
@@ -1727,7 +1727,7 @@ void MetricsService::CheckForClonedInstall() {
 }
 
 void MetricsService::GetCurrentSyntheticFieldTrials(
-    std::vector<chrome_variations::ActiveGroupId>* synthetic_trials) {
+    std::vector<variations::ActiveGroupId>* synthetic_trials) {
   DCHECK(synthetic_trials);
   synthetic_trials->clear();
   const MetricsLog* current_log =

@@ -41,7 +41,7 @@ namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
 
-namespace chrome_variations {
+namespace variations {
 struct ActiveGroupId;
 }
 
@@ -91,7 +91,7 @@ class MetricsLog : public metrics::MetricsLogBase {
   void RecordEnvironment(
       const std::vector<content::WebPluginInfo>& plugin_list,
       const GoogleUpdateMetrics& google_update_metrics,
-      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials);
+      const std::vector<variations::ActiveGroupId>& synthetic_trials);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
   // call from prefs and clears the pref value. Returns true on success or false
@@ -141,7 +141,7 @@ class MetricsLog : public metrics::MetricsLogBase {
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
-      std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const;
+      std::vector<variations::ActiveGroupId>* field_trial_ids) const;
 
   // Exposed to allow dependency injection for tests.
 #if defined(OS_CHROMEOS)

@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 

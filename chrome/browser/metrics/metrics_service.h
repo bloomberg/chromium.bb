@@ -27,6 +27,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -56,7 +57,7 @@ class DictionaryValue;
 class MessageLoopProxy;
 }
 
-namespace chrome_variations {
+namespace variations {
 struct ActiveGroupId;
 }
 
@@ -99,7 +100,7 @@ struct SyntheticTrialGroup {
  public:
   ~SyntheticTrialGroup();
 
-  chrome_variations::ActiveGroupId id;
+  variations::ActiveGroupId id;
   base::TimeTicks start_time;
 
  private:
@@ -481,7 +482,7 @@ class MetricsService
   // Returns a list of synthetic field trials that were active for the entire
   // duration of the current log.
   void GetCurrentSyntheticFieldTrials(
-      std::vector<chrome_variations::ActiveGroupId>* synthetic_trials);
+      std::vector<variations::ActiveGroupId>* synthetic_trials);
 
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.

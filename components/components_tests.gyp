@@ -169,6 +169,7 @@
             'url_matcher/substring_set_matcher_unittest.cc',
             'url_matcher/url_matcher_factory_unittest.cc',
             'url_matcher/url_matcher_unittest.cc',
+            'variations/active_field_trials_unittest.cc',
             'variations/caching_permuted_entropy_provider_unittest.cc',
             'variations/entropy_provider_unittest.cc',
             'variations/metrics_util_unittest.cc',

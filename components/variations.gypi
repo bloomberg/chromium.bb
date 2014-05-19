@@ -15,6 +15,8 @@
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
       ],
       'sources': [
+        'variations/active_field_trials.cc',
+        'variations/active_field_trials.h',
         'variations/caching_permuted_entropy_provider.cc',
         'variations/caching_permuted_entropy_provider.h',
         'variations/entropy_provider.cc',

@@ -36,13 +36,13 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/webplugininfo.h"
@@ -71,7 +71,7 @@ using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
-typedef chrome_variations::ActiveGroupId ActiveGroupId;
+typedef variations::ActiveGroupId ActiveGroupId;
 typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
 namespace {
@@ -523,7 +523,7 @@ int MetricsLog::GetScreenCount() const {
 
 void MetricsLog::GetFieldTrialIds(
     std::vector<ActiveGroupId>* field_trial_ids) const {
-  chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
+  variations::GetFieldTrialActiveGroupIds(field_trial_ids);
 }
 
 bool MetricsLog::HasEnvironment() const {
@@ -691,7 +691,7 @@ void MetricsLog::WritePluginList(
 void MetricsLog::RecordEnvironment(
     const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics,
-    const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials) {
+    const std::vector<variations::ActiveGroupId>& synthetic_trials) {
   DCHECK(!HasEnvironment());
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();

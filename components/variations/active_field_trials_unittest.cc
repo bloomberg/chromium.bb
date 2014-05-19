@@ -1,37 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "components/variations/active_field_trials.h"
 
-#include <set>
-#include <string>
-#include <vector>
-
-#include "base/metrics/field_trial.h"
 #include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
+namespace variations {
 
-class VariationsUtilTest : public ::testing::Test {
- public:
-  VariationsUtilTest() : field_trial_list_(NULL) {
-  }
-
-  virtual ~VariationsUtilTest() {
-    // Ensure that the maps are cleared between tests, since they are stored as
-    // process singletons.
-    testing::ClearAllVariationIDs();
-  }
-
- private:
-  base::FieldTrialList field_trial_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsUtilTest);
-};
-
-TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
+TEST(VariationsUtilTest, GetFieldTrialActiveGroups) {
   typedef std::set<ActiveGroupId, ActiveGroupIdCompare> ActiveGroupIdSet;
   std::string trial_one("trial one");
   std::string group_one("group one");
@@ -70,4 +48,4 @@ TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
   EXPECT_EQ(0U, expected_groups.size());
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

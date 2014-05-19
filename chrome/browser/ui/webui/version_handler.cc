@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "components/variations/active_field_trials.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_ui.h"
@@ -101,7 +101,7 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
   }
 #else
   // In release mode, display the hashes only.
-  chrome_variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
+  variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
 #endif
 
   base::ListValue variations_list;
