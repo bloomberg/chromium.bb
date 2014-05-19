@@ -402,7 +402,6 @@ def GetStaticCastForReturnType(return_type):
                'short[]': 'jshortArray',
                'int[]': 'jintArray',
                'long[]': 'jlongArray',
-               'float[]': 'jfloatArray',
                'double[]': 'jdoubleArray' }
   ret = type_map.get(return_type, None)
   if ret:

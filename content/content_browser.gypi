@@ -583,8 +583,6 @@
     'browser/gamepad/gamepad_consumer.h',
     'browser/gamepad/gamepad_data_fetcher.h',
     'browser/gamepad/gamepad_platform_data_fetcher.h',
-    'browser/gamepad/gamepad_platform_data_fetcher_android.cc',
-    'browser/gamepad/gamepad_platform_data_fetcher_android.h',
     'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
     'browser/gamepad/gamepad_platform_data_fetcher_linux.h',
     'browser/gamepad/gamepad_platform_data_fetcher_mac.h',
@@ -1406,7 +1404,7 @@
         'browser/power_profiler/power_data_provider_dummy.cc'
       ]
     }],
-    ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
+    ['OS!="win" and OS!="mac" and (OS!="linux" or use_udev==0)', {
       'sources': [
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]

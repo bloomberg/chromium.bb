@@ -22,7 +22,6 @@
     'public/android/java/src/org/chromium/content/browser/ContentViewStatics.java',
     'public/android/java/src/org/chromium/content/browser/DeviceSensors.java',
     'public/android/java/src/org/chromium/content/browser/DownloadController.java',
-    'public/android/java/src/org/chromium/content/browser/input/GamepadList.java',
     'public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java',
     'public/android/java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java',
     'public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java',

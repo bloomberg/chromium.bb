@@ -61,8 +61,6 @@ $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chro
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/GestureEventType.java \
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/PageTransitionTypes.java \
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/SpeechRecognitionError.java \
-$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/input/CanonicalAxisIndex.java \
-$(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/input/CanonicalButtonIndex.java \
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/browser/input/PopupItemType.java \
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared,,,$(TARGET_2ND_ARCH))/templates/org/chromium/content/common/ScreenOrientationValues.java \
