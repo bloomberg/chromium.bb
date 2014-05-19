@@ -122,6 +122,7 @@ crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/registration-end
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/registration-events.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/registration.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/serviceworkerglobalscope-scope.html [ Leak ]
+crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/serviceworkerobject-scope.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/state.html [ Leak ]
 crbug.com/364390 virtual/serviceworker/http/tests/serviceworker/unregister.html [ Leak ]
 
