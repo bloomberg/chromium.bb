@@ -883,9 +883,6 @@ crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Crash ]
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
 
-# Disabling this for now since Chromium CL changes output. Will re-enable once Chromium side lands.
-Bug(simonhatch) http/tests/loading/promote-img-in-viewport-priority.html [ Skip ]
-
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 #crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
