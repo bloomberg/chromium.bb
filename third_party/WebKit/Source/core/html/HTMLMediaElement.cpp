@@ -870,11 +870,10 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (m_preload == MediaPlayer::None) {
+        if (m_preload == MediaPlayer::None)
             m_delayingLoadForPreloadNone = true;
-        } else {
-            m_player->load(loadType(), m_currentSrc, corsMode());
-        }
+        else
+            startPlayerLoad();
     } else {
         mediaLoadingFailed(MediaPlayer::FormatError);
     }
@@ -885,6 +884,30 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     if (renderer())
         renderer()->updateFromElement();
+}
+
+void HTMLMediaElement::startPlayerLoad()
+{
+    // Filter out user:pass as those two URL components aren't
+    // considered for media resource fetches (including for the CORS
+    // use-credentials mode.) That behavior aligns with Gecko, with IE
+    // being more restrictive and not allowing fetches to such URLs.
+    //
+    // Spec reference: http://whatwg.org/c/#concept-media-load-resource
+    //
+    // FIXME: when the HTML spec switches to specifying resource
+    // fetches in terms of Fetch (http://fetch.spec.whatwg.org), and
+    // along with that potentially also specifying a setting for its
+    // 'authentication flag' to control how user:pass embedded in a
+    // media resource URL should be treated, then update the handling
+    // here to match.
+    KURL requestURL = m_currentSrc;
+    if (!requestURL.user().isEmpty())
+        requestURL.setUser(String());
+    if (!requestURL.pass().isEmpty())
+        requestURL.setPass(String());
+
+    m_player->load(loadType(), requestURL, corsMode());
 }
 
 void HTMLMediaElement::setPlayerPreload()
@@ -901,7 +924,7 @@ void HTMLMediaElement::startDelayedLoad()
 
     m_delayingLoadForPreloadNone = false;
 
-    m_player->load(loadType(), m_currentSrc, corsMode());
+    startPlayerLoad();
 }
 
 WebMediaPlayer::LoadType HTMLMediaElement::loadType() const

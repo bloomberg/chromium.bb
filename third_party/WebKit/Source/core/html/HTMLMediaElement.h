@@ -355,6 +355,7 @@ private:
     void loadInternal();
     void selectMediaResource();
     void loadResource(const KURL&, ContentType&, const String& keySystem);
+    void startPlayerLoad();
     void setPlayerPreload();
     void startDelayedLoad();
     blink::WebMediaPlayer::LoadType loadType() const;

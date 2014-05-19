@@ -1,0 +1,5 @@
+ 
+Tests that the media player does not include authorization information.  
+EVENT(canplay)
+END OF TEST
+
