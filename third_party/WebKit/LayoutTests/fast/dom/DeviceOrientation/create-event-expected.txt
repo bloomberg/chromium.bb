@@ -4,6 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS typeof event == 'object' is true
+PASS event.__proto__ is DeviceOrientationEvent.prototype
 PASS 'type' in event is true
 PASS 'bubbles' in event is true
 PASS 'cancelable' in event is true
@@ -18,6 +19,9 @@ PASS typeof event.alpha == 'object' is true
 PASS typeof event.beta == 'object' is true
 PASS typeof event.gamma == 'object' is true
 PASS typeof event.absolute == 'object' is true
+PASS newEvent.type is "deviceorientation"
+PASS newEvent.bubbles is false
+PASS newEvent.cancelable is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
