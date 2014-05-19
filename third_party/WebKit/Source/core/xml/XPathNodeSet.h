@@ -35,12 +35,10 @@ namespace WebCore {
 
     namespace XPath {
 
-        class NodeSet : public NoBaseWillBeGarbageCollected<NodeSet> {
-            WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+        class NodeSet {
+            WTF_MAKE_FAST_ALLOCATED;
         public:
-            static PassOwnPtrWillBeRawPtr<NodeSet> create() { return adoptPtrWillBeNoop(new NodeSet); }
-            static PassOwnPtrWillBeRawPtr<NodeSet> create(const NodeSet&);
-            void trace(Visitor* visitor) { visitor->trace(m_nodes); }
+            NodeSet() : m_isSorted(true), m_subtreesAreDisjoint(false) { }
 
             size_t size() const { return m_nodes.size(); }
             bool isEmpty() const { return !m_nodes.size(); }
@@ -73,12 +71,11 @@ namespace WebCore {
             void reverse();
 
         private:
-            NodeSet() : m_isSorted(true), m_subtreesAreDisjoint(false) { }
             void traversalSort() const;
 
             bool m_isSorted;
             bool m_subtreesAreDisjoint;
-            WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
+            Vector<RefPtr<Node> > m_nodes;
         };
 
     }

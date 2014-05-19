@@ -332,7 +332,7 @@ Value FunId::evaluate() const
     }
 
     TreeScope& contextScope = evaluationContext().node->treeScope();
-    OwnPtrWillBeRawPtr<NodeSet> result(NodeSet::create());
+    NodeSet result;
     HashSet<Node*> resultSet;
 
     unsigned startPos = 0;
@@ -352,14 +352,14 @@ Value FunId::evaluate() const
         // In WebKit, getElementById behaves so, too, although its behavior in this case is formally undefined.
         Node* node = contextScope.getElementById(AtomicString(idList.substring(startPos, endPos - startPos)));
         if (node && resultSet.add(node).isNewEntry)
-            result->append(node);
+            result.append(node);
 
         startPos = endPos;
     }
 
-    result->markSorted(false);
+    result.markSorted(false);
 
-    return Value(result.release(), Value::adopt);
+    return Value(result, Value::adopt);
 }
 
 static inline String expandedNameLocalPart(Node* node)
