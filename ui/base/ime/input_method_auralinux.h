@@ -45,7 +45,35 @@ class InputMethodAuraLinux : public InputMethodBase,
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                         TextInputClient* focused) OVERRIDE;
 
+ private:
+  // Allows to fire a VKEY_PROCESSKEY key event.
+  void AllowToFireProcessKey(const ui::KeyEvent& event);
+  // Fires a VKEY_PROCESSKEY key event if allowed.
+  void MaybeFireProcessKey();
+  // Stops firing VKEY_PROCESSKEY key events.
+  void StopFiringProcessKey();
+
   scoped_ptr<LinuxInputMethodContext> input_method_context_;
+
+  // IBus in async mode eagerly consumes all the key events first regardless of
+  // whether the underlying IME consumes the key event or not, and makes
+  // gtk_im_context_filter_keypress() always return true, and later pushes
+  // the key event back to the GDK event queue when it turns out that the
+  // underlying IME doesn't consume the key event.
+  //
+  // Thus we have to defer a decision whether or not to dispatch a
+  // VKEY_PROCESSKEY key event.  Unlike other InputMethod's subclasses,
+  // DispatchKeyEvent() in this class does not directly dispatch a
+  // VKEY_PROCESSKEY event, OnCommit or OnPreedit{Start,Changed,End} dispatch
+  // a VKEY_PROCESSKEY event instead.
+  //
+  // Because of this hack, there could be chances that we accidentally dispatch
+  // VKEY_PROCESSKEY events and other key events in out of order.
+  //
+  // |allowed_to_fire_vkey_process_key_| is used not to dispatch a
+  // VKEY_PROCESSKEY event twice for a single key event.
+  bool allowed_to_fire_vkey_process_key_;
+  int vkey_processkey_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinux);
 };

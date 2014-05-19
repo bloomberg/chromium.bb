@@ -12,7 +12,8 @@
 namespace ui {
 
 InputMethodAuraLinux::InputMethodAuraLinux(
-    internal::InputMethodDelegate* delegate) {
+    internal::InputMethodDelegate* delegate)
+    : allowed_to_fire_vkey_process_key_(false), vkey_processkey_flags_(0) {
   SetDelegate(delegate);
 }
 
@@ -54,18 +55,15 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
   if (!GetTextInputClient())
     return DispatchKeyEventPostIME(event);
 
-  // Let an IME handle the key event first.
-  if (input_method_context_->DispatchKeyEvent(event)) {
-    if (event.type() == ET_KEY_PRESSED &&
-        (event.flags() & ui::EF_IME_FABRICATED_KEY) == 0) {
-      const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
-                                          VKEY_PROCESSKEY,
-                                          event.flags(),
-                                          false);  // is_char
-      DispatchKeyEventPostIME(fabricated_event);
-    }
+  // Let an IME handle the key event first, and allow to fire a VKEY_PROCESSKEY
+  // event for keydown events.  Note that DOM Level 3 Events Sepc requires that
+  // only keydown events fire keyCode=229 events and not for keyup events.
+  if (event.type() == ET_KEY_PRESSED &&
+      (event.flags() & ui::EF_IME_FABRICATED_KEY) == 0)
+    AllowToFireProcessKey(event);
+  if (input_method_context_->DispatchKeyEvent(event))
     return true;
-  }
+  StopFiringProcessKey();
 
   // Otherwise, insert the character.
   const bool handled = DispatchKeyEventPostIME(event);
@@ -122,24 +120,29 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
 // Overriden from ui::LinuxInputMethodContextDelegate
 
 void InputMethodAuraLinux::OnCommit(const base::string16& text) {
+  MaybeFireProcessKey();
   if (!IsTextInputTypeNone())
     GetTextInputClient()->InsertText(text);
 }
 
 void InputMethodAuraLinux::OnPreeditChanged(
     const CompositionText& composition_text) {
+  MaybeFireProcessKey();
   TextInputClient* text_input_client = GetTextInputClient();
   if (text_input_client)
     text_input_client->SetCompositionText(composition_text);
 }
 
 void InputMethodAuraLinux::OnPreeditEnd() {
+  MaybeFireProcessKey();
   TextInputClient* text_input_client = GetTextInputClient();
   if (text_input_client && text_input_client->HasCompositionText())
     text_input_client->ClearCompositionText();
 }
 
-void InputMethodAuraLinux::OnPreeditStart() {}
+void InputMethodAuraLinux::OnPreeditStart() {
+  MaybeFireProcessKey();
+}
 
 // Overridden from InputMethodBase.
 
@@ -151,6 +154,30 @@ void InputMethodAuraLinux::OnDidChangeFocusedClient(
       focused ? focused->GetTextInputType() : TEXT_INPUT_TYPE_NONE);
 
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
+}
+
+// Helper functions to support VKEY_PROCESSKEY.
+
+void InputMethodAuraLinux::AllowToFireProcessKey(const ui::KeyEvent& event) {
+  allowed_to_fire_vkey_process_key_ = true;
+  vkey_processkey_flags_ = event.flags();
+}
+
+void InputMethodAuraLinux::MaybeFireProcessKey() {
+  if (!allowed_to_fire_vkey_process_key_)
+    return;
+
+  const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
+                                      VKEY_PROCESSKEY,
+                                      vkey_processkey_flags_,
+                                      false);  // is_char
+  DispatchKeyEventPostIME(fabricated_event);
+  StopFiringProcessKey();
+}
+
+void InputMethodAuraLinux::StopFiringProcessKey() {
+  allowed_to_fire_vkey_process_key_ = false;
+  vkey_processkey_flags_ = 0;
 }
 
 }  // namespace ui
