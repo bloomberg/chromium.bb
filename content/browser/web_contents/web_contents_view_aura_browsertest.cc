@@ -267,17 +267,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
 
-// Flaky on Windows (perhaps just Win-Aura): http://crbug.com/305722
-#if defined(OS_WIN)
-#define MAYBE_OverscrollNavigation DISABLED_OverscrollNavigation
-#else
-#define MAYBE_OverscrollNavigation OverscrollNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
+// Flaky on Windows and ChromeOS: http://crbug.com/305722
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+    DISABLED_OverscrollNavigation) {
   TestOverscrollNavigation(false);
 }
 
-// Flaky on Windows (perhaps just Win-Aura): http://crbug.com/305722
+// Flaky on Windows (might be related to the above test):
+// http://crbug.com/305722
 #if defined(OS_WIN)
 #define MAYBE_OverscrollNavigationWithTouchHandler \
         DISABLED_OverscrollNavigationWithTouchHandler
