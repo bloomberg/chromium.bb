@@ -272,6 +272,11 @@ namespace WTF {
         typedef T Type;
     };
 
+    // Determines whether this type has a vtable.
+    template <typename T> struct IsPolymorphic {
+        static const bool value = __is_polymorphic(T);
+    };
+
 #define EnsurePtrConvertibleArgDecl(From, To) \
     typename WTF::EnableIf<WTF::IsPointerConvertible<From, To>::Value, bool>::Type = true
 #define EnsurePtrConvertibleArgDefn(From, To) \

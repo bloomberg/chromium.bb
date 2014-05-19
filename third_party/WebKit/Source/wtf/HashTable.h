@@ -947,6 +947,7 @@ namespace WTF {
 
         size_t allocSize = size * sizeof(ValueType);
         ValueType* result;
+        COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<ValueType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
         if (Traits::emptyValueIsZero) {
             result = Allocator::template zeroedBackingMalloc<ValueType*, HashTableBacking>(allocSize);
         } else {

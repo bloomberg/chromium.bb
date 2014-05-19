@@ -1782,7 +1782,7 @@ struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             0,
             false, // HashMap needs no finalizer.
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1800,7 +1800,7 @@ struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             0,
             false, // HashSet needs no finalizer.
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1818,7 +1818,7 @@ struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             LinkedHashSet<T, U, V, HeapAllocator>::finalize,
             true, // Needs finalization. The anchor needs to unlink itself from the chain.
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1874,7 +1874,7 @@ struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
             TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
             0,
             false, // Vector needs no finalizer if it has no inline capacity.
-            VTableTrait<Vector<T, 0, HeapAllocator> >::hasVTable,
+            WTF::IsPolymorphic<Vector<T, 0, HeapAllocator> >::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1896,7 +1896,7 @@ struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
             FinalizerTrait<TargetType>::finalize,
             // Finalizer is needed to destruct things stored in the inline capacity.
             inlineCapacity && VectorTraits<T>::needsDestruction,
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1914,7 +1914,7 @@ struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             0,
             false, // Deque needs no finalizer if it has no inline capacity.
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1933,7 +1933,7 @@ struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > {
             TraceTrait<TargetType>::trace,
             0,
             false, // HashCountedSet is just a HashTable, and needs no finalizer.
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1956,7 +1956,7 @@ struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
             FinalizerTrait<TargetType>::finalize,
             // Finalizer is needed to destruct things stored in the inline capacity.
             inlineCapacity && VectorTraits<T>::needsDestruction,
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif
@@ -1993,7 +1993,7 @@ struct GCInfoTrait<HeapHashTableBacking<Table> > {
             TraceTrait<TargetType>::trace,
             HeapHashTableBacking<Table>::finalize,
             Table::ValueTraits::needsDestruction,
-            VTableTrait<TargetType>::hasVTable,
+            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<TargetType>::get()
 #endif

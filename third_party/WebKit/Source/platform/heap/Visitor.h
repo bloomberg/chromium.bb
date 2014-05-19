@@ -134,12 +134,6 @@ struct FinalizerTrait {
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
 };
 
-// The VTableTrait is used to determine if a type has at least one virtual method.
-template<typename T>
-struct VTableTrait {
-    static const bool hasVTable = __is_polymorphic(T);
-};
-
 // Trait to get the GCInfo structure for types that have their
 // instances allocated in the Blink garbage-collected heap.
 template<typename T> struct GCInfoTrait;
@@ -703,7 +697,7 @@ struct GCInfoAtBase {
             TraceTrait<T>::trace,
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
-            VTableTrait<T>::hasVTable,
+            WTF::IsPolymorphic<T>::value,
 #if ENABLE(GC_TRACING)
             TypenameStringTrait<T>::get()
 #endif
