@@ -357,7 +357,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void AddTouchPoint(gin::Arguments* args);
   void MouseDragBegin();
   void MouseDragEnd();
-  void MouseMomentumBegin();
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
@@ -371,7 +370,13 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureTwoFingerTap(gin::Arguments* args);
   void ContinuousMouseScrollBy(gin::Arguments* args);
   void MouseMoveTo(gin::Arguments* args);
+  void TrackpadScrollBegin();
+  void TrackpadScroll(gin::Arguments* args);
+  void TrackpadScrollEnd();
   void MouseScrollBy(gin::Arguments* args);
+  // TODO(erikchen): Remove MouseMomentumBegin once CL 282743002 has landed.
+  void MouseMomentumBegin();
+  void MouseMomentumBegin2(gin::Arguments* args);
   void MouseMomentumScrollBy(gin::Arguments* args);
   void MouseMomentumEnd();
   void ScheduleAsynchronousClick(gin::Arguments* args);
@@ -480,7 +485,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("addTouchPoint", &EventSenderBindings::AddTouchPoint)
       .SetMethod("mouseDragBegin", &EventSenderBindings::MouseDragBegin)
       .SetMethod("mouseDragEnd", &EventSenderBindings::MouseDragEnd)
-      .SetMethod("mouseMomentumBegin", &EventSenderBindings::MouseMomentumBegin)
       .SetMethod("gestureScrollBegin", &EventSenderBindings::GestureScrollBegin)
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
       .SetMethod("gestureScrollUpdate",
@@ -500,8 +504,15 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("keyDown", &EventSenderBindings::KeyDown)
       .SetMethod("mouseDown", &EventSenderBindings::MouseDown)
       .SetMethod("mouseMoveTo", &EventSenderBindings::MouseMoveTo)
+      .SetMethod("trackpadScrollBegin",
+                 &EventSenderBindings::TrackpadScrollBegin)
+      .SetMethod("trackpadScroll", &EventSenderBindings::TrackpadScroll)
+      .SetMethod("trackpadScrollEnd", &EventSenderBindings::TrackpadScrollEnd)
       .SetMethod("mouseScrollBy", &EventSenderBindings::MouseScrollBy)
       .SetMethod("mouseUp", &EventSenderBindings::MouseUp)
+      .SetMethod("mouseMomentumBegin", &EventSenderBindings::MouseMomentumBegin)
+      .SetMethod("mouseMomentumBegin2",
+                 &EventSenderBindings::MouseMomentumBegin2)
       .SetMethod("mouseMomentumScrollBy",
                  &EventSenderBindings::MouseMomentumScrollBy)
       .SetMethod("mouseMomentumEnd", &EventSenderBindings::MouseMomentumEnd)
@@ -710,11 +721,6 @@ void EventSenderBindings::MouseDragEnd() {
     sender_->MouseDragEnd();
 }
 
-void EventSenderBindings::MouseMomentumBegin() {
-  if (sender_)
-    sender_->MouseMomentumBegin();
-}
-
 void EventSenderBindings::GestureScrollBegin(gin::Arguments* args) {
   if (sender_)
     sender_->GestureScrollBegin(args);
@@ -781,9 +787,34 @@ void EventSenderBindings::MouseMoveTo(gin::Arguments* args) {
     sender_->MouseMoveTo(args);
 }
 
+void EventSenderBindings::TrackpadScrollBegin() {
+  if (sender_)
+    sender_->TrackpadScrollBegin();
+}
+
+void EventSenderBindings::TrackpadScroll(gin::Arguments* args) {
+  if (sender_)
+    sender_->TrackpadScroll(args);
+}
+
+void EventSenderBindings::TrackpadScrollEnd() {
+  if (sender_)
+    sender_->TrackpadScrollEnd();
+}
+
 void EventSenderBindings::MouseScrollBy(gin::Arguments* args) {
   if (sender_)
     sender_->MouseScrollBy(args);
+}
+
+void EventSenderBindings::MouseMomentumBegin() {
+  if (sender_)
+    sender_->MouseMomentumBegin();
+}
+
+void EventSenderBindings::MouseMomentumBegin2(gin::Arguments* args) {
+  if (sender_)
+    sender_->MouseMomentumBegin2(args);
 }
 
 void EventSenderBindings::MouseMomentumScrollBy(gin::Arguments* args) {
@@ -1644,20 +1675,6 @@ void EventSender::MouseDragEnd() {
   view_->handleInputEvent(event);
 }
 
-void EventSender::MouseMomentumBegin() {
-  WebMouseWheelEvent event;
-  InitMouseEvent(WebInputEvent::MouseWheel,
-                 WebMouseEvent::ButtonNone,
-                 last_mouse_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 &event);
-  event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
-  event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
-}
-
 void EventSender::GestureScrollBegin(gin::Arguments* args) {
   GestureEvent(WebInputEvent::GestureScrollBegin, args);
 }
@@ -1742,9 +1759,67 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
   }
 }
 
+void EventSender::TrackpadScrollBegin() {
+  WebMouseWheelEvent event;
+  InitMouseEvent(WebInputEvent::MouseWheel,
+                 WebMouseEvent::ButtonNone,
+                 last_mouse_pos_,
+                 GetCurrentEventTimeSec(),
+                 click_count_,
+                 0,
+                 &event);
+  event.phase = blink::WebMouseWheelEvent::PhaseBegan;
+  event.hasPreciseScrollingDeltas = true;
+  view_->handleInputEvent(event);
+}
+
+void EventSender::TrackpadScroll(gin::Arguments* args) {
+  WebMouseWheelEvent event;
+  InitMouseWheelEvent(args, true, &event);
+  event.phase = blink::WebMouseWheelEvent::PhaseChanged;
+  event.hasPreciseScrollingDeltas = true;
+  view_->handleInputEvent(event);
+}
+
+void EventSender::TrackpadScrollEnd() {
+  WebMouseWheelEvent event;
+  InitMouseEvent(WebInputEvent::MouseWheel,
+                 WebMouseEvent::ButtonNone,
+                 last_mouse_pos_,
+                 GetCurrentEventTimeSec(),
+                 click_count_,
+                 0,
+                 &event);
+  event.phase = WebMouseWheelEvent::PhaseEnded;
+  event.hasPreciseScrollingDeltas = true;
+  view_->handleInputEvent(event);
+}
+
 void EventSender::MouseScrollBy(gin::Arguments* args) {
    WebMouseWheelEvent event;
   InitMouseWheelEvent(args, false, &event);
+  view_->handleInputEvent(event);
+}
+
+void EventSender::MouseMomentumBegin() {
+  WebMouseWheelEvent event;
+  InitMouseEvent(WebInputEvent::MouseWheel,
+                 WebMouseEvent::ButtonNone,
+                 last_mouse_pos_,
+                 GetCurrentEventTimeSec(),
+                 click_count_,
+                 0,
+                 &event);
+  event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
+  event.hasPreciseScrollingDeltas = true;
+  view_->handleInputEvent(event);
+}
+
+void EventSender::MouseMomentumBegin2(gin::Arguments* args) {
+  WebMouseWheelEvent event;
+  InitMouseWheelEvent(args, true, &event);
+  event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
+  event.hasPreciseScrollingDeltas = true;
   view_->handleInputEvent(event);
 }
 
