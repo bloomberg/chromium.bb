@@ -984,3 +984,5 @@ crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-height-pro
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 
 crbug.com/374939 [ XP ] virtual/softwarecompositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
+
+crbug.com/238449 svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsRebaseline ]
