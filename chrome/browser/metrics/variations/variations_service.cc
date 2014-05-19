@@ -499,10 +499,11 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DCHECK(success || response_date.is_null());
 
     if (!response_date.is_null()) {
-      NetworkTimeTracker::BuildNotifierUpdateCallback().Run(
+      g_browser_process->network_time_tracker()->UpdateNetworkTime(
           response_date,
           base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs),
-          latency);
+          latency,
+          base::TimeTicks::Now());
     }
   }
 

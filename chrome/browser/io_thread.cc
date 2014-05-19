@@ -24,7 +24,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -51,7 +50,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
-#include "net/base/network_time_notifier.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
@@ -685,10 +683,6 @@ void IOThread::InitAsync() {
 
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
-
-  globals_->network_time_notifier.reset(
-      new net::NetworkTimeNotifier(
-          scoped_ptr<base::TickClock>(new base::DefaultTickClock())));
 
   sdch_manager_ = new net::SdchManager();
 

@@ -6,12 +6,8 @@
 
 #include <math.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
-#include "net/base/network_time_notifier.h"
+#include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -46,18 +42,10 @@ class TestTickClock : public base::TickClock {
 class NetworkTimeTrackerTest : public testing::Test {
  public:
   NetworkTimeTrackerTest()
-      : ui_thread(content::BrowserThread::UI, &message_loop_),
-        io_thread(content::BrowserThread::IO, &message_loop_),
-        now_(base::Time::NowFromSystemTime()),
-        tick_clock_(new TestTickClock(&ticks_now_)),
-        network_time_notifier_(
-            new net::NetworkTimeNotifier(
-                tick_clock_.PassAs<base::TickClock>())) {}
+      : now_(base::Time::NowFromSystemTime()),
+        network_time_tracker_(new NetworkTimeTracker(
+            scoped_ptr<base::TickClock>(new TestTickClock(&ticks_now_)))) {}
   virtual ~NetworkTimeTrackerTest() {}
-
-  virtual void TearDown() OVERRIDE {
-    message_loop_.RunUntilIdle();
-  }
 
   base::Time Now() const {
     return now_ + (ticks_now_ - base::TimeTicks());
@@ -71,32 +59,13 @@ class NetworkTimeTrackerTest : public testing::Test {
     ticks_now_ += base::TimeDelta::FromMilliseconds(ms);
   }
 
-  void StartTracker() {
-    network_time_tracker_.reset(new NetworkTimeTracker());
-    network_time_notifier_->AddObserver(
-        network_time_tracker_->BuildObserverCallback());
-    message_loop_.RunUntilIdle();
-  }
-
-  void StopTracker() {
-    network_time_tracker_.reset();
-  }
-
-  // Updates the notifier's time with the specified parameters and waits until
-  // the observers have been updated.
+  // Updates the notifier's time with the specified parameters.
   void UpdateNetworkTime(const base::Time& network_time,
                          const base::TimeDelta& resolution,
                          const base::TimeDelta& latency,
                          const base::TimeTicks& post_time) {
-    message_loop_.PostTask(
-        FROM_HERE,
-        base::Bind(&net::NetworkTimeNotifier::UpdateNetworkTime,
-                   base::Unretained(network_time_notifier_.get()),
-                   network_time,
-                   resolution,
-                   latency,
-                   post_time));
-    message_loop_.RunUntilIdle();
+    network_time_tracker_->UpdateNetworkTime(
+        network_time, resolution, latency, post_time);
   }
 
   // Ensures the network time tracker has a network time and that the
@@ -124,22 +93,10 @@ class NetworkTimeTrackerTest : public testing::Test {
   }
 
  private:
-  // Message loop and threads for the tracker's internal logic.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread;
-  content::TestBrowserThread io_thread;
-
-  // Used in building the current time that |tick_clock_| reports. See Now()
+  // Used in building the current time that TestTickClock reports. See Now()
   // for details.
   base::Time now_;
   base::TimeTicks ticks_now_;
-
-  // A custom clock that allows arbitrary time delays.
-  scoped_ptr<TestTickClock> tick_clock_;
-
-  // The network time notifier that receives time updates and posts them to
-  // the tracker.
-  scoped_ptr<net::NetworkTimeNotifier> network_time_notifier_;
 
   // The network time tracker being tested.
   scoped_ptr<NetworkTimeTracker> network_time_tracker_;
@@ -149,7 +106,6 @@ class NetworkTimeTrackerTest : public testing::Test {
 TEST_F(NetworkTimeTrackerTest, Uninitialized) {
   base::Time network_time;
   base::TimeDelta uncertainty;
-  StartTracker();
   EXPECT_FALSE(network_time_tracker()->GetNetworkTime(base::TimeTicks(),
                                                       &network_time,
                                                       &uncertainty));
@@ -158,7 +114,6 @@ TEST_F(NetworkTimeTrackerTest, Uninitialized) {
 // Verify that the the tracker receives and properly handles updates to the
 // network time.
 TEST_F(NetworkTimeTrackerTest, NetworkTimeUpdates) {
-  StartTracker();
   UpdateNetworkTime(
       Now(),
       base::TimeDelta::FromMilliseconds(kResolution1),
@@ -193,28 +148,4 @@ TEST_F(NetworkTimeTrackerTest, NetworkTimeUpdates) {
       base::TimeDelta::FromMilliseconds(kLatency2),
       old_ticks);
   EXPECT_TRUE(ValidateExpectedTime());
-}
-
-// Starting the tracker after the network time has been set with the notifier
-// should update the tracker's time as well.
-TEST_F(NetworkTimeTrackerTest, UpdateThenStartTracker) {
-  UpdateNetworkTime(
-      Now(),
-      base::TimeDelta::FromMilliseconds(kResolution1),
-      base::TimeDelta::FromMilliseconds(kLatency1),
-      TicksNow());
-  StartTracker();
-  EXPECT_TRUE(ValidateExpectedTime());
-}
-
-// Time updates after the tracker has been destroyed should not attempt to
-// dereference the destroyed tracker.
-TEST_F(NetworkTimeTrackerTest, UpdateAfterTrackerDestroyed) {
-  StartTracker();
-  StopTracker();
-  UpdateNetworkTime(
-      Now(),
-      base::TimeDelta::FromMilliseconds(kResolution1),
-      base::TimeDelta::FromMilliseconds(kLatency1),
-      TicksNow());
 }

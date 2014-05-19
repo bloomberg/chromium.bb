@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -28,9 +29,6 @@ NetworkTimeService::NetworkTimeService(Profile* profile)
     return;
   }
 
-  network_time_tracker_.reset(new NetworkTimeTracker);
-  network_time_tracker_->Start();
-
   const base::DictionaryValue* time_mapping =
       profile_->GetPrefs()->GetDictionary(prefs::kNetworkTimeMapping);
   double local_time_js;
@@ -43,7 +41,7 @@ NetworkTimeService::NetworkTimeService(Profile* profile)
       // Drop saved mapping if clock skew has changed or the data is too old.
       profile_->GetPrefs()->ClearPref(prefs::kNetworkTimeMapping);
     } else {
-      network_time_tracker_->InitFromSavedTime(
+      g_browser_process->network_time_tracker()->InitFromSavedTime(
           NetworkTimeTracker::TimeMapping(
               local_time_saved, base::Time::FromJsTime(network_time_js)));
     }
@@ -53,10 +51,7 @@ NetworkTimeService::NetworkTimeService(Profile* profile)
 NetworkTimeService::~NetworkTimeService() {}
 
 void NetworkTimeService::Shutdown() {
-  if (!network_time_tracker_)
-    return;
-
-  if (network_time_tracker_->received_network_time()) {
+  if (g_browser_process->network_time_tracker()->received_network_time()) {
     // Update time mapping if tracker received time update from server, i.e.
     // mapping is accurate.
     base::Time local_now = base::Time::Now();
@@ -70,13 +65,12 @@ void NetworkTimeService::Shutdown() {
 
 base::Time NetworkTimeService::GetNetworkTime(
     const base::Time& local_time) {
-  if (!network_time_tracker_.get() || local_time.is_null() ||
-      local_time.is_max())
+  if (local_time.is_null() || local_time.is_max())
     return local_time;
 
   base::Time network_time_now;
-  if (!network_time_tracker_->GetNetworkTime(base::TimeTicks::Now(),
-                                             &network_time_now, NULL)) {
+  if (!g_browser_process->network_time_tracker()->GetNetworkTime(
+          base::TimeTicks::Now(), &network_time_now, NULL)) {
     return local_time;
   }
   return local_time + (network_time_now - base::Time::Now());

@@ -6,12 +6,10 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/network_time_notifier.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -84,9 +82,6 @@ void TestingIOThreadState::Initialize(const base::Closure& done) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   io_thread_state_->SetGlobalsForTesting(new IOThread::Globals());
-  io_thread_state_->globals()->network_time_notifier.reset(
-      new net::NetworkTimeNotifier(
-          scoped_ptr<base::TickClock>(new base::DefaultTickClock())));
 
   done.Run();
 }

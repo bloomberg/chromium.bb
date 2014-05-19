@@ -23,6 +23,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -246,8 +247,6 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
                                      start_upgrade_check_timer_task,
                                      &is_unstable_channel_));
 #endif
-  // Start tracking network time updates.
-  network_time_tracker_.Start();
 }
 
 UpgradeDetectorImpl::~UpgradeDetectorImpl() {
@@ -378,9 +377,8 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 
   base::Time network_time;
   base::TimeDelta uncertainty;
-  if (!network_time_tracker_.GetNetworkTime(base::TimeTicks::Now(),
-                                            &network_time,
-                                            &uncertainty)) {
+  if (!g_browser_process->network_time_tracker()->GetNetworkTime(
+          base::TimeTicks::Now(), &network_time, &uncertainty)) {
     // When network time has not been initialized yet, simply rely on the
     // machine's current time.
     network_time = base::Time::Now();

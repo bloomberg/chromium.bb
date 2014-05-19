@@ -32,11 +32,6 @@ specific_include_rules = {
     "+third_party/icu",
   ],
 
-  # Uses icu for debug logging only.
-  "network_time_notifier\.cc": [
-    "+base/i18n",
-  ],
-
   # Consolidated string functions that depend on icu.
   "net_string_util_icu\.cc": [
     "+base/i18n/i18n_constants.h",

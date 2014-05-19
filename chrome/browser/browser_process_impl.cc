@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/apps/chrome_apps_client.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
+#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -152,7 +154,9 @@ BrowserProcessImpl::BrowserProcessImpl(
       module_ref_count_(0),
       did_start_(false),
       download_status_updater_(new DownloadStatusUpdater),
-      local_state_task_runner_(local_state_task_runner) {
+      local_state_task_runner_(local_state_task_runner),
+      network_time_tracker_(new NetworkTimeTracker(
+          scoped_ptr<base::TickClock>(new base::DefaultTickClock()))) {
   g_browser_process = this;
   platform_part_.reset(new BrowserProcessPlatformPart());
 
@@ -615,6 +619,10 @@ WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
   return webrtc_log_uploader_.get();
 }
 #endif
+
+NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
+  return network_time_tracker_.get();
+}
 
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {

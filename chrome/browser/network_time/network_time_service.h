@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class NetworkTimeTracker;
 class Profile;
 
 namespace user_prefs {
@@ -35,7 +34,6 @@ class NetworkTimeService : public KeyedService {
 
  private:
   Profile* profile_;
-  scoped_ptr<NetworkTimeTracker> network_time_tracker_;
 };
 
 #endif  // CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_SERVICE_H_

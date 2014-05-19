@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/network_time/network_time_tracker.h"
@@ -41,6 +42,28 @@
 using syncer::InternalComponentsFactory;
 
 namespace browser_sync {
+
+namespace {
+
+void UpdateNetworkTimeOnUIThread(base::Time network_time,
+                                 base::TimeDelta resolution,
+                                 base::TimeDelta latency,
+                                 base::TimeTicks post_time) {
+  g_browser_process->network_time_tracker()->UpdateNetworkTime(
+      network_time, resolution, latency, post_time);
+}
+
+void UpdateNetworkTime(const base::Time& network_time,
+                       const base::TimeDelta& resolution,
+                       const base::TimeDelta& latency) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&UpdateNetworkTimeOnUIThread,
+                 network_time, resolution, latency, base::TimeTicks::Now()));
+}
+
+}  // namespace
 
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
@@ -121,7 +144,7 @@ void SyncBackendHostImpl::Initialize(
       sync_service_url,
       network_resources->GetHttpPostProviderFactory(
           make_scoped_refptr(profile_->GetRequestContext()),
-          NetworkTimeTracker::BuildNotifierUpdateCallback(),
+          base::Bind(&UpdateNetworkTime),
           core_->GetRequestContextCancelationSignal()),
       credentials,
       invalidator_->GetInvalidatorClientId(),
@@ -845,4 +868,3 @@ base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {
 #undef SDVLOG
 
 #undef SLOG
-

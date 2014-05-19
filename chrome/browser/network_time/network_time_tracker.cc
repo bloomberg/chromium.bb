@@ -4,83 +4,23 @@
 
 #include "chrome/browser/network_time/network_time_tracker.h"
 
-#include "base/sequenced_task_runner.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
+#include "base/basictypes.h"
+#include "base/i18n/time_formatting.h"
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/tick_clock.h"
 
 namespace {
 
-// Helper functions for interacting with the NetworkTimeNotifier.
-// Registration happens as follows (assuming tracker lives on thread N):
-// | Thread N |                   | UI thread|                     | IO Thread |
-// Start
-//                         RegisterObserverOnUIThread
-//                                                    RegisterObserverOnIOThread
-//                                              NetworkTimeNotifier::AddObserver
-// after which updates to the notifier and the subsequent observer calls
-// happen as follows (assuming the network time update comes from the same
-// thread):
-// | Thread N |                   | UI thread|                     | IO Thread |
-// UpdateNetworkNotifier
-//                                               UpdateNetworkNotifierOnIOThread
-//                                        NetworkTimeNotifier::UpdateNetworkTime
-//                                                OnNetworkTimeUpdatedOnIOThread
-// OnNetworkTimeUpdated
-void RegisterObserverOnIOThread(
-    IOThread* io_thread,
-    const net::NetworkTimeNotifier::ObserverCallback& observer_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  io_thread->globals()->network_time_notifier->AddObserver(observer_callback);
-}
+// Clock resolution is platform dependent.
+#if defined(OS_WIN)
+const int64 kTicksResolutionMs = base::Time::kMinLowResolutionThresholdMs;
+#else
+const int64 kTicksResolutionMs = 1;  // Assume 1ms for non-windows platforms.
+#endif
 
-void RegisterObserverOnUIThread(
-    const net::NetworkTimeNotifier::ObserverCallback& observer_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RegisterObserverOnIOThread,
-                 g_browser_process->io_thread(),
-                 observer_callback));
-}
-
-void UpdateNetworkNotifierOnIOThread(IOThread* io_thread,
-                                     const base::Time& network_time,
-                                     const base::TimeDelta& resolution,
-                                     const base::TimeDelta& latency,
-                                     const base::TimeTicks& post_time) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  io_thread->globals()->network_time_notifier->UpdateNetworkTime(
-      network_time, resolution, latency, post_time);
-}
-
-void UpdateNetworkNotifier(IOThread* io_thread,
-                           const base::Time& network_time,
-                           const base::TimeDelta& resolution,
-                           const base::TimeDelta& latency) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&UpdateNetworkNotifierOnIOThread,
-                 io_thread,
-                 network_time,
-                 resolution,
-                 latency,
-                 base::TimeTicks::Now()));
-}
-
-void OnNetworkTimeUpdatedOnIOThread(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const net::NetworkTimeNotifier::ObserverCallback& observer_callback,
-    const base::Time& network_time,
-    const base::TimeTicks& network_time_ticks,
-    const base::TimeDelta& network_time_uncertainty) {
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(observer_callback,
-                 network_time,
-                 network_time_ticks,
-                 network_time_uncertainty));
-}
+// Number of time measurements performed in a given network time calculation.
+const int kNumTimeMeasurements = 5;
 
 }  // namespace
 
@@ -89,21 +29,13 @@ NetworkTimeTracker::TimeMapping::TimeMapping(base::Time local_time,
     : local_time(local_time),
       network_time(network_time) {}
 
-NetworkTimeTracker::NetworkTimeTracker()
-    : weak_ptr_factory_(this),
+NetworkTimeTracker::NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock)
+    : tick_clock_(tick_clock.Pass()),
       received_network_time_(false) {
 }
 
 NetworkTimeTracker::~NetworkTimeTracker() {
-}
-
-void NetworkTimeTracker::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&RegisterObserverOnUIThread,
-                 BuildObserverCallback()));
 }
 
 void NetworkTimeTracker::InitFromSavedTime(const TimeMapping& saved) {
@@ -122,7 +54,40 @@ void NetworkTimeTracker::InitFromSavedTime(const TimeMapping& saved) {
   network_time_ticks_ = base::TimeTicks::Now();
 }
 
-bool NetworkTimeTracker::GetNetworkTime(const base::TimeTicks& time_ticks,
+void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
+                                           base::TimeDelta resolution,
+                                           base::TimeDelta latency,
+                                           base::TimeTicks post_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Network time updating to "
+           << base::UTF16ToUTF8(
+                  base::TimeFormatFriendlyDateAndTime(network_time));
+  // Update network time on every request to limit dependency on ticks lag.
+  // TODO(mad): Find a heuristic to avoid augmenting the
+  // network_time_uncertainty_ too much by a particularly long latency.
+  // Maybe only update when the the new time either improves in accuracy or
+  // drifts too far from |network_time_|.
+  network_time_ = network_time;
+
+  // Calculate the delay since the network time was received.
+  base::TimeTicks now = tick_clock_->NowTicks();
+  base::TimeDelta task_delay = now - post_time;
+  // Estimate that the time was set midway through the latency time.
+  network_time_ticks_ = now - task_delay - latency / 2;
+
+  // Can't assume a better time than the resolution of the given time
+  // and 5 ticks measurements are involved, each with their own uncertainty.
+  // 1 & 2 are the ones used to compute the latency, 3 is the Now() from when
+  // this task was posted, 4 is the Now() above and 5 will be the Now() used in
+  // GetNetworkTime().
+  network_time_uncertainty_ =
+      resolution + latency + kNumTimeMeasurements *
+      base::TimeDelta::FromMilliseconds(kTicksResolutionMs);
+
+  received_network_time_ = true;
+}
+
+bool NetworkTimeTracker::GetNetworkTime(base::TimeTicks time_ticks,
                                         base::Time* network_time,
                                         base::TimeDelta* uncertainty) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -135,34 +100,3 @@ bool NetworkTimeTracker::GetNetworkTime(const base::TimeTicks& time_ticks,
     *uncertainty = network_time_uncertainty_;
   return true;
 }
-
-// static
-// Note: UpdateNetworkNotifier is exposed via callback because getting the IO
-// thread pointer must be done on the UI thread, while components that provide
-// network time updates may live on other threads.
-NetworkTimeTracker::UpdateCallback
-NetworkTimeTracker::BuildNotifierUpdateCallback() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return base::Bind(&UpdateNetworkNotifier,
-                    g_browser_process->io_thread());
-}
-
-net::NetworkTimeNotifier::ObserverCallback
-NetworkTimeTracker::BuildObserverCallback() {
-  return base::Bind(&OnNetworkTimeUpdatedOnIOThread,
-                    base::MessageLoop::current()->message_loop_proxy(),
-                    base::Bind(&NetworkTimeTracker::OnNetworkTimeUpdate,
-                               weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NetworkTimeTracker::OnNetworkTimeUpdate(
-    const base::Time& network_time,
-    const base::TimeTicks& network_time_ticks,
-    const base::TimeDelta& network_time_uncertainty) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  network_time_ = network_time;
-  network_time_ticks_ = network_time_ticks;
-  network_time_uncertainty_ = network_time_uncertainty;
-  received_network_time_ = true;
-}
-
