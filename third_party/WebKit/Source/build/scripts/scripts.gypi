@@ -1,3 +1,4 @@
+# The GN build definitions for these variables are in scripts.gni.
 {
     'variables': {
         'scripts_for_in_files': [
