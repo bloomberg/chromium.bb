@@ -877,9 +877,6 @@ crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash
 
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-crbug.com/308992 css2.1/20110323/replaced-intrinsic-001.htm [ Failure ]
-crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
-
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Crash ]
 crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Crash ]
 
