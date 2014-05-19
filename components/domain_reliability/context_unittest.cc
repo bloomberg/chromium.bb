@@ -158,7 +158,9 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
   context_.OnBeacon(url, beacon);
 
-  const char* kExpectedReport = "{\"reporter\":\"test-reporter\","
+  // N.B.: Assumes max_delay is 5 minutes.
+  const char* kExpectedReport = "{\"config_version\":\"1\","
+      "\"reporter\":\"test-reporter\","
       "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
       "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
       "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"

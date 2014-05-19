@@ -272,6 +272,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
   }
 
   DictionaryValue* report_value = new DictionaryValue();
+  report_value->SetString("config_version", config().version);
   report_value->SetString("reporter", upload_reporter_string_);
   report_value->Set("resource_reports", resources_value);
 

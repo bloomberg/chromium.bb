@@ -52,7 +52,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
       uint32* successful_requests_out,
       uint32* failed_requests_out) const;
 
-  const DomainReliabilityConfig& config() { return *config_.get(); }
+  const DomainReliabilityConfig& config() const { return *config_.get(); }
 
   // Maximum number of beacons queued per context; if more than this many are
   // queued; the oldest beacons will be removed.
