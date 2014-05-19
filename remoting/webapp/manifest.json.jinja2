@@ -59,6 +59,19 @@
     "contextMenus",
     "overrideEscFullscreen"
 {% endif %}
+{% if webapp_type == 'v2_pnacl' %}
+    ,{
+      "socket": [
+        "tcp-connect",
+        "tcp-listen",
+        "udp-send-to",
+        "udp-bind",
+        "udp-multicast-membership",
+        "resolve-host",
+        "network-state"
+      ]
+    }
+{% endif %}
   ],
 
 {% if webapp_type == 'v1' %}

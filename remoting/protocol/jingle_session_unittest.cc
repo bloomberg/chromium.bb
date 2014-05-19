@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -94,6 +95,7 @@ class JingleSessionTest : public testing::Test {
  public:
   JingleSessionTest() {
     message_loop_.reset(new base::MessageLoopForIO());
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   }
 
   // Helper method that handles OnIncomingSession().
