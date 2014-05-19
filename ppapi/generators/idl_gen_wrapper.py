@@ -349,7 +349,9 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
 
   def GenerateWrapperInfoAndCollection(self, iface_releases, out):
     for iface in iface_releases:
-      iface_macro = self.cgen.GetInterfaceMacro(iface.node, iface.version)
+      iface_macro = "NULL"
+      if not iface.node.GetProperty("no_interface_string"):
+        iface_macro = self.cgen.GetInterfaceMacro(iface.node, iface.version)
       if iface.needs_wrapping:
         wrap_iface = '(const void *) &%s_Wrappers_%s' % (self.wrapper_prefix,
                                                          iface.struct_name)

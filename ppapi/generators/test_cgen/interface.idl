@@ -41,6 +41,11 @@ interface ifaceBar {
   ifaceFoo createIface([in] str_t name);
 };
 
+[no_interface_string]
+interface ifaceNoString {
+  void mem();
+};
+
 struct struct2 {
   ifaceBar bar;
 };

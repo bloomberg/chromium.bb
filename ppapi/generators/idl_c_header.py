@@ -288,6 +288,9 @@ class HGen(GeneratorByFile):
       # Skip this interface if there are no matching versions
       if not unique: continue
 
+      # Skip this interface if it should have no interface string.
+      if node.GetProperty('no_interface_string'): continue
+
       last_stable_ver = None
       last_dev_rel = None
       for rel in unique:

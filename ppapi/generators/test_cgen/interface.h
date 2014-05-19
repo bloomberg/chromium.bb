@@ -66,6 +66,12 @@ struct ifaceBar_1_0 {
 };
 
 typedef struct ifaceBar_1_0 ifaceBar;
+
+struct ifaceNoString_1_0 {
+  void (*mem)(void);
+};
+
+typedef struct ifaceNoString_1_0 ifaceNoString;
 /**
  * @}
  */
