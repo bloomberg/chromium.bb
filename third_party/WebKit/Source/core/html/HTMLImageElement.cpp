@@ -230,7 +230,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 
         String media = source->fastGetAttribute(mediaAttr);
         if (!media.isEmpty()) {
-            RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media);
+            RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media);
             if (!document().mediaQueryMatcher().evaluate(mediaQueries.get()))
                 continue;
         }
