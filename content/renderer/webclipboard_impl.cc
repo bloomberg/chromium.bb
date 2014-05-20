@@ -155,8 +155,15 @@ void WebClipboardImpl::writeImage(const WebImage& image,
 
   if (!image.isNull()) {
     const SkBitmap& bitmap = image.getSkBitmap();
+    // WriteBitmapFromPixels expects 32-bit data.
+    DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
+
     SkAutoLockPixels locked(bitmap);
-    scw.WriteBitmapFromPixels(bitmap.getPixels(), image.size());
+    void *pixels = bitmap.getPixels();
+    // TODO(piman): this should not be NULL, but it is. crbug.com/369621
+    if (!pixels)
+      return;
+    scw.WriteBitmapFromPixels(pixels, image.size());
   }
 
   if (!url.isEmpty()) {

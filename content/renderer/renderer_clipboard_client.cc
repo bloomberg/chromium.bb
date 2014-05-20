@@ -7,6 +7,7 @@
 #include "content/renderer/renderer_clipboard_client.h"
 
 #include "base/memory/shared_memory.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string16.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -49,7 +50,13 @@ void RendererClipboardWriteContext::WriteBitmapFromPixels(
   if (shared_buf_)
     return;
 
-  uint32 buf_size = 4 * size.width() * size.height();
+  base::CheckedNumeric<uint32> checked_buf_size = 4;
+  checked_buf_size *= size.width();
+  checked_buf_size *= size.height();
+  if (!checked_buf_size.IsValid())
+    return;
+
+  uint32 buf_size = checked_buf_size.ValueOrDie();
 
   // Allocate a shared memory buffer to hold the bitmap bits.
   shared_buf_.reset(ChildThread::current()->AllocateSharedMemory(buf_size));
