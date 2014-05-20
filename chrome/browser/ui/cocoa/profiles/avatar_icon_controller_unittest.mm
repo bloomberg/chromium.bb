@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/bookmarks/core/test/bookmark_test_helpers.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:

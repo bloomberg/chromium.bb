@@ -25,8 +25,8 @@
 
 #include "base/basictypes.h"
 #include "base/mac/scoped_block.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
-#include "components/bookmarks/core/browser/bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model_observer.h"
 
 class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
  public:

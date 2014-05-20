@@ -9,8 +9,8 @@
 
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/undo_manager.h"
-#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
-#include "components/bookmarks/core/browser/bookmark_node_data.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;

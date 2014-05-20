@@ -10,8 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/common/net/url_fixer_upper.h"
-#include "components/bookmarks/core/browser/bookmark_expanded_state_tracker.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 

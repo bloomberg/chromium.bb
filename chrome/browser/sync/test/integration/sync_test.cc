@@ -49,7 +49,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/bookmarks/core/test/bookmark_test_helpers.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/invalidation/invalidation_switches.h"
 #include "components/invalidation/p2p_invalidation_service.h"
 #include "components/os_crypt/os_crypt.h"

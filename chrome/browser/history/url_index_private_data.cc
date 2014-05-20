@@ -24,8 +24,8 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
-#include "components/bookmarks/core/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "net/base/net_util.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)

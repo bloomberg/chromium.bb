@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "components/bookmarks/core/common/bookmark_constants.h"
+#include "components/bookmarks/common/bookmark_constants.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

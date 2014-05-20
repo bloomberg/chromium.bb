@@ -6,7 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "testing/platform_test.h"
 
 class BookmarkTreeBrowserCellTest : public PlatformTest {

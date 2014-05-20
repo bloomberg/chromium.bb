@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/bookmarks/core/common/bookmark_pref_names.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 

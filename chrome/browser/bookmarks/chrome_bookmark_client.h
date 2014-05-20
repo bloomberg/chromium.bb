@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BOOKMARKS_CHROME_BOOKMARK_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
-#include "components/bookmarks/core/browser/bookmark_client.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

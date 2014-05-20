@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #import "ui/base/cocoa/menu_controller.h"
 
 @interface BookmarkContextMenuCocoaController (Private)

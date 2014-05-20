@@ -19,8 +19,8 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
-#include "components/bookmarks/core/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace history {

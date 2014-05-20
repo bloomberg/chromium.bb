@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/common/pref_names.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"

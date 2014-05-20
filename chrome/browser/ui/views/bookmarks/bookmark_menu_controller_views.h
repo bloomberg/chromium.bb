@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
-#include "components/bookmarks/core/browser/bookmark_node_data.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class BookmarkBarView;

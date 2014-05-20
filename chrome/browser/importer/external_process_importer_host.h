@@ -14,7 +14,7 @@
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/importer/importer_data_types.h"
-#include "components/bookmarks/core/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExternalProcessImporterClient;

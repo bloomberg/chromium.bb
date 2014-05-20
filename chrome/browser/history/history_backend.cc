@@ -37,7 +37,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_service.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

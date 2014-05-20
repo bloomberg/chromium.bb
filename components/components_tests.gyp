@@ -63,11 +63,11 @@
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
-            'bookmarks/core/browser/bookmark_codec_unittest.cc',
-            'bookmarks/core/browser/bookmark_expanded_state_tracker_unittest.cc',
-            'bookmarks/core/browser/bookmark_index_unittest.cc',
-            'bookmarks/core/browser/bookmark_model_unittest.cc',
-            'bookmarks/core/browser/bookmark_utils_unittest.cc',
+            'bookmarks/browser/bookmark_codec_unittest.cc',
+            'bookmarks/browser/bookmark_expanded_state_tracker_unittest.cc',
+            'bookmarks/browser/bookmark_index_unittest.cc',
+            'bookmarks/browser/bookmark_model_unittest.cc',
+            'bookmarks/browser/bookmark_utils_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
@@ -212,8 +212,8 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
 
             # Dependencies of bookmarks
-            'components.gyp:bookmarks_core_browser',
-            'components.gyp:bookmarks_core_test_support',
+            'components.gyp:bookmarks_browser',
+            'components.gyp:bookmarks_test_support',
 
             # Dependencies of captive_portal
             'components.gyp:captive_portal_test_support',
@@ -293,7 +293,7 @@
           'conditions': [
             ['toolkit_views == 1', {
               'sources': [
-                'bookmarks/core/browser/bookmark_node_data_unittest.cc',
+                'bookmarks/browser/bookmark_node_data_unittest.cc',
               ],
             }],
             ['OS != "ios"', {

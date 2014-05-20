@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/bookmarks/core",
+  "+components/bookmarks",
   "+sql",
   "+ui",
 ]

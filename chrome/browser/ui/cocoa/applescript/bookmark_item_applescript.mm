@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 
 @interface BookmarkItemAppleScript()
 @property (nonatomic, copy) NSString* tempURL;

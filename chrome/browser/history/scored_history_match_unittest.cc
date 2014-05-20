@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/scored_history_match.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

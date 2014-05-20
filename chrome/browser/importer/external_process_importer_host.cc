@@ -14,7 +14,7 @@
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

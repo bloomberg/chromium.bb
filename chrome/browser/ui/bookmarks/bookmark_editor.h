@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;

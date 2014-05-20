@@ -8,10 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
-#include "components/bookmarks/core/browser/bookmark_node_data.h"
-#include "components/bookmarks/core/browser/bookmark_utils.h"
-#include "components/bookmarks/core/browser/scoped_group_bookmark_actions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node_data.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace chrome {

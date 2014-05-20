@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;

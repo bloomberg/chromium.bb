@@ -21,7 +21,7 @@
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:signin_core_browser_test_support',
         '../components/components.gyp:sync_driver_test_support',
-        '../components/components.gyp:bookmarks_core_test_support',
+        '../components/components.gyp:bookmarks_test_support',
         '../content/content.gyp:content_app_both',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../net/net.gyp:net',

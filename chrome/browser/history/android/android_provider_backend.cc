@@ -16,7 +16,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_service.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/connection.h"
 

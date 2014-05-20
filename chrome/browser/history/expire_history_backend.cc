@@ -19,7 +19,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "components/bookmarks/core/browser/bookmark_service.h"
+#include "components/bookmarks/browser/bookmark_service.h"
 
 namespace history {
 

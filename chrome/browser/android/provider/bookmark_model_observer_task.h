@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/bookmarks/core/browser/bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_model_observer.h"
 
 // Base class for synchronous tasks that involve the bookmark model.
 // Ensures the model has been loaded before accessing it.

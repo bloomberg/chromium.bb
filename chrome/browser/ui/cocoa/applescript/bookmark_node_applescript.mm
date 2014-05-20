@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 
 @interface BookmarkNodeAppleScript()
 @property (nonatomic, copy) NSString* tempTitle;
