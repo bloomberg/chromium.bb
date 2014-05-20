@@ -126,7 +126,7 @@ void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionSta
         return;
     }
 
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
+    if (RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
         replaceChildrenWithFragment(this, fragment.release(), exceptionState);
 }
 

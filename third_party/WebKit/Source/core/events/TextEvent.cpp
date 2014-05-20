@@ -46,7 +46,7 @@ PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtrW
     return adoptRefWillBeNoop(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
+PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtrWillBeRawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
 {
     return adoptRefWillBeNoop(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
 }
@@ -75,7 +75,7 @@ TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& da
     ScriptWrappable::init(this);
 }
 
-TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, PassRefPtr<DocumentFragment> pastingFragment,
+TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment,
                      bool shouldSmartReplace, bool shouldMatchStyle)
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(TextEventInputPaste)
@@ -108,6 +108,7 @@ const AtomicString& TextEvent::interfaceName() const
 
 void TextEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_pastingFragment);
     UIEvent::trace(visitor);
 }
 

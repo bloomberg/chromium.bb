@@ -350,7 +350,7 @@ void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
     target->dispatchEvent(TextEvent::createForPlainTextPaste(m_frame.domWindow(), pastingText, smartReplace), IGNORE_EXCEPTION);
 }
 
-void Editor::pasteAsFragment(PassRefPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
+void Editor::pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
 {
     Node* target = findEventTargetFromSelection();
     if (!target)
@@ -388,7 +388,7 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 {
     RefPtrWillBeRawPtr<Range> range = selectedRange();
-    RefPtr<DocumentFragment> fragment;
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = nullptr;
     bool chosePlainText = false;
 
     if (pasteboard->isHTMLAvailable()) {
@@ -483,7 +483,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard)
     return smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
 }
 
-void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
+void Editor::replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, bool selectReplacement, bool smartReplace, bool matchStyle)
 {
     if (m_frame.selection().isNone() || !m_frame.selection().isContentEditable() || !fragment)
         return;
