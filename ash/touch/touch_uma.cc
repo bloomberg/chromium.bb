@@ -343,7 +343,8 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     int distance = 0;
     if (details->last_touch_position_.count(event.touch_id())) {
       gfx::Point lastpos = details->last_touch_position_[event.touch_id()];
-      distance = abs(lastpos.x() - event.x()) + abs(lastpos.y() - event.y());
+      distance =
+          std::abs(lastpos.x() - event.x()) + std::abs(lastpos.y() - event.y());
     }
 
     if (details->last_move_time_.count(event.touch_id())) {

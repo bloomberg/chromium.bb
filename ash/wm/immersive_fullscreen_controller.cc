@@ -870,8 +870,8 @@ ImmersiveFullscreenController::GetSwipeType(ui::GestureEvent* event) const {
   if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return SWIPE_NONE;
   // Make sure that it is a clear vertical gesture.
-  if (abs(event->details().scroll_y()) <=
-      kSwipeVerticalThresholdMultiplier * abs(event->details().scroll_x()))
+  if (std::abs(event->details().scroll_y()) <=
+      kSwipeVerticalThresholdMultiplier * std::abs(event->details().scroll_x()))
     return SWIPE_NONE;
   if (event->details().scroll_y() < 0)
     return SWIPE_CLOSE;

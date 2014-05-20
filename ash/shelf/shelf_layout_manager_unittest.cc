@@ -201,25 +201,25 @@ class ShelfDragCallback {
         // If dragging inwards from the visible state, then the shelf should
         // increase in size, but not more than the scroll delta.
         EXPECT_LE(visible_bounds_size, shelf_size);
-        EXPECT_LE(abs(shelf_size - visible_bounds_size),
-                  abs(scroll_delta));
+        EXPECT_LE(std::abs(shelf_size - visible_bounds_size),
+                  std::abs(scroll_delta));
       } else {
         if (shelf_size > not_visible_bounds_size) {
           // If dragging outwards from the visible state, then the shelf
           // should decrease in size, until it reaches the minimum size.
-          EXPECT_EQ(shelf_size, visible_bounds_size - abs(scroll_delta));
+          EXPECT_EQ(shelf_size, visible_bounds_size - std::abs(scroll_delta));
         }
       }
     } else {
-      if (fabs(scroll_delta) <
+      if (std::abs(scroll_delta) <
           visible_bounds_size - not_visible_bounds_size) {
         // Tests that the shelf sticks with the touch point during the drag
         // until the shelf is completely visible.
-        EXPECT_EQ(shelf_size, not_visible_bounds_size + abs(scroll_delta));
+        EXPECT_EQ(shelf_size, not_visible_bounds_size + std::abs(scroll_delta));
       } else {
         // Tests that after the shelf is completely visible, the shelf starts
         // resisting the drag.
-        EXPECT_LT(shelf_size, not_visible_bounds_size + abs(scroll_delta));
+        EXPECT_LT(shelf_size, not_visible_bounds_size + std::abs(scroll_delta));
       }
     }
   }

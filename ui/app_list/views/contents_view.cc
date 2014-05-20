@@ -303,12 +303,12 @@ void ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
   }
 
   float offset;
-  if (abs(event->x_offset()) > abs(event->y_offset()))
+  if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
     offset = event->x_offset();
   else
     offset = event->y_offset();
 
-  if (abs(offset) > kMinScrollToSwitchPage) {
+  if (std::abs(offset) > kMinScrollToSwitchPage) {
     if (!pagination_model_->has_transition()) {
       pagination_model_->SelectPageRelative(offset > 0 ? -1 : 1,
                                             true);
