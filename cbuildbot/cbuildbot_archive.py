@@ -155,13 +155,16 @@ class Archive(object):
 
     osutils.SafeMakedirs(self.archive_path)
 
-  def UpdateLatestMarkers(self, manifest_branch, debug):
+  def UpdateLatestMarkers(self, manifest_branch, debug, upload_urls=None):
     """Update the LATEST markers in GS archive area.
 
     Args:
       manifest_branch: The name of the branch in the manifest for this run.
       debug: Boolean debug value for this run.
+      upload_urls: Google storage urls to upload the Latest Markers to.
     """
+    if not upload_urls:
+      upload_urls = [self.upload_url]
     # self.version will be one of these forms, shown through examples:
     # R35-1234.5.6 or R35-1234.5.6-b123.  In either case, we want "1234.5.6".
     version_marker = self.version.split('-')[1]
@@ -169,10 +172,11 @@ class Archive(object):
     filenames = ('LATEST-%s' % manifest_branch,
                  'LATEST-%s' % version_marker)
     base_archive_path = os.path.dirname(self.archive_path)
-    base_upload_url = os.path.dirname(self.upload_url)
-    for filename in filenames:
-      latest_path = os.path.join(base_archive_path, filename)
-      osutils.WriteFile(latest_path, self.version, mode='w')
-      commands.UploadArchivedFile(
-          base_archive_path, [base_upload_url], filename,
-          debug, acl=self.upload_acl)
+    base_upload_urls = [os.path.dirname(url) for url in upload_urls]
+    for base_upload_url in base_upload_urls:
+      for filename in filenames:
+        latest_path = os.path.join(base_archive_path, filename)
+        osutils.WriteFile(latest_path, self.version, mode='w')
+        commands.UploadArchivedFile(
+            base_archive_path, [base_upload_url], filename,
+            debug, acl=self.upload_acl)

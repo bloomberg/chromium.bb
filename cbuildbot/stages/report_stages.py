@@ -328,11 +328,19 @@ class ReportStage(generic_stages.BuilderStage,
       run_archive_urls = self._UploadArchiveIndex(builder_run)
       if run_archive_urls:
         archive_urls.update(run_archive_urls)
-
         # Also update the LATEST files, since this run did archive something.
+
+        # Check if the builder_run is tied to any boards and if so get all
+        # upload urls.
+        if builder_run.config['boards']:
+          upload_urls = self._GetUploadUrls(
+              'LATEST-*', board=builder_run.config['boards'][0])
+        else:
+          upload_urls = [self.upload_url]
         archive = builder_run.GetArchive()
         archive.UpdateLatestMarkers(builder_run.manifest_branch,
-                                    builder_run.debug)
+                                    builder_run.debug,
+                                    upload_urls=upload_urls)
 
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
