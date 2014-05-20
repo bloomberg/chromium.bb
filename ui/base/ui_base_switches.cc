@@ -39,10 +39,6 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
-// Load the locale resources from the given path. When running on Mac/Unix the
-// path should point to a locale.pak file.
-const char kLocalePak[] = "locale_pak";
-
 // Disable ui::MessageBox. This is useful when running as part of scripts that
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";

@@ -258,15 +258,8 @@ std::string ResourceBundle::LoadLocaleResources(
   DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   base::FilePath locale_file_path = GetOverriddenPakPath();
-  if (locale_file_path.empty()) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kLocalePak)) {
-      locale_file_path =
-          command_line->GetSwitchValuePath(switches::kLocalePak);
-    } else {
-      locale_file_path = GetLocaleFilePath(app_locale, true);
-    }
-  }
+  if (locale_file_path.empty())
+    locale_file_path = GetLocaleFilePath(app_locale, true);
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
