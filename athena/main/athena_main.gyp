@@ -11,13 +11,19 @@
       'target_name': 'athena_main',
       'type': 'executable',
       'dependencies': [
+        '../athena.gyp:athena_lib',
         '../../apps/shell/app_shell.gyp:app_shell_lib',
+        '../../skia/skia.gyp:skia',
+        '../../ui/accessibility/accessibility.gyp:ax_gen',
+        '../../ui/views/views.gyp:views',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
         'athena_main.cc',
+        'placeholder.cc',
+        'placeholder.h',
       ],
     },
   ],  # targets

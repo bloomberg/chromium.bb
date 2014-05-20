@@ -1,5 +1,18 @@
 include_rules = [
   "+apps/shell/app",
   "+apps/shell/browser",
+  "+athena/screen/public",
+  "+athena/wm/public",
   "+content/public/app",
+  "+ui/aura",
 ]
+
+# TODO(oshima): Remove this.
+specific_include_rules = {
+  "placeholder\.*": [
+    "+third_party/skia",
+    "+ui/gfx",
+    "+ui/views",
+  ],
+}
+
