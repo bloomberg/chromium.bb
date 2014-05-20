@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace chrome {
 namespace android {
 
@@ -27,6 +31,9 @@ class ChromiumApplication {
 
   // Shows a dialog with the terms of service.
   static void ShowTermsOfServiceDialog();
+
+  // Open the clear browsing data UI.
+  static void OpenClearBrowsingData(content::WebContents* web_contents);
 
   // Determines whether parental controls are enabled.
   static bool AreParentalControlsEnabled();

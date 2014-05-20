@@ -140,12 +140,6 @@ bool TabModelBase::IsSessionRestoreInProgress() const {
       env, java_object_.get(env).obj());
 }
 
-void TabModelBase::OpenClearBrowsingData() const {
-  JNIEnv* env = AttachCurrentThread();
-  Java_TabModelBase_openClearBrowsingData(env,
-      java_object_.get(env).obj());
-}
-
 void TabModelBase::BroadcastSessionRestoreComplete(JNIEnv* env,
                                                    jobject obj) {
   TabModel::BroadcastSessionRestoreComplete();

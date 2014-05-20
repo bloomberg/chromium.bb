@@ -619,12 +619,6 @@ public abstract class TabModelBase implements TabModel {
     @CalledByNative
     protected abstract Tab createNewTabForDevTools(String url);
 
-    /**
-     * Opens the Clear Browsing Data dialog.
-     */
-    @CalledByNative
-    protected abstract void openClearBrowsingData();
-
     @CalledByNative
     private boolean isSessionRestoreInProgress() {
         return mModelDelegate.isSessionRestoreInProgress();

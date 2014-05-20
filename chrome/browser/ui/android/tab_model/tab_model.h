@@ -54,8 +54,6 @@ class TabModel : public content::NotificationObserver {
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const = 0;
 
-  virtual void OpenClearBrowsingData() const = 0;
-
  protected:
   explicit TabModel(Profile* profile);
   virtual ~TabModel();

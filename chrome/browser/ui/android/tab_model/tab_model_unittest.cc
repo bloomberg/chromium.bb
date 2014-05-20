@@ -41,7 +41,6 @@ class TestTabModel : public TabModel {
     return NULL;
   }
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
-  virtual void OpenClearBrowsingData() const OVERRIDE {}
   virtual TabAndroid* GetTabAt(int index) const OVERRIDE {
     return NULL;
   }

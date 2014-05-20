@@ -50,7 +50,6 @@ class TabModelBase : public TabModel {
 
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const OVERRIDE;
-  virtual void OpenClearBrowsingData() const OVERRIDE;
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.

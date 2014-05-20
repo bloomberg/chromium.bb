@@ -6,6 +6,7 @@ package org.chromium.chrome.unit_tests_apk;
 
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
+import org.chromium.chrome.browser.Tab;
 
 /**
  * A stub implementation of the chrome application to be used in chrome unit_tests.
@@ -22,6 +23,10 @@ public class ChromeNativeTestApplication extends ChromiumApplication {
 
     @Override
     protected void showTermsOfServiceDialog() {
+    }
+
+    @Override
+    protected void openClearBrowsingData(Tab tab) {
     }
 
     @Override

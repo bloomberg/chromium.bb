@@ -5,11 +5,13 @@
 package org.chromium.chrome.shell;
 
 import android.content.Intent;
+import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.content.browser.ResourceExtractor;
@@ -21,6 +23,8 @@ import java.util.ArrayList;
  * loading the right resources.
  */
 public class ChromeShellApplication extends ChromiumApplication {
+    private static final String TAG = "ChromeShellApplication";
+
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromeshell";
     /**
      * icudtl.dat provides ICU (i18n library) with all the necessary data
@@ -87,6 +91,11 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected void showTermsOfServiceDialog() {
+    }
+
+    @Override
+    protected void openClearBrowsingData(Tab tab) {
+        Log.e(TAG, "Clear browsing data not currently supported in Chrome Shell");
     }
 
     @Override

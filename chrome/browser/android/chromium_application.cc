@@ -5,6 +5,8 @@
 #include "chrome/browser/android/chromium_application.h"
 
 #include "base/android/jni_android.h"
+#include "chrome/browser/android/tab_android.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ChromiumApplication_jni.h"
 
 namespace chrome {
@@ -31,6 +33,16 @@ void ChromiumApplication::ShowTermsOfServiceDialog() {
   Java_ChromiumApplication_showTermsOfServiceDialog(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext());
+}
+
+void ChromiumApplication::OpenClearBrowsingData(
+    content::WebContents* web_contents) {
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab);
+  Java_ChromiumApplication_openClearBrowsingData(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext(),
+      tab->GetJavaObject().obj());
 }
 
 bool ChromiumApplication::AreParentalControlsEnabled() {

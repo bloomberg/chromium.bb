@@ -25,6 +25,13 @@ public abstract class ChromiumApplication extends ContentApplication {
     protected abstract void showTermsOfServiceDialog();
 
     /**
+     * Opens the UI to clear browsing data.
+     * @param tab The tab that triggered the request.
+     */
+    @CalledByNative
+    protected abstract void openClearBrowsingData(Tab tab);
+
+    /**
      * @return Whether parental controls are enabled.  Returning true will disable
      *         incognito mode.
      */
