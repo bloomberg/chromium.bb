@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
 
+#include <string>
+
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -49,35 +51,35 @@ class ScreenlockPrivateShowMessageFunction
 
  private:
   virtual ~ScreenlockPrivateShowMessageFunction();
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowMessageFunction );
+  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowMessageFunction);
 };
 
-class ScreenlockPrivateShowButtonFunction
+class ScreenlockPrivateShowCustomIconFunction
     : public ChromeAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showButton",
-                             SCREENLOCKPRIVATE_SHOWBUTTON)
-  ScreenlockPrivateShowButtonFunction();
+  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.showCustomIcon",
+                             SCREENLOCKPRIVATE_SHOWCUSTOMICON)
+  ScreenlockPrivateShowCustomIconFunction();
   virtual bool RunAsync() OVERRIDE;
 
  private:
-  virtual ~ScreenlockPrivateShowButtonFunction();
+  virtual ~ScreenlockPrivateShowCustomIconFunction();
   void OnImageLoaded(const gfx::Image& image);
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowButtonFunction);
+  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateShowCustomIconFunction);
 };
 
-class ScreenlockPrivateHideButtonFunction
+class ScreenlockPrivateHideCustomIconFunction
     : public ChromeAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.hideButton",
-                             SCREENLOCKPRIVATE_HIDEBUTTON)
-  ScreenlockPrivateHideButtonFunction();
+  DECLARE_EXTENSION_FUNCTION("screenlockPrivate.hideCustomIcon",
+                             SCREENLOCKPRIVATE_HIDECUSTOMICON)
+  ScreenlockPrivateHideCustomIconFunction();
   virtual bool RunAsync() OVERRIDE;
 
  private:
-  virtual ~ScreenlockPrivateHideButtonFunction();
+  virtual ~ScreenlockPrivateHideCustomIconFunction();
   void OnImageLoaded(const gfx::Image& image);
-  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateHideButtonFunction);
+  DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateHideCustomIconFunction);
 };
 
 class ScreenlockPrivateSetAuthTypeFunction
@@ -124,8 +126,6 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
   virtual ~ScreenlockPrivateEventRouter();
-
-  void OnButtonClicked();
 
   void OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
                        const std::string& value);

@@ -159,28 +159,12 @@ podrow[ncolumns='6'] .pod {
   display: -webkit-box;
 }
 
-.custom-button {
+.custom-icon {
   -webkit-box-align: center;
-  background-color: rgba(0, 0, 0, 0);
-  background-image: none;
-  cursor: pointer;
-  display: -webkit-box;
+  background-position: center;
+  background-repeat: no-repeat;
   height: 40px;
-  margin: 0;
-  max-width: 40px;
-  min-height: 0;
-  min-width: 0;
-  padding: 0;
-}
-
-button.custom-button:focus:active,
-button.custom-button:focus:hover {
-  border: 1px solid transparent !important;
-}
-
-.custom-button img {
-  max-height: 100%;
-  max-width: 100%;
+  width: 40px;
 }
 
 .pod input[type='password'] {

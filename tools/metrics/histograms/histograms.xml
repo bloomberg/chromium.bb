@@ -34598,7 +34598,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
   <int value="651" label="VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD"/>
-  <int value="652" label="SCREENLOCKPRIVATE_SHOWBUTTON"/>
+  <int value="652" label="SCREENLOCKPRIVATE_SHOWCUSTOMICON"/>
   <int value="653" label="INPUT_IME_HIDEINPUTVIEW"/>
   <int value="654" label="BOOKMARKMANAGERPRIVATE_UNDO"/>
   <int value="655" label="BOOKMARKMANAGERPRIVATE_REDO"/>
@@ -34636,7 +34636,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="686" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIES"/>
   <int value="687" label="NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE"/>
   <int value="688" label="NETWORKINGPRIVATE_GETWIFITDLSSTATUS"/>
-  <int value="689" label="SCREENLOCKPRIVATE_HIDEBUTTON"/>
+  <int value="689" label="SCREENLOCKPRIVATE_HIDECUSTOMICON"/>
   <int value="690" label="SCREENLOCKPRIVATE_SETAUTHTYPE"/>
   <int value="691" label="SCREENLOCKPRIVATE_GETAUTHTYPE"/>
   <int value="692" label="SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>

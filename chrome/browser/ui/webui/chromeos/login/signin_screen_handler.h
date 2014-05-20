@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -75,16 +77,6 @@ class LoginDisplayWebUIHandler {
   virtual void OnUserImageChanged(const User& user) = 0;
   virtual void OnPreferencesChanged() = 0;
   virtual void ResetSigninScreenHandlerDelegate() = 0;
-  virtual void ShowBannerMessage(const std::string& message) = 0;
-  virtual void ShowUserPodButton(const std::string& username,
-                                 const std::string& iconURL,
-                                 const base::Closure& click_callback) = 0;
-  virtual void HideUserPodButton(const std::string& username) = 0;
-  virtual void SetAuthType(const std::string& username,
-                           LoginDisplay::AuthType auth_type,
-                           const std::string& initial_value) = 0;
-  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
-      const = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -206,6 +198,7 @@ class SigninScreenHandler
       public LoginDisplayWebUIHandler,
       public content::NotificationObserver,
       public ui::EventHandler,
+      public ScreenlockBridge::LockHandler,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
@@ -280,16 +273,6 @@ class SigninScreenHandler
   virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
-  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
-  virtual void ShowUserPodButton(const std::string& username,
-                                 const std::string& iconURL,
-                                 const base::Closure& click_callback) OVERRIDE;
-  virtual void HideUserPodButton(const std::string& username) OVERRIDE;
-  virtual void SetAuthType(const std::string& username,
-                           LoginDisplay::AuthType auth_type,
-                           const std::string& initial_value) OVERRIDE;
-  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
-      const OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -309,6 +292,19 @@ class SigninScreenHandler
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ScreenlockBridge::LockHandler implementation:
+  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
+  virtual void ShowUserPodCustomIcon(const std::string& username,
+                                     const gfx::Image& icon) OVERRIDE;
+  virtual void HideUserPodCustomIcon(const std::string& username) OVERRIDE;
+  virtual void EnableInput() OVERRIDE;
+  virtual void SetAuthType(const std::string& username,
+                           ScreenlockBridge::LockHandler::AuthType auth_type,
+                           const std::string& initial_value) OVERRIDE;
+  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
+      const std::string& username) const OVERRIDE;
+  virtual void Unlock(const std::string& user_email) OVERRIDE;
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowSigninScreenIfReady();
@@ -341,6 +337,7 @@ class SigninScreenHandler
   void HandleScrapedPasswordVerificationFailed();
   void HandleAuthenticateUser(const std::string& username,
                               const std::string& password);
+  void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchDemoUser();
   void HandleLaunchIncognito();
   void HandleLaunchPublicAccount(const std::string& username);
@@ -373,15 +370,15 @@ class SigninScreenHandler
   void HandleShowLocallyManagedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
-  void HandleCustomButtonClicked(const std::string& username);
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
 
   // Fills |user_dict| with information about |user|.
-  static void FillUserDictionary(User* user,
-                                 bool is_owner,
-                                 bool is_signin_to_add,
-                                 LoginDisplay::AuthType auth_type,
-                                 base::DictionaryValue* user_dict);
+  static void FillUserDictionary(
+      User* user,
+      bool is_owner,
+      bool is_signin_to_add,
+      ScreenlockBridge::LockHandler::AuthType auth_type,
+      base::DictionaryValue* user_dict);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);
@@ -533,12 +530,10 @@ class SigninScreenHandler
 
   base::Closure kiosk_enable_flow_aborted_callback_for_test_;
 
-  // Map of callbacks run when the custom button on a user pod is clicked.
-  std::map<std::string, base::Closure> user_pod_button_callback_map_;
-
   // Map of usernames to their current authentication type. If a user is not
   // contained in the map, it is using the default authentication type.
-  std::map<std::string, LoginDisplay::AuthType> user_auth_type_map_;
+  std::map<std::string, ScreenlockBridge::LockHandler::AuthType>
+      user_auth_type_map_;
 
   // Non-owning ptr.
   // TODO (ygorshenin@): remove this dependency.

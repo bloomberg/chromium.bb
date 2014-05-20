@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_SCREENLOCK_BRIDGE_H_
 #define CHROME_BROWSER_SIGNIN_SCREENLOCK_BRIDGE_H_
 
-#include "base/callback_forward.h"
+#include <string>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -45,14 +46,12 @@ class ScreenlockBridge {
     // Displays |message| in a banner on the lock screen.
     virtual void ShowBannerMessage(const std::string& message) = 0;
 
-    // Shows a button inside the user pod on the lock screen with an icon.
-    // |callback| is invoked when the icon is clicked. This is deprecated now.
-    virtual void ShowUserPodButton(const std::string& user_email,
-                                   const gfx::Image& icon,
-                                   const base::Closure& callback) = 0;
+    // Shows a custom icon in the user pod on the lock screen.
+    virtual void ShowUserPodCustomIcon(const std::string& user_email,
+                                       const gfx::Image& icon) = 0;
 
-    // Hides the user pod button for a user.
-    virtual void HideUserPodButton(const std::string& user_email) = 0;
+    // Hides the custom icon in user pod for a user.
+    virtual void HideUserPodCustomIcon(const std::string& user_email) = 0;
 
     // (Re)enable lock screen UI.
     virtual void EnableInput() = 0;

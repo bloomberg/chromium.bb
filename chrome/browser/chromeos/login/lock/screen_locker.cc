@@ -34,7 +34,6 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -122,39 +121,6 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
 };
 
 ScreenLockObserver* g_screen_lock_observer = NULL;
-
-// TODO(xiyuan): Get rid of LoginDisplay::AuthType and the mappers below.
-ScreenlockBridge::LockHandler::AuthType ToLockHandlerAuthType(
-    LoginDisplay::AuthType auth_type) {
-  switch (auth_type) {
-    case LoginDisplay::OFFLINE_PASSWORD:
-      return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
-    case LoginDisplay::ONLINE_SIGN_IN:
-      return ScreenlockBridge::LockHandler::ONLINE_SIGN_IN;
-    case LoginDisplay::NUMERIC_PIN:
-      return ScreenlockBridge::LockHandler::NUMERIC_PIN;
-    case LoginDisplay::USER_CLICK:
-      return ScreenlockBridge::LockHandler::USER_CLICK;
-  }
-  NOTREACHED();
-  return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
-}
-
-LoginDisplay::AuthType FromLockHandlerAuthType(
-    ScreenlockBridge::LockHandler::AuthType auth_type) {
-  switch (auth_type) {
-    case ScreenlockBridge::LockHandler::OFFLINE_PASSWORD:
-      return LoginDisplay::OFFLINE_PASSWORD;
-    case ScreenlockBridge::LockHandler::ONLINE_SIGN_IN:
-      return LoginDisplay::ONLINE_SIGN_IN;
-    case ScreenlockBridge::LockHandler::NUMERIC_PIN:
-      return LoginDisplay::NUMERIC_PIN;
-    case ScreenlockBridge::LockHandler::USER_CLICK:
-      return LoginDisplay::USER_CLICK;
-  }
-  NOTREACHED();
-  return LoginDisplay::OFFLINE_PASSWORD;
-}
 
 }  // namespace
 
@@ -285,23 +251,6 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   delegate_->SetInputEnabled(false);
   delegate_->OnAuthenticate();
 
-  // Send authentication request to chrome.screenlockPrivate API event router
-  // if the authentication type is not the system password.
-  LoginDisplay::AuthType auth_type =
-      FromLockHandlerAuthType(GetAuthType(user_context.GetUserID()));
-  if (auth_type != LoginDisplay::OFFLINE_PASSWORD) {
-    const User* unlock_user = FindUnlockUser(user_context.GetUserID());
-    LOG_ASSERT(unlock_user);
-
-    Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
-    extensions::ScreenlockPrivateEventRouter* router =
-        extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
-            profile);
-    router->OnAuthAttempted(ToLockHandlerAuthType(auth_type),
-                            user_context.GetPassword());
-    return;
-  }
-
   // Special case: supervised users. Use special authenticator.
   if (const User* user = FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
@@ -358,58 +307,8 @@ void ScreenLocker::Signout() {
   // briefly.
 }
 
-void ScreenLocker::ShowBannerMessage(const std::string& message) {
-  delegate_->ShowBannerMessage(message);
-}
-
-void ScreenLocker::ShowUserPodButton(const std::string& username,
-                                     const gfx::Image& icon,
-                                     const base::Closure& click_callback) {
-  if (!locked_)
-    return;
-
-  screenlock_icon_provider_->AddIcon(username, icon);
-
-  if (!username.empty()) {
-    // Append the current time to the URL so the image will not be cached.
-    std::string icon_url =
-        ScreenlockIconSource::GetIconURLForUser(username) + "?uniq=" +
-        base::Int64ToString(base::Time::Now().ToInternalValue());
-    delegate_->ShowUserPodButton(username, icon_url, click_callback);
-  }
-}
-
-void ScreenLocker::HideUserPodButton(const std::string& username) {
-  if (!locked_)
-    return;
-  screenlock_icon_provider_->RemoveIcon(username);
-  delegate_->HideUserPodButton(username);
-}
-
 void ScreenLocker::EnableInput() {
   delegate_->SetInputEnabled(true);
-}
-
-void ScreenLocker::SetAuthType(
-    const std::string& username,
-    ScreenlockBridge::LockHandler::AuthType auth_type,
-    const std::string& initial_value) {
-  if (!locked_)
-    return;
-  delegate_->SetAuthType(
-      username, FromLockHandlerAuthType(auth_type), initial_value);
-}
-
-ScreenlockBridge::LockHandler::AuthType ScreenLocker::GetAuthType(
-    const std::string& username) const {
-  // Return default authentication type when not locked.
-  if (!locked_)
-    return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
-  return ToLockHandlerAuthType(delegate_->GetAuthType(username));
-}
-
-void ScreenLocker::Unlock(const std::string& user_email) {
-  chromeos::ScreenLocker::Hide();
 }
 
 void ScreenLocker::ShowErrorMessage(int error_msg_id,
@@ -556,8 +455,6 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
-
-  ScreenlockBridge::Get()->SetLockHandler(NULL);
 }
 
 void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
@@ -583,8 +480,6 @@ void ScreenLocker::ScreenLockReady() {
       content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
-
-  ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
 content::WebUI* ScreenLocker::GetAssociatedWebUI() {

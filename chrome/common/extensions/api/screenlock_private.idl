@@ -30,12 +30,12 @@ namespace screenlockPrivate {
     // Show a message to the user on the unlock UI if the screen is locked.
     static void showMessage(DOMString message);
 
-    // Show a Button, an icon beside the input field on the user pod.
+    // Show a custom icon beside the input field on the user pod.
     // |icon|: An extension resource of the icon image.
-    static void showButton(DOMString icon);
+    static void showCustomIcon(DOMString icon);
 
-    // Hides the button added by $(ref:showButton)().
-    static void hideButton();
+    // Hides the custom icon added by $(ref:showCustomIcon)().
+    static void hideCustomIcon();
 
     // Returns the current auth type used for the user pod.
     static void getAuthType(AuthTypeCallback callback);
@@ -53,9 +53,6 @@ namespace screenlockPrivate {
   interface Events {
     // Fires whenever the screen is locked or unlocked.
     static void onChanged(boolean locked);
-
-    // Fires when the user clicks on the Button shown by $(ref:showButton)().
-    static void onButtonClicked();
 
     // Fires when the user attempts to authenticate with the user's input.
     // There will be at most one auth attempt active at any time.

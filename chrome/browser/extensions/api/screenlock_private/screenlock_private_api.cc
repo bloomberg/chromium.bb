@@ -97,17 +97,15 @@ bool ScreenlockPrivateShowMessageFunction::RunAsync() {
   return true;
 }
 
-static const int kMaxButtonIconSize = 40;
+ScreenlockPrivateShowCustomIconFunction::
+  ScreenlockPrivateShowCustomIconFunction() {}
 
-ScreenlockPrivateShowButtonFunction::
-  ScreenlockPrivateShowButtonFunction() {}
+ScreenlockPrivateShowCustomIconFunction::
+  ~ScreenlockPrivateShowCustomIconFunction() {}
 
-ScreenlockPrivateShowButtonFunction::
-  ~ScreenlockPrivateShowButtonFunction() {}
-
-bool ScreenlockPrivateShowButtonFunction::RunAsync() {
-  scoped_ptr<screenlock::ShowButton::Params> params(
-      screenlock::ShowButton::Params::Create(*args_));
+bool ScreenlockPrivateShowCustomIconFunction::RunAsync() {
+  scoped_ptr<screenlock::ShowCustomIcon::Params> params(
+      screenlock::ShowCustomIcon::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   ScreenlockBridge::LockHandler* locker =
       ScreenlockBridge::Get()->lock_handler();
@@ -116,37 +114,41 @@ bool ScreenlockPrivateShowButtonFunction::RunAsync() {
     SendResponse(false);
     return true;
   }
+
+  const int kMaxButtonIconSize = 40;
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(GetProfile());
   loader->LoadImageAsync(
-      GetExtension(), GetExtension()->GetResource(params->icon),
+      GetExtension(),
+      GetExtension()->GetResource(params->icon),
       gfx::Size(kMaxButtonIconSize, kMaxButtonIconSize),
-      base::Bind(&ScreenlockPrivateShowButtonFunction::OnImageLoaded, this));
+      base::Bind(&ScreenlockPrivateShowCustomIconFunction::OnImageLoaded,
+                 this));
   return true;
 }
 
-void ScreenlockPrivateShowButtonFunction::OnImageLoaded(
+void ScreenlockPrivateShowCustomIconFunction::OnImageLoaded(
     const gfx::Image& image) {
   ScreenlockBridge::LockHandler* locker =
       ScreenlockBridge::Get()->lock_handler();
-  ScreenlockPrivateEventRouter* router =
-      ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(GetProfile());
-  locker->ShowUserPodButton(
+  locker->ShowUserPodCustomIcon(
       ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()),
-      image,
-      base::Bind(&ScreenlockPrivateEventRouter::OnButtonClicked,
-                 base::Unretained(router)));
+      image);
   SendResponse(error_.empty());
 }
 
-ScreenlockPrivateHideButtonFunction::ScreenlockPrivateHideButtonFunction() {}
+ScreenlockPrivateHideCustomIconFunction::
+    ScreenlockPrivateHideCustomIconFunction() {
+}
 
-ScreenlockPrivateHideButtonFunction::~ScreenlockPrivateHideButtonFunction() {}
+ScreenlockPrivateHideCustomIconFunction::
+    ~ScreenlockPrivateHideCustomIconFunction() {
+}
 
-bool ScreenlockPrivateHideButtonFunction::RunAsync() {
+bool ScreenlockPrivateHideCustomIconFunction::RunAsync() {
   ScreenlockBridge::LockHandler* locker =
       ScreenlockBridge::Get()->lock_handler();
   if (locker) {
-    locker->HideUserPodButton(
+    locker->HideUserPodCustomIcon(
         ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()));
   } else {
     SetError(kNotLockedError);
@@ -266,10 +268,6 @@ ScreenlockPrivateEventRouter::GetFactoryInstance() {
 
 void ScreenlockPrivateEventRouter::Shutdown() {
   ScreenlockBridge::Get()->RemoveObserver(this);
-}
-
-void ScreenlockPrivateEventRouter::OnButtonClicked() {
-  DispatchEvent(screenlock::OnButtonClicked::kEventName, NULL);
 }
 
 void ScreenlockPrivateEventRouter::OnAuthAttempted(

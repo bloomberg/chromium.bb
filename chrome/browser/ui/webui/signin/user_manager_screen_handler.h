@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -38,10 +39,9 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
 
   // ScreenlockBridge::LockHandler implementation.
   virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
-  virtual void ShowUserPodButton(const std::string& user_email,
-                                 const gfx::Image& icon,
-                                 const base::Closure& callback) OVERRIDE;
-  virtual void HideUserPodButton(const std::string& user_email) OVERRIDE;
+  virtual void ShowUserPodCustomIcon(const std::string& user_email,
+                                     const gfx::Image& icon) OVERRIDE;
+  virtual void HideUserPodCustomIcon(const std::string& user_email) OVERRIDE;
   virtual void EnableInput() OVERRIDE;
   virtual void SetAuthType(const std::string& user_email,
                            ScreenlockBridge::LockHandler::AuthType auth_type,
@@ -61,7 +61,6 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void HandleLaunchGuest(const base::ListValue* args);
   void HandleLaunchUser(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
-  void HandleCustomButtonClicked(const base::ListValue* args);
   void HandleAttemptUnlock(const base::ListValue* args);
 
   // Handle GAIA auth results.

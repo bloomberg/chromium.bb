@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace content {
@@ -46,8 +45,7 @@ class WebUIScreenLockerTester;
 // ScreenLocker creates a ScreenLockerDelegate which will display the lock UI.
 // As well, it takes care of authenticating the user and managing a global
 // instance of itself which will be deleted when the system is unlocked.
-class ScreenLocker : public LoginStatusConsumer,
-                     public ScreenlockBridge::LockHandler {
+class ScreenLocker : public LoginStatusConsumer {
  public:
   explicit ScreenLocker(const UserList& users);
 
@@ -78,19 +76,8 @@ class ScreenLocker : public LoginStatusConsumer,
   // Exit the chrome, which will sign out the current session.
   void Signout();
 
-  // ScreenlockBridge::LockHandler:
-  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
-  virtual void ShowUserPodButton(const std::string& username,
-                                 const gfx::Image& icon,
-                                 const base::Closure& click_callback) OVERRIDE;
-  virtual void HideUserPodButton(const std::string& username) OVERRIDE;
-  virtual void EnableInput() OVERRIDE;
-  virtual void SetAuthType(const std::string& username,
-                           ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const std::string& initial_value) OVERRIDE;
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const OVERRIDE;
-  virtual void Unlock(const std::string& user_email) OVERRIDE;
+  // (Re)enable input field.
+  void EnableInput();
 
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"

@@ -26,21 +26,6 @@ class UserContext;
 // An abstract class that defines login UI implementation.
 class LoginDisplay : public RemoveUserDelegate {
  public:
-  // Supported authentication types for login.
-  enum AuthType {
-    // Authenticates using the user's regular password.
-    OFFLINE_PASSWORD,
-
-    // Authenticates by forced online GAIA sign in.
-    ONLINE_SIGN_IN,
-
-    // Authenticates with a 4 digit numeric pin.
-    NUMERIC_PIN,
-
-    // Authenticates by clicking pod when it is focused.
-    USER_CLICK,
-  };
-
   // Sign in error IDs that require detailed error screen and not just
   // a simple error bubble.
   enum SigninError {
@@ -159,25 +144,6 @@ class LoginDisplay : public RemoveUserDelegate {
   // Selects user entry with specified |index|.
   // Does nothing if current user is already selected.
   virtual void SelectPod(int index) = 0;
-
-  // Displays a banner on the login screen containing |message|.
-  virtual void ShowBannerMessage(const std::string& message) = 0;
-
-  // Shows a button with an icon inside the user pod of |username|.
-  virtual void ShowUserPodButton(const std::string& username,
-                                 const std::string& iconURL,
-                                 const base::Closure& click_callback) = 0;
-
-  // Hides the user pod button for a user.
-  virtual void HideUserPodButton(const std::string& username) = 0;
-
-  // Set the authentication type to be used on the lock screen.
-  virtual void SetAuthType(const std::string& username,
-                           AuthType auth_type,
-                           const std::string& initial_value) = 0;
-
-  // Returns the authentication type used for |username|.
-  virtual AuthType GetAuthType(const std::string& username) const = 0;
 
   // Displays simple error bubble with |error_msg_id| specified.
   // |login_attempts| shows number of login attempts made by current user.

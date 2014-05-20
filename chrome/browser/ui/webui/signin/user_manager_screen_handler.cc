@@ -61,7 +61,6 @@ const char kJsApiUserManagerAuthLaunchUser[] = "authenticatedLaunchUser";
 const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
-const char kJsApiUserManagerCustomButtonClicked[] = "customButtonClicked";
 const char kJsApiUserManagerAttemptUnlock[] = "attemptUnlock";
 
 const size_t kAvatarIconSize = 180;
@@ -141,7 +140,7 @@ extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
       profile);
 }
 
-} // namespace
+}  // namespace
 
 // ProfileUpdateObserver ------------------------------------------------------
 
@@ -220,21 +219,20 @@ void UserManagerScreenHandler::ShowBannerMessage(const std::string& message) {
       base::StringValue(message));
 }
 
-void UserManagerScreenHandler::ShowUserPodButton(
+void UserManagerScreenHandler::ShowUserPodCustomIcon(
     const std::string& user_email,
-    const gfx::Image& icon,
-    const base::Closure& callback) {
+    const gfx::Image& icon) {
   GURL icon_url(webui::GetBitmapDataUrl(icon.AsBitmap()));
   web_ui()->CallJavascriptFunction(
-      "login.AccountPickerScreen.showUserPodButton",
+      "login.AccountPickerScreen.showUserPodCustomIcon",
       base::StringValue(user_email),
       base::StringValue(icon_url.spec()));
 }
 
-void UserManagerScreenHandler::HideUserPodButton(
+void UserManagerScreenHandler::HideUserPodCustomIcon(
     const std::string& user_email) {
   web_ui()->CallJavascriptFunction(
-      "login.AccountPickerScreen.hideUserPodButton",
+      "login.AccountPickerScreen.hideUserPodCustomIcon",
       base::StringValue(user_email));
 }
 
@@ -403,11 +401,6 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
                             ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
 
-void UserManagerScreenHandler::HandleCustomButtonClicked(
-    const base::ListValue* args) {
-  // TODO(xiyuan): Remove this. Deprecated now.
-}
-
 void UserManagerScreenHandler::HandleAttemptUnlock(
     const base::ListValue* args) {
   std::string email;
@@ -456,9 +449,6 @@ void UserManagerScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUser,
       base::Bind(&UserManagerScreenHandler::HandleRemoveUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerCustomButtonClicked,
-      base::Bind(&UserManagerScreenHandler::HandleCustomButtonClicked,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerAttemptUnlock,
       base::Bind(&UserManagerScreenHandler::HandleAttemptUnlock,
@@ -562,8 +552,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("publicAccountReminder", base::string16());
   localized_strings->SetString("publicAccountEnter", base::string16());
   localized_strings->SetString("publicAccountEnterAccessibleName",
-                               base::string16());
-  localized_strings->SetString("multiple-signin-banner-text",
                                base::string16());
   localized_strings->SetString("signinBannerText", base::string16());
   localized_strings->SetString("launchAppButton", base::string16());

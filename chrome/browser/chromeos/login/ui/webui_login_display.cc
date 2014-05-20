@@ -126,43 +126,6 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
 void WebUILoginDisplay::SelectPod(int index) {
 }
 
-void WebUILoginDisplay::ShowBannerMessage(const std::string& message) {
-  if (!webui_handler_)
-    return;
-  webui_handler_->ShowBannerMessage(message);
-}
-
-void WebUILoginDisplay::ShowUserPodButton(
-    const std::string& username,
-    const std::string& iconURL,
-    const base::Closure& click_callback) {
-  if (!webui_handler_)
-    return;
-  webui_handler_->ShowUserPodButton(username, iconURL, click_callback);
-}
-
-void WebUILoginDisplay::HideUserPodButton(const std::string& username) {
-  if (!webui_handler_)
-    return;
-  webui_handler_->HideUserPodButton(username);
-}
-
-void WebUILoginDisplay::SetAuthType(const std::string& username,
-                                    AuthType auth_type,
-                                    const std::string& initial_value) {
-  if (!webui_handler_)
-    return;
-  webui_handler_->SetAuthType(username, auth_type, initial_value);
-}
-
-LoginDisplay::AuthType WebUILoginDisplay::GetAuthType(
-    const std::string& username) const {
-  // Return default auth type if WebUI hander is not ready.
-  if (!webui_handler_)
-    return OFFLINE_PASSWORD;
-  return webui_handler_->GetAuthType(username);
-}
-
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {

@@ -32,8 +32,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'forceLockedUserPodFocus',
       'removeUser',
       'showBannerMessage',
-      'showUserPodButton',
-      'hideUserPodButton',
+      'showUserPodCustomIcon',
+      'hideUserPodCustomIcon',
       'setAuthType',
       'showEasyUnlockBubble',
     ],
@@ -274,22 +274,23 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-     * Shows a button with an icon on the user pod of |username|. This function
+     * Shows a custom icon in the user pod of |username|. This function
      * is used by the chrome.screenlockPrivate API.
      * @param {string} username Username of pod to add button
      * @param {string} iconURL URL of the button icon
      */
-    showUserPodButton: function(username, iconURL) {
-      $('pod-row').showUserPodButton(username, iconURL);
+    showUserPodCustomIcon: function(username, iconURL) {
+      $('pod-row').showUserPodCustomIcon(username, iconURL);
     },
 
     /**
-     * Hides button on the user pod of |username| added by showUserPodButton().
-     * This function is used by the chrome.screenlockPrivate API.
+     * Hides the custom icon in the user pod of |username| added by
+     * showUserPodCustomIcon(). This function is used by the
+     * chrome.screenlockPrivate API.
      * @param {string} username Username of pod to remove button
      */
-    hideUserPodButton: function(username) {
-      $('pod-row').hideUserPodButton(username);
+    hideUserPodCustomIcon: function(username) {
+      $('pod-row').hideUserPodCustomIcon(username);
     },
 
     /**

@@ -56,16 +56,6 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void ScreenLockReady() OVERRIDE;
   virtual void OnAuthenticate() OVERRIDE;
   virtual void SetInputEnabled(bool enabled) OVERRIDE;
-  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
-  virtual void ShowUserPodButton(const std::string& username,
-                                 const std::string& iconURL,
-                                 const base::Closure& click_callback) OVERRIDE;
-  virtual void HideUserPodButton(const std::string& username) OVERRIDE;
-  virtual void SetAuthType(const std::string& username,
-                           LoginDisplay::AuthType auth_type,
-                           const std::string& initial_value) OVERRIDE;
-  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
-      const OVERRIDE;
   virtual void ShowErrorMessage(
       int error_msg_id,
       HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
