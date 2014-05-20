@@ -1204,8 +1204,6 @@
         'browser/metrics/metrics_reporting_scheduler.cc',
         'browser/metrics/metrics_reporting_scheduler.h',
         'browser/metrics/metrics_service_android.cc',
-        'browser/metrics/metrics_service_observer.cc',
-        'browser/metrics/metrics_service_observer.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
         'browser/metrics/metrics_services_manager.cc',

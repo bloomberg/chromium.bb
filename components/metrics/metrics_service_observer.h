@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_METRICS_METRICS_SERVICE_OBSERVER_H_
+#ifndef COMPONENTS_METRICS_METRICS_SERVICE_OBSERVER_H_
+#define COMPONENTS_METRICS_METRICS_SERVICE_OBSERVER_H_
 
 #include "base/macros.h"
 
@@ -22,4 +22,4 @@ class MetricsServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceObserver);
 };
 
-#endif  // CHROME_BROWSER_METRICS_METRICS_SERVICE_OBSERVER_H_
+#endif  // COMPONENTS_METRICS_METRICS_SERVICE_OBSERVER_H_

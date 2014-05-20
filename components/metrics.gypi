@@ -24,6 +24,8 @@
         'metrics/metrics_pref_names.cc',
         'metrics/metrics_pref_names.h',
         'metrics/metrics_service_client.h',
+        'metrics/metrics_service_observer.cc',
+        'metrics/metrics_service_observer.h',
         'metrics/persisted_logs.cc',
         'metrics/persisted_logs.h',
       ],

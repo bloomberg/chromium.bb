@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_METRICS_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_CHROME_BROWSER_METRICS_SERVICE_OBSERVER_H_
 
-#include "chrome/browser/metrics/metrics_service_observer.h"
+#include "components/metrics/metrics_service_observer.h"
 
 // ChromeBrowserMetricsServiceObserver receives notifications when the metrics
 // service creates a new metrics log.

@@ -8,12 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/metrics/metrics_service_observer.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/metrics/metrics_service_observer.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
