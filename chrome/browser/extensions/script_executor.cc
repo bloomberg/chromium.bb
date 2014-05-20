@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/script_executor.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -127,33 +129,64 @@ void ScriptExecutor::ExecuteScript(const std::string& extension_id,
                                    bool user_gesture,
                                    ScriptExecutor::ResultType result_type,
                                    const ExecuteScriptCallback& callback) {
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents_);
+  // Don't execute if the extension has been unloaded.
+  const Extension* extension =
+      ExtensionRegistry::Get(web_contents_->GetBrowserContext())
+          ->enabled_extensions().GetByID(extension_id);
+  if (!extension)
+    return;
+
+  // Don't execute if there's no visible entry. If this is the case, then our
+  // permissions checking is useless (because we can't evaluate the URL).
+  // TODO(rdevlin.cronin): This might be better somewhere higher up the
+  // callstack, but we know it's caught here.
   content::NavigationEntry* visible_entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (active_script_controller && visible_entry) {
-    // TODO(rdevlin.cronin): Now, this is just a notification. Soon, it should
-    // block until the user gives the OK to execute.
-    active_script_controller->NotifyScriptExecuting(extension_id,
-                                                    visible_entry->GetPageID());
-  }
-  ExtensionMsg_ExecuteCode_Params params;
-  params.request_id = next_request_id_++;
-  params.extension_id = extension_id;
-  params.is_javascript = (script_type == JAVASCRIPT);
-  params.code = code;
-  params.all_frames = (frame_scope == ALL_FRAMES);
-  params.match_about_blank = (about_blank == MATCH_ABOUT_BLANK);
-  params.run_at = static_cast<int>(run_at);
-  params.in_main_world = (world_type == MAIN_WORLD);
-  params.is_web_view = (process_type == WEB_VIEW_PROCESS);
-  params.webview_src = webview_src;
-  params.file_url = file_url;
-  params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
-  params.user_gesture = user_gesture;
+  if (!visible_entry)
+    return;
 
+  scoped_ptr<ExtensionMsg_ExecuteCode_Params> params(
+      new ExtensionMsg_ExecuteCode_Params());
+  params->request_id = next_request_id_++;
+  params->extension_id = extension_id;
+  params->is_javascript = (script_type == JAVASCRIPT);
+  params->code = code;
+  params->all_frames = (frame_scope == ALL_FRAMES);
+  params->match_about_blank = (about_blank == MATCH_ABOUT_BLANK);
+  params->run_at = static_cast<int>(run_at);
+  params->in_main_world = (world_type == MAIN_WORLD);
+  params->is_web_view = (process_type == WEB_VIEW_PROCESS);
+  params->webview_src = webview_src;
+  params->file_url = file_url;
+  params->wants_result = (result_type == JSON_SERIALIZED_RESULT);
+  params->user_gesture = user_gesture;
+
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents_);
+  if (active_script_controller &&
+      active_script_controller->RequiresUserConsentForScriptInjection(
+          extension)) {
+    // The base::Unretained(this) is safe, because this and the
+    // ActiveScriptController are both attached to the TabHelper. Thus, if the
+    // ActiveScriptController is still alive to invoke the callback, this is
+    // alive, too.
+    active_script_controller->RequestScriptInjection(
+        extension,
+        visible_entry->GetPageID(),
+        base::Closure(base::Bind(&ScriptExecutor::ExecuteScriptHelper,
+                                 base::Unretained(this),
+                                 base::Passed(params.Pass()),
+                                 callback)));
+  } else {
+    ExecuteScriptHelper(params.Pass(), callback);
+  }
+}
+
+void ScriptExecutor::ExecuteScriptHelper(
+    scoped_ptr<ExtensionMsg_ExecuteCode_Params> params,
+    const ExecuteScriptCallback& callback) {
   // Handler handles IPCs and deletes itself on completion.
-  new Handler(script_observers_, web_contents_, params, callback);
+  new Handler(script_observers_, web_contents_, *params, callback);
 }
 
 }  // namespace extensions

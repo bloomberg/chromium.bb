@@ -8,7 +8,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
@@ -42,10 +44,17 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   static ActiveScriptController* GetForWebContents(
       content::WebContents* web_contents);
 
-  // Notify the ActiveScriptController that an extension is running a script.
-  // TODO(rdevlin.cronin): Soon, this should be ask the user for permission,
-  // rather than simply notifying them.
-  void NotifyScriptExecuting(const std::string& extension_id, int page_id);
+  // Returns true if the extension requesting script injection requires
+  // user consent. If this is true, the caller should then register a request
+  // via RequestScriptInjection().
+  bool RequiresUserConsentForScriptInjection(const Extension* extension);
+
+  // Register a request for a script injection, to be executed by running
+  // |callback|. The only assumption that can be made about when (or if)
+  // |callback| is run is that, if it is run, it will run on the current page.
+  void RequestScriptInjection(const Extension* extension,
+                              int page_id,
+                              const base::Closure& callback);
 
   // Notifies the ActiveScriptController of detected ad injection.
   void OnAdInjectionDetected(const std::vector<std::string> ad_injectors);
@@ -58,12 +67,25 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   virtual void OnNavigated() OVERRIDE;
 
  private:
-  // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // A single pending request. This could be a pair, but we'd have way too many
+  // stl typedefs, and "request.closure" is nicer than "request.first".
+  struct PendingRequest {
+    PendingRequest();  // For STL.
+    PendingRequest(const base::Closure& closure, int page_id);
+    ~PendingRequest();
 
-  // Handle the NotifyExtensionScriptExecution message.
+    base::Closure closure;
+    int page_id;
+  };
+  typedef std::vector<PendingRequest> PendingRequestList;
+  typedef std::map<std::string, PendingRequestList> PendingRequestMap;
+
+  // Handles the NotifyExtensionScriptExecution message.
   void OnNotifyExtensionScriptExecution(const std::string& extension_id,
                                         int page_id);
+
+  // content::WebContentsObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Log metrics.
   void LogUMA() const;
@@ -73,11 +95,14 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // always allowing scripts to run and never displaying actions.
   bool enabled_;
 
-  // The extensions that have called ExecuteScript on the current frame.
-  std::set<std::string> extensions_executing_scripts_;
+  // The map of extension_id:pending_request of all pending requests.
+  PendingRequestMap pending_requests_;
 
-  // The extensions which have injected ads.
-  std::set<std::string> ad_injectors_;
+  // The extensions which have been granted permission to run on the given page.
+  // TODO(rdevlin.cronin): Right now, this just keeps track of extensions that
+  // have been permitted to run on the page via this interface. Instead, it
+  // should incorporate more fully with ActiveTab.
+  std::set<std::string> permitted_extensions_;
 
   // Script badges that have been generated for extensions. This is both those
   // with actions already declared that are copied and normalised, and actions

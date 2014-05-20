@@ -5962,6 +5962,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ActiveScriptController.DeniedExtensions"
+    units="Extension Count">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions on a page that wanted to execute a script, required
+    explicit user consent, and were denied permission.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ActiveScriptController.PermittedExtensions"
+    units="Extension Count">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions on a page that wanted to execute a script, required
+    explicit user consent, and were granted permission.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ActiveScriptController.PreventableAdInjectors"
     units="Extension Count">
   <owner>kalman@chromium.org</owner>
