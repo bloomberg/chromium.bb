@@ -47,6 +47,21 @@
               test.done();
           }, "Test calling removeSourceBuffer() twice with the same object.");
 
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+
+              mediaSource.endOfStream();
+              assert_true(mediaSource.readyState == 'ended', "MediaSource in ended state");
+              mediaSource.removeSourceBuffer(sourceBuffer);
+              
+              assert_true(mediaSource.sourceBuffers.length == 0, "MediaSource.sourceBuffers is empty");
+              assert_true(mediaSource.activeSourceBuffers.length == 0, "MediaSource.activesourceBuffers is empty");
+              
+              test.done();
+          }, "Test calling removeSourceBuffer() in ended state.");
+
         </script>
     </body>
 </html>

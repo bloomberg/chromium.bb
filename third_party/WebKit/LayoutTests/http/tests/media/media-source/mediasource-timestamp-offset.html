@@ -75,6 +75,49 @@
               });
           }, "Test setting timestampOffset in 'ended' state causes a transition to 'open'.");
 
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
+
+              test.expectEvent(sourceBuffer, "updateend", "initSegment append ended.");
+              sourceBuffer.appendBuffer(initSegment);
+              assert_equals(mediaSource.sourceBuffers[0].timestampOffset, 0, "read initial value");
+              
+              test.waitForExpectedEvents(function()
+              {
+                  test.expectEvent(sourceBuffer, "updateend", "mediaSegment append ended.");
+                  sourceBuffer.appendBuffer(mediaSegment);
+                  assert_equals(mediaSource.sourceBuffers[0].timestampOffset, 0, 
+                      "No change to timestampoffset after segments mode init segment append");
+              });
+             
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaSource.sourceBuffers[0].timestampOffset, 0, 
+                      "No change to timestampoffset after segments mode media segment append");
+                  test.done();
+              });
+          }, "Test getting the initial value of timestampOffset.");
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_VIDEO_TYPE);
+              assert_true(sourceBuffer != null, "New SourceBuffer returned");
+             
+              // FIXME: verify activeSourceBuffers is empty before removeSourceBuffer as well.
+            
+              mediaSource.removeSourceBuffer(sourceBuffer);  
+              assert_true(mediaSource.sourceBuffers.length == 0, "MediaSource.sourceBuffers is empty");
+              assert_true(mediaSource.activeSourceBuffers.length == 0, "MediaSource.activesourceBuffers is empty");
+                          
+              assert_throws("InvalidStateError", function() 
+              {
+                  sourceBuffer.timestampOffset = 10;
+              });
+               
+              test.done();
+          }, "Test setting timestampoffset after removing the sourcebuffer.");
         </script>
     </body>
 </html>
