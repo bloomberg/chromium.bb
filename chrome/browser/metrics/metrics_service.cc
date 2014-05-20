@@ -553,6 +553,9 @@ void MetricsService::EnableRecording() {
   if (!log_manager_.current_log())
     OpenNewLog();
 
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->OnRecordingEnabled();
+
   SetUpNotifications(&registrar_, this);
   base::RemoveActionCallback(action_callback_);
   action_callback_ = base::Bind(&MetricsService::OnUserAction,
@@ -569,6 +572,10 @@ void MetricsService::DisableRecording() {
 
   base::RemoveActionCallback(action_callback_);
   registrar_.RemoveAll();
+
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->OnRecordingDisabled();
+
   PushPendingLogsToPersistentStorage();
   DCHECK(!log_manager_.has_staged_log());
 }
@@ -1167,15 +1174,17 @@ void MetricsService::CloseCurrentLog() {
   DCHECK(current_log);
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  current_log->RecordEnvironment(plugins_, google_update_metrics_,
-                                 synthetic_trials);
+  current_log->RecordEnvironment(metrics_providers_.get(), plugins_,
+                                 google_update_metrics_, synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(pref, &incremental_uptime, &uptime);
-  current_log->RecordStabilityMetrics(incremental_uptime, uptime);
+  current_log->RecordStabilityMetrics(metrics_providers_.get(),
+                                      incremental_uptime, uptime);
 
   RecordCurrentHistograms();
+  current_log->RecordGeneralMetrics(metrics_providers_.get());
 
   log_manager_.FinishCurrentLog();
 }
@@ -1427,16 +1436,27 @@ void MetricsService::PrepareInitialStabilityLog() {
 
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
     return;
-  initial_stability_log->RecordStabilityMetrics(base::TimeDelta(),
-                                                base::TimeDelta());
+
   log_manager_.LoadPersistedUnsentLogs();
 
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(initial_stability_log.release());
+
+  // Note: Some stability providers may record stability stats via histograms,
+  //       so this call has to be after BeginLoggingWithLog().
+  MetricsLog* current_log =
+      static_cast<MetricsLog*>(log_manager_.current_log());
+  current_log->RecordStabilityMetrics(metrics_providers_.get(),
+                                      base::TimeDelta(), base::TimeDelta());
+
 #if defined(OS_ANDROID)
   ConvertAndroidStabilityPrefsToHistograms(pref);
   RecordCurrentStabilityHistograms();
 #endif  // defined(OS_ANDROID)
+
+  // Note: RecordGeneralMetrics() intentionally not called since this log is for
+  //       stability stats from a previous session only.
+
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
@@ -1453,22 +1473,33 @@ void MetricsService::PrepareInitialMetricsLog() {
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  initial_metrics_log_->RecordEnvironment(plugins_, google_update_metrics_,
+  initial_metrics_log_->RecordEnvironment(metrics_providers_.get(), plugins_,
+                                          google_update_metrics_,
                                           synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(pref, &incremental_uptime, &uptime);
-  initial_metrics_log_->RecordStabilityMetrics(incremental_uptime, uptime);
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(initial_metrics_log_.release());
+
+  // Note: Some stability providers may record stability stats via histograms,
+  //       so this call has to be after BeginLoggingWithLog().
+  MetricsLog* current_log =
+      static_cast<MetricsLog*>(log_manager_.current_log());
+  current_log->RecordStabilityMetrics(metrics_providers_.get(),
+                                      base::TimeDelta(), base::TimeDelta());
+
 #if defined(OS_ANDROID)
   ConvertAndroidStabilityPrefsToHistograms(pref);
 #endif  // defined(OS_ANDROID)
   RecordCurrentHistograms();
+
+  current_log->RecordGeneralMetrics(metrics_providers_.get());
+
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
@@ -1719,6 +1750,12 @@ void MetricsService::RegisterSyntheticFieldTrial(
   SyntheticTrialGroup trial_group = trial;
   trial_group.start_time = base::TimeTicks::Now();
   synthetic_trial_groups_.push_back(trial_group);
+}
+
+void MetricsService::RegisterMetricsProvider(
+    scoped_ptr<metrics::MetricsProvider> provider) {
+  DCHECK_EQ(INITIALIZED, state_);
+  metrics_providers_.push_back(provider.release());
 }
 
 void MetricsService::CheckForClonedInstall(

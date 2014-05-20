@@ -37,6 +37,10 @@ namespace content {
 struct WebPluginInfo;
 }
 
+namespace metrics {
+class MetricsProvider;
+}
+
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
@@ -82,13 +86,15 @@ class MetricsLog : public metrics::MetricsLogBase {
   static void set_version_extension(const std::string& extension);
   static const std::string& version_extension();
 
-  // Records the current operating environment.  Takes the list of installed
+  // Records the current operating environment, including metrics provided by
+  // the specified set of |metrics_providers|.  Takes the list of installed
   // plugins, Google Update statistics, and synthetic trial IDs as parameters
   // because those can't be obtained synchronously from the UI thread.
   // A synthetic trial is one that is set up dynamically by code in Chrome. For
   // example, a pref may be mapped to a synthetic trial such that the group
   // is determined by the pref value.
   void RecordEnvironment(
+      const std::vector<metrics::MetricsProvider*>& metrics_providers,
       const std::vector<content::WebPluginInfo>& plugin_list,
       const GoogleUpdateMetrics& google_update_metrics,
       const std::vector<variations::ActiveGroupId>& synthetic_trials);
@@ -108,16 +114,23 @@ class MetricsLog : public metrics::MetricsLogBase {
       const tracked_objects::ProcessDataSnapshot& process_data,
       int process_type);
 
-  // Writes application stability metrics (as part of the profile log). The
-  // system profile portion of the log must have already been filled in by a
-  // call to RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
+  // Writes application stability metrics, including stability metrics provided
+  // by the specified set of |metrics_providers|. The system profile portion of
+  // the log must have already been filled in by a call to RecordEnvironment()
+  // or LoadSavedEnvironmentFromPrefs().
   // NOTE: Has the side-effect of clearing the stability prefs..
   //
   // If this log is of type INITIAL_STABILITY_LOG, records additional info such
   // as number of incomplete shutdowns as well as extra breakpad and debugger
   // stats.
-  void RecordStabilityMetrics(base::TimeDelta incremental_uptime,
-                              base::TimeDelta uptime);
+  void RecordStabilityMetrics(
+      const std::vector<metrics::MetricsProvider*>& metrics_providers,
+      base::TimeDelta incremental_uptime,
+      base::TimeDelta uptime);
+
+  // Records general metrics based on the specified |metrics_providers|.
+  void RecordGeneralMetrics(
+      const std::vector<metrics::MetricsProvider*>& metrics_providers);
 
   const base::TimeTicks& creation_time() const {
     return creation_time_;

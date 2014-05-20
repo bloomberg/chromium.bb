@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -277,6 +279,10 @@ class MetricsService
   // To use this method, SyntheticTrialGroup should friend your class.
   void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
 
+  // Register the specified |provider| to provide additional metrics into the
+  // UMA log. Should be called during MetricsService initialization only.
+  void RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider> provider);
+
   // Check if this install was cloned or imaged from another machine. If a
   // clone is detected, reset the client id and low entropy source. This
   // should not be called more than once.
@@ -482,6 +488,9 @@ class MetricsService
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
   metrics::MetricsStateManager* state_manager_;
+
+  // Registered metrics providers.
+  ScopedVector<metrics::MetricsProvider> metrics_providers_;
 
   base::ActionCallback action_callback_;
 

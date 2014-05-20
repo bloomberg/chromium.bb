@@ -15,6 +15,7 @@
         'component_metrics_proto',
       ],
       'sources': [
+        'metrics/metrics_provider.h',
         'metrics/metrics_hashes.cc',
         'metrics/metrics_hashes.h',
         'metrics/metrics_log_base.cc',

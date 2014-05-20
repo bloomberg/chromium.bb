@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -448,8 +449,10 @@ const std::string& MetricsLog::version_extension() {
   return g_version_extension.Get();
 }
 
-void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
-                                        base::TimeDelta uptime) {
+void MetricsLog::RecordStabilityMetrics(
+    const std::vector<metrics::MetricsProvider*>& metrics_providers,
+    base::TimeDelta incremental_uptime,
+    base::TimeDelta uptime) {
   DCHECK(!locked());
   DCHECK(HasEnvironment());
   DCHECK(!HasStabilityMetrics());
@@ -469,6 +472,11 @@ void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
   // users that run happily for a looooong time.  We send increments with each
   // uma log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
+
+  SystemProfileProto::Stability* stability =
+      uma_proto()->mutable_system_profile()->mutable_stability();
+  for (size_t i = 0; i < metrics_providers.size(); ++i)
+    metrics_providers[i]->ProvideStabilityMetrics(stability);
 
   // Omit some stats unless this is the initial stability log.
   if (log_type() != INITIAL_STABILITY_LOG)
@@ -492,8 +500,6 @@ void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
 
   // TODO(jar): The following are all optional, so we *could* optimize them for
   // values of zero (and not include them).
-  SystemProfileProto::Stability* stability =
-      uma_proto()->mutable_system_profile()->mutable_stability();
   stability->set_incomplete_shutdown_count(incomplete_shutdown_count);
   stability->set_breakpad_registration_success_count(
       breakpad_registration_success_count);
@@ -501,6 +507,12 @@ void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
       breakpad_registration_failure_count);
   stability->set_debugger_present_count(debugger_present_count);
   stability->set_debugger_not_present_count(debugger_not_present_count);
+}
+
+void MetricsLog::RecordGeneralMetrics(
+    const std::vector<metrics::MetricsProvider*>& metrics_providers) {
+  for (size_t i = 0; i < metrics_providers.size(); ++i)
+    metrics_providers[i]->ProvideGeneralMetrics(uma_proto());
 }
 
 PrefService* MetricsLog::GetPrefService() {
@@ -689,6 +701,7 @@ void MetricsLog::WritePluginList(
 }
 
 void MetricsLog::RecordEnvironment(
+    const std::vector<metrics::MetricsProvider*>& metrics_providers,
     const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics,
     const std::vector<variations::ActiveGroupId>& synthetic_trials) {
@@ -794,6 +807,9 @@ void MetricsLog::RecordEnvironment(
 #if defined(OS_CHROMEOS)
   metrics_log_chromeos_->LogChromeOSMetrics();
 #endif  // OS_CHROMEOS
+
+  for (size_t i = 0; i < metrics_providers.size(); ++i)
+    metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);
 
   std::string serialied_system_profile;
   std::string base64_system_profile;

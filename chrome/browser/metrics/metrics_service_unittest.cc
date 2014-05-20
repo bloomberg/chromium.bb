@@ -193,7 +193,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
   TestMetricsLog log("client", 1);
-  log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+  log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
+                        std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<variations::ActiveGroupId>());
 
