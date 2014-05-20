@@ -1,43 +1,27 @@
 <!DOCTYPE html>
-<html>
+
+<script>
+    jsTestIsAsync = true;
+</script>
+
 <script src="../../../resources/js-test.js"></script>
 <script src="resources/import-helpers.js"></script>
-<head>
-</head>
-<body>
+
 <script>
+debug("It shouldn't be loaded before insertion.");
 
-waitAndTest([
-    {
-        description: "It shouldn't be loaded before insertion.",
-        setup: function()
-        {
-            window.placeholder = createPlaceholder();
-            window.toInsert = document.createElement("link");
-            window.toInsert.setAttribute("rel", "import");
-            window.toInsert.setAttribute("href", "resources/hello.html");
+var placeholder = createPlaceholder();
+var toInsert = document.createElement("link");
+toInsert.setAttribute("rel", "import");
+toInsert.setAttribute("href", "resources/hello.html");
 
-        },
-        ready: function() { return window.placeholder.import; },
-        test: function()
-        {
-            shouldBeNull("toInsert.import");
-        }
-    },
-    {
-        description: "It should be loaded once it is inserted.",
-        setup: function()
-        {
-            document.head.appendChild(window.toInsert);
-        },
-        ready: function() { return toInsert.import && toInsert.import.querySelector('h1'); },
-        test: function()
-        {
-            shouldBe("toInsert.import.querySelector('h1').innerHTML", "'Hello'");
-        }
-    }
-]);
-
+placeholder.onload = function() {
+    shouldBeNull("toInsert.import");
+    debug("It should be loaded once it is inserted.");
+    document.head.appendChild(toInsert);
+    toInsert.onload = function() {
+        shouldBe("toInsert.import.querySelector('h1').innerHTML", "'Hello'");
+        finishJSTest();
+    };
+};
 </script>
-</body>
-</html>

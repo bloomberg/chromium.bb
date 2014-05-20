@@ -1,33 +1,36 @@
 <!DOCTYPE html>
-<html>
+
+<script>
+    jsTestIsAsync = true;
+</script>
+
 <script src="../../../resources/js-test.js"></script>
 <script src="resources/import-helpers.js"></script>
-<head>
-<link id="target", rel="stylesheet" href="resources/hello.css">
-</head>
-<body>
+
+<link id="target" rel="stylesheet" href="resources/hello.css">
+
 <script>
-waitAndTest([
-    {
-        description: "Updating attribute value shouldn't result import loading.",
-        setup: function()
-        {
-            debug("Before update:");
-            shouldBeNonNull("target.sheet");
-            shouldBeNull("target.import");
-            target.setAttribute("href", "resources/hello.html");
-            target.setAttribute("rel", "import");
-            window.placeholder = createPlaceholder();
-        },
-        ready: function() { return window.placeholder.import && target.sheet; },
-        test: function()
-        {
-            debug("After update:");
-            shouldBeNonNull("target.sheet");
-            shouldBeNull("target.import");
-        }
-    }
-]);
+debug("Updating attribute value shouldn't result import loading.");
+debug("Before update:");
+shouldBeNonNull("target.sheet");
+shouldBeNull("target.import");
+target.setAttribute("href", "resources/hello.html");
+target.setAttribute("rel", "import");
+var targetLoaded = new Promise(function(resolve) {
+    target.onload = function() {
+        resolve();
+    };
+});
+var placeholder = createPlaceholder();
+var placeholderLoaded = new Promise(function(resolve) {
+    placeholder.onload = function() {
+        resolve();
+    };
+});
+Promise.all([placeholderLoaded, targetLoaded]).then(function() {
+    debug("After update:");
+    shouldBeNonNull("target.sheet");
+    shouldBeNull("target.import");
+    finishJSTest();
+});
 </script>
-</body>
-</html>
