@@ -167,6 +167,13 @@ namespace dom_distiller {
           dom_distiller::proto::DomDistillerOptions message;
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            bool field_value;
+            if (!dict->GetBoolean("1", &field_value)) {
+              goto error;
+            }
+            message.set_extract_text_only(field_value);
+          }
           return message;
 
         error:
@@ -175,6 +182,9 @@ namespace dom_distiller {
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_extract_text_only()) {
+            dict->SetBoolean("1", message.extract_text_only());
+          }
           return dict.PassAs<base::Value>();
         }
       };
