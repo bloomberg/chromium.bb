@@ -10,12 +10,14 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/user_script.h"
-#include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "extensions/renderer/script_injection.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 class GURL;
 
@@ -23,7 +25,9 @@ namespace blink {
 class WebFrame;
 }
 
-using blink::WebScriptSource;
+namespace content {
+class RenderView;
+}
 
 namespace extensions {
 class Extension;
@@ -38,13 +42,11 @@ class UserScriptSlave {
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
   void GetActiveExtensions(std::set<std::string>* extension_ids);
 
+  // Gets the extension with the given |id|, if one exists.
+  const Extension* GetExtension(const std::string& extension_id);
+
   // Update the parsed scripts from shared memory.
   bool UpdateScripts(base::SharedMemoryHandle shared_memory);
-
-  // Inject the appropriate scripts into a frame based on its URL.
-  // TODO(aa): Extract a UserScriptFrame interface out of this to improve
-  // testability.
-  void InjectScripts(blink::WebFrame* frame, UserScript::RunLocation location);
 
   // Gets the isolated world ID to use for the given |extension| in the given
   // |frame|. If no isolated world has been created for that extension,
@@ -59,16 +61,23 @@ class UserScriptSlave {
 
   void RemoveIsolatedWorld(const std::string& extension_id);
 
+  // Inject the appropriate scripts into a frame based on its URL.
+  // TODO(aa): Extract a UserScriptFrame interface out of this to improve
+  // testability.
+  void InjectScripts(blink::WebFrame* frame, UserScript::RunLocation location);
+
  private:
+  // Log the data from scripts being run, including doing UMA and notifying the
+  // browser.
+  void LogScriptsRun(blink::WebFrame* frame,
+                     UserScript::RunLocation location,
+                     const ScriptInjection::ScriptsRunInfo& info);
+
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
 
-  // Parsed script data.
-  std::vector<UserScript*> scripts_;
-  STLElementDeleter<std::vector<UserScript*> > script_deleter_;
-
-  // Greasemonkey API source that is injected with the scripts.
-  base::StringPiece api_js_;
+  // Parsed script data, ready to inject.
+  ScopedVector<ScriptInjection> script_injections_;
 
   // Extension metadata.
   const ExtensionSet* extensions_;

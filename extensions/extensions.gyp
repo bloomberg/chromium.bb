@@ -533,6 +533,8 @@
         'renderer/script_context.h',
         'renderer/script_context_set.cc',
         'renderer/script_context_set.h',
+        'renderer/script_injection.cc',
+        'renderer/script_injection.h',
         'renderer/static_v8_external_ascii_string_resource.cc',
         'renderer/static_v8_external_ascii_string_resource.h',
         'renderer/test_features_native_handler.cc',

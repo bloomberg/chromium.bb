@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -210,7 +211,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
     }
 
     if (params.is_javascript) {
-      WebScriptSource source(WebString::fromUTF8(params.code), params.file_url);
+      blink::WebScriptSource source(
+          WebString::fromUTF8(params.code), params.file_url);
       v8::HandleScope scope(v8::Isolate::GetCurrent());
 
       scoped_ptr<content::V8ValueConverter> v8_converter(
@@ -223,7 +225,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
         script_value = child_frame->executeScriptAndReturnValue(source);
       } else {
         blink::WebVector<v8::Local<v8::Value> > results;
-        std::vector<WebScriptSource> sources;
+        std::vector<blink::WebScriptSource> sources;
         sources.push_back(source);
         int isolated_world_id =
             dispatcher_->user_script_slave()->GetIsolatedWorldIdForExtension(
