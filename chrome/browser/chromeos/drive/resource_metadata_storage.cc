@@ -240,62 +240,6 @@ bool ResourceMetadataStorage::Iterator::HasError() const {
   return !it_->status().ok();
 }
 
-ResourceMetadataStorage::CacheEntryIterator::CacheEntryIterator(
-    scoped_ptr<leveldb::Iterator> it) : it_(it.Pass()) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(it_);
-
-  it_->SeekToFirst();
-  AdvanceInternal();
-}
-
-ResourceMetadataStorage::CacheEntryIterator::~CacheEntryIterator() {
-  base::ThreadRestrictions::AssertIOAllowed();
-}
-
-bool ResourceMetadataStorage::CacheEntryIterator::IsAtEnd() const {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return !it_->Valid();
-}
-
-const std::string& ResourceMetadataStorage::CacheEntryIterator::GetID() const {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!IsAtEnd());
-  return id_;
-}
-
-const FileCacheEntry&
-ResourceMetadataStorage::CacheEntryIterator::GetValue() const {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!IsAtEnd());
-  return entry_;
-}
-
-void ResourceMetadataStorage::CacheEntryIterator::Advance() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!IsAtEnd());
-
-  it_->Next();
-  AdvanceInternal();
-}
-
-bool ResourceMetadataStorage::CacheEntryIterator::HasError() const {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return !it_->status().ok();
-}
-
-void ResourceMetadataStorage::CacheEntryIterator::AdvanceInternal() {
-  for (; it_->Valid(); it_->Next()) {
-    // Skip unparsable broken entries.
-    // TODO(hashimoto): Broken entries should be cleaned up at some point.
-    if (IsCacheEntryKey(it_->key()) &&
-        entry_.ParseFromArray(it_->value().data(), it_->value().size())) {
-      id_ = GetIdFromCacheEntryKey(it_->key());
-      break;
-    }
-  }
-}
-
 // static
 bool ResourceMetadataStorage::UpgradeOldDB(
     const base::FilePath& directory_path,
@@ -665,6 +609,8 @@ FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
       return FILE_ERROR_FAILED;
     }
     batch.Put(GetCacheEntryKey(id), serialized_entry);
+  } else {
+    batch.Delete(GetCacheEntryKey(id));
   }
 
   // Put the entry itself.
@@ -708,6 +654,8 @@ FileError ResourceMetadataStorage::GetEntry(const std::string& id,
   if (cache_error == FILE_ERROR_OK) {
     *out_entry->mutable_file_specific_info()->mutable_cache_state() =
         cache_entry;
+  } else {
+    out_entry->mutable_file_specific_info()->clear_cache_state();
   }
   return FILE_ERROR_OK;
 }
@@ -785,24 +733,6 @@ FileError ResourceMetadataStorage::GetChildren(
   return LevelDBStatusToFileError(it->status());
 }
 
-FileError ResourceMetadataStorage::PutCacheEntry(const std::string& id,
-                                                 const FileCacheEntry& entry) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!id.empty());
-
-  std::string serialized_entry;
-  if (!entry.SerializeToString(&serialized_entry)) {
-    DLOG(ERROR) << "Failed to serialize the entry.";
-    return FILE_ERROR_FAILED;
-  }
-
-  const leveldb::Status status = resource_map_->Put(
-      leveldb::WriteOptions(),
-      leveldb::Slice(GetCacheEntryKey(id)),
-      leveldb::Slice(serialized_entry));
-  return LevelDBStatusToFileError(status);
-}
-
 FileError ResourceMetadataStorage::GetCacheEntry(const std::string& id,
                                                  FileCacheEntry* out_entry) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -817,25 +747,6 @@ FileError ResourceMetadataStorage::GetCacheEntry(const std::string& id,
     return LevelDBStatusToFileError(status);
   return out_entry->ParseFromString(serialized_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
-}
-
-FileError ResourceMetadataStorage::RemoveCacheEntry(const std::string& id) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!id.empty());
-
-  const leveldb::Status status = resource_map_->Delete(
-      leveldb::WriteOptions(),
-      leveldb::Slice(GetCacheEntryKey(id)));
-  return LevelDBStatusToFileError(status);
-}
-
-scoped_ptr<ResourceMetadataStorage::CacheEntryIterator>
-ResourceMetadataStorage::GetCacheEntryIterator() {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  scoped_ptr<leveldb::Iterator> it(
-      resource_map_->NewIterator(leveldb::ReadOptions()));
-  return make_scoped_ptr(new CacheEntryIterator(it.Pass()));
 }
 
 ResourceMetadataStorage::RecoveredCacheInfo::RecoveredCacheInfo()

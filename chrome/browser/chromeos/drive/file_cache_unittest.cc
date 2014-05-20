@@ -60,12 +60,6 @@ class FileCacheTest : public testing::Test {
     return cache->RenameCacheFilesToNewFormat();
   }
 
-  FileError GetCacheEntry(FileCache* cache,
-                          const std::string& id,
-                          FileCacheEntry* cache_entry) {
-    return cache->storage_->GetCacheEntry(id, cache_entry);
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_files_dir_;
@@ -83,6 +77,9 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
       dir_source_root.AppendASCII("chrome/test/data/chromeos/drive/image.png");
 
   // Store files. This file should not be moved.
+  ResourceEntry entry;
+  entry.set_local_id("id_foo");
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store("id_foo", "md5", src_path,
                                          FileCache::FILE_OPERATION_COPY));
 
@@ -131,6 +128,10 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 
   // Store a file as a 'temporary' file and remember the path.
   const std::string id_tmp = "id_tmp", md5_tmp = "md5_tmp";
+
+  ResourceEntry entry;
+  entry.set_local_id(id_tmp);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->Store(id_tmp, md5_tmp, src_file,
                           FileCache::FILE_OPERATION_COPY));
@@ -139,6 +140,9 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 
   // Store a file as a pinned file and remember the path.
   const std::string id_pinned = "id_pinned", md5_pinned = "md5_pinned";
+  entry.Clear();
+  entry.set_local_id(id_pinned);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->Store(id_pinned, md5_pinned, src_file,
                           FileCache::FILE_OPERATION_COPY));
@@ -153,11 +157,12 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
   // Only 'temporary' file gets removed.
-  FileCacheEntry entry;
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetCacheEntry(cache_.get(), id_tmp, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_tmp, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_present());
   EXPECT_FALSE(base::PathExists(tmp_path));
 
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id_pinned, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_pinned, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
   EXPECT_TRUE(base::PathExists(pinned_path));
 
   // Returns false when disk space cannot be freed.
@@ -177,6 +182,9 @@ TEST_F(FileCacheTest, GetFile) {
       temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
   // Try to get an existing file from cache.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(id, md5, src_file_path,
                                          FileCache::FILE_OPERATION_COPY));
   base::FilePath cache_file_path;
@@ -191,6 +199,9 @@ TEST_F(FileCacheTest, GetFile) {
 
   // Get file from cache with different id.
   id = "id2";
+  entry.Clear();
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, cache_->GetFile(id, &cache_file_path));
 
   // Pin a non-existent file.
@@ -222,13 +233,15 @@ TEST_F(FileCacheTest, Store) {
   std::string md5(base::MD5String(src_contents));
 
   // Store a file.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
-  FileCacheEntry cache_entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_EQ(md5, cache_entry.md5());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_EQ(md5, entry.file_specific_info().cache_state().md5());
 
   base::FilePath cache_file_path;
   EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(id, &cache_file_path));
@@ -243,10 +256,10 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, std::string(), src_file_path, FileCache::FILE_OPERATION_COPY));
 
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.md5().empty());
-  EXPECT_TRUE(cache_entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(entry.file_specific_info().cache_state().md5().empty());
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // No free space available.
   fake_free_disk_space_getter_->set_default_value(0);
@@ -264,38 +277,42 @@ TEST_F(FileCacheTest, PinAndUnpin) {
   std::string md5(base::MD5String(src_contents));
 
   // Store a file.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
-  FileCacheEntry cache_entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-  EXPECT_FALSE(cache_entry.is_pinned());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
 
   // Pin the existing file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id));
 
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-  EXPECT_TRUE(cache_entry.is_pinned());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_pinned());
 
   // Unpin the file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id));
 
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-  EXPECT_FALSE(cache_entry.is_pinned());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
 
   // Pin a non-present file.
   std::string id_non_present = "id_non_present";
+  entry.Clear();
+  entry.set_local_id(id_non_present);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id_non_present));
 
-  EXPECT_EQ(FILE_ERROR_OK,
-            GetCacheEntry(cache_.get(), id_non_present, &cache_entry));
-  EXPECT_TRUE(cache_entry.is_pinned());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_non_present, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_pinned());
 
   // Unpin the previously pinned non-existent file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id_non_present));
 
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            GetCacheEntry(cache_.get(), id_non_present, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_non_present, &entry));
+  EXPECT_FALSE(entry.file_specific_info().has_cache_state());
 
   // Unpin a file that doesn't exist in cache and is not pinned.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, cache_->Unpin("id_non_existent"));
@@ -310,6 +327,9 @@ TEST_F(FileCacheTest, MountUnmount) {
   std::string md5(base::MD5String(src_contents));
 
   // Store a file.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
@@ -333,14 +353,16 @@ TEST_F(FileCacheTest, OpenForWrite) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
 
   const std::string id = "id";
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   ASSERT_EQ(FILE_ERROR_OK, cache_->Store(id, "md5", src_file,
                                          FileCache::FILE_OPERATION_COPY));
 
   // Entry is not dirty nor opened.
   EXPECT_FALSE(cache_->IsOpenedForWrite(id));
-  FileCacheEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_FALSE(entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Open (1).
   scoped_ptr<base::ScopedClosureRunner> file_closer1;
@@ -348,8 +370,8 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
 
   // Entry is dirty.
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_TRUE(entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // Open (2).
   scoped_ptr<base::ScopedClosureRunner> file_closer2;
@@ -376,6 +398,9 @@ TEST_F(FileCacheTest, UpdateMd5) {
   EXPECT_TRUE(google_apis::test_util::WriteStringToFile(src_file_path,
                                                         contents_before));
   std::string id("id1");
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(id, base::MD5String(contents_before),
                                          src_file_path,
                                          FileCache::FILE_OPERATION_COPY));
@@ -396,14 +421,14 @@ TEST_F(FileCacheTest, UpdateMd5) {
   file_closer.reset();
 
   // MD5 was cleared by OpenForWrite().
-  FileCacheEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_TRUE(entry.md5().empty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().md5().empty());
 
   // Update MD5.
   EXPECT_EQ(FILE_ERROR_OK, cache_->UpdateMd5(id));
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_EQ(base::MD5String(contents_after), entry.md5());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_EQ(base::MD5String(contents_after),
+            entry.file_specific_info().cache_state().md5());
 }
 
 TEST_F(FileCacheTest, ClearDirty) {
@@ -412,6 +437,9 @@ TEST_F(FileCacheTest, ClearDirty) {
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
 
   const std::string id = "id";
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   ASSERT_EQ(FILE_ERROR_OK, cache_->Store(id, "md5", src_file,
                                          FileCache::FILE_OPERATION_COPY));
 
@@ -420,9 +448,8 @@ TEST_F(FileCacheTest, ClearDirty) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer));
 
   // Entry is dirty.
-  FileCacheEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_TRUE(entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // Cannot clear the dirty bit of an opened entry.
   EXPECT_EQ(FILE_ERROR_IN_USE, cache_->ClearDirty(id));
@@ -432,8 +459,8 @@ TEST_F(FileCacheTest, ClearDirty) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->ClearDirty(id));
 
   // Entry is not dirty.
-  EXPECT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &entry));
-  EXPECT_FALSE(entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 }
 
 TEST_F(FileCacheTest, Remove) {
@@ -445,6 +472,9 @@ TEST_F(FileCacheTest, Remove) {
   std::string md5(base::MD5String(src_contents));
 
   // First store a file to cache.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   base::FilePath src_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
@@ -502,21 +532,18 @@ TEST_F(FileCacheTest, ClearAll) {
   const std::string md5("abcdef0123456789");
 
   // Store an existing file.
+  ResourceEntry entry;
+  entry.set_local_id(id);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry));
   base::FilePath src_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->Store(id, md5, src_file, FileCache::FILE_OPERATION_COPY));
 
-  // Verify that the cache entry is created.
-  FileCacheEntry cache_entry;
-  ASSERT_EQ(FILE_ERROR_OK, GetCacheEntry(cache_.get(), id, &cache_entry));
-
   // Clear cache.
   EXPECT_TRUE(cache_->ClearAll());
 
   // Verify that the cache is removed.
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            GetCacheEntry(cache_.get(), id, &cache_entry));
   EXPECT_TRUE(base::IsDirectoryEmpty(cache_files_dir_));
 }
 

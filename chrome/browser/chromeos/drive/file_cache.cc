@@ -82,14 +82,16 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
 
   // Remove all entries unless specially marked.
-  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
-      storage_->GetCacheEntryIterator();
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    const FileCacheEntry& entry = it->GetValue();
-    if (!entry.is_pinned() &&
-        !entry.is_dirty() &&
-        !mounted_files_.count(it->GetID()))
-      storage_->RemoveCacheEntry(it->GetID());
+    if (it->GetValue().file_specific_info().has_cache_state() &&
+        !it->GetValue().file_specific_info().cache_state().is_pinned() &&
+        !it->GetValue().file_specific_info().cache_state().is_dirty() &&
+        !mounted_files_.count(it->GetID())) {
+      ResourceEntry entry(it->GetValue());
+      entry.mutable_file_specific_info()->clear_cache_state();
+      storage_->PutEntry(entry);
+    }
   }
   if (it->HasError())
     return false;
@@ -98,12 +100,14 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   base::FileEnumerator enumerator(cache_file_directory_,
                                   false,  // not recursive
                                   base::FileEnumerator::FILES);
-  FileCacheEntry entry;
+  ResourceEntry entry;
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     std::string id = GetIdFromPath(current);
-    FileError error = storage_->GetCacheEntry(id, &entry);
-    if (error == FILE_ERROR_NOT_FOUND)
+    FileError error = storage_->GetEntry(id, &entry);
+    if (error == FILE_ERROR_NOT_FOUND ||
+        (error == FILE_ERROR_OK &&
+         !entry.file_specific_info().cache_state().is_present()))
       base::DeleteFile(current, false /* recursive */);
     else if (error != FILE_ERROR_OK)
       return false;
@@ -118,11 +122,11 @@ FileError FileCache::GetFile(const std::string& id,
   AssertOnSequencedWorkerPool();
   DCHECK(cache_file_path);
 
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
-  if (!cache_entry.is_present())
+  if (!entry.file_specific_info().cache_state().is_present())
     return FILE_ERROR_NOT_FOUND;
 
   *cache_file_path = GetCacheFilePath(id);
@@ -134,6 +138,11 @@ FileError FileCache::Store(const std::string& id,
                            const base::FilePath& source_path,
                            FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
+
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   int64 file_size = 0;
   if (file_operation_type == FILE_OPERATION_COPY) {
@@ -171,49 +180,47 @@ FileError FileCache::Store(const std::string& id,
   }
 
   // Now that file operations have completed, update metadata.
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
-    return error;
-  cache_entry.set_md5(md5);
-  cache_entry.set_is_present(true);
+  FileCacheEntry* cache_state =
+      entry.mutable_file_specific_info()->mutable_cache_state();
+  cache_state->set_md5(md5);
+  cache_state->set_is_present(true);
   if (md5.empty())
-    cache_entry.set_is_dirty(true);
-  return storage_->PutCacheEntry(id, cache_entry);
+    cache_state->set_is_dirty(true);
+  return storage_->PutEntry(entry);
 }
 
 FileError FileCache::Pin(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
     return error;
-  cache_entry.set_is_pinned(true);
-  return storage_->PutCacheEntry(id, cache_entry);
+  entry.mutable_file_specific_info()->mutable_cache_state()->set_is_pinned(
+      true);
+  return storage_->PutEntry(entry);
 }
 
 FileError FileCache::Unpin(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 
   // Now that file operations have completed, update metadata.
-  if (cache_entry.is_present()) {
-    cache_entry.set_is_pinned(false);
-    error = storage_->PutCacheEntry(id, cache_entry);
-    if (error != FILE_ERROR_OK)
-      return error;
+  if (entry.file_specific_info().cache_state().is_present()) {
+    entry.mutable_file_specific_info()->mutable_cache_state()->set_is_pinned(
+        false);
   } else {
     // Remove the existing entry if we are unpinning a non-present file.
-    error = storage_->RemoveCacheEntry(id);
-    if (error != FILE_ERROR_OK)
-      return error;
+    entry.mutable_file_specific_info()->clear_cache_state();
   }
+  error = storage_->PutEntry(entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   // Now it's a chance to free up space if needed.
   FreeDiskSpaceIfNeededFor(0);
@@ -227,10 +234,12 @@ FileError FileCache::MarkAsMounted(const std::string& id,
   DCHECK(cache_file_path);
 
   // Get cache entry associated with the id and md5
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
+  if (!entry.file_specific_info().cache_state().is_present())
+    return FILE_ERROR_NOT_FOUND;
 
   if (mounted_files_.count(id))
     return FILE_ERROR_INVALID_OPERATION;
@@ -258,18 +267,18 @@ FileError FileCache::OpenForWrite(
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
-  if (!cache_entry.is_present()) {
+  if (!entry.file_specific_info().cache_state().is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: " << id;
     return FILE_ERROR_NOT_FOUND;
   }
 
-  cache_entry.set_is_dirty(true);
-  cache_entry.clear_md5();
-  error = storage_->PutCacheEntry(id, cache_entry);
+  entry.mutable_file_specific_info()->mutable_cache_state()->set_is_dirty(true);
+  entry.mutable_file_specific_info()->mutable_cache_state()->clear_md5();
+  error = storage_->PutEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -294,19 +303,19 @@ FileError FileCache::UpdateMd5(const std::string& id) {
   if (IsOpenedForWrite(id))
     return FILE_ERROR_IN_USE;
 
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
-  if (!cache_entry.is_present())
+  if (!entry.file_specific_info().cache_state().is_present())
     return FILE_ERROR_NOT_FOUND;
 
   const std::string& md5 = util::GetMd5Digest(GetCacheFilePath(id));
   if (md5.empty())
     return FILE_ERROR_NOT_FOUND;
 
-  cache_entry.set_md5(md5);
-  return storage_->PutCacheEntry(id, cache_entry);
+  entry.mutable_file_specific_info()->mutable_cache_state()->set_md5(md5);
+  return storage_->PutEntry(entry);
 }
 
 FileError FileCache::ClearDirty(const std::string& id) {
@@ -317,11 +326,11 @@ FileError FileCache::ClearDirty(const std::string& id) {
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
-  if (!cache_entry.is_present()) {
+  if (!entry.file_specific_info().cache_state().is_present()) {
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << id;
     return FILE_ERROR_NOT_FOUND;
@@ -329,26 +338,29 @@ FileError FileCache::ClearDirty(const std::string& id) {
 
   // If a file is not dirty (it should have been marked dirty via OpenForWrite),
   // clearing its dirty state is an invalid operation.
-  if (!cache_entry.is_dirty()) {
+  if (!entry.file_specific_info().cache_state().is_dirty()) {
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: " << id;
     return FILE_ERROR_INVALID_OPERATION;
   }
 
-  cache_entry.set_is_dirty(false);
-  return storage_->PutCacheEntry(id, cache_entry);
+  entry.mutable_file_specific_info()->mutable_cache_state()->set_is_dirty(
+      false);
+  return storage_->PutEntry(entry);
 }
 
 FileError FileCache::Remove(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
-  FileCacheEntry cache_entry;
+  ResourceEntry entry;
 
   // If entry doesn't exist, nothing to do.
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  FileError error = storage_->GetEntry(id, &entry);
   if (error == FILE_ERROR_NOT_FOUND)
     return FILE_ERROR_OK;
   if (error != FILE_ERROR_OK)
     return error;
+  if (!entry.file_specific_info().has_cache_state())
+    return FILE_ERROR_OK;
 
   // Cannot delete a mounted file.
   if (mounted_files_.count(id))
@@ -360,22 +372,12 @@ FileError FileCache::Remove(const std::string& id) {
     return FILE_ERROR_FAILED;
 
   // Now that all file operations have completed, remove from metadata.
-  return storage_->RemoveCacheEntry(id);
+  entry.mutable_file_specific_info()->clear_cache_state();
+  return storage_->PutEntry(entry);
 }
 
 bool FileCache::ClearAll() {
   AssertOnSequencedWorkerPool();
-
-  // Remove entries on the metadata.
-  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
-      storage_->GetCacheEntryIterator();
-  for (; !it->IsAtEnd(); it->Advance()) {
-    if (storage_->RemoveCacheEntry(it->GetID()) != FILE_ERROR_OK)
-      return false;
-  }
-
-  if (it->HasError())
-    return false;
 
   // Remove files.
   base::FileEnumerator enumerator(cache_file_directory_,
@@ -393,13 +395,13 @@ bool FileCache::Initialize() {
 
   // Older versions do not clear MD5 when marking entries dirty.
   // Clear MD5 of all dirty entries to deal with old data.
-  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
-      storage_->GetCacheEntryIterator();
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    if (it->GetValue().is_dirty()) {
-      FileCacheEntry new_entry(it->GetValue());
-      new_entry.clear_md5();
-      if (storage_->PutCacheEntry(it->GetID(), new_entry) != FILE_ERROR_OK)
+    if (it->GetValue().file_specific_info().cache_state().is_dirty()) {
+      ResourceEntry new_entry(it->GetValue());
+      new_entry.mutable_file_specific_info()->mutable_cache_state()->
+          clear_md5();
+      if (storage_->PutEntry(new_entry) != FILE_ERROR_OK)
         return false;
     }
   }
@@ -439,14 +441,15 @@ bool FileCache::RecoverFilesFromCacheDirectory(
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     const std::string& id = GetIdFromPath(current);
-    FileCacheEntry entry;
-    FileError error = storage_->GetCacheEntry(id, &entry);
-    if (error == FILE_ERROR_OK) {
+    ResourceEntry entry;
+    FileError error = storage_->GetEntry(id, &entry);
+    if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+      return false;
+    if (error == FILE_ERROR_OK &&
+        entry.file_specific_info().cache_state().is_present()) {
       // This file is managed by FileCache, no need to recover it.
       continue;
     }
-    if (error != FILE_ERROR_NOT_FOUND)
-      return false;
 
     // If a cache entry which is non-dirty and has matching MD5 is found in
     // |recovered_cache_entries|, it means the current file is already uploaded
@@ -529,9 +532,9 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
 
   std::string id = GetIdFromPath(file_path);
 
-  // Get cache entry associated with the id and md5
-  FileCacheEntry cache_entry;
-  FileError error = storage_->GetCacheEntry(id, &cache_entry);
+  // Get the entry associated with the id.
+  ResourceEntry entry;
+  FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 

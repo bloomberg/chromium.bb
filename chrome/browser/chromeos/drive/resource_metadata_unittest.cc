@@ -352,6 +352,35 @@ TEST_F(ResourceMetadataTest, RefreshEntry_ResourceIDCheck) {
             resource_metadata_->RefreshEntry(new_entry));
 }
 
+TEST_F(ResourceMetadataTest, RefreshEntry_DoNotOverwriteCacheState) {
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entry));
+
+  // Try to set MD5 with RefreshEntry.
+  entry.mutable_file_specific_info()->mutable_cache_state()->set_md5("md5");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(entry));
+
+  // Cache state is unchanged.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().md5().empty());
+
+  // Pin the file.
+  EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(entry.local_id()));
+
+  // Try to clear the cache state with RefreshEntry.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entry));
+  entry.mutable_file_specific_info()->clear_cache_state();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(entry));
+
+  // Cache state is not cleared.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_pinned());
+}
+
 TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
   std::set<base::FilePath> sub_directories;
 

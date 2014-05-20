@@ -114,7 +114,7 @@ class FileCache {
   // Removes the specified cache entry and delete cache files if available.
   FileError Remove(const std::string& id);
 
-  // Removes all the files in the cache directory and cache entries in DB.
+  // Removes all the files in the cache directory.
   bool ClearAll();
 
   // Initializes the cache. Returns true on success.

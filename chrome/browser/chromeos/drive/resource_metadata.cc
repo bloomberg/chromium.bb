@@ -387,8 +387,17 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   if (!new_parent.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
+  // Do not overwrite cache states.
+  // Cache state should be changed via FileCache.
+  ResourceEntry updated_entry(entry);
+  if (old_entry.file_specific_info().has_cache_state()) {
+    *updated_entry.mutable_file_specific_info()->mutable_cache_state() =
+        old_entry.file_specific_info().cache_state();
+  } else if (updated_entry.file_specific_info().has_cache_state()) {
+    updated_entry.mutable_file_specific_info()->clear_cache_state();
+  }
   // Remove from the old parent and add it to the new parent with the new data.
-  return PutEntryUnderDirectory(entry);
+  return PutEntryUnderDirectory(updated_entry);
 }
 
 FileError ResourceMetadata::GetSubDirectoriesRecursively(

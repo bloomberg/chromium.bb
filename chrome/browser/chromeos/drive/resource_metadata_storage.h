@@ -166,17 +166,8 @@ class ResourceMetadataStorage {
   FileError GetChildren(const std::string& parent_id,
                         std::vector<std::string>* children);
 
-  // Puts the cache entry to this storage.
-  FileError PutCacheEntry(const std::string& id, const FileCacheEntry& entry);
-
   // Gets a cache entry stored in this storage.
   FileError GetCacheEntry(const std::string& id, FileCacheEntry* out_entry);
-
-  // Removes a cache entry from this storage.
-  FileError RemoveCacheEntry(const std::string& id);
-
-  // Returns an object to iterate over cache entries stored in this storage.
-  scoped_ptr<CacheEntryIterator> GetCacheEntryIterator();
 
   // Returns the local ID associated with the given resource ID.
   FileError GetIdByResourceId(const std::string& resource_id,
