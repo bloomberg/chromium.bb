@@ -290,17 +290,18 @@ void decommitSystemPages(void* addr, size_t len)
     int ret = madvise(addr, len, MADV_FREE);
     RELEASE_ASSERT(!ret);
 #else
-    void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
-    RELEASE_ASSERT(ret);
+    setSystemPagesInaccessible(addr, len);
 #endif
 }
 
 void recommitSystemPages(void* addr, size_t len)
 {
-    // FIXME: experiment with a Windows implementation that uses MEM_COMMIT
-    // instead of just faulting a MEM_RESET page.
-    (void) addr;
     ASSERT(!(len & kSystemPageOffsetMask));
+#if OS(POSIX)
+    (void) addr;
+#else
+    setSystemPagesAccessible(addr, len);
+#endif
 }
 
 } // namespace WTF
