@@ -1103,6 +1103,7 @@
                 '../ipc/ipc.gyp:ipc_tests',
                 '../media/media.gyp:media_unittests',
                 '../net/net.gyp:net_unittests_run',
+                '../pdf/pdf.gyp:pdf',
                 '../printing/printing.gyp:printing_unittests',
                 '../remoting/remoting.gyp:remoting_webapp',
                 '../sql/sql.gyp:sql_unittests',
@@ -1114,11 +1115,6 @@
                 '../url/url.gyp:url_unittests',
               ],
               'conditions': [
-                ['internal_pdf', {
-                  'dependencies': [
-                    '../pdf/pdf.gyp:pdf',
-                  ],
-                }], # internal_pdf
                 ['target_arch=="ia32"', {
                   'dependencies': [
                     '../chrome/chrome.gyp:crash_service_win64',

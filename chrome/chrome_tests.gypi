@@ -1770,11 +1770,6 @@
             ['exclude', '^browser/captive_portal/'],
           ],
         }],
-        ['internal_pdf', {
-          'dependencies': [
-            '../pdf/pdf.gyp:pdf',
-          ],
-        }],
         ['enable_webrtc==0', {
           'sources!': [
             'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',

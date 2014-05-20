@@ -282,6 +282,9 @@
                 'app/chrome_main_mac.mm',
                 'app/chrome_main_mac.h',
               ],
+              'dependencies': [
+                '../pdf/pdf.gyp:pdf',
+              ],
               'include_dirs': [
                 '<(grit_out_dir)',
               ],
@@ -319,11 +322,6 @@
                     '../components/components.gyp:breakpad_stubs',
                   ],
                 }],  # mac_breakpad_compiled_in
-                ['internal_pdf', {
-                  'dependencies': [
-                    '../pdf/pdf.gyp:pdf',
-                  ],
-                }],
               ],  # conditions
             }],  # OS=="mac"
           ],  # conditions

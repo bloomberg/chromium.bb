@@ -495,6 +495,7 @@
           '<(PRODUCT_DIR)/chrome',
           '<(PRODUCT_DIR)/chrome_sandbox',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libpdf.so',
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
           '<(PRODUCT_DIR)/xdg-mime',
           '<(PRODUCT_DIR)/xdg-settings',
@@ -540,11 +541,6 @@
           ['target_arch=="arm"', {
             'deb_arch': 'arm',
             'rpm_arch': 'arm',
-          }],
-          ['internal_pdf', {
-            'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/libpdf.so',
-            ],
           }],
           ['libpeer_target_type!="static_library"', {
             'packaging_files_binaries': [

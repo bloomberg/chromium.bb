@@ -1,0 +1,5 @@
+include_rules = [
+  "+net",
+  "+ppapi",
+  "+third_party/pdfium/fpdfsdk/include",
+]

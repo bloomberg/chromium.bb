@@ -1275,9 +1275,6 @@
     # Build libpeerconnection as a static library by default.
     'libpeer_target_type%': 'static_library',
 
-    # Set to 1 to compile with the built in pdf viewer.
-    'internal_pdf%': 0,
-
     # Set to 1 to compile with the OpenGL ES 2.0 conformance tests.
     'internal_gles2_conform_tests%': 0,
 
