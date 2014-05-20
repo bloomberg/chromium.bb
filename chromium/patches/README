@@ -21,12 +21,6 @@ ugly/
   matroska_read_header(), resulting state should be same as prior to call; and
   no double-free is expected to result from this either.)
 
-compile_with_no_iconv.patch
-  wolenetz: When CONFIG_ICONV is 0, the original code path did not return a
-  value, causing compile failure on Windows.  It also aborted via an assert.
-  This patch enables compiling by returning an appropriate error code and also
-  removes the assert and abort.
-
 preserve_m27_avcodecids.patch
   wolenetz: Insert a deprecated placeholder into AVCodecID enum such that
   the resulting IDs are either new IDs since M27 or have same enumeration as

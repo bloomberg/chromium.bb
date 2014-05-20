@@ -615,13 +615,6 @@ static int decode_residual(H264Context *h, GetBitContext *gb, int16_t *block, in
         } \
     }
 
-    // TODO(dalecurtis): FFmpeg doesn't want this patch, but zeros_left must be
-    // checked both before and after the STORE_BLOCK() calls below.
-    if(zeros_left<0){
-        av_log(h->avctx, AV_LOG_ERROR, "negative number of zero coeffs at %d %d\n", h->mb_x, h->mb_y);
-        return -1;
-    }
-
     if (h->pixel_shift) {
         STORE_BLOCK(int32_t)
     } else {
