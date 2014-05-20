@@ -17,7 +17,7 @@ namespace gcm {
 
 namespace {
 const char kRequestContentType[] = "application/x-protobuf";
-const int kRequestVersionValue = 2;
+const int kRequestVersionValue = 3;
 const int kDefaultUserSerialNumber = 0;
 
 // This enum is also used in an UMA histogram (GCMCheckinRequestStatus

@@ -271,8 +271,8 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 void GCMClientImpl::InitializeMCSClient(
     scoped_ptr<GCMStore::LoadResult> result) {
   std::vector<GURL> endpoints;
-  endpoints.push_back(gservices_settings_.mcs_main_endpoint());
-  endpoints.push_back(gservices_settings_.mcs_fallback_endpoint());
+  endpoints.push_back(gservices_settings_.GetMCSMainEndpoint());
+  endpoints.push_back(gservices_settings_.GetMCSFallbackEndpoint());
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints,
       kDefaultBackoffPolicy,
@@ -339,7 +339,7 @@ void GCMClientImpl::StartCheckin() {
                                            account_ids_,
                                            chrome_build_proto_);
   checkin_request_.reset(
-      new CheckinRequest(gservices_settings_.checkin_url(),
+      new CheckinRequest(gservices_settings_.GetCheckinURL(),
                          request_info,
                          kDefaultBackoffPolicy,
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
@@ -378,7 +378,7 @@ void GCMClientImpl::OnCheckinCompleted(
     // First update G-services settings, as something might have changed.
     if (gservices_settings_.UpdateFromCheckinResponse(checkin_response)) {
       gcm_store_->SetGServicesSettings(
-          gservices_settings_.GetSettingsMap(),
+          gservices_settings_.settings_map(),
           gservices_settings_.digest(),
           base::Bind(&GCMClientImpl::SetGServicesSettingsCallback,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -418,7 +418,7 @@ void GCMClientImpl::SchedulePeriodicCheckin() {
 }
 
 base::TimeDelta GCMClientImpl::GetTimeToNextCheckin() const {
-  return last_checkin_time_ + gservices_settings_.checkin_interval() -
+  return last_checkin_time_ + gservices_settings_.GetCheckinInterval() -
          clock_->Now();
 }
 
@@ -476,7 +476,7 @@ void GCMClientImpl::Register(const std::string& app_id,
   DCHECK_EQ(0u, pending_registration_requests_.count(app_id));
 
   RegistrationRequest* registration_request =
-      new RegistrationRequest(gservices_settings_.registration_url(),
+      new RegistrationRequest(gservices_settings_.GetRegistrationURL(),
                               request_info,
                               kDefaultBackoffPolicy,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
@@ -550,16 +550,15 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
       device_checkin_info_.secret,
       app_id);
 
-  UnregistrationRequest* unregistration_request =
-      new UnregistrationRequest(
-          gservices_settings_.registration_url(),
-          request_info,
-          kDefaultBackoffPolicy,
-          base::Bind(&GCMClientImpl::OnUnregisterCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     app_id),
-          url_request_context_getter_,
-          &recorder_);
+  UnregistrationRequest* unregistration_request = new UnregistrationRequest(
+      gservices_settings_.GetRegistrationURL(),
+      request_info,
+      kDefaultBackoffPolicy,
+      base::Bind(&GCMClientImpl::OnUnregisterCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 app_id),
+      url_request_context_getter_,
+      &recorder_);
   pending_unregistration_requests_[app_id] = unregistration_request;
   unregistration_request->Start();
 }

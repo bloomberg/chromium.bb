@@ -21,11 +21,16 @@ namespace gcm {
 // extracting them from checkin response and storing in GCMStore.
 class GCM_EXPORT GServicesSettings {
  public:
+  typedef std::map<std::string, std::string> SettingsMap;
+
   // Minimum periodic checkin interval in seconds.
   static const base::TimeDelta MinimumCheckinInterval();
 
   // Default checkin URL.
   static const GURL DefaultCheckinURL();
+
+  // Calculates digest of provided settings.
+  static std::string CalculateDigest(const SettingsMap& settings);
 
   GServicesSettings();
   ~GServicesSettings();
@@ -38,45 +43,33 @@ class GCM_EXPORT GServicesSettings {
   // successful, false otherwise.
   void UpdateFromLoadResult(const GCMStore::LoadResult& load_result);
 
-  // Gets the settings as a map of string to string for storing.
-  std::map<std::string, std::string> GetSettingsMap() const;
+  SettingsMap settings_map() const { return settings_; }
 
   std::string digest() const { return digest_; }
 
-  base::TimeDelta checkin_interval() const { return checkin_interval_; }
+  // Gets the interval at which device should perform a checkin.
+  base::TimeDelta GetCheckinInterval() const;
 
-  GURL checkin_url() const { return checkin_url_; }
+  // Gets the URL to use when checking in.
+  GURL GetCheckinURL() const;
 
-  GURL mcs_main_endpoint() const { return mcs_main_endpoint_; }
+  // Gets address of main MCS endpoint.
+  GURL GetMCSMainEndpoint() const;
 
-  GURL mcs_fallback_endpoint() const { return mcs_fallback_endpoint_; }
+  // Gets address of fallback MCS endpoint.
+  GURL GetMCSFallbackEndpoint() const;
 
-  GURL registration_url() const { return registration_url_; }
+  // Gets the URL to use when registering or unregistering the apps.
+  GURL GetRegistrationURL() const;
 
  private:
-  // Parses the |settings| to fill in specific fields.
-  // TODO(fgorski): Change to a status variable that can be logged to UMA.
-  bool UpdateSettings(const std::map<std::string, std::string>& settings);
-
   // Digest (hash) of the settings, used to check whether settings need update.
   // It is meant to be sent with checkin request, instead of sending the whole
   // settings table.
   std::string digest_;
 
-  // Time delta between periodic checkins.
-  base::TimeDelta checkin_interval_;
-
-  // URL that should be used for checkins.
-  GURL checkin_url_;
-
-  // Main MCS endpoint.
-  GURL mcs_main_endpoint_;
-
-  // Fallback MCS endpoint.
-  GURL mcs_fallback_endpoint_;
-
-  // URL that should be used for regisrations and unregistrations.
-  GURL registration_url_;
+  // G-services settings as provided by checkin response.
+  SettingsMap settings_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<GServicesSettings> weak_ptr_factory_;
