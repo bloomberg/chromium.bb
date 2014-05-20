@@ -13,7 +13,7 @@ GamepadButton* GamepadButton::create()
 }
 
 GamepadButton::GamepadButton()
-    : m_value(0.f)
+    : m_value(0.)
     , m_pressed(false)
 {
     ScriptWrappable::init(this);

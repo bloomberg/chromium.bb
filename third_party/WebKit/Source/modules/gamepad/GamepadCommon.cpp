@@ -38,7 +38,7 @@ GamepadCommon::~GamepadCommon()
 {
 }
 
-void GamepadCommon::setAxes(unsigned count, const float* data)
+void GamepadCommon::setAxes(unsigned count, const double* data)
 {
     m_axes.resize(count);
     if (count)
