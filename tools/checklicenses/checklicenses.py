@@ -460,11 +460,12 @@ def check_licenses(options, args):
   if success:
     print "\nSUCCESS\n"
 
-    unused_suppressions = set(
-      PATH_SPECIFIC_WHITELISTED_LICENSES.keys()).difference(used_suppressions)
-    if unused_suppressions:
-      print "\nNOTE: unused suppressions detected:\n"
-      print '\n'.join(unused_suppressions)
+    if not len(args):
+      unused_suppressions = set(
+        PATH_SPECIFIC_WHITELISTED_LICENSES.keys()).difference(used_suppressions)
+      if unused_suppressions:
+        print "\nNOTE: unused suppressions detected:\n"
+        print '\n'.join(unused_suppressions)
 
     return 0
   else:
