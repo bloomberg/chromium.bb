@@ -230,9 +230,12 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
 #endif
 
 void RlzLibTest::SimulateOmniboxUsage() {
+  // Set is_popup_open for the OmniboxLog to be true.
+  OmniboxLog dummy = OmniboxLog(NULL, false, NULL, true, NULL, NULL, NULL, NULL,
+                                NULL, NULL, NULL, NULL);
   tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    content::NotificationService::AllSources(),
-                   content::Details<OmniboxLog>(NULL));
+                   content::Details<OmniboxLog>(dummy));
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
