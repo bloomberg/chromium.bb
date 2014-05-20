@@ -42,28 +42,23 @@ namespace blink {
 
 void WebNodeList::reset()
 {
-    assign(0);
+    m_private.reset();
 }
 
 void WebNodeList::assign(const WebNodeList& other)
 {
-    NodeList* p = const_cast<NodeList*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+    m_private = other.m_private;
 }
 
-WebNodeList::WebNodeList(const PassRefPtr<NodeList>& col)
-    : m_private(static_cast<NodeList*>(col.leakRef()))
+WebNodeList::WebNodeList(const PassRefPtrWillBeRawPtr<NodeList>& list)
+    : m_private(list)
 {
 }
 
-void WebNodeList::assign(NodeList* p)
+WebNodeList& WebNodeList::operator=(const PassRefPtrWillBeRawPtr<NodeList>& list)
 {
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    m_private = list;
+    return *this;
 }
 
 unsigned WebNodeList::length() const

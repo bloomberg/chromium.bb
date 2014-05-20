@@ -127,7 +127,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(ExceptionSta
 
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLCollection> children = cells();
+    RefPtrWillBeRawPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
         exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [-1, " + String::number(numCells) + "].");
@@ -144,7 +144,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, E
 
 void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLCollection> children = cells();
+    RefPtrWillBeRawPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index == -1)
         index = numCells-1;
@@ -156,7 +156,7 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
     }
 }
 
-PassRefPtr<HTMLCollection> HTMLTableRowElement::cells()
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableRowElement::cells()
 {
     return ensureCachedHTMLCollection(TRCells);
 }

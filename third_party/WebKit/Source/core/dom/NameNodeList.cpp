@@ -39,7 +39,9 @@ NameNodeList::NameNodeList(ContainerNode& rootNode, const AtomicString& name)
 
 NameNodeList::~NameNodeList()
 {
+#if !ENABLE(OILPAN)
     ownerNode().nodeLists()->removeCache(this, NameNodeListType, m_name);
+#endif
 }
 
 bool NameNodeList::elementMatches(const Element& element) const

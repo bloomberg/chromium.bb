@@ -28,6 +28,7 @@
 #define SelectorQuery_h
 
 #include "core/css/CSSSelectorList.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -48,7 +49,7 @@ class SelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
-    PassRefPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
     PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
@@ -89,7 +90,7 @@ class SelectorQuery {
 public:
     explicit SelectorQuery(const CSSSelectorList&);
     bool matches(Element&) const;
-    PassRefPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
     PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
     SelectorDataList m_selectors;

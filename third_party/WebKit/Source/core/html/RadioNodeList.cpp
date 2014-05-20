@@ -47,7 +47,9 @@ RadioNodeList::RadioNodeList(ContainerNode& rootNode, const AtomicString& name, 
 
 RadioNodeList::~RadioNodeList()
 {
+#if !ENABLE(OILPAN)
     ownerNode().nodeLists()->removeCache(this, m_onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType, m_name);
+#endif
 }
 
 static inline HTMLInputElement* toRadioButtonInputElement(Node& node)

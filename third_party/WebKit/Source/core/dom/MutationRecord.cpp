@@ -44,13 +44,23 @@ namespace {
 
 class ChildListRecord : public MutationRecord {
 public:
-    ChildListRecord(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
+    ChildListRecord(PassRefPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
         : m_target(target)
         , m_addedNodes(added)
         , m_removedNodes(removed)
         , m_previousSibling(previousSibling)
         , m_nextSibling(nextSibling)
     {
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_target);
+        visitor->trace(m_addedNodes);
+        visitor->trace(m_removedNodes);
+        visitor->trace(m_previousSibling);
+        visitor->trace(m_nextSibling);
+        MutationRecord::trace(visitor);
     }
 
 private:
@@ -61,11 +71,11 @@ private:
     virtual Node* previousSibling() OVERRIDE { return m_previousSibling.get(); }
     virtual Node* nextSibling() OVERRIDE { return m_nextSibling.get(); }
 
-    RefPtr<Node> m_target;
-    RefPtr<NodeList> m_addedNodes;
-    RefPtr<NodeList> m_removedNodes;
-    RefPtr<Node> m_previousSibling;
-    RefPtr<Node> m_nextSibling;
+    RefPtrWillBeMember<Node> m_target;
+    RefPtrWillBeMember<NodeList> m_addedNodes;
+    RefPtrWillBeMember<NodeList> m_removedNodes;
+    RefPtrWillBeMember<Node> m_previousSibling;
+    RefPtrWillBeMember<Node> m_nextSibling;
 };
 
 class RecordWithEmptyNodeLists : public MutationRecord {
@@ -76,23 +86,31 @@ public:
     {
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_target);
+        visitor->trace(m_addedNodes);
+        visitor->trace(m_removedNodes);
+        MutationRecord::trace(visitor);
+    }
+
 private:
     virtual Node* target() OVERRIDE { return m_target.get(); }
     virtual String oldValue() OVERRIDE { return m_oldValue; }
     virtual NodeList* addedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_addedNodes); }
     virtual NodeList* removedNodes() OVERRIDE { return lazilyInitializeEmptyNodeList(m_removedNodes); }
 
-    static NodeList* lazilyInitializeEmptyNodeList(RefPtr<NodeList>& nodeList)
+    static NodeList* lazilyInitializeEmptyNodeList(RefPtrWillBeMember<NodeList>& nodeList)
     {
         if (!nodeList)
             nodeList = StaticNodeList::createEmpty();
         return nodeList.get();
     }
 
-    RefPtr<Node> m_target;
+    RefPtrWillBeMember<Node> m_target;
     String m_oldValue;
-    RefPtr<NodeList> m_addedNodes;
-    RefPtr<NodeList> m_removedNodes;
+    RefPtrWillBeMember<NodeList> m_addedNodes;
+    RefPtrWillBeMember<NodeList> m_removedNodes;
 };
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
@@ -172,7 +190,7 @@ const AtomicString& CharacterDataRecord::type()
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtr<NodeList> added, PassRefPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
+PassRefPtrWillBeRawPtr<MutationRecord> MutationRecord::createChildList(PassRefPtr<Node> target, PassRefPtrWillBeRawPtr<NodeList> added, PassRefPtrWillBeRawPtr<NodeList> removed, PassRefPtr<Node> previousSibling, PassRefPtr<Node> nextSibling)
 {
     return adoptRefWillBeNoop(new ChildListRecord(target, added, removed, previousSibling, nextSibling));
 }

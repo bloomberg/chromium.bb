@@ -41,19 +41,21 @@ namespace WebCore {
 
 class NamedNodesCollection FINAL : public NodeList {
 public:
-    static PassRefPtr<NodeList> create(const Vector<RefPtr<Element> >& nodes)
+    static PassRefPtrWillBeRawPtr<NodeList> create(const WillBeHeapVector<RefPtrWillBeMember<Element> >& nodes)
     {
-        return adoptRef(new NamedNodesCollection(nodes));
+        return adoptRefWillBeNoop(new NamedNodesCollection(nodes));
     }
 
     virtual unsigned length() const OVERRIDE { return m_nodes.size(); }
     virtual Node* item(unsigned) const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
-    explicit NamedNodesCollection(const Vector<RefPtr<Element> >& nodes)
+    explicit NamedNodesCollection(const WillBeHeapVector<RefPtrWillBeMember<Element> > nodes)
         : m_nodes(nodes) { }
 
-    Vector<RefPtr<Element> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > m_nodes;
 };
 
 } // namespace WebCore

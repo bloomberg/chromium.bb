@@ -78,19 +78,9 @@ void WebFormElement::submit()
 void WebFormElement::getNamedElements(const WebString& name,
                                       WebVector<WebNode>& result)
 {
-    Vector<RefPtr<Element> > tempVector;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > tempVector;
     unwrap<HTMLFormElement>()->getNamedElements(name, tempVector);
-#if ENABLE(OILPAN)
-    // FIXME: The second argument of HTMLFormElement::getNamedElements should be
-    // HeapVector<Member<Element>>.
-    Vector<WebNode> tempVector2;
-    tempVector2.reserveCapacity(tempVector.size());
-    for (size_t i = 0; i < tempVector.size(); ++i)
-        tempVector2.append(WebNode(tempVector[i].get()));
-    result.assign(tempVector2);
-#else
     result.assign(tempVector);
-#endif
 }
 
 void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& result) const

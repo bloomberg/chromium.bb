@@ -32,10 +32,10 @@ namespace WebCore {
 
 class LabelsNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<LabelsNodeList> create(ContainerNode& ownerNode, CollectionType type)
+    static PassRefPtrWillBeRawPtr<LabelsNodeList> create(ContainerNode& ownerNode, CollectionType type)
     {
         ASSERT_UNUSED(type, type == LabelsNodeListType);
-        return adoptRef(new LabelsNodeList(ownerNode));
+        return adoptRefWillBeNoop(new LabelsNodeList(ownerNode));
     }
 
     virtual ~LabelsNodeList();

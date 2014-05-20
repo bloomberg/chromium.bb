@@ -65,7 +65,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableSectionElement::insertRow(Exception
 // the index... but they aren't used during usual HTML parsing anyway
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLCollection> children = rows();
+    RefPtrWillBeRawPtr<HTMLCollection> children = rows();
     int numRows = children ? static_cast<int>(children->length()) : 0;
     if (index < -1 || index > numRows) {
         exceptionState.throwDOMException(IndexSizeError, "The provided index (" + String::number(index) + " is outside the range [-1, " + String::number(numRows) + "].");
@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index
 
 void HTMLTableSectionElement::deleteRow(int index, ExceptionState& exceptionState)
 {
-    RefPtr<HTMLCollection> children = rows();
+    RefPtrWillBeRawPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
     if (index == -1)
         index = numRows - 1;
@@ -102,7 +102,7 @@ int HTMLTableSectionElement::numRows() const
     return rowCount;
 }
 
-PassRefPtr<HTMLCollection> HTMLTableSectionElement::rows()
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLTableSectionElement::rows()
 {
     return ensureCachedHTMLCollection(TSectionRows);
 }

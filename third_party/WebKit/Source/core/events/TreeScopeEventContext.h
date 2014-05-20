@@ -59,7 +59,7 @@ public:
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
 
-    PassRefPtr<NodeList> ensureEventPath(EventPath&);
+    PassRefPtrWillBeRawPtr<NodeList> ensureEventPath(EventPath&);
 
     bool isInclusiveAncestorOf(const TreeScopeEventContext&);
     void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
@@ -78,7 +78,7 @@ private:
     TreeScope& m_treeScope;
     RefPtr<EventTarget> m_target;
     RefPtr<EventTarget> m_relatedTarget;
-    RefPtr<NodeList> m_eventPath;
+    RefPtrWillBePersistent<NodeList> m_eventPath;
     RefPtrWillBePersistent<TouchEventContext> m_touchEventContext;
 
     Vector<TreeScopeEventContext*> m_children;

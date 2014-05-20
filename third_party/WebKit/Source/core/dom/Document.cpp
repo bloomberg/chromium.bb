@@ -506,8 +506,10 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     initSecurityContext(initializer);
     initDNSPrefetch();
 
-    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); i++)
+#if !ENABLE(OILPAN)
+    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
         m_nodeListCounts[i] = 0;
+#endif
 
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
 
@@ -588,12 +590,12 @@ Document::~Document()
     // as well as Node. See a comment on TreeScope.h for the reason.
     if (hasRareData())
         clearRareData();
-#endif
 
-    ASSERT(!m_listsInvalidatedAtDocument.size());
+    ASSERT(m_listsInvalidatedAtDocument.isEmpty());
 
-    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); i++)
+    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
         ASSERT(!m_nodeListCounts[i]);
+#endif
 
     setClient(0);
 
@@ -3687,20 +3689,49 @@ void Document::setCSSTarget(Element* n)
         n->didAffectSelector(AffectedSelectorTarget);
 }
 
-void Document::registerNodeList(LiveNodeListBase* list)
+void Document::registerNodeList(const LiveNodeListBase* list)
 {
+#if ENABLE(OILPAN)
+    m_nodeLists[list->invalidationType()].add(list);
+#else
     m_nodeListCounts[list->invalidationType()]++;
+#endif
     if (list->isRootedAtDocument())
         m_listsInvalidatedAtDocument.add(list);
 }
 
-void Document::unregisterNodeList(LiveNodeListBase* list)
+void Document::unregisterNodeList(const LiveNodeListBase* list)
 {
+#if ENABLE(OILPAN)
+    ASSERT(m_nodeLists[list->invalidationType()].contains(list));
+    m_nodeLists[list->invalidationType()].remove(list);
+#else
     m_nodeListCounts[list->invalidationType()]--;
+#endif
     if (list->isRootedAtDocument()) {
         ASSERT(m_listsInvalidatedAtDocument.contains(list));
         m_listsInvalidatedAtDocument.remove(list);
     }
+}
+
+void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list)
+{
+#if ENABLE(OILPAN)
+    m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
+#else
+    m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
+#endif
+}
+
+void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list)
+{
+#if ENABLE(OILPAN)
+    ASSERT(m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
+    m_nodeLists[InvalidateOnIdNameAttrChange].remove(list);
+#else
+    ASSERT(m_nodeListCounts[InvalidateOnIdNameAttrChange] > 0);
+    m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
+#endif
 }
 
 void Document::attachNodeIterator(NodeIterator* ni)
@@ -4506,63 +4537,63 @@ bool Document::hasSVGRootNode() const
     return isSVGSVGElement(documentElement());
 }
 
-PassRefPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
 {
     return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
 }
 
-PassRefPtr<HTMLCollection> Document::images()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::images()
 {
     return ensureCachedCollection(DocImages);
 }
 
-PassRefPtr<HTMLCollection> Document::applets()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::applets()
 {
     return ensureCachedCollection(DocApplets);
 }
 
-PassRefPtr<HTMLCollection> Document::embeds()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::embeds()
 {
     return ensureCachedCollection(DocEmbeds);
 }
 
-PassRefPtr<HTMLCollection> Document::scripts()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::scripts()
 {
     return ensureCachedCollection(DocScripts);
 }
 
-PassRefPtr<HTMLCollection> Document::links()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::links()
 {
     return ensureCachedCollection(DocLinks);
 }
 
-PassRefPtr<HTMLCollection> Document::forms()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::forms()
 {
     return ensureCachedCollection(DocForms);
 }
 
-PassRefPtr<HTMLCollection> Document::anchors()
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::anchors()
 {
     return ensureCachedCollection(DocAnchors);
 }
 
-PassRefPtr<HTMLAllCollection> Document::allForBinding()
+PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::allForBinding()
 {
     UseCounter::count(*this, UseCounter::DocumentAll);
     return all();
 }
 
-PassRefPtr<HTMLAllCollection> Document::all()
+PassRefPtrWillBeRawPtr<HTMLAllCollection> Document::all()
 {
     return ensureRareData().ensureNodeLists().addCache<HTMLAllCollection>(*this, DocAll);
 }
 
-PassRefPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
 {
     return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, WindowNamedItems, name);
 }
 
-PassRefPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
+PassRefPtrWillBeRawPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
 {
     return ensureRareData().ensureNodeLists().addCache<HTMLNameCollection>(*this, DocumentNamedItems, name);
 }
@@ -5640,27 +5671,29 @@ bool Document::hasFocus() const
     return false;
 }
 
-template<unsigned type>
-bool shouldInvalidateNodeListCachesForAttr(const unsigned nodeListCounts[], const QualifiedName& attrName)
-{
-    if (nodeListCounts[type] && LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), attrName))
-        return true;
-    return shouldInvalidateNodeListCachesForAttr<type + 1>(nodeListCounts, attrName);
-}
-
-template<>
-bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const unsigned[], const QualifiedName&)
-{
-    return false;
-}
-
 bool Document::shouldInvalidateNodeListCaches(const QualifiedName* attrName) const
 {
-    if (attrName)
-        return shouldInvalidateNodeListCachesForAttr<DoNotInvalidateOnAttributeChanges + 1>(m_nodeListCounts, *attrName);
+    if (attrName) {
+        for (int type = 1; type < numNodeListInvalidationTypes; ++type) {
+#if ENABLE(OILPAN)
+            if (m_nodeLists[type].isEmpty()) {
+#else
+            if (!m_nodeListCounts[type]) {
+#endif
+                continue;
+            }
 
-    for (int type = 0; type < numNodeListInvalidationTypes; type++) {
+            if (LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), *attrName))
+                return true;
+        }
+    }
+
+    for (int type = 0; type < numNodeListInvalidationTypes; ++type) {
+#if ENABLE(OILPAN)
+        if (!m_nodeLists[type].isEmpty())
+#else
         if (m_nodeListCounts[type])
+#endif
             return true;
     }
 
@@ -5669,8 +5702,8 @@ bool Document::shouldInvalidateNodeListCaches(const QualifiedName* attrName) con
 
 void Document::invalidateNodeListCaches(const QualifiedName* attrName)
 {
-    HashSet<LiveNodeListBase*>::iterator end = m_listsInvalidatedAtDocument.end();
-    for (HashSet<LiveNodeListBase*>::iterator it = m_listsInvalidatedAtDocument.begin(); it != end; ++it)
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> >::const_iterator end = m_listsInvalidatedAtDocument.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> >::const_iterator it = m_listsInvalidatedAtDocument.begin(); it != end; ++it)
         (*it)->invalidateCacheForAttribute(attrName);
 }
 
@@ -5704,6 +5737,11 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_markers);
     visitor->trace(m_currentScriptStack);
     visitor->trace(m_transformSourceDocument);
+    visitor->trace(m_listsInvalidatedAtDocument);
+#if ENABLE(OILPAN)
+    for (int i = 0; i < numNodeListInvalidationTypes; ++i)
+        visitor->trace(m_nodeLists[i]);
+#endif
     visitor->trace(m_cssCanvasElements);
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);

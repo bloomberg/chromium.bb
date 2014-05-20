@@ -541,7 +541,7 @@ void HTMLFormElement::didAssociateByParser()
     UseCounter::count(document(), UseCounter::FormAssociationByParser);
 }
 
-PassRefPtr<HTMLCollection> HTMLFormElement::elements()
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLFormElement::elements()
 {
     return ensureCachedHTMLCollection(FormControls);
 }
@@ -718,7 +718,7 @@ void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)
     }
 }
 
-void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<Element> >& namedItems)
+void HTMLFormElement::getNamedElements(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >& namedItems)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#dom-form-nameditem
     elements()->namedItems(name, namedItems);
@@ -750,13 +750,13 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
     // See issue: 867404
     {
-        Vector<RefPtr<Element> > elements;
+        WillBeHeapVector<RefPtrWillBeMember<Element> > elements;
         getNamedElements(name, elements);
         if (elements.isEmpty())
             return;
@@ -764,13 +764,14 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
 
     // Second call may return different results from the first call,
     // but if the first the size cannot be zero.
-    Vector<RefPtr<Element> > elements;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > elements;
     getNamedElements(name, elements);
     ASSERT(!elements.isEmpty());
 
     if (elements.size() == 1) {
         returnValue1Enabled = true;
-        returnValue1 = elements.at(0);
+        // FIXME: Oilpan: remove the call to |get| when Element becomes [GarbageCollected].
+        returnValue1 = elements.at(0).get();
         return;
     }
 

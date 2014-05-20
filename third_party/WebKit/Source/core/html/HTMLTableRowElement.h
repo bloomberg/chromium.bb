@@ -44,7 +44,7 @@ public:
     PassRefPtrWillBeRawPtr<HTMLElement> insertCell(int index, ExceptionState&);
     void deleteCell(int index, ExceptionState&);
 
-    PassRefPtr<HTMLCollection> cells();
+    PassRefPtrWillBeRawPtr<HTMLCollection> cells();
 
 private:
     explicit HTMLTableRowElement(Document&);

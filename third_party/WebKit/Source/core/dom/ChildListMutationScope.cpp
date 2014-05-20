@@ -126,8 +126,8 @@ void ChildListMutationAccumulator::enqueueMutationRecord()
     ASSERT(hasObservers());
     ASSERT(!isEmpty());
 
-    RefPtr<NodeList> addedNodes = StaticNodeList::adopt(m_addedNodes);
-    RefPtr<NodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
+    RefPtrWillBeRawPtr<NodeList> addedNodes = StaticNodeList::adopt(m_addedNodes);
+    RefPtrWillBeRawPtr<NodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
     RefPtrWillBeRawPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
     m_observers->enqueueMutationRecord(record.release());
     m_lastAdded = 0;

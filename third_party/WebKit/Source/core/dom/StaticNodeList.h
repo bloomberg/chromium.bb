@@ -41,17 +41,19 @@ class Node;
 
 class StaticNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes);
+    static PassRefPtrWillBeRawPtr<StaticNodeList> adopt(Vector<RefPtr<Node> >& nodes);
 
-    static PassRefPtr<StaticNodeList> createEmpty()
+    static PassRefPtrWillBeRawPtr<StaticNodeList> createEmpty()
     {
-        return adoptRef(new StaticNodeList);
+        return adoptRefWillBeNoop(new StaticNodeList);
     }
 
     virtual ~StaticNodeList();
 
     virtual unsigned length() const OVERRIDE;
     virtual Node* item(unsigned index) const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     // If AllocationSize() is larger than this, we report it as external
@@ -60,10 +62,10 @@ private:
 
     ptrdiff_t AllocationSize()
     {
-        return m_nodes.capacity() * sizeof(RefPtr<Node>);
+        return m_nodes.capacity() * sizeof(RefPtrWillBeMember<Node>);
     }
 
-    Vector<RefPtr<Node> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
 };
 
 } // namespace WebCore

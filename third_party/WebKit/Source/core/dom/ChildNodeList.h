@@ -33,9 +33,9 @@ namespace WebCore {
 
 class ChildNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<ChildNodeList> create(ContainerNode& rootNode)
+    static PassRefPtrWillBeRawPtr<ChildNodeList> create(ContainerNode& rootNode)
     {
-        return adoptRef(new ChildNodeList(rootNode));
+        return adoptRefWillBeNoop(new ChildNodeList(rootNode));
     }
 
     virtual ~ChildNodeList();
@@ -57,13 +57,15 @@ public:
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
     Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit ChildNodeList(ContainerNode& rootNode);
 
     virtual bool isChildNodeList() const OVERRIDE { return true; }
     virtual Node* virtualOwnerNode() const OVERRIDE;
 
-    RefPtr<ContainerNode> m_parent;
+    RefPtrWillBeMember<ContainerNode> m_parent;
     mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;
 };
 

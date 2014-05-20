@@ -34,10 +34,10 @@ namespace WebCore {
 
 class RadioNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<RadioNodeList> create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
+    static PassRefPtrWillBeRawPtr<RadioNodeList> create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == RadioNodeListType || type == RadioImgNodeListType);
-        return adoptRef(new RadioNodeList(ownerNode, name, type));
+        return adoptRefWillBeNoop(new RadioNodeList(ownerNode, name, type));
     }
 
     virtual ~RadioNodeList();

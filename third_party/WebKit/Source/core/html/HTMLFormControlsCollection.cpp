@@ -47,9 +47,9 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType)
+PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType)
 {
-    return adoptRef(new HTMLFormControlsCollection(ownerNode));
+    return adoptRefWillBeNoop(new HTMLFormControlsCollection(ownerNode));
 }
 
 HTMLFormControlsCollection::~HTMLFormControlsCollection()
@@ -153,7 +153,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    OwnPtr<NamedItemCache> cache = NamedItemCache::create();
+    OwnPtrWillBeRawPtr<NamedItemCache> cache = NamedItemCache::create();
     HashSet<StringImpl*> foundInputElements;
 
     const FormAssociatedElement::List& elementsArray = formControlElements();
@@ -192,9 +192,9 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
 {
-    Vector<RefPtr<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
 
     if (namedItems.isEmpty())
@@ -202,7 +202,8 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& rad
 
     if (namedItems.size() == 1) {
         elementEnabled = true;
-        element = namedItems.first();
+        // FIXME: Oilpan: remove the call to |get| when Element becomes [GarbageCollected].
+        element = namedItems.at(0).get();
         return;
     }
 

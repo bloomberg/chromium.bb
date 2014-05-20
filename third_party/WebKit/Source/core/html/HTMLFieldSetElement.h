@@ -37,7 +37,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
     HTMLLegendElement* legend() const;
 
-    PassRefPtr<HTMLCollection> elements();
+    PassRefPtrWillBeRawPtr<HTMLCollection> elements();
 
     const FormAssociatedElement::List& associatedElements() const;
 

@@ -43,28 +43,23 @@ namespace blink {
 
 void WebElementCollection::reset()
 {
-    assign(0);
+    m_private.reset();
 }
 
 void WebElementCollection::assign(const WebElementCollection& other)
 {
-    HTMLCollection* p = const_cast<HTMLCollection*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+    m_private = other.m_private;
 }
 
-WebElementCollection::WebElementCollection(const PassRefPtr<HTMLCollection>& col)
-    : m_private(static_cast<HTMLCollection*>(col.leakRef()))
+WebElementCollection::WebElementCollection(const PassRefPtrWillBeRawPtr<HTMLCollection>& col)
+    : m_private(col)
 {
 }
 
-void WebElementCollection::assign(HTMLCollection* p)
+WebElementCollection& WebElementCollection::operator=(const PassRefPtrWillBeRawPtr<HTMLCollection>& col)
 {
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    m_private = col;
+    return *this;
 }
 
 unsigned WebElementCollection::length() const

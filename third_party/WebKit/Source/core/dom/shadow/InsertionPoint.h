@@ -52,7 +52,7 @@ public:
     bool isShadowInsertionPoint() const;
     bool isContentInsertionPoint() const;
 
-    PassRefPtr<NodeList> getDistributedNodes();
+    PassRefPtrWillBeRawPtr<NodeList> getDistributedNodes();
 
     virtual bool canAffectSelector() const { return false; }
 

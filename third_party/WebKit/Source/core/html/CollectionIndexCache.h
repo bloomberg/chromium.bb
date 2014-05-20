@@ -38,6 +38,7 @@ namespace WebCore {
 
 template <typename Collection, typename NodeType>
 class CollectionIndexCache {
+    DISALLOW_ALLOCATION();
 public:
     CollectionIndexCache();
 
@@ -63,6 +64,11 @@ public:
 
     void invalidate();
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_currentNode);
+    }
+
 private:
     NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
     NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
@@ -84,7 +90,7 @@ private:
         m_isLengthCacheValid = true;
     }
 
-    NodeType* m_currentNode;
+    RawPtrWillBeMember<NodeType> m_currentNode;
     unsigned m_cachedNodeCount;
     unsigned m_cachedNodeIndex;
     unsigned m_isLengthCacheValid : 1;
@@ -92,7 +98,7 @@ private:
 
 template <typename Collection, typename NodeType>
 CollectionIndexCache<Collection, NodeType>::CollectionIndexCache()
-    : m_currentNode(0)
+    : m_currentNode(nullptr)
     , m_cachedNodeCount(0)
     , m_cachedNodeIndex(0)
     , m_isLengthCacheValid(false)
@@ -102,7 +108,7 @@ CollectionIndexCache<Collection, NodeType>::CollectionIndexCache()
 template <typename Collection, typename NodeType>
 void CollectionIndexCache<Collection, NodeType>::invalidate()
 {
-    m_currentNode = 0;
+    m_currentNode = nullptr;
     m_isLengthCacheValid = false;
 }
 

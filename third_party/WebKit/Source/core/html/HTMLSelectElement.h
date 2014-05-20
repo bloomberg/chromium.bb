@@ -73,8 +73,8 @@ public:
     String suggestedValue() const;
     void setSuggestedValue(const String&);
 
-    PassRefPtr<HTMLOptionsCollection> options();
-    PassRefPtr<HTMLCollection> selectedOptions();
+    PassRefPtrWillBeRawPtr<HTMLOptionsCollection> options();
+    PassRefPtrWillBeRawPtr<HTMLCollection> selectedOptions();
 
     void optionElementChildrenChanged();
 

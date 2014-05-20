@@ -32,11 +32,11 @@ namespace WebCore {
 
 class HTMLAllCollection FINAL : public HTMLCollection {
 public:
-    static PassRefPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);
+    static PassRefPtrWillBeRawPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);
     virtual ~HTMLAllCollection();
 
     Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
-    void namedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Element>&);
+    void namedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<NodeList>&, bool&, RefPtr<Element>&);
 
 private:
     HTMLAllCollection(ContainerNode&, CollectionType);

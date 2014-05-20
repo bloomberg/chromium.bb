@@ -346,7 +346,7 @@ public:
      * @param bottomPadding How much to expand the bottom of the rectangle
      * @param leftPadding How much to expand the left of the rectangle
      */
-    PassRefPtr<NodeList> nodesFromRect(int centerX, int centerY,
+    PassRefPtrWillBeRawPtr<NodeList> nodesFromRect(int centerX, int centerY,
         unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding,
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent) const;
     Element* elementFromPoint(int x, int y) const;
@@ -393,18 +393,18 @@ public:
 
     PassRefPtrWillBeRawPtr<Node> adoptNode(PassRefPtrWillBeRawPtr<Node> source, ExceptionState&);
 
-    PassRefPtr<HTMLCollection> images();
-    PassRefPtr<HTMLCollection> embeds();
-    PassRefPtr<HTMLCollection> applets();
-    PassRefPtr<HTMLCollection> links();
-    PassRefPtr<HTMLCollection> forms();
-    PassRefPtr<HTMLCollection> anchors();
-    PassRefPtr<HTMLCollection> scripts();
-    PassRefPtr<HTMLAllCollection> allForBinding();
-    PassRefPtr<HTMLAllCollection> all();
+    PassRefPtrWillBeRawPtr<HTMLCollection> images();
+    PassRefPtrWillBeRawPtr<HTMLCollection> embeds();
+    PassRefPtrWillBeRawPtr<HTMLCollection> applets();
+    PassRefPtrWillBeRawPtr<HTMLCollection> links();
+    PassRefPtrWillBeRawPtr<HTMLCollection> forms();
+    PassRefPtrWillBeRawPtr<HTMLCollection> anchors();
+    PassRefPtrWillBeRawPtr<HTMLCollection> scripts();
+    PassRefPtrWillBeRawPtr<HTMLAllCollection> allForBinding();
+    PassRefPtrWillBeRawPtr<HTMLAllCollection> all();
 
-    PassRefPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
-    PassRefPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
 
     bool isHTMLDocument() const { return m_documentClasses & HTMLDocumentClass; }
     bool isXHTMLDocument() const { return m_documentClasses & XHTMLDocumentClass; }
@@ -661,10 +661,10 @@ public:
     void scheduleRenderTreeUpdateIfNeeded();
     bool hasPendingForcedStyleRecalc() const;
 
-    void registerNodeList(LiveNodeListBase*);
-    void unregisterNodeList(LiveNodeListBase*);
-    void incrementNodeListWithIdNameCacheCount();
-    void decrementNodeListWithIdNameCacheCount();
+    void registerNodeList(const LiveNodeListBase*);
+    void unregisterNodeList(const LiveNodeListBase*);
+    void registerNodeListWithIdNameCache(const LiveNodeListBase*);
+    void unregisterNodeListWithIdNameCache(const LiveNodeListBase*);
     bool shouldInvalidateNodeListCaches(const QualifiedName* attrName = 0) const;
     void invalidateNodeListCaches(const QualifiedName* attrName);
 
@@ -1151,14 +1151,14 @@ private:
 
     void executeScriptsWaitingForResourcesTimerFired(Timer<Document>*);
 
-    PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
+    PassRefPtrWillBeRawPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 
     void loadEventDelayTimerFired(Timer<Document>*);
     void pluginLoadingTimerFired(Timer<Document>*);
 
     PageVisibilityState pageVisibilityState() const;
 
-    PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
+    PassRefPtrWillBeRawPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 
     // Note that dispatching a window load event may cause the DOMWindow to be detached from
     // the LocalFrame, so callers should take a reference to the DOMWindow (which owns us) to
@@ -1305,8 +1305,16 @@ private:
 
     InheritedBool m_designMode;
 
-    HashSet<LiveNodeListBase*> m_listsInvalidatedAtDocument;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> > m_listsInvalidatedAtDocument;
+#if ENABLE(OILPAN)
+    // Oilpan keeps track of all registered NodeLists.
+    //
+    // FIXME: Oilpan: improve - only need to know if a NodeList
+    // is currently alive or not for the different types.
+    HeapHashSet<WeakMember<const LiveNodeListBase> > m_nodeLists[numNodeListInvalidationTypes];
+#else
     unsigned m_nodeListCounts[numNodeListInvalidationTypes];
+#endif
 
     OwnPtrWillBeMember<SVGDocumentExtensions> m_svgExtensions;
 
@@ -1412,17 +1420,6 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
     // regardless of which order they appear in the DOM. The priority is given by the
     // ViewportDescription::Type enum.
     return origin >= m_legacyViewportDescription.type;
-}
-
-inline void Document::incrementNodeListWithIdNameCacheCount()
-{
-    m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
-}
-
-inline void Document::decrementNodeListWithIdNameCacheCount()
-{
-    ASSERT(m_nodeListCounts[InvalidateOnIdNameAttrChange] > 0);
-    m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
 }
 
 inline void Document::scheduleRenderTreeUpdateIfNeeded()

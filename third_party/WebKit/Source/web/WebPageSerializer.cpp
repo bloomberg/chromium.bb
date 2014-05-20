@@ -139,7 +139,7 @@ void retrieveResourcesForFrame(LocalFrame* frame,
         frameURLs->append(frameURL);
 
     // Now get the resources associated with each node of the document.
-    RefPtr<HTMLCollection> allElements = frame->document()->all();
+    RefPtrWillBeRawPtr<HTMLCollection> allElements = frame->document()->all();
     for (unsigned i = 0; i < allElements->length(); ++i) {
         Element* element = allElements->item(i);
         retrieveResourcesForElement(element,

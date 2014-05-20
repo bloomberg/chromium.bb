@@ -33,9 +33,9 @@ class Document;
 
 class HTMLNameCollection FINAL : public HTMLCollection {
 public:
-    static PassRefPtr<HTMLNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
+    static PassRefPtrWillBeRawPtr<HTMLNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
-        return adoptRef(new HTMLNameCollection(document, type, name));
+        return adoptRefWillBeNoop(new HTMLNameCollection(document, type, name));
     }
 
     ~HTMLNameCollection();

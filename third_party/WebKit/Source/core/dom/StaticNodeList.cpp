@@ -33,10 +33,17 @@
 
 namespace WebCore {
 
-PassRefPtr<StaticNodeList> StaticNodeList::adopt(Vector<RefPtr<Node> >& nodes)
+PassRefPtrWillBeRawPtr<StaticNodeList> StaticNodeList::adopt(Vector<RefPtr<Node> >& nodes)
 {
-    RefPtr<StaticNodeList> nodeList = adoptRef(new StaticNodeList);
+    RefPtrWillBeRawPtr<StaticNodeList> nodeList = adoptRefWillBeNoop(new StaticNodeList);
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: switch to a WillBeHeapVector<RefPtrWillBeMember<>> argument.
+    for (size_t i = 0; i < nodes.size(); ++i)
+        nodeList->m_nodes.append(nodes[i]);
+    nodes.clear();
+#else
     nodeList->m_nodes.swap(nodes);
+#endif
     if (nodeList->AllocationSize() > externalMemoryReportSizeLimit)
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(nodeList->AllocationSize());
     return nodeList.release();
@@ -58,6 +65,12 @@ Node* StaticNodeList::item(unsigned index) const
     if (index < m_nodes.size())
         return m_nodes[index].get();
     return 0;
+}
+
+void StaticNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodes);
+    NodeList::trace(visitor);
 }
 
 } // namespace WebCore

@@ -41,4 +41,10 @@ Node* NamedNodesCollection::item(unsigned index) const
     return 0;
 }
 
+void NamedNodesCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodes);
+    NodeList::trace(visitor);
+}
+
 } // namespace WebCore

@@ -42,10 +42,11 @@ HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType t
 
 HTMLNameCollection::~HTMLNameCollection()
 {
-    ASSERT(ownerNode().isDocumentNode());
     ASSERT(type() == WindowNamedItems || type() == DocumentNamedItems);
-
+#if !ENABLE(OILPAN)
+    ASSERT(ownerNode().isDocumentNode());
     ownerNode().nodeLists()->removeCache(this, type(), m_name);
+#endif
 }
 
 Element* HTMLNameCollection::virtualItemAfter(Element* previous) const

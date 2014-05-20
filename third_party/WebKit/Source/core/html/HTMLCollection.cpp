@@ -166,18 +166,20 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode, CollectionType type, It
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode& base, CollectionType type)
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLCollection::create(ContainerNode& base, CollectionType type)
 {
-    return adoptRef(new HTMLCollection(base, type, DoesNotOverrideItemAfter));
+    return adoptRefWillBeNoop(new HTMLCollection(base, type, DoesNotOverrideItemAfter));
 }
 
 HTMLCollection::~HTMLCollection()
 {
+#if !ENABLE(OILPAN)
     if (hasValidIdNameCache())
         unregisterIdNameCacheFromDocument(document());
     // Named HTMLCollection types remove cache by themselves.
     if (isUnnamedHTMLCollectionType(type()))
         ownerNode().nodeLists()->removeCache(this, type());
+#endif
 }
 
 void HTMLCollection::invalidateCache(Document* oldDocument) const
@@ -420,11 +422,11 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    Vector<Element*>* idResults = cache.getElementsById(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name);
     if (idResults && !idResults->isEmpty())
         return idResults->first();
 
-    Vector<Element*>* nameResults = cache.getElementsByName(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name);
     if (nameResults && !nameResults->isEmpty())
         return nameResults->first();
 
@@ -475,7 +477,7 @@ void HTMLCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    OwnPtr<NamedItemCache> cache = NamedItemCache::create();
+    OwnPtrWillBeRawPtr<NamedItemCache> cache = NamedItemCache::create();
     for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
@@ -490,7 +492,7 @@ void HTMLCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element> >& result) const
+void HTMLCollection::namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >& result) const
 {
     ASSERT(result.isEmpty());
     if (name.isEmpty())
@@ -499,8 +501,8 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    Vector<Element*>* idResults = cache.getElementsById(name);
-    Vector<Element*>* nameResults = cache.getElementsByName(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name);
 
     for (unsigned i = 0; idResults && i < idResults->size(); ++i)
         result.append(idResults->at(i));
@@ -511,6 +513,13 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
 
 HTMLCollection::NamedItemCache::NamedItemCache()
 {
+}
+
+void HTMLCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_namedItemCache);
+    visitor->trace(m_collectionIndexCache);
+    LiveNodeListBase::trace(visitor);
 }
 
 } // namespace WebCore

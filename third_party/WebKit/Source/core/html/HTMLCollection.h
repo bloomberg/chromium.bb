@@ -33,14 +33,15 @@
 
 namespace WebCore {
 
-class HTMLCollection : public ScriptWrappable, public RefCounted<HTMLCollection>, public LiveNodeListBase {
+class HTMLCollection : public RefCountedWillBeGarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 public:
     enum ItemAfterOverrideType {
         OverridesItemAfter,
         DoesNotOverrideItemAfter,
     };
 
-    static PassRefPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
+    static PassRefPtrWillBeRawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
     void invalidateCacheForAttribute(const QualifiedName*) const;
@@ -53,7 +54,7 @@ public:
     void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
 
     // Non-DOM API
-    void namedItems(const AtomicString& name, Vector<RefPtr<Element> >&) const;
+    void namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >&) const;
     bool isEmpty() const { return m_collectionIndexCache.isEmpty(*this); }
     bool hasExactlyOneItem() const { return m_collectionIndexCache.hasExactlyOneNode(*this); }
 
@@ -64,29 +65,37 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
     Element* traverseBackwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
 
+    virtual void trace(Visitor*);
+
 protected:
     HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
 
-    class NamedItemCache {
+    class NamedItemCache FINAL : public NoBaseWillBeGarbageCollected<NamedItemCache> {
     public:
-        static PassOwnPtr<NamedItemCache> create()
+        static PassOwnPtrWillBeRawPtr<NamedItemCache> create()
         {
-            return adoptPtr(new NamedItemCache);
+            return adoptPtrWillBeNoop(new NamedItemCache);
         }
 
-        Vector<Element*>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
-        Vector<Element*>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
+        WillBeHeapVector<RawPtrWillBeMember<Element> >* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
+        WillBeHeapVector<RawPtrWillBeMember<Element> >* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
         void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
         void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
 
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(m_idCache);
+            visitor->trace(m_nameCache);
+        }
+
     private:
         NamedItemCache();
-        typedef HashMap<StringImpl*, OwnPtr<Vector<Element*> > > StringToElementsMap;
+        typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element> > > > StringToElementsMap;
         static void addElementToMap(StringToElementsMap& map, const AtomicString& key, Element* element)
         {
-            OwnPtr<Vector<Element*> >& vector = map.add(key.impl(), nullptr).storedValue->value;
+            OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element> > >& vector = map.add(key.impl(), nullptr).storedValue->value;
             if (!vector)
-                vector = adoptPtr(new Vector<Element*>);
+                vector = adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element> >);
             vector->append(element);
         }
 
@@ -102,10 +111,10 @@ protected:
     virtual void updateIdNameCache() const;
     bool hasValidIdNameCache() const { return m_namedItemCache; }
 
-    void setNamedItemCache(PassOwnPtr<NamedItemCache> cache) const
+    void setNamedItemCache(PassOwnPtrWillBeRawPtr<NamedItemCache> cache) const
     {
         ASSERT(!m_namedItemCache);
-        document().incrementNodeListWithIdNameCacheCount();
+        document().registerNodeListWithIdNameCache(this);
         m_namedItemCache = cache;
     }
 
@@ -134,12 +143,12 @@ private:
     void unregisterIdNameCacheFromDocument(Document& document) const
     {
         ASSERT(hasValidIdNameCache());
-        document.decrementNodeListWithIdNameCacheCount();
+        document.unregisterNodeListWithIdNameCache(this);
     }
 
     const unsigned m_overridesItemAfter : 1;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
-    mutable OwnPtr<NamedItemCache> m_namedItemCache;
+    mutable OwnPtrWillBeMember<NamedItemCache> m_namedItemCache;
     mutable CollectionIndexCache<HTMLCollection, Element> m_collectionIndexCache;
 };
 

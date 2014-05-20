@@ -143,9 +143,9 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     ASSERT(isHTMLTableElement(table));
 }
 
-PassRefPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode& table, CollectionType)
+PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode& table, CollectionType)
 {
-    return adoptRef(new HTMLTableRowsCollection(table));
+    return adoptRefWillBeNoop(new HTMLTableRowsCollection(table));
 }
 
 Element* HTMLTableRowsCollection::virtualItemAfter(Element* previous) const

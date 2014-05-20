@@ -33,9 +33,11 @@
 #define WebElementCollection_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
 
 namespace WebCore { class HTMLCollection; }
 #if BLINK_IMPLEMENTATION
+#include "platform/heap/Handle.h"
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -47,15 +49,15 @@ class WebElementCollection {
 public:
     ~WebElementCollection() { reset(); }
 
-    WebElementCollection() : m_private(0), m_current(0) { }
-    WebElementCollection(const WebElementCollection& n) : m_private(0) { assign(n); }
+    WebElementCollection() : m_current(0) { }
+    WebElementCollection(const WebElementCollection& n) { assign(n); }
     WebElementCollection& operator=(const WebElementCollection& n)
     {
         assign(n);
         return *this;
     }
 
-    bool isNull() const { return !m_private; }
+    bool isNull() const { return m_private.isNull(); }
 
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebElementCollection&);
@@ -65,12 +67,12 @@ public:
     BLINK_EXPORT WebElement firstItem() const;
 
 #if BLINK_IMPLEMENTATION
-    WebElementCollection(const WTF::PassRefPtr<WebCore::HTMLCollection>&);
+    WebElementCollection(const PassRefPtrWillBeRawPtr<WebCore::HTMLCollection>&);
+    WebElementCollection& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLCollection>&);
 #endif
 
 private:
-    void assign(WebCore::HTMLCollection*);
-    WebCore::HTMLCollection* m_private;
+    WebPrivatePtr<WebCore::HTMLCollection> m_private;
     mutable unsigned m_current;
 };
 

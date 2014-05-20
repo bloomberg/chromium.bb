@@ -42,8 +42,9 @@ class LabelsNodeList;
 class RadioNodeList;
 class TreeScope;
 
-class NodeListsNodeData {
-    WTF_MAKE_NONCOPYABLE(NodeListsNodeData); WTF_MAKE_FAST_ALLOCATED;
+class NodeListsNodeData FINAL : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
+    WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     void clearChildNodeListCache()
     {
@@ -51,30 +52,31 @@ public:
             toChildNodeList(m_childNodeList)->invalidateCache();
     }
 
-    PassRefPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)
+    PassRefPtrWillBeRawPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)
     {
         if (m_childNodeList)
             return toChildNodeList(m_childNodeList);
-        RefPtr<ChildNodeList> list = ChildNodeList::create(node);
+        RefPtrWillBeRawPtr<ChildNodeList> list = ChildNodeList::create(node);
         m_childNodeList = list.get();
         return list.release();
     }
 
-    PassRefPtr<EmptyNodeList> ensureEmptyChildNodeList(Node& node)
+    PassRefPtrWillBeRawPtr<EmptyNodeList> ensureEmptyChildNodeList(Node& node)
     {
         if (m_childNodeList)
             return toEmptyNodeList(m_childNodeList);
-        RefPtr<EmptyNodeList> list = EmptyNodeList::create(node);
+        RefPtrWillBeRawPtr<EmptyNodeList> list = EmptyNodeList::create(node);
         m_childNodeList = list.get();
         return list.release();
     }
 
+#if !ENABLE(OILPAN)
     void removeChildNodeList(ChildNodeList* list)
     {
         ASSERT(m_childNodeList == list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
-        m_childNodeList = 0;
+        m_childNodeList = nullptr;
     }
 
     void removeEmptyChildNodeList(EmptyNodeList* list)
@@ -82,8 +84,9 @@ public:
         ASSERT(m_childNodeList == list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
-        m_childNodeList = 0;
+        m_childNodeList = nullptr;
     }
+#endif
 
     struct NodeListAtomicCacheMapEntryHash {
         static unsigned hash(const std::pair<unsigned char, StringImpl*>& entry)
@@ -94,29 +97,33 @@ public:
         static const bool safeToCompareToEmptyOrDeleted = DefaultHash<StringImpl*>::Hash::safeToCompareToEmptyOrDeleted;
     };
 
-    typedef HashMap<std::pair<unsigned char, StringImpl*>, LiveNodeListBase*, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
-    typedef HashMap<QualifiedName, TagCollection*> TagCollectionCacheNS;
+    // Oilpan: keep a weak reference to the collection objects.
+    // Explicit object unregistration in a non-Oilpan setting
+    // on object destruction is replaced by the garbage collector
+    // clearing out their weak reference.
+    typedef WillBeHeapHashMap<std::pair<unsigned char, StringImpl*>, RawPtrWillBeWeakMember<LiveNodeListBase>, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
+    typedef WillBeHeapHashMap<QualifiedName, RawPtrWillBeWeakMember<TagCollection> > TagCollectionCacheNS;
 
     template<typename T>
-    PassRefPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
+    PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
     {
-        NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), 0);
+        NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
         if (!result.isNewEntry)
-            return static_cast<T*>(result.storedValue->value);
+            return static_cast<T*>(result.storedValue->value.get());
 
-        RefPtr<T> list = T::create(node, collectionType, name);
+        RefPtrWillBeRawPtr<T> list = T::create(node, collectionType, name);
         result.storedValue->value = list.get();
         return list.release();
     }
 
     template<typename T>
-    PassRefPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
+    PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
     {
-        NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), 0);
+        NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), nullptr);
         if (!result.isNewEntry)
-            return static_cast<T*>(result.storedValue->value);
+            return static_cast<T*>(result.storedValue->value.get());
 
-        RefPtr<T> list = T::create(node, collectionType);
+        RefPtrWillBeRawPtr<T> list = T::create(node, collectionType);
         result.storedValue->value = list.get();
         return list.release();
     }
@@ -124,21 +131,28 @@ public:
     template<typename T>
     T* cached(CollectionType collectionType)
     {
+#if ENABLE(OILPAN)
+        // FIXME: Oilpan: unify, if possible. The lookup resolves to a T& with Oilpan,
+        // whereas non-Oilpan resolves to RawPtr<T>.
         return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
+#else
+        return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)).get());
+#endif
     }
 
-    PassRefPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
+    PassRefPtrWillBeRawPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
-        TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, 0);
+        TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, nullptr);
         if (!result.isNewEntry)
             return result.storedValue->value;
 
-        RefPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
+        RefPtrWillBeRawPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
         result.storedValue->value = list.get();
         return list.release();
     }
 
+#if !ENABLE(OILPAN)
     void removeCache(LiveNodeListBase* list, CollectionType collectionType, const AtomicString& name = starAtom)
     {
         ASSERT(list == m_atomicNameCaches.get(namedNodeListKey(collectionType, name)));
@@ -155,16 +169,18 @@ public:
             return;
         m_tagCollectionCacheNS.remove(name);
     }
+#endif
 
-    static PassOwnPtr<NodeListsNodeData> create()
+    static PassOwnPtrWillBeRawPtr<NodeListsNodeData> create()
     {
-        return adoptPtr(new NodeListsNodeData);
+        return adoptPtrWillBeNoop(new NodeListsNodeData);
     }
 
     void invalidateCaches(const QualifiedName* attrName = 0);
+
     bool isEmpty() const
     {
-        return m_atomicNameCaches.isEmpty() && m_tagCollectionCacheNS.isEmpty();
+        return !m_childNodeList && m_atomicNameCaches.isEmpty() && m_tagCollectionCacheNS.isEmpty();
     }
 
     void adoptTreeScope()
@@ -190,9 +206,11 @@ public:
         }
     }
 
+    void trace(Visitor*);
+
 private:
     NodeListsNodeData()
-        : m_childNodeList(0)
+        : m_childNodeList(nullptr)
     { }
 
     std::pair<unsigned char, StringImpl*> namedNodeListKey(CollectionType type, const AtomicString& name)
@@ -202,10 +220,12 @@ private:
         return std::pair<unsigned char, StringImpl*>(type, name.impl());
     }
 
+#if !ENABLE(OILPAN)
     bool deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node&);
+#endif
 
     // Can be a ChildNodeList or an EmptyNodeList.
-    NodeList* m_childNodeList;
+    RawPtrWillBeWeakMember<NodeList> m_childNodeList;
     NodeListAtomicNameCacheMap m_atomicNameCaches;
     TagCollectionCacheNS m_tagCollectionCacheNS;
 };
@@ -289,7 +309,7 @@ public:
     void finalizeGarbageCollectedObject();
 
 protected:
-    NodeRareData(RenderObject* renderer)
+    explicit NodeRareData(RenderObject* renderer)
         : NodeRareDataBase(renderer)
         , m_connectedFrameCount(0)
         , m_elementFlags(0)
@@ -298,7 +318,7 @@ protected:
     { }
 
 private:
-    OwnPtr<NodeListsNodeData> m_nodeLists;
+    OwnPtrWillBeMember<NodeListsNodeData> m_nodeLists;
     OwnPtrWillBeMember<NodeMutationObserverData> m_mutationObserverData;
 
     unsigned m_connectedFrameCount : ConnectedFrameCountBits;
@@ -308,6 +328,7 @@ protected:
     unsigned m_isElementRareData : 1;
 };
 
+#if !ENABLE(OILPAN)
 inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)
 {
     ASSERT(ownerNode.nodeLists() == this);
@@ -316,6 +337,7 @@ inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLas
     ownerNode.clearNodeLists();
     return true;
 }
+#endif
 
 } // namespace WebCore
 

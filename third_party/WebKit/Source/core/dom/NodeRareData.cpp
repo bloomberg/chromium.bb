@@ -58,9 +58,21 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
         it->value->invalidateCache();
 }
 
+void NodeListsNodeData::trace(Visitor* visitor)
+{
+    visitor->trace(m_childNodeList);
+    visitor->trace(m_atomicNameCaches);
+    visitor->trace(m_tagCollectionCacheNS);
+}
+
 void NodeRareData::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_mutationObserverData);
+    // Do not keep empty NodeListsNodeData objects around.
+    if (m_nodeLists && m_nodeLists->isEmpty())
+        m_nodeLists.clear();
+    else
+        visitor->trace(m_nodeLists);
 }
 
 void NodeRareData::trace(Visitor* visitor)

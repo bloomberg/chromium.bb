@@ -41,7 +41,7 @@ class HTMLDataListElement FINAL : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLDataListElement> create(Document&);
 
-    PassRefPtr<HTMLCollection> options();
+    PassRefPtrWillBeRawPtr<HTMLCollection> options();
 
     void optionElementChildrenChanged();
 

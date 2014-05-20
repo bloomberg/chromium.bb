@@ -50,7 +50,7 @@ PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document
     return adoptRefWillBeRefCountedGarbageCollected(new HTMLDataListElement(document));
 }
 
-PassRefPtr<HTMLCollection> HTMLDataListElement::options()
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLDataListElement::options()
 {
     return ensureCachedHTMLCollection(DataListOptions);
 }

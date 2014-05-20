@@ -42,7 +42,7 @@ public:
 
     int numRows() const;
 
-    PassRefPtr<HTMLCollection> rows();
+    PassRefPtrWillBeRawPtr<HTMLCollection> rows();
 
 private:
     HTMLTableSectionElement(const QualifiedName& tagName, Document&);

@@ -39,12 +39,20 @@ namespace WebCore {
 
 EmptyNodeList::~EmptyNodeList()
 {
+#if !ENABLE(OILPAN)
     m_owner->nodeLists()->removeEmptyChildNodeList(this);
+#endif
 }
 
 Node* EmptyNodeList::virtualOwnerNode() const
 {
     return &ownerNode();
+}
+
+void EmptyNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_owner);
+    NodeList::trace(visitor);
 }
 
 } // namespace WebCore

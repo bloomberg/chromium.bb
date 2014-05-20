@@ -60,4 +60,11 @@ Element* LiveNodeList::traverseBackwardToOffset(unsigned offset, Element& curren
     return traverseMatchingElementsBackwardToOffset(*this, offset, currentNode, currentOffset);
 }
 
+void LiveNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_collectionIndexCache);
+    LiveNodeListBase::trace(visitor);
+    NodeList::trace(visitor);
+}
+
 } // namespace WebCore

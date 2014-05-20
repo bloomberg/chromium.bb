@@ -159,7 +159,7 @@ WebElementCollection WebDocument::all()
 
 void WebDocument::images(WebVector<WebElement>& results)
 {
-    RefPtr<HTMLCollection> images = unwrap<Document>()->images();
+    RefPtrWillBeRawPtr<HTMLCollection> images = unwrap<Document>()->images();
     size_t sourceLength = images->length();
     Vector<WebElement> temp;
     temp.reserveCapacity(sourceLength);
@@ -173,7 +173,7 @@ void WebDocument::images(WebVector<WebElement>& results)
 
 void WebDocument::forms(WebVector<WebFormElement>& results) const
 {
-    RefPtr<HTMLCollection> forms = const_cast<Document*>(constUnwrap<Document>())->forms();
+    RefPtrWillBeRawPtr<HTMLCollection> forms = const_cast<Document*>(constUnwrap<Document>())->forms();
     size_t sourceLength = forms->length();
     Vector<WebFormElement> temp;
     temp.reserveCapacity(sourceLength);

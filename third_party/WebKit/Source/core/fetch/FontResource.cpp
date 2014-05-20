@@ -133,7 +133,7 @@ bool FontResource::ensureSVGFontData()
 
 SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 {
-    RefPtr<HTMLCollection> collection = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
+    RefPtrWillBeRawPtr<HTMLCollection> collection = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
     if (!collection)
         return 0;
 

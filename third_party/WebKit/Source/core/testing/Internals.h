@@ -187,7 +187,7 @@ public:
     PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
-    PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
+    PassRefPtrWillBeRawPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionState&) const;
 
     void emitInspectorDidBeginFrame(int frameId = 0);
@@ -218,8 +218,8 @@ public:
     String elementLayerTreeAsText(Element*, unsigned flags, ExceptionState&) const;
     String elementLayerTreeAsText(Element*, ExceptionState&) const;
 
-    PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionState&);
-    PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
 
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
     bool isUnclippedDescendant(Element*, ExceptionState&);

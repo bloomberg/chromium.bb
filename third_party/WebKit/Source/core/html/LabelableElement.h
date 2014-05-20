@@ -40,7 +40,7 @@ namespace WebCore {
 class LabelableElement : public HTMLElement {
 public:
     virtual ~LabelableElement();
-    PassRefPtr<NodeList> labels();
+    PassRefPtrWillBeRawPtr<NodeList> labels();
     virtual bool supportLabels() const { return false; }
 
     virtual void trace(Visitor*) OVERRIDE;

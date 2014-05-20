@@ -131,9 +131,19 @@ void TouchActionTest::runTouchActionTest(std::string file)
 {
     TouchActionTrackingWebViewClient client;
 
+    // runTouchActionTest() loads a document in a frame, setting up a
+    // nested message loop. Should any Oilpan GC happen while it is in
+    // effect, the implicit assumption that we're outside any event
+    // loop (=> there being no pointers on the stack needing scanning)
+    // when that GC strikes will no longer hold.
+    //
+    // To ensure that the references on the stack are also traced, we
+    // turn them into persistent, stack allocated references. This
+    // workaround is sufficient to handle this artificial test
+    // scenario.
     WebView* webView = setupTest(file, client);
 
-    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -146,8 +156,10 @@ void TouchActionTest::runShadowDOMTest(std::string file)
     WebView* webView = setupTest(file, client);
 
     WebCore::TrackExceptionState es;
-    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
-    RefPtr<WebCore::NodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
+
+    // Oilpan: see runTouchActionTest() comment why these are persistent references.
+    RefPtrWillBePersistent<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<WebCore::NodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
 
@@ -186,7 +198,9 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
 {
     // Find all elements to test the touch-action of in the document.
     WebCore::TrackExceptionState es;
-    RefPtr<WebCore::NodeList> nodes = root->querySelectorAll("[expected-action]", es);
+
+    // Oilpan: see runTouchActionTest() comment why these are persistent references.
+    RefPtrWillBePersistent<WebCore::NodeList> nodes = root->querySelectorAll("[expected-action]", es);
     ASSERT_FALSE(es.hadException());
 
     for (unsigned index = 0; index < nodes->length(); index++) {
@@ -209,9 +223,9 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
         // Note that we don't want the bounding box because our tests sometimes have elements with
         // multiple border boxes with other elements in between. Use the first border box (which
         // we can easily visualize in a browser for debugging).
-        RefPtrWillBeRawPtr<WebCore::ClientRectList> rects = element->getClientRects();
+        RefPtrWillBePersistent<WebCore::ClientRectList> rects = element->getClientRects();
         ASSERT_GE(rects->length(), 0u) << failureContext;
-        RefPtrWillBeRawPtr<WebCore::ClientRect> r = rects->item(0);
+        RefPtrWillBePersistent<WebCore::ClientRect> r = rects->item(0);
         WebCore::FloatRect clientFloatRect = WebCore::FloatRect(r->left(), r->top(), r->width(), r->height());
         WebCore::IntRect clientRect =  enclosedIntRect(clientFloatRect);
         for (int locIdx = 0; locIdx < 3; locIdx++) {

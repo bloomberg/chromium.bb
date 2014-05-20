@@ -100,7 +100,7 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
     return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-PassRefPtr<HTMLCollection> HTMLFieldSetElement::elements()
+PassRefPtrWillBeRawPtr<HTMLCollection> HTMLFieldSetElement::elements()
 {
     return ensureCachedHTMLCollection(FormControls);
 }

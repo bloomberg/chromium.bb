@@ -473,9 +473,9 @@ void WebPageSerializerImpl::collectTargetFrames()
         // Get current using document.
         Document* currentDoc = currentFrame->frame()->document();
         // Go through sub-frames.
-        RefPtr<HTMLCollection> all = currentDoc->all();
+        RefPtrWillBeRawPtr<HTMLCollection> all = currentDoc->all();
 
-        for (unsigned i = 0; Element* element = all->item(i); i++) {
+        for (unsigned i = 0; Element* element = all->item(i); ++i) {
             if (!element->isHTMLElement())
                 continue;
             WebLocalFrameImpl* webFrame =

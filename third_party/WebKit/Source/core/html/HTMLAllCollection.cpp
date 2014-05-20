@@ -31,9 +31,9 @@
 
 namespace WebCore {
 
-PassRefPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
+PassRefPtrWillBeRawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
-    return adoptRef(new HTMLAllCollection(node, type));
+    return adoptRefWillBeNoop(new HTMLAllCollection(node, type));
 }
 
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node, CollectionType type)
@@ -51,13 +51,13 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    if (Vector<Element*>* elements = cache.getElementsById(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* elements = cache.getElementsById(name)) {
         if (index < elements->size())
             return elements->at(index);
         index -= elements->size();
     }
 
-    if (Vector<Element*>* elements = cache.getElementsByName(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* elements = cache.getElementsByName(name)) {
         if (index < elements->size())
             return elements->at(index);
     }
@@ -65,9 +65,9 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     return 0;
 }
 
-void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
-    Vector<RefPtr<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())
@@ -75,7 +75,8 @@ void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0
 
     if (namedItems.size() == 1) {
         returnValue1Enabled = true;
-        returnValue1 = namedItems.at(0);
+        // FIXME: Oilpan: remove the call to |get| when Element becomes [GarbageCollected].
+        returnValue1 = namedItems.at(0).get();
         return;
     }
 

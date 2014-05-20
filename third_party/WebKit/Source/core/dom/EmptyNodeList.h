@@ -39,13 +39,15 @@ namespace WebCore {
 
 class EmptyNodeList FINAL : public NodeList {
 public:
-    static PassRefPtr<EmptyNodeList> create(Node& rootNode)
+    static PassRefPtrWillBeRawPtr<EmptyNodeList> create(Node& rootNode)
     {
-        return adoptRef(new EmptyNodeList(rootNode));
+        return adoptRefWillBeNoop(new EmptyNodeList(rootNode));
     }
     virtual ~EmptyNodeList();
 
     Node& ownerNode() const { return *m_owner; }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }
@@ -56,7 +58,7 @@ private:
     virtual bool isEmptyNodeList() const OVERRIDE { return true; }
     virtual Node* virtualOwnerNode() const OVERRIDE;
 
-    RefPtr<Node> m_owner;
+    RefPtrWillBeMember<Node> m_owner;
 };
 
 DEFINE_TYPE_CASTS(EmptyNodeList, NodeList, nodeList, nodeList->isEmptyNodeList(), nodeList.isEmptyNodeList());

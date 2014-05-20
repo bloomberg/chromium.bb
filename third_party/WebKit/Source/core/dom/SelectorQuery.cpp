@@ -134,7 +134,7 @@ bool SelectorDataList::matches(Element& targetElement) const
     return false;
 }
 
-PassRefPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
     Vector<RefPtr<Node> > result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
@@ -475,7 +475,7 @@ bool SelectorQuery::matches(Element& element) const
     return m_selectors.matches(element);
 }
 
-PassRefPtr<NodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<NodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
 {
     return m_selectors.queryAll(rootNode);
 }

@@ -415,7 +415,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
     if (doc && doc->isHTMLDocument()) {
         if (toHTMLDocument(doc)->hasNamedItem(propName) || doc->hasElementWithId(propName.impl())) {
-            RefPtr<HTMLCollection> items = doc->windowNamedItems(propName);
+            RefPtrWillBeRawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
             if (!items->isEmpty()) {
                 if (items->hasExactlyOneItem()) {
                     v8SetReturnValueFast(info, items->item(0), window);

@@ -33,12 +33,13 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ElementTraversal.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
 class ParentNode {
 public:
-    static PassRefPtr<HTMLCollection> children(ContainerNode& node)
+    static PassRefPtrWillBeRawPtr<HTMLCollection> children(ContainerNode& node)
     {
         return node.children();
     }
@@ -66,7 +67,7 @@ public:
         return node.querySelector(selectors, exceptionState);
     }
 
-    static PassRefPtr<NodeList> querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<NodeList> querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelectorAll(selectors, exceptionState);
     }

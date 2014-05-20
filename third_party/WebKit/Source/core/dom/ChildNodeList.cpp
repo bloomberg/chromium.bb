@@ -41,7 +41,9 @@ Node* ChildNodeList::virtualOwnerNode() const
 
 ChildNodeList::~ChildNodeList()
 {
+#if !ENABLE(OILPAN)
     m_parent->nodeLists()->removeChildNodeList(this);
+#endif
 }
 
 Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const
@@ -64,6 +66,13 @@ Node* ChildNodeList::traverseBackwardToOffset(unsigned offset, Node& currentNode
             return previous;
     }
     return 0;
+}
+
+void ChildNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_parent);
+    visitor->trace(m_collectionIndexCache);
+    NodeList::trace(visitor);
 }
 
 } // namespace WebCore

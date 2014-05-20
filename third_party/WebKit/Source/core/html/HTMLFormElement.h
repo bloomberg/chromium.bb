@@ -51,8 +51,8 @@ public:
     virtual ~HTMLFormElement();
     virtual void trace(Visitor*) OVERRIDE;
 
-    PassRefPtr<HTMLCollection> elements();
-    void getNamedElements(const AtomicString&, Vector<RefPtr<Element> >&);
+    PassRefPtrWillBeRawPtr<HTMLCollection> elements();
+    void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element> >&);
 
     unsigned length() const;
     Element* item(unsigned index);
@@ -114,7 +114,7 @@ public:
     const FormAssociatedElement::List& associatedElements() const;
     const Vector<HTMLImageElement*>& imageElements();
 
-    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
+    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
 
 private:
     explicit HTMLFormElement(Document&);
