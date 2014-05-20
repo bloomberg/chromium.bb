@@ -67,7 +67,7 @@ ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
   app_window->LoadURL(url);
 
   // Create the reply to send to the renderer.
-  return RespondNow(SingleArgument(CreateResult(app_window)));
+  return RespondNow(OneArgument(CreateResult(app_window)));
 }
 
 }  // namespace apps

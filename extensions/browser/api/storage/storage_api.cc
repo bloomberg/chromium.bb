@@ -78,7 +78,7 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Swap(&result->settings());
-  return SingleArgument(dict);
+  return OneArgument(dict);
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
@@ -249,7 +249,7 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
       return BadMessage();
   }
 
-  return SingleArgument(
+  return OneArgument(
       new base::FundamentalValue(static_cast<int>(bytes_in_use)));
 }
 

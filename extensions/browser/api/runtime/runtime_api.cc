@@ -460,14 +460,12 @@ ExtensionFunction::ResponseAction RuntimeRequestUpdateCheckFunction::Run() {
 void RuntimeRequestUpdateCheckFunction::CheckComplete(
     const RuntimeAPIDelegate::UpdateCheckResult& result) {
   if (result.success) {
-    base::ListValue* results = new base::ListValue;
-    results->AppendString(result.response);
     base::DictionaryValue* details = new base::DictionaryValue;
-    results->Append(details);
     details->SetString("version", result.version);
-    Respond(MultipleArguments(results));
+    Respond(TwoArguments(new base::StringValue(result.response), details));
   } else {
-    Respond(SingleArgument(new base::StringValue(result.response)));
+    // HMM(kalman): Why does !success not imply Error()?
+    Respond(OneArgument(new base::StringValue(result.response)));
   }
 }
 
@@ -489,8 +487,8 @@ ExtensionFunction::ResponseAction RuntimeGetPlatformInfoFunction::Run() {
            ->GetPlatformInfo(&info)) {
     return RespondNow(Error(kPlatformInfoUnavailable));
   }
-  return RespondNow(MultipleArguments(
-      runtime::GetPlatformInfo::Results::Create(info).release()));
+  return RespondNow(
+      ArgumentList(runtime::GetPlatformInfo::Results::Create(info)));
 }
 
 ExtensionFunction::ResponseAction
@@ -511,7 +509,7 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", relative_path);
-  return RespondNow(SingleArgument(dict));
+  return RespondNow(OneArgument(dict));
 }
 
 }  // namespace extensions

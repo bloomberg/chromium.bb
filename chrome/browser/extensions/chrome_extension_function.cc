@@ -131,8 +131,7 @@ ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
 ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
 
 ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? MultipleArguments(results_.get())
-                              : Error(error_));
+  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
 }
 
 // static

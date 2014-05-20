@@ -275,7 +275,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
     infos->Append(account_info.ToValue().release());
   }
 
-  return RespondNow(SingleArgument(infos));
+  return RespondNow(OneArgument(infos));
 }
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()

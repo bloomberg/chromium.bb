@@ -76,10 +76,9 @@ AutomationInternalEnableCurrentTabFunction::Run() {
     return RespondNow(Error("Could not enable accessibility for active tab"));
   AutomationWebContentsObserver::CreateForWebContents(contents);
   rwh->EnableTreeOnlyAccessibilityMode();
-  scoped_ptr<base::ListValue> results =
-      api::automation_internal::EnableCurrentTab::Results::Create(
-          rwh->GetProcess()->GetID(), rwh->GetRoutingID());
-  return RespondNow(MultipleArguments(results.release()));
+  return RespondNow(
+      ArgumentList(api::automation_internal::EnableCurrentTab::Results::Create(
+          rwh->GetProcess()->GetID(), rwh->GetRoutingID())));
 }
 
 ExtensionFunction::ResponseAction

@@ -24,30 +24,30 @@ using extensions::Feature;
 
 namespace {
 
-class MultipleArgumentsResponseValue
+class ArgumentListResponseValue
     : public ExtensionFunction::ResponseValueObject {
  public:
-  MultipleArgumentsResponseValue(const std::string& function_name,
-                                 const char* title,
-                                 ExtensionFunction* function,
-                                 base::ListValue* result)
+  ArgumentListResponseValue(const std::string& function_name,
+                            const char* title,
+                            ExtensionFunction* function,
+                            scoped_ptr<base::ListValue> result)
       : function_name_(function_name), title_(title) {
     if (function->GetResultList()) {
-      DCHECK_EQ(function->GetResultList(), result)
+      DCHECK_EQ(function->GetResultList(), result.get())
           << "The result set on this function (" << function_name_ << ") "
           << "either by calling SetResult() or directly modifying |result_| is "
           << "different to the one passed to " << title_ << "(). "
           << "The best way to fix this problem is to exclusively use " << title_
           << "(). SetResult() and |result_| are deprecated.";
     } else {
-      function->SetResultList(make_scoped_ptr(result));
+      function->SetResultList(result.Pass());
     }
     // It would be nice to DCHECK(error.empty()) but some legacy extension
     // function implementations... I'm looking at chrome.input.ime... do this
     // for some reason.
   }
 
-  virtual ~MultipleArgumentsResponseValue() {}
+  virtual ~ArgumentListResponseValue() {}
 
   virtual bool Apply() OVERRIDE { return true; }
 
@@ -222,22 +222,32 @@ void ExtensionFunction::SetError(const std::string& error) {
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
-  return ResponseValue(new MultipleArgumentsResponseValue(
-      name(), "NoArguments", this, new base::ListValue()));
+  return ResponseValue(new ArgumentListResponseValue(
+      name(), "NoArguments", this, make_scoped_ptr(new base::ListValue())));
 }
 
-ExtensionFunction::ResponseValue ExtensionFunction::SingleArgument(
+ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
     base::Value* arg) {
-  base::ListValue* args = new base::ListValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg);
   return ResponseValue(
-      new MultipleArgumentsResponseValue(name(), "SingleArgument", this, args));
+      new ArgumentListResponseValue(name(), "OneArgument", this, args.Pass()));
 }
 
-ExtensionFunction::ResponseValue ExtensionFunction::MultipleArguments(
-    base::ListValue* args) {
-  return ResponseValue(new MultipleArgumentsResponseValue(
-      name(), "MultipleArguments", this, args));
+ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
+    base::Value* arg1,
+    base::Value* arg2) {
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(arg1);
+  args->Append(arg2);
+  return ResponseValue(
+      new ArgumentListResponseValue(name(), "TwoArguments", this, args.Pass()));
+}
+
+ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
+    scoped_ptr<base::ListValue> args) {
+  return ResponseValue(
+      new ArgumentListResponseValue(name(), "ArgumentList", this, args.Pass()));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::Error(
@@ -407,8 +417,7 @@ SyncExtensionFunction::~SyncExtensionFunction() {
 }
 
 ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? MultipleArguments(results_.get())
-                              : Error(error_));
+  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
 }
 
 // static
@@ -423,8 +432,7 @@ SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
 }
 
 ExtensionFunction::ResponseAction SyncIOThreadExtensionFunction::Run() {
-  return RespondNow(RunSync() ? MultipleArguments(results_.get())
-                              : Error(error_));
+  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
 }
 
 // static
