@@ -497,6 +497,10 @@ sub parselicense($) {
 	$license = "MIT/X11 (BSD like) $license";
     }
 
+    if ($licensetext  =~ /This file is part of the Independent JPEG Group(')?s software.*For conditions of distribution and use, see the accompanying README file/i) {
+	$license = "Independent JPEG Group License $license";
+    }
+
     if ($licensetext  =~ /the University of Illinois Open Source License/){
 	$license = "University of Illinois/NCSA Open Source License (BSD like) $license";
     }

@@ -58,6 +58,7 @@ WHITELISTED_LICENSES = [
     'GPL (v2 or later) with libtool exception',
     'GPL (v3 or later) with Bison parser exception',
     'GPL with Bison parser exception',
+    'Independent JPEG Group License',
     'ISC',
     'LGPL (unversioned/unknown version)',
     'LGPL (v2)',
@@ -204,9 +205,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/libjingle/source/talk': [  # http://crbug.com/98310
-        'UNKNOWN',
-    ],
-    'third_party/libjpeg': [  # http://crbug.com/98313
         'UNKNOWN',
     ],
     'third_party/libjpeg_turbo': [  # http://crbug.com/98314
