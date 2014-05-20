@@ -193,20 +193,25 @@ class Parser(object):
 
   def p_basictypename(self, p):
     """basictypename : identifier
-                     | HANDLE
-                     | specializedhandle"""
+                     | handletype"""
     p[0] = p[1]
 
-  def p_specializedhandle(self, p):
-    """specializedhandle : HANDLE LANGLE specializedhandlename RANGLE"""
-    p[0] = "handle<" + p[3] + ">"
-
-  def p_specializedhandlename(self, p):
-    """specializedhandlename : DATA_PIPE_CONSUMER
-                             | DATA_PIPE_PRODUCER
-                             | MESSAGE_PIPE
-                             | SHARED_BUFFER"""
-    p[0] = p[1]
+  def p_handletype(self, p):
+    """handletype : HANDLE
+                  | HANDLE LANGLE identifier RANGLE"""
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      if p[3] not in ('data_pipe_consumer',
+                      'data_pipe_producer',
+                      'message_pipe',
+                      'shared_buffer'):
+        # Note: We don't enable tracking of line numbers for everything, so we
+        # can't use |p.lineno(3)|.
+        raise ParseError(self.filename, "Invalid handle type %r:" % p[3],
+                         lineno=p.lineno(1),
+                         snippet=self._GetSnippet(p.lineno(1)))
+      p[0] = "handle<" + p[3] + ">"
 
   def p_array(self, p):
     """array : typename LBRACKET RBRACKET"""

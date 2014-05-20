@@ -311,7 +311,7 @@ struct MyStruct {
       parser.Parse(source6, "my_file.mojom")
 
   def testNestedNamespace(self):
-    """Tests nested namespaces work."""
+    """Tests that "nested" namespaces work."""
     source = """\
 module my.mod {
 
@@ -330,6 +330,47 @@ struct MyStruct {
     None,
     [('FIELD', 'int32', 'a', ast.Ordinal(None), None)])])]
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testValidHandleTypes(self):
+    """Tests (valid) handle types."""
+    source = """\
+struct MyStruct {
+  handle a;
+  handle<data_pipe_consumer> b;
+  handle <data_pipe_producer> c;
+  handle < message_pipe > d;
+  handle
+    < shared_buffer
+    > e;
+};
+"""
+    expected = \
+[('MODULE',
+  '',
+  None,
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'handle', 'a', ast.Ordinal(None), None),
+     ('FIELD', 'handle<data_pipe_consumer>', 'b', ast.Ordinal(None), None),
+     ('FIELD', 'handle<data_pipe_producer>', 'c', ast.Ordinal(None), None),
+     ('FIELD', 'handle<message_pipe>', 'd', ast.Ordinal(None), None),
+     ('FIELD', 'handle<shared_buffer>', 'e', ast.Ordinal(None), None)])])]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testInvalidHandleType(self):
+    """Tests an invalid (unknown) handle type."""
+    source = """\
+struct MyStruct {
+  handle<wtf_is_this> foo;
+};
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: "
+            r"Invalid handle type 'wtf_is_this':\n"
+            r"  handle<wtf_is_this> foo;$"):
+      parser.Parse(source, "my_file.mojom")
 
 
 if __name__ == "__main__":

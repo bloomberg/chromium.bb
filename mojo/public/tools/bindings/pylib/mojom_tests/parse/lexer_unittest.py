@@ -67,12 +67,6 @@ class LexerTest(unittest.TestCase):
     """Tests valid keywords."""
     self.assertEquals(self._SingleTokenForInput("handle"),
                       _MakeLexTokenForKeyword("handle"))
-    self.assertEquals(self._SingleTokenForInput("data_pipe_consumer"),
-                      _MakeLexTokenForKeyword("data_pipe_consumer"))
-    self.assertEquals(self._SingleTokenForInput("data_pipe_producer"),
-                      _MakeLexTokenForKeyword("data_pipe_producer"))
-    self.assertEquals(self._SingleTokenForInput("message_pipe"),
-                      _MakeLexTokenForKeyword("message_pipe"))
     self.assertEquals(self._SingleTokenForInput("import"),
                       _MakeLexTokenForKeyword("import"))
     self.assertEquals(self._SingleTokenForInput("module"),

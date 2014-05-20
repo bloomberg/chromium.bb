@@ -57,10 +57,6 @@ class Lexer(object):
   ##
   keywords = (
     'HANDLE',
-    'DATA_PIPE_CONSUMER',
-    'DATA_PIPE_PRODUCER',
-    'MESSAGE_PIPE',
-    'SHARED_BUFFER',
 
     'IMPORT',
     'MODULE',
