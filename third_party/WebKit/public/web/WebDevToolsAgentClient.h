@@ -60,6 +60,8 @@ public:
         virtual void quitNow() = 0;
     };
     virtual WebKitClientMessageLoop* createClientMessageLoop() { return 0; }
+    virtual void willEnterDebugLoop() { }
+    virtual void didExitDebugLoop() { }
 
     class AllocatedObjectVisitor {
     public:

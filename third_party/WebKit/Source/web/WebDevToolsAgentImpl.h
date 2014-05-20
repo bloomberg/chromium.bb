@@ -77,6 +77,8 @@ public:
     WebDevToolsAgentImpl(WebViewImpl* webViewImpl, WebDevToolsAgentClient* client);
     virtual ~WebDevToolsAgentImpl();
 
+    WebDevToolsAgentClient* client() { return m_client; }
+
     // WebDevToolsAgentPrivate implementation.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
     virtual void webViewResized(const WebSize&) OVERRIDE;

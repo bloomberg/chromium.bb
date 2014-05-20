@@ -136,6 +136,8 @@ private:
             views.append(view);
             view->setIgnoreInputEvents(true);
         }
+        // Notify embedder about pausing.
+        agent->client()->willEnterDebugLoop();
 
         // 2. Disable active objects
         WebView::willEnterModalLoop();
@@ -153,6 +155,7 @@ private:
                 (*it)->setIgnoreInputEvents(false);
             }
         }
+        agent->client()->didExitDebugLoop();
 
         // 6. All views have been resumed, clear the set.
         m_frozenViews.clear();
