@@ -975,8 +975,6 @@ crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Imag
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
-crbug.com/358460 svg/custom/use-setAttribute-crash.svg [ NeedsRebaseline ]
-
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure ]
