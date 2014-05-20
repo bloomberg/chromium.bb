@@ -60,8 +60,7 @@ class ASH_EXPORT TouchHudDebug : public TouchObserverHUD {
 
   // Overriden from TouchObserverHUD.
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void SetHudForRootWindowController(
       RootWindowController* controller) OVERRIDE;
   virtual void UnsetHudForRootWindowController(

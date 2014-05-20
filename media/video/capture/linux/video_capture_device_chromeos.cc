@@ -45,14 +45,13 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
     DCHECK(!capture_device_);
   }
 
-  virtual void OnDisplayAdded(const gfx::Display& /*new_display*/) OVERRIDE {}
-  virtual void OnDisplayRemoved(const gfx::Display& /*old_display*/) OVERRIDE {}
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE {
-    if (!(metrics & DISPLAY_METRIC_ROTATION))
-      return;
+  // gfx::DisplayObserver:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
     SendDisplayRotation(display);
   }
+
+  virtual void OnDisplayAdded(const gfx::Display& /*new_display*/) OVERRIDE {}
+  virtual void OnDisplayRemoved(const gfx::Display& /*old_display*/) OVERRIDE {}
 
   void AddObserverOnUIThread() {
     DCHECK(ui_task_runner_->BelongsToCurrentThread());

@@ -67,10 +67,9 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
   // gfx::DisplayObserver overrides:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
 
   // TabStripModelObserver overrides:
   virtual void ActiveTabChanged(content::WebContents* old_contents,

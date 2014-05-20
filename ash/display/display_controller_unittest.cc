@@ -67,8 +67,6 @@ class TestObserver : public DisplayController::Observer,
       : changing_count_(0),
         changed_count_(0),
         bounds_changed_count_(0),
-        rotation_changed_count_(0),
-        workarea_changed_count_(0),
         changed_display_id_(0),
         focus_changed_count_(0),
         activation_changed_count_(0) {
@@ -98,15 +96,9 @@ class TestObserver : public DisplayController::Observer,
   }
 
   // Overrideen from gfx::DisplayObserver
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE {
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
     changed_display_id_ = display.id();
-    if (metrics & DISPLAY_METRIC_BOUNDS)
-      ++bounds_changed_count_;
-    if (metrics & DISPLAY_METRIC_ROTATION)
-      ++rotation_changed_count_;
-    if (metrics & DISPLAY_METRIC_WORK_AREA)
-      ++workarea_changed_count_;
+    bounds_changed_count_ ++;
   }
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
   }
@@ -139,14 +131,6 @@ class TestObserver : public DisplayController::Observer,
     return Resetter<int>(&bounds_changed_count_).value();
   }
 
-  int64 GetRotationChangedCountAndReset() {
-    return Resetter<int>(&rotation_changed_count_).value();
-  }
-
-  int64 GetWorkareaChangedCountAndReset() {
-    return Resetter<int>(&workarea_changed_count_).value();
-  }
-
   int64 GetChangedDisplayIdAndReset() {
     return Resetter<int64>(&changed_display_id_).value();
   }
@@ -164,8 +148,6 @@ class TestObserver : public DisplayController::Observer,
   int changed_count_;
 
   int bounds_changed_count_;
-  int rotation_changed_count_;
-  int workarea_changed_count_;
   int64 changed_display_id_;
 
   int focus_changed_count_;
@@ -405,7 +387,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   gfx::Insets insets(5, 5, 5, 5);
@@ -424,7 +405,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
@@ -436,7 +416,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
@@ -448,7 +427,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayout(DisplayLayout::TOP);
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
@@ -460,7 +438,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 300);
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
@@ -471,7 +448,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 490);
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
@@ -481,7 +457,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, -400);
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -492,7 +467,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -200);
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -503,7 +477,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, 490);
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -513,7 +486,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
   EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -524,7 +496,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
   EXPECT_EQ(0, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(0, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.CountAndReset());  // resize and add
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -588,7 +559,6 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   EXPECT_EQ(1U, display_manager->num_connected_displays());
   EXPECT_EQ(0, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ(0, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -657,15 +627,12 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 
   // Rotation
-  observer.GetRotationChangedCountAndReset();  // we only want to reset.
   int64 primary_id = GetPrimaryDisplay().id();
   display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
-  EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
-  EXPECT_EQ(0, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
@@ -1065,7 +1032,6 @@ TEST_F(DisplayControllerTest, Rotate) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::test::EventGenerator generator1(root_windows[0]);
 
-  TestObserver observer;
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("120,0 150x200",
@@ -1074,7 +1040,6 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ("50,40", event_handler.GetLocationAndReset());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
-  EXPECT_EQ(0, observer.GetRotationChangedCountAndReset());
 
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_90);
@@ -1086,7 +1051,6 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
-  EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
   display_manager->SetLayoutForCurrentDisplays(display_layout);
@@ -1101,7 +1065,6 @@ TEST_F(DisplayControllerTest, Rotate) {
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
-  EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
 #if !defined(OS_WIN)
   aura::test::EventGenerator generator2(root_windows[1]);
@@ -1117,7 +1080,6 @@ TEST_F(DisplayControllerTest, Rotate) {
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
-  EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());

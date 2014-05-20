@@ -66,10 +66,9 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
 
  private:
   // gfx::DisplayObserver:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) OVERRIDE;
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
@@ -183,16 +182,16 @@ void SystemInfoEventRouter::OnRemovableStorageDetached(
   DispatchEvent(system_storage::OnDetached::kEventName, args.Pass());
 }
 
+void SystemInfoEventRouter::OnDisplayBoundsChanged(
+    const gfx::Display& display) {
+  OnDisplayChanged();
+}
+
 void SystemInfoEventRouter::OnDisplayAdded(const gfx::Display& new_display) {
   OnDisplayChanged();
 }
 
 void SystemInfoEventRouter::OnDisplayRemoved(const gfx::Display& old_display) {
-  OnDisplayChanged();
-}
-
-void SystemInfoEventRouter::OnDisplayMetricsChanged(const gfx::Display& display,
-                                                    uint32_t metrics) {
   OnDisplayChanged();
 }
 

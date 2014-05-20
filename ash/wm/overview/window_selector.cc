@@ -325,15 +325,14 @@ void WindowSelector::OnTouchEvent(ui::TouchEvent* event) {
   SelectWindow(target);
 }
 
+void WindowSelector::OnDisplayBoundsChanged(const gfx::Display& display) {
+  PositionWindows(/* animate */ false);
+}
+
 void WindowSelector::OnDisplayAdded(const gfx::Display& display) {
 }
 
 void WindowSelector::OnDisplayRemoved(const gfx::Display& display) {
-}
-
-void WindowSelector::OnDisplayMetricsChanged(const gfx::Display& display,
-                                             uint32_t metrics) {
-  PositionWindows(/* animate */ false);
 }
 
 void WindowSelector::OnWindowAdded(aura::Window* new_window) {

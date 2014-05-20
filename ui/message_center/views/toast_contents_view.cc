@@ -28,8 +28,6 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
-using gfx::Screen;
-
 namespace message_center {
 namespace {
 
@@ -249,10 +247,8 @@ void ToastContentsView::OnDisplayChanged() {
   if (!native_view || !collection_.get())
     return;
 
-  collection_->OnDisplayMetricsChanged(
-      Screen::GetScreenFor(native_view)->GetDisplayNearestWindow(native_view),
-      gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-          gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
+      native_view)->GetDisplayNearestWindow(native_view));
 }
 
 void ToastContentsView::OnWorkAreaChanged() {
@@ -264,9 +260,8 @@ void ToastContentsView::OnWorkAreaChanged() {
   if (!native_view || !collection_.get())
     return;
 
-  collection_->OnDisplayMetricsChanged(
-      Screen::GetScreenFor(native_view)->GetDisplayNearestWindow(native_view),
-      gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
+      native_view)->GetDisplayNearestWindow(native_view));
 }
 
 // views::View

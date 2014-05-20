@@ -158,10 +158,9 @@ void WorkAreaObserver::StopObserving() {
 void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
   UpdateShelf();
 
-  collection_->OnDisplayMetricsChanged(
+  collection_->OnDisplayBoundsChanged(
       Shell::GetScreen()->GetDisplayNearestWindow(
-          shelf_->shelf_widget()->GetNativeView()),
-      gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+          shelf_->shelf_widget()->GetNativeView()));
 }
 
 void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
