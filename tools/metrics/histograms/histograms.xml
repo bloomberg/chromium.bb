@@ -13568,7 +13568,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.QuicSession.PublicResetAddressMismatch"
     enum="QuicAddressMismatch">
-  <owner>rch@chromium.org</owner>
+  <owner>wtc@chromium.org</owner>
+  <summary>
+    When a public reset packet is received, whether the client IP address and
+    port number in it differ from the client IP address and port number in the
+    ServerHello handshake message. In the comparison, the first address is the
+    one in ServerHello and the second address is the one in public reset. Note:
+    this histogram is obsolete because it failed to treat IPv4-mapped IPv6
+    addresses as IPv4 addresses.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PublicResetAddressMismatch2"
+    enum="QuicAddressMismatch">
+  <owner>wtc@chromium.org</owner>
   <summary>
     When a public reset packet is received, whether the client IP address and
     port number in it differ from the client IP address and port number in the

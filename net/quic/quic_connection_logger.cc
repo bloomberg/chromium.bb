@@ -251,7 +251,7 @@ void UpdatePublicResetAddressMismatchHistogram(
   if (sample < 0) {
     return;
   }
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PublicResetAddressMismatch",
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PublicResetAddressMismatch2",
                             sample, QUIC_ADDRESS_MISMATCH_MAX);
 }
 
@@ -300,6 +300,12 @@ const char* GetConnectionDescriptionString() {
   return description;
 }
 
+// If |address| is an IPv4-mapped IPv6 address, returns ADDRESS_FAMILY_IPV4
+// instead of ADDRESS_FAMILY_IPV6. Othewise, behaves like GetAddressFamily().
+AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
+  return IsIPv4Mapped(address) ? ADDRESS_FAMILY_IPV4 :
+      GetAddressFamily(address);
+}
 
 }  // namespace
 
@@ -431,7 +437,7 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
   if (local_address_from_self_.GetFamily() == ADDRESS_FAMILY_UNSPECIFIED) {
     local_address_from_self_ = self_address;
     UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromSelf",
-                              self_address.GetFamily(),
+                              GetRealAddressFamily(self_address.address()),
                               ADDRESS_FAMILY_LAST);
   }
 
@@ -594,7 +600,8 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
         decoder.Decode(address.data(), address.size())) {
       local_address_from_shlo_ = IPEndPoint(decoder.ip(), decoder.port());
       UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromPeer",
-                                local_address_from_shlo_.GetFamily(),
+                                GetRealAddressFamily(
+                                    local_address_from_shlo_.address()),
                                 ADDRESS_FAMILY_LAST);
     }
   }
