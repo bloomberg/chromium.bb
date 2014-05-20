@@ -438,10 +438,13 @@ def main(argv):
                     configure_flags['Common'] +
                     configure_flags['Chromium'] +
                     configure_flags['ChromiumOS'])
-    do_build_ffmpeg('ChromeOS',
-                    configure_flags['Common'] +
-                    configure_flags['Chrome'] +
-                    configure_flags['ChromeOS'])
+
+    # ChromeOS enables MPEG4 which requires error resilience :(
+    chrome_os_flags = (configure_flags['Common'] +
+                       configure_flags['Chrome'] +
+                       configure_flags['ChromeOS'])
+    chrome_os_flags.remove('--disable-error-resilience')
+    do_build_ffmpeg('ChromeOS', chrome_os_flags)
 
   print('Done. If desired you may copy config.h/config.asm into the '
         'source/config tree using copy_config.sh.')
