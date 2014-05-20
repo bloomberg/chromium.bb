@@ -175,4 +175,10 @@ public interface Core {
      */
     public SharedBufferHandle createSharedBuffer(SharedBufferHandle.CreateOptions options,
             long numBytes);
+
+    /**
+     * Returns a default implementation of {@link AsyncWaiter}.
+     */
+    public AsyncWaiter getDefaultAsyncWaiter();
+
 }

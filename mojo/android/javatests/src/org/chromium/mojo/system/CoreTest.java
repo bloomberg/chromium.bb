@@ -10,6 +10,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.mojo.system.AsyncWaiter.Callback;
+import org.chromium.mojo.system.AsyncWaiter.Cancellable;
 import org.chromium.mojo.system.Core.WaitFlags;
 import org.chromium.mojo.system.Core.WaitManyResult;
 import org.chromium.mojo.system.MessagePipeHandle.ReadFlags;
@@ -33,16 +35,31 @@ import java.util.concurrent.TimeUnit;
 @JNINamespace("mojo::android")
 public class CoreTest extends InstrumentationTestCase {
 
+    private static final long RUN_LOOP_TIMEOUT_MS = 5;
+
     private static final ScheduledExecutorService WORKER =
             Executors.newSingleThreadScheduledExecutor();
+
+    private long mTestEnvironmentPointer;
 
     /**
      * @see junit.framework.TestCase#setUp()
      */
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         LibraryLoader.ensureInitialized();
         nativeInitApplicationContext(getInstrumentation().getTargetContext());
+        mTestEnvironmentPointer = nativeSetupTestEnvironment();
+    }
+
+    /**
+     * @see android.test.InstrumentationTestCase#tearDown()
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        nativeTearDownTestEnvironment(mTestEnvironmentPointer);
+        super.tearDown();
     }
 
     /**
@@ -518,5 +535,295 @@ public class CoreTest extends InstrumentationTestCase {
         }
     }
 
+    private static class AsyncWaiterResult implements Callback {
+        private int mResult = Integer.MIN_VALUE;
+        private MojoException mException = null;
+
+        /**
+         * @see Callback#onResult(int)
+         */
+        @Override
+        public void onResult(int result) {
+            this.mResult = result;
+        }
+
+        /**
+         * @see Callback#onError(MojoException)
+         */
+        @Override
+        public void onError(MojoException exception) {
+            this.mException = exception;
+        }
+
+        /**
+         * @return the result
+         */
+        public int getResult() {
+            return mResult;
+        }
+
+        /**
+         * @return the exception
+         */
+        public MojoException getException() {
+            return mException;
+        }
+
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterCorrectResult() {
+        Core core = CoreImpl.getInstance();
+
+        // Checking a correct result.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
+                    MessagePipeHandle.WriteFlags.none());
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertNull(asyncWaiterResult.getException());
+            assertEquals(MojoResult.OK, asyncWaiterResult.getResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterClosingPeerHandle() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            handles.second.close();
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertNull(asyncWaiterResult.getException());
+            assertEquals(MojoResult.FAILED_PRECONDITION, asyncWaiterResult.getResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterClosingWaitingHandle() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            handles.first.close();
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            // TODO(qsr) Re-enable when MojoWaitMany handles it correctly.
+            // assertNull(asyncWaiterResult.getException());
+            // assertEquals(MojoResult.CANCELLED, asyncWaiterResult.getResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterWaitingOnInvalidHandle() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            handles.first.close();
+            core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertNotNull(asyncWaiterResult.getException());
+            assertEquals(MojoResult.INVALID_ARGUMENT,
+                    asyncWaiterResult.getException().getMojoResult());
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterWaitingOnDefaultInvalidHandle() {
+        Core core = CoreImpl.getInstance();
+
+        final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+        assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+        assertEquals(null, asyncWaiterResult.getException());
+
+        core.getDefaultAsyncWaiter().asyncWait(new InvalidHandle(),
+                WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+        assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+        assertEquals(null, asyncWaiterResult.getException());
+
+        nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+        assertNotNull(asyncWaiterResult.getException());
+        assertEquals(MojoResult.INVALID_ARGUMENT,
+                asyncWaiterResult.getException().getMojoResult());
+        assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterWaitingWithTimeout() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), RUN_LOOP_TIMEOUT_MS, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            nativeRunLoop(10 * RUN_LOOP_TIMEOUT_MS);
+            assertNull(asyncWaiterResult.getException());
+            assertEquals(MojoResult.DEADLINE_EXCEEDED, asyncWaiterResult.getResult());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterCancelWaiting() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            cancellable.cancel();
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            handles.second.writeMessage(ByteBuffer.allocateDirect(1), null,
+                    MessagePipeHandle.WriteFlags.none());
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
+    /**
+     * Testing core {@link AsyncWaiter} implementation.
+     */
+    @SmallTest
+    public void testAsyncWaiterImmediateCancelOnInvalidHandle() {
+        Core core = CoreImpl.getInstance();
+
+        // Closing the peer handle.
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        try {
+            final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
+            handles.first.close();
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+
+            Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
+                    WaitFlags.none().setReadable(true), Core.DEADLINE_INFINITE, asyncWaiterResult);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+            cancellable.cancel();
+
+            nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
+            assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
+            assertEquals(null, asyncWaiterResult.getException());
+        } finally {
+            handles.first.close();
+            handles.second.close();
+        }
+    }
+
     private native void nativeInitApplicationContext(Context context);
+
+    private native long nativeSetupTestEnvironment();
+
+    private native void nativeTearDownTestEnvironment(long testEnvironment);
+
+    private native void nativeRunLoop(long timeoutMS);
 }

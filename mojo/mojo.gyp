@@ -725,6 +725,7 @@
           'type': 'shared_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
             'libmojo_system_java',
             'mojo_jni_headers',
           ],

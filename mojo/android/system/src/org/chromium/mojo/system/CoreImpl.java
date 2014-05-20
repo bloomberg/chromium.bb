@@ -5,6 +5,7 @@
 package org.chromium.mojo.system;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNIAdditionalImport;
 import org.chromium.base.JNINamespace;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
@@ -19,8 +20,9 @@ import java.util.List;
 /**
  * Implementation of {@link Core}.
  */
+@JNIAdditionalImport(AsyncWaiter.class)
 @JNINamespace("mojo::android")
-public class CoreImpl implements Core {
+public class CoreImpl implements Core, AsyncWaiter {
 
     /**
      * Discard flag for the |MojoReadData| operation.
@@ -152,6 +154,24 @@ public class CoreImpl implements Core {
         }
         assert result.getMojoHandle2() == 0;
         return new SharedBufferHandleImpl(this, result.getMojoHandle1());
+    }
+
+    /**
+     * @see Core#getDefaultAsyncWaiter()
+     */
+    @Override
+    public AsyncWaiter getDefaultAsyncWaiter() {
+        return this;
+    }
+
+    /**
+     * @see AsyncWaiter#asyncWait(Handle, Core.WaitFlags, long, Callback)
+     */
+    @Override
+    public Cancellable asyncWait(Handle handle, WaitFlags flags, long deadline,
+            Callback callback) {
+        return nativeAsyncWait(getMojoHandle(handle),
+                flags.getFlags(), deadline, callback);
     }
 
     int closeWithResult(int mojoHandle) {
@@ -372,19 +392,31 @@ public class CoreImpl implements Core {
         return 0;
     }
 
-    private static int filterMojoResultForWait(int code) {
-        if (code >= 0) {
-            return MojoResult.OK;
-        }
+    private static boolean isUnrecoverableError(int code) {
         switch (code) {
+            case MojoResult.OK:
             case MojoResult.DEADLINE_EXCEEDED:
             case MojoResult.CANCELLED:
             case MojoResult.FAILED_PRECONDITION:
-                return code;
+                return false;
             default:
-                throw new MojoException(code);
+                return true;
         }
+    }
 
+    private static int filterMojoResult(int code) {
+        if (code >= 0) {
+            return MojoResult.OK;
+        }
+        return code;
+    }
+
+    private static int filterMojoResultForWait(int code) {
+        int finalCode = filterMojoResult(code);
+        if (isUnrecoverableError(finalCode)) {
+            throw new MojoException(finalCode);
+        }
+        return finalCode;
     }
 
     private static ByteBuffer allocateDirectBuffer(int capacity) {
@@ -425,6 +457,62 @@ public class CoreImpl implements Core {
             mBuffer = buffer;
         }
 
+    }
+
+    /**
+     * Implementation of {@link AsyncWaiter.Cancellable}.
+     */
+    private class AsyncWaiterCancellableImpl implements AsyncWaiter.Cancellable {
+
+        private final long mId;
+        private final long mDataPtr;
+        private boolean mActive = true;
+
+        private AsyncWaiterCancellableImpl(long id, long dataPtr) {
+            this.mId = id;
+            this.mDataPtr = dataPtr;
+        }
+
+        /**
+         * @see AsyncWaiter.Cancellable#cancel()
+         */
+        @Override
+        public void cancel() {
+            if (mActive) {
+                mActive = false;
+                nativeCancelAsyncWait(mId, mDataPtr);
+            }
+        }
+
+        private boolean isActive() {
+            return mActive;
+        }
+
+        private void deactivate() {
+            mActive = false;
+        }
+    }
+
+    @CalledByNative
+    private AsyncWaiterCancellableImpl newAsyncWaiterCancellableImpl(long id, long dataPtr) {
+        return new AsyncWaiterCancellableImpl(id, dataPtr);
+    }
+
+    @CalledByNative
+    private void onAsyncWaitResult(int mojoResult,
+            AsyncWaiter.Callback callback,
+            AsyncWaiterCancellableImpl cancellable) {
+        if (!cancellable.isActive()) {
+            // If cancellable is not active, the user cancelled the wait.
+            return;
+        }
+        cancellable.deactivate();
+        int finalCode = filterMojoResult(mojoResult);
+        if (isUnrecoverableError(finalCode)) {
+            callback.onError(new MojoException(finalCode));
+            return;
+        }
+        callback.onResult(finalCode);
     }
 
     @CalledByNative
@@ -592,4 +680,8 @@ public class CoreImpl implements Core {
 
     private native int nativeUnmap(ByteBuffer buffer);
 
+    private native AsyncWaiterCancellableImpl nativeAsyncWait(int mojoHandle, int flags,
+            long deadline, AsyncWaiter.Callback callback);
+
+    private native void nativeCancelAsyncWait(long mId, long dataPtr);
 }

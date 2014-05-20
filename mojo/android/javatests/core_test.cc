@@ -6,7 +6,22 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/test_support_android.h"
 #include "jni/CoreTest_jni.h"
+#include "mojo/public/cpp/environment/environment.h"
+
+namespace {
+
+struct TestEnvironment {
+  mojo::Environment environment;
+  base::MessageLoopForUI message_loop;
+};
+
+}  // namespace
 
 namespace mojo {
 namespace android {
@@ -16,6 +31,26 @@ static void InitApplicationContext(JNIEnv* env,
                                    jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
   base::android::InitApplicationContext(env, scoped_context);
+  base::InitAndroidTestMessageLoop();
+}
+
+static jlong SetupTestEnvironment(JNIEnv* env, jobject jcaller) {
+  return reinterpret_cast<intptr_t>(new TestEnvironment());
+}
+
+static void TearDownTestEnvironment(JNIEnv* env,
+                                    jobject jcaller,
+                                    jlong test_environment) {
+  delete reinterpret_cast<TestEnvironment*>(test_environment);
+}
+
+static void RunLoop(JNIEnv* env, jobject jcaller, jlong timeout_ms) {
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(timeout_ms));
+  base::RunLoop run_loop;
+  run_loop.Run();
 }
 
 bool RegisterCoreTest(JNIEnv* env) {
