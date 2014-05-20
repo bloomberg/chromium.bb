@@ -17,49 +17,49 @@
       # it easier for us to reference them internally.
       'actions': [
         {
-          'action_name': 'memory_internals_resources',
+          'action_name': 'generate_memory_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/memory_internals_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'net_internals_resources',
+          'action_name': 'generate_net_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/net_internals_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'invalidations_resources',
+          'action_name': 'generate_invalidations_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/invalidations_resources.grd',
             },
           'includes': ['../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'password_manager_internals_resources',
+          'action_name': 'generate_password_manager_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/password_manager_internals_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'signin_internals_resources',
+          'action_name': 'generate_signin_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/signin_internals_resources.grd',
             },
           'includes': ['../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'sync_internals_resources',
+          'action_name': 'generate_sync_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/sync_internals_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'translate_internals_resources',
+          'action_name': 'generate_translate_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/translate_internals_resources.grd',
           },
@@ -76,28 +76,28 @@
           ],
           'actions': [
             {
-              'action_name': 'component_extension_resources',
+              'action_name': 'generate_component_extension_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/component_extension_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
             {
-              'action_name': 'options_resources',
+              'action_name': 'generate_options_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/options_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
             {
-              'action_name': 'quota_internals_resources',
+              'action_name': 'generate_quota_internals_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
             {
-              'action_name': 'sync_file_system_internals_resources',
+              'action_name': 'generate_sync_file_system_internals_resources',
               'variables': {
                 'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',
               },
@@ -143,7 +143,7 @@
         ['branding=="Chrome"', {
           'actions': [
             {
-              'action_name': 'transform_additional_modules_list',
+              'action_name': 'generate_transform_additional_modules_list',
               'variables': {
                 'additional_modules_input_path':
                   'browser/internal/resources/additional_modules_list.input',
@@ -181,9 +181,8 @@
         'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
       ],
       'actions': [
-        # Data resources.
         {
-          'action_name': 'browser_resources',
+          'action_name': 'generate_browser_resources',
           'variables': {
             'grit_grd_file': 'browser/browser_resources.grd',
             'grit_additional_defines': [
@@ -195,14 +194,14 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'common_resources',
+          'action_name': 'generate_common_resources',
           'variables': {
             'grit_grd_file': 'common/common_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'renderer_resources',
+          'action_name': 'generate_renderer_resources',
           'variables': {
             'grit_grd_file': 'renderer/resources/renderer_resources.grd',
           },
@@ -213,7 +212,7 @@
         ['enable_extensions==1', {
           'actions': [
             {
-              'action_name': 'extensions_api_resources',
+              'action_name': 'generate_extensions_api_resources',
               'variables': {
                 'grit_grd_file': 'common/extensions_api_resources.grd',
               },
@@ -232,30 +231,29 @@
       'target_name': 'chrome_strings',
       'type': 'none',
       'actions': [
-        # Localizable resources.
         {
-          'action_name': 'locale_settings',
+          'action_name': 'generate_locale_settings',
           'variables': {
             'grit_grd_file': 'app/resources/locale_settings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'chromium_strings.grd',
+          'action_name': 'generate_chromium_strings',
           'variables': {
             'grit_grd_file': 'app/chromium_strings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'generated_resources',
+          'action_name': 'generate_generated_resources',
           'variables': {
             'grit_grd_file': 'app/generated_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'google_chrome_strings',
+          'action_name': 'generate_google_chrome_strings',
           'variables': {
             'grit_grd_file': 'app/google_chrome_strings.grd',
           },
@@ -326,23 +324,9 @@
       },  # variables
       'actions': [
         {
-          'action_name': 'platform_locale_settings',
+          'action_name': 'generate_platform_locale_settings',
           'variables': {
             'grit_grd_file': '<(platform_locale_settings_grd)',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-    {
-      'target_name': 'theme_resources_gen',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'theme_resources',
-          'variables': {
-            'grit_grd_file': 'app/theme/theme_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
@@ -353,10 +337,19 @@
       'target_name': 'theme_resources',
       'type': 'none',
       'dependencies': [
+        '../ui/resources/ui_resources.gyp:ui_resources',
         'chrome_unscaled_resources',
-        'theme_resources_gen',
-        '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
       ],
+      'actions': [
+        {
+          'action_name': 'generate_theme_resources',
+          'variables': {
+            'grit_grd_file': 'app/theme/theme_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'packed_extra_resources',
@@ -504,12 +497,9 @@
     {
       'target_name': 'chrome_unscaled_resources',
       'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-      },
       'actions': [
         {
-          'action_name': 'chrome_unscaled_resources',
+          'action_name': 'generate_chrome_unscaled_resources',
           'variables': {
             'grit_grd_file': 'app/theme/chrome_unscaled_resources.grd',
           },

@@ -286,15 +286,8 @@ action("about_credits") {
 #  source = "browser/resources/translate_internals_resources.grd"
 #}
 #
-#group("theme_resources") {
-#  deps = [
-#    ":theme_resources_gen",
-#    #"//ui:ui_resources",
-#  ]
-#}
-#
 ## TODO(brettw) rename "app_theme_resources" or something when we don't support
 ## GYP any more. This name is required to match the GYP build.
-#grit("theme_resources_gen") {
+#grit("theme_resources") {
 #  source = "app/theme/theme_resources.grd"
 #}
