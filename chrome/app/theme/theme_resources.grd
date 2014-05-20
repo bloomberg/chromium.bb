@@ -471,7 +471,7 @@
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_30" file="avatar_rainbowfish.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="avatar_recordplayer.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="avatar_upsidedown.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="cros/login_password_capslock.png" />
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_ICON" file="cros/managed_mode_icon.png" />
