@@ -55,7 +55,7 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
   return false;
 }
 
-void UpdateBookmarksExperimentState(const PrefService* user_prefs,
+void UpdateBookmarksExperimentState(PrefService* user_prefs,
                                     PrefService* local_state,
                                     bool user_signed_in) {
   BookmarksExperimentState bookmarks_experiment_state_before =
@@ -111,6 +111,9 @@ void UpdateBookmarksExperimentState(const PrefService* user_prefs,
   UMA_HISTOGRAM_ENUMERATION("EnhancedBookmarks.SyncExperimentState",
                             bookmarks_experiment_new_state,
                             kBookmarksExperimentEnumSize);
+  user_prefs->SetInteger(
+      sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
+      bookmarks_experiment_new_state);
   if (bookmarks_experiment_state_before != bookmarks_experiment_new_state)
     ForceFinchBookmarkExperimentIfNeeded(local_state,
                                          bookmarks_experiment_new_state);

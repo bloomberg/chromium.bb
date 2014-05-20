@@ -31,7 +31,7 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
 
 // Updates bookmark experiment state based on information from Chrome sync
 // and Finch experiments.
-void UpdateBookmarksExperimentState(const PrefService* user_prefs,
+void UpdateBookmarksExperimentState(PrefService* user_prefs,
                                     PrefService* local_state,
                                     bool user_signed_in);
 
