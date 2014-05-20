@@ -57,11 +57,6 @@ class CC_EXPORT Proxy {
 
   virtual void SetVisible(bool visible) = 0;
 
-  // Attempts to recreate the context and renderer synchronously after the
-  // output surface is lost. Calls
-  // LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted with the result.
-  virtual void CreateAndInitializeOutputSurface() = 0;
-
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 
   virtual void SetNeedsAnimate() = 0;

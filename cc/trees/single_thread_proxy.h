@@ -31,7 +31,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual bool IsStarted() const OVERRIDE;
   virtual void SetLayerTreeHostClientReady() OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
-  virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsUpdateLayers() OVERRIDE;
@@ -83,6 +82,10 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void DidActivatePendingTree() OVERRIDE {}
   virtual void DidManageTiles() OVERRIDE {}
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
+
+  // Attempts to create the context and renderer synchronously. Calls
+  // LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted with the result.
+  void CreateAndInitializeOutputSurface();
 
   // Called by the legacy path where RenderWidget does the scheduling.
   void CompositeImmediately(base::TimeTicks frame_begin_time);

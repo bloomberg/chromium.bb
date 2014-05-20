@@ -118,8 +118,6 @@ class CC_EXPORT LayerTreeHost {
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
-  // Returns false if we should abort this frame due to initialization failure.
-  bool InitializeOutputSurfaceIfNeeded();
   bool UpdateLayers(ResourceUpdateQueue* queue);
 
   LayerTreeHostClient* client() { return client_; }
@@ -364,7 +362,6 @@ class CC_EXPORT LayerTreeHost {
   int source_frame_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
-  bool output_surface_can_be_initialized_;
   bool output_surface_lost_;
   int num_failed_recreate_attempts_;
 

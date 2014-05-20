@@ -96,7 +96,6 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       client_(client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      output_surface_can_be_initialized_(true),
       output_surface_lost_(true),
       num_failed_recreate_attempts_(0),
       settings_(settings),
@@ -698,16 +697,13 @@ void LayerTreeHost::NotifyInputThrottledUntilCommit() {
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(!proxy_->HasImplThread());
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
-  proxy->CompositeImmediately(frame_begin_time);
-}
-
-bool LayerTreeHost::InitializeOutputSurfaceIfNeeded() {
-  if (!output_surface_can_be_initialized_)
-    return false;
 
   if (output_surface_lost_)
-    proxy_->CreateAndInitializeOutputSurface();
-  return !output_surface_lost_;
+    proxy->CreateAndInitializeOutputSurface();
+  if (output_surface_lost_)
+    return;
+
+  proxy->CompositeImmediately(frame_begin_time);
 }
 
 bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue) {

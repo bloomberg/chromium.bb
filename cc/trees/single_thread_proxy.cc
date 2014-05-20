@@ -88,6 +88,7 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
   TRACE_EVENT0(
       "cc", "SingleThreadProxy::CreateAndInitializeOutputSurface");
   DCHECK(Proxy::IsMainThread());
+  DCHECK(layer_tree_host_->output_surface_lost());
 
   scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
@@ -340,9 +341,7 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
-
-  if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded())
-    return;
+  DCHECK(!layer_tree_host_->output_surface_lost());
 
   layer_tree_host_->AnimateLayers(frame_begin_time);
 

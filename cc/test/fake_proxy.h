@@ -25,7 +25,6 @@ class FakeProxy : public Proxy {
   virtual bool IsStarted() const OVERRIDE;
   virtual void SetLayerTreeHostClientReady() OVERRIDE {}
   virtual void SetVisible(bool visible) OVERRIDE {}
-  virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE {}
   virtual void SetNeedsUpdateLayers() OVERRIDE {}

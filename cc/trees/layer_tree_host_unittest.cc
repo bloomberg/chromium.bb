@@ -2036,7 +2036,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.max_partial_texture_updates = 10;
 
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    host.OnCreateAndInitializeOutputSurfaceAttempted(true);
 
     EXPECT_EQ(0u, host.MaxPartialTextureUpdates());
   }
@@ -2054,7 +2054,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.max_partial_texture_updates = 10;
 
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    host.OnCreateAndInitializeOutputSurfaceAttempted(true);
 
     EXPECT_EQ(5u, host.MaxPartialTextureUpdates());
   }
@@ -2072,7 +2072,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.max_partial_texture_updates = 10;
 
     LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    host.OnCreateAndInitializeOutputSurfaceAttempted(true);
 
     EXPECT_EQ(10u, host.MaxPartialTextureUpdates());
   }
@@ -2088,7 +2088,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), settings);
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  host->Composite(base::TimeTicks::Now());
+
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
@@ -2102,7 +2103,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), settings);
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  host->Composite(base::TimeTicks::Now());
+
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
@@ -2116,7 +2118,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), settings);
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  host->Composite(base::TimeTicks::Now());
+
   EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
 }
 
@@ -2131,7 +2134,8 @@ TEST(LayerTreeHostTest,
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), settings);
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  host->Composite(base::TimeTicks::Now());
+
   EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
 }
 
