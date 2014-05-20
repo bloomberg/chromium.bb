@@ -463,7 +463,7 @@ bool Parser::expandQName(const String& qName, AtomicString& localName, AtomicStr
     return true;
 }
 
-Expression* Parser::parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
+PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     reset(statement);
 
@@ -475,6 +475,7 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtrWillBeRawP
     currentParser = oldParser;
 
     if (parseError) {
+#if !ENABLE(OILPAN)
         deleteAllValues(m_parseNodes);
         m_parseNodes.clear();
 
@@ -488,9 +489,10 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtrWillBeRawP
             delete *it;
         m_expressionVectors.clear();
 
-        m_strings.clear();
-
         m_nodeTests.clear();
+#endif
+
+        m_strings.clear();
 
         m_topExpr = 0;
 
@@ -498,55 +500,63 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtrWillBeRawP
             exceptionState.throwDOMException(NamespaceError, "The string '" + statement + "' contains unresolvable namespaces.");
         else
             exceptionState.throwDOMException(SyntaxError, "The string '" + statement + "' is not a valid XPath expression.");
-        return 0;
+        return nullptr;
     }
-
+    ASSERT(m_strings.size() == 0);
+#if !ENABLE(OILPAN)
     ASSERT(m_parseNodes.size() == 1);
     ASSERT(*m_parseNodes.begin() == m_topExpr);
     ASSERT(m_expressionVectors.size() == 0);
     ASSERT(m_predicateVectors.size() == 0);
-    ASSERT(m_strings.size() == 0);
     ASSERT(m_nodeTests.size() == 0);
-
     m_parseNodes.clear();
+#endif
+
     Expression* result = m_topExpr;
     m_topExpr = 0;
 
-    return result;
+    return adoptPtrWillBeNoop(result);
 }
 
 void Parser::registerParseNode(ParseNode* node)
 {
+#if !ENABLE(OILPAN)
     if (node == 0)
         return;
 
     ASSERT(!m_parseNodes.contains(node));
 
     m_parseNodes.add(node);
+#endif
 }
 
 void Parser::unregisterParseNode(ParseNode* node)
 {
+#if !ENABLE(OILPAN)
     if (node == 0)
         return;
 
     ASSERT(m_parseNodes.contains(node));
 
     m_parseNodes.remove(node);
+#endif
 }
 
-void Parser::registerPredicateVector(Vector<OwnPtr<Predicate> >* vector)
+void Parser::registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* vector)
 {
+#if !ENABLE(OILPAN)
     if (vector == 0)
         return;
 
     ASSERT(!m_predicateVectors.contains(vector));
 
     m_predicateVectors.add(vector);
+#endif
 }
 
-void Parser::deletePredicateVector(Vector<OwnPtr<Predicate> >* vector)
+void Parser::deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* vector)
 {
+#if !ENABLE(OILPAN)
     if (vector == 0)
         return;
 
@@ -554,21 +564,25 @@ void Parser::deletePredicateVector(Vector<OwnPtr<Predicate> >* vector)
 
     m_predicateVectors.remove(vector);
     delete vector;
+#endif
 }
 
 
-void Parser::registerExpressionVector(Vector<OwnPtr<Expression> >* vector)
+void Parser::registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >* vector)
 {
+#if !ENABLE(OILPAN)
     if (vector == 0)
         return;
 
     ASSERT(!m_expressionVectors.contains(vector));
 
     m_expressionVectors.add(vector);
+#endif
 }
 
-void Parser::deleteExpressionVector(Vector<OwnPtr<Expression> >* vector)
+void Parser::deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >* vector)
 {
+#if !ENABLE(OILPAN)
     if (vector == 0)
         return;
 
@@ -576,6 +590,7 @@ void Parser::deleteExpressionVector(Vector<OwnPtr<Expression> >* vector)
 
     m_expressionVectors.remove(vector);
     delete vector;
+#endif
 }
 
 void Parser::registerString(String* s)
@@ -600,21 +615,25 @@ void Parser::deleteString(String* s)
 
 void Parser::registerNodeTest(Step::NodeTest* t)
 {
+#if !ENABLE(OILPAN)
     if (t == 0)
         return;
 
     ASSERT(!m_nodeTests.contains(t));
 
     m_nodeTests.add(adoptPtr(t));
+#endif
 }
 
 void Parser::deleteNodeTest(Step::NodeTest* t)
 {
+#if !ENABLE(OILPAN)
     if (t == 0)
         return;
 
     ASSERT(m_nodeTests.contains(t));
 
     m_nodeTests.remove(t);
+#endif
 }
 

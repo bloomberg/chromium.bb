@@ -291,7 +291,7 @@ inline bool Interval::contains(int value) const
     return value >= m_min && value <= m_max;
 }
 
-void Function::setArguments(Vector<OwnPtr<Expression> >& args)
+void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >& args)
 {
     ASSERT(!subExprCount());
 
@@ -299,8 +299,8 @@ void Function::setArguments(Vector<OwnPtr<Expression> >& args)
     if (m_name != "lang" && !args.isEmpty())
         setIsContextNodeSensitive(false);
 
-    Vector<OwnPtr<Expression> >::iterator end = args.end();
-    for (Vector<OwnPtr<Expression> >::iterator it = args.begin(); it != end; ++it)
+    WillBeHeapVector<OwnPtrWillBeMember<Expression> >::iterator end = args.end();
+    for (WillBeHeapVector<OwnPtrWillBeMember<Expression> >::iterator it = args.begin(); it != end; ++it)
         addSubExpression(it->release());
 }
 
@@ -728,11 +728,11 @@ static void createFunctionMap()
 
 Function* createFunction(const String& name)
 {
-    Vector<OwnPtr<Expression> > args;
+    WillBeHeapVector<OwnPtrWillBeMember<Expression> > args;
     return createFunction(name, args);
 }
 
-Function* createFunction(const String& name, Vector<OwnPtr<Expression> >& args)
+Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >& args)
 {
     if (!functionMap)
         createFunctionMap();

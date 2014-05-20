@@ -49,5 +49,11 @@ Expression::~Expression()
 {
 }
 
+void Expression::trace(Visitor* visitor)
+{
+    visitor->trace(m_subExpressions);
+    ParseNode::trace(visitor);
+}
+
 }
 }

@@ -41,6 +41,12 @@ Number::Number(double value)
 {
 }
 
+void Number::trace(Visitor* visitor)
+{
+    // FIXME: Oilpan: Make m_value traceable and trace it.
+    Expression::trace(visitor);
+}
+
 Value Number::evaluate() const
 {
     return m_value;
@@ -49,6 +55,12 @@ Value Number::evaluate() const
 StringExpression::StringExpression(const String& value)
     : m_value(value)
 {
+}
+
+void StringExpression::trace(Visitor* visitor)
+{
+    // FIXME: Oilpan: Make m_value traceable and trace it.
+    Expression::trace(visitor);
 }
 
 Value StringExpression::evaluate() const
@@ -62,7 +74,7 @@ Value Negative::evaluate() const
     return -p.toNumber();
 }
 
-NumericOp::NumericOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
+NumericOp::NumericOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -93,7 +105,7 @@ Value NumericOp::evaluate() const
     return 0.0;
 }
 
-EqTestOp::EqTestOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
+EqTestOp::EqTestOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -196,7 +208,7 @@ Value EqTestOp::evaluate() const
     return compare(lhs, rhs);
 }
 
-LogicalOp::LogicalOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
+LogicalOp::LogicalOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -248,13 +260,16 @@ Value Union::evaluate() const
     return lhsResult;
 }
 
-Predicate::Predicate(PassOwnPtr<Expression> expr)
+Predicate::Predicate(PassOwnPtrWillBeRawPtr<Expression> expr)
     : m_expr(expr)
 {
 }
 
-Predicate::~Predicate()
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Predicate);
+
+void Predicate::trace(Visitor* visitor)
 {
+    visitor->trace(m_expr);
 }
 
 bool Predicate::evaluate() const
@@ -265,7 +280,7 @@ bool Predicate::evaluate() const
 
     // foo[3] means foo[position()=3]
     if (result.isNumber())
-        return EqTestOp(EqTestOp::OP_EQ, adoptPtr(createFunction("position")), adoptPtr(new Number(result.toNumber()))).evaluate().toBoolean();
+        return EqTestOp(EqTestOp::OP_EQ, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate().toBoolean();
 
     return result.toBoolean();
 }

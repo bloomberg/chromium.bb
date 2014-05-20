@@ -62,8 +62,8 @@ using namespace XPath;
     EqTestOp::Opcode eqop;
     String* str;
     Expression* expr;
-    Vector<OwnPtr<Predicate> >* predList;
-    Vector<OwnPtr<Expression> >* argList;
+    WillBeHeapVector<OwnPtrWillBeMember<Predicate> >* predList;
+    WillBeHeapVector<OwnPtrWillBeMember<Expression> >* argList;
     Step* step;
     LocationPath* locationPath;
 }
@@ -291,15 +291,15 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new Vector<OwnPtr<Predicate> >;
-        $$->append(adoptPtr(new Predicate(adoptPtr($1))));
+        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Predicate> >;
+        $$->append(adoptPtrWillBeNoop(new Predicate(adoptPtrWillBeNoop($1))));
         parser->unregisterParseNode($1);
         parser->registerPredicateVector($$);
     }
     |
     PredicateList Predicate
     {
-        $$->append(adoptPtr(new Predicate(adoptPtr($2))));
+        $$->append(adoptPtrWillBeNoop(new Predicate(adoptPtrWillBeNoop($2))));
         parser->unregisterParseNode($2);
     }
     ;
@@ -387,15 +387,15 @@ FunctionCall:
 ArgumentList:
     Argument
     {
-        $$ = new Vector<OwnPtr<Expression> >;
-        $$->append(adoptPtr($1));
+        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Expression> >;
+        $$->append(adoptPtrWillBeNoop($1));
         parser->unregisterParseNode($1);
         parser->registerExpressionVector($$);
     }
     |
     ArgumentList ',' Argument
     {
-        $$->append(adoptPtr($3));
+        $$->append(adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($3);
     }
     ;
@@ -410,8 +410,8 @@ UnionExpr:
     UnionExpr '|' PathExpr
     {
         $$ = new Union;
-        $$->addSubExpression(adoptPtr($1));
-        $$->addSubExpression(adoptPtr($3));
+        $$->addSubExpression(adoptPtrWillBeNoop($1));
+        $$->addSubExpression(adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -452,7 +452,7 @@ FilterExpr:
     |
     PrimaryExpr PredicateList
     {
-        $$ = new Filter(adoptPtr($1), *$2);
+        $$ = new Filter(adoptPtrWillBeNoop($1), *$2);
         parser->unregisterParseNode($1);
         parser->deletePredicateVector($2);
         parser->registerParseNode($$);
@@ -464,7 +464,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_Or, adoptPtr($1), adoptPtr($3));
+        $$ = new LogicalOp(LogicalOp::OP_Or, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -476,7 +476,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_And, adoptPtr($1), adoptPtr($3));
+        $$ = new LogicalOp(LogicalOp::OP_And, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -488,7 +488,7 @@ EqualityExpr:
     |
     EqualityExpr EQOP RelationalExpr
     {
-        $$ = new EqTestOp($2, adoptPtr($1), adoptPtr($3));
+        $$ = new EqTestOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -500,7 +500,7 @@ RelationalExpr:
     |
     RelationalExpr RELOP AdditiveExpr
     {
-        $$ = new EqTestOp($2, adoptPtr($1), adoptPtr($3));
+        $$ = new EqTestOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -512,7 +512,7 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Add, adoptPtr($1), adoptPtr($3));
+        $$ = new NumericOp(NumericOp::OP_Add, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -520,7 +520,7 @@ AdditiveExpr:
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Sub, adoptPtr($1), adoptPtr($3));
+        $$ = new NumericOp(NumericOp::OP_Sub, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -532,7 +532,7 @@ MultiplicativeExpr:
     |
     MultiplicativeExpr MULOP UnaryExpr
     {
-        $$ = new NumericOp($2, adoptPtr($1), adoptPtr($3));
+        $$ = new NumericOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -545,7 +545,7 @@ UnaryExpr:
     MINUS UnaryExpr
     {
         $$ = new Negative;
-        $$->addSubExpression(adoptPtr($2));
+        $$->addSubExpression(adoptPtrWillBeNoop($2));
         parser->unregisterParseNode($2);
         parser->registerParseNode($$);
     }

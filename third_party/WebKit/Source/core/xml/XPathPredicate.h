@@ -37,6 +37,8 @@ namespace WebCore {
         class Number FINAL : public Expression {
         public:
             explicit Number(double);
+            virtual void trace(Visitor*) OVERRIDE;
+
         private:
             virtual Value evaluate() const OVERRIDE;
             virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
@@ -47,6 +49,8 @@ namespace WebCore {
         class StringExpression FINAL : public Expression {
         public:
             explicit StringExpression(const String&);
+            virtual void trace(Visitor*) OVERRIDE;
+
         private:
             virtual Value evaluate() const OVERRIDE;
             virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
@@ -65,7 +69,7 @@ namespace WebCore {
             enum Opcode {
                 OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod
             };
-            NumericOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
+            NumericOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
         private:
             virtual Value evaluate() const OVERRIDE;
             virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
@@ -76,7 +80,7 @@ namespace WebCore {
         class EqTestOp FINAL : public Expression {
         public:
             enum Opcode { OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE };
-            EqTestOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
+            EqTestOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
             virtual Value evaluate() const OVERRIDE;
         private:
             virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
@@ -88,7 +92,7 @@ namespace WebCore {
         class LogicalOp FINAL : public Expression {
         public:
             enum Opcode { OP_And, OP_Or };
-            LogicalOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
+            LogicalOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
         private:
             virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
             bool shortCircuitOn() const;
@@ -103,18 +107,19 @@ namespace WebCore {
             virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
         };
 
-        class Predicate {
-            WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED;
+        class Predicate FINAL : public NoBaseWillBeGarbageCollected<Predicate> {
+            WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+            DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Predicate);
         public:
-            explicit Predicate(PassOwnPtr<Expression>);
-            ~Predicate();
+            explicit Predicate(PassOwnPtrWillBeRawPtr<Expression>);
+            void trace(Visitor*);
             bool evaluate() const;
 
             bool isContextPositionSensitive() const { return m_expr->isContextPositionSensitive() || m_expr->resultType() == Value::NumberValue; }
             bool isContextSizeSensitive() const { return m_expr->isContextSizeSensitive(); }
 
         private:
-            OwnPtr<Expression> m_expr;
+            OwnPtrWillBeMember<Expression> m_expr;
         };
 
     }

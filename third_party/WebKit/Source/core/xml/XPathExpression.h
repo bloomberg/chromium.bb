@@ -55,15 +55,12 @@ public:
     static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
     PassRefPtrWillBeRawPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
-    XPathExpression()
-    {
-        ScriptWrappable::init(this);
-    }
+    XPathExpression();
 
-    XPath::Expression* m_topExpression;
+    OwnPtrWillBeMember<XPath::Expression> m_topExpression;
 };
 
 }

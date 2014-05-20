@@ -35,7 +35,7 @@ namespace WebCore {
 
         class Function : public Expression {
         public:
-            void setArguments(Vector<OwnPtr<Expression> >&);
+            void setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
             void setName(const String& name) { m_name = name; }
         protected:
             Expression* arg(int pos) { return subExpr(pos); }
@@ -48,7 +48,7 @@ namespace WebCore {
         };
 
         Function* createFunction(const String& name);
-        Function* createFunction(const String& name, Vector<OwnPtr<Expression> >&);
+        Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression> >&);
 
     } // namespace XPath
 

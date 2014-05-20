@@ -40,6 +40,11 @@ namespace WebCore {
 
 using namespace XPath;
 
+XPathExpression::XPathExpression()
+{
+    ScriptWrappable::init(this);
+}
+
 PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<XPathExpression> expr = XPathExpression::create();
@@ -54,7 +59,11 @@ PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const 
 
 XPathExpression::~XPathExpression()
 {
-    delete m_topExpression;
+}
+
+void XPathExpression::trace(Visitor* visitor)
+{
+    visitor->trace(m_topExpression);
 }
 
 PassRefPtrWillBeRawPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState& exceptionState)

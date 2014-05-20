@@ -48,22 +48,24 @@ namespace WebCore {
             bool hadTypeConversionError;
         };
 
-        class ParseNode {
+        class ParseNode : public NoBaseWillBeGarbageCollectedFinalized<ParseNode> {
         public:
             virtual ~ParseNode() { }
+            virtual void trace(Visitor*) { }
         };
 
         class Expression : public ParseNode {
-            WTF_MAKE_NONCOPYABLE(Expression); WTF_MAKE_FAST_ALLOCATED;
+            WTF_MAKE_NONCOPYABLE(Expression); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
         public:
             static EvaluationContext& evaluationContext();
 
             Expression();
             virtual ~Expression();
+            virtual void trace(Visitor*) OVERRIDE;
 
             virtual Value evaluate() const = 0;
 
-            void addSubExpression(PassOwnPtr<Expression> expr)
+            void addSubExpression(PassOwnPtrWillBeRawPtr<Expression> expr)
             {
                 m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
                 m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
@@ -86,7 +88,7 @@ namespace WebCore {
             const Expression* subExpr(unsigned i) const { return m_subExpressions[i].get(); }
 
         private:
-            Vector<OwnPtr<Expression> > m_subExpressions;
+            WillBeHeapVector<OwnPtrWillBeMember<Expression> > m_subExpressions;
 
             // Evaluation details that can be used for optimization.
             bool m_isContextNodeSensitive;

@@ -40,7 +40,7 @@ class Predicate;
 
 class Step FINAL : public ParseNode {
     WTF_MAKE_NONCOPYABLE(Step);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Axis {
         AncestorAxis, AncestorOrSelfAxis, AttributeAxis,
@@ -50,8 +50,8 @@ public:
         SelfAxis
     };
 
-    class NodeTest {
-        WTF_MAKE_FAST_ALLOCATED;
+    class NodeTest : public NoBaseWillBeGarbageCollectedFinalized<NodeTest> {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
         enum Kind {
             TextNodeTest, CommentNodeTest, ProcessingInstructionNodeTest, AnyNodeTest, NameTest
@@ -76,12 +76,13 @@ public:
             ASSERT(o.m_mergedPredicates.isEmpty());
             return *this;
         }
+        void trace(Visitor* visitor) { visitor->trace(m_mergedPredicates); }
 
         Kind kind() const { return m_kind; }
         const AtomicString& data() const { return m_data; }
         const AtomicString& namespaceURI() const { return m_namespaceURI; }
-        Vector<OwnPtr<Predicate> >& mergedPredicates() { return m_mergedPredicates; }
-        const Vector<OwnPtr<Predicate> >& mergedPredicates() const { return m_mergedPredicates; }
+        WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& mergedPredicates() { return m_mergedPredicates; }
+        const WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& mergedPredicates() const { return m_mergedPredicates; }
 
     private:
         Kind m_kind;
@@ -89,31 +90,33 @@ public:
         AtomicString m_namespaceURI;
 
         // When possible, we merge some or all predicates with node test for better performance.
-        Vector<OwnPtr<Predicate> > m_mergedPredicates;
+        WillBeHeapVector<OwnPtrWillBeMember<Predicate> > m_mergedPredicates;
     };
 
     Step(Axis, const NodeTest&);
-    Step(Axis, const NodeTest&, Vector<OwnPtr<Predicate> >&);
+    Step(Axis, const NodeTest&, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
     virtual ~Step();
+    virtual void trace(Visitor*) OVERRIDE;
 
     void optimize();
 
     void evaluate(Node* context, NodeSet&) const;
 
     Axis axis() const { return m_axis; }
-    const NodeTest& nodeTest() const { return m_nodeTest; }
+    const NodeTest& nodeTest() const { return *m_nodeTest; }
 
 private:
     friend void optimizeStepPair(Step*, Step*, bool&);
     bool predicatesAreContextListInsensitive() const;
+    NodeTest& nodeTest() { return *m_nodeTest; }
 
     void parseNodeTest(const String&);
     void nodesInAxis(Node* context, NodeSet&) const;
     String namespaceFromNodetest(const String& nodeTest) const;
 
     Axis m_axis;
-    NodeTest m_nodeTest;
-    Vector<OwnPtr<Predicate> > m_predicates;
+    OwnPtrWillBeMember<NodeTest> m_nodeTest;
+    WillBeHeapVector<OwnPtrWillBeMember<Predicate> > m_predicates;
 };
 
 void optimizeStepPair(Step*, Step*, bool& dropSecondStep);

@@ -36,7 +36,7 @@
 namespace WebCore {
 namespace XPath {
 
-Filter::Filter(PassOwnPtr<Expression> expr, Vector<OwnPtr<Predicate> >& predicates)
+Filter::Filter(PassOwnPtrWillBeRawPtr<Expression> expr, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& predicates)
     : m_expr(expr)
 {
     m_predicates.swap(predicates);
@@ -47,6 +47,13 @@ Filter::Filter(PassOwnPtr<Expression> expr, Vector<OwnPtr<Predicate> >& predicat
 
 Filter::~Filter()
 {
+}
+
+void Filter::trace(Visitor* visitor)
+{
+    visitor->trace(m_expr);
+    visitor->trace(m_predicates);
+    Expression::trace(visitor);
 }
 
 Value Filter::evaluate() const
@@ -85,7 +92,17 @@ LocationPath::LocationPath()
 
 LocationPath::~LocationPath()
 {
+#if !ENABLE(OILPAN)
     deleteAllValues(m_steps);
+#endif
+}
+
+void LocationPath::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_steps);
+#endif
+    Expression::trace(visitor);
 }
 
 Value LocationPath::evaluate() const
@@ -162,7 +179,9 @@ void LocationPath::appendStep(Step* step)
         bool dropSecondStep;
         optimizeStepPair(m_steps[stepCount - 1], step, dropSecondStep);
         if (dropSecondStep) {
+#if !ENABLE(OILPAN)
             delete step;
+#endif
             return;
         }
     }
@@ -176,7 +195,9 @@ void LocationPath::insertFirstStep(Step* step)
         bool dropSecondStep;
         optimizeStepPair(step, m_steps[0], dropSecondStep);
         if (dropSecondStep) {
+#if !ENABLE(OILPAN)
             delete m_steps[0];
+#endif
             m_steps[0] = step;
             return;
         }
@@ -186,8 +207,8 @@ void LocationPath::insertFirstStep(Step* step)
 }
 
 Path::Path(Expression* filter, LocationPath* path)
-    : m_filter(filter)
-    , m_path(path)
+    : m_filter(adoptPtrWillBeNoop(filter))
+    , m_path(adoptPtrWillBeNoop(path))
 {
     setIsContextNodeSensitive(filter->isContextNodeSensitive());
     setIsContextPositionSensitive(filter->isContextPositionSensitive());
@@ -196,8 +217,13 @@ Path::Path(Expression* filter, LocationPath* path)
 
 Path::~Path()
 {
-    delete m_filter;
-    delete m_path;
+}
+
+void Path::trace(Visitor* visitor)
+{
+    visitor->trace(m_filter);
+    visitor->trace(m_path);
+    Expression::trace(visitor);
 }
 
 Value Path::evaluate() const

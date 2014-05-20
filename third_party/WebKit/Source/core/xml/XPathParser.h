@@ -72,7 +72,7 @@ public:
     XPathNSResolver* resolver() const { return m_resolver.get(); }
     bool expandQName(const String& qName, AtomicString& localName, AtomicString& namespaceURI);
 
-    Expression* parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
+    PassOwnPtrWillBeRawPtr<Expression> parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
 
     static Parser* current() { return currentParser; }
 
@@ -84,11 +84,11 @@ public:
     void registerParseNode(ParseNode*);
     void unregisterParseNode(ParseNode*);
 
-    void registerPredicateVector(Vector<OwnPtr<Predicate> >*);
-    void deletePredicateVector(Vector<OwnPtr<Predicate> >*);
+    void registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >*);
+    void deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate> >*);
 
-    void registerExpressionVector(Vector<OwnPtr<Expression> >*);
-    void deleteExpressionVector(Vector<OwnPtr<Expression> >*);
+    void registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >*);
+    void deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression> >*);
 
     void registerString(String*);
     void deleteString(String*);
@@ -123,11 +123,13 @@ private:
     int m_lastTokenType;
     RefPtrWillBeMember<XPathNSResolver> m_resolver;
 
+#if !ENABLE(OILPAN)
     HashSet<ParseNode*> m_parseNodes;
     HashSet<Vector<OwnPtr<Predicate> >*> m_predicateVectors;
     HashSet<Vector<OwnPtr<Expression> >*> m_expressionVectors;
-    HashSet<OwnPtr<String> > m_strings;
     HashSet<OwnPtr<Step::NodeTest> > m_nodeTests;
+#endif
+    HashSet<OwnPtr<String> > m_strings;
 };
 
 } // XPath
