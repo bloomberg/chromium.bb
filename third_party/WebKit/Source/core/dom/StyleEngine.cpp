@@ -322,6 +322,12 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     markTreeScopeDirty(treeScope);
 }
 
+void StyleEngine::enableExitTransitionStylesheets()
+{
+    TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(*m_document);
+    collection->enableExitTransitionStylesheets();
+}
+
 bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
 {
     return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;

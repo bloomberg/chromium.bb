@@ -34,6 +34,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
+#include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 
 namespace WebCore {
@@ -187,6 +188,17 @@ void TreeScopeStyleSheetCollection::clearMediaQueryRuleSetStyleSheets()
         StyleSheetContents* contents = m_activeAuthorStyleSheets[i]->contents();
         if (contents->hasMediaQueries())
             contents->clearRuleSet();
+    }
+}
+
+void TreeScopeStyleSheetCollection::enableExitTransitionStylesheets()
+{
+    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
+    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
+    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
+        Node* node = *it;
+        if (isHTMLLinkElement(*node))
+            toHTMLLinkElement(node)->enableIfExitTransitionStyle();
     }
 }
 

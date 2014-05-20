@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+function checkResult() {
+  testPassed("Fired Load event.");
+  testStyle = window.getComputedStyle(document.getElementById("test"), null);
+  shouldBe('testStyle.color', '"rgb(0, 0, 0)"' /* black */);
+  finishJSTest();
+}
+
+description('This test checks that transition-existing-stylesheet link resources are initially disabled.');
+
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.dumpResourceResponseMIMETypes();
+}
+
+window.successfullyParsed = true;
+window.jsTestIsAsync = true;
+</script>
+
+<link id="testlink" rel="transition-exiting-stylesheet" href="resources/stylesheet.css" onload="checkResult()">
+<h1 id="test"><!-- Test element --></h1>

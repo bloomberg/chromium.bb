@@ -107,6 +107,7 @@ public:
     void removeStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
+    void enableExitTransitionStylesheets();
 
     void invalidateInjectedStyleSheetCache();
     void updateInjectedStyleSheetCache() const;

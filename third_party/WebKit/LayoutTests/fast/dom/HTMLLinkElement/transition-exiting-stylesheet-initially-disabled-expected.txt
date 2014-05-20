@@ -1,0 +1,12 @@
+stylesheet.css has MIME type text/css
+This test checks that transition-existing-stylesheet link resources are initially disabled.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Fired Load event.
+PASS testStyle.color is "rgb(0, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

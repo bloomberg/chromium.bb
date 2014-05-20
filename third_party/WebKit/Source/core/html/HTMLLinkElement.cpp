@@ -213,7 +213,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             m_link = LinkManifest::create(this);
         } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
-            if (fastHasAttribute(disabledAttr))
+            if (fastHasAttribute(disabledAttr) || m_relAttribute.isTransitionExitingStylesheet())
                 link->setDisabledState(true);
             m_link = link.release();
         }
@@ -247,6 +247,14 @@ void HTMLLinkElement::process()
 {
     if (LinkResource* link = linkResourceToProcess())
         link->process();
+}
+
+void HTMLLinkElement::enableIfExitTransitionStyle()
+{
+    if (m_relAttribute.isTransitionExitingStylesheet()) {
+        if (LinkStyle* link = linkStyle())
+            link->setDisabledState(false);
+    }
 }
 
 Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* insertionPoint)
@@ -637,7 +645,7 @@ void LinkStyle::process()
     if (!m_owner->loadLink(type, builder.url()))
         return;
 
-    if ((m_disabledState != Disabled) && m_owner->relAttribute().isStyleSheet()
+    if ((m_disabledState != Disabled) && (m_owner->relAttribute().isStyleSheet() || m_owner->relAttribute().isTransitionExitingStylesheet())
         && shouldLoadResource() && builder.url().isValid()) {
 
         if (resource()) {

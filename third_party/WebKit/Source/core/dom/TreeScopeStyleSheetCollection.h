@@ -63,6 +63,7 @@ public:
     ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
     void clearMediaQueryRuleSetStyleSheets();
+    void enableExitTransitionStylesheets();
 
     virtual void trace(Visitor* visitor) OVERRIDE
     {
