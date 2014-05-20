@@ -146,6 +146,8 @@
 #ifndef NEVER_INLINE
 #if COMPILER(GCC)
 #define NEVER_INLINE __attribute__((__noinline__))
+#elif COMPILER(MSVC)
+#define NEVER_INLINE __declspec(noinline)
 #else
 #define NEVER_INLINE
 #endif
