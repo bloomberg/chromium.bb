@@ -27,7 +27,6 @@ config("feature_flags") {
       "CHROMIUM_BUILD",
       "ENABLE_ONE_CLICK_SIGNIN",
       "ENABLE_REMOTING=1",
-      "ENABLE_WEBRTC=1",
       "ENABLE_CONFIGURATION_POLICY",
       "ENABLE_NOTIFICATIONS",
       "ENABLE_EGLIMAGE=1",
@@ -123,6 +122,9 @@ config("feature_flags") {
   }
   if (use_allocator != "tcmalloc") {
     defines += [ "NO_TCMALLOC" ]
+  }
+  if (enable_webrtc) {
+    defines += [ "ENABLE_WEBRTC=1" ]
   }
 }
 

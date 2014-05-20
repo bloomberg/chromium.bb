@@ -10,7 +10,7 @@
 #
 #  gpu.gyp:gles2_cmd_helper => //gpu/command_buffer/client:gles2_cmd_helper
 #
-#  gpu.gyp:gles2_c_lib => //gpu/command_buffer/client:cles2_c_lib
+#  gpu.gyp:gles2_c_lib => //gpu/command_buffer/client:gles2_c_lib
 #
 #  gpu.gyp:gles2_implementation =>
 #      //gpu_command_buffer/client:gles2_implementation

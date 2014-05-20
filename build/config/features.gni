@@ -47,3 +47,12 @@ if (is_android) {
 } else {
   enable_printing = 1
 }
+
+# The seccomp-bpf sandbox is only supported on three architectures
+# currently.
+# Do not disable seccomp_bpf anywhere without talking to
+# security@chromium.org!
+use_seccomp_bpf = (is_linux || is_android) &&
+  (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
+
+enable_webrtc = !is_ios

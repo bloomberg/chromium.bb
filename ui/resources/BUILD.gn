@@ -8,3 +8,8 @@ grit("resources") {
   output_name = "ui_resources"
   source = "ui_resources.grd"
 }
+
+grit("unscaled_resources") {
+  output_name = "ui_unscaled_resources"
+  source = "ui_unscaled_resources.grd"
+}

@@ -34,8 +34,6 @@ component("ui_base") {
     "clipboard/clipboard.h",
     "clipboard/clipboard_android.cc",
     "clipboard/clipboard_android_initialization.h",
-    "clipboard/clipboard_aura.cc",
-    "clipboard/clipboard_aurax11.cc",
     "clipboard/clipboard_constants.cc",
     "clipboard/clipboard_mac.mm",
     "clipboard/clipboard_types.h",
@@ -97,12 +95,9 @@ component("ui_base") {
     "cursor/cursor_loader.h",
     "cursor/cursor_loader_win.cc",
     "cursor/cursor_loader_win.h",
-    "cursor/cursor_loader_x11.cc",
-    "cursor/cursor_loader_x11.h",
     "cursor/cursor_util.cc",
     "cursor/cursor_util.h",
     "cursor/cursor_win.cc",
-    "cursor/cursor_x11.cc",
     "cursor/cursors_aura.cc",
     "cursor/cursors_aura.h",
     "default_theme_provider.cc",
@@ -132,10 +127,6 @@ component("ui_base") {
     "dragdrop/file_info.h",
     "dragdrop/os_exchange_data.cc",
     "dragdrop/os_exchange_data.h",
-    "dragdrop/os_exchange_data_provider_aura.cc",
-    "dragdrop/os_exchange_data_provider_aura.h",
-    "dragdrop/os_exchange_data_provider_aurax11.cc",
-    "dragdrop/os_exchange_data_provider_aurax11.h",
     "dragdrop/os_exchange_data_provider_win.cc",
     "dragdrop/os_exchange_data_provider_win.h",
     "hit_test.h",
@@ -206,7 +197,6 @@ component("ui_base") {
     "touch/touch_device.cc",
     "touch/touch_device.h",
     "touch/touch_device_android.cc",
-    "touch/touch_device_aurax11.cc",
     "touch/touch_device_ozone.cc",
     "touch/touch_device_win.cc",
     "touch/touch_editing_controller.cc",
@@ -285,6 +275,7 @@ component("ui_base") {
     "//skia",
     "//third_party/icu",
     "//ui/resources",
+    "//ui/resources:unscaled_resources",
     "//ui/strings",
     "//ui/webui/resources",
     "//url",
@@ -311,9 +302,6 @@ component("ui_base") {
     sources -= [
       "cursor/cursor.cc",
       "cursor/cursor.h",
-      "cursor/cursor_loader_x11.cc",
-      "cursor/cursor_loader_x11.h",
-      "cursor/cursor_x11.cc",
       "x/selection_owner.cc",
       "x/selection_owner.h",
       "x/selection_requestor.cc",
@@ -356,26 +344,14 @@ component("ui_base") {
       "//build/config/linux:pangocairo",
     ]
   }
-  if (is_win || use_clipboard_aurax11) {
-    sources -= [
-      "clipboard/clipboard_aura.cc",
-    ]
-  } else {
-    sources -= [
-      "clipboard/clipboard_aurax11.cc",
-    ]
-  }
 
   if (is_chromeos || (use_aura && is_linux && !use_x11)) {
-    sources -= [
-      "dragdrop/os_exchange_data_provider_aurax11.cc",
-      "touch/touch_device.cc",
-    ]
-  } else {
-    sources -= [
+    sources += [
       "dragdrop/os_exchange_data_provider_aura.cc",
       "dragdrop/os_exchange_data_provider_aura.h",
-      "touch/touch_device_aurax11.cc",
+    ]
+    sources -= [
+      "touch/touch_device.cc",
     ]
   }
 
@@ -444,6 +420,24 @@ component("ui_base") {
     ]
   }
 
+  if (use_aura) {
+    if (use_x11) {
+      sources += [
+        "cursor/cursor_loader_x11.cc",
+        "cursor/cursor_loader_x11.h",
+        "cursor/cursor_x11.cc",
+        "touch/touch_device_aurax11.cc",
+      ]
+      if (!is_chromeos) {
+        # These Aura X11 files aren't used on ChromeOS.
+        sources += [
+          "dragdrop/os_exchange_data_provider_aurax11.cc",
+          "dragdrop/os_exchange_data_provider_aurax11.h",
+        ]
+      }
+    }
+  }
+
   if (!toolkit_views) {
     sources -= [
       "dragdrop/drag_drop_types.h",
@@ -492,10 +486,14 @@ component("ui_base") {
     ]
   }
 
-  if (is_android && use_aura) {
-    sources -= [
-      "clipboard/clipboard_aura.cc",
-    ]
+  # Aura clipboard.
+  if (use_aura) {
+    if (use_x11) {
+      sources += [ "clipboard/clipboard_aurax11.cc" ]
+    } else if (!is_win) {
+      # This file is used for all non-X11, non-Windows aura Builds.
+      sources += [ "clipboard/clipboard_aura.cc" ]
+    }
   }
 
   if (is_android || is_ios) {
