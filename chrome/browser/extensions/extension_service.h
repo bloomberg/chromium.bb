@@ -342,14 +342,6 @@ class ExtensionService
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater();
 
-  // Notify the frontend that there was an error loading an extension.
-  // This method is public because UnpackedInstaller and InstalledLoader
-  // can post to here.
-  // TODO(aa): Remove this. It doesn't do enough to be worth the dependency
-  // of these classes on ExtensionService.
-  void ReportExtensionLoadError(const base::FilePath& extension_path,
-                                const std::string& error);
-
   // ExtensionHost of background page calls this method right after its render
   // view has been created.
   void DidCreateRenderViewForBackgroundPage(extensions::ExtensionHost* host);
