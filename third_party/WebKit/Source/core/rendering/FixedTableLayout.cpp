@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2002 Lars Knoll (knoll@kde.org)
  *           (C) 2002 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -137,13 +137,8 @@ int FixedTableLayout::calcWidthArray()
 
     unsigned currentColumn = 0;
 
-    RenderTableRow* firstRow = toRenderTableRow(section->firstChild());
-    for (RenderObject* child = firstRow->firstChild(); child; child = child->nextSibling()) {
-        if (!child->isTableCell())
-            continue;
-
-        RenderTableCell* cell = toRenderTableCell(child);
-
+    RenderTableRow* firstRow = section->firstRow();
+    for (RenderTableCell* cell = firstRow->firstCell(); cell; cell = cell->nextCell()) {
         Length logicalWidth = cell->styleOrColLogicalWidth();
         unsigned span = cell->colSpan();
         int fixedBorderBoxLogicalWidth = 0;
@@ -330,11 +325,8 @@ void FixedTableLayout::willChangeTableLayout()
             RenderTableRow* row = section->rowRendererAt(i);
             if (!row)
                 continue;
-            for (RenderObject* cell = row->firstChild(); cell; cell = cell->nextSibling()) {
-                if (!cell->isTableCell())
-                    continue;
+            for (RenderTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
                 cell->setPreferredLogicalWidthsDirty();
-            }
         }
     }
 }

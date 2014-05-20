@@ -412,16 +412,13 @@ void FastTextAutosizer::inflateAutoTable(RenderTable* table)
     for (RenderObject* section = table->firstChild(); section; section = section->nextSibling()) {
         if (!section->isTableSection())
             continue;
-        for (RenderObject* row = toRenderTableSection(section)->firstChild(); row; row = row->nextSibling()) {
-            if (!row->isTableRow())
-                continue;
-            for (RenderObject* cell = toRenderTableRow(row)->firstChild(); cell; cell = cell->nextSibling()) {
-                if (!cell->isTableCell() || !cell->needsLayout())
+        for (RenderTableRow* row = toRenderTableSection(section)->firstRow(); row; row = row->nextRow()) {
+            for (RenderTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
+                if (!cell->needsLayout())
                     continue;
-                RenderTableCell* renderTableCell = toRenderTableCell(cell);
-                beginLayout(renderTableCell);
-                inflate(renderTableCell);
-                endLayout(renderTableCell);
+                beginLayout(cell);
+                inflate(cell);
+                endLayout(cell);
             }
         }
     }

@@ -4,7 +4,7 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2013 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -76,6 +76,9 @@ public:
     RenderTableRow* row() const { return toRenderTableRow(parent()); }
     RenderTableSection* section() const { return toRenderTableSection(parent()->parent()); }
     RenderTable* table() const { return toRenderTable(parent()->parent()->parent()); }
+
+    RenderTableCell* previousCell() const;
+    RenderTableCell* nextCell() const;
 
     unsigned rowIndex() const
     {
@@ -277,6 +280,9 @@ private:
     unsigned parseRowSpanFromDOM() const;
     unsigned parseColSpanFromDOM() const;
 
+    void nextSibling() const WTF_DELETED_FUNCTION;
+    void previousSibling() const WTF_DELETED_FUNCTION;
+
     // Note MSVC will only pack members if they have identical types, hence we use unsigned instead of bool here.
     unsigned m_column : 29;
     unsigned m_cellWidthChanged : 1;
@@ -287,6 +293,28 @@ private:
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCell, isTableCell());
+
+inline RenderTableCell* RenderTableCell::previousCell() const
+{
+    return toRenderTableCell(RenderObject::previousSibling());
+}
+
+inline RenderTableCell* RenderTableCell::nextCell() const
+{
+    return toRenderTableCell(RenderObject::nextSibling());
+}
+
+inline RenderTableCell* RenderTableRow::firstCell() const
+{
+    ASSERT(children() == virtualChildren());
+    return toRenderTableCell(children()->firstChild());
+}
+
+inline RenderTableCell* RenderTableRow::lastCell() const
+{
+    ASSERT(children() == virtualChildren());
+    return toRenderTableCell(children()->lastChild());
+}
 
 } // namespace WebCore
 

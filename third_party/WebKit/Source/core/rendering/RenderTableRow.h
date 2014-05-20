@@ -4,7 +4,7 @@
  *           (C) 1998 Waldo Bastian (bastian@kde.org)
  *           (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2009, 2013 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -36,8 +36,11 @@ class RenderTableRow FINAL : public RenderBox {
 public:
     explicit RenderTableRow(Element*);
 
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+    RenderTableCell* firstCell() const;
+    RenderTableCell* lastCell() const;
+
+    RenderTableRow* previousRow() const;
+    RenderTableRow* nextRow() const;
 
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
@@ -88,6 +91,8 @@ public:
     const BorderValue& borderAdjoiningStartCell(const RenderTableCell*) const;
     const BorderValue& borderAdjoiningEndCell(const RenderTableCell*) const;
 
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
+
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE { return children(); }
@@ -100,7 +105,6 @@ private:
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void layout() OVERRIDE;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
     virtual LayerType layerTypeRequired() const OVERRIDE
     {
@@ -119,11 +123,36 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
+    void nextSibling() const WTF_DELETED_FUNCTION;
+    void previousSibling() const WTF_DELETED_FUNCTION;
+
     RenderObjectChildList m_children;
     unsigned m_rowIndex : 31;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableRow, isTableRow());
+
+inline RenderTableRow* RenderTableRow::previousRow() const
+{
+    return toRenderTableRow(RenderObject::previousSibling());
+}
+
+inline RenderTableRow* RenderTableRow::nextRow() const
+{
+    return toRenderTableRow(RenderObject::nextSibling());
+}
+
+inline RenderTableRow* RenderTableSection::firstRow() const
+{
+    ASSERT(children() == virtualChildren());
+    return toRenderTableRow(children()->firstChild());
+}
+
+inline RenderTableRow* RenderTableSection::lastRow() const
+{
+    ASSERT(children() == virtualChildren());
+    return toRenderTableRow(children()->lastChild());
+}
 
 } // namespace WebCore
 
