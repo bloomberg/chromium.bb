@@ -150,7 +150,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
         ASSERT(!info[i].IsEmpty());
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, currentExecutionContext(m_scriptState->isolate()), thisObject, m_arguments.size(), info.get(), m_scriptState->isolate());
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, m_scriptState->executionContext(), thisObject, m_arguments.size(), info.get(), m_scriptState->isolate());
     if (tryCatch.HasCaught()) {
         hadException = true;
         return ScriptValue();

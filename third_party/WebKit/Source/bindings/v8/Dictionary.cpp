@@ -670,19 +670,6 @@ bool Dictionary::get(const String& key, RefPtrWillBeMember<DOMError>& value) con
     return true;
 }
 
-bool Dictionary::get(const String& key, OwnPtr<VoidCallback>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
-        return false;
-
-    if (!v8Value->IsFunction())
-        return false;
-
-    value = V8VoidCallback::create(v8::Handle<v8::Function>::Cast(v8Value), currentExecutionContext(m_isolate));
-    return true;
-}
-
 bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMap) const
 {
     if (!isObject())

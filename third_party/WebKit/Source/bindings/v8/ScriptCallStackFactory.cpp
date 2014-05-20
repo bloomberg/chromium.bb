@@ -108,12 +108,11 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool empt
     return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed, isolate);
 }
 
-PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
+PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState* scriptState, size_t maxStackSize)
 {
     size_t stackSize = 1;
     if (InspectorInstrumentation::hasFrontends()) {
-        ExecutionContext* executionContext = currentExecutionContext(v8::Isolate::GetCurrent());
-        if (InspectorInstrumentation::consoleAgentEnabled(executionContext))
+        if (InspectorInstrumentation::consoleAgentEnabled(scriptState->executionContext()))
             stackSize = maxStackSize;
     }
     return createScriptCallStack(stackSize);

@@ -58,7 +58,7 @@ public:
     virtual ~InspectorProfilerAgent();
 
     void consoleProfile(const String& title, ScriptState*);
-    void consoleProfileEnd(const String& title);
+    void consoleProfileEnd(const String& title, ScriptState*);
 
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;

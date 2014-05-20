@@ -116,9 +116,9 @@ void ConsoleBase::profile(ScriptState* scriptState, const String& title)
     InspectorInstrumentation::consoleProfile(context(), title, scriptState);
 }
 
-void ConsoleBase::profileEnd(ScriptState*, const String& title)
+void ConsoleBase::profileEnd(ScriptState* scriptState, const String& title)
 {
-    InspectorInstrumentation::consoleProfileEnd(context(), title);
+    InspectorInstrumentation::consoleProfileEnd(context(), title, scriptState);
 }
 
 void ConsoleBase::time(const String& title)
@@ -173,7 +173,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
         return;
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
+    RefPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, stackSize));
 
     String message;
     bool gotStringMessage = arguments->getFirstArgumentAsString(message);

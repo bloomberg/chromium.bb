@@ -123,7 +123,7 @@ void ConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, ScriptState
         return;
 
     if (scriptState)
-        m_callStack = createScriptCallStackForConsole();
+        m_callStack = createScriptCallStackForConsole(scriptState);
     else if (canGenerateCallStack)
         m_callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
     else
