@@ -57,6 +57,7 @@ class ContentTranslateDriver : public TranslateDriver {
   virtual const GURL& GetVisibleURL() OVERRIDE;
   virtual bool HasCurrentPage() OVERRIDE;
   virtual int GetCurrentPageID() OVERRIDE;
+  virtual void OpenUrlInNewTab(const GURL& url) OVERRIDE;
 
  private:
   // The navigation controller of the tab we are associated with.

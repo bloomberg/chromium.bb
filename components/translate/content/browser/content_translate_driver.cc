@@ -10,8 +10,10 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "url/gurl.h"
 
 ContentTranslateDriver::ContentTranslateDriver(
@@ -122,4 +124,13 @@ int ContentTranslateDriver::GetCurrentPageID() {
   DCHECK(HasCurrentPage());
   content::NavigationEntry* entry = navigation_controller_->GetActiveEntry();
   return entry->GetPageID();
+}
+
+void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
+  content::OpenURLParams params(url,
+                                content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                false);
+  navigation_controller_->GetWebContents()->OpenURL(params);
 }

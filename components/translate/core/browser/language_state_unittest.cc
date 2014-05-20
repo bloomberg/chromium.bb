@@ -69,6 +69,8 @@ class MockTranslateDriver : public TranslateDriver {
 
   virtual int GetCurrentPageID() OVERRIDE { return 0; }
 
+  virtual void OpenUrlInNewTab(const GURL& url) OVERRIDE {}
+
   bool on_is_page_translated_changed_called() const {
     return on_is_page_translated_changed_called_;
   }

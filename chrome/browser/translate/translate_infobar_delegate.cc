@@ -8,9 +8,8 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_client.h"
@@ -18,7 +17,6 @@
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/component_strings.h"
 #include "grit/theme_resources.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -55,16 +53,15 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 void TranslateInfoBarDelegate::Create(
     bool replace_existing_infobar,
     const base::WeakPtr<TranslateManager>& translate_manager,
-    InfoBarService* infobar_service,
+    infobars::InfoBarManager* infobar_manager,
     bool is_off_the_record,
     translate::TranslateStep step,
     const std::string& original_language,
     const std::string& target_language,
     TranslateErrors::Type error_type,
-    PrefService* prefs,
     bool triggered_from_menu) {
   DCHECK(translate_manager);
-  DCHECK(infobar_service);
+  DCHECK(infobar_manager);
 
   // Check preconditions.
   if (step != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
@@ -90,8 +87,8 @@ void TranslateInfoBarDelegate::Create(
   // Find any existing translate infobar delegate.
   infobars::InfoBar* old_infobar = NULL;
   TranslateInfoBarDelegate* old_delegate = NULL;
-  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    old_infobar = infobar_service->infobar_at(i);
+  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
+    old_infobar = infobar_manager->infobar_at(i);
     old_delegate = old_infobar->delegate()->AsTranslateInfoBarDelegate();
     if (old_delegate) {
       if (!replace_existing_infobar)
@@ -104,12 +101,12 @@ void TranslateInfoBarDelegate::Create(
   scoped_ptr<infobars::InfoBar> infobar(CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
           translate_manager, is_off_the_record, step, old_delegate,
-          original_language, target_language, error_type, prefs,
+          original_language, target_language, error_type,
           triggered_from_menu))));
   if (old_delegate)
-    infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
+    infobar_manager->ReplaceInfoBar(old_infobar, infobar.Pass());
   else
-    infobar_service->AddInfoBar(infobar.Pass());
+    infobar_manager->AddInfoBar(infobar.Pass());
 }
 
 
@@ -272,10 +269,6 @@ bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
           kAlwaysTranslateMinCount);
 }
 
-content::WebContents* TranslateInfoBarDelegate::GetWebContents() {
-  return InfoBarService::WebContentsFromInfoBar(infobar());
-}
-
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(
     std::vector<base::string16>* strings,
@@ -311,6 +304,13 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
   strings->push_back(text.substr(offsets[1]));
 }
 
+TranslateDriver* TranslateInfoBarDelegate::GetTranslateDriver() {
+  if (!translate_manager_)
+    return NULL;
+
+  return translate_manager_->translate_client()->GetTranslateDriver();
+}
+
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     const base::WeakPtr<TranslateManager>& translate_manager,
     bool is_off_the_record,
@@ -319,7 +319,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     const std::string& original_language,
     const std::string& target_language,
     TranslateErrors::Type error_type,
-    PrefService* prefs,
     bool triggered_from_menu)
     : infobars::InfoBarDelegate(),
       is_off_the_record_(is_off_the_record),

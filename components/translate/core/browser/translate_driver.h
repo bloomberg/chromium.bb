@@ -57,6 +57,9 @@ class TranslateDriver {
   // Returns an int identifying the current page. Should only be called if
   // |HasCurrentPage()| is true.
   virtual int GetCurrentPageID() = 0;
+
+  // Opens |url| in a new tab.
+  virtual void OpenUrlInNewTab(const GURL& url) = 0;
 };
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_

@@ -174,19 +174,15 @@ void TranslateTabHelper::ShowTranslateUI(translate::TranslateStep step,
   }
 
   // Infobar UI.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
   TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
       translate_manager_->GetWeakPtr(),
       InfoBarService::FromWebContents(web_contents()),
-      profile->IsOffTheRecord(),
+      web_contents()->GetBrowserContext()->IsOffTheRecord(),
       step,
       source_language,
       target_language,
       error_type,
-      original_profile->GetPrefs(),
       triggered_from_menu);
 }
 

@@ -39,8 +39,7 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
   MockTranslateInfoBarDelegate(content::WebContents* web_contents,
                                translate::TranslateStep step,
-                               TranslateErrors::Type error,
-                               PrefService* prefs)
+                               TranslateErrors::Type error)
       : TranslateInfoBarDelegate(
             TranslateTabHelper::GetManagerFromWebContents(
                 web_contents)->GetWeakPtr(),
@@ -50,7 +49,6 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
             "en",
             "es",
             error,
-            prefs,
             false) {}
 
   MOCK_METHOD0(Translate, void());
@@ -96,13 +94,10 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == translate::TRANSLATE_STEP_TRANSLATE_ERROR)
       error = TranslateErrors::NETWORK;
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     [[infobar_controller_ view] removeFromSuperview];
 
     scoped_ptr<TranslateInfoBarDelegate> delegate(
-        new MockTranslateInfoBarDelegate(web_contents_.get(), type, error,
-                                         profile->GetPrefs()));
+        new MockTranslateInfoBarDelegate(web_contents_.get(), type, error));
     scoped_ptr<infobars::InfoBar> infobar(
         TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
     if (infobar_)

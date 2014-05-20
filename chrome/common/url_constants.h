@@ -381,9 +381,6 @@ extern const char kSupervisedUserManagementDisplayURL[];
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 
-// "About" URL for the translate bar's options menu.
-extern const char kAboutGoogleTranslateURL[];
-
 // Help URL for the Omnibox setting.
 extern const char kOmniboxLearnMoreURL[];
 

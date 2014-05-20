@@ -425,13 +425,6 @@ const char kSettingsSearchHelpURL[] =
     "https://support.google.com/chrome/?p=settings_search_help";
 #endif
 
-const char kAboutGoogleTranslateURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=ib_translation_bar";
-#else
-    "https://support.google.com/chrome/?p=ib_translation_bar";
-#endif
-
 const char kOmniboxLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_omnibox";

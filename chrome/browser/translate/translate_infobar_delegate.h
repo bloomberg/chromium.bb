@@ -19,13 +19,12 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
-class InfoBarService;
-class PrefService;
 class TranslateClient;
+class TranslateDriver;
 class TranslateManager;
 
-namespace content {
-class WebContents;
+namespace infobars {
+class InfoBarManager;
 }
 
 class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
@@ -50,18 +49,17 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // |step| == TRANSLATING and |original_language| == kUnknownLanguageCode.
   //
   // If |replace_existing_infobar| is true, the infobar is created and added to
-  // the infobar service for |web_contents|, replacing any other translate
-  // infobar already present there.  Otherwise, the infobar will only be added
-  // if there is no other translate infobar already present.
+  // the infobar manager, replacing any other translate infobar already present
+  // there.  Otherwise, the infobar will only be added if there is no other
+  // translate infobar already present.
   static void Create(bool replace_existing_infobar,
                      const base::WeakPtr<TranslateManager>& translate_manager,
-                     InfoBarService* infobar_service,
+                     infobars::InfoBarManager* infobar_manager,
                      bool is_off_the_record,
                      translate::TranslateStep step,
                      const std::string& original_language,
                      const std::string& target_language,
                      TranslateErrors::Type error_type,
-                     PrefService* prefs,
                      bool triggered_from_menu);
 
   // Returns the number of languages supported.
@@ -156,9 +154,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
 
-  // Returns the WebContents associated with the TranslateInfoBarDelegate.
-  content::WebContents* GetWebContents();
-
   // Adds the strings that should be displayed in the after translate infobar to
   // |strings|. If |autodetermined_source_language| is false, the text in that
   // infobar is:
@@ -175,6 +170,10 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                                        bool* swap_languages,
                                        bool autodetermined_source_language);
 
+  // Gets the TranslateDriver associated with this object.
+  // May return NULL if the driver has been destroyed.
+  TranslateDriver* GetTranslateDriver();
+
  protected:
   TranslateInfoBarDelegate(
       const base::WeakPtr<TranslateManager>& translate_manager,
@@ -184,7 +183,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
       const std::string& original_language,
       const std::string& target_language,
       TranslateErrors::Type error_type,
-      PrefService* prefs,
       bool triggered_from_menu);
 
  private:
@@ -195,6 +193,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate> delegate);
 
+  // Gets the TranslateClient associated with this object.
   // May return NULL if the client has been destroyed.
   TranslateClient* GetTranslateClient();
 
