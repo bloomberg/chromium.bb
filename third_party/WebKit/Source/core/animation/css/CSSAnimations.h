@@ -159,8 +159,9 @@ private:
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
 };
 
-class CSSAnimations FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimations> {
+class CSSAnimations FINAL {
     WTF_MAKE_NONCOPYABLE(CSSAnimations);
+    DISALLOW_ALLOCATION();
 public:
     CSSAnimations();
 

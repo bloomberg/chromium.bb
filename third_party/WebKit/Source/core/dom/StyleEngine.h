@@ -147,7 +147,7 @@ public:
     void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
     bool usesRemUnits() const { return m_usesRemUnits; }
     void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
-    bool hasScopedStyleSheet() { return m_documentStyleSheetCollection.scopingNodesForStyleScoped(); }
+    bool hasScopedStyleSheet() { return documentStyleSheetCollection()->scopingNodesForStyleScoped(); }
 
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);
@@ -213,6 +213,25 @@ private:
 
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
+    // FIXME: Oilpan: clean this const madness up once oilpan ships.
+    const DocumentStyleSheetCollection* documentStyleSheetCollection() const
+    {
+#if ENABLE(OILPAN)
+        return m_documentStyleSheetCollection;
+#else
+        return &m_documentStyleSheetCollection;
+#endif
+    }
+
+    DocumentStyleSheetCollection* documentStyleSheetCollection()
+    {
+#if ENABLE(OILPAN)
+        return m_documentStyleSheetCollection;
+#else
+        return &m_documentStyleSheetCollection;
+#endif
+    }
+
     RawPtrWillBeMember<Document> m_document;
     bool m_isMaster;
 
@@ -227,7 +246,11 @@ private:
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
+#if ENABLE(OILPAN)
+    Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
+#else
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
+#endif
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<TreeScope>, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > StyleSheetCollectionMap;
     StyleSheetCollectionMap m_styleSheetCollectionMap;
 
