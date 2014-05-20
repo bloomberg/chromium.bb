@@ -8,8 +8,6 @@
 #include <string>
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
-class ExtensionService;
-
 namespace extensions {
 
 class NtpOverriddenBubbleController : public ExtensionMessageBubbleController {

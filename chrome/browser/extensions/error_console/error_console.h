@@ -26,7 +26,6 @@ class NotificationSource;
 class RenderViewHost;
 }
 
-class ExtensionService;
 class Profile;
 
 namespace extensions {

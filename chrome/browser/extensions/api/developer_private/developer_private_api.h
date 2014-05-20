@@ -25,7 +25,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 
-class ExtensionService;
 class Profile;
 
 namespace extensions {

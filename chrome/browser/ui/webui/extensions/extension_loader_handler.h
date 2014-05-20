@@ -22,7 +22,6 @@ namespace content {
 class WebUIDataSource;
 }
 
-class ExtensionService;
 class Profile;
 
 namespace extensions {

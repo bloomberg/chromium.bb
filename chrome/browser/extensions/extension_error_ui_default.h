@@ -12,7 +12,6 @@
 #include "extensions/common/extension.h"
 
 class Browser;
-class ExtensionService;
 class Profile;
 
 namespace extensions {

@@ -12,7 +12,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class AppListControllerDelegate;
-class ExtensionService;
 class Profile;
 
 namespace extensions {

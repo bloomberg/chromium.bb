@@ -4,22 +4,16 @@
 
 #include "chrome/browser/extensions/dev_mode_bubble_controller.h"
 
-#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
@@ -36,6 +30,42 @@ base::LazyInstance<std::set<Profile*> > g_shown_for_profiles =
 
 ////////////////////////////////////////////////////////////////////////////////
 // DevModeBubbleDelegate
+
+class DevModeBubbleDelegate
+    : public ExtensionMessageBubbleController::Delegate {
+ public:
+  explicit DevModeBubbleDelegate(Profile* profile);
+  virtual ~DevModeBubbleDelegate();
+
+  // ExtensionMessageBubbleController::Delegate methods.
+  virtual bool ShouldIncludeExtension(const std::string& extension_id) OVERRIDE;
+  virtual void AcknowledgeExtension(
+      const std::string& extension_id,
+      ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
+  virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
+  virtual void OnClose() OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetMessageBody() const OVERRIDE;
+  virtual base::string16 GetOverflowText(
+      const base::string16& overflow_count) const OVERRIDE;
+  virtual base::string16 GetLearnMoreLabel() const OVERRIDE;
+  virtual GURL GetLearnMoreUrl() const OVERRIDE;
+  virtual base::string16 GetActionButtonLabel() const OVERRIDE;
+  virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
+  virtual bool ShouldShowExtensionList() const OVERRIDE;
+  virtual void LogExtensionCount(size_t count) OVERRIDE;
+  virtual void LogAction(
+      ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;
+
+ private:
+  // The associated profile (weak).
+  Profile* profile_;
+
+  // Our extension service. Weak, not owned by us.
+  ExtensionService* service_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);
+};
 
 DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
     : profile_(profile),
@@ -129,8 +159,7 @@ void DevModeBubbleController::ClearProfileListForTesting() {
 bool DevModeBubbleController::IsDevModeExtension(
     const Extension* extension) {
   if (!FeatureSwitch::force_dev_mode_highlighting()->IsEnabled()) {
-    if (chrome::VersionInfo::GetChannel() <
-            chrome::VersionInfo::CHANNEL_BETA)
+    if (chrome::VersionInfo::GetChannel() < chrome::VersionInfo::CHANNEL_BETA)
       return false;
   }
   return extension->location() == Manifest::UNPACKED ||

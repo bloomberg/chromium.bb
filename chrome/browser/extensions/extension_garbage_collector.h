@@ -17,8 +17,6 @@ namespace content {
 class BrowserContext;
 }
 
-class ExtensionService;
-
 namespace extensions {
 
 // The class responsible for cleaning up the cruft left behind on the file

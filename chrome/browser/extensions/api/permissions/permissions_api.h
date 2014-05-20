@@ -12,8 +12,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "extensions/common/permissions/permission_set.h"
 
-class ExtensionService;
-
 namespace extensions {
 
 // chrome.permissions.contains

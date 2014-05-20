@@ -36,8 +36,6 @@
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 
-class ExtensionService;
-
 namespace google_apis {
 class ResourceList;
 }
