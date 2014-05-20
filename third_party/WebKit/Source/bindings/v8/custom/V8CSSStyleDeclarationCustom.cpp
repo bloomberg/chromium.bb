@@ -210,9 +210,6 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     }
 
     String result = impl->getPropertyValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
-    if (result.isNull())
-        result = ""; // convert null to empty string.
-
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
