@@ -1827,6 +1827,17 @@ const WebInputEvent* WebViewImpl::m_currentInputEvent = 0;
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
     UserGestureNotifier notifier(m_autofillClient, &m_userGestureObserved);
+    // On the first input event since page load, |notifier| instructs the
+    // autofill client to unblock values of password input fields of any forms
+    // on the page. There is a single input event, GestureTap, which can both
+    // be the first event after page load, and cause a form submission. In that
+    // case, the form submission happens before the autofill client is told
+    // to unblock the password values, and so the password values are not
+    // submitted. To avoid that, GestureTap is handled explicitly:
+    if (inputEvent.type == WebInputEvent::GestureTap && m_autofillClient) {
+        m_userGestureObserved = true;
+        m_autofillClient->firstUserGestureObserved();
+    }
 
     TRACE_EVENT0("input", "WebViewImpl::handleInputEvent");
     // If we've started a drag and drop operation, ignore input events until
