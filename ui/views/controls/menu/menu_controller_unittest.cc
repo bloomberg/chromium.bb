@@ -16,6 +16,8 @@
 #include <X11/Xlib.h>
 #undef Bool
 #undef None
+#elif defined(USE_OZONE)
+#include "ui/events/event.h"
 #endif
 
 namespace views {
@@ -83,10 +85,15 @@ class MenuControllerTest : public ViewsTestBase {
     XEvent xevent;
     memset(&xevent, 0, sizeof(xevent));
     event_source_.Dispatch(&xevent);
-#else
+#elif defined(OS_WIN)
     MSG msg;
     memset(&msg, 0, sizeof(MSG));
     dispatcher_client_.dispatcher()->Dispatch(msg);
+#elif defined(USE_OZONE)
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, true);
+    dispatcher_client_.dispatcher()->Dispatch(&event);
+#else
+#error Unsupported platform
 #endif
 
     if (count) {
