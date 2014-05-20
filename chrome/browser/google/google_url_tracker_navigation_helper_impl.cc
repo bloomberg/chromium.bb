@@ -26,22 +26,6 @@ void GoogleURLTrackerNavigationHelperImpl::SetGoogleURLTracker(
   tracker_ = tracker;
 }
 
-void GoogleURLTrackerNavigationHelperImpl::SetListeningForNavigationStart(
-    bool listen) {
-  if (listen) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-        content::NotificationService::AllBrowserContextsAndSources());
-  } else {
-    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-        content::NotificationService::AllBrowserContextsAndSources());
-  }
-}
-
-bool GoogleURLTrackerNavigationHelperImpl::IsListeningForNavigationStart() {
-  return registrar_.IsRegistered(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::NotificationService::AllBrowserContextsAndSources());
-}
-
 void GoogleURLTrackerNavigationHelperImpl::SetListeningForNavigationCommit(
     const content::NavigationController* nav_controller,
     bool listen) {
@@ -104,23 +88,6 @@ void GoogleURLTrackerNavigationHelperImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
-      content::WebContents* web_contents = controller->GetWebContents();
-      InfoBarService* infobar_service =
-          InfoBarService::FromWebContents(web_contents);
-      // Because we're listening to all sources, there may be no
-      // InfoBarService for some notifications, e.g. navigations in
-      // bubbles/balloons etc.
-      if (infobar_service) {
-        tracker_->OnNavigationPending(
-            controller, infobar_service,
-            controller->GetPendingEntry()->GetUniqueID());
-      }
-      break;
-    }
-
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();

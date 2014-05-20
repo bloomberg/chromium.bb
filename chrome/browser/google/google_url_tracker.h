@@ -21,6 +21,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+class GoogleURLTrackerClient;
 class GoogleURLTrackerNavigationHelper;
 class PrefService;
 class Profile;
@@ -70,6 +71,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // than the GoogleURLTracker itself should actually use
   // GoogleURLTrackerFactory::GetForProfile().
   GoogleURLTracker(Profile* profile,
+                   scoped_ptr<GoogleURLTrackerClient> client,
                    scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper,
                    Mode mode);
 
@@ -109,12 +111,12 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // No one but GoogleURLTrackerMapEntry should call this.
   void DeleteMapEntryForService(const InfoBarService* infobar_service);
 
-  // Called by the navigation observer after SearchCommitted() registers
-  // listeners, to indicate that we've received the "load now pending"
-  // notification.  |navigation_controller| is the NavigationController for this
-  // load; |infobar_service| is the InfoBarService of the associated tab; and
-  // |pending_id| is the unique ID of the newly pending NavigationEntry.
-  // If there is already a visible GoogleURLTracker infobar for this tab, this
+  // Called by the client after SearchCommitted() registers listeners, to
+  // indicate that we've received the "load now pending" notification.
+  // |navigation_controller| is the NavigationController for this load;
+  // |infobar_service| is the InfoBarService of the associated tab; and
+  // |pending_id| is the unique ID of the newly pending NavigationEntry.  If
+  // there is already a visible GoogleURLTracker infobar for this tab, this
   // function resets its associated pending entry ID to the new ID.  Otherwise
   // this function creates a map entry for the associated tab.
   virtual void OnNavigationPending(
@@ -187,6 +189,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   CallbackList callback_list_;
 
   Profile* profile_;
+
+  scoped_ptr<GoogleURLTrackerClient> client_;
 
   scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper_;
 

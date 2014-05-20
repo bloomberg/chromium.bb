@@ -19,8 +19,6 @@ class GoogleURLTrackerNavigationHelperImpl
 
   // GoogleURLTrackerNavigationHelper.
   virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) OVERRIDE;
-  virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationStart() OVERRIDE;
   virtual void SetListeningForNavigationCommit(
       const content::NavigationController* nav_controller,
       bool listen) OVERRIDE;
@@ -33,8 +31,6 @@ class GoogleURLTrackerNavigationHelperImpl
       const content::NavigationController* nav_controller) OVERRIDE;
 
  private:
-  friend class GoogleURLTrackerNavigationHelperTest;
-
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

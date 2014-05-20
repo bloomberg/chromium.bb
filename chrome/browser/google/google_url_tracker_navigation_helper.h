@@ -19,16 +19,8 @@ class GoogleURLTrackerNavigationHelper {
  public:
   virtual ~GoogleURLTrackerNavigationHelper() {}
 
-  // Sets the GoogleURLTracker that should receive callbacks from this observer.
+  // Sets the GoogleURLTracker that is associated with this object.
   virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) = 0;
-
-  // Enables or disables listening for navigation starts. OnNavigationPending
-  // will be called for each navigation start if listening is enabled.
-  virtual void SetListeningForNavigationStart(bool listen) = 0;
-
-  // Returns whether or not the observer is currently listening for navigation
-  // starts.
-  virtual bool IsListeningForNavigationStart() = 0;
 
   // Enables or disables listening for navigation commits for the given
   // NavigationController. OnNavigationCommitted will be called for each

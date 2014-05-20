@@ -681,6 +681,8 @@
         'browser/geolocation/geolocation_prefs.h',
         'browser/global_keyboard_shortcuts_mac.h',
         'browser/global_keyboard_shortcuts_mac.mm',
+        'browser/google/chrome_google_url_tracker_client.cc',
+        'browser/google/chrome_google_url_tracker_client.h',
         'browser/google/google_search_counter.cc',
         'browser/google/google_search_counter.h',
         'browser/google/google_update_settings_posix.cc',

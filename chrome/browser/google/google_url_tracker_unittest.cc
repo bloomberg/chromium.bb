@@ -15,6 +15,7 @@
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/notification_service.h"
@@ -104,7 +105,39 @@ void TestCallbackListener::RegisterCallback(
           &TestCallbackListener::OnGoogleURLUpdated, base::Unretained(this)));
 }
 
-// TestGoogleURLTrackerNavigationHelper -------------------------------------
+
+// TestGoogleURLTrackerClient -------------------------------------------------
+
+class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
+ public:
+  TestGoogleURLTrackerClient();
+  virtual ~TestGoogleURLTrackerClient();
+
+  virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
+  virtual bool IsListeningForNavigationStart() OVERRIDE;
+
+ private:
+  bool observe_nav_start_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestGoogleURLTrackerClient);
+};
+
+TestGoogleURLTrackerClient::TestGoogleURLTrackerClient()
+    : observe_nav_start_(false) {
+}
+
+TestGoogleURLTrackerClient::~TestGoogleURLTrackerClient() {
+}
+
+void TestGoogleURLTrackerClient::SetListeningForNavigationStart(bool listen) {
+  observe_nav_start_ = listen;
+}
+
+bool TestGoogleURLTrackerClient::IsListeningForNavigationStart() {
+  return observe_nav_start_;
+}
+
+// TestGoogleURLTrackerNavigationHelper ---------------------------------------
 
 class TestGoogleURLTrackerNavigationHelper
     : public GoogleURLTrackerNavigationHelper {
@@ -113,8 +146,6 @@ class TestGoogleURLTrackerNavigationHelper
   virtual ~TestGoogleURLTrackerNavigationHelper();
 
   virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) OVERRIDE;
-  virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationStart() OVERRIDE;
   virtual void SetListeningForNavigationCommit(
       const content::NavigationController* nav_controller,
       bool listen) OVERRIDE;
@@ -128,7 +159,6 @@ class TestGoogleURLTrackerNavigationHelper
 
  private:
   GoogleURLTracker* tracker_;
-  bool observe_nav_start_;
   std::set<const content::NavigationController*>
       nav_controller_commit_listeners_;
   std::set<const content::NavigationController*>
@@ -136,8 +166,7 @@ class TestGoogleURLTrackerNavigationHelper
 };
 
 TestGoogleURLTrackerNavigationHelper::TestGoogleURLTrackerNavigationHelper()
-    : tracker_(NULL),
-      observe_nav_start_(false) {
+    : tracker_(NULL) {
 }
 
 TestGoogleURLTrackerNavigationHelper::
@@ -147,15 +176,6 @@ TestGoogleURLTrackerNavigationHelper::
 void TestGoogleURLTrackerNavigationHelper::SetGoogleURLTracker(
     GoogleURLTracker* tracker) {
   tracker_ = tracker;
-}
-
-void TestGoogleURLTrackerNavigationHelper::SetListeningForNavigationStart(
-    bool listen) {
-  observe_nav_start_ = listen;
-}
-
-bool TestGoogleURLTrackerNavigationHelper::IsListeningForNavigationStart() {
-  return observe_nav_start_;
 }
 
 void TestGoogleURLTrackerNavigationHelper::SetListeningForNavigationCommit(
@@ -261,6 +281,7 @@ class GoogleURLTrackerTest : public testing::Test {
   // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   net::TestURLFetcherFactory fetcher_factory_;
+  GoogleURLTrackerClient* client_;
   GoogleURLTrackerNavigationHelper* nav_helper_;
   TestingProfile profile_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
@@ -300,12 +321,16 @@ GoogleURLTrackerTest::~GoogleURLTrackerTest() {
 
 void GoogleURLTrackerTest::SetUp() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-  // Ownership is passed to google_url_tracker_, but a weak pointer is kept;
-  // this is safe since GoogleURLTracker keeps the observer for its lifetime.
+  // Ownership is passed to google_url_tracker_, but weak pointers are kept;
+  // this is safe since GoogleURLTracker keeps these objects for its lifetime.
+  client_ = new TestGoogleURLTrackerClient();
   nav_helper_ = new TestGoogleURLTrackerNavigationHelper();
+  scoped_ptr<GoogleURLTrackerClient> client(client_);
   scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper(nav_helper_);
   google_url_tracker_.reset(
-      new GoogleURLTracker(&profile_, nav_helper.Pass(),
+      new GoogleURLTracker(&profile_,
+                           client.Pass(),
+                           nav_helper.Pass(),
                            GoogleURLTracker::UNIT_TEST_MODE));
   google_url_tracker_->infobar_creator_ = base::Bind(
       &GoogleURLTrackerTest::CreateTestInfoBar, base::Unretained(this));
@@ -314,9 +339,6 @@ void GoogleURLTrackerTest::SetUp() {
 void GoogleURLTrackerTest::TearDown() {
   while (!unique_ids_seen_.empty())
     CloseTab(*unique_ids_seen_.begin());
-
-  nav_helper_ = NULL;
-  network_change_notifier_.reset();
 }
 
 net::TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
@@ -371,7 +393,7 @@ void GoogleURLTrackerTest::SetNavigationPending(intptr_t unique_id,
     // for navigation starts if the searchdomaincheck response was bogus.
   }
   unique_ids_seen_.insert(unique_id);
-  if (nav_helper_->IsListeningForNavigationStart()) {
+  if (client_->IsListeningForNavigationStart()) {
     google_url_tracker_->OnNavigationPending(
         reinterpret_cast<content::NavigationController*>(unique_id),
         reinterpret_cast<InfoBarService*>(unique_id), unique_id);

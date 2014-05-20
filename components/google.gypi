@@ -16,6 +16,8 @@
       'sources': [
         'google/core/browser/google_search_metrics.cc',
         'google/core/browser/google_search_metrics.h',
+        'google/core/browser/google_url_tracker_client.cc',
+        'google/core/browser/google_url_tracker_client.h',
       ],
     },
   ],
