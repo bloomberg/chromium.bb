@@ -10,10 +10,10 @@
 namespace extensions {
 namespace image_writer {
 
-// Number of bytes for the maximum partition table size.  By wiping this many
-// bytes we can essentially guarantee the header and associated information will
-// be wiped. See http://crbug.com/328246 for more information.
-const int kPartitionTableSize = 1 * 1024;
+// Number of bytes for the maximum partition table size.  GUID partition tables
+// reside in the second sector of the disk.  Disks can have up to 4k sectors.
+// See http://crbug.com/328246 for more information.
+const int kPartitionTableSize = 2 * 4096;
 
 DestroyPartitionsOperation::DestroyPartitionsOperation(
     base::WeakPtr<OperationManager> manager,

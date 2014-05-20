@@ -16,6 +16,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
+#endif
+
 namespace extensions {
 namespace image_writer {
 
@@ -48,6 +53,37 @@ class MockOperationManager : public OperationManager {
                              int progress,
                              const std::string& error_message));
 };
+
+#if defined(OS_CHROMEOS)
+// A fake for the DiskMountManager that will successfully call the unmount
+// callback.
+class FakeDiskMountManager : public chromeos::disks::MockDiskMountManager {
+ public:
+  FakeDiskMountManager();
+  virtual ~FakeDiskMountManager();
+
+  virtual void UnmountDeviceRecursively(
+      const std::string& device_path,
+      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE;
+  /*
+  MOCK_METHOD1(AddObserver, void(chromeos::disks::DiskMountManager::Observer*));
+  MOCK_METHOD1(RemoveObserver,
+  void(chromeos::disks::DiskMountManager::Observer*));
+  MOCK_CONST_METHOD0(disks, const DiskMap&());
+  MOCK_CONST_METHOD1(FindDiskBySourcePath, const Disk*(const std::string&));
+  MOCK_CONST_METHOD0(mount_points, const MountPointMap&());
+  MOCK_METHOD0(RequestMountInfoRefresh, void());
+  MOCK_METHOD4(MountPath, void(const std::string&, const std::string&, const
+  std::string&, chromeos::MountType));
+  MOCK_METHOD3(UnmountPath, void(const std::string&, chromeos::UnmountOptions,
+  const UnmountPathCallback&));
+  MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
+  */
+
+ private:
+  DiskMap disks_;
+};
+#endif
 
 class FakeImageWriterClient : public ImageWriterUtilityClient {
  public:

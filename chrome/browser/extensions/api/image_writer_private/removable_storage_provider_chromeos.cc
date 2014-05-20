@@ -31,7 +31,7 @@ bool RemovableStorageProvider::PopulateDeviceList(
          disk.device_type() == chromeos::DEVICE_TYPE_SD)) {
       linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
           new api::image_writer_private::RemovableStorageDevice());
-      device->storage_unit_id = disk.file_path();
+      device->storage_unit_id = disk.device_path();
       device->capacity = disk.total_size_in_bytes();
       device->vendor = disk.vendor_name();
       device->model = disk.product_name();

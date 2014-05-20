@@ -46,6 +46,7 @@ extern const char kImageNotFound[];
 extern const char kImageOpenError[];
 extern const char kImageReadError[];
 extern const char kImageSizeError[];
+extern const char kUnmountVolumesError[];
 
 // Verification Errors
 extern const char kHashReadError[];

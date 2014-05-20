@@ -55,6 +55,17 @@ MockOperationManager::MockOperationManager(content::BrowserContext* context)
     : OperationManager(context) {}
 MockOperationManager::~MockOperationManager() {}
 
+#if defined(OS_CHROMEOS)
+FakeDiskMountManager::FakeDiskMountManager() {}
+FakeDiskMountManager::~FakeDiskMountManager() {}
+
+void FakeDiskMountManager::UnmountDeviceRecursively(
+    const std::string& device_path,
+    const UnmountDeviceRecursivelyCallbackType& callback) {
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+}
+#endif
+
 FakeImageWriterClient::FakeImageWriterClient() {}
 FakeImageWriterClient::~FakeImageWriterClient() {}
 
@@ -131,12 +142,33 @@ void ImageWriterUnitTestBase::SetUp() {
     fake_dbus_thread_manager->SetImageBurnerClient(image_burner_fake.Pass());
     chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
   }
+  FakeDiskMountManager* disk_manager = new FakeDiskMountManager();
+  chromeos::disks::DiskMountManager::InitializeForTesting(disk_manager);
+
+  // Adds a disk entry for test_device_path_ with the same device and file path.
+  disk_manager->CreateDiskEntryForMountDevice(
+      chromeos::disks::DiskMountManager::MountPointInfo(
+          test_device_path_.value(),
+          "/dummy/mount",
+          chromeos::MOUNT_TYPE_DEVICE,
+          chromeos::disks::MOUNT_CONDITION_NONE),
+      "device_id",
+      "device_label",
+      "Vendor",
+      "Product",
+      chromeos::DEVICE_TYPE_USB,
+      kTestFileSize,
+      true,
+      true,
+      false);
+  disk_manager->SetupDefaultReplies();
 #endif
 }
 
 void ImageWriterUnitTestBase::TearDown() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Shutdown();
+  chromeos::disks::DiskMountManager::Shutdown();
 #endif
 }
 

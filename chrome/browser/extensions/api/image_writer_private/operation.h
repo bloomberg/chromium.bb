@@ -164,8 +164,14 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 #endif
 
 #if defined(OS_CHROMEOS)
-  void StartWriteOnUIThread(const base::Closure& continuation);
-
+  // Unmounts all volumes on |device_path_|.
+  void UnmountVolumes(const base::Closure& continuation);
+  // Starts the write after unmounting.
+  void UnmountVolumesCallback(const base::Closure& continuation, bool success);
+  // Starts the ImageBurner write.  Note that target_path is the file path of
+  // the device where device_path has been a system device path.
+  void StartWriteOnUIThread(const std::string& target_path,
+                            const base::Closure& continuation);
   void OnBurnFinished(const base::Closure& continuation,
                       const std::string& target_path,
                       bool success,

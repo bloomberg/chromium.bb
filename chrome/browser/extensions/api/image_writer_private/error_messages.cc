@@ -45,6 +45,7 @@ const char kImageNotFound[] = "IMAGE_NOT_FOUND";
 const char kImageOpenError[] = "IMAGE_OPEN_ERROR";
 const char kImageReadError[] = "IMAGE_READ_ERROR";
 const char kImageSizeError[] = "IMAGE_STAT_ERROR";
+const char kUnmountVolumesError[] = "UNMOUNT_VOLUMES_ERROR";
 
 // Verification Errors
 const char kHashReadError[] = "HASH_READ_ERROR";

@@ -64,9 +64,14 @@ void OperationManager::StartWriteFromUrl(
     const std::string& hash,
     const std::string& device_path,
     const Operation::StartWriteCallback& callback) {
+#if defined(OS_CHROMEOS)
+  // Chrome OS can only support a single operation at a time.
+  if (operations_.size() > 0) {
+#else
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
   if (existing_operation != operations_.end()) {
+#endif
     return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 
@@ -89,9 +94,14 @@ void OperationManager::StartWriteFromFile(
     const base::FilePath& path,
     const std::string& device_path,
     const Operation::StartWriteCallback& callback) {
+#if defined(OS_CHROMEOS)
+  // Chrome OS can only support a single operation at a time.
+  if (operations_.size() > 0) {
+#else
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
   if (existing_operation != operations_.end()) {
+#endif
     return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 

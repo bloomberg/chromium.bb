@@ -6,11 +6,13 @@
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_burner_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 namespace image_writer {
 
+using chromeos::disks::DiskMountManager;
 using chromeos::ImageBurnerClient;
 using content::BrowserThread;
 
@@ -35,12 +37,13 @@ void Operation::Write(const base::Closure& continuation) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SetStage(image_writer_api::STAGE_WRITE);
 
+  // Note this has to be run on the FILE thread to avoid concurrent access.
+  AddCleanUpFunction(base::Bind(&ClearImageBurner));
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&Operation::StartWriteOnUIThread, this, continuation));
-
-  AddCleanUpFunction(base::Bind(&ClearImageBurner));
+      base::Bind(&Operation::UnmountVolumes, this, continuation));
 }
 
 void Operation::VerifyWrite(const base::Closure& continuation) {
@@ -50,9 +53,42 @@ void Operation::VerifyWrite(const base::Closure& continuation) {
   continuation.Run();
 }
 
-void Operation::StartWriteOnUIThread(const base::Closure& continuation) {
+void Operation::UnmountVolumes(const base::Closure& continuation) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      device_path_.value(),
+      base::Bind(&Operation::UnmountVolumesCallback, this, continuation));
+}
+
+void Operation::UnmountVolumesCallback(const base::Closure& continuation,
+                                       bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (!success) {
+    LOG(ERROR) << "Volume unmounting failed.";
+    Error(error::kUnmountVolumesError);
+    return;
+  }
+
+  const DiskMountManager::DiskMap& disks =
+      DiskMountManager::GetInstance()->disks();
+  DiskMountManager::DiskMap::const_iterator iter =
+      disks.find(device_path_.value());
+
+  if (iter == disks.end()) {
+    LOG(ERROR) << "Disk not found in disk list after unmounting volumes.";
+    Error(error::kUnmountVolumesError);
+    return;
+  }
+
+  StartWriteOnUIThread(iter->second->file_path(), continuation);
+}
+
+void Operation::StartWriteOnUIThread(const std::string& target_path,
+                                     const base::Closure& continuation) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(haven): Image Burner cannot handle multiple burns. crbug.com/373575
   ImageBurnerClient* burner =
       chromeos::DBusThreadManager::Get()->GetImageBurnerClient();
 
@@ -61,7 +97,7 @@ void Operation::StartWriteOnUIThread(const base::Closure& continuation) {
       base::Bind(&Operation::OnBurnProgress, this));
 
   burner->BurnImage(image_path_.value(),
-                    device_path_.value(),
+                    target_path,
                     base::Bind(&Operation::OnBurnError, this));
 }
 
