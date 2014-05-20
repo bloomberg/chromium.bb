@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <script src="../../../resources/js-test.js"></script>
+<script src="resources/currentSrcHelper.js"></script>
 <script>
     if (window.testRunner)
         testRunner.dumpAsText();
 
     addEventListener("load", function() {
         shouldBe('document.getElementById("canary").clientWidth', '75');
-        shouldBe('document.getElementById("canary").currentSrc', '"resources/blue_rect.jpg?0"');
+        shouldBe('currentSrcFileName("canary")', '"blue_rect.jpg?0"');
         shouldBe('document.getElementById("picture_in_picture").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_picture").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_picture")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_in_div_in_picture").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_div_in_picture").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_div_in_picture")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_in_div_with_source_above").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_div_with_source_above").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_div_with_source_above")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_in_the_way").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_the_way").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_the_way")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_in_picture_1").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_picture_1").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_picture_1")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_in_picture_2").clientWidth', '800');
-        shouldBe('document.getElementById("picture_in_picture_2").currentSrc', '"../../hidpi/resources/image-set-2x.png?2"');
+        shouldBe('currentSrcFileName("picture_in_picture_2")', '"image-set-2x.png?2"');
         shouldBe('document.getElementById("picture_at_end").clientWidth', '75');
-        shouldBe('document.getElementById("picture_at_end").currentSrc', '"resources/blue_rect.jpg?52"');
+        shouldBe('currentSrcFileName("picture_at_end")', '"blue_rect.jpg?52"');
         shouldBe('document.getElementById("picture_no_source").clientWidth', '75');
-        shouldBe('document.getElementById("picture_no_source").currentSrc', '"resources/blue_rect.jpg?6"');
+        shouldBe('currentSrcFileName("picture_no_source")', '"blue_rect.jpg?6"');
     }, false);
 </script>
 <!-- A canary image to see that the test is actually working -->

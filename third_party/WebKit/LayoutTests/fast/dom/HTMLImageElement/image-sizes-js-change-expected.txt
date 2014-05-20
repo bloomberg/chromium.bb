@@ -2,5 +2,5 @@ main frame - img requested 'image-set-4x.png'
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS document.getElementById("foo").currentSrc is "resources/image-set-4x.png"
+PASS currentSrcFileName("foo") is "image-set-4x.png"
 

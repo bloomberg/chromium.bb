@@ -157,6 +157,7 @@ void HTMLImageElement::resetFormOwner()
 void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidate& candidate)
 {
     m_bestFitImageURL = candidate.url();
+    m_currentSrc = AtomicString(document().completeURL(imageSourceURL()).string());
     float candidateScaleFactor = candidate.scaleFactor();
     // FIXME: Make this ">0" part match the spec, once it settles.
     if (candidateScaleFactor > 0)
@@ -376,8 +377,7 @@ int HTMLImageElement::naturalHeight() const
 
 const AtomicString& HTMLImageElement::currentSrc() const
 {
-    // FIXME: Need to absolutize the returned value.
-    return m_bestFitImageURL;
+    return m_currentSrc;
 }
 
 bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const

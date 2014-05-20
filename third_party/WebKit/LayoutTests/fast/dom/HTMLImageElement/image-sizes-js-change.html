@@ -1,7 +1,7 @@
-<html>
-<head>
+<!DOCTYPE html>
 <script src="../../hidpi/resources/srcset-helper.js"></script>
 <script src="../../../resources/js-test.js"></script>
+<script src="resources/currentSrcHelper.js"></script>
 <script>
     if (window.testRunner)
         testRunner.dumpAsText();
@@ -21,12 +21,7 @@
         updateSrc();
     }, false);
     addEventListener("load", function() {
-        shouldBe('document.getElementById("foo").currentSrc', '"resources/image-set-4x.png"');
+        shouldBe('currentSrcFileName("foo")', '"image-set-4x.png"');
     }, false);
 </script>
-</head>
-
-<body id="body">
-    <img id="foo">
-</body>
-</html>
+<img id="foo">

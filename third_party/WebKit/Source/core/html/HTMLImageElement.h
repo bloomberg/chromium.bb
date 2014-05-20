@@ -132,6 +132,7 @@ private:
     WeakPtr<HTMLFormElement> m_form;
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
+    AtomicString m_currentSrc;
     float m_imageDevicePixelRatio;
     bool m_formWasSetByParser;
 };
