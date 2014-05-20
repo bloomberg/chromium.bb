@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
 #include "base/memory/shared_memory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 
@@ -50,8 +53,18 @@ uint32 AudioInputSyncWriter::Write(const void* data,
          << interval.InMilliseconds() << "ms.";
     }
   }
-  if (!oss.str().empty())
+  if (!oss.str().empty()) {
     MediaStreamManager::SendMessageToNativeLog(oss.str());
+
+    // MediaStreamManager::SendMessageToNativeLog posts a task to the UI thread,
+    // which will attach the audio thread to the Android java VM. Unlike chrome
+    // created threads, the audio thread is owned by the OS and does not detach
+    // itself from the VM on exit, causing a crash (crbug/365915). So we detach
+    // here to make sure the thread exits clean.
+#if defined(OS_ANDROID)
+    base::android::DetachFromVM();
+#endif
+  }
 
   last_write_time_ = base::Time::Now();
 
