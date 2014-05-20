@@ -293,9 +293,6 @@ public:
     AXObjectCache* axObjectCache() const;
     AXID axObjectID() const { return m_id; }
 
-    // Lays out the page so that the accessibility tree is based on up-to-date information.
-    void updateBackingStore();
-
     // Determine subclass type.
     virtual bool isAXNodeObject() const { return false; }
     virtual bool isAXRenderObject() const { return false; }

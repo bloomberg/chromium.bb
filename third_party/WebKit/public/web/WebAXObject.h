@@ -81,11 +81,14 @@ public:
 
     BLINK_EXPORT int axID() const;
 
-    // Update the underlying tree, and return true if this object is
+    // Update layout on the underlying tree, and return true if this object is
     // still valid (not detached). Note that calling this method
     // can cause other WebAXObjects to become invalid, too,
     // so always call isDetached if updateBackingStoreAndCheckValidity
     // has been called on any object, or if any other WebCore code has run.
+    BLINK_EXPORT bool updateLayoutAndCheckValidity();
+
+    // FIXME: Deprecated - remove once callers use updateLayoutAndCheckValidity, instead.
     BLINK_EXPORT bool updateBackingStoreAndCheckValidity();
 
     BLINK_EXPORT WebString accessibilityDescription() const;

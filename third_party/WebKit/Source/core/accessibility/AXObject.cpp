@@ -163,13 +163,6 @@ AXObjectCache* AXObject::axObjectCache() const
     return 0;
 }
 
-void AXObject::updateBackingStore()
-{
-    // Updating the layout may delete this object.
-    if (Document* document = this->document())
-        document->updateLayoutIgnorePendingStylesheets();
-}
-
 bool AXObject::isARIATextControl() const
 {
     return ariaRoleAttribute() == TextAreaRole || ariaRoleAttribute() == TextFieldRole;
