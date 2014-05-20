@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace ppapi {
 
@@ -17,9 +18,17 @@ namespace ppapi {
 
 #pragma pack(push, 1)
 
+#if defined(ENABLE_NEW_GAMEPAD_API)
+ typedef double buttonValueType;
+ typedef double axisValueType;
+#else
+ typedef float buttonValueType;
+ typedef float axisValueType;
+#endif
+
 struct WebKitGamepadButton {
   bool pressed;
-  float value;
+  buttonValueType value;
 };
 
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
@@ -44,7 +53,7 @@ struct WebKitGamepad {
   unsigned axes_length;
 
   // Normalized values representing axes, in the range [-1..1].
-  float axes[kAxesLengthCap];
+  axisValueType axes[kAxesLengthCap];
 
   // Number of valid entries in the buttons array.
   unsigned buttons_length;
