@@ -1983,6 +1983,7 @@
 
       ['asan==1', {
         'clang%': 1,
+        'use_allocator%': 'none',
       }],
       ['asan==1 and OS=="mac"', {
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
