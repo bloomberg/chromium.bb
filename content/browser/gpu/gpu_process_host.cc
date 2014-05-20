@@ -38,6 +38,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/message_filter.h"
+#include "media/base/media_switches.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
@@ -937,6 +938,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kGpuSandboxAllowSysVShm,
     switches::kGpuSandboxFailuresFatal,
     switches::kGpuSandboxStartAfterInitialization,
+    switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
     switches::kLoggingLevel,
     switches::kNoSandbox,
     switches::kTestGLLib,

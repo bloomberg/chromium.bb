@@ -15,6 +15,11 @@ const char kVideoThreads[] = "video-threads";
 // Enables ADTS stream parser for Media Source Extensions.
 const char kEnableADTSStreamParser[] = "enable-adts-stream-parser";
 
+// Bypass autodetection of the upper limit on resolution of streams that can
+// be hardware decoded.
+const char kIgnoreResolutionLimitsForAcceleratedVideoDecode[] =
+    "ignore-resolution-limits-for-accelerated-video-decode";
+
 #if defined(OS_ANDROID)
 // Disables the infobar popup for accessing protected media identifier.
 const char kDisableInfobarForProtectedMediaIdentifier[] =

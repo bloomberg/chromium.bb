@@ -105,7 +105,10 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     kInputBufferCount = 8,
     // TODO(posciak): determine input buffer size based on level limits.
     // See http://crbug.com/255116.
-    kInputBufferMaxSize = 1024 * 1024,
+    // Input bitstream buffer size for up to 1080p streams.
+    kInputBufferMaxSizeFor1080p = 1024 * 1024,
+    // Input bitstream buffer size for up to 4k streams.
+    kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p,
     // Number of output buffers to use for each VDA stage above what's required
     // by the decoder (e.g. DPB size, in H264).  We need
     // media::limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,

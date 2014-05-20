@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -18,6 +19,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
@@ -120,9 +122,14 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
   if (coded_size.width() <= 1920 && coded_size.height() <= 1088)
     return true;
 
+  // NOTE: additional autodetection logic may require updating input buffer size
+  // selection in platform-specific implementations, such as
+  // V4L2VideoDecodeAccelerator.
   base::CPU cpu;
   bool hw_large_video_support =
-      (cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55;
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode) ||
+      ((cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55);
   bool os_large_video_support = true;
 #if defined(OS_WIN)
   os_large_video_support = false;

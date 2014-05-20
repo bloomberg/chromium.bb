@@ -12,12 +12,14 @@
 #include <sys/mman.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
+#include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -1669,7 +1671,11 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   memset(&format, 0, sizeof(format));
   format.type                              = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   format.fmt.pix_mp.pixelformat            = pixelformat;
-  format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSize;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode))
+    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor4k;
+  else
+    format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSizeFor1080p;
   format.fmt.pix_mp.num_planes             = 1;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
