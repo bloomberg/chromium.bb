@@ -894,12 +894,6 @@ crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsM
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/bidi-explicit-embedding-past-end.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/emphasis-avoid-ruby.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/emphasis-overlap.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/justify-padding-distribution.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/setData-dirty-lines.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/splitText-dirty-lines.html [ NeedsRebaseline ]
 
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
