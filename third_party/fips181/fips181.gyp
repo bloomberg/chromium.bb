@@ -16,8 +16,17 @@
         ],
       },
       'sources': [
+        'convert.cc',
+        'convert.h',
         'fips181.cc',
         'fips181.h',
+        'owntypes.h',
+        'randpass.cc',
+        'randpass.h',
+        'smbl.h',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
       ],
     },
   ],
