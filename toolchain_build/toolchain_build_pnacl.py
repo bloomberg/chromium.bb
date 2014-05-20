@@ -211,11 +211,12 @@ def GetGitSyncCmdsCallback(revisions):
      source targets with minimal boilerplate.
   """
   def GetGitSyncCmds(component):
-    return [command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS[component],
-                                '%(output)s',
-                                revisions[component]),
-            command.Runnable(None, pnacl_commands.CmdCheckoutGitBundleForTrybot,
-                             component, '%(output)s')]
+    git_url = GIT_BASE_URL + GIT_REPOS[component]
+    return (command.SyncGitRepoCmds(git_url, '%(output)s',
+                                    revisions[component]) +
+            [command.Runnable(None,
+                              pnacl_commands.CmdCheckoutGitBundleForTrybot,
+                              component, '%(output)s')])
 
   return GetGitSyncCmds
 
@@ -451,25 +452,36 @@ values.
       deps[tokens[0].replace('_', '-')] = tokens[1]
   return deps
 
+
 # This is to replace build.sh's use of gclient, which will eliminate the issues
 # with msys vs cygwin git checkouts, and make testing easier. Note that the new
 # build scripts will not share source directories with build.sh.
-def SyncPNaClRepos(revisions):
-  sys.stdout.flush()
-  for repo, revision in revisions.iteritems():
-    destination = os.path.join(NACL_DIR, 'pnacl', 'git', repo)
+def GetGitSyncPNaClReposCmdsCallback(revisions):
+  def GetGitSyncCmds(repo):
+    git_url = GIT_BASE_URL + GIT_REPOS[repo]
+
     # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
     # the newlib repo on checkout (while silently blowing away any local
     # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
     is_newlib = repo == 'nacl-newlib'
-    pynacl.repo_tools.SyncGitRepo(
-        GIT_BASE_URL + GIT_REPOS[repo],
-        destination,
-        revision,
-        clean=is_newlib
-    )
+    return (command.SyncGitRepoCmds(git_url, '%(output)s', revisions[repo],
+                                    clean=is_newlib) +
+            [command.Runnable(None,
+                              pnacl_commands.CmdCheckoutGitBundleForTrybot,
+                              repo, '%(output)s')])
 
-    pnacl_commands.CheckoutGitBundleForTrybot(repo, destination)
+  return GetGitSyncCmds
+
+
+def GetSyncPNaClReposSource(revisions, GetGitSyncCmds):
+  sources = {}
+  for repo, revision in revisions.iteritems():
+    sources['legacy_pnacl_%s_src' % repo] = {
+        'type': 'source',
+        'output_dirname': os.path.join(NACL_DIR, 'pnacl', 'git', repo),
+        'commands': GetGitSyncCmds(repo),
+    }
+  return sources
 
 
 def InstallMinGWHostCompiler():
@@ -590,52 +602,58 @@ if __name__ == '__main__':
     print 'Use of clang is currently only supported with cmake/ninja'
     sys.exit(1)
 
-  revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
-  if args.legacy_repo_sync:
-    SyncPNaClRepos(revisions)
-    sys.exit(0)
-
-  if pynacl.platform.IsWindows():
-    InstallMinGWHostCompiler()
 
   packages = {}
-  packages.update(HostToolsSources(GetGitSyncCmdsCallback(revisions)))
-  if args.testsuite_sync:
-    packages.update(TestsuiteSources(GetGitSyncCmdsCallback(revisions)))
+  upload_packages = {}
 
-
-  if pynacl.platform.IsLinux64():
-    hosts = ['i686-linux']
-    if args.build_64bit_host:
-      hosts.append(pynacl.platform.PlatformTriple())
+  rev = ParseComponentRevisionsFile(GIT_DEPS_FILE)
+  if args.legacy_repo_sync:
+    packages = GetSyncPNaClReposSource(rev,
+                                       GetGitSyncPNaClReposCmdsCallback(rev))
+    # Make sure sync is inside of the args to toolchain_main.
+    if not set(['-y', '--sync', '--sync-only']).intersection(leftover_args):
+      leftover_args.append('--sync-only')
   else:
-    hosts = [pynacl.platform.PlatformTriple()]
-  if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
-    hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
-  for host in hosts:
-    packages.update(HostLibs(host))
-    packages.update(HostTools(host, args))
-  # Don't build the target libs on Windows because of pathname issues.
-  # Don't build the target libs on Mac because the gold plugin's rpaths
-  # aren't right.
-  # On linux use the 32-bit compiler to build the target libs since that's what
-  # most developers will be using. (hosts[0] is i686-linux on linux64)
-  # For now, don't build anything more than once.
-  # TODO(dschuff): Figure out a better way to test things on toolchain bots.
-  if pynacl.platform.IsLinux64():
-    packages.update(pnacl_targetlibs.TargetLibsSrc(
-      GetGitSyncCmdsCallback(revisions)))
-    for bias in BITCODE_BIASES:
-      packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
-    for arch in ALL_ARCHES:
-      packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
-    packages.update(Metadata())
-  if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
-    packages.update(pnacl_targetlibs.UnsandboxedIRT(
-        'x86-32-%s' % pynacl.platform.GetOS()))
+    upload_packages = GetUploadPackageTargets()
+    if pynacl.platform.IsWindows():
+      InstallMinGWHostCompiler()
+
+    packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
+    if args.testsuite_sync:
+      packages.update(TestsuiteSources(GetGitSyncCmdsCallback(rev)))
+
+    if pynacl.platform.IsLinux64():
+      hosts = ['i686-linux']
+      if args.build_64bit_host:
+        hosts.append(pynacl.platform.PlatformTriple())
+    else:
+      hosts = [pynacl.platform.PlatformTriple()]
+    if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
+      hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
+    for host in hosts:
+      packages.update(HostLibs(host))
+      packages.update(HostTools(host, args))
+    # Don't build the target libs on Windows because of pathname issues.
+    # Don't build the target libs on Mac because the gold plugin's rpaths
+    # aren't right.
+    # On linux use the 32-bit compiler to build the target libs since that's
+    # what most developers will be using. (hosts[0] is i686-linux on linux64)
+    # For now, don't build anything more than once.
+    # TODO(dschuff): Figure out a better way to test things on toolchain bots.
+    if pynacl.platform.IsLinux64():
+      packages.update(pnacl_targetlibs.TargetLibsSrc(
+        GetGitSyncCmdsCallback(rev)))
+      for bias in BITCODE_BIASES:
+        packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
+      for arch in ALL_ARCHES:
+        packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
+      packages.update(Metadata())
+    if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
+      packages.update(pnacl_targetlibs.UnsandboxedIRT(
+          'x86-32-%s' % pynacl.platform.GetOS()))
 
 
   tb = toolchain_main.PackageBuilder(packages,
-                                     GetUploadPackageTargets(),
+                                     upload_packages,
                                      leftover_args)
   tb.Main()

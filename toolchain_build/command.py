@@ -300,13 +300,45 @@ def WriteData(data, dst, run_cond=None):
   return Runnable(run_cond, writedata, dst, data)
 
 
-def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None, run_cond=None):
-  def sync(subst, url, dest, rev, reclone, clean, pathspec):
+def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
+                    reclone=False, clean=False, pathspec=None, run_cond=None):
+  """Returns a list of commands to sync and validate a git repo.
+
+  Args:
+    url: Git repo URL to sync from.
+    destination: Local git repo directory to sync to.
+    revision: If not None, will sync the git repository to this revision.
+    clobber_invalid_repo: Always True for bots, but can be forced for users.
+    reclone: If True, delete the destination directory and re-clone the repo.
+    clean: If True, discard local changes and untracked files.
+           Otherwise the checkout will fail if there are uncommitted changes.
+    pathspec: If not None, add the path to the git checkout command, which
+              causes it to just update the working tree without switching
+              branches.
+    run_cond: Run condition for when to sync the git repo.
+
+  Returns:
+    List of commands, this is a little different from the other command funcs.
+  """
+  def validate(subst, url, directory):
+    pynacl.repo_tools.ValidateGitRepo(url, subst.SubstituteAbsPaths(directory),
+                                      clobber_mismatch=True)
+
+  def sync(subst, url, dest, revision, reclone, clean, pathspec):
     pynacl.repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
                                   reclone, clean, pathspec)
-  return Runnable(run_cond, sync, url, destination, revision, reclone, clean,
-                  pathspec)
+
+  def ClobberInvalidRepoCondition(cmd_opts):
+    # Check if caller passed their own run_cond
+    if run_cond and not run_cond(cmd_opts):
+      return False
+    elif clobber_invalid_repo:
+      return True
+    return cmd_opts.IsBot()
+
+  return [Runnable(ClobberInvalidRepoCondition, validate, url, destination),
+          Runnable(run_cond, sync, url, destination, revision, reclone,
+                   clean, pathspec)]
 
 
 def CleanGitWorkingDir(directory, path, run_cond=None):

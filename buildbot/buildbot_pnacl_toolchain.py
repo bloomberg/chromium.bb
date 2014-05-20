@@ -58,13 +58,19 @@ toolchain_install_dir = os.path.join(
 def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   executable = [python_executable] if python_executable else [sys.executable]
   sync_flag = ['--sync'] if sync else []
-  return executable + [
-    # The path to the script is a relative path with forward slashes so it is
-    # interpreted properly when it uses __file__ inside cygwin
-    'toolchain_build/toolchain_build_pnacl.py',
-    '--verbose', '--clobber', '--build-64bit-host',
-    '--install', toolchain_install_dir,
-    ] + sync_flag + extra_flags
+
+  # The path to the script is a relative path with forward slashes so it is
+  # interpreted properly when it uses __file__ inside cygwin
+  executable_args = ['toolchain_build/toolchain_build_pnacl.py',
+                     '--verbose', '--clobber', '--build-64bit-host',
+                     '--install', toolchain_install_dir]
+
+  if args.buildbot:
+    executable_args.append('--buildbot')
+  elif args.trybot:
+    executable_args.append('--trybot')
+
+  return executable + executable_args + sync_flag + extra_flags
 
 
 # Sync the git repos used by build.sh
@@ -128,15 +134,9 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
 try:
-  gsd_arg = []
-  if args.buildbot:
-    gsd_arg = ['--buildbot']
-  elif args.trybot:
-    gsd_arg = ['--trybot']
-
   cmd = ToolchainBuildCmd(cygwin_python if host_os == 'win' else None,
                           host_os != 'win', # On Windows, we synced already
-                          gsd_arg + ['--packages-file', TEMP_PACKAGES_FILE])
+                          ['--packages-file', TEMP_PACKAGES_FILE])
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
