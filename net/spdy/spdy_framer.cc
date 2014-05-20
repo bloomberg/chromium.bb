@@ -47,6 +47,10 @@ base::LazyInstance<DictionaryIds>::Leaky g_dictionary_ids;
 // Used to indicate no flags in a SPDY flags field.
 const uint8 kNoFlags = 0;
 
+// Wire sizes of priority payloads.
+const size_t kPriorityDependencyPayloadSize = 4;
+const size_t kPriorityWeightPayloadSize = 1;
+
 }  // namespace
 
 const SpdyStreamId SpdyFramer::kInvalidStream = -1;
@@ -183,9 +187,9 @@ size_t SpdyFramer::GetSynStreamMinimumSize() const {
     // + 1 (unused, was credential slot)
     return GetControlFrameHeaderSize() + 10;
   } else {
-    // Calculated as:
-    // frame prefix + 4 (priority)
-    return GetControlFrameHeaderSize() + 4;
+    return GetControlFrameHeaderSize() +
+        kPriorityDependencyPayloadSize +
+        kPriorityWeightPayloadSize;
   }
 }
 
@@ -323,8 +327,9 @@ size_t SpdyFramer::GetAltSvcMinimumSize() const {
 
 size_t SpdyFramer::GetPrioritySize() const {
   // Size, in bytes, of a PRIORITY frame.
-  // Calculated as frame prefix + 4 (stream dependency) + 1 (weight)
-  return GetControlFrameHeaderSize() + 5;
+  return GetControlFrameHeaderSize() +
+      kPriorityDependencyPayloadSize +
+      kPriorityWeightPayloadSize;
 }
 
 size_t SpdyFramer::GetFrameMinimumSize() const {
@@ -1047,7 +1052,9 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       frame_size_without_variable_data = GetHeadersMinimumSize();
       if (protocol_version() > SPDY3 &&
           current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
-        frame_size_without_variable_data += 4;  // priority
+        frame_size_without_variable_data +=
+            kPriorityDependencyPayloadSize +
+            kPriorityWeightPayloadSize;
       }
       break;
     case PUSH_PROMISE:
@@ -1414,8 +1421,13 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
               (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0;
           uint32 priority = 0;
           if (protocol_version() > SPDY3 && has_priority) {
-            successful_read = reader.ReadUInt31(&priority);
-            DCHECK(successful_read);
+            // TODO(jgraettinger): Process dependency rather than ignoring it.
+            reader.Seek(kPriorityDependencyPayloadSize);
+            uint8 weight = 0;
+            successful_read = reader.ReadUInt8(&weight);
+            if (successful_read) {
+              priority = MapWeightToPriority(weight);
+            }
           }
           DCHECK(reader.IsDoneReading());
           if (debug_visitor_) {
@@ -2376,7 +2388,9 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
                           HEADERS,
                           flags,
                           syn_stream.stream_id());
-    builder.WriteUInt32(priority);
+    // TODO(jgraettinger): Plumb priorities and stream dependencies.
+    builder.WriteUInt32(0);  // Non-exclusive bit and root stream ID.
+    builder.WriteUInt8(MapPriorityToWeight(priority));
   }
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   if (protocol_version() > SPDY3) {
@@ -2664,7 +2678,9 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
                           flags,
                           headers.stream_id());
     if (headers.has_priority()) {
-      builder.WriteUInt32(priority);
+      // TODO(jgraettinger): Plumb priorities and stream dependencies.
+      builder.WriteUInt32(0);  // Non-exclusive bit and root stream ID.
+      builder.WriteUInt8(MapPriorityToWeight(priority));
     }
   }
   if (protocol_version() <= SPDY2) {
@@ -3053,6 +3069,16 @@ HpackDecoder* SpdyFramer::GetHpackDecoder() {
     hpack_decoder_.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
   }
   return hpack_decoder_.get();
+}
+
+uint8 SpdyFramer::MapPriorityToWeight(SpdyPriority priority) {
+  const float kSteps = 255.9f / 7.f;
+  return static_cast<uint8>(kSteps * (7.f - priority));
+}
+
+SpdyPriority SpdyFramer::MapWeightToPriority(uint8 weight) {
+  const float kSteps = 255.9f / 7.f;
+  return static_cast<SpdyPriority>(7.f - weight / kSteps);
 }
 
 // Incrementally decompress the control frame's header block, feeding the

@@ -839,7 +839,8 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
                         HEADERS,
                         HEADERS_FLAG_PRIORITY | HEADERS_FLAG_END_HEADERS,
                         3);
-    frame.WriteUInt32(framer.GetHighestPriority());
+    frame.WriteUInt32(0);  // Priority exclusivity and dependent stream.
+    frame.WriteUInt8(255);  // Priority weight.
   }
 
   string value("value1\0value2", 13);
@@ -1876,14 +1877,14 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
       'a',  'r'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x16, 0x01, 0x24,  // HEADERS: PRIORITY | END_HEADERS
+      0x00, 0x17, 0x01, 0x24,  // HEADERS: PRIORITY | END_HEADERS
       0x00, 0x00, 0x00, 0x01,  // Stream 1
-      0x00, 0x00, 0x00, 0x07,  // Priority 7
-      0x00, 0x03, 0x62, 0x61,  // @.ba
-      0x72, 0x03, 0x66, 0x6f,  // r.fo
-      0x6f, 0x00, 0x03, 0x66,  // o@.f
-      0x6f, 0x6f, 0x03, 0x62,  // oo.b
-      0x61, 0x72,              // ar
+      0x00, 0x00, 0x00, 0x00,  // Non-exclusive dependency 0. Weight 0.
+      0x00, 0x00, 0x03, 0x62,
+      0x61, 0x72, 0x03, 0x66,
+      0x6f, 0x6f, 0x00, 0x03,
+      0x66, 0x6f, 0x6f, 0x03,
+      0x62, 0x61, 0x72,
     };
     SpdySynStreamIR syn_stream(1);
     syn_stream.set_priority(framer.GetLowestPriority());
@@ -1931,13 +1932,13 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
       'b',  'a',  'r'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x13, 0x01, 0x25,  // HEADERS: PRIORITY | FIN | END_HEADERS
+      0x00, 0x14, 0x01, 0x25,  // HEADERS: PRIORITY | FIN | END_HEADERS
       0x7f, 0xff, 0xff, 0xff,  // Stream 0x7fffffff
-      0x00, 0x00, 0x00, 0x00,  // Priority 0
-      0x00, 0x00, 0x03, 0x66,  // @..f
-      0x6f, 0x6f, 0x00, 0x03,  // oo@.
-      0x66, 0x6f, 0x6f, 0x03,  // foo.
-      0x62, 0x61, 0x72,        // bar
+      0x00, 0x00, 0x00, 0x00,  // Non-exclusive dependency 0. Weight 255.
+      0xff, 0x00, 0x00, 0x03,
+      0x66, 0x6f, 0x6f, 0x00,
+      0x03, 0x66, 0x6f, 0x6f,
+      0x03, 0x62, 0x61, 0x72,
     };
     SpdySynStreamIR syn_stream(0x7fffffff);
     syn_stream.set_associated_to_stream_id(0x7fffffff);
@@ -1988,13 +1989,13 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
       0x00, 0x00, 0x00
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x13, 0x01, 0x25,  // HEADERS: PRIORITY | FIN | END_HEADERS
+      0x00, 0x14, 0x01, 0x25,  // HEADERS: PRIORITY | FIN | END_HEADERS
       0x7f, 0xff, 0xff, 0xff,  // Stream 0x7fffffff
-      0x00, 0x00, 0x00, 0x01,  // Priority 1
-      0x00, 0x03, 0x62, 0x61,  // @.ba
-      0x72, 0x03, 0x66, 0x6f,  // r.fo
-      0x6f, 0x00, 0x03, 0x66,  // o@.f
-      0x6f, 0x6f, 0x00,        // oo.
+      0x00, 0x00, 0x00, 0x00,  // Non-exclusive dependency 0. Weight 219.
+      0xdb, 0x00, 0x03, 0x62,
+      0x61, 0x72, 0x03, 0x66,
+      0x6f, 0x6f, 0x00, 0x03,
+      0x66, 0x6f, 0x6f, 0x00,
     };
     SpdySynStreamIR syn_stream(0x7fffffff);
     syn_stream.set_associated_to_stream_id(0x7fffffff);
@@ -5394,6 +5395,38 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedPriority) {
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
             visitor.framer_.error_code())
       << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+}
+
+TEST_P(SpdyFramerTest, PriorityWeightMapping) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+  SpdyFramer framer(spdy_version_);
+
+  EXPECT_EQ(255u, framer.MapPriorityToWeight(0));
+  EXPECT_EQ(219u, framer.MapPriorityToWeight(1));
+  EXPECT_EQ(182u, framer.MapPriorityToWeight(2));
+  EXPECT_EQ(146u, framer.MapPriorityToWeight(3));
+  EXPECT_EQ(109u, framer.MapPriorityToWeight(4));
+  EXPECT_EQ(73u, framer.MapPriorityToWeight(5));
+  EXPECT_EQ(36u, framer.MapPriorityToWeight(6));
+  EXPECT_EQ(0u, framer.MapPriorityToWeight(7));
+
+  EXPECT_EQ(0u, framer.MapWeightToPriority(255));
+  EXPECT_EQ(0u, framer.MapWeightToPriority(220));
+  EXPECT_EQ(1u, framer.MapWeightToPriority(219));
+  EXPECT_EQ(1u, framer.MapWeightToPriority(183));
+  EXPECT_EQ(2u, framer.MapWeightToPriority(182));
+  EXPECT_EQ(2u, framer.MapWeightToPriority(147));
+  EXPECT_EQ(3u, framer.MapWeightToPriority(146));
+  EXPECT_EQ(3u, framer.MapWeightToPriority(110));
+  EXPECT_EQ(4u, framer.MapWeightToPriority(109));
+  EXPECT_EQ(4u, framer.MapWeightToPriority(74));
+  EXPECT_EQ(5u, framer.MapWeightToPriority(73));
+  EXPECT_EQ(5u, framer.MapWeightToPriority(37));
+  EXPECT_EQ(6u, framer.MapWeightToPriority(36));
+  EXPECT_EQ(6u, framer.MapWeightToPriority(1));
+  EXPECT_EQ(7u, framer.MapWeightToPriority(0));
 }
 
 }  // namespace net

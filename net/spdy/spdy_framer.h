@@ -559,6 +559,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyPriority GetHighestPriority() const { return 0; }
 
+  // Interpolates SpdyPriority values into SPDY4/HTTP2 priority weights,
+  // and vice versa.
+  uint8 MapPriorityToWeight(SpdyPriority priority);
+  SpdyPriority MapWeightToPriority(uint8 weight);
+
   // Deliver the given control frame's compressed headers block to the visitor
   // in decompressed form, in chunks. Returns true if the visitor has
   // accepted all of the chunks.
