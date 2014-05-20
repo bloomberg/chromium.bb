@@ -33,6 +33,7 @@
 namespace WebCore {
 
 class HTMLFormElement;
+class ImageCandidate;
 
 class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
 public:
@@ -123,6 +124,8 @@ private:
     virtual Image* imageContents() OVERRIDE;
 
     void resetFormOwner();
+    ImageCandidate findBestFitImageFromPictureParent();
+    void setBestFitURLAndDPRFromImageCandidate(const ImageCandidate&);
 
     HTMLImageLoader m_imageLoader;
     // m_form should be a strong reference in Oilpan.

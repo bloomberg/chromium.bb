@@ -76,7 +76,7 @@ public:
         return String(m_string.toString());
     }
 
-    AtomicString toAtomicString() const
+    AtomicString url() const
     {
         return AtomicString(m_string.toString());
     }

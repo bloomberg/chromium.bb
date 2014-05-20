@@ -25,8 +25,10 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "MediaTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
+#include "core/css/MediaQueryMatcher.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
@@ -34,10 +36,12 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLSourceElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/rendering/RenderImage.h"
+#include "platform/MIMETypeRegistry.h"
 
 using namespace std;
 
@@ -150,23 +154,28 @@ void HTMLImageElement::resetFormOwner()
     }
 }
 
+void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidate& candidate)
+{
+    m_bestFitImageURL = candidate.url();
+    float candidateScaleFactor = candidate.scaleFactor();
+    // FIXME: Make this ">0" part match the spec, once it settles.
+    if (candidateScaleFactor > 0)
+        m_imageDevicePixelRatio = 1 / candidateScaleFactor;
+    if (renderer() && renderer()->isImage())
+        toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+}
+
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == altAttr) {
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
     } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
-        int effectiveSize = 0;
+        unsigned effectiveSize = 0;
         if (RuntimeEnabledFeatures::pictureSizesEnabled())
             effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
-        m_bestFitImageURL = candidate.toAtomicString();
-        float candidateScaleFactor = candidate.scaleFactor();
-        // FIXME: Make this ">0" part match the spec, once it settles.
-        if (candidateScaleFactor > 0)
-            m_imageDevicePixelRatio = 1 / candidateScaleFactor;
-        if (renderer() && renderer()->isImage())
-            toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+        setBestFitURLAndDPRFromImageCandidate(candidate);
         m_imageLoader.updateFromElementIgnoringPreviousError();
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
@@ -190,6 +199,49 @@ const AtomicString& HTMLImageElement::altText() const
         return alt;
     // fall back to title attribute
     return fastGetAttribute(titleAttr);
+}
+
+static bool supportedImageType(const String& type)
+{
+    return MIMETypeRegistry::isSupportedImageResourceMIMEType(type);
+}
+
+// http://picture.responsiveimages.org/#update-source-set
+ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
+{
+    ASSERT(isMainThread());
+    Node* parent = parentNode();
+    if (!parent || !isHTMLPictureElement(*parent))
+        return ImageCandidate();
+    for (Node* child = parent->firstChild(); child; child = child->nextSibling()) {
+        if (child == this)
+            return ImageCandidate();
+
+        if (!isHTMLSourceElement(*child))
+            continue;
+
+        HTMLSourceElement* source = toHTMLSourceElement(child);
+        String srcset = source->fastGetAttribute(srcsetAttr);
+        if (srcset.isEmpty())
+            continue;
+        String type = source->fastGetAttribute(typeAttr);
+        if (!type.isEmpty() && !supportedImageType(type))
+            continue;
+
+        String media = source->fastGetAttribute(mediaAttr);
+        if (!media.isEmpty()) {
+            RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media);
+            if (!document().mediaQueryMatcher().evaluate(mediaQueries.get()))
+                continue;
+        }
+
+        unsigned effectiveSize = SizesAttributeParser::findEffectiveSize(source->fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
+        ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
+        if (candidate.isEmpty())
+            continue;
+        return candidate;
+    }
+    return ImageCandidate();
 }
 
 RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
@@ -236,9 +288,18 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
     if (!m_formWasSetByParser || insertionPoint->highestAncestorOrSelf() != m_form->highestAncestorOrSelf())
         resetFormOwner();
 
+    bool imageWasModified = false;
+    if (RuntimeEnabledFeatures::pictureEnabled()) {
+        ImageCandidate candidate = findBestFitImageFromPictureParent();
+        if (!candidate.isEmpty()) {
+            setBestFitURLAndDPRFromImageCandidate(candidate);
+            imageWasModified = true;
+        }
+    }
+
     // If we have been inserted from a renderer-less document,
     // our loader may have not fetched the image, so do it now.
-    if (insertionPoint->inDocument() && !m_imageLoader.image())
+    if ((insertionPoint->inDocument() && !m_imageLoader.image()) || imageWasModified)
         m_imageLoader.updateFromElement();
 
     return HTMLElement::insertedInto(insertionPoint);
@@ -315,6 +376,7 @@ int HTMLImageElement::naturalHeight() const
 
 const AtomicString& HTMLImageElement::currentSrc() const
 {
+    // FIXME: Need to absolutize the returned value.
     return m_bestFitImageURL;
 }
 
