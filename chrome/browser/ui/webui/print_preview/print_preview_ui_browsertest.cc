@@ -35,6 +35,11 @@ using task_manager::browsertest_util::MatchAnyTab;
 using task_manager::browsertest_util::MatchPrint;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
+// http://crbug.com/375126: these tests fail after pdf plugin was open sourced.
+// They must not have been running before since these bots didn't have the PDf
+// plugin.
+#if !defined(ADDRESS_SANITIZER)
+
 namespace {
 
 class PrintPreviewTest : public InProcessBrowserTest {
@@ -207,3 +212,5 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, NoCrashOnCloseWithOtherTabs) {
 #endif
 
 }  // namespace
+
+#endif
