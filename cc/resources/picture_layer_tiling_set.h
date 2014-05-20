@@ -25,11 +25,11 @@ class CC_EXPORT PictureLayerTilingSet {
   // Delete any tilings that don't meet |minimum_contents_scale|.  Recreate
   // any tiles that intersect |layer_invalidation|.  Update the size of all
   // tilings to |new_layer_bounds|.
-  void SyncTilings(
-     const PictureLayerTilingSet& other,
-     const gfx::Size& new_layer_bounds,
-     const Region& layer_invalidation,
-     float minimum_contents_scale);
+  // Returns true if we had at least one high res tiling synced.
+  bool SyncTilings(const PictureLayerTilingSet& other,
+                   const gfx::Size& new_layer_bounds,
+                   const Region& layer_invalidation,
+                   float minimum_contents_scale);
 
   void RemoveTilesInRegion(const Region& region);
 

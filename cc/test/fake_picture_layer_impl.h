@@ -48,6 +48,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::SanityCheckTilingState;
 
+  void SetNeedsPostCommitInitialization() {
+    needs_post_commit_initialization_ = true;
+  }
+
   bool needs_post_commit_initialization() const {
     return needs_post_commit_initialization_;
   }

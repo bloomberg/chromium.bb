@@ -1727,6 +1727,60 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_EQ(HIGH_RESOLUTION, high_res->resolution());
 }
 
+TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+  host_impl_.active_tree()->UpdateDrawProperties();
+  EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
+
+  float result_scale_x;
+  float result_scale_y;
+  gfx::Size result_bounds;
+  active_layer_->CalculateContentsScale(0.5f,
+                                        0.5f,
+                                        0.5f,
+                                        0.5f,
+                                        false,
+                                        &result_scale_x,
+                                        &result_scale_y,
+                                        &result_bounds);
+  active_layer_->tilings()->RemoveAllTilings();
+  PictureLayerTiling* tiling = active_layer_->tilings()->AddTiling(0.5f);
+  active_layer_->tilings()->AddTiling(1.5f);
+  active_layer_->tilings()->AddTiling(0.25f);
+  tiling->set_resolution(HIGH_RESOLUTION);
+
+  // Sanity checks.
+  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(tiling, active_layer_->tilings()->TilingAtScale(0.5f));
+
+  // Now, set the bounds to be 1x1 (so that minimum contents scale becomes
+  // 1.0f). Note that we should also ensure that the pending layer needs post
+  // commit initialization, since this is what would happen during commit. In
+  // other words we want the pending layer to sync from the active layer.
+  pending_layer_->SetBounds(gfx::Size(1, 1));
+  pending_layer_->SetNeedsPostCommitInitialization();
+  pending_layer_->set_twin_layer(NULL);
+  active_layer_->set_twin_layer(NULL);
+  EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
+
+  // Update the draw properties: sync from active tree should happen here.
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  // Another sanity check.
+  ASSERT_EQ(1.f, pending_layer_->MinimumContentsScale());
+
+  // Now we should've synced 1.5f tiling, since that's the only one that doesn't
+  // violate minimum contents scale. At the same time, we should've created a
+  // new high res tiling at scale 1.0f.
+  EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_TRUE(pending_layer_->tilings()->TilingAtScale(1.0f));
+  EXPECT_EQ(HIGH_RESOLUTION,
+            pending_layer_->tilings()->TilingAtScale(1.0f)->resolution());
+  ASSERT_TRUE(pending_layer_->tilings()->TilingAtScale(1.5f));
+  EXPECT_EQ(NON_IDEAL_RESOLUTION,
+            pending_layer_->tilings()->TilingAtScale(1.5f)->resolution());
+}
+
 TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   gfx::Size default_tile_size(host_impl_.settings().default_tile_size);
   gfx::Size layer_bounds(default_tile_size.width() * 4,

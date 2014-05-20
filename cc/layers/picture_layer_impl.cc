@@ -691,14 +691,25 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   difference_region.Subtract(gfx::Rect(other->bounds()));
   invalidation_.Union(difference_region);
 
+  bool synced_high_res_tiling = false;
   if (CanHaveTilings()) {
-    tilings_->SyncTilings(
+    synced_high_res_tiling = tilings_->SyncTilings(
         *other->tilings_, bounds(), invalidation_, MinimumContentsScale());
   } else {
     RemoveAllTilings();
   }
 
-  SanityCheckTilingState();
+  // If our MinimumContentsScale has changed to prevent the twin's high res
+  // tiling from being synced, we should reset the raster scale and let it be
+  // recalculated (1) again. This can happen if our bounds shrink to the point
+  // where min contents scale grows.
+  // (1) - TODO(vmpstr) Instead of hoping that this will be recalculated, we
+  // should refactor this code a little bit and actually recalculate this.
+  // However, this is a larger undertaking, so this will work for now.
+  if (!synced_high_res_tiling)
+    ResetRasterScale();
+  else
+    SanityCheckTilingState();
 }
 
 void PictureLayerImpl::SyncTiling(
