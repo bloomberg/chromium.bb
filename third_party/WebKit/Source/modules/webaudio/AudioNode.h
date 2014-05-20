@@ -26,7 +26,7 @@
 #define AudioNode_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"

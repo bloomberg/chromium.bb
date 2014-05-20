@@ -34,7 +34,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
 #include "platform/AsyncMethodRunner.h"

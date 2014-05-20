@@ -35,7 +35,7 @@
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"

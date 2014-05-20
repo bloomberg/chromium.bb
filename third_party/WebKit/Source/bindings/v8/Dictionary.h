@@ -47,6 +47,7 @@ class ArrayValue;
 class DOMError;
 class DOMWindow;
 class Gamepad;
+class MediaStream;
 class IDBKeyRange;
 class MIDIPort;
 class MediaKeyError;

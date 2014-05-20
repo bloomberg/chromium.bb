@@ -31,7 +31,7 @@
 #include "core/dom/DOMError.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/heap/Handle.h"

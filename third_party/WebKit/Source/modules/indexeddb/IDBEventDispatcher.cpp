@@ -30,7 +30,7 @@
 #include "modules/indexeddb/IDBEventDispatcher.h"
 
 #include "core/events/Event.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 
 namespace WebCore {
 

@@ -5,7 +5,7 @@
 #ifndef HTMLMediaElementEncryptedMedia_h
 #define HTMLMediaElementEncryptedMedia_h
 
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "platform/Supplementable.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "platform/heap/Handle.h"

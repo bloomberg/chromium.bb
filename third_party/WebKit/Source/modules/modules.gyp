@@ -29,6 +29,7 @@
 #
 {
   'includes': [
+    '../build/scripts/scripts.gypi',
     '../build/win/precompile.gypi',
     '../bindings/bindings.gypi',
     'modules.gypi',
@@ -41,6 +42,7 @@
       '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
       '../config.gyp:config',
       '../core/core.gyp:webcore',
+      'make_modules_generated',
     ],
     'defines': [
       'BLINK_IMPLEMENTATION=1',
@@ -68,5 +70,58 @@
       '<@(modules_testing_files)',
     ],
 
+  },
+  {
+    'target_name': 'make_modules_generated',
+    'type': 'none',
+    'hard_dependency': 1,
+    'dependencies': [
+      #'generated_testing_idls',
+      '../bindings/core_bindings_generated.gyp:core_bindings_generated',
+      '../config.gyp:config',
+    ],
+    'sources': [
+      # bison rule
+      '../core/css/CSSGrammar.y',
+      '../core/xml/XPathGrammar.y',
+    ],
+    'actions': [
+      {
+        'action_name': 'EventTargetModulesFactory',
+        'inputs': [
+          '<@(make_event_factory_files)',
+          'EventTargetModulesFactory.in',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
+        ],
+        'action': [
+          'python',
+          '../build/scripts/make_event_factory.py',
+          'EventTargetModulesFactory.in',
+          '--output_dir',
+          '<(SHARED_INTERMEDIATE_DIR)/blink',
+        ],
+      },
+      {
+        'action_name': 'EventTargetModulesNames',
+        'inputs': [
+          '<@(make_names_files)',
+          'EventTargetModulesFactory.in',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h',
+        ],
+        'action': [
+          'python',
+          '../build/scripts/make_names.py',
+          'EventTargetModulesFactory.in',
+          '--output_dir',
+          '<(SHARED_INTERMEDIATE_DIR)/blink',
+        ],
+      },
+    ],
   }],
 }

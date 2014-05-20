@@ -33,6 +33,7 @@
 #include "bindings/v8/ScriptObject.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"

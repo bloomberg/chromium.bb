@@ -31,7 +31,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMStringList.h"
 #include "core/events/Event.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBObjectStore.h"

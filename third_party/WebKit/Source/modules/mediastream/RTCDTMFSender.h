@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 #include "wtf/RefCounted.h"

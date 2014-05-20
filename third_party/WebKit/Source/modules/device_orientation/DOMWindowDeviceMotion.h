@@ -5,7 +5,7 @@
 #ifndef DOMWindowDeviceMotion_h
 #define DOMWindowDeviceMotion_h
 
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "platform/audio/AudioBus.h"

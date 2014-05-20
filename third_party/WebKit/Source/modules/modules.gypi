@@ -256,8 +256,18 @@
       'webmidi/MIDIMessageEvent.idl',
       'websockets/CloseEvent.idl',
     ],
+    'generated_modules_files': [
+      # .cpp files from make_modules_generated actions.
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h',
+    ],
     'modules_files': [
       '<@(extra_blink_module_files)',
+      '<@(generated_modules_files)',
+      'InitModules.cpp',
+      'InitModules.h',
       'battery/BatteryDispatcher.cpp',
       'battery/BatteryDispatcher.h',
       'battery/BatteryManager.cpp',

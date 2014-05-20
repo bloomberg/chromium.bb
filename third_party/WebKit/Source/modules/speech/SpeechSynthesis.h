@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
 #include "platform/heap/Handle.h"

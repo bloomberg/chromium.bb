@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/notifications/NotificationClient.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"

@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/mediastream/SourceInfo.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"

@@ -32,7 +32,7 @@
 #define SourceBufferList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 

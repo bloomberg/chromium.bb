@@ -33,7 +33,6 @@
 #define EventTarget_h
 
 #include "core/events/EventListenerMap.h"
-#include "core/events/EventTargetModules.h" // TODO: remove this later http://crbug.com/371581.
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

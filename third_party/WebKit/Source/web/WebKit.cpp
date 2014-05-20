@@ -40,6 +40,7 @@
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "gin/public/v8_platform.h"
+#include "modules/InitModules.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -167,7 +168,9 @@ void initializeWithoutV8(Platform* platform)
         s_messageLoopInterruptor = new WebCore::MessageLoopInterruptor(currentThread);
         WebCore::ThreadState::current()->addInterruptor(s_messageLoopInterruptor);
     }
-    WebCore::init();
+
+    DEFINE_STATIC_LOCAL(WebCore::ModulesInitializer, initializer, ());
+    initializer.init();
 
     // There are some code paths (for example, running WebKit in the browser
     // process and calling into LocalStorage before anything else) where the

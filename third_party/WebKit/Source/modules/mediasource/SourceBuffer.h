@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "modules/EventTargetModules.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"

@@ -7,8 +7,8 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
-#include "core/events/EventTarget.h"
 #include "core/frame/DeviceSensorEventController.h"
+#include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

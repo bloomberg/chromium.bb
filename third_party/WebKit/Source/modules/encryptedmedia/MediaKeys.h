@@ -29,7 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"

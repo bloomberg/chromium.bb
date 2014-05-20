@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"

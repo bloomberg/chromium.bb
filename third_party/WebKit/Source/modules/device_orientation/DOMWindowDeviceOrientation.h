@@ -5,7 +5,7 @@
 #ifndef DOMWindowDeviceOrientation_h
 #define DOMWindowDeviceOrientation_h
 
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 
 namespace WebCore {
 

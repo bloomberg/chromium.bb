@@ -26,7 +26,7 @@
 #define RTCDataChannel_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebRTCDataChannelHandler.h"

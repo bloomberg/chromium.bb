@@ -32,9 +32,9 @@
 #define MediaSourceBase_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/URLRegistry.h"
+#include "modules/EventTargetModules.h"
 #include "public/platform/WebMediaSource.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

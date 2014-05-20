@@ -32,7 +32,6 @@
 #include "Init.h"
 
 #include "EventNames.h"
-#include "EventTargetModulesNames.h"
 #include "EventTargetNames.h"
 #include "EventTypeNames.h"
 #include "FetchInitiatorTypeNames.h"
@@ -56,12 +55,16 @@
 
 namespace WebCore {
 
-void init()
+void CoreInitializer::initEventTargetNames()
 {
-    static bool isInited;
-    if (isInited)
+    EventTargetNames::init();
+}
+
+void CoreInitializer::init()
+{
+    if (m_isInited)
         return;
-    isInited = true;
+    m_isInited = true;
 
     // It would make logical sense to do this and WTF::StringStatics::init() in
     // WTF::initialize() but there are ordering dependencies.
@@ -74,8 +77,7 @@ void init()
     XMLNames::init();
 
     EventNames::init();
-    EventTargetNames::init();
-    EventTargetNames::initModules(); // TODO: remove this later http://crbug.com/371581.
+    initEventTargetNames();
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
     FontFamilyNames::init();

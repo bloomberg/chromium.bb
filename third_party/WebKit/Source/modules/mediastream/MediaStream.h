@@ -28,8 +28,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
 #include "core/html/URLRegistry.h"
+#include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/Timer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
