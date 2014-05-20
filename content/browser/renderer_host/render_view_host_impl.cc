@@ -1289,7 +1289,7 @@ void RenderViewHostImpl::OnStartDragging(
       filtered_data.file_system_files.push_back(drop_data.file_system_files[i]);
   }
 
-  float scale = ui::GetImageScale(GetScaleFactorForView(GetView()));
+  float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale));
   view->StartDragging(filtered_data, drag_operations_mask, image,
       bitmap_offset_in_dip, event_info);

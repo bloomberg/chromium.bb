@@ -96,9 +96,12 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
   if (copy_rect.IsEmpty())
     return;
 
+  ui::ScaleFactor scale_factor =
+      ui::GetSupportedScaleFactor(
+          ui::GetScaleFactorForNativeView(view->GetNativeView()));
   context->clip_result = algorithm->GetCanvasCopyInfo(
       copy_rect.size(),
-      ui::GetScaleFactorForNativeView(view->GetNativeView()),
+      scale_factor,
       &copy_rect,
       &context->requested_copy_size);
   render_widget_host->CopyFromBackingStore(

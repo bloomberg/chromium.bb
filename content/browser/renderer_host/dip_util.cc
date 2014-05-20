@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 
 #include "content/public/browser/render_widget_host_view.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
@@ -15,32 +16,25 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace content {
-namespace {
 
-float GetScaleForView(const RenderWidgetHostView* view) {
-  return ui::GetImageScale(GetScaleFactorForView(view));
-}
-
-}  // namespace
-
-ui::ScaleFactor GetScaleFactorForView(const RenderWidgetHostView* view) {
+float GetScaleFactorForView(const RenderWidgetHostView* view) {
   return ui::GetScaleFactorForNativeView(view ? view->GetNativeView() : NULL);
 }
 
 gfx::Point ConvertViewPointToDIP(const RenderWidgetHostView* view,
                                  const gfx::Point& point_in_pixel) {
   return gfx::ToFlooredPoint(
-      gfx::ScalePoint(point_in_pixel, 1.0f / GetScaleForView(view)));
+      gfx::ScalePoint(point_in_pixel, 1.0f / GetScaleFactorForView(view)));
 }
 
 gfx::Size ConvertViewSizeToPixel(const RenderWidgetHostView* view,
                                  const gfx::Size& size_in_dip) {
-  return ConvertSizeToPixel(GetScaleForView(view), size_in_dip);
+  return ConvertSizeToPixel(GetScaleFactorForView(view), size_in_dip);
 }
 
 gfx::Rect ConvertViewRectToPixel(const RenderWidgetHostView* view,
                                  const gfx::Rect& rect_in_dip) {
-  return ConvertRectToPixel(GetScaleForView(view), rect_in_dip);
+  return ConvertRectToPixel(GetScaleFactorForView(view), rect_in_dip);
 }
 
 gfx::Size ConvertSizeToDIP(float scale_factor,

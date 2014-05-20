@@ -1432,9 +1432,9 @@ gfx::Image AutofillDialogControllerImpl::GetGeneratedCardImage(
   const int kCardWidthPx = 300;
   const int kCardHeightPx = 190;
   const gfx::Size size(kCardWidthPx, kCardHeightPx);
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorForNativeView(
+  float scale_factor = ui::GetScaleFactorForNativeView(
       web_contents()->GetNativeView());
-  gfx::Canvas canvas(size, ui::GetImageScale(scale_factor), false);
+  gfx::Canvas canvas(size, scale_factor, false);
 
   gfx::Rect display_rect(size);
 

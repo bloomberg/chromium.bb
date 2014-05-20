@@ -34,7 +34,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual WebUIController* GetController() const OVERRIDE;
   virtual void SetController(WebUIController* controller) OVERRIDE;
-  virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE;
+  virtual float GetDeviceScaleFactor() const OVERRIDE;
   virtual const base::string16& GetOverriddenTitle() const OVERRIDE;
   virtual void OverrideTitle(const base::string16& title) OVERRIDE;
   virtual PageTransition GetLinkTransitionType() const OVERRIDE;

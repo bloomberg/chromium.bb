@@ -314,10 +314,10 @@ bool HasPolicyForNetwork(const NetworkState* network,
 
 void SetCommonNetworkInfo(const ManagedState* state,
                           const gfx::ImageSkia& icon,
-                          ui::ScaleFactor icon_scale_factor,
+                          float icon_scale_factor,
                           base::DictionaryValue* network_info) {
   gfx::ImageSkiaRep image_rep =
-      icon.GetRepresentation(ui::GetImageScale(icon_scale_factor));
+      icon.GetRepresentation(icon_scale_factor);
   std::string icon_url =
       icon.isNull() ? "" : webui::GetBitmapDataUrl(image_rep.sk_bitmap());
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
@@ -337,7 +337,7 @@ void SetCommonNetworkInfo(const ManagedState* state,
 // transferred to the caller.
 base::DictionaryValue* BuildNetworkDictionary(
     const NetworkState* network,
-    ui::ScaleFactor icon_scale_factor,
+    float icon_scale_factor,
     const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
   network_info->SetBoolean(kNetworkInfoKeyConnectable, network->connectable());
@@ -356,7 +356,7 @@ base::DictionaryValue* BuildNetworkDictionary(
 
 base::DictionaryValue* BuildFavoriteDictionary(
     const FavoriteState* favorite,
-    ui::ScaleFactor icon_scale_factor,
+    float icon_scale_factor,
     const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
   network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
@@ -1262,7 +1262,7 @@ std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
   gfx::ImageSkia* icon =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   gfx::ImageSkiaRep image_rep = icon->GetRepresentation(
-      ui::GetImageScale(web_ui()->GetDeviceScaleFactor()));
+      web_ui()->GetDeviceScaleFactor());
   return webui::GetBitmapDataUrl(image_rep.sk_bitmap());
 }
 

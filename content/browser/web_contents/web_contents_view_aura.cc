@@ -132,8 +132,7 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
     if (entry && entry->screenshot().get()) {
       std::vector<gfx::ImagePNGRep> image_reps;
       image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
-          ui::GetImageScale(
-              ui::GetScaleFactorForNativeView(web_contents_window()))));
+          ui::GetScaleFactorForNativeView(web_contents_window())));
       image = gfx::Image(image_reps);
     }
     SetImage(image);

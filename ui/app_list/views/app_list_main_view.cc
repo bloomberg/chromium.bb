@@ -188,11 +188,10 @@ bool AppListMainView::ShouldCenterWindow() const {
 }
 
 void AppListMainView::PreloadIcons(gfx::NativeView parent) {
-  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
+  float scale_factor = 1.0f;
   if (parent)
     scale_factor = ui::GetScaleFactorForNativeView(parent);
 
-  float scale = ui::GetImageScale(scale_factor);
   // |pagination_model| could have -1 as the initial selected page and
   // assumes first page (i.e. index 0) will be used in this case.
   const int selected_page = std::max(0, pagination_model_->selected_page());
@@ -206,10 +205,10 @@ void AppListMainView::PreloadIcons(gfx::NativeView parent) {
   pending_icon_loaders_.clear();
   for (int i = start_model_index; i < end_model_index; ++i) {
     AppListItem* item = model_->top_level_item_list()->item_at(i);
-    if (item->icon().HasRepresentation(scale))
+    if (item->icon().HasRepresentation(scale_factor))
       continue;
 
-    pending_icon_loaders_.push_back(new IconLoader(this, item, scale));
+    pending_icon_loaders_.push_back(new IconLoader(this, item, scale_factor));
   }
 }
 

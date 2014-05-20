@@ -98,7 +98,7 @@ WebContents* WebUIImpl::GetWebContents() const {
   return web_contents_;
 }
 
-ui::ScaleFactor WebUIImpl::GetDeviceScaleFactor() const {
+float WebUIImpl::GetDeviceScaleFactor() const {
   return GetScaleFactorForView(web_contents_->GetRenderWidgetHostView());
 }
 

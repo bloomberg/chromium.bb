@@ -149,10 +149,6 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
   return methodDescription.name != NULL || methodDescription.types != NULL;
 }
 
-static float ScaleFactorForView(NSView* view) {
-  return ui::GetImageScale(ui::GetScaleFactorForNativeView(view));
-}
-
 // Private methods:
 @interface RenderWidgetHostViewCocoa ()
 @property(nonatomic, assign) NSRange selectedRange;
@@ -809,7 +805,7 @@ int RenderWidgetHostViewMac::window_number() const {
 }
 
 float RenderWidgetHostViewMac::ViewScaleFactor() const {
-  return ScaleFactorForView(cocoa_view_);
+  return ui::GetScaleFactorForNativeView(cocoa_view_);
 }
 
 void RenderWidgetHostViewMac::UpdateDisplayLink() {
@@ -847,7 +843,7 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
   if (!render_widget_host_)
     return;
 
-  float new_scale_factor = ScaleFactorForView(cocoa_view_);
+  float new_scale_factor = ui::GetScaleFactorForNativeView(cocoa_view_);
   if (new_scale_factor == backing_store_scale_factor_)
     return;
   backing_store_scale_factor_ = new_scale_factor;
@@ -1251,7 +1247,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   }
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  float scale = ScaleFactorForView(cocoa_view_);
+  float scale = ui::GetScaleFactorForNativeView(cocoa_view_);
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(dst_size, scale));
   if (compositing_iosurface_ && compositing_iosurface_->HasIOSurface()) {
@@ -2495,7 +2491,7 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
     canBeKeyView_ = YES;
     focusedPluginIdentifier_ = -1;
     renderWidgetHostView_->backing_store_scale_factor_ =
-        ScaleFactorForView(self);
+        ui::GetScaleFactorForNativeView(self);
 
     // OpenGL support:
     if ([self respondsToSelector:

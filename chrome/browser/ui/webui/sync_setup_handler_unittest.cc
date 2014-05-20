@@ -194,8 +194,8 @@ class TestWebUI : public content::WebUI {
     return NULL;
   }
   virtual void SetController(content::WebUIController* controller) OVERRIDE {}
-  virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE {
-    return ui::SCALE_FACTOR_100P;
+  virtual float GetDeviceScaleFactor() const OVERRIDE {
+    return 1.0f;
   }
   virtual const base::string16& GetOverriddenTitle() const OVERRIDE {
     return temp_string_;

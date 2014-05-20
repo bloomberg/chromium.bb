@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
-#include "ui/base/layout.h"
 
 class GURL;
 
@@ -55,7 +54,7 @@ class CONTENT_EXPORT WebUI {
   // Returns the device scale factor of the monitor that the renderer is on.
   // Whenever possible, WebUI should push resources with this scale factor to
   // Javascript.
-  virtual ui::ScaleFactor GetDeviceScaleFactor() const = 0;
+  virtual float GetDeviceScaleFactor() const = 0;
 
   // Gets a custom tab title provided by the Web UI. If there is no title
   // override, the string will be empty which should trigger the default title

@@ -31,8 +31,8 @@ float GetScaleFactorScaleForNativeView(gfx::NativeView view) {
 
 namespace ui {
 
-ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {
-  return GetSupportedScaleFactor(GetScaleFactorScaleForNativeView(view));
+float GetScaleFactorForNativeView(gfx::NativeView view) {
+  return GetScaleFactorScaleForNativeView(view);
 }
 
 }  // namespace ui

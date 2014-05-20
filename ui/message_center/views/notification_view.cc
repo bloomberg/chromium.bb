@@ -82,16 +82,12 @@ scoped_ptr<views::Border> MakeSeparatorBorder(int top,
 // Return true if and only if the image is null or has alpha.
 bool HasAlpha(gfx::ImageSkia& image, views::Widget* widget) {
   // Determine which bitmap to use.
-  ui::ScaleFactor factor = ui::SCALE_FACTOR_100P;
-  if (widget) {
+  float factor = 1.0f;
+  if (widget)
     factor = ui::GetScaleFactorForNativeView(widget->GetNativeView());
-    if (factor == ui::SCALE_FACTOR_NONE)
-      factor = ui::SCALE_FACTOR_100P;
-  }
 
   // Extract that bitmap's alpha and look for a non-opaque pixel there.
-  SkBitmap bitmap =
-      image.GetRepresentation(ui::GetImageScale(factor)).sk_bitmap();
+  SkBitmap bitmap = image.GetRepresentation(factor).sk_bitmap();
   if (!bitmap.isNull()) {
     SkBitmap alpha;
     bitmap.extractAlpha(&alpha);

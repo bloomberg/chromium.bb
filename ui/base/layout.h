@@ -53,7 +53,7 @@ UI_BASE_EXPORT float GetImageScale(ScaleFactor scale_factor);
 UI_BASE_EXPORT ScaleFactor GetSupportedScaleFactor(float image_scale);
 
 // Returns the ScaleFactor used by |view|.
-UI_BASE_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
+UI_BASE_EXPORT float GetScaleFactorForNativeView(gfx::NativeView view);
 
 // Returns true if |scale_factor| is supported by this platform.
 UI_BASE_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
