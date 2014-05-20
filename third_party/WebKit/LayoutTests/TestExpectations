@@ -915,6 +915,9 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
+crbug.com/331251 fast/block/float/float-not-removed-from-next-sibling2.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/float/nestedAnonymousBlocks.html [ NeedsRebaseline ]
+
 # Need rebaseline once all tests are in ForceCompositingMode.
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
 crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ ImageOnlyFailure ]
