@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -53,11 +52,6 @@ class SharedOptionsTest : public LoginManagerTest {
     settings->RemoveSettingsProvider(&stub_settings_provider_);
     settings->AddSettingsProvider(device_settings_provider_);
     LoginManagerTest::CleanUpOnMainThread();
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
  protected:

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -39,11 +38,6 @@ class UserAddingScreenTest : public LoginManagerTest,
   UserAddingScreenTest() : LoginManagerTest(false),
                            user_adding_started_(0),
                            user_adding_finished_(0) {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

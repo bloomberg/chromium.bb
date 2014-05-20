@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -131,8 +130,7 @@ SkColor GetAverageBackgroundColor() {
 
 class WallpaperManagerPolicyTest
     : public LoginManagerTest,
-      public ash::DesktopBackgroundControllerObserver,
-      public testing::WithParamInterface<bool> {
+      public ash::DesktopBackgroundControllerObserver {
  protected:
   WallpaperManagerPolicyTest()
       : LoginManagerTest(true),
@@ -182,10 +180,6 @@ class WallpaperManagerPolicyTest
     // start-up of user profiles.
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
-    else
-      command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -277,7 +271,7 @@ class WallpaperManagerPolicyTest
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
   RegisterUser(kTestUsers[0]);
   RegisterUser(kTestUsers[1]);
   StartupUtils::MarkOobeCompleted();
@@ -287,7 +281,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // setting policy for a user that is not logged in doesn't affect the current
 // user.  Also verifies that after the policy has been cleared, the wallpaper
 // reverts to default.
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   WallpaperInfo info;
   LoginUser(kTestUsers[0]);
   base::RunLoop().RunUntilIdle();
@@ -328,14 +322,14 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, SetResetClear) {
   ASSERT_EQ(4, wallpaper_change_count_);
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        PRE_PRE_PRE_WallpaperOnLoginScreen) {
   RegisterUser(kTestUsers[0]);
   RegisterUser(kTestUsers[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
                        PRE_PRE_WallpaperOnLoginScreen) {
   LoginUser(kTestUsers[0]);
 
@@ -350,7 +344,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest,
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
   LoginUser(kTestUsers[1]);
 
   // Wait until default wallpaper has been loaded.
@@ -364,7 +358,7 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_WallpaperOnLoginScreen) {
   ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
   // Wait for active pod's wallpaper to be loaded.
   RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kGreenImageColor, GetAverageBackgroundColor());
@@ -379,12 +373,12 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, WallpaperOnLoginScreen) {
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
   RegisterUser(kTestUsers[0]);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
   LoginUser(kTestUsers[0]);
 
   // Wait until default wallpaper has been loaded.
@@ -398,15 +392,12 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_P(WallpaperManagerPolicyTest, PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
   LoginUser(kTestUsers[0]);
 
   // Wait until wallpaper has been loaded.
   RunUntilWallpaperChangeCount(1);
   ASSERT_EQ(kRedImageColor, GetAverageBackgroundColor());
 }
-
-INSTANTIATE_TEST_CASE_P(WallpaperManagerPolicyTestInstantiation,
-                        WallpaperManagerPolicyTest, testing::Bool());
 
 }  // namespace chromeos

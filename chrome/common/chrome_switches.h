@@ -249,7 +249,6 @@ extern const char kMediaCacheSize[];
 extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
-extern const char kMultiProfiles[];
 extern const char kNetLogLevel[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoDisplayingInsecureContent[];

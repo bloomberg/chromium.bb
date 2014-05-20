@@ -172,12 +172,6 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
 }
 
 TEST_F(BrowserCommandControllerTest, OldAvatarMenuEnabledForOneOrMoreProfiles) {
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
-  // default on CrOS. http://crbug.com/351655
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-#endif
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -213,12 +207,6 @@ TEST_F(BrowserCommandControllerTest, OldAvatarMenuEnabledForOneOrMoreProfiles) {
 }
 
 TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
-  // default on CrOS. http://crbug.com/351655
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-#endif
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -247,12 +235,6 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledWhenOnlyOneProfile) {
 }
 
 TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledInGuestMode) {
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
-  // default on CrOS. http://crbug.com/351655
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-#endif
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -290,12 +272,6 @@ TEST_F(BrowserCommandControllerTest, NewAvatarMenuEnabledInGuestMode) {
 }
 
 TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
-  // default on CrOS. http://crbug.com/351655
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-#endif
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 

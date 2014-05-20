@@ -890,9 +890,6 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
-// Enables multiprofile Chrome.
-const char kMultiProfiles[]                 = "multi-profiles";
-
 // Sets the base logging level for the net log. Log 0 logs the most data.
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";

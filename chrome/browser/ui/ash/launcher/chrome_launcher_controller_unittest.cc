@@ -786,9 +786,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     // AvatarMenu and multiple profiles works after user logged in.
     profile_manager_->SetLoggedIn(true);
 
-    // Enabling multi profile requires several flags to be set.
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));

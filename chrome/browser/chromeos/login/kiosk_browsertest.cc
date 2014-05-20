@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -870,8 +869,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       content::NotificationService::AllSources()).Wait();
 }
 
-class KioskUpdateTest : public KioskTest,
-                        public testing::WithParamInterface<bool> {
+class KioskUpdateTest : public KioskTest {
  public:
   KioskUpdateTest() {}
   virtual ~KioskUpdateTest() {}
@@ -880,10 +878,7 @@ class KioskUpdateTest : public KioskTest,
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Needs background networking so that ExtensionDownloader works.
     needs_background_networking_ = true;
-
     KioskTest::SetUpCommandLine(command_line);
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -895,7 +890,7 @@ class KioskUpdateTest : public KioskTest,
   DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
   PrepareAppLaunch();
@@ -906,7 +901,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
   fake_cws()->SetNoUpdate(test_app_id());
@@ -921,7 +916,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
   fake_cws()->SetUpdateCrx(
@@ -937,7 +932,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PermissionChange) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
   fake_cws()->SetUpdateCrx(
@@ -955,7 +950,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PRE_PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
 
@@ -965,7 +960,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -982,11 +977,6 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PreserveLocalData) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-// TODO(xiyuan): Remove this after multi profile is turned on by default.
-INSTANTIATE_TEST_CASE_P(KioskUpdateTestInstantiation,
-                        KioskUpdateTest,
-                        testing::Bool());
 
 class KioskEnterpriseTest : public KioskTest {
  protected:

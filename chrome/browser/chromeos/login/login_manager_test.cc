@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -38,7 +37,6 @@ void LoginManagerTest::CleanUpOnMainThread() {
 void LoginManagerTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-  command_line->AppendSwitch(::switches::kMultiProfiles);
 }
 
 void LoginManagerTest::SetUpInProcessBrowserTestFixture() {

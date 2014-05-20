@@ -54,7 +54,6 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
 };
 
 void MultiUserContextMenuChromeOSTest::SetUp() {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
   AshTestBase::SetUp();
 
   window_ = CreateTestWindowInShellWithId(0);

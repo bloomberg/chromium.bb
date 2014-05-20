@@ -61,7 +61,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(::switches::kEnableSettingsWindow);
-    command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   Profile* CreateTestProfile() {

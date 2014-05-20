@@ -802,6 +802,7 @@ void ProfileManager::Observe(
     logged_in_ = true;
 
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    LOG(ERROR) << ">>>>>>>> " << command_line.GetCommandLineString();
     if (!command_line.HasSwitch(switches::kTestType)) {
       // If we don't have a mounted profile directory we're in trouble.
       // TODO(davemoore) Once we have better api this check should ensure that

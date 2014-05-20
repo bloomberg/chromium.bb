@@ -904,7 +904,6 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   // Enables multi-profiles.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kMultiProfiles);
     // Logs in to a dummy profile (For making MultiProfileWindowManager happy;
     // browser test creates a default window and the manager tries to assign a
     // user for it, and we need a profile connected to a user.)

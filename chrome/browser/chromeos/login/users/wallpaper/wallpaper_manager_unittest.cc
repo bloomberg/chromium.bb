@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -52,7 +51,6 @@ class WallpaperManagerCacheTest : public test::AshTestBase {
   FakeUserManager* fake_user_manager() { return fake_user_manager_; }
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kMultiProfiles);
     test::AshTestBase::SetUp();
   }
 

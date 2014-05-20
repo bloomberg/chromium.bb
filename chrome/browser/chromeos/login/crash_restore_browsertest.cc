@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -38,7 +37,6 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
   virtual ~CrashRestoreSimpleTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(::switches::kMultiProfiles);
     command_line->AppendSwitchASCII(switches::kLoginUser, kUserId1);
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,

@@ -10,7 +10,6 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -70,9 +69,6 @@ class MessageCenterSettingsControllerChromeOSTest
 
   virtual void SetUp() OVERRIDE {
     MessageCenterSettingsControllerTest::SetUp();
-
-    // Enabling multi profile requires several flags to be set.
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(

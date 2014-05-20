@@ -22,7 +22,6 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -224,9 +223,6 @@ class MetricsLogTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    // Enable multi-profiles.
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-
     // Set up the fake Bluetooth environment,
     scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
         new FakeDBusThreadManager);

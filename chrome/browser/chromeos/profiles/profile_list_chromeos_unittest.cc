@@ -64,10 +64,6 @@ class ProfileListChromeOSTest : public testing::Test {
     // AvatarMenu and multiple profiles works after user logged in.
     manager_.SetLoggedIn(true);
 
-    // We only instantiate UserMenuModel if multi-profile mode is enabled.
-    CommandLine* cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(switches::kMultiProfiles);
-
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(
         new ScopedUserManagerEnabler(new FakeUserManager));

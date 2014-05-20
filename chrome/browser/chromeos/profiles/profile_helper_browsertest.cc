@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,25 +22,19 @@ static const char kActiveUserHash[] = "01234567890";
 
 // The boolean parameter, retrieved by GetParam(), is true if testing with
 // multi-profiles enabled.
-class ProfileHelperTest : public InProcessBrowserTest,
-                          public testing::WithParamInterface<bool> {
+class ProfileHelperTest : public InProcessBrowserTest {
  public:
   ProfileHelperTest() {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
-  }
-
   void ActiveUserChanged(ProfileHelper* profile_helper,
                          const std::string& hash) {
     profile_helper->ActiveUserHashChanged(hash);
   }
 };
 
-IN_PROC_BROWSER_TEST_P(ProfileHelperTest, ActiveUserProfileDir) {
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, ActiveUserProfileDir) {
   ProfileHelper profile_helper;
   ActiveUserChanged(&profile_helper, kActiveUserHash);
   base::FilePath profile_dir = profile_helper.GetActiveUserProfileDir();
@@ -51,7 +44,7 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTest, ActiveUserProfileDir) {
   EXPECT_EQ(expected_dir, profile_dir.BaseName().value());
 }
 
-IN_PROC_BROWSER_TEST_P(ProfileHelperTest,
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest,
                        GetProfileDirByLegacyLoginProfileSwitch) {
   CommandLine::ForCurrentProcess()->
       AppendSwitchASCII(chromeos::switches::kLoginProfile,
@@ -70,7 +63,7 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTest,
             ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch().value());
 }
 
-IN_PROC_BROWSER_TEST_P(ProfileHelperTest, GetProfilePathByUserIdHash) {
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, GetProfilePathByUserIdHash) {
   ProfileHelper profile_helper;
   base::FilePath profile_path =
       profile_helper.GetProfilePathByUserIdHash(kActiveUserHash);
@@ -79,9 +72,5 @@ IN_PROC_BROWSER_TEST_P(ProfileHelperTest, GetProfilePathByUserIdHash) {
           std::string(chrome::kProfileDirPrefix) + kActiveUserHash);
   EXPECT_EQ(expected_path, profile_path);
 }
-
-INSTANTIATE_TEST_CASE_P(ProfileHelperTestInstantiation,
-                        ProfileHelperTest,
-                        testing::Bool());
 
 }  // namespace chromeos

@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/fake_ime_keyboard.h"
@@ -44,7 +43,6 @@ class PreferencesTest : public LoginManagerTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kMultiProfiles);
     command_line->AppendSwitch(switches::kStubCrosSettings);
   }
 

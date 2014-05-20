@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -133,8 +132,7 @@ class CryptoVerifyStub
 #endif  // defined(OS_CHROMEOS)
 
 class ExtensionNetworkingPrivateApiTest
-    : public ExtensionApiTest,
-      public testing::WithParamInterface<bool> {
+    : public ExtensionApiTest {
  public:
   ExtensionNetworkingPrivateApiTest()
 #if defined(OS_CHROMEOS)
@@ -184,8 +182,6 @@ class ExtensionNetworkingPrivateApiTest
         CryptohomeClient::GetStubSanitizedUsername(login_user);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     sanitized_user);
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   void InitializeSanitizedUsername() {
@@ -372,25 +368,25 @@ class ExtensionNetworkingPrivateApiTest
 // library state is reset for each subtest run. This way they won't affect each
 // other.
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, StartConnect) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartConnect) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, StartDisconnect) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartDisconnect) {
   EXPECT_TRUE(RunNetworkingSubtest("startDisconnect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        StartConnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        StartDisconnectNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startDisconnectNonexistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        StartGetPropertiesNonexistent) {
   EXPECT_TRUE(RunNetworkingSubtest("startGetPropertiesNonexistent"))
       << message_;
@@ -398,7 +394,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 
 #if defined(OS_CHROMEOS)
 // TODO(stevenjb/mef): Fix these on non-Chrome OS, crbug.com/371442.
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetNetworks) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetNetworks) {
   // Remove "stub_wifi2" from the visible list.
   manager_test_->RemoveManagerService("stub_wifi2", false);
   // Add a couple of additional networks that are not configured (saved).
@@ -407,49 +403,49 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getNetworks")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }
 #endif
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        GetVisibleNetworksWifi) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
 #if defined(OS_CHROMEOS)
 // TODO(stevenjb/mef): Fix this on non-Chrome OS, crbug.com/371442.
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
   EXPECT_TRUE(RunNetworkingSubtest("requestNetworkScan")) << message_;
 }
 #endif
 
 // Properties are filtered and translated through
 // ShillToONCTranslator::TranslateWiFiWithState
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetProperties) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetState) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
   EXPECT_TRUE(RunNetworkingSubtest("getState")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, GetStateNonExistent) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetStateNonExistent) {
   EXPECT_TRUE(RunNetworkingSubtest("getStateNonExistent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, SetProperties) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, SetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, CreateNetwork) {
   EXPECT_TRUE(RunNetworkingSubtest("createNetwork")) << message_;
 }
 
 #if defined(OS_CHROMEOS)
 // TODO(stevenjb/mef): Find a maintainable way to support this on win/mac and
 // a better way to set this up on Chrome OS.
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        GetManagedProperties) {
   const std::string uidata_blob =
       "{ \"user_settings\": {"
@@ -501,13 +497,13 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 }
 #endif  // OS_CHROMEOS
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventConnect) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventConnect"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        OnNetworksChangedEventDisconnect) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventDisconnect"))
       << message_;
@@ -515,35 +511,35 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 
 #if defined(OS_CHROMEOS)
 // TODO(stevenjb/mef): Fix this on non-Chrome OS, crbug.com/371442.
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        OnNetworkListChangedEvent) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworkListChangedEvent")) << message_;
 }
 #endif  // OS_CHROMEOS
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        VerifyAndEncryptCredentials) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        VerifyAndEncryptData) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
 
 #if defined(OS_CHROMEOS)
 // Currently TDLS support is only enabled for Chrome OS.
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        SetWifiTDLSEnabledState) {
   EXPECT_TRUE(RunNetworkingSubtest("setWifiTDLSEnabledState")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        GetWifiTDLSStatus) {
   EXPECT_TRUE(RunNetworkingSubtest("getWifiTDLSStatus")) << message_;
 }
@@ -551,7 +547,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 
 // NetworkPortalDetector is only enabled for Chrome OS.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        GetCaptivePortalStatus) {
   AddService("stub_cellular1", "cellular1",
              shill::kTypeCellular, shill::kStateIdle);
@@ -588,7 +584,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        CaptivePortalNotification) {
   detector()->SetDefaultNetworkPathForTesting("wifi");
   NetworkPortalDetector::CaptivePortalState state;
@@ -602,9 +598,5 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("captivePortalNotification")) << message_;
 }
 #endif  // defined(OS_CHROMEOS)
-
-INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
-                        ExtensionNetworkingPrivateApiTest,
-                        testing::Bool());
 
 }  // namespace
