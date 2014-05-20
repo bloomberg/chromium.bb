@@ -1913,6 +1913,8 @@ class AndroidCommands(object):
     if self._control_usb_charging_command['cached']:
       return self._control_usb_charging_command['command']
     self._control_usb_charging_command['cached'] = True
+    if not self.IsRootEnabled():
+      return None
     for command in CONTROL_USB_CHARGING_COMMANDS:
       # Assert command is valid.
       assert 'disable_command' in command
@@ -1927,26 +1929,32 @@ class AndroidCommands(object):
   def CanControlUsbCharging(self):
     return self._GetControlUsbChargingCommand() is not None
 
-  def DisableUsbCharging(self):
+  def DisableUsbCharging(self, timeout=10):
     command = self._GetControlUsbChargingCommand()
     if not command:
       raise Exception('Unable to act on usb charging.')
     disable_command = command['disable_command']
+    t0 = time.time()
     # Do not loop directly on self.IsDeviceCharging to cut the number of calls
     # to the device.
     while True:
+      if t0 + timeout - time.time() < 0:
+        raise pexpect.TIMEOUT('Unable to enable USB charging in time.')
       self.RunShellCommand(disable_command)
       if not self.IsDeviceCharging():
         break
 
-  def EnableUsbCharging(self):
+  def EnableUsbCharging(self, timeout=10):
     command = self._GetControlUsbChargingCommand()
     if not command:
       raise Exception('Unable to act on usb charging.')
     disable_command = command['enable_command']
+    t0 = time.time()
     # Do not loop directly on self.IsDeviceCharging to cut the number of calls
     # to the device.
     while True:
+      if t0 + timeout - time.time() < 0:
+        raise pexpect.TIMEOUT('Unable to enable USB charging in time.')
       self.RunShellCommand(disable_command)
       if self.IsDeviceCharging():
         break
