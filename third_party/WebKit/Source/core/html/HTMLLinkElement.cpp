@@ -555,7 +555,7 @@ void LinkStyle::addPendingSheet(PendingSheetType type)
     m_owner->document().styleEngine()->addPendingSheet();
 }
 
-void LinkStyle::removePendingSheet(RemovePendingSheetNotificationType notification)
+void LinkStyle::removePendingSheet()
 {
     PendingSheetType type = m_pendingSheetType;
     m_pendingSheetType = None;
@@ -572,10 +572,7 @@ void LinkStyle::removePendingSheet(RemovePendingSheetNotificationType notificati
         return;
     }
 
-    m_owner->document().styleEngine()->removePendingSheet(m_owner,
-        notification == RemovePendingSheetNotifyImmediately
-        ? StyleEngine::RemovePendingSheetNotifyImmediately
-        : StyleEngine::RemovePendingSheetNotifyLater);
+    m_owner->document().styleEngine()->removePendingSheet(m_owner);
 }
 
 void LinkStyle::setDisabledState(bool disabled)
@@ -701,7 +698,7 @@ void LinkStyle::ownerRemoved()
         clearSheet();
 
     if (styleSheetIsLoading())
-        removePendingSheet(RemovePendingSheetNotifyLater);
+        removePendingSheet();
 }
 
 void LinkStyle::trace(Visitor* visitor)

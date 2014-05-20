@@ -429,8 +429,6 @@ public:
 
     bool sawElementsInKnownNamespaces() const { return m_sawElementsInKnownNamespaces; }
 
-    void notifyRemovePendingSheetIfNeeded();
-
     bool isRenderingReady() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
     bool isScriptExecutionReady() const { return isRenderingReady(); }
 
@@ -1020,7 +1018,6 @@ public:
 
     void didLoadAllScriptBlockingResources();
     void didRemoveAllPendingStylesheet();
-    void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
     void clearStyleResolver();
 
     bool inStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::InStyleRecalc; }
@@ -1186,7 +1183,6 @@ private:
     DocumentLifecycle m_lifecycle;
 
     bool m_hasNodesWithPlaceholderStyle;
-    bool m_needsNotifyRemoveAllPendingStylesheet;
     bool m_evaluateMediaQueriesOnStyleRecalc;
 
     // If we do ignore the pending stylesheet count, then we need to add a boolean
@@ -1407,12 +1403,6 @@ private:
 
     int m_styleRecalcElementCounter;
 };
-
-inline void Document::notifyRemovePendingSheetIfNeeded()
-{
-    if (m_needsNotifyRemoveAllPendingStylesheet)
-        didRemoveAllPendingStylesheet();
-}
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)
 {

@@ -129,11 +129,7 @@ public:
     }
 
     void addPendingSheet();
-    enum RemovePendingSheetNotificationType {
-        RemovePendingSheetNotifyImmediately,
-        RemovePendingSheetNotifyLater
-    };
-    void removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
+    void removePendingSheet(Node* styleSheetCandidateNode);
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
     bool haveStylesheetsLoaded() const { return !hasPendingSheets() || m_ignorePendingStylesheets; }

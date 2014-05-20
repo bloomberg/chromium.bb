@@ -245,7 +245,7 @@ void StyleEngine::addPendingSheet()
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
-void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
+void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
 {
     ASSERT(styleSheetCandidateNode);
     TreeScope* treeScope = isHTMLStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
@@ -257,11 +257,6 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendin
     m_pendingStylesheets--;
     if (m_pendingStylesheets)
         return;
-
-    if (notification == RemovePendingSheetNotifyLater) {
-        document().setNeedsNotifyRemoveAllPendingStylesheet();
-        return;
-    }
 
     // FIXME: We can't call addedStyleSheet or removedStyleSheet here because we don't know
     // what's new. We should track that to tell the style system what changed.

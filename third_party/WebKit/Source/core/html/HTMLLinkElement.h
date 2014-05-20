@@ -100,14 +100,9 @@ private:
         Blocking
     };
 
-    enum RemovePendingSheetNotificationType {
-        RemovePendingSheetNotifyImmediately,
-        RemovePendingSheetNotifyLater
-    };
-
     void clearSheet();
     void addPendingSheet(PendingSheetType);
-    void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
+    void removePendingSheet();
     Document& document();
 
     RefPtrWillBeMember<CSSStyleSheet> m_sheet;

@@ -410,7 +410,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
     , m_hasNodesWithPlaceholderStyle(false)
-    , m_needsNotifyRemoveAllPendingStylesheet(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
@@ -3001,8 +3000,6 @@ void Document::didLoadAllImports()
 
 void Document::didRemoveAllPendingStylesheet()
 {
-    m_needsNotifyRemoveAllPendingStylesheet = false;
-
     styleResolverMayHaveChanged();
 
     // Only imports on master documents can trigger rendering.
