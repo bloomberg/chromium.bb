@@ -518,7 +518,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   // * For HIDE_ON_MOUSE_RELEASE, which only hides the chip on mouse release if
   //   the omnibox is empty, it handles the "omnibox was not empty" case by
   //   acting like HIDE_ON_USER_INPUT.
-  if (chrome::ShouldDisplayOriginChipV2() && in_progress)
+  if (chrome::ShouldDisplayOriginChip() && in_progress)
     controller()->GetToolbarModel()->set_origin_chip_enabled(false);
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);

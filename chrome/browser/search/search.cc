@@ -73,7 +73,6 @@ const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
 const char kOriginChipFlagName[] = "origin_chip";
-const char kOriginChipV2FlagName[] = "origin_chip_v2";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
@@ -623,23 +622,17 @@ DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
 }
 
 bool ShouldDisplayOriginChip() {
-  return GetOriginChipPosition() != ORIGIN_CHIP_DISABLED;
+  return GetOriginChipCondition() != ORIGIN_CHIP_DISABLED;
 }
 
-OriginChipPosition GetOriginChipPosition() {
-  if (ShouldDisplayOriginChipV2())
-    return ORIGIN_CHIP_DISABLED;
-
+OriginChipCondition GetOriginChipCondition() {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableOriginChip))
     return ORIGIN_CHIP_DISABLED;
-  if (cl->HasSwitch(switches::kEnableOriginChipLeadingLocationBar))
-    return ORIGIN_CHIP_LEADING_LOCATION_BAR;
-  if (cl->HasSwitch(switches::kEnableOriginChip) ||
-      cl->HasSwitch(switches::kEnableOriginChipTrailingLocationBar))
-    return ORIGIN_CHIP_TRAILING_LOCATION_BAR;
-  if (cl->HasSwitch(switches::kEnableOriginChipLeadingMenuButton))
-    return ORIGIN_CHIP_LEADING_MENU_BUTTON;
+  if (cl->HasSwitch(switches::kEnableOriginChipAlways))
+    return ORIGIN_CHIP_ALWAYS;
+  if (cl->HasSwitch(switches::kEnableOriginChipOnSrp))
+    return ORIGIN_CHIP_ON_SRP;
 
   FieldTrialFlags flags;
   if (!GetFieldTrialInfo(&flags))
@@ -647,33 +640,7 @@ OriginChipPosition GetOriginChipPosition() {
   uint64 value =
       GetUInt64ValueForFlagWithDefault(kOriginChipFlagName, 0, flags);
   return (value < ORIGIN_CHIP_NUM_VALUES) ?
-      static_cast<OriginChipPosition>(value) :
-      ORIGIN_CHIP_DISABLED;
-}
-
-bool ShouldDisplayOriginChipV2() {
-  return GetOriginChipV2Condition() != ORIGIN_CHIP_V2_DISABLED;
-}
-
-OriginChipV2Condition GetOriginChipV2Condition() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableOriginChipV2))
-    return ORIGIN_CHIP_V2_DISABLED;
-  if (cl->HasSwitch(switches::kEnableOriginChipV2HideOnMouseRelease))
-    return ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE;
-  if (cl->HasSwitch(switches::kEnableOriginChipV2HideOnUserInput))
-    return ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT;
-  if (cl->HasSwitch(switches::kEnableOriginChipV2OnSrp))
-    return ORIGIN_CHIP_V2_ON_SRP;
-
-  FieldTrialFlags flags;
-  if (!GetFieldTrialInfo(&flags))
-    return ORIGIN_CHIP_V2_DISABLED;
-  uint64 value =
-      GetUInt64ValueForFlagWithDefault(kOriginChipV2FlagName, 0, flags);
-  return (value < ORIGIN_CHIP_V2_NUM_VALUES) ?
-      static_cast<OriginChipV2Condition>(value) :
-      ORIGIN_CHIP_V2_DISABLED;
+      static_cast<OriginChipCondition>(value) : ORIGIN_CHIP_DISABLED;
 }
 
 bool ShouldShowGoogleLocalNTP() {

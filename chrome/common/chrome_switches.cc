@@ -310,9 +310,6 @@ const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 
-// Disable the origin chip in the location bar.
-const char kDisableOriginChipV2[]             = "disable-origin-chip-v2";
-
 // Disable the setting to prompt the user for their OS account password before
 // revealing plaintext passwords in the password manager.
 const char kDisablePasswordManagerReauthentication[] =
@@ -547,24 +544,6 @@ const char kEnableOfflineLoadStaleCache[]   = "enable-offline-load-stale-cache";
 const char kDisableOfflineLoadStaleCache[]  =
     "disable-offline-load-stale-cache";
 
-// Controls which branch of the origin chip experiment is enabled. The first
-// flag (enable-origin-chip) is equivalent to the third
-// (enable-origin-chip-trailing-location-bar) and exists for backwards
-// compatability with an earlier version of the experiment.
-//
-// We're using independent flags here (as opposed to a common flag with
-// different values) to be able to enable/disable the entire experience
-// associated with this feature server-side from the FieldTrial (the complete
-// experience includes other flag changes as well). It is not currently possible
-// to do that with "flag=value" flags.
-const char kEnableOriginChip[] = "enable-origin-chip";
-const char kEnableOriginChipLeadingLocationBar[] =
-    "enable-origin-chip-leading-location-bar";
-const char kEnableOriginChipTrailingLocationBar[] =
-    "enable-origin-chip-trailing-location-bar";
-const char kEnableOriginChipLeadingMenuButton[] =
-    "enable-origin-chip-leading-menu-button";
-
 // Controls which branch of the origin chip in location bar experiment is
 // enabled.
 //
@@ -573,12 +552,8 @@ const char kEnableOriginChipLeadingMenuButton[] =
 // associated with this feature server-side from the FieldTrial (the complete
 // experience includes other flag changes as well). It is not currently possible
 // to do that with "flag=value" flags.
-const char kEnableOriginChipV2[] = "enable-origin-chip-v2";
-const char kEnableOriginChipV2HideOnMouseRelease[] =
-    "enable-origin-chip-v2-hide-on-mouse-release";
-const char kEnableOriginChipV2HideOnUserInput[] =
-    "enable-origin-chip-v2-hide-on-user-input";
-const char kEnableOriginChipV2OnSrp[] = "enable-origin-chip-v2-on-srp";
+const char kEnableOriginChipAlways[]        = "enable-origin-chip-always";
+const char kEnableOriginChipOnSrp[]         = "enable-origin-chip-on-srp";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
@@ -588,7 +563,7 @@ const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
 // Enable Privet storage.
-const char kEnablePrivetStorage[]     = "enable-privet-storage";
+const char kEnablePrivetStorage[]           = "enable-privet-storage";
 
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:

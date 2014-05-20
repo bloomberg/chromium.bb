@@ -1937,8 +1937,6 @@
         'browser/ui/views/toolbar/browser_actions_container_observer.h',
         'browser/ui/views/toolbar/home_button.cc',
         'browser/ui/views/toolbar/home_button.h',
-        'browser/ui/views/toolbar/toolbar_origin_chip_view.cc',
-        'browser/ui/views/toolbar/toolbar_origin_chip_view.h',
         'browser/ui/views/toolbar/reload_button.cc',
         'browser/ui/views/toolbar/reload_button.h',
         'browser/ui/views/toolbar/toolbar_button.cc',

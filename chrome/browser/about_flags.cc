@@ -361,22 +361,8 @@ const Experiment::Choice kSearchButtonInOmniboxChoices[] = {
 const Experiment::Choice kOriginChipChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOriginChip, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_TRAILING_LOCATION_BAR,
-    switches::kEnableOriginChipTrailingLocationBar, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_LEADING_LOCATION_BAR,
-    switches::kEnableOriginChipLeadingLocationBar, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_LEADING_MENU_BUTTON,
-    switches::kEnableOriginChipLeadingMenuButton, ""}
-};
-const Experiment::Choice kOriginChipV2Choices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOriginChipV2, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE,
-    switches::kEnableOriginChipV2HideOnMouseRelease, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
-    switches::kEnableOriginChipV2HideOnUserInput, ""},
-  { IDS_FLAGS_ORIGIN_CHIP_V2_ON_SRP,
-    switches::kEnableOriginChipV2OnSrp, ""}
+  { IDS_FLAGS_ORIGIN_CHIP_ALWAYS, switches::kEnableOriginChipAlways, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_ON_SRP, switches::kEnableOriginChipOnSrp, ""}
 };
 
 const Experiment::Choice kTouchScrollingModeChoices[] = {
@@ -1661,18 +1647,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kNumRasterThreadsChoices)
   },
   {
-    "origin-chip",
+    "origin-chip-in-omnibox",
     IDS_FLAGS_ORIGIN_CHIP_NAME,
     IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION,
-    kOsCrOS | kOsWin | kOsLinux,
-    MULTI_VALUE_TYPE(kOriginChipChoices)
-  },
-  {
-    "origin-chip-in-omnibox",
-    IDS_FLAGS_ORIGIN_CHIP_V2_NAME,
-    IDS_FLAGS_ORIGIN_CHIP_V2_DESCRIPTION,
     kOsCrOS | kOsMac | kOsWin | kOsLinux,
-    MULTI_VALUE_TYPE(kOriginChipV2Choices)
+    MULTI_VALUE_TYPE(kOriginChipChoices)
   },
   {
     "search-button-in-omnibox",

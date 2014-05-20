@@ -163,7 +163,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
   [[field_ cell] setIsPopupMode:
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
 
-  if (chrome::ShouldDisplayOriginChipV2())
+  if (chrome::ShouldDisplayOriginChip())
     origin_chip_decoration_.reset(new OriginChipDecoration(
         this, location_icon_decoration_.get()));
 }

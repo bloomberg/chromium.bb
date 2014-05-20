@@ -88,20 +88,15 @@ OmniboxView::~OmniboxView() {
 }
 
 void OmniboxView::HandleOriginChipMouseRelease() {
-  // HIDE_ON_MOUSE_RELEASE only hides if there isn't any current text in the
-  // Omnibox (e.g. search terms).
-  if ((chrome::GetOriginChipV2Condition() ==
-       chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) &&
-      controller()->GetToolbarModel()->GetText().empty()) {
+  // Only hide if there isn't any current text in the Omnibox (e.g. search
+  // terms).
+  if (controller()->GetToolbarModel()->GetText().empty())
     controller()->HideOriginChip();
-  }
 }
 
 void OmniboxView::OnDidKillFocus() {
-  if (chrome::ShouldDisplayOriginChipV2() &&
-      !model()->user_input_in_progress()) {
+  if (chrome::ShouldDisplayOriginChip() && !model()->user_input_in_progress())
     controller()->ShowOriginChip();
-  }
 }
 
 void OmniboxView::OpenMatch(const AutocompleteMatch& match,

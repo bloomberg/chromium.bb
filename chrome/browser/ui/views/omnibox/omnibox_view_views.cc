@@ -225,7 +225,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  if (chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2())
+  if (chrome::ShouldDisplayOriginChip())
     set_placeholder_text(GetHintText());
 
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
@@ -1026,8 +1026,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip() ||
-      chrome::ShouldDisplayOriginChipV2()) {
+  if (chrome::IsQueryExtractionEnabled() || chrome::ShouldDisplayOriginChip()) {
     int select_all_position = menu_contents->GetIndexOfCommandId(
         IDS_APP_SELECT_ALL);
     DCHECK_GE(select_all_position, 0);

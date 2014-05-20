@@ -186,14 +186,9 @@ int ToolbarModelImpl::GetIcon() const {
     // button nor origin chip are present to indicate the security state.
     return (chrome::GetDisplaySearchButtonConditions() ==
         chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
-        !chrome::ShouldDisplayOriginChipV2() ?
+        !chrome::ShouldDisplayOriginChip() ?
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
-
-  // When the original site chip experiment is running, the icon in the location
-  // bar, when not the search icon, should be the page icon.
-  if (chrome::ShouldDisplayOriginChip())
-    return GetIconForSecurityLevel(NONE);
 
   return GetIconForSecurityLevel(GetSecurityLevel(false));
 }
@@ -285,10 +280,10 @@ bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
   if (chrome::ShouldDisplayOriginChip())
     return true;
 
-  const chrome::OriginChipV2Condition chip_condition =
-      chrome::GetOriginChipV2Condition();
-  return (chip_condition != chrome::ORIGIN_CHIP_V2_DISABLED) &&
-      ((chip_condition != chrome::ORIGIN_CHIP_V2_ON_SRP) ||
+  const chrome::OriginChipCondition chip_condition =
+      chrome::GetOriginChipCondition();
+  return (chip_condition == chrome::ORIGIN_CHIP_ALWAYS) ||
+      ((chip_condition == chrome::ORIGIN_CHIP_ON_SRP) &&
        WouldPerformSearchTermReplacement(false));
 }
 

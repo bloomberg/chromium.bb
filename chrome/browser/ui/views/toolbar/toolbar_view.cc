@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -43,7 +42,6 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_origin_chip_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -134,7 +132,6 @@ ToolbarView::ToolbarView(Browser* browser)
       reload_(NULL),
       home_(NULL),
       location_bar_(NULL),
-      origin_chip_view_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
       browser_(browser),
@@ -238,22 +235,12 @@ void ToolbarView::Init() {
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Always add children in order from left to right, for accessibility.
-  origin_chip_view_ = new ToolbarOriginChipView(this);
-  chrome::OriginChipPosition origin_chip_position =
-      chrome::GetOriginChipPosition();
   AddChildView(back_);
   AddChildView(forward_);
   AddChildView(reload_);
   AddChildView(home_);
-  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR)
-    AddChildView(origin_chip_view_);
   AddChildView(location_bar_);
-  if (origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR)
-    AddChildView(origin_chip_view_);
   AddChildView(browser_actions_);
-  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON ||
-      origin_chip_position == chrome::ORIGIN_CHIP_DISABLED)
-    AddChildView(origin_chip_view_);
   AddChildView(app_menu_);
 
   LoadImages();
@@ -274,10 +261,6 @@ void ToolbarView::Init() {
   UpdateAppMenuState();
 
   location_bar_->Init();
-
-  origin_chip_view_->Init();
-  if (origin_chip_view_->ShouldShow())
-    location_bar_->set_toolbar_origin_chip_view(origin_chip_view_);
 
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(),
@@ -306,12 +289,8 @@ void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
-  if (origin_chip_view_->visible())
-    origin_chip_view_->Update(tab);
-
   if (browser_actions_)
     browser_actions_->RefreshBrowserActionViews();
-
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 }
@@ -547,8 +526,6 @@ gfx::Size ToolbarView::GetPreferredSize() const {
         (show_home_button_.GetValue() ? home_->GetPreferredSize().width() : 0) +
         kStandardSpacing + browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
-    content_width += origin_chip_view_->visible() ?
-        (origin_chip_view_->GetPreferredSize().width() + kStandardSpacing) : 0;
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -562,8 +539,6 @@ gfx::Size ToolbarView::GetMinimumSize() const {
         (show_home_button_.GetValue() ? home_->GetMinimumSize().width() : 0) +
         kStandardSpacing + browser_actions_->GetMinimumSize().width() +
         app_menu_->GetMinimumSize().width() + kRightEdgeSpacing;
-    content_width += origin_chip_view_->visible() ?
-        (origin_chip_view_->GetMinimumSize().width() + kStandardSpacing) : 0;
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -629,33 +604,11 @@ void ToolbarView::Layout() {
   int available_width = std::max(0, width() - kRightEdgeSpacing -
       app_menu_width - browser_actions_width - next_element_x);
 
-  origin_chip_view_->SetVisible(origin_chip_view_->ShouldShow());
-  int origin_chip_width =
-      origin_chip_view_->ElideDomainTarget(available_width / 2);
-  if (origin_chip_view_->visible())
-    available_width -= origin_chip_width + kStandardSpacing;
-
-  chrome::OriginChipPosition origin_chip_position =
-      chrome::GetOriginChipPosition();
-  if (origin_chip_view_->visible() &&
-      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
-    origin_chip_view_->SetBounds(next_element_x, child_y,
-                                 origin_chip_width, child_height);
-    next_element_x = origin_chip_view_->bounds().right() + kStandardSpacing;
-  }
-
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = (height() - location_height + 1) / 2;
   location_bar_->SetBounds(next_element_x, location_y,
                            std::max(available_width, 0), location_height);
   next_element_x = location_bar_->bounds().right();
-
-  if (origin_chip_view_->visible() &&
-      origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR) {
-    origin_chip_view_->SetBounds(next_element_x + kStandardSpacing, child_y,
-                                 origin_chip_width, child_height);
-    next_element_x = origin_chip_view_->bounds().right();
-  }
 
   browser_actions_->SetBounds(
       next_element_x, child_y, browser_actions_width, child_height);
@@ -669,13 +622,6 @@ void ToolbarView::Layout() {
   // TODO(sidchat): Rework the above behavior so that explicit layout is not
   //                required.
   browser_actions_->Layout();
-
-  if (origin_chip_view_->visible() &&
-      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON) {
-    origin_chip_view_->SetBounds(next_element_x, child_y,
-                                 origin_chip_width, child_height);
-    next_element_x = origin_chip_view_->bounds().right() + kStandardSpacing;
-  }
 
   // Extend the app menu to the screen's right edge in maximized mode just like
   // we extend the back button to the left edge.

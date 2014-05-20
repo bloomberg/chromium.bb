@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_origin_chip_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -207,7 +206,6 @@ LocationBarView::LocationBarView(Browser* browser,
       omnibox_view_(NULL),
       delegate_(delegate),
       origin_chip_view_(NULL),
-      toolbar_origin_chip_view_(NULL),
       location_icon_view_(NULL),
       ev_bubble_view_(NULL),
       ime_inline_autocomplete_view_(NULL),
@@ -597,27 +595,13 @@ void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
 }
 
-views::ImageView* LocationBarView::GetLocationIconView() {
-  return toolbar_origin_chip_view_ ?
-      toolbar_origin_chip_view_->location_icon_view() : location_icon_view_;
-}
-
-const views::ImageView* LocationBarView::GetLocationIconView() const {
-  return toolbar_origin_chip_view_ ?
-      toolbar_origin_chip_view_->location_icon_view() : location_icon_view_;
-}
-
-views::View* LocationBarView::GetLocationBarAnchor() {
-  return GetLocationIconView();
-}
-
 gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
   // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-  gfx::Point icon_bottom(0, GetLocationIconView()->GetImageBounds().bottom() -
+  gfx::Point icon_bottom(0, location_icon_view_->GetImageBounds().bottom() -
       LocationBarView::kIconInternalPadding + 1);
-  gfx::Point icon_center(GetLocationIconView()->GetImageBounds().CenterPoint());
+  gfx::Point icon_center(location_icon_view_->GetImageBounds().CenterPoint());
   gfx::Point point(icon_center.x(), icon_bottom.y());
-  ConvertPointToTarget(GetLocationIconView(), this, &point);
+  ConvertPointToTarget(location_icon_view_, this, &point);
   return point;
 }
 
@@ -1054,7 +1038,7 @@ void LocationBarView::Update(const WebContents* contents) {
 }
 
 void LocationBarView::ShowURL() {
-  if (chrome::ShouldDisplayOriginChipV2()) {
+  if (chrome::ShouldDisplayOriginChip()) {
     omnibox_view_->SetVisible(false);
     omnibox_view_->ShowURL();
     show_url_animation_->Show();
@@ -1235,7 +1219,7 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
     return;
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser)
-    FirstRunBubble::ShowBubble(browser, GetLocationBarAnchor());
+    FirstRunBubble::ShowBubble(browser, location_icon_view_);
 #endif
 }
 
@@ -1254,7 +1238,7 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowEVBubble() const {
-  return !toolbar_origin_chip_view_ && !chrome::ShouldDisplayOriginChipV2() &&
+  return !chrome::ShouldDisplayOriginChip() &&
       (GetToolbarModel()->GetSecurityLevel(false) == ToolbarModel::EV_SECURE);
 }
 
@@ -1587,9 +1571,6 @@ void LocationBarView::OnChanged() {
       views::Button::STATE_NORMAL,
       *GetThemeProvider()->GetImageSkiaNamed((icon_id == IDR_OMNIBOX_SEARCH) ?
           IDR_OMNIBOX_SEARCH_BUTTON_LOUPE : IDR_OMNIBOX_SEARCH_BUTTON_ARROW));
-
-  if (toolbar_origin_chip_view_)
-    toolbar_origin_chip_view_->OnChanged();
 
   if (origin_chip_view_->visible())
     origin_chip_view_->OnChanged();

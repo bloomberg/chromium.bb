@@ -105,21 +105,17 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   // bar, or the location bar is at the NTP. However, if the origin chip is
   // enabled, the omnibox will be empty by default, so the page info should be
   // shown in those cases as well.
-  if ((chrome::ShouldDisplayOriginChipV2() &&
-       owner_->GetOmniboxView()->model() &&
-       owner_->GetOmniboxView()->model()->user_input_in_progress()) ||
-      (!chrome::ShouldDisplayOriginChipV2() &&
-       owner_->GetOmniboxView()->IsEditingOrEmpty()))
+  if (chrome::ShouldDisplayOriginChip() ?
+          (owner_->GetOmniboxView()->model() &&
+           owner_->GetOmniboxView()->model()->user_input_in_progress()) :
+          owner_->GetOmniboxView()->IsEditingOrEmpty())
     return true;
 
   WebContents* tab = owner_->GetWebContents();
   const NavigationController& controller = tab->GetController();
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   NavigationEntry* nav_entry = controller.GetVisibleEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return true;
-  }
+  DCHECK(nav_entry);
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetURL(),
                               nav_entry->GetSSL());

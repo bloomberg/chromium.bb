@@ -209,7 +209,7 @@ void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {
 }
 
 void OmniboxViewMac::Update() {
-  if (chrome::ShouldDisplayOriginChipV2()) {
+  if (chrome::ShouldDisplayOriginChip()) {
     NSDictionary* placeholder_attributes = @{
       NSFontAttributeName : GetFieldFont(gfx::Font::NORMAL),
       NSForegroundColorAttributeName : [NSColor disabledControlTextColor]

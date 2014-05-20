@@ -49,7 +49,6 @@ class Profile;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
-class ToolbarOriginChipView;
 class TranslateIconView;
 class ZoomView;
 
@@ -194,11 +193,6 @@ class LocationBarView : public LocationBar,
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 
-  void set_toolbar_origin_chip_view(
-      ToolbarOriginChipView* toolbar_origin_chip_view) {
-    toolbar_origin_chip_view_ = toolbar_origin_chip_view;
-  }
-
   // Returns the screen coordinates of the omnibox (where the URL text appears,
   // not where the icons are shown).
   gfx::Point GetOmniboxViewOrigin() const;
@@ -223,11 +217,8 @@ class LocationBarView : public LocationBar,
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
 
-  views::ImageView* GetLocationIconView();
-  const views::ImageView* GetLocationIconView() const;
+  LocationIconView* location_icon_view() { return location_icon_view_; }
 
-  // Return a view suitable for anchoring location-bar-anchored bubbles to.
-  views::View* GetLocationBarAnchor();
   // Return the point suitable for anchoring location-bar-anchored bubbles at.
   // The point will be returned in the coordinates of the LocationBarView.
   gfx::Point GetLocationBarAnchorPoint() const;
@@ -435,11 +426,8 @@ class LocationBarView : public LocationBar,
   // Object used to paint the border.
   scoped_ptr<views::Painter> border_painter_;
 
-  // The version of the origin chip that appears in the location bar.
+  // The origin chip that may appear in the location bar.
   OriginChipView* origin_chip_view_;
-
-  // The version of the origin chip that appears in the toolbar.
-  ToolbarOriginChipView* toolbar_origin_chip_view_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;

@@ -485,7 +485,7 @@ void BrowserView::InitStatusBubble() {
 
 void BrowserView::InitPermissionBubbleView() {
   permission_bubble_view_.reset(new PermissionBubbleViewViews(
-      GetLocationBarView()->GetLocationIconView()));
+      GetLocationBarView()->location_icon_view()));
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
@@ -1254,7 +1254,7 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       const GURL& url,
                                       const content::SSLStatus& ssl) {
   WebsiteSettingsPopupView::ShowPopup(
-      GetLocationBarView()->GetLocationIconView(), profile,
+      GetLocationBarView()->location_icon_view(), profile,
       web_contents, url, ssl, browser_.get());
 }
 

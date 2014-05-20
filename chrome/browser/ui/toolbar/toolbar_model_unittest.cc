@@ -4,16 +4,12 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -22,13 +18,9 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/escape.h"
 
-using base::ASCIIToUTF16;
 
 // Test data ------------------------------------------------------------------
 
@@ -41,8 +33,6 @@ struct TestItem {
   base::string16 expected_text_url_replacement_inactive;
   // The expected text to display when query extraction is active.
   base::string16 expected_text_query_extraction;
-  // The expected text to display when the origin chip (URL removal) is active.
-  base::string16 expected_text_origin_chip;
   // The expected text to display when both query extraction and URL removal are
   // active.
   base::string16 expected_text_both;
@@ -51,100 +41,90 @@ struct TestItem {
 } test_items[] = {
   {
     GURL("view-source:http://www.google.com"),
-    ASCIIToUTF16("view-source:www.google.com"),
-    ASCIIToUTF16("view-source:www.google.com"),
-    base::string16(),
+    base::ASCIIToUTF16("view-source:www.google.com"),
+    base::ASCIIToUTF16("view-source:www.google.com"),
     base::string16(),
     false,
     true
   },
   {
     GURL("view-source:chrome://newtab/"),
-    ASCIIToUTF16("view-source:chrome://newtab"),
-    ASCIIToUTF16("view-source:chrome://newtab"),
-    base::string16(),
+    base::ASCIIToUTF16("view-source:chrome://newtab"),
+    base::ASCIIToUTF16("view-source:chrome://newtab"),
     base::string16(),
     false,
     true
   },
   {
     GURL("chrome-extension://monkey/balls.html"),
-    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
-    ASCIIToUTF16("chrome-extension://monkey/balls.html"),
-    base::string16(),
+    base::ASCIIToUTF16("chrome-extension://monkey/balls.html"),
+    base::ASCIIToUTF16("chrome-extension://monkey/balls.html"),
     base::string16(),
     false,
     true
   },
   {
     GURL(content::kAboutBlankURL),
-    ASCIIToUTF16(content::kAboutBlankURL),
-    ASCIIToUTF16(content::kAboutBlankURL),
-    base::string16(),
+    base::ASCIIToUTF16(content::kAboutBlankURL),
+    base::ASCIIToUTF16(content::kAboutBlankURL),
     base::string16(),
     false,
     true
   },
   {
     GURL("http://searchurl/?q=tractor+supply"),
-    ASCIIToUTF16("searchurl/?q=tractor+supply"),
-    ASCIIToUTF16("searchurl/?q=tractor+supply"),
-    base::string16(),
+    base::ASCIIToUTF16("searchurl/?q=tractor+supply"),
+    base::ASCIIToUTF16("searchurl/?q=tractor+supply"),
     base::string16(),
     false,
     true
   },
   {
     GURL("http://google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
-    base::string16(),
+    base::ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
+    base::ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
     base::string16(),
     false,
     true
   },
   {
     GURL("https://google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
-    base::string16(),
+    base::ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
+    base::ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     base::string16(),
     false,
     true
   },
   {
     GURL("https://google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
-    base::string16(),
+    base::ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
+    base::ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
     base::string16(),
     false,
     true
   },
   {
     GURL("https://google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("tractor supply"),
-    base::string16(),
-    ASCIIToUTF16("tractor supply"),
+    base::ASCIIToUTF16("https://google.com/search?q=tractor+supply&espv=1"),
+    base::ASCIIToUTF16("tractor supply"),
+    base::ASCIIToUTF16("tractor supply"),
     true,
     true
   },
   {
     GURL("https://google.com/search?q=tractorsupply.com&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
-    ASCIIToUTF16("tractorsupply.com"),
-    base::string16(),
-    ASCIIToUTF16("tractorsupply.com"),
+    base::ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
+    base::ASCIIToUTF16("tractorsupply.com"),
+    base::ASCIIToUTF16("tractorsupply.com"),
     true,
     true
   },
   {
     GURL("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
-    ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
-    ASCIIToUTF16("ftp://tractorsupply.ie"),
-    base::string16(),
-    ASCIIToUTF16("ftp://tractorsupply.ie"),
+    base::ASCIIToUTF16(
+        "https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
+    base::ASCIIToUTF16("ftp://tractorsupply.ie"),
+    base::ASCIIToUTF16("ftp://tractorsupply.ie"),
     true,
     true
   },
@@ -167,11 +147,11 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE;
 
  protected:
+  void EnableOriginChipFieldTrial();
   void NavigateAndCheckText(const GURL& url,
                             const base::string16& expected_text,
                             bool would_perform_search_term_replacement,
                             bool should_display_url);
-  void EnableOriginChipFieldTrial();
 
  private:
   scoped_ptr<base::FieldTrialList> field_trial_list_;
@@ -206,8 +186,8 @@ void ToolbarModelTest::SetUp() {
 void ToolbarModelTest::EnableOriginChipFieldTrial() {
   field_trial_list_.reset(new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("platypus")));
-  base::FieldTrialList::CreateFieldTrial(
-            "EmbeddedSearch", "Group1 espv:2 origin_chip:1");
+  base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                         "Group1 espv:2 origin_chip:1");
 }
 
 void ToolbarModelTest::NavigateAndCheckText(
@@ -316,8 +296,8 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_OriginChip) {
   EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url, test_item.expected_text_origin_chip,
-                         false, test_item.should_display_url);
+    NavigateAndCheckText(test_item.url, base::string16(), false,
+                         test_item.should_display_url);
   }
 
   // Check with both enabled.
@@ -341,7 +321,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL_OriginChip) {
   }
 }
 
-// Verify that search terms are extracted while the page is loading.
+ // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
   chrome::EnableQueryExtractionForTesting();
   AddTab(browser(), GURL(content::kAboutBlankURL));
@@ -377,7 +357,8 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
   UIThreadSearchTermsData::SetGoogleBaseURL("http://www.foo.com/");
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
-      ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"), false, true);
+      base::ASCIIToUTF16("www.foo.com/search?q=tractor+supply&espv=1"), false,
+      true);
 
   // The same URL, when specified on the command line, should allow search term
   // extraction.
@@ -386,7 +367,7 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
                                                       "http://www.foo.com/");
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
-      ASCIIToUTF16("tractor supply"), true, true);
+      base::ASCIIToUTF16("tractor supply"), true, true);
 }
 
 // Popup windows don't have an origin chip, so test that URL display in a popup

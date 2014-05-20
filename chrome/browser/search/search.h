@@ -48,20 +48,11 @@ enum DisplaySearchButtonConditions {
   DISPLAY_SEARCH_BUTTON_NUM_VALUES,
 };
 
-enum OriginChipPosition {
-  ORIGIN_CHIP_DISABLED,
-  ORIGIN_CHIP_LEADING_LOCATION_BAR,
-  ORIGIN_CHIP_TRAILING_LOCATION_BAR,
-  ORIGIN_CHIP_LEADING_MENU_BUTTON,
+enum OriginChipCondition {
+  ORIGIN_CHIP_DISABLED = 0,
+  ORIGIN_CHIP_ALWAYS,
+  ORIGIN_CHIP_ON_SRP,
   ORIGIN_CHIP_NUM_VALUES,
-};
-
-enum OriginChipV2Condition {
-  ORIGIN_CHIP_V2_DISABLED,
-  ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE,
-  ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
-  ORIGIN_CHIP_V2_ON_SRP,
-  ORIGIN_CHIP_V2_NUM_VALUES,
 };
 
 // Use this value for "start margin" to prevent the "es_sm" parameter from
@@ -194,24 +185,11 @@ bool ShouldHideTopVerbatimMatch();
 // ToolbarModel::WouldPerformSearchTermReplacement().
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions();
 
-// Returns true if the origin chip should be shown in the toolbar. This
-// also includes the related changes to the omnibox. Always returns false if
-// ShouldDisplayOriginChipV2() returns true.
+// Returns true if the origin chip should be shown.
 bool ShouldDisplayOriginChip();
 
-// Returns a value indicating where the origin chip should be positioned on the
-// toolbar.
-OriginChipPosition GetOriginChipPosition();
-
-// Returns true if version 2 of the origin chip should be shown.  This version
-// places the origin chip inside the location bar instead of the toolbar and
-// adds show/hide behavior and animations to make the relationship between the
-// chip and the text in the Omnibox clearer.
-bool ShouldDisplayOriginChipV2();
-
-// Returns a value indicating what event should trigger hiding the origin chip
-// in the location bar.
-OriginChipV2Condition GetOriginChipV2Condition();
+// Returns a value indicating when the origin chip should be shown.
+OriginChipCondition GetOriginChipCondition();
 
 // Returns true if the local new tab page should show a Google logo and search
 // box for users whose default search provider is Google, or false if not.

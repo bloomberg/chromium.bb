@@ -21,7 +21,6 @@ bool ToolbarModel::WouldReplaceURL() const {
 }
 
 bool ToolbarModel::ShouldShowOriginChip() const {
-  return chrome::ShouldDisplayOriginChipV2() &&
-      WouldOmitURLDueToOriginChip() &&
+  return chrome::ShouldDisplayOriginChip() && WouldOmitURLDueToOriginChip() &&
       origin_chip_enabled();
 }

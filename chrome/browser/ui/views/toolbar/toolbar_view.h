@@ -26,7 +26,6 @@ class Browser;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
-class ToolbarOriginChipView;
 class WrenchMenu;
 class WrenchMenuModel;
 class WrenchToolbarButton;
@@ -103,7 +102,6 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  ToolbarOriginChipView* origin_chip() const { return origin_chip_view_; }
   views::MenuButton* app_menu() const;
   HomeButton* home_button() const { return home_; }
 
@@ -235,7 +233,6 @@ class ToolbarView : public views::AccessiblePaneView,
   ReloadButton* reload_;
   HomeButton* home_;
   LocationBarView* location_bar_;
-  ToolbarOriginChipView* origin_chip_view_;
   BrowserActionsContainer* browser_actions_;
   WrenchToolbarButton* app_menu_;
   Browser* browser_;
