@@ -1233,11 +1233,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadowList
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
-{
-    return getPropertyCSSValue(propertyID, UpdateLayout);
-}
-
 static CSSValueID identifierForFamily(const AtomicString& family)
 {
     if (family == FontFamilyNames::webkit_cursive)
