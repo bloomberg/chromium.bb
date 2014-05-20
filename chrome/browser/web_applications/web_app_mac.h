@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/extensions/file_handler_info.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 namespace web_app {
 

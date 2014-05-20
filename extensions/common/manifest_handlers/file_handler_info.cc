@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,13 +17,18 @@ namespace extensions {
 namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
+namespace {
 const int kMaxTypeAndExtensionHandlers = 200;
+}
+
+FileHandlerInfo::FileHandlerInfo() {}
+FileHandlerInfo::~FileHandlerInfo() {}
 
 FileHandlers::FileHandlers() {}
 FileHandlers::~FileHandlers() {}
 
 // static
-const std::vector<FileHandlerInfo>* FileHandlers::GetFileHandlers(
+const FileHandlersInfo* FileHandlers::GetFileHandlers(
     const Extension* extension) {
   FileHandlers* info = static_cast<FileHandlers*>(
       extension->GetManifestData(keys::kFileHandlers));
@@ -38,7 +43,7 @@ FileHandlersParser::~FileHandlersParser() {
 
 bool LoadFileHandler(const std::string& handler_id,
                      const base::DictionaryValue& handler_info,
-                     std::vector<FileHandlerInfo>* file_handlers,
+                     FileHandlersInfo* file_handlers,
                      base::string16* error) {
   DCHECK(error);
   FileHandlerInfo handler;
@@ -61,8 +66,8 @@ bool LoadFileHandler(const std::string& handler_id,
     return false;
   }
 
-  if ((!mime_types || mime_types->GetSize() == 0) &&
-      (!file_extensions || file_extensions->GetSize() == 0)) {
+  if ((!mime_types || mime_types->empty()) &&
+      (!file_extensions || file_extensions->empty())) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidFileHandlerNoTypeOrExtension,
         handler_id);
@@ -116,7 +121,8 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  for (base::DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*all_handlers);
+       !iter.IsAtEnd();
        iter.Advance()) {
     // A file handler entry is a title and a list of MIME types to handle.
     const base::DictionaryValue* handler = NULL;
@@ -129,16 +135,15 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
     }
   }
 
-  int filterCount = 0;
-  for (std::vector<FileHandlerInfo>::iterator iter =
-           info->file_handlers.begin();
-       iter < info->file_handlers.end();
+  int filter_count = 0;
+  for (FileHandlersInfo::const_iterator iter = info->file_handlers.begin();
+       iter != info->file_handlers.end();
        iter++) {
-    filterCount += iter->types.size();
-    filterCount += iter->extensions.size();
+    filter_count += iter->types.size();
+    filter_count += iter->extensions.size();
   }
 
-  if (filterCount > kMaxTypeAndExtensionHandlers) {
+  if (filter_count > kMaxTypeAndExtensionHandlers) {
     *error = base::ASCIIToUTF16(
         errors::kInvalidFileHandlersTooManyTypesAndExtensions);
     return false;

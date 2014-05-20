@@ -242,15 +242,13 @@ void WritableFileChecker::RemoteCheckDone(
 
 }  // namespace
 
-typedef std::vector<FileHandlerInfo> FileHandlerList;
-
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
                                         const std::string& handler_id) {
-  const FileHandlerList* file_handlers = FileHandlers::GetFileHandlers(&app);
+  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return NULL;
 
-  for (FileHandlerList::const_iterator i = file_handlers->begin();
+  for (FileHandlersInfo::const_iterator i = file_handlers->begin();
        i != file_handlers->end(); i++) {
     if (i->id == handler_id)
       return &*i;
@@ -262,11 +260,11 @@ const FileHandlerInfo* FirstFileHandlerForFile(
     const Extension& app,
     const std::string& mime_type,
     const base::FilePath& path) {
-  const FileHandlerList* file_handlers = FileHandlers::GetFileHandlers(&app);
+  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return NULL;
 
-  for (FileHandlerList::const_iterator i = file_handlers->begin();
+  for (FileHandlersInfo::const_iterator i = file_handlers->begin();
        i != file_handlers->end(); i++) {
     if (FileHandlerCanHandleFile(*i, mime_type, path))
       return &*i;
@@ -281,11 +279,11 @@ std::vector<const FileHandlerInfo*> FindFileHandlersForFiles(
     return handlers;
 
   // Look for file handlers which can handle all the MIME types specified.
-  const FileHandlerList* file_handlers = FileHandlers::GetFileHandlers(&app);
+  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return handlers;
 
-  for (FileHandlerList::const_iterator data = file_handlers->begin();
+  for (FileHandlersInfo::const_iterator data = file_handlers->begin();
        data != file_handlers->end(); ++data) {
     bool handles_all_types = true;
     for (PathAndMimeTypeSet::const_iterator it = files.begin();

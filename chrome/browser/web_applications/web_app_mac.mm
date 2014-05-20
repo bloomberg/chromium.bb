@@ -436,14 +436,12 @@ web_app::ShortcutInfo BuildShortcutInfoFromBundle(
 
 void UpdateFileTypes(NSMutableDictionary* plist,
                      const extensions::FileHandlersInfo& file_handlers_info) {
-  const std::vector<extensions::FileHandlerInfo>& handlers =
-      file_handlers_info.handlers;
   NSMutableArray* document_types =
-      [NSMutableArray arrayWithCapacity:handlers.size()];
+      [NSMutableArray arrayWithCapacity:file_handlers_info.size()];
 
-  for (std::vector<extensions::FileHandlerInfo>::const_iterator info_it =
-           handlers.begin();
-       info_it != handlers.end();
+  for (extensions::FileHandlersInfo::const_iterator info_it =
+           file_handlers_info.begin();
+       info_it != file_handlers_info.end();
        ++info_it) {
     const extensions::FileHandlerInfo& info = *info_it;
 

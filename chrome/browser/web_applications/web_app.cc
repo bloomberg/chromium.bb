@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -162,11 +161,10 @@ void GetInfoForApp(const extensions::Extension* extension,
                    const InfoCallback& callback) {
   web_app::ShortcutInfo shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile);
-  extensions::FileHandlersInfo file_handlers_info;
   const std::vector<extensions::FileHandlerInfo>* file_handlers =
       extensions::FileHandlers::GetFileHandlers(extension);
-  if (file_handlers)
-    file_handlers_info.handlers = *file_handlers;
+  extensions::FileHandlersInfo file_handlers_info =
+      file_handlers ? *file_handlers : extensions::FileHandlersInfo();
 
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < kNumDesiredSizes; ++i) {

@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 class Profile;
 

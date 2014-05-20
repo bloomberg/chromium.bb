@@ -1,19 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-//#include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace errors = extensions::manifest_errors;
+namespace extensions {
 
-using extensions::Extension;
-using extensions::FileHandlers;
-using extensions::FileHandlerInfo;
+namespace errors = manifest_errors;
 
 class FileHandlersManifestTest : public ExtensionManifestTest {
 };
@@ -45,8 +41,7 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
       LoadAndExpectSuccess("file_handlers_valid.json");
 
   ASSERT_TRUE(extension.get());
-  const std::vector<FileHandlerInfo>* handlers =
-      FileHandlers::GetFileHandlers(extension.get());
+  const FileHandlersInfo* handlers = FileHandlers::GetFileHandlers(extension);
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(2U, handlers->size());
 
@@ -73,7 +68,8 @@ TEST_F(FileHandlersManifestTest, NotPlatformApp) {
       LoadAndExpectSuccess("file_handlers_invalid_not_app.json");
 
   ASSERT_TRUE(extension.get());
-  const std::vector<FileHandlerInfo>* handlers =
-      FileHandlers::GetFileHandlers(extension.get());
+  const FileHandlersInfo* handlers = FileHandlers::GetFileHandlers(extension);
   ASSERT_TRUE(handlers == NULL);
 }
+
+}  // namespace extensions

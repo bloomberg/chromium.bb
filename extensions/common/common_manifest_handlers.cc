@@ -7,6 +7,7 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
@@ -22,6 +23,7 @@ void RegisterCommonManifestHandlers() {
   (new BackgroundManifestHandler)->Register();
   (new CSPHandler(false))->Register();
   (new CSPHandler(true))->Register();
+  (new FileHandlersParser)->Register();
   (new IncognitoHandler)->Register();
   (new KioskModeHandler)->Register();
   (new OfflineEnabledHandler)->Register();

@@ -307,11 +307,11 @@ TEST_F(WebAppShortcutCreatorTest, FileHandlers) {
   handler_0.extensions.insert("ext1");
   handler_0.types.insert("type0");
   handler_0.types.insert("type1");
-  file_handlers_info.handlers.push_back(handler_0);
+  file_handlers_info.push_back(handler_0);
   extensions::FileHandlerInfo handler_1;
   handler_1.extensions.insert("ext2");
   handler_1.types.insert("type2");
-  file_handlers_info.handlers.push_back(handler_1);
+  file_handlers_info.push_back(handler_1);
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(
       app_data_dir_, info_, file_handlers_info);

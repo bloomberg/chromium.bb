@@ -9,7 +9,6 @@
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
-#include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
@@ -56,7 +55,6 @@ void RegisterChromeManifestHandlers() {
   (new DevToolsPageHandler)->Register();
   (new ExternallyConnectableHandler)->Register();
   (new FileBrowserHandlerParser)->Register();
-  (new FileHandlersParser)->Register();
   (new HomepageURLHandler)->Register();
   (new IconsHandler)->Register();
 #if defined(OS_CHROMEOS)

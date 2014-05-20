@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/extensions/file_handler_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 class Profile;
 

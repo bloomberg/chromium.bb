@@ -125,6 +125,8 @@
         'common/manifest_handlers/csp_info.h',
         'common/manifest_handlers/externally_connectable.cc',
         'common/manifest_handlers/externally_connectable.h',
+        'common/manifest_handlers/file_handler_info.cc',
+        'common/manifest_handlers/file_handler_info.h',
         'common/manifest_handlers/icons_handler.cc',
         'common/manifest_handlers/icons_handler.h',
         'common/manifest_handlers/incognito_info.cc',
