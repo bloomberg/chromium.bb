@@ -2163,7 +2163,6 @@ name=bug_374105a
 gpu.dll!gpu::gles2::ShaderTranslatorCache::GetTranslator
 gpu.dll!gpu::gles2::GLES2DecoderImpl::InitializeShaderTranslator
 gpu.dll!gpu::gles2::GLES2DecoderImpl::Initialize
-gpu.dll!gpu::InProcessCommandBuffer::InitializeOnGpuThread
 
 UNINITIALIZED READ
 name=bug_374105b
@@ -2172,5 +2171,5 @@ gpu.dll!gpu::gles2::ShaderTranslator::GetStringForOptionsThatWouldEffectCompilat
 *!gpu::gles2::ShaderTranslatorTest_OptionsString_Test::TestBody
 
 UNINITIALIZED READ
-name=bug_313788
+name=bug_375401
 *!ToolbarOriginChipView::Update
