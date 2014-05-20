@@ -71,7 +71,7 @@ bool SupportsShadow() {
           switches::kDisableDwmComposition)) {
     return false;
   }
-#elif defined(OS_LINUX) && !defined(USE_ASH)
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Shadows are not supported on (non-ChromeOS) Linux.
   return false;
 #endif

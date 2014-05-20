@@ -78,11 +78,13 @@ const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
 const char* gmail_url = "https://mail.google.com/mail/u";
 const char* kGmailLaunchURL = "https://mail.google.com/mail/ca";
 
+#if defined(OS_CHROMEOS)
 // As defined in /chromeos/dbus/cryptohome_client.cc.
 const char kUserIdHashSuffix[] = "-hash";
 
 // An extension prefix.
 const char kCrxAppPrefix[] = "_crx_";
+#endif
 
 // ShelfModelObserver implementation that tracks what messages are invoked.
 class TestShelfModelObserver : public ash::ShelfModelObserver {

@@ -68,6 +68,11 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup()) {
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ash::Shell::GetInstance()->CreateShelf();
+  ash::Shell::GetInstance()->ShowShelf();
+#endif
   } else {
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);

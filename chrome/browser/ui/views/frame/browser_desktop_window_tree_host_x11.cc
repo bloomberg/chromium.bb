@@ -4,16 +4,78 @@
 
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
+
+namespace {
+
+// DesktopThemeProvider maps resource ids using MapThemeImage(). This is
+// necessary for BrowserDesktopWindowTreeHostWin so that it uses the windows
+// theme images rather than the ash theme images.
+//
+// This differs from the version in browser_desktop_window_tree_host_win.cc
+// because we need to also look up whether we're using the native theme.
+class DesktopThemeProvider : public ui::ThemeProvider {
+ public:
+  explicit DesktopThemeProvider(ThemeService* delegate)
+      : delegate_(delegate) {
+  }
+
+  virtual bool UsingSystemTheme() const OVERRIDE {
+    return delegate_->UsingSystemTheme();
+  }
+  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
+    if (delegate_->UsingSystemTheme())
+      return delegate_->GetImageSkiaNamed(id);
+
+    return delegate_->GetImageSkiaNamed(
+        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
+  }
+  virtual SkColor GetColor(int id) const OVERRIDE {
+    return delegate_->GetColor(id);
+  }
+  virtual int GetDisplayProperty(int id) const OVERRIDE {
+    return delegate_->GetDisplayProperty(id);
+  }
+  virtual bool ShouldUseNativeFrame() const OVERRIDE {
+    return delegate_->ShouldUseNativeFrame();
+  }
+  virtual bool HasCustomImage(int id) const OVERRIDE {
+    return delegate_->HasCustomImage(
+        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
+  }
+  virtual base::RefCountedMemory* GetRawData(
+      int id,
+      ui::ScaleFactor scale_factor) const OVERRIDE {
+    return delegate_->GetRawData(id, scale_factor);
+  }
+
+ private:
+  ThemeService* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
+};
+
+} // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostX11, public:
 
 BrowserDesktopWindowTreeHostX11::BrowserDesktopWindowTreeHostX11(
     views::internal::NativeWidgetDelegate* native_widget_delegate,
     views::DesktopNativeWidgetAura* desktop_native_widget_aura,
-    BrowserView* browser_view)
+    BrowserView* browser_view,
+    BrowserFrame* browser_frame)
     : DesktopWindowTreeHostX11(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view) {
+  scoped_ptr<ui::ThemeProvider> theme_provider(
+      new DesktopThemeProvider(ThemeServiceFactory::GetForProfile(
+                                   browser_view->browser()->profile())));
+  browser_frame->SetThemeProvider(theme_provider.Pass());
 }
 
 BrowserDesktopWindowTreeHostX11::~BrowserDesktopWindowTreeHostX11() {
@@ -67,5 +129,6 @@ BrowserDesktopWindowTreeHost*
         BrowserFrame* browser_frame) {
   return new BrowserDesktopWindowTreeHostX11(native_widget_delegate,
                                              desktop_native_widget_aura,
-                                             browser_view);
+                                             browser_view,
+                                             browser_frame);
 }

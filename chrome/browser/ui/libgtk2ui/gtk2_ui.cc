@@ -120,10 +120,17 @@ const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
 // A list of images that we provide while in gtk mode.
+//
+// TODO(erg): We list both the normal and *_DESKTOP versions of some of these
+// images because in some contexts, we don't go through the
+// chrome::MapThemeImage interface. That should be fixed, but tracking that
+// down is Hard.
 const int kThemeImages[] = {
   IDR_THEME_TOOLBAR,
   IDR_THEME_TAB_BACKGROUND,
+  IDR_THEME_TAB_BACKGROUND_DESKTOP,
   IDR_THEME_TAB_BACKGROUND_INCOGNITO,
+  IDR_THEME_TAB_BACKGROUND_INCOGNITO_DESKTOP,
   IDR_FRAME,
   IDR_FRAME_INACTIVE,
   IDR_THEME_FRAME,
@@ -1043,8 +1050,10 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
       return bitmap;
     }
     case IDR_THEME_TAB_BACKGROUND:
+    case IDR_THEME_TAB_BACKGROUND_DESKTOP:
       return GenerateTabImage(IDR_THEME_FRAME);
     case IDR_THEME_TAB_BACKGROUND_INCOGNITO:
+    case IDR_THEME_TAB_BACKGROUND_INCOGNITO_DESKTOP:
       return GenerateTabImage(IDR_THEME_FRAME_INCOGNITO);
     case IDR_FRAME:
     case IDR_THEME_FRAME:

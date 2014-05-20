@@ -365,6 +365,8 @@
         'browser/ui/ash/session_state_delegate_chromeos.h',
         'browser/ui/ash/session_state_delegate_views.cc',
         'browser/ui/ash/session_state_delegate_views.h',
+        'browser/ui/ash/solid_color_user_wallpaper_delegate.cc',
+        'browser/ui/ash/solid_color_user_wallpaper_delegate.h',
         'browser/ui/ash/stub_user_accounts_delegate.cc',
         'browser/ui/ash/stub_user_accounts_delegate.h',
         'browser/ui/ash/system_tray_delegate_chromeos.cc',
@@ -373,8 +375,6 @@
         'browser/ui/ash/system_tray_delegate_win.h',
         'browser/ui/ash/user_accounts_delegate_chromeos.cc',
         'browser/ui/ash/user_accounts_delegate_chromeos.h',
-        'browser/ui/ash/user_wallpaper_delegate_win.cc',
-        'browser/ui/ash/user_wallpaper_delegate_win.h',
         'browser/ui/ash/volume_controller_chromeos.cc',
         'browser/ui/ash/volume_controller_chromeos.h',
         'browser/ui/aura/active_desktop_monitor.cc',
@@ -1924,9 +1924,9 @@
         'browser/ui/views/tabs/window_finder_win.cc',
         'browser/ui/views/tabs/window_finder_x11.cc',
         'browser/ui/views/task_manager_view.cc',
-        'browser/ui/views/theme_image_mapper.cc',
         'browser/ui/views/theme_image_mapper.h',
-        'browser/ui/views/theme_image_mapper_aura_win.cc',
+        'browser/ui/views/theme_image_mapper_chromeos.cc',
+        'browser/ui/views/theme_image_mapper_desktop.cc',
         'browser/ui/views/toolbar/back_button.cc',
         'browser/ui/views/toolbar/back_button.h',
         'browser/ui/views/toolbar/browser_action_test_util_views.cc',
@@ -2680,7 +2680,7 @@
             'browser/ui/views/message_center/web_notification_tray.cc',
           ],
         }],
-        ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {
+        ['use_aura==1 and chromeos==0 and use_ozone==0 and OS=="linux"', {
           'dependencies': [
             # gtk2 is the only component that can interact with gtk2 in our new
             # world.
@@ -2721,7 +2721,6 @@
             ['OS=="win"', {
               'sources/': [
                 ['exclude', '^browser/ui/views/apps/chrome_app_window_delegate_views.cc'],
-                ['exclude', '^browser/ui/views/theme_image_mapper.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
@@ -2750,7 +2749,6 @@
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host_win.h'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host_x11.cc'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_window_tree_host_x11.h'],
-            ['exclude', '^browser/ui/views/theme_image_mapper_aura_win.cc'],
             ['exclude', '^browser/ui/webui/gesture_config_ui.cc'],
             ['exclude', '^browser/ui/webui/gesture_config_ui.h'],
             ['exclude', '^browser/ui/webui/salsa_ui.cc'],

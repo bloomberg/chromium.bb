@@ -8,8 +8,12 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_linux.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_views.h"
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
+#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/app_list/scoped_keep_alive.h"
+#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -80,10 +84,14 @@ void AppListServiceLinux::MoveNearCursor(app_list::AppListView* view) {
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
+  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
+    return AppListServiceAsh::GetInstance();
+
   return AppListServiceLinux::GetInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile) {
+  AppListServiceAsh::GetInstance()->Init(initial_profile);
   AppListServiceLinux::GetInstance()->Init(initial_profile);
 }

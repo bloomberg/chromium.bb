@@ -469,9 +469,9 @@ TEST_F(BrowserThemePackTest, CanParsePaths) {
   ParseImageNamesJSON(path_json, &out_file_paths);
 
   size_t expected_file_paths = 2u;
-#if defined(OS_WIN)
-  // On Windows additional theme paths are generated to map to the special
-  // resource ids like IDR_THEME_FRAME_WIN, etc
+#if defined(USE_ASH) && !defined(OS_CHROMEOS)
+  // On desktop builds with ash, additional theme paths are generated to map to
+  // the special resource ids like IDR_THEME_FRAME_DESKTOP, etc
   expected_file_paths = 3u;
 #endif
   EXPECT_EQ(expected_file_paths, out_file_paths.size());

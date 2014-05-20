@@ -112,13 +112,13 @@ void ViewEventTestBase::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
 #if defined(USE_ASH)
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 
-#else  // !OS_WIN
+#else  // !OS_CHROMEOS
   // Ash Shell can't just live on its own without a browser process, we need to
   // also create the message center.
   message_center::MessageCenter::Initialize();
@@ -136,7 +136,7 @@ void ViewEventTestBase::SetUp() {
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
   context->GetHost()->Show();
-#endif  // !OS_WIN
+#endif  // !OS_CHROMEOS
   aura::Env::CreateInstance(true);
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
@@ -161,17 +161,15 @@ void ViewEventTestBase::TearDown() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
 
 #if defined(USE_ASH)
-#if !defined(OS_WIN)
-  ash::Shell::DeleteInstance();
 #if defined(OS_CHROMEOS)
+  ash::Shell::DeleteInstance();
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
-#endif
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.
   message_center::MessageCenter::Shutdown();
-#endif  // !OS_WIN
+#endif
   aura::Env::DeleteInstance();
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();

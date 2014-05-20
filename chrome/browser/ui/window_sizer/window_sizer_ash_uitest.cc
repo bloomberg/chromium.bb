@@ -67,7 +67,7 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
 
 }  // namespace
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
 #define MAYBE_OpenBrowserUsingShelfOnOtherDisplay DISABLED_OpenBrowserUsingShelfOnOtherDisplay
 #define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay
 #else

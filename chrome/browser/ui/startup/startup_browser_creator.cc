@@ -299,7 +299,7 @@ bool StartupBrowserCreator::LaunchBrowser(
     chrome::HostDesktopType host_desktop_type =
         chrome::HOST_DESKTOP_TYPE_NATIVE;
 
-#if defined(OS_WIN) && defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_CHROMEOS)
     // We want to maintain only one type of instance for now, either ASH
     // or desktop.
     // TODO(shrikant): Remove this code once we decide on running both desktop

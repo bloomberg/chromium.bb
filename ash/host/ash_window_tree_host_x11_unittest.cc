@@ -57,16 +57,35 @@ class RootWindowEventHandler : public ui::EventHandler {
 
 namespace ash {
 
-typedef aura::test::AuraTestBase AshWindowTreeHostX11Test;
+class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
+ public:
+  virtual void SetUp() OVERRIDE {
+    aura::test::AuraTestBase::SetUp();
+
+#if defined(OS_CHROMEOS)
+    // Fake a ChromeOS running env.
+    const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
+    base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+#endif
+  }
+
+  virtual void TearDown() OVERRIDE {
+    aura::test::AuraTestBase::TearDown();
+
+#if defined(OS_CHROMEOS)
+    // Revert the CrOS testing env otherwise the following non-CrOS aura
+    // tests will fail.
+    // Fake a ChromeOS running env.
+    const char* kLsbRelease = "";
+    base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+#endif
+  }
+};
 
 // Send X touch events to one WindowTreeHost. The WindowTreeHost's
 // delegate will get corresponding ui::TouchEvent if the touch events
 // are targeting this WindowTreeHost.
 TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
-  // Fake a ChromeOS running env.
-  const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-
   scoped_ptr<aura::WindowTreeHostX11> window_tree_host(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host->InitHost();
@@ -117,22 +136,12 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
   EXPECT_EQ(gfx::Point(1500, 1600), handler->last_touch_location());
 
   handler.reset();
-
-  // Revert the CrOS testing env otherwise the following non-CrOS aura
-  // tests will fail.
-  // Fake a ChromeOS running env.
-  kLsbRelease = "";
-  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 }
 
 // Send X touch events to two WindowTreeHost. The WindowTreeHost which is
 // the event target of the X touch events should generate the corresponding
 // ui::TouchEvent for its delegate.
 TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
-  // Fake a ChromeOS running env.
-  const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
-  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-
   scoped_ptr<aura::WindowTreeHostX11> window_tree_host1(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host1->InitHost();
@@ -238,12 +247,6 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   handler1.reset();
   handler2.reset();
-
-  // Revert the CrOS testing env otherwise the following non-CrOS aura
-  // tests will fail.
-  // Fake a ChromeOS running env.
-  kLsbRelease = "";
-  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
 }
 
 }  // namespace aura

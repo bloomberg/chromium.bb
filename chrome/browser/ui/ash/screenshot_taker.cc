@@ -58,7 +58,9 @@ const int kScreenshotMinimumIntervalInMS = 1000;
 
 const char kNotificationId[] = "screenshot";
 
+#if defined(OS_CHROMEOS)
 const char kNotificationOriginUrl[] = "chrome://screenshot";
+#endif
 
 const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
 const char kImageClipboardFormatSuffix[] = "'>";
@@ -359,6 +361,7 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
   return true;
 }
 
+#if defined(OS_CHROMEOS)
 const int GetScreenshotNotificationTitle(
     ScreenshotTakerObserver::Result screenshot_result) {
   switch (screenshot_result) {
@@ -382,6 +385,7 @@ const int GetScreenshotNotificationText(
       return IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL;
   }
 }
+#endif
 
 }  // namespace
 

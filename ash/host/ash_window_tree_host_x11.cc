@@ -154,7 +154,9 @@ void AshWindowTreeHostX11::UpdateRootWindowSize(const gfx::Size& host_size) {
 }
 
 void AshWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
+#if defined(OS_CHROMEOS)
   SetCrOSTapPaused(!show);
+#endif
 }
 
 void AshWindowTreeHostX11::OnWindowInitialized(aura::Window* window) {}
@@ -163,9 +165,11 @@ void AshWindowTreeHostX11::OnHostInitialized(aura::WindowTreeHost* host) {
   if (host != AsWindowTreeHost())
     return;
 
+#if defined(OS_CHROMEOS)
   // We have to enable Tap-to-click by default because the cursor is set to
   // visible in Shell::InitRootWindowController.
   SetCrOSTapPaused(false);
+#endif
 }
 
 void AshWindowTreeHostX11::OnConfigureNotify() {
@@ -181,7 +185,6 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
   if(!WindowTreeHostX11::CanDispatchEvent(event))
     return false;
   XEvent* xev = event;
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   ui::EventType type = ui::EventTypeFromNative(xev);
   // For touch event, check if the root window is residing on the according
   // touch display.
@@ -191,6 +194,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
 #if defined(OS_CHROMEOS)
+      XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
       int64 touch_display_id =
           ui::DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
               xiev->deviceid);
@@ -239,6 +243,7 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
   SendEventToProcessor(event);
 }
 
+#if defined(OS_CHROMEOS)
 void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
   if (!ui::IsXInput2Available())
     return;
@@ -281,6 +286,7 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
     }
   }
 }
+#endif
 
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {

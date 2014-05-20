@@ -78,7 +78,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     AshTestBase::SetUp();
 
     // Set up screen for Windows.
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
     aura::TestScreen* test_screen = aura::TestScreen::Create();
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen);
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateDesktop);

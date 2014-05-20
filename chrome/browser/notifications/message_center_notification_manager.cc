@@ -78,7 +78,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   blockers_.push_back(new FullscreenNotificationBlocker(message_center));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
-  || (defined(USE_AURA) && !defined(USE_ASH))
+  || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // On Windows, Linux and Mac, the notification manager owns the tray icon and
   // views.Other platforms have global ownership and Create will return NULL.
   tray_.reset(message_center::CreateMessageCenterTray());

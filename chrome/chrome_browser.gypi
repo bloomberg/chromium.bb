@@ -2954,6 +2954,7 @@
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',
+            'browser/fullscreen_aurax11.cc',
             'browser/icon_loader_auralinux.cc',
             'browser/idle_linux.cc',
             'browser/password_manager/native_backend_gnome_x.cc',
@@ -3011,11 +3012,6 @@
         }, {
           'dependencies': [
             '../build/linux/system.gyp:gnome_keyring',
-          ],
-        }],
-        ['use_ash==1', {
-          'sources!': [
-            'browser/fullscreen_aurax11.cc',
           ],
         }],
         ['use_aura==1', {

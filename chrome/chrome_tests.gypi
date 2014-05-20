@@ -1798,10 +1798,20 @@
               ],
             }],
           ],
+        }, { # else: OS != "win"
           'sources!': [
-            # use_aura currently sets use_ash on Windows. So take these tests out
-            # for win aura builds.
-            # TODO: enable these for win_ash browser tests.
+            'app/chrome_command_ids.h',
+            'app/chrome_dll.rc',
+            'app/chrome_dll_resource.h',
+            'app/chrome_version.rc.version',
+          ],
+        }],
+        ['chromeos==0 and use_aura==1', {
+          'sources!': [
+            # On Windows and Linux, we currently don't support enough of the
+            # ash environment to run these unit tests.
+            #
+            # TODO: enable these on windows and linux.
             'browser/chromeos/system/tray_accessibility_browsertest.cc',
             'browser/ui/ash/accelerator_commands_browsertest.cc',
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
@@ -1809,13 +1819,6 @@
             'browser/ui/ash/shelf_browsertest.cc',
             'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
             'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
-          ],
-        }, { # else: OS != "win"
-          'sources!': [
-            'app/chrome_command_ids.h',
-            'app/chrome_dll.rc',
-            'app/chrome_dll_resource.h',
-            'app/chrome_version.rc.version',
           ],
         }],
         ['OS=="linux"', {
