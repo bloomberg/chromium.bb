@@ -38,6 +38,10 @@ _API_CLIENT_FILE = 'config.json'
 _API_DISCOVERY_FILE = 'discovery.json'
 _DEVICE_STATE_FILE = 'device_state.json'
 
+_DEVICE_SETUP_SSID = "GCDPrototype.camera.privet"
+_DEVICE_NAME = "GCD Prototype"
+_DEVICE_TYPE = "camera"
+
 DEVICE_DRAFT = {
     'systemName': 'LEDFlasher',
     'deviceKind': 'vendor',
@@ -102,17 +106,21 @@ class CommandWrapperReal(object):
     if type(cmd) == str:
       cmd = cmd.split()
     self.cmd = cmd
+    self.cmd_str = ' '.join(cmd)
     self.process = None
 
   def start(self):
+    print 'Start: ', self.cmd_str
     if self.process:
       self.end()
     self.process = subprocess.Popen(self.cmd)
 
   def wait(self):
+    print 'Wait: ', self.cmd_str
     self.process.wait()
 
   def end(self):
+    print 'End: ', self.cmd_str
     if self.process:
       self.process.terminate()
 
@@ -121,16 +129,16 @@ class CommandWrapperFake(object):
   """Command wrapper that just prints shell commands."""
 
   def __init__(self, cmd):
-    self.cmd = cmd
+    self.cmd_str = ' '.join(cmd)
 
   def start(self):
-    print 'Start: ', self.cmd
+    print 'Fake start: ', self.cmd_str
 
   def wait(self):
-    print 'Wait: ', self.cmd
+    print 'Fake wait: ', self.cmd_str
 
   def end(self):
-    print 'End: ', self.cmd
+    print 'Fake end: ', self.cmd_str
 
 
 class CloudCommandHandlerFake(object):
@@ -275,6 +283,9 @@ class WifiHandlerPassthrough(WifiHandler):
   def switch_to_wifi(self, unused_ssid, unused_passwd, unused_token):
     raise Exception('Should not be reached')
 
+  def stop(self):
+    pass
+
   def get_ssid(self):
     return 'dummy'
 
@@ -375,10 +386,17 @@ class MDnsWrapper(object):
     self.run_command()
 
   def get_command(self):
-    cmd = ['avahi-publish', '-s', 'Raspberry Pi', '_privet._tcp', '8080',
-           'txtvers=2', 'type=wifi', 'ty=Raspberry Pi', 'id=' + self.device_id]
+    cmd = [
+        'avahi-publish',
+        '-s', '--subtype=_%s._sub._privet._tcp' % _DEVICE_TYPE,
+        _DEVICE_NAME, '_privet._tcp', '8080',
+        'txtvers=2',
+        'type=%s' % _DEVICE_TYPE,
+        'ty=%s' % _DEVICE_NAME,
+        'id=%s' % self.device_id
+    ]
     if self.setup_name:
-      cmd.append('setup=' + self.setup_name)
+      cmd.append('setup_ssid=' + self.setup_name)
     return cmd
 
   def run_command(self):
@@ -696,7 +714,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @staticmethod
   def setup_fake():
-    print 'Called setup'
+    print 'Skipping device setup'
 
   @staticmethod
   def setup_real():
@@ -706,7 +724,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   def start(self):
     self.wifi_handler.start()
-    self.mdns_wrapper.set_setup_name('RaspberryPi.camera.privet')
+    self.mdns_wrapper.set_setup_name(_DEVICE_SETUP_SSID)
     self.mdns_wrapper.start()
 
   @get_only
