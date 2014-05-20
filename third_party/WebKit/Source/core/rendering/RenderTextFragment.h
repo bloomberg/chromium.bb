@@ -45,8 +45,8 @@ public:
     unsigned end() const { return m_end; }
     virtual unsigned textStartOffset() const OVERRIDE { return start(); }
 
-    RenderObject* firstLetter() const { return m_firstLetter; }
-    void setFirstLetter(RenderObject* firstLetter) { m_firstLetter = firstLetter; }
+    RenderBoxModelObject* firstLetter() const { return m_firstLetter; }
+    void setFirstLetter(RenderBoxModelObject* firstLetter) { m_firstLetter = firstLetter; }
     RenderText* firstRenderTextInFirstLetter() const;
 
     StringImpl* contentString() const { return m_contentString.get(); }
@@ -69,7 +69,7 @@ private:
     unsigned m_start;
     unsigned m_end;
     RefPtr<StringImpl> m_contentString;
-    RenderObject* m_firstLetter;
+    RenderBoxModelObject* m_firstLetter;
 };
 
 DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());

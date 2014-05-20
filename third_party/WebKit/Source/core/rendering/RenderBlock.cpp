@@ -4041,7 +4041,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
 
     RenderObject* firstLetterContainer = currentChild->parent();
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
-    RenderObject* firstLetter = 0;
+    RenderBoxModelObject* firstLetter = 0;
     if (pseudoStyle->display() == INLINE)
         firstLetter = RenderInline::createAnonymous(&document());
     else
@@ -4072,7 +4072,7 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     firstLetterContainer->addChild(remainingText, textObj);
     firstLetterContainer->removeChild(textObj);
     remainingText->setFirstLetter(firstLetter);
-    toRenderBoxModelObject(firstLetter)->setFirstLetterRemainingText(remainingText);
+    firstLetter->setFirstLetterRemainingText(remainingText);
 
     // construct text fragment for the first letter
     RenderTextFragment* letter =
