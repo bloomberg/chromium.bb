@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/type_converters.h"
 #include "mojo/services/view_manager/view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
@@ -67,7 +66,7 @@ void ViewManagerConnection::OnConnectionEstablished() {
   client()->OnConnectionEstablished(
       id_,
       root_node_manager_->next_server_change_id(),
-      Array<INode>::From(to_send));
+      NodesToINodes(to_send));
 }
 
 const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
@@ -92,10 +91,24 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
     const Node* old_parent,
     TransportChangeId server_change_id,
     bool originated_change) {
+  if (known_nodes_.count(NodeIdToTransportId(node->id())) > 0) {
+    if (originated_change)
+      return;
+    if (node->id().connection_id != id_ && !IsNodeDescendantOfRoots(node)) {
+      // Node was a descendant of roots and is no longer, treat it as though the
+      // node was deleted.
+      RemoveFromKnown(node);
+      client()->OnNodeDeleted(NodeIdToTransportId(node->id()),
+                              server_change_id);
+      return;
+    }
+  }
+
   if (originated_change || root_node_manager_->is_processing_delete_node())
     return;
   std::vector<const Node*> to_send;
-  if (!ShouldNotifyOnHierarchyChange(node, new_parent, old_parent, &to_send)) {
+  if (!ShouldNotifyOnHierarchyChange(node, &new_parent, &old_parent,
+                                     &to_send)) {
     if (root_node_manager_->IsProcessingChange()) {
       client()->OnServerChangeIdAdvanced(
           root_node_manager_->next_server_change_id() + 1);
@@ -105,11 +118,15 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
   AllocationScope allocation_scope;
   const NodeId new_parent_id(new_parent ? new_parent->id() : NodeId());
   const NodeId old_parent_id(old_parent ? old_parent->id() : NodeId());
+  DCHECK((node->id().connection_id == id_) ||
+         (roots_.count(NodeIdToTransportId(node->id())) > 0) ||
+         (new_parent && IsNodeDescendantOfRoots(new_parent)) ||
+         (old_parent && IsNodeDescendantOfRoots(old_parent)));
   client()->OnNodeHierarchyChanged(NodeIdToTransportId(node->id()),
                                    NodeIdToTransportId(new_parent_id),
                                    NodeIdToTransportId(old_parent_id),
                                    server_change_id,
-                                   Array<INode>::From(to_send));
+                                   NodesToINodes(to_send));
 }
 
 void ViewManagerConnection::ProcessNodeViewReplaced(
@@ -117,16 +134,14 @@ void ViewManagerConnection::ProcessNodeViewReplaced(
     const View* new_view,
     const View* old_view,
     bool originated_change) {
-  if (originated_change)
+  if (originated_change || !known_nodes_.count(NodeIdToTransportId(node->id())))
     return;
-  if (known_nodes_.count(NodeIdToTransportId(node->id())) > 0) {
-    const TransportViewId new_view_id = new_view ?
-        ViewIdToTransportId(new_view->id()) : 0;
-    const TransportViewId old_view_id = old_view ?
-        ViewIdToTransportId(old_view->id()) : 0;
-    client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
-                                 new_view_id, old_view_id);
-  }
+  const TransportViewId new_view_id = new_view ?
+      ViewIdToTransportId(new_view->id()) : 0;
+  const TransportViewId old_view_id = old_view ?
+      ViewIdToTransportId(old_view->id()) : 0;
+  client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
+                               new_view_id, old_view_id);
 }
 
 void ViewManagerConnection::ProcessNodeDeleted(
@@ -231,35 +246,128 @@ void ViewManagerConnection::GetUnknownNodesFrom(
     GetUnknownNodesFrom(children[i], nodes);
 }
 
+void ViewManagerConnection::RemoveFromKnown(const Node* node) {
+  if (node->id().connection_id == id_)
+    return;
+  known_nodes_.erase(NodeIdToTransportId(node->id()));
+  std::vector<const Node*> children = node->GetChildren();
+  for (size_t i = 0; i < children.size(); ++i)
+    RemoveFromKnown(children[i]);
+}
+
+bool ViewManagerConnection::IsNodeDescendantOfRoots(const Node* node) const {
+  if (roots_.empty())
+    return true;
+  if (!node)
+    return false;
+  for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i) {
+    const Node* root = GetNode(NodeIdFromTransportId(*i));
+    DCHECK(root);
+    if (root->Contains(node))
+      return true;
+  }
+  return false;
+}
+
 bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
     const Node* node,
-    const Node* new_parent,
-    const Node* old_parent,
+    const Node** new_parent,
+    const Node** old_parent,
     std::vector<const Node*>* to_send) {
-  if (new_parent) {
+  // If the node is not in |roots_| or was never known to this connection then
+  // don't notify the client about it.
+  if (node->id().connection_id != id_ &&
+      known_nodes_.count(NodeIdToTransportId(node->id())) == 0 &&
+      !IsNodeDescendantOfRoots(node)) {
+    return false;
+  }
+  if (!IsNodeDescendantOfRoots(*new_parent))
+    *new_parent = NULL;
+  if (!IsNodeDescendantOfRoots(*old_parent))
+    *old_parent = NULL;
+
+  if (*new_parent) {
     // On getting a new parent we may need to communicate new nodes to the
     // client. We do that in the following cases:
-    // . New parent is a descendant of the root. In this case the client already
-    //   knows all ancestors, so we only have to communicate descendants of node
-    //   the client doesn't know about.
+    // . New parent is a descendant of the roots. In this case the client
+    //   already knows all ancestors, so we only have to communicate descendants
+    //   of node the client doesn't know about.
     // . If the client knew about the parent, we have to do the same.
     // . If the client knows about the node and is added to a tree the client
     //   doesn't know about we have to communicate from the root down (the
     //   client is learning about a new root).
-    if (root_node_manager_->root()->Contains(new_parent) ||
-        known_nodes_.count(NodeIdToTransportId(new_parent->id()))) {
+    if (root_node_manager_->root()->Contains(*new_parent) ||
+        known_nodes_.count(NodeIdToTransportId((*new_parent)->id()))) {
       GetUnknownNodesFrom(node, to_send);
       return true;
     }
     // If parent wasn't known we have to communicate from the root down.
     if (known_nodes_.count(NodeIdToTransportId(node->id()))) {
-      GetUnknownNodesFrom(new_parent->GetRoot(), to_send);
+      // No need to check against |roots_| as client should always know it's
+      // |roots_|.
+      GetUnknownNodesFrom((*new_parent)->GetRoot(), to_send);
       return true;
     }
   }
   // Otherwise only communicate the change if the node was known. We shouldn't
   // need to communicate any nodes on a remove.
   return known_nodes_.count(NodeIdToTransportId(node->id())) > 0;
+}
+
+bool ViewManagerConnection::ProcessSetRoots(
+    TransportConnectionId source_connection_id,
+    const Array<TransportNodeId>& transport_node_ids) {
+  // TODO(sky): these DCHECKs can go away once this is part of a real API. Also
+  // make sure that when roots are set nodes are communicate to client. Code in
+  // ProcessNodeHierarchyChanged() is depending on this.
+  DCHECK(node_map_.empty());
+  DCHECK(view_map_.empty());
+
+  NodeIdSet roots;
+  for (size_t i = 0; i < transport_node_ids.size(); ++i) {
+    const Node* node = GetNode(NodeIdFromTransportId(transport_node_ids[i]));
+    // Only allow setting roots that are owned by the source connection.
+    if (!node || node->id().connection_id != source_connection_id)
+      return false;
+    roots.insert(transport_node_ids[i]);
+  }
+  roots_.swap(roots);
+
+  // TODO(sky): remove |known_nodes_.clear()| temporary while this is done here
+  // instead of at creation time.
+  known_nodes_.clear();
+  std::vector<const Node*> to_send;
+  for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
+    GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
+  AllocationScope allocation_scope;
+  client()->OnConnectionEstablished(
+      id_,
+      root_node_manager_->next_server_change_id(),
+      NodesToINodes(to_send));
+
+  return true;
+}
+
+Array<INode> ViewManagerConnection::NodesToINodes(
+    const std::vector<const Node*>& nodes) {
+  Array<INode>::Builder array_builder(nodes.size());
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    INode::Builder node_builder;
+    const Node* node = nodes[i];
+    DCHECK(known_nodes_.count(NodeIdToTransportId(node->id())) > 0);
+    const Node* parent = node->GetParent();
+    // If the parent isn't known, it means the parent is not visible to us (not
+    // in roots), and should not be sent over.
+    if (parent && known_nodes_.count(NodeIdToTransportId(parent->id())) == 0)
+      parent = NULL;
+    node_builder.set_parent_id(NodeIdToTransportId(
+                                   parent ? parent->id() : NodeId()));
+    node_builder.set_node_id(NodeIdToTransportId(node->id()));
+    node_builder.set_view_id(ViewIdToTransportId(
+        node->view() ? node->view()->id() : ViewId()));
+    array_builder[i] = node_builder.Finish();
+  }
+  return array_builder.Finish();
 }
 
 void ViewManagerConnection::CreateNode(
@@ -338,7 +446,7 @@ void ViewManagerConnection::GetNodeTree(
   GetDescendants(node, &nodes);
   for (size_t i = 0; i < nodes.size(); ++i)
     known_nodes_.insert(NodeIdToTransportId(nodes[i]->id()));
-  callback.Run(Array<INode>::From(nodes));
+  callback.Run(NodesToINodes(nodes));
 }
 
 void ViewManagerConnection::CreateView(
@@ -391,6 +499,16 @@ void ViewManagerConnection::SetViewContents(
                         buffer_size, &bitmap);
   view->SetBitmap(bitmap);
   UnmapBuffer(handle_data);
+}
+
+void ViewManagerConnection::SetRoots(
+    TransportConnectionId connection_id,
+    const Array<TransportNodeId>& transport_node_ids,
+    const Callback<void(bool)>& callback) {
+  ViewManagerConnection* connection =
+      root_node_manager_->GetConnection(connection_id);
+  callback.Run(connection &&
+               connection->ProcessSetRoots(id_, transport_node_ids));
 }
 
 void ViewManagerConnection::OnNodeHierarchyChanged(const Node* node,

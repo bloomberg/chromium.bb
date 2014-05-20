@@ -96,13 +96,29 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // to |nodes|, marks |node| as known and recurses.
   void GetUnknownNodesFrom(const Node* node, std::vector<const Node*>* nodes);
 
+  // Removes |node| and all its descendants from |known_nodes_|. This does not
+  // recurse through nodes that were created by this connection.
+  void RemoveFromKnown(const Node* node);
+
+  // Returns true if |node| is a non-null and a descendant of |roots_| (or
+  // |roots_| is empty).
+  bool IsNodeDescendantOfRoots(const Node* node) const;
+
   // Returns true if notification should be sent of a hierarchy change. If true
   // is returned, any nodes that need to be sent to the client are added to
   // |to_send|.
-  bool ShouldNotifyOnHierarchyChange(const Node* node_id,
-                                     const Node* new_parent_id,
-                                     const Node* old_parent_id,
+  bool ShouldNotifyOnHierarchyChange(const Node* node,
+                                     const Node** new_parent,
+                                     const Node** old_parent,
                                      std::vector<const Node*>* to_send);
+
+  bool ProcessSetRoots(TransportConnectionId source_connection_id,
+                       const Array<TransportNodeId>& transport_node_ids);
+
+  // Converts an array of Nodes to INodes. This assumes all the nodes are valid
+  // for the client. The parent of nodes the client is not allowed to see are
+  // set to NULL (in the returned INodes).
+  Array<INode> NodesToINodes(const std::vector<const Node*>& nodes);
 
   // Overridden from IViewManager:
   virtual void CreateNode(TransportNodeId transport_node_id,
@@ -130,6 +146,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void SetViewContents(TransportViewId view_id,
                                ScopedSharedBufferHandle buffer,
                                uint32_t buffer_size) OVERRIDE;
+  virtual void SetRoots(
+      TransportConnectionId connection_id,
+      const Array<TransportNodeId>& transport_node_ids,
+      const Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,
@@ -151,6 +171,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   // The set of nodes that has been communicated to the client.
   NodeIdSet known_nodes_;
+
+  // This is the set of nodes the client can see. The client can not delete or
+  // move these.
+  NodeIdSet roots_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
 };

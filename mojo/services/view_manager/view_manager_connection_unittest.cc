@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/shell/connect.h"
@@ -20,6 +21,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
+
+// TODO(sky): remove this when Darin is done with cleanup.
+template <typename T>
+class MOJO_COMMON_EXPORT TypeConverter<T, T> {
+ public:
+  static T ConvertFrom(T input, Buffer* buf) {
+    return input;
+  }
+  static T ConvertTo(T input) {
+    return input;
+  }
+
+  MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+};
+
 namespace view_manager {
 namespace service {
 
@@ -30,6 +46,8 @@ base::RunLoop* current_run_loop = NULL;
 // Sets |current_run_loop| and runs it. It is expected that someone else quits
 // the loop.
 void DoRunLoop() {
+  DCHECK(!current_run_loop);
+
   base::RunLoop run_loop;
   current_run_loop = &run_loop;
   current_run_loop->Run();
@@ -175,6 +193,17 @@ bool SetView(IViewManager* view_manager,
   return result;
 }
 
+bool SetRoots(IViewManager* view_manager,
+              TransportConnectionId connection_id,
+              const std::vector<uint32_t>& node_ids) {
+  bool result = false;
+  view_manager->SetRoots(connection_id,
+                         Array<uint32_t>::From(node_ids),
+                         base::Bind(&BooleanCallback, &result));
+  DoRunLoop();
+  return result;
+}
+
 }  // namespace
 
 typedef std::vector<std::string> Changes;
@@ -204,9 +233,13 @@ class ViewManagerClientImpl : public IViewManagerClient {
     return changes;
   }
 
+  void ClearId() {
+    id_ = 0;
+  }
+
   void WaitForId() {
-    if (id_ == 0)
-      DoRunLoop();
+    DCHECK_EQ(0, id_);
+    DoRunLoopUntilChangesCount(1);
   }
 
   void DoRunLoopUntilChangesCount(size_t count) {
@@ -224,9 +257,10 @@ class ViewManagerClientImpl : public IViewManagerClient {
       const mojo::Array<INode>& nodes) OVERRIDE {
     id_ = connection_id;
     next_server_change_id_ = next_server_change_id;
+    initial_nodes_.clear();
     INodesToTestNodes(nodes, &initial_nodes_);
-    if (current_run_loop)
-      current_run_loop->Quit();
+    changes_.push_back("OnConnectionEstablished");
+    QuitIfNecessary();
   }
   virtual void OnServerChangeIdAdvanced(
       uint32_t next_server_change_id) OVERRIDE {
@@ -314,6 +348,7 @@ class ViewManagerConnectionTest : public testing::Test {
     view_manager_->SetClient(&client_);
 
     client_.WaitForId();
+    client_.GetAndClearChanges();
   }
 
  protected:
@@ -323,6 +358,7 @@ class ViewManagerConnectionTest : public testing::Test {
     view_manager2_->SetClient(&client2_);
 
     client2_.WaitForId();
+    client2_.GetAndClearChanges();
   }
 
   void DestroySecondConnection() {
@@ -1091,6 +1127,95 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
     EXPECT_EQ("node=1,11 parent=1,1 view=1,51", nodes[1].ToString());
   }
 }
+
+TEST_F(ViewManagerConnectionTest, SetRoots) {
+  // Create 1, 2, and 3 in the first connection.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 3));
+
+  // Parent 1 to the root.
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 1),
+                      1));
+
+  // Establish the second connection and give it the roots 1 and 3.
+  EstablishSecondConnection();
+  client2_.ClearId();
+  {
+    AllocationScope scope;
+    std::vector<uint32_t> roots;
+    roots.push_back(CreateNodeId(1, 1));
+    roots.push_back(CreateNodeId(1, 3));
+    ASSERT_TRUE(SetRoots(view_manager_.get(), 2, roots));
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("OnConnectionEstablished", changes[0]);
+    ASSERT_NE(0u, client2_.id());
+    const std::vector<TestNode>& nodes(client2_.initial_nodes());
+    ASSERT_EQ(2u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,3 parent=null view=null", nodes[1].ToString());
+  }
+
+  // Create 4 and add it to the root, connection 2 should only get id advanced.
+  {
+    ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 4));
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 4),
+                        2));
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
+  }
+
+  // Move 4 under 3, this should expose 4 to the client.
+  {
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(1, 3),
+                        CreateNodeId(1, 4),
+                        3));
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=3 node=1,4 new_parent=1,3 "
+        "old_parent=null", changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,4 parent=1,3 view=null", nodes[0].ToString());
+  }
+
+  // Move 4 under 2, since 2 isn't a root client should get a delete.
+  {
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(1, 2),
+                        CreateNodeId(1, 4),
+                        4));
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("NodeDeleted change_id=4 node=1,4", changes[0]);
+  }
+
+  // Delete 4, client shouldn't receive a delete since it should no longer know
+  // about 4.
+  {
+    ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 4)));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("ServerChangeIdAdvanced 6", changes[0]);
+  }
+}
+
+// TODO: add tests that verify can't manipulate trees of uknown nodes.
 
 }  // namespace service
 }  // namespace view_manager

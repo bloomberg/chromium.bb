@@ -39,6 +39,9 @@ interface IViewManager {
   // . |parent| or |child| does not identify a valid node.
   // . |child| is an ancestor of |parent|.
   // . |child| is already a child of |parent|.
+  //
+  // This may result in a connection getting OnNodeDeleted(). See
+  // RemoveNodeFromParent for details.
   AddNode(uint32 parent,
           uint32 child,
           uint32 server_change_id) => (bool success);
@@ -46,6 +49,12 @@ interface IViewManager {
   // Removes a view from its current parent. See description above class for
   // details of |change_id|. This fails if the node is not valid,
   // |server_change_id| doesn't match, or the node already has no parent.
+  //
+  // Removing a node from a parent may result in OnNodeDeleted() being sent to
+  // other connections. For example, connection A has nodes 1 and 2, with 2 a
+  // child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
+  // OnNodeDeleted(). This is done as node 2 is effectively no longer visible to
+  // connection B.
   RemoveNodeFromParent(uint32 node_id,
                        uint32 server_change_id) => (bool success);
 
@@ -72,6 +81,11 @@ interface IViewManager {
   SetViewContents(uint32 view_id,
                   handle<shared_buffer> buffer,
                   uint32 buffer_size);
+
+  // Sets the ids of the roots for the specified connection.
+  // TODO(sky): this is temporary for testing. This needs to be conveyed at
+  // creation time of a new connection.
+  SetRoots(uint16 connection_id, uint32[] nodes) => (bool success);
 };
 
 // Changes to nodes/views are not sent to the connection that originated the
