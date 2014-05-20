@@ -511,13 +511,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-    base::FilePath echo_extension_path(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/echo"));
-    if (command_line->HasSwitch(chromeos::switches::kEchoExtensionPath)) {
-      echo_extension_path = command_line->GetSwitchValuePath(
-          chromeos::switches::kEchoExtensionPath);
-    }
-    Add(IDR_ECHO_MANIFEST, echo_extension_path);
+    Add(IDR_ECHO_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/echo")));
 
     if (!command_line->HasSwitch(chromeos::switches::kGuestSession)) {
       Add(IDR_WALLPAPERMANAGER_MANIFEST,
