@@ -4,11 +4,12 @@
 
 import("../build/scripts/scripts.gni")
 
-platform_gypi = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("blink_platform.gypi") ],
-    "scope",
-    [ "blink_platform.gypi" ])
+# TODO(brettw) uncomment when used below.
+#platform_gypi = exec_script(
+#    "//build/gypi_to_gn.py",
+#    [ rebase_path("blink_platform.gypi") ],
+#    "scope",
+#    [ "blink_platform.gypi" ])
 
 component("blink_common") {
   sources = [
