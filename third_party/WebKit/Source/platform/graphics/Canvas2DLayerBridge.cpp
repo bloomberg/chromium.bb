@@ -312,7 +312,7 @@ void Canvas2DLayerBridge::freeReleasedMailbox()
     if (mailboxInfo->m_image) {
         if (isHidden() || releasedMailboxHasExpired())
             mailboxInfo->m_image->getTexture()->resetFlag(static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
-        mailboxInfo->m_image->getTexture()->invalidateCachedState();
+        mailboxInfo->m_image->getTexture()->textureParamsModified();
         mailboxInfo->m_image.clear();
     }
     mailboxInfo->m_status = MailboxAvailable;
@@ -417,7 +417,7 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     // Because of texture sharing with the compositor, we must invalidate
     // the state cached in skia so that the deferred copy on write
     // in SkSurface_Gpu does not make any false assumptions.
-    mailboxInfo->m_image->getTexture()->invalidateCachedState();
+    mailboxInfo->m_image->getTexture()->textureParamsModified();
 
     ASSERT(mailboxInfo->m_mailbox.syncPoint == 0);
     ASSERT(mailboxInfo->m_image.get());
