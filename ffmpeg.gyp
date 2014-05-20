@@ -169,6 +169,8 @@
           'cflags': [
             '-fPIC',
             '-fomit-frame-pointer',
+            # ffmpeg uses its own deprecated functions.
+            '-Wno-deprecated-declarations',
           ],
           'conditions': [
             ['target_arch != "arm" and target_arch != "mipsel" and os_config != "linux-noasm"', {
@@ -194,7 +196,6 @@
               },
               'cflags': [
                 '-Wno-absolute-value',
-                '-Wno-deprecated-declarations',
                 '-Wno-incompatible-pointer-types',
                 '-Wno-logical-op-parentheses',
                 '-Wno-parentheses',
@@ -298,9 +299,6 @@
                 '-fno-math-errno',
                 '-fno-signed-zeros',
                 '-fno-tree-vectorize',
-                '-fomit-frame-pointer',
-                # Don't warn about libavformat using its own deprecated APIs.
-                '-Wno-deprecated-declarations',
               ],
               'cflags!': [
                 # Ensure the symbols are exported.

@@ -21,7 +21,6 @@ void av_register_bitstream_filter(AVBitStreamFilter *bsf);
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
 int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc, AVCodecContext *avctx, const char *args, uint8_t **poutbuf, int *poutbuf_size, const uint8_t *buf, int buf_size, int keyframe);
 void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
-void av_destruct_packet(AVPacket *pkt);
 int av_lockmgr_register(AVLockMgrOperation cb);
 void avcodec_get_frame_defaults(AVFrame *pic);
 void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
@@ -32,7 +31,6 @@ void av_frame_free(AVFrame **frame);
 void avcodec_free_frame(AVFrame **frame);
 AVFrame* av_frame_alloc();
 int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
-void av_packet_move_ref(AVPacket *dst, AVPacket *src);
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);

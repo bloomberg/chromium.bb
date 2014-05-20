@@ -1630,7 +1630,11 @@ int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size)
             av_fast_padded_malloc(&avctx->internal->byte_buffer, &avctx->internal->byte_buffer_size, size);
             avpkt->data = avctx->internal->byte_buffer;
             avpkt->size = avctx->internal->byte_buffer_size;
+#if FF_API_DESTRUCT_PACKET
+FF_DISABLE_DEPRECATION_WARNINGS
             avpkt->destruct = NULL;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
         }
     }
 
@@ -1802,7 +1806,11 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
             }
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
+#if FF_API_DESTRUCT_PACKET
+FF_DISABLE_DEPRECATION_WARNINGS
             avpkt->destruct = user_pkt.destruct;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
         } else {
             if (av_dup_packet(avpkt) < 0) {
                 ret = AVERROR(ENOMEM);
@@ -2003,7 +2011,11 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
             }
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
+#if FF_API_DESTRUCT_PACKET
+FF_DISABLE_DEPRECATION_WARNINGS
             avpkt->destruct = user_pkt.destruct;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
         } else {
             if (av_dup_packet(avpkt) < 0) {
                 ret = AVERROR(ENOMEM);
