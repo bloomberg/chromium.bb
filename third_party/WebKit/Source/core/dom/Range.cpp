@@ -565,11 +565,11 @@ static inline unsigned lengthOfContentsInNode(Node* node)
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionState& exceptionState)
 {
     typedef Vector<RefPtr<Node> > NodeVector;
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = nullptr;
+    RefPtr<DocumentFragment> fragment;
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
         fragment = DocumentFragment::create(*m_ownerDocument.get());
 
@@ -676,7 +676,7 @@ static inline void deleteCharacterData(PassRefPtrWillBeRawPtr<CharacterData> dat
         data->deleteData(0, startOffset, exceptionState);
 }
 
-PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRefPtrWillBeRawPtr<DocumentFragment> fragment,
+PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRefPtr<DocumentFragment> fragment,
     Node* container, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
 {
     ASSERT(container);
@@ -821,7 +821,7 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
     return clonedContainer.release();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionState)
 {
     checkDeleteExtract(exceptionState);
     if (exceptionState.hadException())
@@ -830,7 +830,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> Range::extractContents(ExceptionState& 
     return processContents(EXTRACT_CONTENTS, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> Range::cloneContents(ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> Range::cloneContents(ExceptionState& exceptionState)
 {
     return processContents(CLONE_CONTENTS, exceptionState);
 }
@@ -974,7 +974,7 @@ String Range::text() const
     return plainText(this);
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)
 {
     Node* element = m_start.container()->isElementNode() ? m_start.container() : m_start.container()->parentNode();
     if (!element || !element->isHTMLElement()) {
@@ -982,7 +982,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> Range::createContextualFragment(const S
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = WebCore::createContextualFragment(markup, toHTMLElement(element), AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
+    RefPtr<DocumentFragment> fragment = WebCore::createContextualFragment(markup, toHTMLElement(element), AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
     if (!fragment)
         return nullptr;
 
@@ -1266,7 +1266,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& exc
         if (exceptionState.hadException())
             return;
     }
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = extractContents(exceptionState);
+    RefPtr<DocumentFragment> fragment = extractContents(exceptionState);
     if (exceptionState.hadException())
         return;
     insertNode(newParent, exceptionState);

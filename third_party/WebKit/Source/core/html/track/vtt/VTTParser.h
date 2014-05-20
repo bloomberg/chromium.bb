@@ -98,7 +98,7 @@ public:
     static bool parseFloatPercentageValuePair(VTTScanner&, char, FloatPoint&);
 
     // Create the DocumentFragment representation of the WebVTT cue text.
-    static PassRefPtrWillBeRawPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);
+    static PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);
 
     // Input data to the parser to parse.
     void parseBytes(const char* data, unsigned length);

@@ -58,7 +58,7 @@ public:
         if (style)
             m_stylesheetRootNode = style;
     }
-    PassRefPtrWillBeRawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
+    PassRefPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
     PassRefPtr<Document> transformToDocument(Node* source);
 
     void setParameter(const String& namespaceURI, const String& localName, const String& value);

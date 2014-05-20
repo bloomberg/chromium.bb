@@ -63,9 +63,8 @@ enum EFragmentType { EmptyFragment, SingleTextNodeFragment, TreeFragment };
 
 // --- ReplacementFragment helper class
 
-class ReplacementFragment FINAL {
+class ReplacementFragment {
     WTF_MAKE_NONCOPYABLE(ReplacementFragment);
-    STACK_ALLOCATED();
 public:
     ReplacementFragment(Document*, DocumentFragment*, const VisibleSelection&);
 
@@ -88,8 +87,8 @@ private:
 
     void insertNodeBefore(PassRefPtr<Node> node, Node* refNode);
 
-    RefPtrWillBeMember<Document> m_document;
-    RefPtrWillBeMember<DocumentFragment> m_fragment;
+    RefPtr<Document> m_document;
+    RefPtr<DocumentFragment> m_fragment;
     bool m_hasInterchangeNewlineAtStart;
     bool m_hasInterchangeNewlineAtEnd;
 };
@@ -356,7 +355,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node& node, N
         m_lastNodeInserted = &newNode;
 }
 
-ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, CommandOptions options, EditAction editAction)
+ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, PassRefPtr<DocumentFragment> fragment, CommandOptions options, EditAction editAction)
     : CompositeEditCommand(document)
     , m_selectReplacement(options & SelectReplacement)
     , m_smartReplace(options & SmartReplace)

@@ -321,7 +321,7 @@ public:
     VTTTreeBuilder(Document& document)
         : m_document(document) { }
 
-    PassRefPtrWillBeRawPtr<DocumentFragment> buildFromString(const String& cueText);
+    PassRefPtr<DocumentFragment> buildFromString(const String& cueText);
 
 private:
     void constructTreeFromToken(Document&);
@@ -332,13 +332,13 @@ private:
     Document& m_document;
 };
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
+PassRefPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
     // 5.4 WebVTT cue text parsing rules, and
     // 5.5 WebVTT cue text DOM construction rules
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
 
     if (cueText.isEmpty()) {
         fragment->parserAppendChild(Text::create(m_document, ""));
@@ -356,7 +356,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const S
     return fragment.release();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
+PassRefPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
 {
     VTTTreeBuilder treeBuilder(document);
     return treeBuilder.buildFromString(cueText);

@@ -191,7 +191,7 @@ static bool executeApplyParagraphStyle(LocalFrame& frame, EditorCommandSource so
     return false;
 }
 
-static bool executeInsertFragment(LocalFrame& frame, PassRefPtrWillBeRawPtr<DocumentFragment> fragment)
+static bool executeInsertFragment(LocalFrame& frame, PassRefPtr<DocumentFragment> fragment)
 {
     ASSERT(frame.document());
     ReplaceSelectionCommand::create(*frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified)->apply();
@@ -201,7 +201,7 @@ static bool executeInsertFragment(LocalFrame& frame, PassRefPtrWillBeRawPtr<Docu
 static bool executeInsertNode(LocalFrame& frame, PassRefPtr<Node> content)
 {
     ASSERT(frame.document());
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*frame.document());
     TrackExceptionState exceptionState;
     fragment->appendChild(content, exceptionState);
     if (exceptionState.hadException())

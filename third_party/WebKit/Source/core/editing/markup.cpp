@@ -635,11 +635,11 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
     return createMarkupInternal(document, range, updatedRange, nodes, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
+PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
     // We use a fake body element here to trick the HTML parser to using the InBody insertion mode.
     RefPtr<HTMLBodyElement> fakeBody = HTMLBodyElement::create(document);
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     fragment->parseHTML(markup, fakeBody.get(), parserContentPolicy);
 
@@ -688,7 +688,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
     }
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& document, const String& markup, unsigned fragmentStart, unsigned fragmentEnd,
+PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& document, const String& markup, unsigned fragmentStart, unsigned fragmentEnd,
     const String& baseURL, ParserContentPolicy parserContentPolicy)
 {
     // FIXME: Need to handle the case where the markup already contains these markers.
@@ -700,8 +700,8 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     MarkupAccumulator::appendComment(taggedMarkup, fragmentMarkerTag);
     taggedMarkup.append(markup.substring(fragmentEnd));
 
-    RefPtrWillBeRawPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
-    RefPtrWillBeRawPtr<Document> taggedDocument = Document::create();
+    RefPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
+    RefPtr<Document> taggedDocument = Document::create();
     taggedDocument->setContextFeatures(document.contextFeatures());
 
     // FIXME: It's not clear what this code is trying to do. It puts nodes as direct children of a
@@ -723,7 +723,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     // When there's a special common ancestor outside of the fragment, we must include it as well to
     // preserve the structure and appearance of the fragment. For example, if the fragment contains
     // TD, we need to include the enclosing TABLE tag as well.
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
     if (specialCommonAncestor)
         fragment->appendChild(specialCommonAncestor);
     else
@@ -768,7 +768,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
                 paragraph->appendChild(createTabSpanElement(document, tabText.toString()));
                 tabText.clear();
             }
-            RefPtrWillBeRawPtr<Node> textNode = document.createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
+            RefPtr<Node> textNode = document.createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
             paragraph->appendChild(textNode.release());
         }
 
@@ -814,13 +814,13 @@ static bool shouldPreserveNewline(const Range& range)
     return false;
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)
+PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)
 {
     if (!context)
         return nullptr;
 
     Document& document = context->ownerDocument();
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = document.createDocumentFragment();
+    RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
 
     if (text.isEmpty())
         return fragment.release();
@@ -910,11 +910,11 @@ String urlToMarkup(const KURL& url, const String& title)
     return markup.toString();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
 {
     ASSERT(contextElement);
     Document& document = isHTMLTemplateElement(*contextElement) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     if (document.isHTMLDocument()) {
         fragment->parseHTML(markup, contextElement, parserContentPolicy);
@@ -929,9 +929,9 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const S
     return fragment.release();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForTransformToFragment(const String& sourceString, const String& sourceMIMEType, Document& outputDoc)
+PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& sourceString, const String& sourceMIMEType, Document& outputDoc)
 {
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = outputDoc.createDocumentFragment();
+    RefPtr<DocumentFragment> fragment = outputDoc.createDocumentFragment();
 
     if (sourceMIMEType == "text/html") {
         // As far as I can tell, there isn't a spec for how transformToFragment is supposed to work.
@@ -953,7 +953,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForTransformToFragment(co
     return fragment.release();
 }
 
-static inline void removeElementPreservingChildren(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, HTMLElement* element)
+static inline void removeElementPreservingChildren(PassRefPtr<DocumentFragment> fragment, HTMLElement* element)
 {
     RefPtr<Node> nextChild;
     for (RefPtr<Node> child = element->firstChild(); child; child = nextChild) {
@@ -964,7 +964,7 @@ static inline void removeElementPreservingChildren(PassRefPtrWillBeRawPtr<Docume
     fragment->removeChild(element);
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
+PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)
 {
     ASSERT(element);
     if (element->ieForbidsInsertHTML() || element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
@@ -973,7 +973,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& 
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, "createContextualFragment", exceptionState);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, "createContextualFragment", exceptionState);
     if (!fragment)
         return nullptr;
 
@@ -994,10 +994,10 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& 
     return fragment.release();
 }
 
-void replaceChildrenWithFragment(ContainerNode* container, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
+void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     ASSERT(container);
-    RefPtrWillBeRawPtr<ContainerNode> containerNode(container);
+    RefPtr<ContainerNode> containerNode(container);
 
     ChildListMutationScope mutation(*containerNode);
 
@@ -1025,7 +1025,7 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtrWillBeRawPt
 void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& exceptionState)
 {
     ASSERT(container);
-    RefPtrWillBeRawPtr<ContainerNode> containerNode(container);
+    RefPtr<ContainerNode> containerNode(container);
 
     ChildListMutationScope mutation(*containerNode);
 
