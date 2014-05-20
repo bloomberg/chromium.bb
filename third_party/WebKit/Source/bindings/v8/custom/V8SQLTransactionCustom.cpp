@@ -91,9 +91,6 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     }
 
     SQLTransaction* transaction = V8SQLTransaction::toNative(info.Holder());
-
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-
     OwnPtr<SQLStatementCallback> callback;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
         if (!info[2]->IsFunction()) {
@@ -101,7 +98,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             exceptionState.throwIfNeeded();
             return;
         }
-        callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), executionContext);
+        callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), ScriptState::current(info.GetIsolate()));
     }
 
     OwnPtr<SQLStatementErrorCallback> errorCallback;
@@ -111,7 +108,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             exceptionState.throwIfNeeded();
             return;
         }
-        errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), executionContext);
+        errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), ScriptState::current(info.GetIsolate()));
     }
 
     transaction->executeSQL(statement, sqlValues, callback.release(), errorCallback.release(), exceptionState);

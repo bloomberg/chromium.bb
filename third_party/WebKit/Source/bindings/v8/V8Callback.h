@@ -70,7 +70,7 @@ PassOwnPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value
         return nullptr;
     }
 
-    return V8CallbackType::create(v8::Handle<v8::Function>::Cast(value), currentExecutionContext(isolate));
+    return V8CallbackType::create(v8::Handle<v8::Function>::Cast(value), ScriptState::current(isolate));
 }
 
 } // namespace WebCore

@@ -14,12 +14,11 @@
 
 namespace WebCore {
 
-{{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ExecutionContext* context)
-    : ActiveDOMCallback(context)
+{{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+    : ActiveDOMCallback(scriptState->executionContext())
+    , m_scriptState(scriptState)
 {
-    v8::Isolate* isolate = toIsolate(context);
-    m_callback.set(isolate, callback);
-    m_scriptState = ScriptState::current(isolate);
+    m_callback.set(scriptState->isolate(), callback);
 }
 
 {{v8_class}}::~{{v8_class}}()

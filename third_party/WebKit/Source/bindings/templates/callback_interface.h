@@ -14,14 +14,11 @@
 
 namespace WebCore {
 
-class ExecutionContext;
-
 class {{v8_class}} FINAL : public {{cpp_class}}, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
+    static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
     {
-        ASSERT(context);
-        return adoptPtr(new {{v8_class}}(callback, context));
+        return adoptPtr(new {{v8_class}}(callback, scriptState));
     }
 
     virtual ~{{v8_class}}();
@@ -30,7 +27,7 @@ public:
     virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) OVERRIDE;
 {% endfor %}
 private:
-    {{v8_class}}(v8::Handle<v8::Function>, ExecutionContext*);
+    {{v8_class}}(v8::Handle<v8::Function>, ScriptState*);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;

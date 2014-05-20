@@ -122,7 +122,7 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
                   (argument.index + 1)) | indent(8)}}
         return;
     }
-    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext(info.GetIsolate()));
+    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 }
 {% else %}
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
@@ -131,7 +131,7 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
               (argument.index + 1)) | indent }}
     return;
 }
-OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext(info.GetIsolate()));
+OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
 {% elif argument.is_clamp %}{# argument.is_callback_interface #}

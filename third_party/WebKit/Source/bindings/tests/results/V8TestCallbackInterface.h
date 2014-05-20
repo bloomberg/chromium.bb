@@ -14,14 +14,11 @@
 
 namespace WebCore {
 
-class ExecutionContext;
-
 class V8TestCallbackInterface FINAL : public TestCallbackInterface, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<V8TestCallbackInterface> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
+    static PassOwnPtr<V8TestCallbackInterface> create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
     {
-        ASSERT(context);
-        return adoptPtr(new V8TestCallbackInterface(callback, context));
+        return adoptPtr(new V8TestCallbackInterface(callback, scriptState));
     }
 
     virtual ~V8TestCallbackInterface();
@@ -38,7 +35,7 @@ public:
     virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& sequenceArg) OVERRIDE;
     virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >& arrayArg) OVERRIDE;
 private:
-    V8TestCallbackInterface(v8::Handle<v8::Function>, ExecutionContext*);
+    V8TestCallbackInterface(v8::Handle<v8::Function>, ScriptState*);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;

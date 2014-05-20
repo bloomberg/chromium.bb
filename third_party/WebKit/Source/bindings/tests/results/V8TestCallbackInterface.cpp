@@ -18,12 +18,11 @@
 
 namespace WebCore {
 
-V8TestCallbackInterface::V8TestCallbackInterface(v8::Handle<v8::Function> callback, ExecutionContext* context)
-    : ActiveDOMCallback(context)
+V8TestCallbackInterface::V8TestCallbackInterface(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+    : ActiveDOMCallback(scriptState->executionContext())
+    , m_scriptState(scriptState)
 {
-    v8::Isolate* isolate = toIsolate(context);
-    m_callback.set(isolate, callback);
-    m_scriptState = ScriptState::current(isolate);
+    m_callback.set(scriptState->isolate(), callback);
 }
 
 V8TestCallbackInterface::~V8TestCallbackInterface()
