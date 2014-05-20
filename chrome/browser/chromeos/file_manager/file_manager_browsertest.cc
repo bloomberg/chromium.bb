@@ -722,12 +722,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
 INSTANTIATE_TEST_CASE_P(
-    OpenSpecialTypes,
+    OpenZipFiles,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive"),
-                      TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 

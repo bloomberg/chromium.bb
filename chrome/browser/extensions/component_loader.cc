@@ -296,7 +296,9 @@ void ComponentLoader::AddVideoPlayerExtension() {
 }
 
 void ComponentLoader::AddGalleryExtension() {
-  // TODO(hirono): Disable the new experimental gallery in M36 temporarily.
+#if defined(OS_CHROMEOS)
+  Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
+#endif
 }
 
 void ComponentLoader::AddHangoutServicesExtension() {

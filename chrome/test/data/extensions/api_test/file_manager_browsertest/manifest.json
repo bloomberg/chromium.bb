@@ -19,7 +19,7 @@
       "multi_profile.js",
       "navigation_list.js",
       "open_audio_files.js",
-      "open_special_types.js",
+      "open_zip_files.js",
       "open_video_files.js",
       "restore_geometry.js",
       "restore_prefs.js",
