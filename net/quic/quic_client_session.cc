@@ -646,7 +646,8 @@ void QuicClientSession::CloseSessionOnErrorInner(int net_error,
       NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
       NetLog::IntegerCallback("net_error", net_error));
 
-  connection()->CloseConnection(quic_error, false);
+  if (connection()->connected())
+    connection()->CloseConnection(quic_error, false);
   DCHECK(!connection()->connected());
 }
 
