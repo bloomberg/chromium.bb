@@ -29,6 +29,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/util_constants.h"
 #include "policy/policy_constants.h"
 #endif
 
@@ -126,10 +127,8 @@ void ChromeBreakpadClient::GetProductNameAndVersion(
     *version = base::ASCIIToUTF16("0.0.0.0-devel");
   }
 
-  std::wstring channel_string;
   GoogleUpdateSettings::GetChromeChannelAndModifiers(
-      !GetIsPerUserInstall(exe_path), &channel_string);
-  *channel_name = base::WideToUTF16(channel_string);
+      !GetIsPerUserInstall(exe_path), channel_name);
 }
 
 bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
@@ -185,15 +184,13 @@ bool ChromeBreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
 }
 
 bool ChromeBreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
-  base::string16 channel_name(base::WideToUTF16(
-      GoogleUpdateSettings::GetChromeChannel(!is_per_user_install)));
+  base::string16 channel_name =
+      GoogleUpdateSettings::GetChromeChannel(!is_per_user_install);
 
   // Capture more detail in crash dumps for beta and dev channel builds.
-  if (channel_name == base::ASCIIToUTF16("dev") ||
-      channel_name == base::ASCIIToUTF16("beta") ||
-      channel_name == GoogleChromeSxSDistribution::ChannelName())
-    return true;
-  return false;
+  return (channel_name == installer::kChromeChannelDev ||
+          channel_name == installer::kChromeChannelBeta ||
+          channel_name == GoogleChromeSxSDistribution::ChannelName());
 }
 
 int ChromeBreakpadClient::GetResultCodeRespawnFailed() {
@@ -280,7 +277,7 @@ bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 
   return false;
 }
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
 void ChromeBreakpadClient::GetProductNameAndVersion(std::string* product_name,

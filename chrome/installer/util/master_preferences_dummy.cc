@@ -10,11 +10,8 @@
 
 #include "chrome/installer/util/master_preferences.h"
 
-#include <windows.h>
-
 #include "base/logging.h"
 #include "base/values.h"
-#include "url/gurl.h"
 
 namespace installer {
 

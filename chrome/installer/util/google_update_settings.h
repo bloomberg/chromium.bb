@@ -167,7 +167,7 @@ class GoogleUpdateSettings {
   // Returns only the channel name: "" (stable), "dev", "beta", "canary", or
   // "unknown" if unknown. This value will not be modified by "-m" for a
   // multi-install. See kChromeChannel* in util_constants.h
-  static std::wstring GetChromeChannel(bool system_install);
+  static base::string16 GetChromeChannel(bool system_install);
 
   // Return a human readable modifier for the version string, e.g.
   // the channel (dev, beta, stable). Returns true if this operation succeeded,

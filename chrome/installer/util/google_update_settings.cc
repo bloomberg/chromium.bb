@@ -167,9 +167,9 @@ bool GetChromeChannelInternal(bool system_install,
   // Tag the channel name if this is a multi-install.
   if (add_multi_modifier && channel_info.IsMultiInstall()) {
     if (!channel->empty()) {
-      channel->append(1, L'-');
+      channel->push_back(L'-');
     }
-    channel->append(1, L'm');
+    channel->push_back(L'm');
   }
 
   return true;
@@ -409,8 +409,8 @@ bool GoogleUpdateSettings::UpdateDidRunStateForDistribution(
                                              system_level);
 }
 
-std::wstring GoogleUpdateSettings::GetChromeChannel(bool system_install) {
-  std::wstring channel;
+base::string16 GoogleUpdateSettings::GetChromeChannel(bool system_install) {
+  base::string16 channel;
   GetChromeChannelInternal(system_install, false, &channel);
   return channel;
 }
