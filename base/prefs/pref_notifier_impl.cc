@@ -94,19 +94,6 @@ void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
   }
 }
 
-// TODO(battre): Delete this. See crbug.com/373435.
-void PrefNotifierImpl::BroadcastPrefServiceDestructionTrace(
-    const std::string& stack_trace) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (PrefObserverMap::iterator observer_iterator = pref_observers_.begin();
-       observer_iterator != pref_observers_.end();
-       ++observer_iterator) {
-    FOR_EACH_OBSERVER(PrefObserver,
-                      *(observer_iterator->second),
-                      SetPrefServiceDestructionTrace(stack_trace));
-  }
-}
-
 void PrefNotifierImpl::FireObservers(const std::string& path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

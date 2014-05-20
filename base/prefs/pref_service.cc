@@ -7,8 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-// TODO(battre): Delete this. See crbug.com/373435.
-#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -60,13 +58,6 @@ PrefService::PrefService(
 
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
-
-  // TODO(battre): Remove the following code. It's purpose is to understand
-  // whether a crash in PrefChangeRegistrar::~PrefChangeRegistrar() is caused
-  // by a PrefService already being dead. See crbug.com/373435.
-  std::string stack_trace = base::debug::StackTrace().ToString();
-  static_cast<PrefNotifier*>(pref_notifier_.get())
-      ->BroadcastPrefServiceDestructionTrace(stack_trace);
 
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();

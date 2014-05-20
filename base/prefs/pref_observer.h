@@ -16,10 +16,6 @@ class PrefObserver {
  public:
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) = 0;
-
-  // TODO(battre): Remove function (debugging tool for crbug.com/373435).
-  virtual void SetPrefServiceDestructionTrace(
-      const std::string& stack_trace) = 0;
 };
 
 #endif  // BASE_PREFS_PREF_OBSERVER_H_

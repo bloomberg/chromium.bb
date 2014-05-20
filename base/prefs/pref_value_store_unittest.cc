@@ -24,8 +24,6 @@ class MockPrefNotifier : public PrefNotifier {
  public:
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
   MOCK_METHOD1(OnInitializationCompleted, void(bool));
-  // TODO(battre) Remove function. See crbug.com/373435.
-  MOCK_METHOD1(BroadcastPrefServiceDestructionTrace, void(const std::string&));
 };
 
 // Allows to capture sync model associator interaction.

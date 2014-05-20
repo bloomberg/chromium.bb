@@ -5,8 +5,6 @@
 #include "base/prefs/pref_change_registrar.h"
 
 #include "base/bind.h"
-// TODO(battre): Delete this. See crbug.com/373435.
-#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 
@@ -50,19 +48,6 @@ void PrefChangeRegistrar::Remove(const char* path) {
 }
 
 void PrefChangeRegistrar::RemoveAll() {
-  // TODO(battre): Delete this. See crbug.com/373435.
-  if (!observers_.empty() && !pref_service_destruction_.empty()) {
-    // The PrefService is already destroyed, so the following call to
-    // service_->RemovePrefObserver would crash anyway. When the PrefService
-    // was destroyed, it stored a stack trace of the destruction in
-    // pref_service_destruction_. We save this on the stack in the minidump to
-    // understand what happens.
-    char tmp[2048] = {};
-    strncat(tmp, pref_service_destruction_.c_str(), sizeof(tmp) - 1u);
-    base::debug::Alias(tmp);
-    CHECK(false) << tmp;
-  }
-
   for (ObserverMap::const_iterator it = observers_.begin();
        it != observers_.end(); ++it) {
     service_->RemovePrefObserver(it->first.c_str(), this);
@@ -94,12 +79,6 @@ void PrefChangeRegistrar::OnPreferenceChanged(PrefService* service,
                                               const std::string& pref) {
   if (IsObserved(pref))
     observers_[pref].Run(pref);
-}
-
-// TODO(battre): Delete this. See crbug.com/373435.
-void PrefChangeRegistrar::SetPrefServiceDestructionTrace(
-    const std::string& stack_trace) {
-  pref_service_destruction_ = stack_trace;
 }
 
 void PrefChangeRegistrar::InvokeUnnamedCallback(const base::Closure& callback,

@@ -66,9 +66,6 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   // PrefObserver:
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
-  // TODO(battre): Delete function. See crbug.com/373435.
-  virtual void SetPrefServiceDestructionTrace(
-      const std::string& stack_trace) OVERRIDE;
 
   static void InvokeUnnamedCallback(const base::Closure& callback,
                                     const std::string& pref_name);
@@ -77,8 +74,6 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
 
   ObserverMap observers_;
   PrefService* service_;
-  // TODO(battre): Remove attribute (debugging tool for crbug.com/373435).
-  std::string pref_service_destruction_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };

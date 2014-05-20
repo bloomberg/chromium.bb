@@ -6,8 +6,6 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-// TODO(battre): Delete this. See crbug.com/373435.
-#include "base/debug/alias.h"
 #include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/value_conversions.h"
@@ -49,18 +47,6 @@ void PrefMemberBase::Init(const char* pref_name,
 
 void PrefMemberBase::Destroy() {
   if (prefs_ && !pref_name_.empty()) {
-    // TODO(battre): Delete this. See crbug.com/373435.
-    if (!pref_service_destruction_.empty()) {
-      // The PrefService is already destroyed, so the following call to
-      // service_->RemovePrefObserver would crash anyway. When the PrefService
-      // was destroyed, it stored a stack trace of the destruction in
-      // pref_service_destruction_. We save this on the stack in the minidump to
-      // understand what happens.
-      char tmp[2048] = {};
-      strncat(tmp, pref_service_destruction_.c_str(), sizeof(tmp) - 1u);
-      base::debug::Alias(tmp);
-      CHECK(false) << tmp;
-    }
     prefs_->RemovePrefObserver(pref_name_.c_str(), this);
     prefs_ = NULL;
   }
@@ -80,12 +66,6 @@ void PrefMemberBase::OnPreferenceChanged(PrefService* service,
   VerifyValuePrefName();
   UpdateValueFromPref((!setting_value_ && !observer_.is_null()) ?
       base::Bind(observer_, pref_name) : base::Closure());
-}
-
-// TODO(battre): Delete this. See crbug.com/373435.
-void PrefMemberBase::SetPrefServiceDestructionTrace(
-    const std::string& stack_trace) {
-  pref_service_destruction_ = stack_trace;
 }
 
 void PrefMemberBase::UpdateValueFromPref(const base::Closure& callback) const {
