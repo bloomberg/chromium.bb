@@ -95,7 +95,8 @@ TEST_F(FakeVideoCaptureDeviceTest, Capture) {
   ASSERT_GT(static_cast<int>(names.size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names.front()));
+      video_capture_device_factory_->Create(
+          base::MessageLoopProxy::current(), names.front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr()).Times(0);
@@ -153,7 +154,8 @@ TEST_F(FakeVideoCaptureDeviceTest, CaptureVariableResolution) {
   ASSERT_GT(static_cast<int>(names.size()), 0);
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names.front()));
+      video_capture_device_factory_->Create(
+          base::MessageLoopProxy::current(), names.front()));
   ASSERT_TRUE(device);
 
   // Configure the FakeVideoCaptureDevice to use all its formats as roster.

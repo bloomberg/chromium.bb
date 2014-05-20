@@ -25,6 +25,7 @@ base::FilePath GetFilePathFromCommandLine() {
 }
 
 scoped_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
 #if defined(OS_WIN)
   return scoped_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(

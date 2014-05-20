@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
@@ -190,7 +191,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   // Creates a VideoCaptureDevice object.
   // Return NULL if the hardware is not available.
-  static VideoCaptureDevice* Create(const Name& device_name);
+  static VideoCaptureDevice* Create(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const Name& device_name);
   virtual ~VideoCaptureDevice();
 
   // Gets the names of all video capture devices connected to this computer.

@@ -35,6 +35,7 @@ VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
 }
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int id;

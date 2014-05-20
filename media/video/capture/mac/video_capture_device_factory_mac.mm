@@ -27,6 +27,7 @@ VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac() {
 }
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(device_name.capture_api_type(),

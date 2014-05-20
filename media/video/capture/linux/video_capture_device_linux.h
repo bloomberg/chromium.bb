@@ -35,6 +35,12 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
 
   virtual void StopAndDeAllocate() OVERRIDE;
 
+ protected:
+  void SetRotation(int rotation);
+
+  // Once |v4l2_thread_| is started, only called on that thread.
+  void SetRotationOnV4L2Thread(int rotation);
+
  private:
   enum InternalState {
     kIdle,  // The device driver is opened but camera is not in use.
@@ -71,6 +77,11 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   int buffer_pool_size_;  // Number of allocated buffers.
   int timeout_count_;
   VideoCaptureFormat capture_format_;
+
+  // Clockwise rotation in degrees.  This value should be 0, 90, 180, or 270.
+  // This is only used on |v4l2_thread_| when it is running, or the constructor
+  // thread otherwise.
+  int rotation_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };

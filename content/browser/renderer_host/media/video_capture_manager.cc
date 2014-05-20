@@ -200,7 +200,9 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       DeviceInfo* found = FindDeviceInfoById(entry->id, devices_info_cache_);
       if (found) {
         video_capture_device =
-            video_capture_device_factory_->Create(found->name);
+            video_capture_device_factory_->Create(
+                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+                found->name);
       }
       break;
     }

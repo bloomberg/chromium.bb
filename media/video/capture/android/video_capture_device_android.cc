@@ -32,7 +32,9 @@ bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
 // VideoCaptureDeviceFactory.
 
 // static
-VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
+VideoCaptureDevice* VideoCaptureDevice::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const Name& device_name) {
   NOTREACHED();
   return NULL;
 }

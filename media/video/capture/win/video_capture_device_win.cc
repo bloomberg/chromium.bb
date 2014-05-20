@@ -245,7 +245,9 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
 }
 
 // static
-VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
+VideoCaptureDevice* VideoCaptureDevice::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const Name& device_name) {
   VideoCaptureDevice* ret = NULL;
   if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
     DCHECK(VideoCaptureDeviceMFWin::PlatformSupported());

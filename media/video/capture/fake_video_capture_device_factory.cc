@@ -14,6 +14,7 @@ FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
 }
 
 scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);

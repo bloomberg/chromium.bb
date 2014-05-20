@@ -473,6 +473,8 @@
         'video/capture/linux/video_capture_device_factory_linux.h',
         'video/capture/linux/video_capture_device_linux.cc',
         'video/capture/linux/video_capture_device_linux.h',
+        'video/capture/linux/video_capture_device_chromeos.cc',
+        'video/capture/linux/video_capture_device_chromeos.h',
         'video/capture/mac/avfoundation_glue.h',
         'video/capture/mac/avfoundation_glue.mm',
         'video/capture/mac/coremedia_glue.h',

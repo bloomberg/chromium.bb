@@ -113,7 +113,9 @@ void VideoCaptureDeviceLinux::GetListOfUsableFourCCs(bool favour_mjpeg,
 // VideoCaptureDeviceFactory.
 
 // static
-VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
+VideoCaptureDevice* VideoCaptureDevice::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const Name& device_name) {
   NOTREACHED();
   return NULL;
 }
@@ -157,7 +159,9 @@ VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)
       v4l2_thread_("V4L2Thread"),
       buffer_pool_(NULL),
       buffer_pool_size_(0),
-      timeout_count_(0) {}
+      timeout_count_(0),
+      rotation_(0) {
+}
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
   state_ = kIdle;
@@ -197,6 +201,25 @@ void VideoCaptureDeviceLinux::StopAndDeAllocate() {
   // This can happen (theoretically) if an error occurs when trying to stop
   // the camera.
   DeAllocateVideoBuffers();
+}
+
+void VideoCaptureDeviceLinux::SetRotation(int rotation) {
+  if (v4l2_thread_.IsRunning()) {
+    v4l2_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureDeviceLinux::SetRotationOnV4L2Thread,
+                   base::Unretained(this), rotation));
+  } else {
+    // If the |v4l2_thread_| is not running, there's no race condition and
+    // |rotation_| can be set directly.
+    rotation_ = rotation;
+  }
+}
+
+void VideoCaptureDeviceLinux::SetRotationOnV4L2Thread(int rotation) {
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK(rotation >= 0 && rotation < 360 && rotation % 90 == 0);
+  rotation_ = rotation;
 }
 
 void VideoCaptureDeviceLinux::OnAllocateAndStart(int width,
@@ -407,7 +430,7 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
           static_cast<uint8*>(buffer_pool_[buffer.index].start),
           buffer.bytesused,
           capture_format_,
-          0,
+          rotation_,
           base::TimeTicks::Now());
 
       // Enqueue the buffer again.

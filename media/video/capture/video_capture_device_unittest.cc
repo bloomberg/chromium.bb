@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -175,7 +176,9 @@ TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
 #endif
   scoped_ptr<VideoCaptureDevice> device =
-      video_capture_device_factory_->Create(device_name);
+      video_capture_device_factory_->Create(
+          base::MessageLoopProxy::current(),
+          device_name);
   EXPECT_TRUE(device == NULL);
 }
 
@@ -187,7 +190,8 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   }
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_.front()));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            names_.front()));
   ASSERT_TRUE(device);
   DVLOG(1) << names_.front().id();
 
@@ -215,7 +219,8 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
   }
 
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_.front()));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            names_.front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -239,7 +244,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_.front()));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            names_.front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -268,7 +274,8 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
   for (int i = 0; i <= 5; i++) {
     ResetWithNewClient();
     scoped_ptr<VideoCaptureDevice> device(
-        video_capture_device_factory_->Create(names_.front()));
+        video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                              names_.front()));
     gfx::Size resolution;
     if (i % 2) {
       resolution = gfx::Size(640, 480);
@@ -293,7 +300,8 @@ TEST_F(VideoCaptureDeviceTest, ReAllocateCamera) {
 
   ResetWithNewClient();
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_.front()));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            names_.front()));
 
   device->AllocateAndStart(capture_params, client_.PassAs<Client>());
   WaitForCapturedFrame();
@@ -310,7 +318,8 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_.front()));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            names_.front()));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())
@@ -339,7 +348,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
     return;
   }
   scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(*name));
+      video_capture_device_factory_->Create(base::MessageLoopProxy::current(),
+                                            *name));
   ASSERT_TRUE(device);
 
   EXPECT_CALL(*client_, OnErr())

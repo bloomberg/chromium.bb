@@ -23,6 +23,7 @@ class MEDIA_EXPORT VideoCaptureDeviceFactory {
 
   // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
   virtual scoped_ptr<VideoCaptureDevice> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const VideoCaptureDevice::Name& device_name);
 
   // Gets the names of all video capture devices connected to this computer.

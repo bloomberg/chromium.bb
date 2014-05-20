@@ -17,6 +17,9 @@
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
+#if defined(OS_CHROMEOS)
+#include "media/video/capture/linux/video_capture_device_chromeos.h"
+#endif
 #include "media/video/capture/linux/video_capture_device_linux.h"
 
 namespace media {
@@ -42,9 +45,15 @@ static bool HasUsableFormats(int fd) {
 }
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
+#if defined(OS_CHROMEOS)
+  VideoCaptureDeviceChromeOS* self =
+      new VideoCaptureDeviceChromeOS(ui_task_runner, device_name);
+#else
   VideoCaptureDeviceLinux* self = new VideoCaptureDeviceLinux(device_name);
+#endif
   if (!self)
     return scoped_ptr<VideoCaptureDevice>();
   // Test opening the device driver. This is to make sure it is available.

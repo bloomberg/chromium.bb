@@ -40,6 +40,9 @@ scoped_ptr<VideoCaptureDeviceFactory>
 #elif defined(OS_LINUX)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactoryLinux());
+#elif defined(OS_LINUX)
+    return scoped_ptr<VideoCaptureDeviceFactory>(new
+        VideoCaptureDeviceFactoryLinux());
 #elif defined(OS_ANDROID)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactoryAndroid());
@@ -57,10 +60,11 @@ VideoCaptureDeviceFactory::VideoCaptureDeviceFactory() {
 VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() {}
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactory::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return scoped_ptr<VideoCaptureDevice>(
-      VideoCaptureDevice::Create(device_name));
+      VideoCaptureDevice::Create(ui_task_runner, device_name));
 }
 
 void VideoCaptureDeviceFactory::GetDeviceNames(

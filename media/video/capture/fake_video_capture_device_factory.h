@@ -20,6 +20,7 @@ class MEDIA_EXPORT FakeVideoCaptureDeviceFactory :
   virtual ~FakeVideoCaptureDeviceFactory() {}
 
   virtual scoped_ptr<VideoCaptureDevice> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const VideoCaptureDevice::Name& device_name) OVERRIDE;
   virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) OVERRIDE;
   virtual void GetDeviceSupportedFormats(
