@@ -173,6 +173,35 @@ Credentials::Credentials() {
 Credentials::~Credentials() {
 }
 
+int Credentials::CountOpenFds(int proc_fd) {
+  DCHECK_LE(0, proc_fd);
+  int proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
+  PCHECK(0 <= proc_self_fd);
+
+  // Ownership of proc_self_fd is transferred here, it must not be closed
+  // or modified afterwards except via dir.
+  ScopedDIR dir(fdopendir(proc_self_fd));
+  CHECK(dir);
+
+  int count = 0;
+  struct dirent e;
+  struct dirent* de;
+  while (!readdir_r(dir.get(), &e, &de) && de) {
+    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+      continue;
+    }
+
+    int fd_num;
+    CHECK(base::StringToInt(e.d_name, &fd_num));
+    if (fd_num == proc_fd || fd_num == proc_self_fd) {
+      continue;
+    }
+
+    ++count;
+  }
+  return count;
+}
+
 bool Credentials::HasOpenDirectory(int proc_fd) {
   int proc_self_fd = -1;
   if (proc_fd >= 0) {

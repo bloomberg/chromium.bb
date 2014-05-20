@@ -7,6 +7,11 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace sandbox {
+class SetuidSandboxClient;
+}
 
 namespace nacl {
 
@@ -61,6 +66,8 @@ class NaClSandbox {
   bool layer_two_enabled() { return layer_two_enabled_; }
 
  private:
+  void CheckForExpectedNumberOfOpenFds();
+
   bool layer_one_enabled_;
   bool layer_one_sealed_;
   bool layer_two_enabled_;
@@ -68,6 +75,7 @@ class NaClSandbox {
   // |proc_fd_| must be released before the layer-1 sandbox is considered
   // enforcing.
   base::ScopedFD proc_fd_;
+  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
   DISALLOW_COPY_AND_ASSIGN(NaClSandbox);
 };
 

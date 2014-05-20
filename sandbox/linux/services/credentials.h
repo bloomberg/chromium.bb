@@ -27,6 +27,11 @@ class SANDBOX_EXPORT Credentials {
   Credentials();
   ~Credentials();
 
+  // Returns the number of file descriptors in the current process's FD
+  // table, excluding |proc_fd|, which should be a file descriptor for
+  // /proc.
+  int CountOpenFds(int proc_fd);
+
   // Checks whether the current process has any directory file descriptor open.
   // Directory file descriptors are "capabilities" that would let a process use
   // system calls such as openat() to bypass restrictions such as

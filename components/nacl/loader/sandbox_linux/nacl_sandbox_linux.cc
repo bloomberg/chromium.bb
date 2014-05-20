@@ -46,7 +46,8 @@ NaClSandbox::NaClSandbox()
       layer_one_sealed_(false),
       layer_two_enabled_(false),
       layer_two_is_nonsfi_(false),
-      proc_fd_(-1) {
+      proc_fd_(-1),
+      setuid_sandbox_client_(sandbox::SetuidSandboxClient::Create()) {
   proc_fd_.reset(
       HANDLE_EINTR(open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC)));
   PCHECK(proc_fd_.is_valid());
@@ -72,21 +73,37 @@ bool NaClSandbox::HasOpenDirectory() {
 void NaClSandbox::InitializeLayerOneSandbox() {
   // Check that IsSandboxed() works. We should not be sandboxed at this point.
   CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
-  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
-      sandbox::SetuidSandboxClient::Create());
-  const bool suid_sandbox_child = setuid_sandbox_client->IsSuidSandboxChild();
 
-  if (suid_sandbox_child) {
-    setuid_sandbox_client->CloseDummyFile();
+  if (setuid_sandbox_client_->IsSuidSandboxChild()) {
+    setuid_sandbox_client_->CloseDummyFile();
 
     // Make sure that no directory file descriptor is open, as it would bypass
     // the setuid sandbox model.
     CHECK(!HasOpenDirectory());
 
     // Get sandboxed.
-    CHECK(setuid_sandbox_client->ChrootMe());
+    CHECK(setuid_sandbox_client_->ChrootMe());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
+  }
+}
+
+void NaClSandbox::CheckForExpectedNumberOfOpenFds() {
+  if (setuid_sandbox_client_->IsSuidSandboxChild()) {
+    // We expect to have the following FDs open:
+    //  1-3) stdin, stdout, stderr.
+    //  4) The /dev/urandom FD used by base::GetUrandomFD().
+    //  5) A dummy pipe FD used to overwrite kSandboxIPCChannel.
+    //  6) The socket created by the SUID sandbox helper, used by ChrootMe().
+    //     After ChrootMe(), this is no longer connected to anything.
+    //     (Only present when running under the SUID sandbox.)
+    //  7) The socket for the Chrome IPC channel that's connected to the
+    //     browser process, kPrimaryIPCChannel.
+    //
+    // This sanity check ensures that dynamically loaded libraries don't
+    // leave any FDs open before we enable the sandbox.
+    sandbox::Credentials credentials;
+    CHECK_EQ(7, credentials.CountOpenFds(proc_fd_.get()));
   }
 }
 
@@ -95,6 +112,8 @@ void NaClSandbox::InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
   // have a single thread running here.
   DCHECK(!layer_one_sealed_);
   CHECK(IsSingleThreaded());
+  CheckForExpectedNumberOfOpenFds();
+
   if (uses_nonsfi_mode) {
     layer_two_enabled_ = nacl::nonsfi::InitializeBPFSandbox();
     layer_two_is_nonsfi_ = true;

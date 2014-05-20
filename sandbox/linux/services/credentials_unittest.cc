@@ -57,6 +57,18 @@ TEST(Credentials, CreateAndDestroy) {
   scoped_ptr<Credentials> cred2(new Credentials);
 }
 
+TEST(Credentials, CountOpenFds) {
+  base::ScopedFD proc_fd(open("/proc", O_RDONLY | O_DIRECTORY));
+  ASSERT_TRUE(proc_fd.is_valid());
+  Credentials creds;
+  int fd_count = creds.CountOpenFds(proc_fd.get());
+  int fd = open("/dev/null", O_RDONLY);
+  ASSERT_LE(0, fd);
+  EXPECT_EQ(fd_count + 1, creds.CountOpenFds(proc_fd.get()));
+  ASSERT_EQ(0, IGNORE_EINTR(close(fd)));
+  EXPECT_EQ(fd_count, creds.CountOpenFds(proc_fd.get()));
+}
+
 TEST(Credentials, HasOpenDirectory) {
   Credentials creds;
   // No open directory should exist at startup.
