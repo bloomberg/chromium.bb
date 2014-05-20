@@ -687,6 +687,8 @@ function testList(tests, header, tableId)
         else if (tableId == 'crash-tests-table') {
             html += resultLink(stripExtension(test), '-crash-log.txt', 'crash log');
             html += resultLink(stripExtension(test), '-sample.txt', 'sample');
+            if (testObject.has_stderr)
+                html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
         } else if (tableId == 'leak-tests-table')
             html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
         else if (tableId == 'timeout-tests-table') {
