@@ -343,6 +343,9 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
 
     LayoutRect layerBounds = m_owningLayer.boundingBoxForCompositing();
 
+    // FIXME: either move this hack to RenderLayer or find a way to get rid of it. Removing it from here
+    // will alow us to get rid of m_compositedBounds.
+
     // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
     // then we need to ensure that the compositing layer has non-zero size so that we can apply
     // the transform-origin via the GraphicsLayer anchorPoint (which is expressed as a fractional value).
@@ -534,82 +537,86 @@ static LayoutPoint computeOffsetFromCompositedAncestor(const RenderLayer* layer,
     return offset;
 }
 
-void CompositedLayerMapping::adjustBoundsForSubPixelAccumulation(const RenderLayer* compositedAncestor, IntRect& localBounds, IntRect& relativeBounds, IntPoint& delta)
+void CompositedLayerMapping::computeBoundsOfOwningLayer(const RenderLayer* compositedAncestor, IntRect& localBounds, IntRect& compositingBoundsRelativeToCompositedAncestor, LayoutPoint& offsetFromCompositedAncestor,
+    IntPoint& snappedOffsetFromCompositedAncestor)
 {
     LayoutRect localRawCompositingBounds = compositedBounds();
-    LayoutPoint rawDelta = computeOffsetFromCompositedAncestor(&m_owningLayer, compositedAncestor);
-    delta = IntPoint(rawDelta.x().round(), rawDelta.y().round());
-    LayoutSize subpixelAccumulation = rawDelta - delta;
+    offsetFromCompositedAncestor = computeOffsetFromCompositedAncestor(&m_owningLayer, compositedAncestor);
+    snappedOffsetFromCompositedAncestor = IntPoint(offsetFromCompositedAncestor.x().round(), offsetFromCompositedAncestor.y().round());
+
+    LayoutSize subpixelAccumulation = offsetFromCompositedAncestor - snappedOffsetFromCompositedAncestor;
     m_owningLayer.setSubpixelAccumulation(subpixelAccumulation);
 
     // Move the bounds by the subpixel accumulation so that it pixel-snaps relative to absolute pixels instead of local coordinates.
     localRawCompositingBounds.move(subpixelAccumulation);
     localBounds = pixelSnappedIntRect(localRawCompositingBounds);
 
-    relativeBounds = localBounds;
-    relativeBounds.moveBy(delta);
+    compositingBoundsRelativeToCompositedAncestor = localBounds;
+    compositingBoundsRelativeToCompositedAncestor.moveBy(snappedOffsetFromCompositedAncestor);
 }
 
-void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta, const LayoutSize subpixelAccumulation, const RenderLayer& referenceLayer)
+void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& offsetFromReferenceLayerToParentGraphicsLayer, const RenderLayer& referenceLayer,
+    Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer& graphicsLayer, LayoutPoint* offsetFromTransformedAncestor)
 {
-    if (!m_squashingLayer)
-        return;
-
-    ASSERT(compositor()->layerSquashingEnabled());
+    // FIXME: Cache these offsets.
+    LayoutPoint referenceOffsetFromTransformedAncestor = referenceLayer.computeOffsetFromTransformedAncestor();
 
     LayoutRect totalSquashBounds;
-    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-        LayoutRect squashedBounds = m_squashedLayers[i].renderLayer->boundingBoxForCompositing();
+    for (size_t i = 0; i < layers.size(); ++i) {
+        LayoutRect squashedBounds = layers[i].renderLayer->boundingBoxForCompositing();
 
         // Store the local bounds of the RenderLayer subtree before applying the offset.
-        m_squashedLayers[i].compositedBounds = squashedBounds;
+        layers[i].compositedBounds = squashedBounds;
 
-        squashedBounds.move(m_squashedLayers[i].offsetFromSquashingLayer);
+        LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].renderLayer->computeOffsetFromTransformedAncestor();
+        LayoutSize offsetFromSquashingLayer = offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor;
+
+        squashedBounds.move(offsetFromSquashingLayer);
         totalSquashBounds.unite(squashedBounds);
     }
 
-    m_squashingLayerOffsetFromTransformedAncestor = referenceLayer.computeOffsetFromTransformedAncestor();
-    m_squashingLayerOffsetFromTransformedAncestor.moveBy(totalSquashBounds.location());
+    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
+    offsetFromTransformedAncestor->moveBy(totalSquashBounds.location());
 
     // The totalSquashBounds is positioned with respect to referenceLayer of this CompositedLayerMapping.
     // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
     // The conversion between referenceLayer and the ancestor CLM is already computed in the caller as
-    // |delta| + |subpixelAccumulation|.
-    LayoutPoint rawDelta = delta + subpixelAccumulation;
-    totalSquashBounds.moveBy(rawDelta);
+    // offsetFromReferenceLayerToCompositedAncestor.
+    totalSquashBounds.moveBy(offsetFromReferenceLayerToParentGraphicsLayer);
     IntRect squashLayerBounds = enclosingIntRect(totalSquashBounds);
     IntPoint squashLayerOrigin = squashLayerBounds.location();
-    LayoutPoint squashLayerOriginInOwningLayerSpace = LayoutPoint(squashLayerOrigin - rawDelta);
+    LayoutSize squashLayerOriginInOwningLayerSpace = squashLayerOrigin - offsetFromReferenceLayerToParentGraphicsLayer;
 
-    m_squashingLayer->setPosition(squashLayerBounds.location());
-    m_squashingLayer->setSize(squashLayerBounds.size());
+    graphicsLayer.setPosition(squashLayerBounds.location());
+    graphicsLayer.setSize(squashLayerBounds.size());
 
     // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
     // from CLM owning layer space to the squashing layer space.
     //
     // The painting offset we want to compute for each squashed RenderLayer is essentially the position of
-    // the squashed RenderLayer described w.r.t. m_squashingLayer's origin. For this purpose we already cached
+    // the squashed RenderLayer described w.r.t. referenceLayer's origin. For this purpose we already cached
     // offsetFromSquashingCLM before, which describes where the squashed RenderLayer is located w.r.t.
-    // referenceLayer. So we just need to convert that point from referenceLayer space to m_squashingLayer
+    // referenceLayer. So we just need to convert that point from referenceLayer space to referenceLayer
     // space. This is simply done by subtracing squashLayerOriginInOwningLayerSpace, but then the offset
     // overall needs to be negated because that's the direction that the painting code expects the
     // offset to be.
-    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-        LayoutSize offsetFromSquashLayerOrigin = LayoutPoint(m_squashedLayers[i].offsetFromSquashingLayer) - squashLayerOriginInOwningLayerSpace;
-        m_squashedLayers[i].offsetFromRenderer = -flooredIntSize(offsetFromSquashLayerOrigin);
+    for (size_t i = 0; i < layers.size(); ++i) {
+        LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].renderLayer->computeOffsetFromTransformedAncestor();
+        LayoutSize offsetFromSquashLayerOrigin = (offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor) - squashLayerOriginInOwningLayerSpace;
+        layers[i].offsetFromRenderer = -flooredIntSize(offsetFromSquashLayerOrigin);
 
-        m_squashedLayers[i].renderLayer->setSubpixelAccumulation(offsetFromSquashLayerOrigin.fraction());
-        ASSERT(m_squashedLayers[i].renderLayer->subpixelAccumulation() ==
-            toLayoutSize(computeOffsetFromCompositedAncestor(m_squashedLayers[i].renderLayer, m_squashedLayers[i].renderLayer->ancestorCompositingLayer())).fraction());
+        layers[i].renderLayer->setSubpixelAccumulation(offsetFromSquashLayerOrigin.fraction());
+        ASSERT(layers[i].renderLayer->subpixelAccumulation() ==
+            toLayoutSize(computeOffsetFromCompositedAncestor(layers[i].renderLayer, layers[i].renderLayer->ancestorCompositingLayer())).fraction());
 
         // FIXME: find a better design to avoid this redundant value - most likely it will make
         // sense to move the paint task info into RenderLayer's m_compositingProperties.
-        m_squashedLayers[i].renderLayer->setOffsetFromSquashingLayerOrigin(m_squashedLayers[i].offsetFromRenderer);
+        layers[i].renderLayer->setOffsetFromSquashingLayerOrigin(layers[i].offsetFromRenderer);
 
     }
 
-    for (size_t i = 0; i < m_squashedLayers.size(); ++i)
-        m_squashedLayers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(m_squashedLayers[i]);
+    for (size_t i = 0; i < layers.size(); ++i)
+        layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(referenceLayer, layers[i], layers);
 }
 
 void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer)
@@ -655,8 +662,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
     IntRect localCompositingBounds;
     IntRect relativeCompositingBounds;
-    IntPoint delta;
-    adjustBoundsForSubPixelAccumulation(compositingContainer, localCompositingBounds, relativeCompositingBounds, delta);
+    LayoutPoint offsetFromCompositedAncestor;
+    IntPoint snappedOffsetFromCompositedAncestor;
+    {
+        computeBoundsOfOwningLayer(compositingContainer, localCompositingBounds, relativeCompositingBounds, offsetFromCompositedAncestor, snappedOffsetFromCompositedAncestor);
+    }
 
     IntPoint graphicsLayerParentLocation;
     if (compositingContainer && compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
@@ -690,8 +700,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
         m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
         m_ancestorClippingLayer->setSize(parentClipRect.size());
 
-        // backgroundRect is relative to compositingContainer, so subtract deltaX/deltaY to get back to local coords.
-        m_ancestorClippingLayer->setOffsetFromRenderer(parentClipRect.location() - delta);
+        // backgroundRect is relative to compositingContainer, so subtract snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y to get back to local coords.
+        m_ancestorClippingLayer->setOffsetFromRenderer(parentClipRect.location() - snappedOffsetFromCompositedAncestor);
 
         // The primary layer is then parented in, and positioned relative to this clipping layer.
         graphicsLayerParentLocation = parentClipRect.location();
@@ -740,7 +750,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
         // Get layout bounds in the coords of compositingContainer to match relativeCompositingBounds.
         IntRect layerBounds = pixelSnappedIntRect(toLayoutPoint(m_owningLayer.subpixelAccumulation()), borderBox.size());
-        layerBounds.moveBy(delta);
+        layerBounds.moveBy(snappedOffsetFromCompositedAncestor);
 
         // Update properties that depend on layer dimensions
         FloatPoint3D transformOrigin = computeTransformOrigin(IntRect(IntPoint(), layerBounds.size()));
@@ -859,9 +869,12 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     }
 
     {
-        IntPoint squashingDelta(delta);
-        squashingDelta.moveBy(-graphicsLayerParentLocation);
-        updateSquashingLayerGeometry(squashingDelta, m_owningLayer.subpixelAccumulation(), m_owningLayer);
+        LayoutPoint offsetFromReferenceLayerToParentGaphicsLayer(offsetFromCompositedAncestor);
+        offsetFromReferenceLayerToParentGaphicsLayer.moveBy(-graphicsLayerParentLocation);
+        if (m_squashingLayer) {
+            ASSERT(compositor()->layerSquashingEnabled());
+            updateSquashingLayerGeometry(offsetFromReferenceLayerToParentGaphicsLayer, m_owningLayer, m_squashedLayers, *m_squashingLayer, &m_squashingLayerOffsetFromTransformedAncestor);
+        }
     }
 
     if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
@@ -1860,26 +1873,31 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject) const
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers)
 {
-    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-        if (renderObject->isDescendantOf(m_squashedLayers[i].renderLayer->renderer())) {
-            return &m_squashedLayers[i];
+    for (size_t i = 0; i < layers.size(); ++i) {
+        if (renderObject->isDescendantOf(layers[i].renderLayer->renderer())) {
+            return &layers[i];
             break;
         }
     }
     return 0;
 }
 
-IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const GraphicsLayerPaintInfo& paintInfo) const
+const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject)
+{
+    return CompositedLayerMapping::containingSquashedLayer(renderObject, m_squashedLayers);
+}
+
+IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo& paintInfo, const Vector<GraphicsLayerPaintInfo>& layers)
 {
     const RenderObject* clippingContainer = paintInfo.renderLayer->renderer()->clippingContainer();
-    if (clippingContainer == m_owningLayer.renderer()->clippingContainer())
+    if (clippingContainer == referenceLayer.renderer()->clippingContainer())
         return PaintInfo::infiniteRect();
 
     ASSERT(clippingContainer);
 
-    const GraphicsLayerPaintInfo* ancestorPaintInfo = containingSquashedLayer(clippingContainer);
+    const GraphicsLayerPaintInfo* ancestorPaintInfo = containingSquashedLayer(clippingContainer, layers);
     // Must be there, otherwise CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have disallowed squashing.
     ASSERT(ancestorPaintInfo);
 
@@ -2095,11 +2113,6 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* squashe
     // NOTE: offsetFromRenderer is updated elsewhere
     paintInfo.paintingPhase = GraphicsLayerPaintAllWithOverflowClip;
     paintInfo.isBackgroundLayer = false;
-
-    LayoutPoint referenceOffsetFromTransformedAncestor = owningLayer.computeOffsetFromTransformedAncestor();
-    LayoutPoint offsetFromTransformedAncestorForSquashedLayer = squashedLayer->computeOffsetFromTransformedAncestor();
-
-    paintInfo.offsetFromSquashingLayer = offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor;
 
     // Change tracking on squashing layers: at the first sign of something changed, just invalidate the layer.
     // FIXME: Perhaps we can find a tighter more clever mechanism later.

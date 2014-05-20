@@ -48,12 +48,6 @@ struct GraphicsLayerPaintInfo {
     // The clip rect to apply, in the local coordinate space of the squashed layer, when painting it.
     IntRect localClipRectForSquashedLayer;
 
-    // At first, the m_squashingLayer's bounds/location are not known. The value offsetFromSquashingLayer is
-    // an intermediate offset for a squashed RenderLayer, described with respect to the CompositedLayerMapping's
-    // owning layer that would eventually have the m_squashingLayer. Once the shared GraphicsLayer's bounds are
-    // known, then we can trivially convert this offset to m_squashingLayer's space.
-    LayoutSize offsetFromSquashingLayer;
-
     // Offset describing where this squashed RenderLayer paints into the shared GraphicsLayer backing.
     IntSize offsetFromRenderer;
     LayoutSize subpixelAccumulation;
@@ -67,7 +61,6 @@ struct GraphicsLayerPaintInfo {
         // FIXME: offsetFromRenderer and compositedBounds should not be checked here, because
         // they are not yet fixed at the time this function is used.
         return renderLayer == other.renderLayer
-            && offsetFromSquashingLayer == other.offsetFromSquashingLayer
             && paintingPhase == other.paintingPhase
             && isBackgroundLayer == other.isBackgroundLayer;
     }
@@ -209,9 +202,11 @@ public:
     }
 
     // If there is a squashed layer painting into this CLM that is an ancestor of the given RenderObject, return it. Otherwise return 0.
-    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*) const;
+    const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*);
 
 private:
+    static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers);
+
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
 
@@ -241,7 +236,8 @@ private:
     void updateChildrenTransform();
     void registerScrollingLayers();
 
-    void adjustBoundsForSubPixelAccumulation(const RenderLayer* compositedAncestor, IntRect& localCompositingBounds, IntRect& relativeCompositingBounds, IntPoint& delta);
+    // Also sets subpixelAccumulation on the layer.
+    void computeBoundsOfOwningLayer(const RenderLayer* compositedAncestor, IntRect& localCompositingBounds, IntRect& compositingBoundsRelativeToCompositedAncestor, LayoutPoint& offsetFromCompositedAncestor, IntPoint& snappedOffsetFromCompositedAncestor);
 
     void setBackgroundLayerPaintsFixedRootBackground(bool);
 
@@ -250,7 +246,7 @@ private:
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
 
-    void updateSquashingLayerGeometry(const IntPoint& delta, const LayoutSize subpixelAccumulation, const RenderLayer& referenceLayer);
+    static void updateSquashingLayerGeometry(const LayoutPoint& offsetFromReferenceLayerToParentGraphicsLayer, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer&, LayoutPoint* offsetFromTransformedAncestor);
 
     void updateOpacity(const RenderStyle*);
     void updateTransform(const RenderStyle*);
@@ -286,7 +282,7 @@ private:
     // The clip rect is returned in the coordinate space of the given squashed layer.
     // If there is no such containing layer, returns the infinite rect.
     // FIXME: unify this code with the code that sets up m_ancestorClippingLayer. They are doing very similar things.
-    IntRect localClipRectForSquashedLayer(const GraphicsLayerPaintInfo&) const;
+    static IntRect localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo&,  const Vector<GraphicsLayerPaintInfo>& layers);
 
     RenderLayer& m_owningLayer;
 
