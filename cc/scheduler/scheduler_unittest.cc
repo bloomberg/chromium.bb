@@ -134,11 +134,6 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.push_back(scheduler_->AsValue().release());
     return DRAW_SUCCESS;
   }
-  virtual DrawResult ScheduledActionDrawAndReadback() OVERRIDE {
-    actions_.push_back("ScheduledActionDrawAndReadback");
-    states_.push_back(scheduler_->AsValue().release());
-    return DRAW_SUCCESS;
-  }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
     states_.push_back(scheduler_->AsValue().release());
@@ -644,53 +639,6 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
 }
-
-TEST(SchedulerTest, NoSwapWhenSwapFailsDuringForcedCommit) {
-  FakeSchedulerClient client;
-  SchedulerSettings default_scheduler_settings;
-  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
-
-  // Tell the client that it will fail to swap.
-  client.SetDrawWillHappen(true);
-  client.SetSwapWillHappenIfDrawHappens(false);
-
-  // Get the compositor to do a ScheduledActionDrawAndReadback.
-  scheduler->SetCanDraw(true);
-  scheduler->SetNeedsRedraw();
-  scheduler->SetNeedsForcedCommitForReadback();
-  scheduler->NotifyBeginMainFrameStarted();
-  scheduler->NotifyReadyToCommit();
-  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
-}
-
-TEST(SchedulerTest, BackToBackReadbackAllowed) {
-  // Some clients call readbacks twice in a row before the replacement
-  // commit comes in.  Make sure it is allowed.
-  FakeSchedulerClient client;
-  SchedulerSettings default_scheduler_settings;
-  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
-
-  // Get the compositor to do 2 ScheduledActionDrawAndReadbacks before
-  // the replacement commit comes in.
-  scheduler->SetCanDraw(true);
-  scheduler->SetNeedsRedraw();
-  scheduler->SetNeedsForcedCommitForReadback();
-  scheduler->NotifyBeginMainFrameStarted();
-  scheduler->NotifyReadyToCommit();
-  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
-
-  client.Reset();
-  scheduler->SetNeedsForcedCommitForReadback();
-  scheduler->NotifyBeginMainFrameStarted();
-  scheduler->NotifyReadyToCommit();
-  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndReadback"));
-
-  // The replacement commit comes in after 2 readbacks.
-  client.Reset();
-  scheduler->NotifyBeginMainFrameStarted();
-  scheduler->NotifyReadyToCommit();
-}
-
 
 class SchedulerClientNeedsManageTilesInDraw : public FakeSchedulerClient {
  public:

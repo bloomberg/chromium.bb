@@ -164,11 +164,6 @@ void Scheduler::SetNeedsCommit() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetNeedsForcedCommitForReadback() {
-  state_machine_.SetNeedsForcedCommitForReadback();
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetNeedsRedraw() {
   state_machine_.SetNeedsRedraw();
   ProcessScheduledActions();
@@ -191,9 +186,6 @@ void Scheduler::SetMaxSwapsPending(int max) {
 
 void Scheduler::DidSwapBuffers() {
   state_machine_.DidSwapBuffers();
-
-  // Swap should not occur inside readback operation.
-  DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_DRAW_AND_READBACK));
 
   // There is no need to call ProcessScheduledActions here because
   // swapping should not trigger any new actions.
@@ -618,7 +610,6 @@ void Scheduler::ProcessScheduledActions() {
 
   SchedulerStateMachine::Action action;
   do {
-    state_machine_.CheckInvariants();
     action = state_machine_.NextAction();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
@@ -654,9 +645,6 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
         // No action is actually performed, but this allows the state machine to
         // advance out of its waiting to draw state without actually drawing.
-        break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_READBACK:
-        client_->ScheduledActionDrawAndReadback();
         break;
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();

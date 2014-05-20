@@ -68,18 +68,6 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* CommitStateToString(CommitState state);
 
-  enum SynchronousReadbackState {
-    READBACK_STATE_IDLE,
-    READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME,
-    READBACK_STATE_WAITING_FOR_COMMIT,
-    READBACK_STATE_WAITING_FOR_ACTIVATION,
-    READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK,
-    READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT,
-    READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION,
-  };
-  static const char* SynchronousReadbackStateToString(
-      SynchronousReadbackState state);
-
   enum ForcedRedrawOnTimeoutState {
     FORCED_REDRAW_STATE_IDLE,
     FORCED_REDRAW_STATE_WAITING_FOR_COMMIT,
@@ -109,7 +97,6 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_DRAW_AND_SWAP_IF_POSSIBLE,
     ACTION_DRAW_AND_SWAP_FORCED,
     ACTION_DRAW_AND_SWAP_ABORT,
-    ACTION_DRAW_AND_READBACK,
     ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
     ACTION_MANAGE_TILES,
   };
@@ -119,8 +106,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   Action NextAction() const;
   void UpdateState(Action action);
-
-  void CheckInvariants();
 
   // Indicates whether the impl thread needs a BeginImplFrame callback in order
   // to make progress.
@@ -199,12 +184,6 @@ class CC_EXPORT SchedulerStateMachine {
   // updates from the main thread to the impl, or to push deltas from the impl
   // thread to main.
   void SetNeedsCommit();
-
-  // As SetNeedsCommit(), but ensures the BeginMainFrame will be sent even
-  // if we are not visible.  After this call we expect to go through
-  // the forced commit flow and then return to waiting for a non-forced
-  // BeginMainFrame to finish.
-  void SetNeedsForcedCommitForReadback();
 
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction.
@@ -285,7 +264,6 @@ class CC_EXPORT SchedulerStateMachine {
   BeginImplFrameState begin_impl_frame_state_;
   CommitState commit_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
-  SynchronousReadbackState readback_state_;
 
   BeginFrameArgs begin_impl_frame_args_;
 
@@ -322,7 +300,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
-  bool needs_back_to_back_readback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

@@ -19,7 +19,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
       commit_state_(COMMIT_STATE_IDLE),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
-      readback_state_(READBACK_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
       last_frame_number_animate_performed_(-1),
@@ -47,8 +46,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       smoothness_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false),
-      continuous_painting_(false),
-      needs_back_to_back_readback_(false) {
+      continuous_painting_(false) {
 }
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
@@ -104,28 +102,6 @@ const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
   return "???";
 }
 
-const char* SchedulerStateMachine::SynchronousReadbackStateToString(
-    SynchronousReadbackState state) {
-  switch (state) {
-    case READBACK_STATE_IDLE:
-      return "READBACK_STATE_IDLE";
-    case READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME:
-      return "READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME";
-    case READBACK_STATE_WAITING_FOR_COMMIT:
-      return "READBACK_STATE_WAITING_FOR_COMMIT";
-    case READBACK_STATE_WAITING_FOR_ACTIVATION:
-      return "READBACK_STATE_WAITING_FOR_ACTIVATION";
-    case READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK:
-      return "READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK";
-    case READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT:
-      return "READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT";
-    case READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION:
-      return "READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION";
-  }
-  NOTREACHED();
-  return "???";
-}
-
 const char* SchedulerStateMachine::ForcedRedrawOnTimeoutStateToString(
     ForcedRedrawOnTimeoutState state) {
   switch (state) {
@@ -162,8 +138,6 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_DRAW_AND_SWAP_FORCED";
     case ACTION_DRAW_AND_SWAP_ABORT:
       return "ACTION_DRAW_AND_SWAP_ABORT";
-    case ACTION_DRAW_AND_READBACK:
-      return "ACTION_DRAW_AND_READBACK";
     case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       return "ACTION_BEGIN_OUTPUT_SURFACE_CREATION";
     case ACTION_MANAGE_TILES:
@@ -186,8 +160,6 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   major_state->SetString(
       "forced_redraw_state",
       ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
-  major_state->SetString("readback_state",
-                         SynchronousReadbackStateToString(readback_state_));
   state->Set("major_state", major_state.release());
 
   scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
@@ -348,8 +320,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   // We want to clear the pipline of any pending draws and activations
   // before starting output surface initialization. This allows us to avoid
   // weird corner cases where we abort draws or force activation while we
-  // are initializing the output surface and can potentially have a pending
-  // readback.
+  // are initializing the output surface.
   if (active_tree_needs_first_draw_ || has_pending_tree_)
     return false;
 
@@ -359,16 +330,6 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 }
 
 bool SchedulerStateMachine::ShouldDraw() const {
-  // After a readback, make sure not to draw again until we've replaced the
-  // readback commit with a real one.
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT ||
-      readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION)
-    return false;
-
-  // Draw immediately for readbacks to unblock the main thread quickly.
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK)
-    return true;
-
   // If we need to abort draws, we should do so ASAP since the draw could
   // be blocking other important actions (like output surface initialization),
   // from occuring. If we are waiting for the first draw, then perfom the
@@ -469,15 +430,7 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
   }
 
-  // We want to handle readback commits immediately to unblock the main thread.
-  // Note: This BeginMainFrame will correspond to the replacement commit that
-  // comes after the readback commit itself, so we only send the BeginMainFrame
-  // if a commit isn't already pending behind the readback.
-  if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME)
-    return !CommitPending();
-
-  // We do not need commits if we are not visible, unless there's a
-  // request for a readback.
+  // We do not need commits if we are not visible.
   if (!visible_)
     return false;
 
@@ -561,9 +514,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   if (ShouldAnimate())
     return ACTION_ANIMATE;
   if (ShouldDraw()) {
-    if (readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK)
-      return ACTION_DRAW_AND_READBACK;
-    else if (PendingDrawsShouldBeAborted())
+    if (PendingDrawsShouldBeAborted())
       return ACTION_DRAW_AND_SWAP_ABORT;
     else if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
       return ACTION_DRAW_AND_SWAP_FORCED;
@@ -577,13 +528,6 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   if (ShouldBeginOutputSurfaceCreation())
     return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
   return ACTION_NONE;
-}
-
-void SchedulerStateMachine::CheckInvariants() {
-  // We should never try to perform a draw for readback and forced draw due to
-  // timeout simultaneously.
-  DCHECK(!(forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW &&
-           readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK));
 }
 
 void SchedulerStateMachine::UpdateState(Action action) {
@@ -613,12 +557,9 @@ void SchedulerStateMachine::UpdateState(Action action) {
              settings_.main_frame_before_activation_enabled);
       DCHECK(!active_tree_needs_first_draw_ ||
              settings_.main_frame_before_draw_enabled);
-      DCHECK(visible_ ||
-             readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME);
+      DCHECK(visible_);
       commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
       needs_commit_ = false;
-      if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME)
-        readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
       last_frame_number_begin_main_frame_sent_ =
           current_frame_number_;
       return;
@@ -636,8 +577,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
       return;
     }
 
-    case ACTION_DRAW_AND_SWAP_ABORT:
-    case ACTION_DRAW_AND_READBACK: {
+    case ACTION_DRAW_AND_SWAP_ABORT: {
       bool did_request_swap = false;
       UpdateStateOnDraw(did_request_swap);
       return;
@@ -678,52 +618,28 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
   // mostly as if we are not impl-side-painting since there is no pending tree.
   has_pending_tree_ = settings_.impl_side_painting && !commit_was_aborted;
 
-  // Update state related to readbacks.
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_COMMIT) {
-    // Update the state if this is the readback commit.
-    readback_state_ = has_pending_tree_
-                          ? READBACK_STATE_WAITING_FOR_ACTIVATION
-                          : READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK;
-  } else if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT) {
-    // Update the state if this is the commit replacing the readback commit.
-    readback_state_ = has_pending_tree_
-                          ? READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION
-                          : READBACK_STATE_IDLE;
-  } else {
-    DCHECK(readback_state_ == READBACK_STATE_IDLE);
+  // Update state related to forced draws.
+  if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
+    forced_redraw_state_ = has_pending_tree_
+                               ? FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION
+                               : FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
   }
 
-  // Readbacks can interrupt output surface initialization and forced draws,
-  // so we do not want to advance those states if we are in the middle of a
-  // readback. Note: It is possible for the readback's replacement commit to
-  // be the output surface's first commit and/or the forced redraw's commit.
-  if (readback_state_ == READBACK_STATE_IDLE ||
-      readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION) {
-    // Update state related to forced draws.
-    if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
-      forced_redraw_state_ = has_pending_tree_
-                                 ? FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION
-                                 : FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
-    }
-
-    // Update the output surface state.
-    DCHECK_NE(output_surface_state_,
-              OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION);
-    if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
-      if (has_pending_tree_) {
-        output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION;
-      } else {
-        output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
-        needs_redraw_ = true;
-      }
+  // Update the output surface state.
+  DCHECK_NE(output_surface_state_, OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION);
+  if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
+    if (has_pending_tree_) {
+      output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION;
+    } else {
+      output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
+      needs_redraw_ = true;
     }
   }
 
   // Update state if we have a new active tree to draw, or if the active tree
-  // was unchanged but we need to do a readback or forced draw.
+  // was unchanged but we need to do a forced draw.
   if (!has_pending_tree_ &&
       (!commit_was_aborted ||
-       readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK ||
        forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)) {
     needs_redraw_ = true;
     active_tree_needs_first_draw_ = true;
@@ -746,27 +662,6 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION)
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
 
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_ACTIVATION) {
-    readback_state_ = READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK;
-  } else if (readback_state_ ==
-             READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION) {
-    if (needs_back_to_back_readback_) {
-      if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
-        // If main_frame_before_activation_enabled is true, it is possible that
-        // we will have already sent the BeginMainFrame here.
-        readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
-      } else {
-        // Replacement commit for incoming forced commit should be scheduled
-        // after current commit's draw & swap is finished.
-        needs_commit_ = true;
-        readback_state_ = READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME;
-      }
-      needs_back_to_back_readback_ = false;
-    } else {
-      readback_state_ = READBACK_STATE_IDLE;
-    }
-  }
-
   has_pending_tree_ = false;
   pending_tree_is_ready_for_activation_ = false;
   active_tree_needs_first_draw_ = true;
@@ -774,22 +669,8 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
 }
 
 void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
-  DCHECK(readback_state_ != READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT &&
-         readback_state_ != READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION)
-      << *AsValue();
-
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK) {
-    // The draw corresponds to a readback commit.
-    // We are blocking commits from the main thread until after this draw, so
-    // we should not have a pending tree.
-    DCHECK(!has_pending_tree_);
-    // We transition to COMMIT_STATE_BEGIN_MAIN_FRAME_SENT because there is a
-    // pending BeginMainFrame behind the readback request.
-    commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
-    readback_state_ = READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT;
-  } else if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
+  if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
-  }
 
   if (!has_pending_tree_ &&
       commit_state_ == COMMIT_STATE_WAITING_FOR_FIRST_DRAW) {
@@ -948,11 +829,6 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
 bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   // TODO(brianderson): This should take into account multiple commit sources.
 
-  // If we are in the middle of the readback, we won't swap, so there is
-  // no reason to trigger the deadline early.
-  if (readback_state_ != READBACK_STATE_IDLE)
-    return false;
-
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
@@ -1086,7 +962,6 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
       NOTREACHED() << "Uninitialized DrawResult.";
       break;
     case DRAW_ABORTED_CANT_DRAW:
-    case DRAW_ABORTED_CANT_READBACK:
     case DRAW_ABORTED_CONTEXT_LOST:
       NOTREACHED() << "Invalid return value from DrawAndSwapIfPossible:"
                    << result;
@@ -1126,39 +1001,6 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
 
 void SchedulerStateMachine::SetNeedsCommit() { needs_commit_ = true; }
 
-void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
-  // If this is called in READBACK_STATE_IDLE, this is a "first" readback
-  // request.
-  // If this is called in READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT, this
-  // is a back-to-back readback request that started before the replacement
-  // commit had a chance to land.
-  // If this is called in READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION,
-  // this is a readback-commit-readback request when replacement commit is in
-  // impl-side painting.
-  DCHECK(readback_state_ == READBACK_STATE_IDLE ||
-         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT ||
-         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION);
-
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION) {
-    // If new forced commit is requested when impl-side painting of replacement
-    // commit is in progress, it should not interrupt the draw & swap of current
-    // commit(replacement commit). New commit(incoming forced commit) should be
-    // started after current commit is finished.
-    needs_back_to_back_readback_ = true;
-  } else if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
-    // If there is already a commit in progress when we get the readback request
-    // then we don't need to send a BeginMainFrame for the replacement commit,
-    // since there's already a BeginMainFrame behind the readback request. In
-    // that case, we can skip READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go
-    // directly to READBACK_STATE_WAITING_FOR_COMMIT.
-    readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
-  } else {
-    // Set needs_commit_ to true to trigger scheduling BeginMainFrame().
-    needs_commit_ = true;
-    readback_state_ = READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME;
-  }
-}
-
 void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED) << *AsValue();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
@@ -1170,7 +1012,6 @@ void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
     bool commit_was_aborted = true;
     UpdateStateOnCommit(commit_was_aborted);
   } else {
-    DCHECK_NE(readback_state_, READBACK_STATE_WAITING_FOR_COMMIT);
     commit_state_ = COMMIT_STATE_IDLE;
     SetNeedsCommit();
   }
@@ -1210,11 +1051,6 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
   DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
-
-  DCHECK(readback_state_ == READBACK_STATE_IDLE ||
-         readback_state_ == READBACK_STATE_WAITING_FOR_COMMIT ||
-         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT);
-
   commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED;
 }
 

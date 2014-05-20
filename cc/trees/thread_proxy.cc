@@ -1149,12 +1149,6 @@ DrawResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
   return DrawSwapInternal(forced_draw);
 }
 
-DrawResult ThreadProxy::ScheduledActionDrawAndReadback() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndReadback");
-  NOTREACHED();
-  return INVALID_RESULT;
-}
-
 void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
   if (impl().current_resource_update_controller)
     impl().current_resource_update_controller->PerformMoreUpdates(time);

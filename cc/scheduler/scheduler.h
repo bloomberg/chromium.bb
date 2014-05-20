@@ -32,7 +32,6 @@ class SchedulerClient {
   virtual void ScheduledActionSendBeginMainFrame() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
-  virtual DrawResult ScheduledActionDrawAndReadback() = 0;
   virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
@@ -75,10 +74,6 @@ class CC_EXPORT Scheduler {
   void NotifyReadyToActivate();
 
   void SetNeedsCommit();
-
-  // Like SetNeedsCommit(), but ensures a commit will definitely happen even if
-  // we are not visible. Will eventually result in a forced draw internally.
-  void SetNeedsForcedCommitForReadback();
 
   void SetNeedsRedraw();
 

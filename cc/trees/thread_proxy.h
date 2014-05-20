@@ -110,7 +110,6 @@ class ThreadProxy : public Proxy,
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
   virtual DrawResult ScheduledActionDrawAndSwapForced() OVERRIDE;
-  virtual DrawResult ScheduledActionDrawAndReadback() OVERRIDE;
   virtual void ScheduledActionAnimate() OVERRIDE;
   virtual void ScheduledActionCommit() OVERRIDE;
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
