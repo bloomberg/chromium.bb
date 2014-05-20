@@ -183,9 +183,6 @@ class Plugin : public pp::Instance {
   // Histogram helper functions, internal to Plugin so they can use
   // uma_interface_ normally.
   void HistogramTimeSmall(const std::string& name, int64_t ms);
-  void HistogramTimeMedium(const std::string& name, int64_t ms);
-  void HistogramTimeLarge(const std::string& name, int64_t ms);
-  void HistogramSizeKB(const std::string& name, int32_t sample);
   void HistogramEnumerateLoadStatus(PP_NaClError error_code);
   void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code);
 
@@ -250,13 +247,6 @@ class Plugin : public pp::Instance {
   // Processes the JSON manifest string and starts loading the nexe.
   void ProcessNaClManifest(const nacl::string& manifest_json);
 
-  // Parses the JSON in |manifest_json| and retains a Manifest in
-  // |manifest_| for use by subsequent resource lookups.
-  // On success, |true| is returned and |manifest_| is updated to
-  // contain a Manifest that is used by SelectNexeURLFromManifest.
-  // On failure, |false| is returned, and |manifest_| is unchanged.
-  bool SetManifestObject(const nacl::string& manifest_json);
-
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.
   void HistogramStartupTimeSmall(const std::string& name, float dt);
@@ -311,7 +301,6 @@ class Plugin : public pp::Instance {
   int64_t time_of_last_progress_event_;
   int exit_status_;
 
-  PP_Var manifest_data_var_;
   int32_t manifest_id_;
 
   PP_FileHandle nexe_handle_;

@@ -368,7 +368,7 @@ interface PPB_NaCl_Private {
   /* Performs accounting for requesting the NaCl manifest at the given URL. */
   void RequestNaClManifest([in] PP_Instance instance,
                            [in] str_t manifest_url,
-                           [out] PP_Var manifest_data,
+                           [out] int32_t manifest_id,
                            [in] PP_CompletionCallback callback);
 
   PP_Var GetManifestBaseURL([in] PP_Instance instance);
@@ -389,9 +389,6 @@ interface PPB_NaCl_Private {
   PP_Bool DevInterfacesEnabled([in] PP_Instance instance);
 
   int32_t CreatePnaclManifest([in] PP_Instance instance);
-  int32_t CreateJsonManifest([in] PP_Instance instance,
-                             [in] str_t manifest_base_url,
-                             [in] str_t manifest_data);
 
   void DestroyManifest([in] PP_Instance instance,
                        [in] int32_t manifest_id);

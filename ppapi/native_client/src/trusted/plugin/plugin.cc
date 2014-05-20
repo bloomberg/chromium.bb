@@ -49,10 +49,6 @@ const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
 
-const int64_t kSizeKBMin = 1;
-const int64_t kSizeKBMax = 512*1024;     // very large .nexe
-const uint32_t kSizeKBBuckets = 100;
-
 // Converts a PP_FileHandle to a POSIX file descriptor.
 int32_t ConvertFileDescriptor(PP_FileHandle handle) {
   PLUGIN_PRINTF(("ConvertFileDescriptor, handle=%d\n", handle));
@@ -97,15 +93,6 @@ void Plugin::HistogramTimeSmall(const std::string& name,
                                       ms,
                                       kTimeSmallMin, kTimeSmallMax,
                                       kTimeSmallBuckets);
-}
-
-void Plugin::HistogramSizeKB(const std::string& name,
-                             int32_t sample) {
-  if (sample < 0) return;
-  uma_interface_.HistogramCustomCounts(name,
-                                       sample,
-                                       kSizeKBMin, kSizeKBMax,
-                                       kSizeKBBuckets);
 }
 
 void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
@@ -395,6 +382,8 @@ Plugin::~Plugin() {
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
   // Clean up accounting for our instance inside the NaCl interface.
+  if (manifest_id_ != -1)
+    nacl_interface_->DestroyManifest(pp_instance(), manifest_id_);
   nacl_interface_->InstanceDestroyed(pp_instance());
 
   // ShutDownSubprocesses shuts down the main subprocess, which shuts
@@ -532,20 +521,7 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
-  if (pp_error == PP_OK) {
-    // Take local ownership of manifest_data_var_
-    pp::Var manifest_data = pp::Var(pp::PASS_REF, manifest_data_var_);
-    manifest_data_var_ = PP_MakeUndefined();
-
-    std::string json_buffer = manifest_data.AsString();
-    ProcessNaClManifest(json_buffer);
-  }
-}
-
-void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
-  HistogramSizeKB("NaCl.Perf.Size.Manifest",
-                  static_cast<int32_t>(manifest_json.length() / 1024));
-  if (!SetManifestObject(manifest_json))
+  if (pp_error != PP_OK || manifest_id_ == -1)
     return;
 
   PP_Var pp_program_url;
@@ -586,28 +562,8 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
       callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
   nacl_interface_->RequestNaClManifest(pp_instance(),
                                        url.c_str(),
-                                       &manifest_data_var_,
+                                       &manifest_id_,
                                        open_callback.pp_completion_callback());
-}
-
-
-bool Plugin::SetManifestObject(const nacl::string& manifest_json) {
-  PLUGIN_PRINTF(("Plugin::SetManifestObject(): manifest_json='%s'.\n",
-       manifest_json.c_str()));
-  // Determine whether lookups should use portable (i.e., pnacl versions)
-  // rather than platform-specific files.
-  pp::Var manifest_base_url =
-      pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
-  std::string manifest_base_url_str = manifest_base_url.AsString();
-
-  int32_t manifest_id = nacl_interface_->CreateJsonManifest(
-      pp_instance(),
-      manifest_base_url_str.c_str(),
-      manifest_json.c_str());
-  if (manifest_id == -1)
-    return false;
-  manifest_id_ = manifest_id;
-  return true;
 }
 
 void Plugin::UrlDidOpenForStreamAsFile(

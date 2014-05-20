@@ -819,12 +819,16 @@ int64_t GetNexeSize(PP_Instance instance) {
 }
 
 void DownloadManifestToBuffer(PP_Instance instance,
-                              struct PP_Var* out_data,
+                              int32_t* out_manifest_id,
                               struct PP_CompletionCallback callback);
+
+int32_t CreateJsonManifest(PP_Instance instance,
+                           const std::string& manifest_url,
+                           const std::string& manifest_data);
 
 void RequestNaClManifest(PP_Instance instance,
                          const char* url,
-                         PP_Var* out_data,
+                         int32_t* out_manifest_id,
                          PP_CompletionCallback callback) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -854,7 +858,7 @@ void RequestNaClManifest(PP_Instance instance,
     if (net::DataURL::Parse(gurl, &mime_type, &charset, &data)) {
       if (data.size() <= ManifestDownloader::kNaClManifestMaxFileBytes) {
         error = PP_OK;
-        *out_data = ppapi::StringVar::StringToPPVar(data);
+        *out_manifest_id = CreateJsonManifest(instance, base_url.spec(), data);
       } else {
         load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
                                       "manifest file too large.");
@@ -867,7 +871,7 @@ void RequestNaClManifest(PP_Instance instance,
         FROM_HERE,
         base::Bind(callback.func, callback.user_data, error));
   } else {
-    DownloadManifestToBuffer(instance, out_data, callback);
+    DownloadManifestToBuffer(instance, out_manifest_id, callback);
   }
 }
 
@@ -918,13 +922,13 @@ PP_Bool DevInterfacesEnabled(PP_Instance instance) {
 
 void DownloadManifestToBufferCompletion(PP_Instance instance,
                                         struct PP_CompletionCallback callback,
-                                        struct PP_Var* out_data,
+                                        int32_t* out_manifest_id,
                                         base::Time start_time,
                                         PP_NaClError pp_nacl_error,
                                         const std::string& data);
 
 void DownloadManifestToBuffer(PP_Instance instance,
-                              struct PP_Var* out_data,
+                              int32_t* out_manifest_id,
                               struct PP_CompletionCallback callback) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -949,13 +953,13 @@ void DownloadManifestToBuffer(PP_Instance instance,
       url_loader.Pass(),
       load_manager->is_installed(),
       base::Bind(DownloadManifestToBufferCompletion,
-                 instance, callback, out_data, base::Time::Now()));
+                 instance, callback, out_manifest_id, base::Time::Now()));
   manifest_downloader->Load(request);
 }
 
 void DownloadManifestToBufferCompletion(PP_Instance instance,
                                         struct PP_CompletionCallback callback,
-                                        struct PP_Var* out_data,
+                                        int32_t* out_manifest_id,
                                         base::Time start_time,
                                         PP_NaClError pp_nacl_error,
                                         const std::string& data) {
@@ -997,8 +1001,8 @@ void DownloadManifestToBufferCompletion(PP_Instance instance,
   }
 
   if (pp_error == PP_OK) {
-    std::string contents;
-    *out_data = ppapi::StringVar::StringToPPVar(data);
+    std::string base_url = load_manager->manifest_base_url().spec();
+    *out_manifest_id = CreateJsonManifest(instance, base_url, data);
   }
   callback.func(callback.user_data, pp_error);
 }
@@ -1008,8 +1012,11 @@ int32_t CreatePNaClManifest(PP_Instance /* instance */) {
 }
 
 int32_t CreateJsonManifest(PP_Instance instance,
-                           const char* manifest_url,
-                           const char* manifest_data) {
+                           const std::string& manifest_url,
+                           const std::string& manifest_data) {
+  HistogramSizeKB("NaCl.Perf.Size.Manifest",
+                  static_cast<int32_t>(manifest_data.length() / 1024));
+
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (!load_manager)
     return -1;
@@ -1024,12 +1031,12 @@ int32_t CreateJsonManifest(PP_Instance instance,
 
   scoped_ptr<nacl::JsonManifest> j(
       new nacl::JsonManifest(
-          manifest_url,
+          manifest_url.c_str(),
           isa_type,
           IsNonSFIModeEnabled(),
-          PP_ToBool(NaClDebugEnabledForURL(manifest_url))));
+          PP_ToBool(NaClDebugEnabledForURL(manifest_url.c_str()))));
   JsonManifest::ErrorInfo error_info;
-  if (j->Init(manifest_data, &error_info)) {
+  if (j->Init(manifest_data.c_str(), &error_info)) {
     g_manifest_map.Get().add(manifest_id, j.Pass());
     return manifest_id;
   }
@@ -1461,7 +1468,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetManifestURLArgument,
   &DevInterfacesEnabled,
   &CreatePNaClManifest,
-  &CreateJsonManifest,
   &DestroyManifest,
   &ManifestGetProgramURL,
   &ManifestResolveKey,
