@@ -25,6 +25,9 @@ TAGS
 /install-sh
 /INSTALL
 
+# valgrind
+/valgrind.log
+
 # Eclipse
 .cproject
 .project
@@ -143,3 +146,4 @@ TAGS
 /tools/lou_trace
 /tools/lou_translate
 /tools/*.exe
+
