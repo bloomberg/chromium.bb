@@ -65,14 +65,6 @@ class SANDBOX_EXPORT SandboxBPF {
     PROCESS_MULTI_THREADED,   // The program may be multi-threaded.
   };
 
-  // When calling setSandboxPolicy(), the caller can provide an arbitrary
-  // pointer in |aux|. This pointer will then be forwarded to the sandbox
-  // policy each time a call is made through an EvaluateSyscall function
-  // pointer.  One common use case would be to pass the "aux" pointer as an
-  // argument to Trap() functions.
-  typedef ErrorCode (*EvaluateSyscall)(SandboxBPF* sandbox_compiler,
-                                       int system_call_number,
-                                       void* aux);
   // A vector of BPF instructions that need to be installed as a filter
   // program in the kernel.
   typedef std::vector<struct sock_filter> Program;
@@ -108,20 +100,6 @@ class SANDBOX_EXPORT SandboxBPF {
   // The sandbox becomes the new owner of this file descriptor and will
   // eventually close it when "StartSandbox()" executes.
   void set_proc_fd(int proc_fd);
-
-  // The system call evaluator function is called with the system
-  // call number. It can decide to allow the system call unconditionally
-  // by returning ERR_ALLOWED; it can deny the system call unconditionally by
-  // returning an appropriate "errno" value; or it can request inspection
-  // of system call argument(s) by returning a suitable ErrorCode.
-  // The "aux" parameter can be used to pass optional data to the system call
-  // evaluator. There are different possible uses for this data, but one of the
-  // use cases would be for the policy to then forward this pointer to a Trap()
-  // handler. In this case, of course, the data that is pointed to must remain
-  // valid for the entire time that Trap() handlers can be called; typically,
-  // this would be the lifetime of the program.
-  // DEPRECATED: use the policy interface below.
-  void SetSandboxPolicyDeprecated(EvaluateSyscall syscallEvaluator, void* aux);
 
   // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
   // to the sandbox object.
@@ -229,8 +207,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // policy. The caller has to make sure that "this" has not yet been
   // initialized with any other policies.
   bool RunFunctionInPolicy(void (*code_in_sandbox)(),
-                           EvaluateSyscall syscall_evaluator,
-                           void* aux);
+                           scoped_ptr<SandboxBPFPolicy> policy);
 
   // Performs a couple of sanity checks to verify that the kernel supports the
   // features that we need for successful sandboxing.
