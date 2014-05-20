@@ -281,7 +281,7 @@
                   ],
                 },
               }],
-              [ 'os_bsd==1', {
+              ['os_bsd==1', {
                 'cflags': [
                   '<!@(python cups_config_helper.py --cflags)',
                 ],

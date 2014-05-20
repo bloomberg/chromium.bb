@@ -16,6 +16,7 @@ KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
 # Sysroot packages: these are the packages needed to build chrome.
 # NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
 # by running this script in GeneratePackageList mode.
+# TODO(thestig) Remove libgcrypt11* the next time a package gets added.
 DEBIAN_PACKAGES="\
   comerr-dev \
   gcc-4.8 \
