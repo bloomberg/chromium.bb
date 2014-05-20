@@ -8,6 +8,8 @@
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -22,8 +24,11 @@ class GuestWebContentsObserver
     : public WebContentsObserver {
  public:
   explicit GuestWebContentsObserver(WebContents* guest_web_contents)
-      : WebContentsObserver(guest_web_contents),
-        guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()) {
+      : WebContentsObserver(guest_web_contents) {
+    BrowserPluginGuest* guest =
+        static_cast<WebContentsImpl*>(guest_web_contents)->
+            GetBrowserPluginGuest();
+    guest_instance_id_ = guest->instance_id();
   }
 
   virtual ~GuestWebContentsObserver() {
@@ -100,7 +105,11 @@ WebContents* TestGuestManager::CreateGuest(
       guest_site_instance);
   create_params.guest_instance_id = instance_id;
   create_params.guest_extra_params.reset(extra_params.release());
-  WebContents* guest_web_contents = WebContents::Create(create_params);
+  WebContentsImpl* guest_web_contents = static_cast<WebContentsImpl*>(
+      WebContents::Create(create_params));
+  BrowserPluginGuest* guest = guest_web_contents->GetBrowserPluginGuest();
+  guest_web_contents->GetBrowserPluginGuest()->SetDelegate(
+      new TestBrowserPluginGuestDelegate(guest));
   AddGuest(instance_id, guest_web_contents);
   return guest_web_contents;
 }
@@ -159,11 +168,13 @@ bool TestGuestManager::ForEachGuest(
   for (GuestInstanceMap::iterator it =
            guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
-    WebContents* guest = it->second;
-    if (embedder_web_contents != guest->GetEmbedderWebContents())
+    WebContentsImpl* guest_web_contents =
+        static_cast<WebContentsImpl*>(it->second);
+    BrowserPluginGuest* guest = guest_web_contents->GetBrowserPluginGuest();
+    if (embedder_web_contents != guest->embedder_web_contents())
       continue;
 
-    if (callback.Run(guest))
+    if (callback.Run(guest_web_contents))
       return true;
   }
   return false;

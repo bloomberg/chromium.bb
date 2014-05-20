@@ -12,8 +12,6 @@
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents.h"
 
-class AdViewGuest;
-class WebViewGuest;
 struct RendererContentSettingRules;
 
 // A GuestViewBase is the base class browser-side API implementation for a
@@ -45,10 +43,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
     return NULL;
   }
 
-  static GuestViewBase* Create(content::WebContents* guest_web_contents,
+  static GuestViewBase* Create(int guest_instance_id,
+                               content::WebContents* guest_web_contents,
                                const std::string& embedder_extension_id,
-                               const std::string& view_type,
-                               const base::WeakPtr<GuestViewBase>& opener);
+                               const std::string& view_type);
 
   static GuestViewBase* FromWebContents(content::WebContents* web_contents);
 
@@ -90,6 +88,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
     return guest_web_contents_;
   }
 
+  // Returns the extra parameters associated with this GuestView passed
+  // in from JavaScript.
+  base::DictionaryValue* extra_params() const {
+    return extra_params_.get();
+  }
+
   // Returns whether this guest has an associated embedder.
   bool attached() const { return !!embedder_web_contents_; }
 
@@ -113,14 +117,21 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   // Returns the embedder's process ID.
   int embedder_render_process_id() const { return embedder_render_process_id_; }
 
+  GuestViewBase* GetOpener() const {
+    return opener_.get();
+  }
+
+  void SetOpener(GuestViewBase* opener);
+
   // BrowserPluginGuestDelegate implementation.
-  virtual content::WebContents* GetOpener() const OVERRIDE;
-  virtual void SetOpener(content::WebContents* opener) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual void RegisterDestructionCallback(
+      const DestructionCallback& callback) OVERRIDE;
 
  protected:
-  GuestViewBase(content::WebContents* guest_web_contents,
-                const std::string& embedder_extension_id,
-                const base::WeakPtr<GuestViewBase>& opener);
+  GuestViewBase(int guest_instance_id,
+                content::WebContents* guest_web_contents,
+                const std::string& embedder_extension_id);
   virtual ~GuestViewBase();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
@@ -147,6 +158,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
 
   // The opener guest view.
   base::WeakPtr<GuestViewBase> opener_;
+
+  DestructionCallback destruction_callback_;
+
+  // The extra parameters associated with this GuestView passed
+  // in from JavaScript. This will typically be the view instance ID,
+  // the API to use, and view-specific parameters. These parameters
+  // are passed along to new guests that are created from this guest.
+  scoped_ptr<base::DictionaryValue> extra_params_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

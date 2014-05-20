@@ -61,8 +61,7 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
       guestview::kUrl,
       base::Value::CreateStringValue(origin_url.spec()));
   webview_guest_->RequestPermission(
-      static_cast<BrowserPluginPermissionType>(
-          WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG),
+      WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
       request_info,
       base::Bind(&JavaScriptDialogHelper::OnPermissionResponse,
                  base::Unretained(this),

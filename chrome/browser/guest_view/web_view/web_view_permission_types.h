@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_TYPES_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_TYPES_H_
 
-#include "content/public/common/browser_plugin_permission_type.h"
-
 enum WebViewPermissionType {
-  WEB_VIEW_PERMISSION_TYPE_DOWNLOAD =
-      BROWSER_PLUGIN_PERMISSION_TYPE_CONTENT_END + 1,
+  // Unknown type of permission request.
+  WEB_VIEW_PERMISSION_TYPE_UNKNOWN,
+
+  WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
 
   WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
 
@@ -23,6 +23,12 @@ enum WebViewPermissionType {
 
   // Media access (audio/video) permission request type.
   WEB_VIEW_PERMISSION_TYPE_MEDIA,
+
+  // New window requests.
+  // Note: Even though new windows don't use the permission API, the new window
+  // API is sufficiently similar that it's convenient to consider it a
+  // permission type for code reuse.
+  WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW,
 
   WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK
 };

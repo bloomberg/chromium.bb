@@ -70,6 +70,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void GuestWebContentsCreated(
+      int guest_instance_id,
       content::SiteInstance* guest_site_instance,
       content::WebContents* guest_web_contents,
       content::WebContents* opener_web_contents,

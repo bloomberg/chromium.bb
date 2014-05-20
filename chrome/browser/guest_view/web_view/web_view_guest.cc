@@ -4,8 +4,10 @@
 
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webview/webview_api.h"
@@ -15,12 +17,14 @@
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
+#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
@@ -39,6 +43,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -66,6 +71,29 @@ using content::WebContents;
 
 namespace {
 
+std::string WindowOpenDispositionToString(
+  WindowOpenDisposition window_open_disposition) {
+  switch (window_open_disposition) {
+    case IGNORE_ACTION:
+      return "ignore";
+    case SAVE_TO_DISK:
+      return "save_to_disk";
+    case CURRENT_TAB:
+      return "current_tab";
+    case NEW_BACKGROUND_TAB:
+      return "new_background_tab";
+    case NEW_FOREGROUND_TAB:
+      return "new_foreground_tab";
+    case NEW_WINDOW:
+      return "new_window";
+    case NEW_POPUP:
+      return "new_popup";
+    default:
+      NOTREACHED() << "Unknown Window Open Disposition";
+      return "ignore";
+  }
+}
+
 static std::string TerminationStatusToString(base::TerminationStatus status) {
   switch (status) {
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
@@ -87,33 +115,26 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
   return "unknown";
 }
 
-static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
+static std::string PermissionTypeToString(WebViewPermissionType type) {
   switch (type) {
-    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+    case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+      return webview::kPermissionTypeDownload;
+    case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+      return webview::kPermissionTypeGeolocation;
+    case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+      return webview::kPermissionTypeDialog;
+    case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+      return webview::kPermissionTypeLoadPlugin;
+    case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+      return webview::kPermissionTypeMedia;
+    case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW:
       return webview::kPermissionTypeNewWindow;
-    case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+    case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
+      return webview::kPermissionTypePointerLock;
+    default:
       NOTREACHED();
-      break;
-    default: {
-      WebViewPermissionType webview = static_cast<WebViewPermissionType>(type);
-      switch (webview) {
-        case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
-          return webview::kPermissionTypeDownload;
-        case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
-          return webview::kPermissionTypeGeolocation;
-        case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-          return webview::kPermissionTypeDialog;
-        case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-          return webview::kPermissionTypeLoadPlugin;
-        case WEB_VIEW_PERMISSION_TYPE_MEDIA:
-          return webview::kPermissionTypeMedia;
-        case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
-          return webview::kPermissionTypePointerLock;
-      }
-      NOTREACHED();
-    }
+      return std::string();
   }
-  return std::string();
 }
 
 void RemoveWebViewEventListenersOnIOThread(
@@ -148,12 +169,12 @@ void AttachWebViewHelpers(WebContents* contents) {
 
 }  // namespace
 
-WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
-                           const std::string& embedder_extension_id,
-                           const base::WeakPtr<GuestViewBase>& opener)
-   :  GuestView<WebViewGuest>(guest_web_contents,
-                              embedder_extension_id,
-                              opener),
+WebViewGuest::WebViewGuest(int guest_instance_id,
+                           WebContents* guest_web_contents,
+                           const std::string& embedder_extension_id)
+   :  GuestView<WebViewGuest>(guest_instance_id,
+                              guest_web_contents,
+                              embedder_extension_id),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
@@ -206,83 +227,67 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     // scenario would be: an embedder allows geolocation request but doesn't
     // have geolocation access on its own.
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+      case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.Download"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.Geolocation"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.JSDialog"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+        content::RecordAction(
+            UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
+      case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.Media"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+      case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionAllow.PointerLock"));
         break;
-      default: {
-        WebViewPermissionType webview_permission_type =
-            static_cast<WebViewPermissionType>(info.permission_type);
-        switch (webview_permission_type) {
-          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.Download"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.Geolocation"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.JSDialog"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-            content::RecordAction(
-                UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
-          case WEB_VIEW_PERMISSION_TYPE_MEDIA:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.Media"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionAllow.PointerLock"));
-            break;
-          default:
-            break;
-        }
-      }
+      default:
+        break;
     }
   } else {
     switch (info.permission_type) {
-      case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+      case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.Download"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.Geolocation"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.JSDialog"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+        content::RecordAction(
+            UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
+      case WEB_VIEW_PERMISSION_TYPE_MEDIA:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.Media"));
+        break;
+      case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW:
         content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
         break;
-      case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+      case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
+        content::RecordAction(
+            UserMetricsAction("WebView.PermissionDeny.PointerLock"));
         break;
-      default: {
-        WebViewPermissionType webview_permission_type =
-            static_cast<WebViewPermissionType>(info.permission_type);
-        switch (webview_permission_type) {
-          case WEB_VIEW_PERMISSION_TYPE_DOWNLOAD:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.Download"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_GEOLOCATION:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.Geolocation"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.JSDialog"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-            content::RecordAction(
-                UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
-          case WEB_VIEW_PERMISSION_TYPE_MEDIA:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.Media"));
-            break;
-          case WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK:
-            content::RecordAction(
-                UserMetricsAction("WebView.PermissionDeny.PointerLock"));
-            break;
-          default:
-            break;
-        }
-      }
+      default:
+        break;
     }
   }
 }
@@ -358,6 +363,25 @@ void WebViewGuest::Close() {
 }
 
 void WebViewGuest::DidAttach() {
+  if (GetOpener()) {
+    // We need to do a navigation here if the target URL has changed between
+    // the time the WebContents was created and the time it was attached.
+    // We also need to do an initial navigation if a RenderView was never
+    // created for the new window in cases where there is no referrer.
+    PendingWindowMap::iterator it =
+        GetOpener()->pending_new_windows_.find(this);
+    if (it != GetOpener()->pending_new_windows_.end()) {
+      const NewWindowInfo& new_window_info = it->second;
+      NavigateGuest(new_window_info.url.spec());
+    } else {
+      NOTREACHED();
+    }
+
+    // Once a new guest is attached to the DOM of the embedder page, then the
+    // lifetime of the new guest is no longer managed by the opener guest.
+    GetOpener()->pending_new_windows_.erase(this);
+  }
+
   if (pending_reload_on_attachment_) {
     pending_reload_on_attachment_ = false;
     guest_web_contents()->GetController().Reload(false);
@@ -424,10 +448,6 @@ bool WebViewGuest::IsDragAndDropEnabled() {
   return true;
 }
 
-bool WebViewGuest::IsOverridingUserAgent() const {
-  return is_overriding_user_agent_;
-}
-
 void WebViewGuest::LoadProgressed(double progress) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, guest_web_contents()->GetURL().spec());
@@ -447,6 +467,45 @@ void WebViewGuest::LoadAbort(bool is_top_level,
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
+WebViewGuest* WebViewGuest::CreateNewGuestWindow(
+    const content::OpenURLParams& params) {
+
+  GuestViewManager* guest_manager =
+      GuestViewManager::FromBrowserContext(browser_context());
+  // Allocate a new instance ID for the new guest.
+  int instance_id = guest_manager->GetNextInstanceID();
+
+  // Set the attach params to use the same partition as the opener.
+  // We pull the partition information from the site's URL, which is of the
+  // form guest://site/{persist}?{partition_name}.
+  const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
+
+  scoped_ptr<base::DictionaryValue> create_params(extra_params()->DeepCopy());
+  const std::string& storage_partition_id = site_url.query();
+  bool persist_storage =
+      site_url.path().find("persist") != std::string::npos;
+  WebContents* new_guest_web_contents =
+      guest_manager->CreateGuest(guest_web_contents()->GetSiteInstance(),
+                                 instance_id,
+                                 storage_partition_id,
+                                 persist_storage,
+                                 create_params.Pass());
+  WebViewGuest* new_guest =
+      WebViewGuest::FromWebContents(new_guest_web_contents);
+  new_guest->SetOpener(this);
+
+  // Take ownership of |new_guest|.
+  pending_new_windows_.insert(
+      std::make_pair(new_guest, NewWindowInfo(params.url, std::string())));
+
+  // Request permission to show the new window.
+  RequestNewWindowPermission(params.disposition, gfx::Rect(),
+                             params.user_gesture,
+                             new_guest->guest_web_contents());
+
+  return new_guest;
+}
+
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
 // 'unresponsive' events.
 void WebViewGuest::RendererResponsive() {
@@ -463,17 +522,6 @@ void WebViewGuest::RendererUnresponsive() {
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(
       new GuestViewBase::Event(webview::kEventUnresponsive, args.Pass()));
-}
-
-void WebViewGuest::RequestPermission(
-    BrowserPluginPermissionType permission_type,
-    const base::DictionaryValue& request_info,
-    const PermissionResponseCallback& callback,
-    bool allowed_by_default) {
-  RequestPermissionInternal(permission_type,
-                            request_info,
-                            callback,
-                            allowed_by_default);
 }
 
 void WebViewGuest::Observe(int type,
@@ -545,7 +593,6 @@ void WebViewGuest::Reload() {
   guest_web_contents()->GetController().Reload(false);
 }
 
-
 void WebViewGuest::RequestGeolocationPermission(
     int bridge_id,
     const GURL& requesting_frame,
@@ -565,9 +612,8 @@ void WebViewGuest::RequestGeolocationPermission(
                  bridge_id,
                  user_gesture,
                  callback);
-  int request_id = RequestPermissionInternal(
-      static_cast<BrowserPluginPermissionType>(
-          WEB_VIEW_PERMISSION_TYPE_GEOLOCATION),
+  int request_id = RequestPermission(
+      WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
       request_info,
       permission_callback,
       false /* allowed_by_default */);
@@ -876,18 +922,6 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
           web_contents->GetRoutingID()));
 }
 
-GURL WebViewGuest::ResolveURL(const std::string& src) {
-  if (!in_extension()) {
-    NOTREACHED();
-    return GURL(src);
-  }
-
-  GURL default_url(base::StringPrintf("%s://%s/",
-                                      extensions::kExtensionScheme,
-                                      embedder_extension_id().c_str()));
-  return default_url.Resolve(src);
-}
-
 void WebViewGuest::SizeChanged(const gfx::Size& old_size,
                                const gfx::Size& new_size) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
@@ -906,8 +940,7 @@ void WebViewGuest::RequestMediaAccessPermission(
   request_info.Set(
       guestview::kUrl,
       base::Value::CreateStringValue(request.security_origin.spec()));
-  RequestPermission(static_cast<BrowserPluginPermissionType>(
-                        WEB_VIEW_PERMISSION_TYPE_MEDIA),
+  RequestPermission(WEB_VIEW_PERMISSION_TYPE_MEDIA,
                     request_info,
                     base::Bind(&WebViewGuest::OnWebViewMediaPermissionResponse,
                                base::Unretained(this),
@@ -925,8 +958,7 @@ void WebViewGuest::CanDownload(
       guestview::kUrl,
       base::Value::CreateStringValue(url.spec()));
   RequestPermission(
-      static_cast<BrowserPluginPermissionType>(
-          WEB_VIEW_PERMISSION_TYPE_DOWNLOAD),
+      WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
       request_info,
       base::Bind(&WebViewGuest::OnWebViewDownloadPermissionResponse,
                  base::Unretained(this),
@@ -948,8 +980,7 @@ void WebViewGuest::RequestPointerLockPermission(
                        guest_web_contents()->GetLastCommittedURL().spec()));
 
   RequestPermission(
-      static_cast<BrowserPluginPermissionType>(
-          WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK),
+      WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK,
       request_info,
       base::Bind(&WebViewGuest::OnWebViewPointerLockPermissionResponse,
                  base::Unretained(this),
@@ -978,6 +1009,38 @@ void WebViewGuest::RunFileChooser(WebContents* web_contents,
     return;
 
   embedder_web_contents()->GetDelegate()->RunFileChooser(web_contents, params);
+}
+
+void WebViewGuest::NavigateGuest(const std::string& src) {
+  GURL url = ResolveURL(src);
+
+  // Do not allow navigating a guest to schemes other than known safe schemes.
+  // This will block the embedder trying to load unwanted schemes, e.g.
+  // chrome://settings.
+  bool scheme_is_blocked =
+      (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+          url.scheme()) &&
+      !url.SchemeIs(content::kAboutScheme)) ||
+      url.SchemeIs(content::kJavaScriptScheme);
+  if (scheme_is_blocked || !url.is_valid()) {
+    std::string error_type;
+    base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",
+                      &error_type);
+    LoadAbort(true /* is_top_level */, url, error_type);
+    return;
+  }
+
+  GURL validated_url(url);
+  guest_web_contents()->GetRenderProcessHost()->
+      FilterURL(false, &validated_url);
+  // As guests do not swap processes on navigation, only navigations to
+  // normal web URLs are supported.  No protocol handlers are installed for
+  // other schemes (e.g., WebUI or extensions), and no permissions or bindings
+  // can be granted to the guest process.
+  LoadURLWithParams(validated_url,
+                    content::Referrer(),
+                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                    guest_web_contents());
 }
 
 #if defined(OS_CHROMEOS)
@@ -1020,8 +1083,8 @@ int WebViewGuest::RemoveBridgeID(int bridge_id) {
   return request_id;
 }
 
-int WebViewGuest::RequestPermissionInternal(
-    BrowserPluginPermissionType permission_type,
+int WebViewGuest::RequestPermission(
+    WebViewPermissionType permission_type,
     const base::DictionaryValue& request_info,
     const PermissionResponseCallback& callback,
     bool allowed_by_default) {
@@ -1046,8 +1109,8 @@ int WebViewGuest::RequestPermissionInternal(
       PermissionResponseInfo(callback, permission_type, allowed_by_default);
   scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
   args->SetInteger(webview::kRequestId, request_id);
-  switch (static_cast<int>(permission_type)) {
-    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
+  switch (permission_type) {
+    case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW: {
       DispatchEvent(
           new GuestViewBase::Event(webview::kEventNewWindow, args.Pass()));
       break;
@@ -1109,13 +1172,13 @@ bool WebViewGuest::HandleKeyboardShortcuts(
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()
-    : permission_type(BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN),
+    : permission_type(WEB_VIEW_PERMISSION_TYPE_UNKNOWN),
       allowed_by_default(false) {
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo(
     const PermissionResponseCallback& callback,
-    BrowserPluginPermissionType permission_type,
+    WebViewPermissionType permission_type,
     bool allowed_by_default)
     : callback(callback),
       permission_type(permission_type),
@@ -1140,4 +1203,157 @@ void WebViewGuest::ShowContextMenu(int request_id,
   ContextMenuDelegate* menu_delegate =
       ContextMenuDelegate::FromWebContents(guest_web_contents());
   menu_delegate->ShowMenu(pending_menu_.Pass());
+}
+
+void WebViewGuest::Destroy() {
+  if (!attached() && GetOpener())
+    GetOpener()->pending_new_windows_.erase(this);
+  DestroyUnattachedWindows();
+  GuestViewBase::Destroy();
+}
+
+void WebViewGuest::AddNewContents(content::WebContents* source,
+                                  content::WebContents* new_contents,
+                                  WindowOpenDisposition disposition,
+                                  const gfx::Rect& initial_pos,
+                                  bool user_gesture,
+                                  bool* was_blocked) {
+  if (was_blocked)
+    *was_blocked = false;
+  RequestNewWindowPermission(disposition,
+                             initial_pos,
+                             user_gesture,
+                             new_contents);
+}
+
+content::WebContents* WebViewGuest::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  // If the guest wishes to navigate away prior to attachment then we save the
+  // navigation to perform upon attachment. Navigation initializes a lot of
+  // state that assumes an embedder exists, such as RenderWidgetHostViewGuest.
+  // Navigation also resumes resource loading which we don't want to allow
+  // until attachment.
+  if (!attached()) {
+    WebViewGuest* opener = GetOpener();
+    PendingWindowMap::iterator it =
+        opener->pending_new_windows_.find(this);
+    if (it == opener->pending_new_windows_.end())
+      return NULL;
+    const NewWindowInfo& old_target_url = it->second;
+    NewWindowInfo new_window_info(params.url, old_target_url.name);
+    it->second = new_window_info;
+    return NULL;
+  }
+  if (params.disposition == CURRENT_TAB) {
+    // This can happen for cross-site redirects.
+    LoadURLWithParams(params.url, params.referrer, params.transition, source);
+    return source;
+  }
+
+  return CreateNewGuestWindow(params)->guest_web_contents();
+}
+
+void WebViewGuest::WebContentsCreated(WebContents* source_contents,
+                                      int opener_render_frame_id,
+                                      const base::string16& frame_name,
+                                      const GURL& target_url,
+                                      content::WebContents* new_contents) {
+  WebViewGuest* guest = WebViewGuest::FromWebContents(new_contents);
+  CHECK(guest);
+  guest->SetOpener(this);
+  std::string guest_name = base::UTF16ToUTF8(frame_name);
+  pending_new_windows_.insert(
+      std::make_pair(guest, NewWindowInfo(target_url, guest_name)));
+}
+
+void WebViewGuest::LoadURLWithParams(const GURL& url,
+                                     const content::Referrer& referrer,
+                                     content::PageTransition transition_type,
+                                     content::WebContents* web_contents) {
+  content::NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.referrer = referrer;
+  load_url_params.transition_type = transition_type;
+  load_url_params.extra_headers = std::string();
+  if (is_overriding_user_agent_) {
+    load_url_params.override_user_agent =
+        content::NavigationController::UA_OVERRIDE_TRUE;
+  }
+  web_contents->GetController().LoadURLWithParams(load_url_params);
+}
+
+void WebViewGuest::RequestNewWindowPermission(
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_bounds,
+    bool user_gesture,
+    content::WebContents* new_contents) {
+  WebViewGuest* guest = WebViewGuest::FromWebContents(new_contents);
+  if (!guest)
+    return;
+  PendingWindowMap::iterator it = pending_new_windows_.find(guest);
+  if (it == pending_new_windows_.end())
+    return;
+  const NewWindowInfo& new_window_info = it->second;
+
+  base::DictionaryValue request_info;
+  request_info.Set(webview::kInitialHeight,
+                   base::Value::CreateIntegerValue(initial_bounds.height()));
+  request_info.Set(webview::kInitialWidth,
+                   base::Value::CreateIntegerValue(initial_bounds.width()));
+  request_info.Set(webview::kTargetURL,
+                   base::Value::CreateStringValue(new_window_info.url.spec()));
+  request_info.Set(webview::kName,
+                   base::Value::CreateStringValue(new_window_info.name));
+  request_info.Set(webview::kWindowID,
+                   base::Value::CreateIntegerValue(guest->guest_instance_id()));
+  request_info.Set(webview::kWindowOpenDisposition,
+                   base::Value::CreateStringValue(
+                       WindowOpenDispositionToString(disposition)));
+
+  RequestPermission(WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW,
+                    request_info,
+                    base::Bind(&WebViewGuest::OnWebViewNewWindowResponse,
+                               base::Unretained(this),
+                               guest->guest_instance_id()),
+                               false /* allowed_by_default */);
+}
+
+void WebViewGuest::DestroyUnattachedWindows() {
+  // Destroy() reaches in and removes the WebViewGuest from its opener's
+  // pending_new_windows_ set. To avoid mutating the set while iterating, we
+  // create a copy of the pending new windows set and iterate over the copy.
+  PendingWindowMap pending_new_windows(pending_new_windows_);
+  // Clean up unattached new windows opened by this guest.
+  for (PendingWindowMap::const_iterator it = pending_new_windows.begin();
+       it != pending_new_windows.end(); ++it) {
+    it->first->Destroy();
+  }
+  // All pending windows should be removed from the set after Destroy() is
+  // called on all of them.
+  DCHECK(pending_new_windows_.empty());
+}
+
+GURL WebViewGuest::ResolveURL(const std::string& src) {
+  if (!in_extension()) {
+    NOTREACHED();
+    return GURL(src);
+  }
+
+  GURL default_url(base::StringPrintf("%s://%s/",
+                                      extensions::kExtensionScheme,
+                                      embedder_extension_id().c_str()));
+  return default_url.Resolve(src);
+}
+
+void WebViewGuest::OnWebViewNewWindowResponse(
+    int new_window_instance_id,
+    bool allow,
+    const std::string& user_input) {
+  WebViewGuest* guest =
+      WebViewGuest::From(embedder_render_process_id(), new_window_instance_id);
+  if (!guest)
+    return;
+
+  if (!allow)
+    guest->Destroy();
 }

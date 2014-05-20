@@ -1077,6 +1077,8 @@
             'browser/browser_plugin/browser_plugin_host_browsertest.cc',
             'browser/browser_plugin/test_browser_plugin_guest.cc',
             'browser/browser_plugin/test_browser_plugin_guest.h',
+            'browser/browser_plugin/test_browser_plugin_guest_delegate.cc',
+            'browser/browser_plugin/test_browser_plugin_guest_delegate.h',
             'browser/browser_plugin/test_guest_manager.cc',
             'browser/browser_plugin/test_guest_manager.h',
             'browser/child_process_security_policy_browsertest.cc',

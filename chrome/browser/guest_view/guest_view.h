@@ -23,16 +23,29 @@ class GuestView : public GuestViewBase {
     return guest ? guest->As<T>() : NULL;
   }
 
+  T* GetOpener() const {
+    GuestViewBase* guest = GuestViewBase::GetOpener();
+    if (!guest)
+      return NULL;
+    return guest->As<T>();
+  }
+
+  void SetOpener(T* opener) {
+    GuestViewBase::SetOpener(opener);
+  }
+
   // GuestViewBase implementation.
   virtual const char* GetViewType() const OVERRIDE {
     return T::Type;
   }
 
  protected:
-  GuestView(content::WebContents* guest_web_contents,
-            const std::string& embedder_extension_id,
-            const base::WeakPtr<GuestViewBase>& opener)
-      : GuestViewBase(guest_web_contents, embedder_extension_id, opener) {}
+  GuestView(int guest_instance_id,
+            content::WebContents* guest_web_contents,
+            const std::string& embedder_extension_id)
+      : GuestViewBase(guest_instance_id,
+                      guest_web_contents,
+                      embedder_extension_id) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestView);

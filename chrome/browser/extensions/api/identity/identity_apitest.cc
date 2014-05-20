@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -237,7 +238,8 @@ class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
       // It is safe to keep the pointer here, because we know in a test, that
       // the WebContents won't go away before CloseEmbedderWebContents is
       // called. Don't copy this code to production.
-      embedder_web_contents_ = web_contents->GetEmbedderWebContents();
+      GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
+      embedder_web_contents_ = guest->embedder_web_contents();
       // Condtionally invoke parent class so that Wait will not exit
       // until the target URL arrives.
       content::WindowedNotificationObserver::Observe(type, source, details);

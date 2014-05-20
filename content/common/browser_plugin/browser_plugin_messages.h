@@ -14,7 +14,6 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
 #include "content/common/frame_param_macros.h"
-#include "content/public/common/browser_plugin_permission_type.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel_handle.h"

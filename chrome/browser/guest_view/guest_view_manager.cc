@@ -178,7 +178,8 @@ bool GuestViewManager::ForEachGuest(WebContents* embedder_web_contents,
            guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
     WebContents* guest = it->second;
-    if (embedder_web_contents != guest->GetEmbedderWebContents())
+    GuestViewBase* guest_view = GuestViewBase::FromWebContents(guest);
+    if (embedder_web_contents != guest_view->embedder_web_contents())
       continue;
 
     if (callback.Run(guest))
@@ -272,7 +273,7 @@ bool GuestViewManager::CanEmbedderAccessGuest(int embedder_render_process_id,
       return false;
 
     return embedder_render_process_id ==
-        guest->GetOpener()->GetEmbedderWebContents()->GetRenderProcessHost()->
+        guest->GetOpener()->embedder_web_contents()->GetRenderProcessHost()->
             GetID();
   }
 

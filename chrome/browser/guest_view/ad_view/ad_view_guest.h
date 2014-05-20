@@ -19,7 +19,8 @@
 class AdViewGuest : public GuestView<AdViewGuest>,
                     public content::WebContentsObserver {
  public:
-  AdViewGuest(content::WebContents* guest_web_contents,
+  AdViewGuest(int guest_instance_id,
+              content::WebContents* guest_web_contents,
               const std::string& extension_id);
 
   static const char Type[];

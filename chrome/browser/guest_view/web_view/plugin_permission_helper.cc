@@ -73,8 +73,8 @@ void PluginPermissionHelper::OnBlockedUnauthorizedPlugin(
   base::DictionaryValue info;
   info.SetString(std::string(kPluginName), name);
   info.SetString(std::string(kPluginIdentifier), identifier);
-  webview->RequestPermission(static_cast<BrowserPluginPermissionType>(
-          WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN),
+  webview->RequestPermission(
+      WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN,
       info,
       base::Bind(&PluginPermissionHelper::OnPermissionResponse,
                  weak_factory_.GetWeakPtr(),

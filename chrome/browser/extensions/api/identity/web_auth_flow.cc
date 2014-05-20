@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/identity_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -156,10 +157,10 @@ void WebAuthFlow::Observe(int type,
     RenderViewHost* render_view(
         content::Details<RenderViewHost>(details).ptr());
     WebContents* web_contents = WebContents::FromRenderViewHost(render_view);
-
+    GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
+    WebContents* embedder = guest ? guest->embedder_web_contents() : NULL;
     if (web_contents &&
-        (web_contents->GetEmbedderWebContents() ==
-         WebContentsObserver::web_contents())) {
+        (embedder == WebContentsObserver::web_contents())) {
       // Switch from watching the app window to the guest inside it.
       embedded_window_created_ = true;
       WebContentsObserver::Observe(web_contents);

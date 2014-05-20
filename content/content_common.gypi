@@ -32,7 +32,6 @@
   'sources': [
     'public/common/assert_matching_enums.cc',
     'public/common/bindings_policy.h',
-    'public/common/browser_plugin_permission_type.h',
     'public/common/child_process_host.h',
     'public/common/child_process_host_delegate.cc',
     'public/common/child_process_host_delegate.h',

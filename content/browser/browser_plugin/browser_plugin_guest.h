@@ -29,7 +29,6 @@
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_plugin_permission_type.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
@@ -94,12 +93,7 @@ class CONTENT_EXPORT BrowserPluginGuest
       int instance_id,
       SiteInstance* guest_site_instance,
       WebContentsImpl* web_contents,
-      scoped_ptr<base::DictionaryValue> extra_params);
-
-  static BrowserPluginGuest* CreateWithOpener(
-      int instance_id,
-      bool has_render_view,
-      WebContentsImpl* web_contents,
+      scoped_ptr<base::DictionaryValue> extra_params,
       BrowserPluginGuest* opener);
 
   // Returns a WeakPtr to this BrowserPluginGuest.
@@ -280,55 +274,15 @@ class CONTENT_EXPORT BrowserPluginGuest
   class EmbedderWebContentsObserver;
   friend class TestBrowserPluginGuest;
 
-  class DownloadRequest;
-  class NewWindowRequest;
-  class PermissionRequest;
-
-  // Tracks the name, and target URL of the new window and whether or not it has
-  // changed since the WebContents has been created and before the new window
-  // has been attached to a BrowserPlugin. Once the first navigation commits, we
-  // no longer track this information.
-  struct NewWindowInfo {
-    bool changed;
-    GURL url;
-    std::string name;
-    NewWindowInfo(const GURL& url, const std::string& name) :
-        changed(false),
-        url(url),
-        name(name) {}
-  };
-
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
   BrowserPluginGuest(int instance_id,
                      bool has_render_view,
                      WebContentsImpl* web_contents);
 
-  // Destroy unattached new windows that have been opened by this
-  // BrowserPluginGuest.
-  void DestroyUnattachedWindows();
-
-  void LoadURLWithParams(const GURL& url,
-                         const Referrer& referrer,
-                         PageTransition transition_type,
-                         WebContents* web_contents);
-
-  // Returns the |request_id| generated for the |request| provided.
-  void RequestPermission(
-      BrowserPluginPermissionType permission_type,
-      scoped_refptr<BrowserPluginGuest::PermissionRequest> request,
-      const base::DictionaryValue& request_info);
-
-  // Creates a new guest window, and BrowserPluginGuest that is owned by this
-  // BrowserPluginGuest.
-  BrowserPluginGuest* CreateNewGuestWindow(const OpenURLParams& params);
+  void WillDestroy(WebContents* web_contents);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
-
-  void RequestNewWindowPermission(WindowOpenDisposition disposition,
-                                  const gfx::Rect& initial_bounds,
-                                  bool user_gesture,
-                                  WebContentsImpl* new_contents);
 
   // Message handlers for messages from embedder.
 
@@ -482,16 +436,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   typedef std::map<int, const CopyRequestCallback> CopyRequestMap;
   CopyRequestMap copy_request_callbacks_;
 
-  typedef std::map<BrowserPluginGuest*, NewWindowInfo> PendingWindowMap;
-  PendingWindowMap pending_new_windows_;
-  // A counter to generate a unique request id for a permission request.
-  // We only need the ids to be unique for a given BrowserPluginGuest.
-  int next_permission_request_id_;
-
-  // A map to store relevant info for a request keyed by the request's id.
-  typedef std::map<int, scoped_refptr<PermissionRequest> > RequestMap;
-  RequestMap permission_request_map_;
-
   // Indicates that this BrowserPluginGuest has associated renderer-side state.
   // This is used to determine whether or not to create a new RenderView when
   // this guest is attached.
@@ -514,10 +458,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   std::queue<IPC::Message*> pending_messages_;
 
   scoped_ptr<BrowserPluginGuestDelegate> delegate_;
-
-  // These are parameters passed from JavaScript on attachment to the content
-  // embedder.
-  scoped_ptr<base::DictionaryValue> extra_attach_params_;
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.

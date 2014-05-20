@@ -8,31 +8,14 @@ namespace content {
 
 namespace browser_plugin {
 
-// Method bindings.
-const char kMethodBack[] = "back";
-const char kMethodCanGoBack[] = "canGoBack";
-const char kMethodCanGoForward[] = "canGoForward";
-const char kMethodForward[] = "forward";
-const char kMethodGetInstanceId[] = "getInstanceId";
-const char kMethodGetGuestInstanceId[] = "getGuestInstanceId";
-const char kMethodGo[] = "go";
-const char kMethodReload[] = "reload";
-const char kMethodStop[] = "stop";
-const char kMethodTerminate[] = "terminate";
-
 // Internal method bindings.
 const char kMethodInternalAttach[] = "-internal-attach";
-const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
-const char kMethodInternalTrackObjectLifetime[] =
-    "-internal-trackObjectLifetime";
 
 // Internal events.
 const char kEventInternalInstanceIDAllocated[] = "instanceid-allocated";
-const char kEventInternalTrackedObjectGone[] = "trackedobjectgone";
 
 // Attributes.
 const char kAttributeAllowTransparency[] = "allowtransparency";
-const char kAttributeApi[] = "api";
 const char kAttributeAutoSize[] = "autosize";
 const char kAttributeContentWindow[] = "contentWindow";
 const char kAttributeMaxHeight[] = "maxheight";
@@ -44,26 +27,8 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Parameters/properties on events.
-const char kId[] = "id";
-const char kInitialHeight[] = "initialHeight";
-const char kInitialWidth[] = "initialWidth";
-const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
-const char kName[] = "name";
-const char kPermission[] = "permission";
-const char kPermissionTypeDialog[] = "dialog";
-const char kPermissionTypeDownload[] = "download";
-const char kPermissionTypeGeolocation[] = "geolocation";
-const char kPermissionTypeMedia[] = "media";
-const char kPermissionTypeNewWindow[] = "newwindow";
-const char kPermissionTypePointerLock[] = "pointerLock";
 const char kPersistPrefix[] = "persist:";
-const char kProcessId[] = "processId";
-const char kRequestId[] = "requestId";
-const char kRequestMethod[] = "requestMethod";
-const char kTargetURL[] = "targetUrl";
-const char kURL[] = "url";
 const char kWindowID[] = "windowId";
-const char kWindowOpenDisposition[] = "windowOpenDisposition";
 
 // Error messages.
 const char kErrorAlreadyNavigated[] =
@@ -74,7 +39,6 @@ const char kErrorCannotRemovePartition[] =
     "Cannot remove partition attribute after navigating.";
 
 // Other.
-const char kBrowserPluginGuestManagerKeyName[] = "browser_plugin_guest_manager";
 const int kInstanceIDNone = 0;
 const int kInvalidPermissionRequestID = 0;
 

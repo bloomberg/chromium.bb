@@ -811,6 +811,7 @@ content::WebContentsViewDelegate*
 }
 
 void ChromeContentBrowserClient::GuestWebContentsCreated(
+    int guest_instance_id,
     SiteInstance* guest_site_instance,
     WebContents* guest_web_contents,
     WebContents* opener_web_contents,
@@ -850,10 +851,10 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 
     // Create a new GuestViewBase of the same type as the opener.
     *guest_delegate = GuestViewBase::Create(
+        guest_instance_id,
         guest_web_contents,
         extension_id,
-        guest->GetViewType(),
-        guest->AsWeakPtr());
+        guest->GetViewType());
     return;
   }
 
@@ -868,10 +869,10 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
     return;
 
   *guest_delegate =
-      GuestViewBase::Create(guest_web_contents,
+      GuestViewBase::Create(guest_instance_id,
+                            guest_web_contents,
                             extension_id,
-                            api_type,
-                            base::WeakPtr<GuestViewBase>());
+                            api_type);
 }
 
 void ChromeContentBrowserClient::GuestWebContentsAttached(

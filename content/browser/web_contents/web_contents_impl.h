@@ -180,8 +180,6 @@ class CONTENT_EXPORT WebContentsImpl
       const base::Callback<void(RenderFrameHost*)>& on_frame) OVERRIDE;
   virtual void SendToAllFrames(IPC::Message* message) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual WebContents* GetEmbedderWebContents() const OVERRIDE;
-  virtual int GetEmbeddedInstanceID() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const

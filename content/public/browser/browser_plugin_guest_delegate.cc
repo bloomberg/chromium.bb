@@ -8,20 +8,8 @@
 
 namespace content {
 
-WebContents* BrowserPluginGuestDelegate::GetOpener() const {
-  return NULL;
-}
-
 bool BrowserPluginGuestDelegate::IsDragAndDropEnabled() {
   return false;
-}
-
-bool BrowserPluginGuestDelegate::IsOverridingUserAgent() const {
-  return false;
-}
-
-GURL BrowserPluginGuestDelegate::ResolveURL(const std::string& src) {
-  return GURL(src);
 }
 
 void BrowserPluginGuestDelegate::RequestMediaAccessPermission(
@@ -54,6 +42,12 @@ ColorChooser* BrowserPluginGuestDelegate::OpenColorChooser(
 bool BrowserPluginGuestDelegate::HandleContextMenu(
     const ContextMenuParams& params) {
   return false;
+}
+
+WebContents* BrowserPluginGuestDelegate::OpenURLFromTab(
+    WebContents* source,
+    const OpenURLParams& params) {
+  return NULL;
 }
 
 }  // namespace content
