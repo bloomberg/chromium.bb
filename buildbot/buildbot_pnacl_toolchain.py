@@ -88,16 +88,6 @@ with buildbot_lib.Step('checkdeps', status):
       [sys.executable,
        os.path.join(NACL_DIR, 'tools', 'checkdeps', 'checkdeps.py')])
 
-# Test the pinned toolchain. Since we don't yet have main waterfall
-# Windows or mac bots, we need to test the full assembled toolchain here.
-if host_os == 'win' or host_os == 'mac' or not pynacl.platform.IsArch64Bit():
-  with buildbot_lib.Step('Test NaCl-pinned toolchain', status,
-                         halt_on_fail=False):
-    buildbot_lib.SCons(context, args=['smoke_tests'], parallel=True)
-    buildbot_lib.SCons(context, args=['large_tests'], parallel=False)
-    buildbot_lib.SCons(context, args=['pnacl_generate_pexe=0',
-                                      'nonpexe_tests'], parallel=True)
-
 
 if host_os == 'win':
   # On windows, sync with Windows git/svn rather than cygwin git/svn
