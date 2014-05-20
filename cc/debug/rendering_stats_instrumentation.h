@@ -18,20 +18,19 @@ class CC_EXPORT RenderingStatsInstrumentation {
   static scoped_ptr<RenderingStatsInstrumentation> Create();
   virtual ~RenderingStatsInstrumentation();
 
-  // Return current main thread rendering stats.
-  const MainThreadRenderingStats& main_thread_rendering_stats() {
-    return main_stats_;
-  }
-  // Return current impl thread rendering stats.
-  const ImplThreadRenderingStats& impl_thread_rendering_stats() {
-    return impl_stats_;
-  }
+  // Return copy of current main thread rendering stats.
+  MainThreadRenderingStats main_thread_rendering_stats();
+
+  // Return copy of current impl thread rendering stats.
+  ImplThreadRenderingStats impl_thread_rendering_stats();
+
   // Return the accumulated, combined rendering stats.
   RenderingStats GetRenderingStats();
 
   // Add current main thread rendering stats to accumulator and
   // clear current stats.
   void AccumulateAndClearMainThreadStats();
+
   // Add current impl thread rendering stats to accumulator and
   // clear current stats.
   void AccumulateAndClearImplThreadStats();

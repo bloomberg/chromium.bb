@@ -18,6 +18,18 @@ RenderingStatsInstrumentation::RenderingStatsInstrumentation()
 
 RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}
 
+MainThreadRenderingStats
+RenderingStatsInstrumentation::main_thread_rendering_stats() {
+  base::AutoLock scoped_lock(lock_);
+  return main_stats_;
+}
+
+ImplThreadRenderingStats
+RenderingStatsInstrumentation::impl_thread_rendering_stats() {
+  base::AutoLock scoped_lock(lock_);
+  return impl_stats_;
+}
+
 RenderingStats RenderingStatsInstrumentation::GetRenderingStats() {
   base::AutoLock scoped_lock(lock_);
   RenderingStats rendering_stats;
