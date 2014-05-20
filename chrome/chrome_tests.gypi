@@ -307,6 +307,7 @@
           ],
         }],
         ['OS=="win"', {
+          'msvs_large_pdb': 1,
           'include_dirs': [
             '../third_party/wtl/include',
           ],
@@ -1788,6 +1789,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
+            'browser_tests_exe_pdb_workaround',
             'chrome_version_resources',
             'security_tests',  # run time dependency
           ],
@@ -2106,6 +2108,7 @@
           'dependencies': [
             'chrome_version_resources',
           ],
+          'msvs_large_pdb': 1,
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [
@@ -2380,6 +2383,7 @@
           ],
         }],
         ['OS=="win"', {
+          'msvs_large_pdb': 1,
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
@@ -2485,6 +2489,7 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
           ],
+          'msvs_large_pdb': 1,
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
@@ -2936,6 +2941,25 @@
           'sources': [
             'telemetry_gpu_test.isolate',
           ],
+        },
+      ],
+    }],
+    ['OS=="win"', {
+      'targets' : [
+        {
+          # This target is only depended upon in Windows.
+          'target_name': 'browser_tests_exe_pdb_workaround',
+          'type': 'static_library',
+          'sources': [ 'empty_pdb_workaround.cc' ],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              # This *in the compile phase* must match the pdb name that's
+              # output by the final link. See empty_pdb_workaround.cc for
+              # more details.
+              'DebugInformationFormat': '3',
+              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/browser_tests.exe.pdb',
+            },
+          },
         },
       ],
     }],

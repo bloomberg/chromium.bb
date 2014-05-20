@@ -108,6 +108,7 @@
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
+                'chrome_dll_pdb_workaround',
                 'chrome_version_resources',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
                 '../crypto/crypto.gyp:crypto',
@@ -327,6 +328,29 @@
         },  # target chrome_main_dll
       ],  # targets
     }],  # OS=="mac" or OS=="win"
+    ['OS=="win"', {
+      'targets': [
+        {
+          # This target is only depended upon on Windows.
+          'target_name': 'chrome_dll_pdb_workaround',
+          'type': 'static_library',
+          'sources': [ 'empty_pdb_workaround.cc' ],
+          'conditions': [
+            ['fastbuild==0 or win_z7!=0', {
+             'msvs_settings': {
+              'VCCLCompilerTool': {
+                # This *in the compile phase* must match the pdb name that's
+                # output by the final link. See empty_pdb_workaround.cc for
+                # more details.
+                'DebugInformationFormat': '3',
+                'ProgramDataBaseFileName': '<(PRODUCT_DIR)/chrome.dll.pdb',
+              },
+             },
+            }],
+          ],
+        },
+      ],
+    }],
     ['chrome_multiple_dll', {
       'targets': [
         {
