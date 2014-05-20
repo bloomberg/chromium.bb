@@ -41,6 +41,9 @@ static const int kDefaultSampleRate = 48000;
 static const int kMinimumOutputBufferSize = 512;
 static const int kMaximumOutputBufferSize = 8192;
 
+// Default input buffer size.
+static const int kDefaultInputBufferSize = 1024;
+
 bool AudioManagerCras::HasAudioOutputDevices() {
   return true;
 }
@@ -74,12 +77,15 @@ void AudioManagerCras::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerCras::GetInputStreamParameters(
     const std::string& device_id) {
-  static const int kDefaultInputBufferSize = 1024;
+  int user_buffer_size = GetUserBufferSize();
+  int buffer_size = user_buffer_size ?
+      user_buffer_size : kDefaultInputBufferSize;
+
   // TODO(hshi): Fine-tune audio parameters based on |device_id|. The optimal
   // parameters for the loopback stream may differ from the default.
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      kDefaultSampleRate, 16, kDefaultInputBufferSize);
+      kDefaultSampleRate, 16, buffer_size);
 }
 
 AudioOutputStream* AudioManagerCras::MakeLinearOutputStream(

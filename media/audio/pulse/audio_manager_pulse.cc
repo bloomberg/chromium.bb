@@ -39,6 +39,9 @@ static const int kMaxOutputStreams = 50;
 static const int kMinimumOutputBufferSize = 512;
 static const int kMaximumOutputBufferSize = 8192;
 
+// Default input buffer size.
+static const int kDefaultInputBufferSize = 1024;
+
 static const base::FilePath::CharType kPulseLib[] =
     FILE_PATH_LITERAL("libpulse.so.0");
 
@@ -125,12 +128,14 @@ void AudioManagerPulse::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerPulse::GetInputStreamParameters(
     const std::string& device_id) {
-  static const int kDefaultInputBufferSize = 1024;
+  int user_buffer_size = GetUserBufferSize();
+  int buffer_size = user_buffer_size ?
+      user_buffer_size : kDefaultInputBufferSize;
 
   // TODO(xians): add support for querying native channel layout for pulse.
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      GetNativeSampleRate(), 16, kDefaultInputBufferSize);
+      GetNativeSampleRate(), 16, buffer_size);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(

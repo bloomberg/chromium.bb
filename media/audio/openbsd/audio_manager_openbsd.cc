@@ -59,9 +59,13 @@ AudioParameters AudioManagerOpenBSD::GetInputStreamParameters(
     const std::string& device_id) {
   static const int kDefaultInputBufferSize = 1024;
 
+  int user_buffer_size = GetUserBufferSize();
+  int buffer_size = user_buffer_size ?
+      user_buffer_size : kDefaultInputBufferSize;
+
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      kDefaultSampleRate, 16, kDefaultInputBufferSize);
+      kDefaultSampleRate, 16, buffer_size);
 }
 
 AudioManagerOpenBSD::AudioManagerOpenBSD(AudioLogFactory* audio_log_factory)

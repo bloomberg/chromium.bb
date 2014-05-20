@@ -301,13 +301,25 @@ void AudioManagerWin::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerWin::GetInputStreamParameters(
     const std::string& device_id) {
+  AudioParameters parameters;
   if (!core_audio_supported()) {
-    return AudioParameters(
+    // Windows Wave implementation is being used.
+    parameters = AudioParameters(
         AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 0, 48000,
         16, kFallbackBufferSize, AudioParameters::NO_EFFECTS);
+  } else  {
+    parameters = WASAPIAudioInputStream::GetInputStreamParameters(device_id);
   }
 
-  return WASAPIAudioInputStream::GetInputStreamParameters(device_id);
+  int user_buffer_size = GetUserBufferSize();
+  if (user_buffer_size) {
+    parameters.Reset(parameters.format(), parameters.channel_layout(),
+                     parameters.channels(), parameters.input_channels(),
+                     parameters.sample_rate(), parameters.bits_per_sample(),
+                     user_buffer_size);
+  }
+
+  return parameters;
 }
 
 std::string AudioManagerWin::GetAssociatedOutputDeviceID(
