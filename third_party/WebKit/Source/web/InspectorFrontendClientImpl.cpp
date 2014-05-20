@@ -121,6 +121,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     ['searchInPath', 3],"
             "     ['setWhitelistedShortcuts', 1],"
             "     ['setContentsResizingStrategy', 2],"
+            "     ['setInspectedPageBounds', 1],"
             "     ['setIsDocked', 1],"
             "     ['subscribe', 1],"
             "     ['stopIndexing', 1],"
