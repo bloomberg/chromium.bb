@@ -29,6 +29,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "wtf/MathExtras.h"
+#include "wtf/VectorTraits.h"
 
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;
@@ -159,5 +160,12 @@ inline int IntPoint::distanceSquaredToPoint(const IntPoint& point) const
 }
 
 } // namespace WebCore
+
+namespace WTF {
+
+template<>
+struct VectorTraits<WebCore::IntPoint> : SimpleClassVectorTraits<WebCore::IntPoint> { };
+
+} // namespace WTF
 
 #endif // IntPoint_h

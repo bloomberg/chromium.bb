@@ -26,6 +26,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -151,5 +152,12 @@ public:
 };
 
 } // namespace WebCore
+
+namespace WTF {
+
+template<>
+struct VectorTraits<WebCore::DocumentMarker> : SimpleClassVectorTraits<WebCore::DocumentMarker> { };
+
+} // namespace WTF
 
 #endif // DocumentMarker_h

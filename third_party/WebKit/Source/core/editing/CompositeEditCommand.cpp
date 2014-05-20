@@ -488,7 +488,7 @@ Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
     return Position(textNode.release(), start.offsetInContainerNode() + text.length());
 }
 
-static void copyMarkers(const Vector<DocumentMarker*>& markerPointers, Vector<DocumentMarker>& markers)
+static void copyMarkers(const WillBeHeapVector<DocumentMarker*>& markerPointers, Vector<DocumentMarker>& markers)
 {
     size_t arraySize = markerPointers.size();
     markers.reserveCapacity(arraySize);

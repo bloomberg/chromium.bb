@@ -3255,7 +3255,7 @@ void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
 {
     Vector<uint32_t> result;
     for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        const Vector<DocumentMarker*>& documentMarkers = frame->document()->markers().markers();
+        const WillBeHeapVector<DocumentMarker*>& documentMarkers = frame->document()->markers().markers();
         for (size_t i = 0; i < documentMarkers.size(); ++i)
             result.append(documentMarkers[i]->hash());
     }

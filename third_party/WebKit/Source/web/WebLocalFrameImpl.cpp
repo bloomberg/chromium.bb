@@ -1146,7 +1146,7 @@ void WebLocalFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtrWillBeRawPtr<Range> caretRange = frame()->selection().toNormalizedRange();
     if (!caretRange)
         return;
-    Vector<DocumentMarker*> markers = frame()->document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
+    WillBeHeapVector<DocumentMarker*> markers = frame()->document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
     RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());

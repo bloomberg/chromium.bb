@@ -805,10 +805,10 @@ unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& excepti
 
     // Only TextMatch markers can be active.
     DocumentMarker::MarkerType markerType = DocumentMarker::TextMatch;
-    Vector<DocumentMarker*> markers = node->document().markers().markersFor(node, markerType);
+    WillBeHeapVector<DocumentMarker*> markers = node->document().markers().markersFor(node, markerType);
 
     unsigned activeMarkerCount = 0;
-    for (Vector<DocumentMarker*>::iterator iter = markers.begin(); iter != markers.end(); ++iter) {
+    for (WillBeHeapVector<DocumentMarker*>::iterator iter = markers.begin(); iter != markers.end(); ++iter) {
         if ((*iter)->activeMatch())
             activeMarkerCount++;
     }
@@ -829,7 +829,7 @@ DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsign
         return 0;
     }
 
-    Vector<DocumentMarker*> markers = node->document().markers().markersFor(node, markerTypes);
+    WillBeHeapVector<DocumentMarker*> markers = node->document().markers().markersFor(node, markerTypes);
     if (markers.size() <= index)
         return 0;
     return markers[index];

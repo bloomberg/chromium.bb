@@ -810,7 +810,7 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
 
     unsigned startOffset = static_cast<unsigned>(from);
     unsigned endOffset = static_cast<unsigned>(from + length);
-    Vector<DocumentMarker*> markers = m_frame.document()->markers().markersFor(node);
+    WillBeHeapVector<DocumentMarker*> markers = m_frame.document()->markers().markersFor(node);
     for (size_t i = 0; i < markers.size(); ++i) {
         DocumentMarker* marker = markers[i];
         if (marker->startOffset() <= startOffset && endOffset <= marker->endOffset() && marker->type() == markerType)
