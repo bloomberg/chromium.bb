@@ -8,7 +8,7 @@
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "crypto/nss_util.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
 NaClValidationQueryContext::NaClValidationQueryContext(

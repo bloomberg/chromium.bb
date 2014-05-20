@@ -6,6 +6,5 @@ include_rules = [
   "+native_client/src/trusted/reverse_service/reverse_service.h",
   "+native_client/src/trusted/service_runtime/include",
   "+native_client/src/trusted/service_runtime/nacl_error_code.h",
-  "+native_client/src/trusted/validator/nacl_file_info.h",
   "+third_party/jsoncpp",
 ]

@@ -26,7 +26,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
+#include "native_client/src/public/nacl_file_info.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -169,7 +169,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
                                 int32* fd, std::string* path) OVERRIDE {
     *fd = -1;
     *path = "";
-    if (file_token->lo == 0 && file_token->hi == 0) {
+    if (!NaClFileTokenIsValid(file_token)) {
       return false;
     }
     IPC::PlatformFileForTransit ipc_fd = IPC::InvalidPlatformFileForTransit();
