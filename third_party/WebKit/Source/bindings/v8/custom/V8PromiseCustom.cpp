@@ -44,7 +44,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorPromiseInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Task.h"
 #include "wtf/Deque.h"
@@ -208,26 +207,7 @@ void setStateForPromise(v8::Handle<v8::Object> promise, V8PromiseCustom::Promise
     v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
     internal->SetInternalField(V8PromiseCustom::InternalStateIndex, v8::Integer::New(isolate, state));
     internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
-    ExecutionContext* context = currentExecutionContext(isolate);
-    if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::current(isolate), promise), state, ScriptValue(ScriptState::current(isolate), value));
 }
-
-class TaskPerformScopeForInstrumentation {
-public:
-    TaskPerformScopeForInstrumentation(ExecutionContext* context, ExecutionContextTask* task)
-        : m_cookie(InspectorInstrumentation::willPerformPromiseTask(context, task))
-    {
-    }
-
-    ~TaskPerformScopeForInstrumentation()
-    {
-        InspectorInstrumentation::didPerformPromiseTask(m_cookie);
-    }
-
-private:
-    InspectorInstrumentationCookie m_cookie;
-};
 
 class CallHandlerTask FINAL : public ExecutionContextTask {
 public:
@@ -240,7 +220,6 @@ public:
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
         ASSERT(!m_argument.isEmpty());
-        InspectorInstrumentation::didPostPromiseTask(context, this, originatorState == V8PromiseCustom::Fulfilled);
     }
     virtual ~CallHandlerTask() { }
 
@@ -255,8 +234,6 @@ private:
 
 void CallHandlerTask::performTask(ExecutionContext* context)
 {
-    TaskPerformScopeForInstrumentation performTaskScope(context, this);
-
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
         return;
@@ -284,7 +261,6 @@ public:
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());
-        InspectorInstrumentation::didPostPromiseTask(context, this, true);
     }
     virtual ~UpdateDerivedTask() { }
 
@@ -300,8 +276,6 @@ private:
 
 void UpdateDerivedTask::performTask(ExecutionContext* context)
 {
-    TaskPerformScopeForInstrumentation performTaskScope(context, this);
-
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
         return;
@@ -502,11 +476,6 @@ void PromisePropagator::updateDerivedFromPromise(v8::Handle<v8::Object> derivedP
     } else {
         addToDerived(internal, derivedPromise, onFulfilled, onRejected, isolate);
     }
-    ExecutionContext* context = currentExecutionContext(isolate);
-    if (InspectorInstrumentation::isPromiseTrackerEnabled(context)) {
-        ScriptState* scriptState = ScriptState::current(isolate);
-        InspectorInstrumentation::didUpdatePromiseParent(context, ScriptObject(scriptState, derivedPromise), ScriptObject(scriptState, promise));
-    }
 }
 
 } // namespace
@@ -677,10 +646,6 @@ v8::Local<v8::Object> V8PromiseCustom::createPromise(v8::Handle<v8::Object> crea
 
     clearDerived(internal, isolate);
     promise->SetInternalField(v8DOMWrapperObjectIndex, internal);
-
-    ExecutionContext* context = currentExecutionContext(isolate);
-    if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
-        InspectorInstrumentation::didCreatePromise(context, ScriptObject(ScriptState::current(isolate), promise));
 
     setStateForPromise(promise, Pending, v8::Undefined(isolate), isolate);
     return promise;

@@ -44,7 +44,6 @@ namespace WebCore {
 class EventListener;
 class EventTarget;
 class ExecutionContext;
-class ExecutionContextTask;
 class MutationObserver;
 class XMLHttpRequest;
 
@@ -99,9 +98,6 @@ public:
     bool hasEnqueuedMutationRecord(ExecutionContext*, MutationObserver*);
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
-
-    void didPostPromiseTask(ExecutionContext*, ExecutionContextTask*, bool isResolved, const ScriptValue& callFrames);
-    void willPerformPromiseTask(ExecutionContext*, ExecutionContextTask*);
 
     void didFireAsyncCall();
     void clear();

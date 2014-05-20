@@ -61,7 +61,6 @@
             'v8/ScriptHeapSnapshot.h',
             'v8/ScriptObject.cpp',
             'v8/ScriptObject.h',
-            'v8/ScriptObjectTraits.h',
             'v8/ScriptPreprocessor.cpp',
             'v8/ScriptPreprocessor.h',
             'v8/ScriptProfiler.cpp',

@@ -120,7 +120,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorPromiseInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
           ],
@@ -318,7 +317,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorConsoleInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorOverridesInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorPromiseInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InstrumentingAgentsInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorInstrumentationImpl.cpp',
 
