@@ -70,9 +70,22 @@ public:
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a blink::WebLayer for compositing.
 class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public blink::WebExternalTextureLayerClient  {
+    // If we used CHROMIUM_image as the backing storage for our buffers,
+    // we need to know the mapping from texture id to image.
+    struct TextureInfo {
+        Platform3DObject textureId;
+        blink::WGC3Duint imageId;
+
+        TextureInfo()
+            : textureId(0)
+            , imageId(0)
+        {
+        }
+    };
+
     struct MailboxInfo : public RefCounted<MailboxInfo> {
         blink::WebExternalTextureMailbox mailbox;
-        unsigned textureId;
+        TextureInfo textureInfo;
         IntSize size;
         // This keeps the parent drawing buffer alive as long as the compositor is
         // referring to one of the mailboxes DrawingBuffer produced. The parent drawing buffer is
@@ -160,7 +173,7 @@ protected: // For unittests
 private:
     void mailboxReleasedWhileDestructionInProgress(const blink::WebExternalTextureMailbox&);
 
-    unsigned createColorTexture(const IntSize& size = IntSize());
+    unsigned createColorTexture();
     // Create the depth/stencil and multisample buffers, if needed.
     void createSecondaryBuffers();
     bool resizeFramebuffer(const IntSize&);
@@ -173,7 +186,7 @@ private:
     void clearPlatformLayer();
 
     PassRefPtr<MailboxInfo> recycledMailbox();
-    PassRefPtr<MailboxInfo> createNewMailbox(unsigned);
+    PassRefPtr<MailboxInfo> createNewMailbox(const TextureInfo&);
     void deleteMailbox(const blink::WebExternalTextureMailbox&);
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
@@ -204,6 +217,9 @@ private:
     // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
     // By default, alignment is 4, the OpenGL default setting.
     void texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint alignment = 4);
+    // Allocate buffer storage to be sent to compositor using either texImage2D or CHROMIUM_image based on available support.
+    void allocateTextureMemory(TextureInfo*, const IntSize&);
+    void deleteChromiumImageForTexture(TextureInfo*);
 
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
@@ -218,8 +234,8 @@ private:
     bool m_packedDepthStencilExtensionSupported;
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
-    Platform3DObject m_colorBuffer;
-    Platform3DObject m_frontColorBuffer;
+    TextureInfo m_colorBuffer;
+    TextureInfo m_frontColorBuffer;
 
     // This is used when we have OES_packed_depth_stencil.
     Platform3DObject m_depthStencilBuffer;

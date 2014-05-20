@@ -147,6 +147,7 @@ WebAnimationsElementAnimate status=stable
 WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
+WebGLImageChromium
 WebMIDI status=test
 WebVTTRegions depends_on=Media, status=experimental
 WOFF2 status=stable

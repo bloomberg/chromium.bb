@@ -36,9 +36,11 @@ namespace blink {
 struct WebExternalTextureMailbox {
     signed char name[64];
     unsigned syncPoint;
+    bool allowOverlay;
 
     WebExternalTextureMailbox()
         : syncPoint(0)
+        , allowOverlay(false)
     {
         memset(name, 0, sizeof(name));
     }

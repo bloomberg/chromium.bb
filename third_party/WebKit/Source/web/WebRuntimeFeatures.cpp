@@ -231,6 +231,11 @@ void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable)
     RuntimeEnabledFeatures::setWebGLDraftExtensionsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebGLImageChromium(bool enable)
+{
+    RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableWebMIDI(bool enable)
 {
     return RuntimeEnabledFeatures::setWebMIDIEnabled(enable);

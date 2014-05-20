@@ -32,6 +32,7 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -62,7 +63,8 @@ public:
         : MockWebGraphicsContext3D()
         , m_boundTexture(0)
         , m_currentMailboxByte(0)
-        , m_mostRecentlyWaitedSyncPoint(0) { }
+        , m_mostRecentlyWaitedSyncPoint(0)
+        , m_currentImageId(1) { }
 
     virtual void bindTexture(WGC3Denum target, WebGLId texture)
     {
@@ -107,9 +109,50 @@ public:
         m_mostRecentlyWaitedSyncPoint = syncPoint;
     }
 
+    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage)
+    {
+        m_imageSizes.set(m_currentImageId, IntSize(width, height));
+        return m_currentImageId++;
+    }
+
+    MOCK_METHOD1(destroyImageMock, void(WGC3Duint imageId));
+    void destroyImageCHROMIUM(WGC3Duint imageId)
+    {
+        m_imageSizes.remove(imageId);
+        // No textures should be bound to this.
+        ASSERT(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
+        m_imageSizes.remove(imageId);
+        destroyImageMock(imageId);
+    }
+
+    MOCK_METHOD1(bindTexImage2DMock, void(WGC3Dint imageId));
+    void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
+    {
+        if (target == GL_TEXTURE_2D) {
+            m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
+            m_imageToTextureMap.set(imageId, m_boundTexture);
+            bindTexImage2DMock(imageId);
+        }
+    }
+
+    MOCK_METHOD1(releaseTexImage2DMock, void(WGC3Dint imageId));
+    void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
+    {
+        if (target == GL_TEXTURE_2D) {
+            m_imageSizes.set(m_currentImageId, IntSize());
+            m_imageToTextureMap.remove(imageId);
+            releaseTexImage2DMock(imageId);
+        }
+    }
+
     unsigned mostRecentlyWaitedSyncPoint()
     {
         return m_mostRecentlyWaitedSyncPoint;
+    }
+
+    WGC3Duint nextImageIdToBeCreated()
+    {
+        return m_currentImageId;
     }
 
 private:
@@ -118,6 +161,9 @@ private:
     WGC3Dbyte m_currentMailboxByte;
     IntSize m_mostRecentlyProducedSize;
     unsigned m_mostRecentlyWaitedSyncPoint;
+    WGC3Duint m_currentImageId;
+    HashMap<WGC3Duint, IntSize> m_imageSizes;
+    HashMap<WGC3Duint, WebGLId> m_imageToTextureMap;
 };
 
 static const int initialWidth = 100;
@@ -355,6 +401,100 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer waits for the sync point because the destruction is in progress.
     EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+}
+
+class DrawingBufferImageChromiumTest : public DrawingBufferTest {
+protected:
+    virtual void SetUp()
+    {
+        RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
+        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
+        m_context = context.get();
+        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
+        m_imageId0 = webContext()->nextImageIdToBeCreated();
+        EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId0)).Times(1);
+        m_drawingBuffer = DrawingBufferForTests::create(context.release(),
+            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+        testing::Mock::VerifyAndClearExpectations(webContext());
+    }
+
+    virtual void TearDown()
+    {
+        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
+    }
+    WGC3Duint m_imageId0;
+};
+
+TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
+{
+    blink::WebExternalTextureMailbox mailbox;
+
+    IntSize initialSize(initialWidth, initialHeight);
+    IntSize alternateSize(initialWidth, alternateHeight);
+
+    WGC3Duint m_imageId1 = webContext()->nextImageIdToBeCreated();
+    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId1)).Times(1);
+    // Produce one mailbox at size 100x100.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+    EXPECT_TRUE(mailbox.allowOverlay);
+    testing::Mock::VerifyAndClearExpectations(webContext());
+
+    WGC3Duint m_imageId2 = webContext()->nextImageIdToBeCreated();
+    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId2)).Times(1);
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId0)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId0)).Times(1);
+    // Resize to 100x50.
+    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
+    m_drawingBuffer->mailboxReleased(mailbox);
+    testing::Mock::VerifyAndClearExpectations(webContext());
+
+    WGC3Duint m_imageId3 = webContext()->nextImageIdToBeCreated();
+    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId3)).Times(1);
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId1)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId1)).Times(1);
+    // Produce a mailbox at this size.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    EXPECT_EQ(alternateSize, webContext()->mostRecentlyProducedSize());
+    EXPECT_TRUE(mailbox.allowOverlay);
+    testing::Mock::VerifyAndClearExpectations(webContext());
+
+    WGC3Duint m_imageId4 = webContext()->nextImageIdToBeCreated();
+    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId4)).Times(1);
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId2)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId2)).Times(1);
+    // Reset to initial size.
+    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
+    m_drawingBuffer->mailboxReleased(mailbox);
+    testing::Mock::VerifyAndClearExpectations(webContext());
+
+    WGC3Duint m_imageId5 = webContext()->nextImageIdToBeCreated();
+    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId3)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId3)).Times(1);
+    // Prepare another mailbox and verify that it's the correct size.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+    EXPECT_TRUE(mailbox.allowOverlay);
+    testing::Mock::VerifyAndClearExpectations(webContext());
+
+    // Prepare one final mailbox and verify that it's the correct size.
+    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+    EXPECT_TRUE(mailbox.allowOverlay);
+    m_drawingBuffer->mailboxReleased(mailbox);
+
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId4)).Times(1);
+    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId4)).Times(1);
+    m_drawingBuffer->beginDestruction();
+    testing::Mock::VerifyAndClearExpectations(webContext());
 }
 
 } // namespace
