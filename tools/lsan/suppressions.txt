@@ -9,16 +9,8 @@ leak:libfontconfig
 # Leaks in Nvidia's libGL.
 leak:libGL.so
 
-# False positive in Blink due to bit twiddling on pointers. http://crbug.com/242672
-# TODO(earthdok): Annotate.
-leak:WTF::BitVector::resizeOutOfLine
-
 # A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
 leak:WebCore::V8GCController::collectGarbage
-
-# Intentional leak in Blink. http://crbug.com/121729
-# TODO(earthdok): annotate it.
-leak:WebCore::parseUASheet
 
 # http://crbug.com/270180
 leak:net::ProxyResolverV8::Context::ResolveProxy
