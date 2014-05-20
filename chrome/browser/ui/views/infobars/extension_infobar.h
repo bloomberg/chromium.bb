@@ -30,7 +30,7 @@ class ExtensionInfoBar : public InfoBarView,
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual int ContentMinimumWidth() OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
@@ -38,6 +38,7 @@ class ExtensionInfoBar : public InfoBarView,
 
   void OnImageLoaded(const gfx::Image& image);
   ExtensionInfoBarDelegate* GetDelegate();
+  const ExtensionInfoBarDelegate* GetDelegate() const;
 
   // Returns the width of all content other than the extension view.  Layout()
   // uses this to determine how much space the extension view can take.

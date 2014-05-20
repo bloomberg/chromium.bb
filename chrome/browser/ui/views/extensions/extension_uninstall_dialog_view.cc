@@ -98,7 +98,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   virtual void Layout() OVERRIDE;
 
@@ -203,7 +203,7 @@ base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
 }
 
-gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() {
+gfx::Size ExtensionUninstallDialogDelegateView::GetPreferredSize() const {
   int width = kRightColumnWidth;
   width += kIconSize;
   width += views::kButtonHEdgeMarginNew * 2;

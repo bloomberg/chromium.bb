@@ -48,7 +48,7 @@ class ButtonView : public views::View {
   virtual ~ButtonView();
 
   // Returns an empty size when the view is not visible.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   views::LabelButton* accept_button() const { return accept_button_; }
   views::LabelButton* deny_button() const { return deny_button_; }
@@ -81,7 +81,7 @@ ButtonView::ButtonView(views::ButtonListener* listener,
 ButtonView::~ButtonView() {
 }
 
-gfx::Size ButtonView::GetPreferredSize() {
+gfx::Size ButtonView::GetPreferredSize() const {
   return visible() ? views::View::GetPreferredSize() : gfx::Size();
 }
 

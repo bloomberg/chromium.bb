@@ -50,7 +50,7 @@ class ExtensionInstalledBubbleView
   virtual void WindowClosing() OVERRIDE;
 
   // views::BubbleDelegate:
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
 
   ExtensionInstalledBubble bubble_;
 

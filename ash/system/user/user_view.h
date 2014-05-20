@@ -46,8 +46,8 @@ class UserView : public views::View,
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::ButtonListener.

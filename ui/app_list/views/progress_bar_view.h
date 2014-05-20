@@ -22,7 +22,7 @@ class ProgressBarView : public views::ProgressBar {
   virtual ~ProgressBarView();
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:

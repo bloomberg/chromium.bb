@@ -18,7 +18,7 @@ namespace autofill {
 
 namespace {
 
-gfx::Insets GetPreferredInsets(views::View* view) {
+gfx::Insets GetPreferredInsets(const views::View* view) {
   gfx::Size pref_size = view->GetPreferredSize();
   gfx::Rect local_bounds = view->GetLocalBounds();
   gfx::Point origin = local_bounds.CenterPoint();
@@ -38,7 +38,7 @@ class TooltipBubble : public InfoBubble {
 
  protected:
   // InfoBubble:
-  virtual gfx::Rect GetAnchorRect() OVERRIDE {
+  virtual gfx::Rect GetAnchorRect() const OVERRIDE {
     gfx::Rect bounds = views::BubbleDelegateView::GetAnchorRect();
     bounds.Inset(GetPreferredInsets(anchor()));
     return bounds;

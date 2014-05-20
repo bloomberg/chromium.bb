@@ -70,7 +70,7 @@ class ContentsView : public views::View {
   ShowState show_state() const { return show_state_; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;

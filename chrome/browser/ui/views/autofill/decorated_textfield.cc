@@ -106,7 +106,7 @@ views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
   return this;
 }
 
-gfx::Size DecoratedTextfield::GetPreferredSize() {
+gfx::Size DecoratedTextfield::GetPreferredSize() const {
   static const int height =
       views::LabelButton(NULL, base::string16()).GetPreferredSize().height();
   const gfx::Size size = views::Textfield::GetPreferredSize();

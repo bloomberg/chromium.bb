@@ -157,9 +157,15 @@ gfx::Insets StyledLabel::GetInsets() const {
   return insets;
 }
 
-int StyledLabel::GetHeightForWidth(int w) {
-  if (w != calculated_size_.width())
-    calculated_size_ = CalculateAndDoLayout(w, true);
+int StyledLabel::GetHeightForWidth(int w) const {
+  if (w != calculated_size_.width()) {
+    // TODO(erg): Munge the const-ness of the style label. CalculateAndDoLayout
+    // doesn't actually make any changes to member variables when |dry_run| is
+    // set to true. In general, the mutating and non-mutating parts shouldn't
+    // be in the same codepath.
+    calculated_size_ =
+        const_cast<StyledLabel*>(this)->CalculateAndDoLayout(w, true);
+  }
   return calculated_size_.height();
 }
 

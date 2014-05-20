@@ -108,7 +108,7 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
   scroll_offset_.set_y(y);
 }
 
-gfx::Size OverflowBubbleView::GetPreferredSize() {
+gfx::Size OverflowBubbleView::GetPreferredSize() const {
   gfx::Size preferred_size = GetContentsSize();
 
   const gfx::Rect monitor_rect = Shell::GetScreen()->GetDisplayNearestPoint(

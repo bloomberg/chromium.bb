@@ -365,7 +365,7 @@ class TitleCard : public views::View {
     title_label_->SetBoundsRect(GetContentsBounds());
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE{
+  virtual gfx::Size GetPreferredSize() const OVERRIDE{
     int height = std::max(title_label_->GetPreferredSize().height(),
         back_button_->GetPreferredSize().height());
     return gfx::Size(width(), height);

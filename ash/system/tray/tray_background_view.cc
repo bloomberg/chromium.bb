@@ -229,7 +229,7 @@ void TrayBackgroundView::TrayContainer::SetAlignment(ShelfAlignment alignment) {
   UpdateLayout();
 }
 
-gfx::Size TrayBackgroundView::TrayContainer::GetPreferredSize() {
+gfx::Size TrayBackgroundView::TrayContainer::GetPreferredSize() const {
   if (size_.IsEmpty())
     return views::View::GetPreferredSize();
   return size_;

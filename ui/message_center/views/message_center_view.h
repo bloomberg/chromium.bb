@@ -68,8 +68,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 

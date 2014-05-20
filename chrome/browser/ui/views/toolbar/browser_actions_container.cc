@@ -207,7 +207,7 @@ void BrowserActionsContainer::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-gfx::Size BrowserActionsContainer::GetPreferredSize() {
+gfx::Size BrowserActionsContainer::GetPreferredSize() const {
   // We calculate the size of the view by taking the current width and
   // subtracting resize_amount_ (the latter represents how far the user is
   // resizing the view or, if animating the snapping, how far to animate it).
@@ -221,7 +221,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
   return gfx::Size(preferred_width, 0);
 }
 
-gfx::Size BrowserActionsContainer::GetMinimumSize() {
+gfx::Size BrowserActionsContainer::GetMinimumSize() const {
   int min_width = std::min(MinimumNonemptyWidth(), IconCountToWidth(-1, false));
   // Height will be ignored by the ToolbarView.
   return gfx::Size(min_width, 0);

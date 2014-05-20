@@ -117,7 +117,7 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
   layer()->SetOpacity(show ? 1.0f : 0.0f);
 }
 
-gfx::Size AppListFolderView::GetPreferredSize() {
+gfx::Size AppListFolderView::GetPreferredSize() const {
   const gfx::Size header_size = folder_header_view_->GetPreferredSize();
   const gfx::Size grid_size = items_grid_view_->GetPreferredSize();
   int width = std::max(header_size.width(), grid_size.width());

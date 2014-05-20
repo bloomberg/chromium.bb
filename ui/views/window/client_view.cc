@@ -45,7 +45,7 @@ void ClientView::WidgetClosing() {
 ///////////////////////////////////////////////////////////////////////////////
 // ClientView, View overrides:
 
-gfx::Size ClientView::GetPreferredSize() {
+gfx::Size ClientView::GetPreferredSize() const {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
   return contents_view_ ? contents_view_->GetPreferredSize() : gfx::Size();
@@ -57,7 +57,7 @@ gfx::Size ClientView::GetMaximumSize() {
   return contents_view_ ? contents_view_->GetMaximumSize() : gfx::Size();
 }
 
-gfx::Size ClientView::GetMinimumSize() {
+gfx::Size ClientView::GetMinimumSize() const {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
   return contents_view_ ? contents_view_->GetMinimumSize() : gfx::Size();

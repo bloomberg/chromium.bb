@@ -53,9 +53,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   virtual void UpdateWindowTitle() OVERRIDE;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;

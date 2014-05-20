@@ -33,7 +33,7 @@ class MenuScrollViewContainer : public View {
   // View overrides.
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  protected:

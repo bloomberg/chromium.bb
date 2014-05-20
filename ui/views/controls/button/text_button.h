@@ -161,9 +161,9 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -182,7 +182,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   void UpdateTextSize();
 
   // Calculate the size of the text size without setting any of the members.
-  void CalculateTextSize(gfx::Size* text_size, int max_width);
+  void CalculateTextSize(gfx::Size* text_size, int max_width) const;
 
   // Paint the button's text into the specified canvas. If |mode| is
   // |PB_FOR_DRAG|, the function paints a drag image representation. Derived
@@ -233,7 +233,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   base::string16 text_;
 
   // The size of the text string.
-  gfx::Size text_size_;
+  mutable gfx::Size text_size_;
 
   // Track the size of the largest text string seen so far, so that
   // changing text_ will not resize the button boundary.
@@ -326,7 +326,7 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   void set_full_justification(bool full_justification);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
   // Overridden from TextButtonBase:

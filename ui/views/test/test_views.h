@@ -15,7 +15,7 @@ class StaticSizedView : public View {
   explicit StaticSizedView(const gfx::Size& size);
   virtual ~StaticSizedView();
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   gfx::Size size_;
@@ -29,7 +29,7 @@ class ProportionallySizedView : public View {
   explicit ProportionallySizedView(int factor);
   virtual ~ProportionallySizedView();
 
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
 
  private:
   // The multiplicative factor between width and height, i.e.

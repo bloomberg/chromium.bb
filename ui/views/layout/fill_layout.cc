@@ -20,7 +20,7 @@ void FillLayout::Layout(View* host) {
   frame_view->SetBoundsRect(host->GetContentsBounds());
 }
 
-gfx::Size FillLayout::GetPreferredSize(View* host) {
+gfx::Size FillLayout::GetPreferredSize(const View* host) const {
   if (!host->has_children())
     return gfx::Size();
   DCHECK_EQ(1, host->child_count());
@@ -29,7 +29,7 @@ gfx::Size FillLayout::GetPreferredSize(View* host) {
   return rect.size();
 }
 
-int FillLayout::GetPreferredHeightForWidth(View* host, int width) {
+int FillLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   if (!host->has_children())
     return 0;
   DCHECK_EQ(1, host->child_count());

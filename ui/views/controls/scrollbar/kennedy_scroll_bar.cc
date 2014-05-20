@@ -28,7 +28,7 @@ class KennedyScrollBarThumb : public BaseScrollBarThumb {
 
  protected:
   // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
@@ -42,7 +42,7 @@ KennedyScrollBarThumb::KennedyScrollBarThumb(BaseScrollBar* scroll_bar)
 KennedyScrollBarThumb::~KennedyScrollBarThumb() {
 }
 
-gfx::Size KennedyScrollBarThumb::GetPreferredSize() {
+gfx::Size KennedyScrollBarThumb::GetPreferredSize() const {
   return gfx::Size(kThumbMinimumSize, kThumbMinimumSize);
 }
 
@@ -77,7 +77,7 @@ int KennedyScrollBar::GetLayoutSize() const {
   return kScrollbarWidth;
 }
 
-gfx::Size KennedyScrollBar::GetPreferredSize() {
+gfx::Size KennedyScrollBar::GetPreferredSize() const {
   return GetTrackBounds().size();
 }
 

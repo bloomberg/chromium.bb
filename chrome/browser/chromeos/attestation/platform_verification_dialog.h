@@ -48,7 +48,7 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from views::StyledLabelListener:
   virtual void StyledLabelLinkClicked(const gfx::Range& range,

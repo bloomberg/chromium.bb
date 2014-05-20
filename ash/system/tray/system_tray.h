@@ -135,9 +135,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
   virtual base::string16 GetAccessibleNameForBubble() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
-                                  AnchorType anchor_type,
-                                  AnchorAlignment anchor_alignment) OVERRIDE;
+  virtual gfx::Rect GetAnchorRect(
+      views::Widget* anchor_widget,
+      AnchorType anchor_type,
+      AnchorAlignment anchor_alignment) const OVERRIDE;
   virtual void HideBubble(const views::TrayBubbleView* bubble_view) OVERRIDE;
 
   TrayAccessibility* GetTrayAccessibilityForTest() {

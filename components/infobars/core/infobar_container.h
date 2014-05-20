@@ -54,7 +54,7 @@ class InfoBarContainer : public InfoBarManager::Observer {
   // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
   // (including overlap).
-  int GetVerticalOverlap(int* total_height);
+  int GetVerticalOverlap(int* total_height) const;
 
   // Called by the delegate when the distance between what the top infobar's
   // "unspoofable" arrow would point to and the top infobar itself changes.

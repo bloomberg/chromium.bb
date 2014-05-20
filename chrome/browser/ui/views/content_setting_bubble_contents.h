@@ -51,7 +51,7 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
       views::BubbleBorder::Arrow arrow);
   virtual ~ContentSettingBubbleContents();
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Callback to allow ContentSettingMediaMenuModel to update the menu label.
   void UpdateMenuLabel(content::MediaStreamType type,

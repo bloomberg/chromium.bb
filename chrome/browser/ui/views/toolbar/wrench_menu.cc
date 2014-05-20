@@ -98,7 +98,7 @@ class FullscreenButton : public ImageButton {
       : ImageButton(listener) { }
 
   // Overridden from ImageButton.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     gfx::Size pref = ImageButton::GetPreferredSize();
     if (border()) {
       gfx::Insets insets = border()->GetInsets();
@@ -435,6 +435,8 @@ class WrenchMenuView : public views::View,
   WrenchMenu* menu() { return menu_; }
   MenuModel* menu_model() { return menu_model_; }
 
+  bool use_new_menu() const { return menu_->use_new_menu(); }
+
  private:
   // Hosting WrenchMenu.
   // WARNING: this may be NULL during shutdown.
@@ -457,7 +459,7 @@ class ButtonContainerMenuItemView : public MenuItemView {
   };
 
   // Overridden from MenuItemView.
-  virtual gfx::Size GetChildPreferredSize() OVERRIDE {
+  virtual gfx::Size GetChildPreferredSize() const OVERRIDE {
     gfx::Size size = MenuItemView::GetChildPreferredSize();
     // When there is a height override given, we need to deduct our spacing
     // above and below to get to the correct height to return here for the
@@ -544,7 +546,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   }
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
     return gfx::Size(GetMaxChildViewPreferredWidth() * child_count(), 0);
@@ -565,7 +567,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 
  private:
   // Returns the max preferred width of all the children.
-  int GetMaxChildViewPreferredWidth() {
+  int GetMaxChildViewPreferredWidth() const {
     int width = 0;
     for (int i = 0; i < child_count(); ++i)
       width = std::max(width, child_at(i)->GetPreferredSize().width());
@@ -687,11 +689,11 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   virtual ~ZoomView() {}
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
-    int zoom_padding = menu()->use_new_menu() ?
+    int zoom_padding = use_new_menu() ?
         kTouchZoomPadding : kZoomPadding;
     int fullscreen_width = fullscreen_button_->GetPreferredSize().width() +
                            zoom_padding;
@@ -720,10 +722,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     bounds.set_width(button_width);
     increment_button_->SetBoundsRect(bounds);
 
-    x += bounds.width() + (menu()->use_new_menu() ? 0 : kZoomPadding);
+    x += bounds.width() + (use_new_menu() ? 0 : kZoomPadding);
     bounds.set_x(x);
     bounds.set_width(fullscreen_button_->GetPreferredSize().width() +
-                     (menu()->use_new_menu() ? kTouchZoomPadding : 0));
+                     (use_new_menu() ? kTouchZoomPadding : 0));
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
@@ -1148,7 +1150,8 @@ void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   return entry.first->ActivatedAt(entry.second, mouse_event_flags);
 }
 
-bool WrenchMenu::GetAccelerator(int command_id, ui::Accelerator* accelerator) {
+bool WrenchMenu::GetAccelerator(int command_id,
+                                ui::Accelerator* accelerator) const {
   if (IsBookmarkCommand(command_id))
     return false;
 
@@ -1157,7 +1160,7 @@ bool WrenchMenu::GetAccelerator(int command_id, ui::Accelerator* accelerator) {
     return false;
   }
 
-  CommandIDToEntry::iterator ix = command_id_to_entry_.find(command_id);
+  CommandIDToEntry::const_iterator ix = command_id_to_entry_.find(command_id);
   const Entry& entry = ix->second;
   ui::Accelerator menu_accelerator;
   if (!entry.first->GetAcceleratorAt(entry.second, &menu_accelerator))

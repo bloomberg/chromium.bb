@@ -73,7 +73,7 @@ class VolumeButton : public views::ToggleImageButton {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     gfx::Size size = views::ToggleImageButton::GetPreferredSize();
     size.set_height(kTrayPopupItemHeight);
     return size;
@@ -119,7 +119,7 @@ class BarSeparator : public views::View {
   virtual ~BarSeparator() {}
 
   // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(kBarSeparatorWidth, kBarSeparatorHeight);
   }
 

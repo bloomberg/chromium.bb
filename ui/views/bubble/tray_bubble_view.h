@@ -75,9 +75,10 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
 
     // Passes responsibility for BubbleDelegateView::GetAnchorRect to the
     // delegate.
-    virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
-                                    AnchorType anchor_type,
-                                    AnchorAlignment anchor_alignment) = 0;
+    virtual gfx::Rect GetAnchorRect(
+        views::Widget* anchor_widget,
+        AnchorType anchor_type,
+        AnchorAlignment anchor_alignment) const = 0;
 
     // Called when a bubble wants to hide/destroy itself (e.g. last visible
     // child view was closed).
@@ -153,12 +154,12 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from views::BubbleDelegateView.
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;

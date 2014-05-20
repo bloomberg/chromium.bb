@@ -67,7 +67,8 @@ void ContentsLayoutManager::Layout(views::View* contents_container) {
   contents_view_->SetBoundsRect(new_contents_bounds);
 }
 
-gfx::Size ContentsLayoutManager::GetPreferredSize(views::View* host) {
+gfx::Size ContentsLayoutManager::GetPreferredSize(
+    const views::View* host) const {
   return gfx::Size();
 }
 

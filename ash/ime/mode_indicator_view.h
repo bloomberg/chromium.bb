@@ -31,7 +31,7 @@ class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
   void ShowAndFadeOut();
 
   // views::BubbleDelegateView override:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  protected:
   // views::BubbleDelegateView override:

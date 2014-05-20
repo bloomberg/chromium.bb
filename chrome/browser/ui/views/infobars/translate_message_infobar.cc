@@ -61,7 +61,7 @@ void TranslateMessageInfoBar::ButtonPressed(views::Button* sender,
     TranslateInfoBarBase::ButtonPressed(sender, event);
 }
 
-int TranslateMessageInfoBar::ContentMinimumWidth() {
+int TranslateMessageInfoBar::ContentMinimumWidth() const {
   return label_->GetMinimumSize().width() + NonLabelWidth();
 }
 

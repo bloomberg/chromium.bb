@@ -42,11 +42,11 @@ class VIEWS_EXPORT LayoutManager {
 
   // Return the preferred size which is the size required to give each
   // children their respective preferred size.
-  virtual gfx::Size GetPreferredSize(View* host) = 0;
+  virtual gfx::Size GetPreferredSize(const View* host) const = 0;
 
   // Returns the preferred height for the specified width. The default
   // implementation returns the value from GetPreferredSize.
-  virtual int GetPreferredHeightForWidth(View* host, int width);
+  virtual int GetPreferredHeightForWidth(const View* host, int width) const;
 
   // Notification that a view has been added.
   virtual void ViewAdded(View* host, View* view);

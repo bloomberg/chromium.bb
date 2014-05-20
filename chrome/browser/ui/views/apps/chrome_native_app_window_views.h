@@ -66,7 +66,7 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // NativeAppWindow implementation.

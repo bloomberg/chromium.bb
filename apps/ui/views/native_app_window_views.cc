@@ -291,7 +291,7 @@ void NativeAppWindowViews::ViewHierarchyChanged(
   }
 }
 
-gfx::Size NativeAppWindowViews::GetMinimumSize() {
+gfx::Size NativeAppWindowViews::GetMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }
 

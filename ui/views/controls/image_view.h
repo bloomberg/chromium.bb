@@ -55,7 +55,7 @@ class VIEWS_EXPORT ImageView : public View {
   // Return the preferred size for the receiving view. Returns false if the
   // preferred size is not defined, which means that the view uses the image
   // size.
-  bool GetImageSize(gfx::Size* image_size);
+  bool GetImageSize(gfx::Size* image_size) const;
 
   // Returns the actual bounds of the visible image inside the view.
   gfx::Rect GetImageBounds() const;
@@ -80,7 +80,7 @@ class VIEWS_EXPORT ImageView : public View {
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
   // Overriden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

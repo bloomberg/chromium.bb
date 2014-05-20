@@ -29,7 +29,7 @@ class AppInfoDialog : public views::DialogDelegateView {
 
  private:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from views::DialogDelegate:
   virtual bool Cancel() OVERRIDE;

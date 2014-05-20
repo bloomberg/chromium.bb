@@ -64,7 +64,7 @@ class ToolbarOriginChipView : public ToolbarButton,
   int ElideDomainTarget(int target_max_width);
 
   // ToolbarButton:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

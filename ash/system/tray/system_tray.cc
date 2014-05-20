@@ -666,7 +666,7 @@ base::string16 SystemTray::GetAccessibleNameForBubble() {
 gfx::Rect SystemTray::GetAnchorRect(
     views::Widget* anchor_widget,
     TrayBubbleView::AnchorType anchor_type,
-    TrayBubbleView::AnchorAlignment anchor_alignment) {
+    TrayBubbleView::AnchorAlignment anchor_alignment) const {
   return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 

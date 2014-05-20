@@ -41,7 +41,7 @@ class ThrobberView : public views::View {
   void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool GetTooltipText(
       const gfx::Point& p, base::string16* tooltip) const OVERRIDE;

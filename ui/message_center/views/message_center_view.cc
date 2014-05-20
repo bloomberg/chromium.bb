@@ -61,8 +61,8 @@ class NoNotificationMessageView : public views::View {
   virtual ~NoNotificationMessageView();
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:
@@ -87,11 +87,11 @@ NoNotificationMessageView::NoNotificationMessageView() {
 NoNotificationMessageView::~NoNotificationMessageView() {
 }
 
-gfx::Size NoNotificationMessageView::GetPreferredSize() {
+gfx::Size NoNotificationMessageView::GetPreferredSize() const {
   return gfx::Size(kMinScrollViewHeight, label_->GetPreferredSize().width());
 }
 
-int NoNotificationMessageView::GetHeightForWidth(int width) {
+int NoNotificationMessageView::GetHeightForWidth(int width) const {
   return kMinScrollViewHeight;
 }
 
@@ -121,8 +121,8 @@ class MessageListView : public views::View,
  protected:
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) OVERRIDE;
   virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
@@ -133,7 +133,7 @@ class MessageListView : public views::View,
   virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
 
  private:
-  bool IsValidChild(views::View* child);
+  bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
 
   // Animates all notifications below target upwards to align with the top of
@@ -276,10 +276,10 @@ void MessageListView::UpdateNotification(MessageView* view,
   DoUpdateIfPossible();
 }
 
-gfx::Size MessageListView::GetPreferredSize() {
+gfx::Size MessageListView::GetPreferredSize() const {
   int width = 0;
   for (int i = 0; i < child_count(); i++) {
-    views::View* child = child_at(i);
+    const views::View* child = child_at(i);
     if (IsValidChild(child))
       width = std::max(width, child->GetPreferredSize().width());
   }
@@ -288,7 +288,7 @@ gfx::Size MessageListView::GetPreferredSize() {
                    GetHeightForWidth(width + GetInsets().width()));
 }
 
-int MessageListView::GetHeightForWidth(int width) {
+int MessageListView::GetHeightForWidth(int width) const {
   if (fixed_height_ > 0)
     return fixed_height_;
 
@@ -296,7 +296,7 @@ int MessageListView::GetHeightForWidth(int width) {
   int height = 0;
   int padding = 0;
   for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+    const views::View* child = child_at(i);
     if (!IsValidChild(child))
       continue;
     height += child->GetHeightForWidth(width) + padding;
@@ -391,10 +391,12 @@ void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
-bool MessageListView::IsValidChild(views::View* child) {
+bool MessageListView::IsValidChild(const views::View* child) const {
   return child->visible() &&
-         deleting_views_.find(child) == deleting_views_.end() &&
-         deleted_when_done_.find(child) == deleted_when_done_.end();
+      deleting_views_.find(const_cast<views::View*>(child)) ==
+          deleting_views_.end() &&
+      deleted_when_done_.find(const_cast<views::View*>(child)) ==
+          deleted_when_done_.end();
 }
 
 void MessageListView::DoUpdateIfPossible() {
@@ -761,7 +763,7 @@ void MessageCenterView::Layout() {
     GetWidget()->GetRootView()->SchedulePaint();
 }
 
-gfx::Size MessageCenterView::GetPreferredSize() {
+gfx::Size MessageCenterView::GetPreferredSize() const {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating()) {
     int content_width = std::max(source_view_->GetPreferredSize().width(),
@@ -773,14 +775,14 @@ gfx::Size MessageCenterView::GetPreferredSize() {
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(0);
+    const views::View* child = child_at(0);
     if (child->visible())
       width = std::max(width, child->GetPreferredSize().width());
   }
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-int MessageCenterView::GetHeightForWidth(int width) {
+int MessageCenterView::GetHeightForWidth(int width) const {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating()) {
     int content_height = target_height_;

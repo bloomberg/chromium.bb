@@ -272,7 +272,7 @@ void OriginChipView::FadeIn() {
   fade_in_animation_->Show();
 }
 
-gfx::Size OriginChipView::GetPreferredSize() {
+gfx::Size OriginChipView::GetPreferredSize() const {
   gfx::Size label_size = host_label_->GetPreferredSize();
   gfx::Size icon_size = location_icon_view_->GetPreferredSize();
   int icon_spacing = showing_16x16_icon_ ?

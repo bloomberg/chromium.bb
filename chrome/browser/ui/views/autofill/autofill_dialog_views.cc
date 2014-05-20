@@ -165,7 +165,7 @@ class SectionRowView : public views::View {
   virtual ~SectionRowView() {}
 
   // views::View implementation:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     int height = 0;
     int width = 0;
     for (int i = 0; i < child_count(); ++i) {
@@ -317,10 +317,10 @@ class NotificationView : public views::View,
                        vertical_padding, kDialogEdgePadding);
   }
 
-  virtual int GetHeightForWidth(int width) OVERRIDE {
+  virtual int GetHeightForWidth(int width) const OVERRIDE {
     int label_width = width - GetInsets().width();
     if (child_count() > 1) {
-      views::View* tooltip_icon = child_at(1);
+      const views::View* tooltip_icon = child_at(1);
       label_width -= tooltip_icon->GetPreferredSize().width() +
           kDialogEdgePadding;
     }
@@ -755,7 +755,7 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
   PreferredSizeChanged();
 }
 
-gfx::Size AutofillDialogViews::NotificationArea::GetPreferredSize() {
+gfx::Size AutofillDialogViews::NotificationArea::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   // Ensure that long notifications wrap and don't enlarge the dialog.
   size.set_width(1);
@@ -993,7 +993,7 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
 
 AutofillDialogViews::SuggestedButton::~SuggestedButton() {}
 
-gfx::Size AutofillDialogViews::SuggestedButton::GetPreferredSize() {
+gfx::Size AutofillDialogViews::SuggestedButton::GetPreferredSize() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Size size = rb.GetImageNamed(ResourceIDForState()).Size();
   const gfx::Insets insets = GetInsets();
@@ -1088,13 +1088,13 @@ AutofillDialogViews::SuggestionView::SuggestionView(
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
 
-gfx::Size AutofillDialogViews::SuggestionView::GetPreferredSize() {
+gfx::Size AutofillDialogViews::SuggestionView::GetPreferredSize() const {
   // There's no preferred width. The parent's layout should get the preferred
   // height from GetHeightForWidth().
   return gfx::Size();
 }
 
-int AutofillDialogViews::SuggestionView::GetHeightForWidth(int width) {
+int AutofillDialogViews::SuggestionView::GetHeightForWidth(int width) const {
   int height = 0;
   CanUseVerticallyCompactText(width, &height);
   return height;
@@ -1102,7 +1102,7 @@ int AutofillDialogViews::SuggestionView::GetHeightForWidth(int width) {
 
 bool AutofillDialogViews::SuggestionView::CanUseVerticallyCompactText(
     int available_width,
-    int* resulting_height) {
+    int* resulting_height) const {
   // This calculation may be costly, avoid doing it more than once per width.
   if (!calculated_heights_.count(available_width)) {
     // Changing the state of |this| now will lead to extra layouts and
@@ -1472,14 +1472,14 @@ void AutofillDialogViews::ValidateSection(DialogSection section) {
   ValidateGroup(*GroupForSection(section), VALIDATE_EDIT);
 }
 
-gfx::Size AutofillDialogViews::GetPreferredSize() {
+gfx::Size AutofillDialogViews::GetPreferredSize() const {
   if (preferred_size_.IsEmpty())
     preferred_size_ = CalculatePreferredSize(false);
 
   return preferred_size_;
 }
 
-gfx::Size AutofillDialogViews::GetMinimumSize() {
+gfx::Size AutofillDialogViews::GetMinimumSize() const {
   return CalculatePreferredSize(true);
 }
 
@@ -1766,7 +1766,8 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   group->suggested_button->SetState(state);
 }
 
-gfx::Size AutofillDialogViews::CalculatePreferredSize(bool get_minimum_size) {
+gfx::Size AutofillDialogViews::CalculatePreferredSize(
+    bool get_minimum_size) const {
   gfx::Insets insets = GetInsets();
   gfx::Size scroll_size = scrollable_area_->contents()->GetPreferredSize();
   // The width is always set by the scroll area.

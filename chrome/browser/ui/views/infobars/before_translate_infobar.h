@@ -31,7 +31,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                              const ui::Event& event) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual int ContentMinimumWidth() OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,

@@ -15,9 +15,9 @@ ProportionalImageView::ProportionalImageView(const gfx::ImageSkia& image,
 
 ProportionalImageView::~ProportionalImageView() {}
 
-gfx::Size ProportionalImageView::GetPreferredSize() { return max_size_; }
+gfx::Size ProportionalImageView::GetPreferredSize() const { return max_size_; }
 
-int ProportionalImageView::GetHeightForWidth(int width) {
+int ProportionalImageView::GetHeightForWidth(int width) const {
   return max_size_.height();
 }
 

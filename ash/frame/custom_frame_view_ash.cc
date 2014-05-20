@@ -467,7 +467,7 @@ void CustomFrameViewAsh::UpdateWindowTitle() {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, views::View overrides:
 
-gfx::Size CustomFrameViewAsh::GetPreferredSize() {
+gfx::Size CustomFrameViewAsh::GetPreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
   return frame_->non_client_view()->GetWindowBoundsForClientBounds(
@@ -478,7 +478,7 @@ const char* CustomFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size CustomFrameViewAsh::GetMinimumSize() {
+gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
   return gfx::Size(
       std::max(header_view_->GetMinimumWidth(), min_client_view_size.width()),

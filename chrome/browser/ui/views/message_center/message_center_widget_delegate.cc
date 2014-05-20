@@ -112,7 +112,7 @@ void MessageCenterWidgetDelegate::PreferredSizeChanged() {
   views::View::PreferredSizeChanged();
 }
 
-gfx::Size MessageCenterWidgetDelegate::GetPreferredSize() {
+gfx::Size MessageCenterWidgetDelegate::GetPreferredSize() const {
   int preferred_width = kNotificationWidth + 2 * kMarginBetweenItems;
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
 }
@@ -122,7 +122,7 @@ gfx::Size MessageCenterWidgetDelegate::GetMaximumSize() {
   return size;
 }
 
-int MessageCenterWidgetDelegate::GetHeightForWidth(int width) {
+int MessageCenterWidgetDelegate::GetHeightForWidth(int width) const {
   int height = MessageCenterView::GetHeightForWidth(width);
   return (pos_info_.max_height != 0) ?
     std::min(height, pos_info_.max_height - border_insets_.height()) : height;

@@ -71,12 +71,12 @@ void NotificationButton::SetTitle(const base::string16& title) {
   SetAccessibleName(title);
 }
 
-gfx::Size NotificationButton::GetPreferredSize() {
+gfx::Size NotificationButton::GetPreferredSize() const {
   return gfx::Size(message_center::kNotificationWidth,
                    message_center::kButtonHeight);
 }
 
-int NotificationButton::GetHeightForWidth(int width) {
+int NotificationButton::GetHeightForWidth(int width) const {
   return message_center::kButtonHeight;
 }
 

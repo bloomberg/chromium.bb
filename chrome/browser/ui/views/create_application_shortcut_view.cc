@@ -332,7 +332,7 @@ void CreateApplicationShortcutView::InitControls() {
   }
 }
 
-gfx::Size CreateApplicationShortcutView::GetPreferredSize() {
+gfx::Size CreateApplicationShortcutView::GetPreferredSize() const {
   // TODO(evanm): should this use IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS?
   static const int kDialogWidth = 360;
   int height = GetLayoutManager()->GetPreferredHeightForWidth(this,

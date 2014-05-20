@@ -60,7 +60,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   BrowserView* get_parent() { return parent_; }
 
   // Implementation of View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;

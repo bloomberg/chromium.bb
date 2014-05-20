@@ -424,7 +424,7 @@ gfx::Rect View::GetBoundsInScreen() const {
   return gfx::Rect(origin, size());
 }
 
-gfx::Size View::GetPreferredSize() {
+gfx::Size View::GetPreferredSize() const {
   if (layout_manager_.get())
     return layout_manager_->GetPreferredSize(this);
   return gfx::Size();
@@ -440,7 +440,7 @@ void View::SizeToPreferredSize() {
     SetBounds(x(), y(), prefsize.width(), prefsize.height());
 }
 
-gfx::Size View::GetMinimumSize() {
+gfx::Size View::GetMinimumSize() const {
   return GetPreferredSize();
 }
 
@@ -448,7 +448,7 @@ gfx::Size View::GetMaximumSize() {
   return gfx::Size();
 }
 
-int View::GetHeightForWidth(int w) {
+int View::GetHeightForWidth(int w) const {
   if (layout_manager_.get())
     return layout_manager_->GetPreferredHeightForWidth(this, w);
   return GetPreferredSize().height();

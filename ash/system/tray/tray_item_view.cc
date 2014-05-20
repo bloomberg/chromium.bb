@@ -75,7 +75,7 @@ void TrayItemView::SetVisible(bool set_visible) {
   }
 }
 
-gfx::Size TrayItemView::DesiredSize() {
+gfx::Size TrayItemView::DesiredSize() const {
   return views::View::GetPreferredSize();
 }
 
@@ -83,7 +83,7 @@ int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
 
-gfx::Size TrayItemView::GetPreferredSize() {
+gfx::Size TrayItemView::GetPreferredSize() const {
   gfx::Size size = DesiredSize();
   if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
       owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_TOP)
@@ -103,7 +103,7 @@ gfx::Size TrayItemView::GetPreferredSize() {
   return size;
 }
 
-int TrayItemView::GetHeightForWidth(int width) {
+int TrayItemView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 

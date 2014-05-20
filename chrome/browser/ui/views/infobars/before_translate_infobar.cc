@@ -139,7 +139,7 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
       delegate->language_name_at(delegate->original_language_index()));
 }
 
-int BeforeTranslateInfoBar::ContentMinimumWidth() {
+int BeforeTranslateInfoBar::ContentMinimumWidth() const {
   return label_1_->GetMinimumSize().width() +
       label_2_->GetMinimumSize().width() + NonLabelWidth();
 }

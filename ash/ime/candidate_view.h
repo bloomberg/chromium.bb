@@ -45,7 +45,7 @@ class ASH_EXPORT CandidateView : public views::CustomButton {
   // Overridden from View:
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // The orientation of the candidate view.
   ui::CandidateWindow::Orientation orientation_;

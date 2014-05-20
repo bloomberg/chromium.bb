@@ -57,7 +57,7 @@ class EnrollmentDialogView : public views::DialogDelegateView {
   virtual base::string16 GetWindowTitle() const OVERRIDE;
 
   // views::View overrides
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   EnrollmentDialogView(const std::string& network_name,
@@ -142,7 +142,7 @@ base::string16 EnrollmentDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_TITLE);
 }
 
-gfx::Size EnrollmentDialogView::GetPreferredSize() {
+gfx::Size EnrollmentDialogView::GetPreferredSize() const {
   return gfx::Size(kDefaultWidth, kDefaultHeight);
 }
 

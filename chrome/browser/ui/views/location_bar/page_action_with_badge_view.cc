@@ -21,7 +21,7 @@ void PageActionWithBadgeView::GetAccessibleState(
   state->role = ui::AX_ROLE_GROUP;
 }
 
-gfx::Size PageActionWithBadgeView::GetPreferredSize() {
+gfx::Size PageActionWithBadgeView::GetPreferredSize() const {
   return gfx::Size(ExtensionAction::kPageActionIconMaxSize,
                    ExtensionAction::kPageActionIconMaxSize);
 }

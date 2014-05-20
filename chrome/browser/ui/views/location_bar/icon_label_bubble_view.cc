@@ -79,7 +79,7 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
-gfx::Size IconLabelBubbleView::GetPreferredSize() {
+gfx::Size IconLabelBubbleView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
 }

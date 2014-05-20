@@ -229,7 +229,7 @@ void AppWindowFrameView::GetWindowMask(const gfx::Size& size,
   // We got nothing to say about no window mask.
 }
 
-gfx::Size AppWindowFrameView::GetPreferredSize() {
+gfx::Size AppWindowFrameView::GetPreferredSize() const {
   gfx::Size pref = widget_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
   return widget_->non_client_view()
@@ -316,7 +316,7 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
 
 const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }
 
-gfx::Size AppWindowFrameView::GetMinimumSize() {
+gfx::Size AppWindowFrameView::GetMinimumSize() const {
   gfx::Size min_size = widget_->client_view()->GetMinimumSize();
   if (!draw_frame_)
     return min_size;

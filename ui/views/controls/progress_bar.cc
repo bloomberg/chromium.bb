@@ -183,7 +183,7 @@ void ProgressBar::GetAccessibleState(ui::AXViewState* state) {
   state->AddStateFlag(ui::AX_STATE_READ_ONLY);
 }
 
-gfx::Size ProgressBar::GetPreferredSize() {
+gfx::Size ProgressBar::GetPreferredSize() const {
   gfx::Size pref_size(100, 11);
   gfx::Insets insets = GetInsets();
   pref_size.Enlarge(insets.width(), insets.height());

@@ -81,7 +81,7 @@ class WebsiteSettingsPopupView
   virtual void TabSelectedAt(int index) OVERRIDE;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // WebsiteSettingsUI implementations.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;

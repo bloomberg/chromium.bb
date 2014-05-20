@@ -54,7 +54,7 @@ class TestView : public views::View {
     PreferredSizeChanged();
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     if (!preferred_size_.IsEmpty())
       return preferred_size_;
     return View::GetPreferredSize();
@@ -228,7 +228,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   content::RunMessageLoop();
 }
 
-gfx::Size ViewEventTestBase::GetPreferredSize() {
+gfx::Size ViewEventTestBase::GetPreferredSize() const {
   return gfx::Size();
 }
 

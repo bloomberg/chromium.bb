@@ -68,7 +68,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
   virtual void OnExtensionSizeChanged(ExtensionViewViews* view) OVERRIDE;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 

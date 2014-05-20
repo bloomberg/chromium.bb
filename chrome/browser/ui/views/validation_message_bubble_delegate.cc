@@ -89,7 +89,7 @@ void ValidationMessageBubbleDelegate::SetPositionRelativeToAnchor(
   SetAnchorRect(anchor_in_screen);
 }
 
-gfx::Size ValidationMessageBubbleDelegate::GetPreferredSize() {
+gfx::Size ValidationMessageBubbleDelegate::GetPreferredSize() const {
   return gfx::Size(width_, height_);
 }
 

@@ -202,7 +202,7 @@ void OmniboxResultView::Invalidate() {
   SchedulePaint();
 }
 
-gfx::Size OmniboxResultView::GetPreferredSize() {
+gfx::Size OmniboxResultView::GetPreferredSize() const {
   return gfx::Size(0, std::max(
       default_icon_size_ + (kMinimumIconVerticalPadding * 2),
       GetTextHeight() + (minimum_text_vertical_padding_ * 2)));

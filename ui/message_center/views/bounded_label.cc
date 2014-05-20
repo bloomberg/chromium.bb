@@ -319,11 +319,11 @@ int BoundedLabel::GetBaseline() const {
   return label_->GetBaseline();
 }
 
-gfx::Size BoundedLabel::GetPreferredSize() {
+gfx::Size BoundedLabel::GetPreferredSize() const {
   return visible() ? label_->GetSizeForWidthAndLines(-1, -1) : gfx::Size();
 }
 
-int BoundedLabel::GetHeightForWidth(int width) {
+int BoundedLabel::GetHeightForWidth(int width) const {
   return visible() ?
          label_->GetSizeForWidthAndLines(width, line_limit_).height() : 0;
 }

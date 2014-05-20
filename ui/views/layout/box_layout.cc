@@ -98,12 +98,12 @@ void BoxLayout::Layout(View* host) {
   }
 }
 
-gfx::Size BoxLayout::GetPreferredSize(View* host) {
+gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
   // Calculate the child views' preferred width.
   int width = 0;
   if (orientation_ == kVertical) {
     for (int i = 0; i < host->child_count(); ++i) {
-      View* child = host->child_at(i);
+      const View* child = host->child_at(i);
       if (!child->visible())
         continue;
 
@@ -114,7 +114,7 @@ gfx::Size BoxLayout::GetPreferredSize(View* host) {
   return GetPreferredSizeForChildWidth(host, width);
 }
 
-int BoxLayout::GetPreferredHeightForWidth(View* host, int width) {
+int BoxLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   int child_width = width - NonChildSize(host).width();
   return GetPreferredSizeForChildWidth(host, child_width).height();
 }
@@ -141,8 +141,8 @@ void BoxLayout::SetMainAxisPosition(int position, gfx::Rect* child_area) const {
     child_area->set_y(position);
 }
 
-gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
-                                                   int child_area_width) {
+gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
+                                                   int child_area_width) const {
   gfx::Rect child_area_bounds;
 
   if (orientation_ == kHorizontal) {
@@ -151,7 +151,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
     // TODO(estade): fix this if it ever becomes a problem.
     int position = 0;
     for (int i = 0; i < host->child_count(); ++i) {
-      View* child = host->child_at(i);
+      const View* child = host->child_at(i);
       if (!child->visible())
         continue;
 
@@ -166,7 +166,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
   } else {
     int height = 0;
     for (int i = 0; i < host->child_count(); ++i) {
-      View* child = host->child_at(i);
+      const View* child = host->child_at(i);
       if (!child->visible())
         continue;
 
@@ -186,7 +186,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
                    child_area_bounds.height() + non_child_size.height());
 }
 
-gfx::Size BoxLayout::NonChildSize(View* host) {
+gfx::Size BoxLayout::NonChildSize(const View* host) const {
   gfx::Insets insets(host->GetInsets());
   return gfx::Size(insets.width() + inside_border_insets_.width(),
                    insets.height() + inside_border_insets_.height());

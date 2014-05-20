@@ -230,7 +230,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
                      image_size.height() + selection_rect_.height() +

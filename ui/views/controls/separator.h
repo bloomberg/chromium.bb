@@ -28,7 +28,7 @@ class VIEWS_EXPORT Separator : public View {
   virtual ~Separator();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) OVERRIDE;

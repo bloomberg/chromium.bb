@@ -148,7 +148,7 @@ bool FolderHeaderView::IsFolderNameEnabledForTest() const {
   return folder_name_view_->enabled();
 }
 
-gfx::Size FolderHeaderView::GetPreferredSize() {
+gfx::Size FolderHeaderView::GetPreferredSize() const {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 

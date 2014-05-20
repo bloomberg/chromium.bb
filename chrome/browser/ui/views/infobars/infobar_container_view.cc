@@ -22,7 +22,7 @@ InfoBarContainerView::~InfoBarContainerView() {
   RemoveAllInfoBarsForDestruction();
 }
 
-gfx::Size InfoBarContainerView::GetPreferredSize() {
+gfx::Size InfoBarContainerView::GetPreferredSize() const {
   int total_height;
   GetVerticalOverlap(&total_height);
   gfx::Size size(0, total_height);

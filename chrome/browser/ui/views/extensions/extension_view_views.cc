@@ -37,7 +37,7 @@ ExtensionViewViews::~ExtensionViewViews() {
   CleanUp();
 }
 
-gfx::Size ExtensionViewViews::GetMinimumSize() {
+gfx::Size ExtensionViewViews::GetMinimumSize() const {
   // If the minimum size has never been set, returns the preferred size (same
   // behavior as views::View).
   return (minimum_size_ == gfx::Size()) ? GetPreferredSize() : minimum_size_;

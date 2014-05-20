@@ -137,7 +137,7 @@ class EntryView : public views::View {
 
   // views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
@@ -167,7 +167,7 @@ void EntryView::Layout() {
   content->SetBounds(0, y, content_width, content_height);
 }
 
-gfx::Size EntryView::GetPreferredSize() {
+gfx::Size EntryView::GetPreferredSize() const {
   DCHECK_EQ(1, child_count());
   gfx::Size size = child_at(0)->GetPreferredSize();
   size.SetToMax(gfx::Size(settings::kWidth, settings::kEntryHeight));
@@ -652,7 +652,7 @@ void NotifierSettingsView::Layout() {
   scroller_->SetBounds(0, title_height, width(), height() - title_height);
 }
 
-gfx::Size NotifierSettingsView::GetMinimumSize() {
+gfx::Size NotifierSettingsView::GetMinimumSize() const {
   gfx::Size size(settings::kWidth, settings::kMinimumHeight);
   int total_height = title_label_->GetPreferredSize().height() +
                      scroller_->contents()->GetPreferredSize().height();
@@ -661,7 +661,7 @@ gfx::Size NotifierSettingsView::GetMinimumSize() {
   return size;
 }
 
-gfx::Size NotifierSettingsView::GetPreferredSize() {
+gfx::Size NotifierSettingsView::GetPreferredSize() const {
   gfx::Size preferred_size;
   gfx::Size title_size = title_label_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();

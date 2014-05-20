@@ -34,7 +34,7 @@ class BarPlaceholderButton : public views::CustomButton {
   virtual ~BarPlaceholderButton() {}
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(kBarPlaceholderWidth, kBarPlaceholderHeight);
   }
 

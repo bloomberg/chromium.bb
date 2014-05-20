@@ -48,7 +48,7 @@ class IconLabelBubbleView : public views::View {
 
  protected:
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;

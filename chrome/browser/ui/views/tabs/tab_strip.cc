@@ -1250,7 +1250,7 @@ const char* TabStrip::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size TabStrip::GetPreferredSize() {
+gfx::Size TabStrip::GetPreferredSize() const {
   // For stacked tabs the minimum size is calculated as the size needed to
   // handle showing any number of tabs. Otherwise report the minimum width as
   // the size required for a single selected tab plus the new tab button. Don't

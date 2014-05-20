@@ -198,7 +198,7 @@ bool AppListView::ShouldCenterWindow() const {
   return delegate_->ShouldCenterWindow();
 }
 
-gfx::Size AppListView::GetPreferredSize() {
+gfx::Size AppListView::GetPreferredSize() const {
   return app_list_main_view_->GetPreferredSize();
 }
 

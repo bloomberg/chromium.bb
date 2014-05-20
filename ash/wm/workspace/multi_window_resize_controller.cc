@@ -71,7 +71,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
   }
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(image_->width(), image_->height());
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {

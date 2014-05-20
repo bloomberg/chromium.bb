@@ -10,7 +10,7 @@ StaticSizedView::StaticSizedView(const gfx::Size& size) : size_(size) {}
 
 StaticSizedView::~StaticSizedView() {}
 
-gfx::Size StaticSizedView::GetPreferredSize() {
+gfx::Size StaticSizedView::GetPreferredSize() const {
   return size_;
 }
 
@@ -19,7 +19,7 @@ ProportionallySizedView::ProportionallySizedView(int factor)
 
 ProportionallySizedView::~ProportionallySizedView() {}
 
-int ProportionallySizedView::GetHeightForWidth(int w) {
+int ProportionallySizedView::GetHeightForWidth(int w) const {
   return w * factor_;
 }
 

@@ -70,7 +70,7 @@ class FindBarView : public DropdownBarView,
   // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

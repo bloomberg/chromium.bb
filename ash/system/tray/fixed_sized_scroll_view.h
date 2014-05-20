@@ -26,7 +26,7 @@ class FixedSizedScrollView : public views::ScrollView {
   void set_fixed_size(const gfx::Size& size) { fixed_size_ = size; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  protected:

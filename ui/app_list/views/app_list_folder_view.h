@@ -62,7 +62,7 @@ class AppListFolderView : public views::View,
   void CloseFolderPage();
 
   // views::View
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 

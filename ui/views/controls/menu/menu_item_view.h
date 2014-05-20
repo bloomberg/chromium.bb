@@ -263,10 +263,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Returns the preferred size of this item.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Return the preferred dimensions of the item in pixel.
-  const MenuItemDimensions& GetDimensions();
+  const MenuItemDimensions& GetDimensions() const;
 
   // Returns the object responsible for controlling showing the menu.
   MenuController* GetMenuController();
@@ -330,11 +330,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   virtual const char* GetClassName() const OVERRIDE;
 
   // Returns the preferred size (and padding) of any children.
-  virtual gfx::Size GetChildPreferredSize();
+  virtual gfx::Size GetChildPreferredSize() const;
 
   // Returns the various margins.
-  int GetTopMargin();
-  int GetBottomMargin();
+  int GetTopMargin() const;
+  int GetBottomMargin() const;
 
  private:
   friend class internal::MenuRunnerImpl;  // For access to ~MenuItemView.
@@ -362,7 +362,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   int GetDrawStringFlags();
 
   // Returns the font list to use for menu text.
-  const gfx::FontList& GetFontList();
+  const gfx::FontList& GetFontList() const;
 
   // If this menu item has no children a child is added showing it has no
   // children. Otherwise AddEmtpyMenus is recursively invoked on child menu
@@ -389,13 +389,13 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the text that should be displayed on the end (right) of the menu
   // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
-  base::string16 GetMinorText();
+  base::string16 GetMinorText() const;
 
   // Calculates and returns the MenuItemDimensions.
-  MenuItemDimensions CalculateDimensions();
+  MenuItemDimensions CalculateDimensions() const;
 
   // Get the horizontal position at which to draw the menu item's label.
-  int GetLabelStartForThisItem();
+  int GetLabelStartForThisItem() const;
 
   // Used by MenuController to cache the menu position in use by the
   // active menu.
@@ -488,7 +488,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Cached dimensions. This is cached as text sizing calculations are quite
   // costly.
-  MenuItemDimensions dimensions_;
+  mutable MenuItemDimensions dimensions_;
 
   // Removed items to be deleted in ChildrenChanged().
   std::vector<View*> removed_items_;
@@ -499,8 +499,8 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Horizontal icon margins in pixels, which can differ between MenuItems.
   // These values will be set in the layout process.
-  int left_icon_margin_;
-  int right_icon_margin_;
+  mutable int left_icon_margin_;
+  mutable int right_icon_margin_;
 
   // |menu_position_| is the requested position with respect to the bounds.
   // |actual_menu_position_| is used by the controller to cache the

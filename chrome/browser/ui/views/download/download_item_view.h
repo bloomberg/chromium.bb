@@ -76,7 +76,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
@@ -198,7 +198,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // Sets |size| with the size of the Save and Discard buttons (they have the
   // same size).
-  gfx::Size GetButtonSize();
+  gfx::Size GetButtonSize() const;
 
   // Sizes the dangerous download label to a minimum width available using 2
   // lines.  The size is computed only the first time this method is invoked
@@ -313,7 +313,7 @@ class DownloadItemView : public views::ButtonListener,
   bool dangerous_download_label_sized_;
 
   // The size of the buttons.  Cached so animation works when hidden.
-  gfx::Size cached_button_size_;
+  mutable gfx::Size cached_button_size_;
 
   // Whether we are currently disabled as part of opening the downloaded file.
   bool disabled_while_opening_;

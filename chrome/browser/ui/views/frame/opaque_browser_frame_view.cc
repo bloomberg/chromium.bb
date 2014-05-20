@@ -190,7 +190,7 @@ void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
     window_icon_->Update();
 }
 
-gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
+gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
   return layout_->GetMinimumSize(width());
 }
 

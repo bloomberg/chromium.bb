@@ -82,7 +82,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   void OnPaintFocus(gfx::Canvas* canvas);
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;

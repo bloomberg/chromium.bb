@@ -208,7 +208,7 @@ class BrowserView : public BrowserWindow,
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false
   // otherwise.
-  bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
+  bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const;
 
   // Returns true if the specificed |accelerator| is registered with this view.
   bool IsAcceleratorRegistered(const ui::Accelerator& accelerator);
@@ -431,7 +431,7 @@ class BrowserView : public BrowserWindow,
   // Overridden from views::ClientView:
   virtual bool CanClose() OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
   // InfoBarContainer::Delegate overrides
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;

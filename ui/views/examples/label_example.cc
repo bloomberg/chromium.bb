@@ -25,7 +25,7 @@ class PreferredSizeLabel : public Label {
   virtual ~PreferredSizeLabel();
 
   // Label:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PreferredSizeLabel);
@@ -37,7 +37,9 @@ PreferredSizeLabel::PreferredSizeLabel() : Label() {
 
 PreferredSizeLabel::~PreferredSizeLabel() {}
 
-gfx::Size PreferredSizeLabel::GetPreferredSize() { return gfx::Size(100, 40); }
+gfx::Size PreferredSizeLabel::GetPreferredSize() const {
+  return gfx::Size(100, 40);
+}
 
 }  // namespace
 

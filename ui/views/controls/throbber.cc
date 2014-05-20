@@ -68,7 +68,7 @@ void Throbber::Run() {
   SchedulePaint();
 }
 
-gfx::Size Throbber::GetPreferredSize() {
+gfx::Size Throbber::GetPreferredSize() const {
   return gfx::Size(frames_->height(), frames_->height());
 }
 

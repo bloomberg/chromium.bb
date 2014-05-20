@@ -20,7 +20,7 @@ class FixedSizedImageView : public views::ImageView {
   virtual ~FixedSizedImageView();
 
  private:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   int width_;
   int height_;

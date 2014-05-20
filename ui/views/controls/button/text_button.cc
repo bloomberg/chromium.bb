@@ -276,7 +276,7 @@ void TextButtonBase::SetMultiLine(bool multi_line) {
   }
 }
 
-gfx::Size TextButtonBase::GetPreferredSize() {
+gfx::Size TextButtonBase::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
 
   // Use the max size to set the button boundaries.
@@ -296,7 +296,7 @@ gfx::Size TextButtonBase::GetPreferredSize() {
   return prefsize;
 }
 
-int TextButtonBase::GetHeightForWidth(int w) {
+int TextButtonBase::GetHeightForWidth(int w) const {
   if (!multi_line_)
     return View::GetHeightForWidth(w);
 
@@ -347,7 +347,8 @@ void TextButtonBase::UpdateTextSize() {
   }
 }
 
-void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
+void TextButtonBase::CalculateTextSize(gfx::Size* text_size,
+                                       int max_width) const {
   int h = font_list_.GetHeight();
   int w = multi_line_ ? max_width : 0;
   int flags = ComputeCanvasStringFlags();
@@ -481,7 +482,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   OnPaintText(canvas, mode);
 }
 
-gfx::Size TextButtonBase::GetMinimumSize() {
+gfx::Size TextButtonBase::GetMinimumSize() const {
   return max_text_size_;
 }
 
@@ -597,7 +598,7 @@ void TextButton::SetPushedIcon(const gfx::ImageSkia& icon) {
   SchedulePaint();
 }
 
-gfx::Size TextButton::GetPreferredSize() {
+gfx::Size TextButton::GetPreferredSize() const {
   gfx::Size prefsize(TextButtonBase::GetPreferredSize());
   prefsize.Enlarge(icon_.width(), 0);
   prefsize.set_height(std::max(prefsize.height(), icon_.height()));

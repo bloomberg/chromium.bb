@@ -36,7 +36,7 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
   // View overrides:
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
   // ScrollBar overrides:

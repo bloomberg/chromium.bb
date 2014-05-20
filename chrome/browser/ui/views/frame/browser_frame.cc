@@ -215,7 +215,7 @@ views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
 }
 
 bool BrowserFrame::GetAccelerator(int command_id,
-                                  ui::Accelerator* accelerator) {
+                                  ui::Accelerator* accelerator) const {
   return browser_view_->GetAccelerator(command_id, accelerator);
 }
 

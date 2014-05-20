@@ -60,7 +60,7 @@ class ShelfTooltipManager::ShelfTooltipBubble
   virtual void WindowClosing() OVERRIDE;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   ShelfTooltipManager* host_;
   views::Label* label_;
@@ -124,7 +124,7 @@ void ShelfTooltipManager::ShelfTooltipBubble::WindowClosing() {
     host_->OnBubbleClosed(this);
 }
 
-gfx::Size ShelfTooltipManager::ShelfTooltipBubble::GetPreferredSize() {
+gfx::Size ShelfTooltipManager::ShelfTooltipBubble::GetPreferredSize() const {
   gfx::Size pref_size = views::BubbleDelegateView::GetPreferredSize();
   if (pref_size.height() < kTooltipMinHeight)
     pref_size.set_height(kTooltipMinHeight);

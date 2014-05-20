@@ -268,11 +268,11 @@ class WebNotificationButton : public views::CustomButton {
 
  protected:
   // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(kShelfItemHeight, kShelfItemHeight);
   }
 
-  virtual int GetHeightForWidth(int width) OVERRIDE {
+  virtual int GetHeightForWidth(int width) const OVERRIDE {
     return GetPreferredSize().height();
   }
 
@@ -501,7 +501,7 @@ base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
 gfx::Rect WebNotificationTray::GetAnchorRect(
     views::Widget* anchor_widget,
     views::TrayBubbleView::AnchorType anchor_type,
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
+    views::TrayBubbleView::AnchorAlignment anchor_alignment) const {
   return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 

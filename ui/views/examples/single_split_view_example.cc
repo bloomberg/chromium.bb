@@ -22,8 +22,8 @@ class SplittedView : public View {
 
  private:
   // View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(SplittedView);
@@ -40,11 +40,11 @@ void SplittedView::SetColor(SkColor from, SkColor to) {
   set_background(Background::CreateVerticalGradientBackground(from, to));
 }
 
-gfx::Size SplittedView::GetPreferredSize() {
+gfx::Size SplittedView::GetPreferredSize() const {
   return gfx::Size(width(), height());
 }
 
-gfx::Size SplittedView::GetMinimumSize() {
+gfx::Size SplittedView::GetMinimumSize() const {
   return gfx::Size(10, 10);
 }
 

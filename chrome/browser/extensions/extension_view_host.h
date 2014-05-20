@@ -52,6 +52,7 @@ class ExtensionViewHost
 #endif
 
   PlatformExtensionView* view() { return view_.get(); }
+  const PlatformExtensionView* view() const { return view_.get(); }
 
   // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
   // is a valid argument for |browser|.  Extension views may be bound to

@@ -70,7 +70,7 @@ void NativeFrameView::UpdateWindowTitle() {
   // Nothing to do.
 }
 
-gfx::Size NativeFrameView::GetPreferredSize() {
+gfx::Size NativeFrameView::GetPreferredSize() const {
   gfx::Size client_preferred_size = frame_->client_view()->GetPreferredSize();
 #if defined(OS_WIN)
   // Returns the client size. On Windows, this is the expected behavior for
@@ -84,7 +84,7 @@ gfx::Size NativeFrameView::GetPreferredSize() {
 #endif
 }
 
-gfx::Size NativeFrameView::GetMinimumSize() {
+gfx::Size NativeFrameView::GetMinimumSize() const {
   return frame_->client_view()->GetMinimumSize();
 }
 

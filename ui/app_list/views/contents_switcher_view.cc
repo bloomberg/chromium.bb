@@ -42,7 +42,7 @@ void ContentsSwitcherView::AddSwitcherButton(int resource_id, int tag) {
   buttons_->AddChildView(button);
 }
 
-gfx::Size ContentsSwitcherView::GetPreferredSize() {
+gfx::Size ContentsSwitcherView::GetPreferredSize() const {
   return gfx::Size(buttons_->GetPreferredSize().width(), kPreferredHeight);
 }
 

@@ -700,7 +700,7 @@ void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
   }
 }
 
-gfx::Size LocationBarView::GetPreferredSize() {
+gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute minimum height.
   gfx::Size min_size(border_painter_->GetMinimumSize());
   if (!IsInitialized())

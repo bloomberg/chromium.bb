@@ -54,7 +54,7 @@ class VIEWS_EXPORT TabbedPane : public View {
   void SelectTab(Tab* tab);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
  private:

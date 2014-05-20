@@ -51,8 +51,8 @@ class CustomFrameView : public NonClientFrameView,
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
 
   // Overridden from ButtonListener:

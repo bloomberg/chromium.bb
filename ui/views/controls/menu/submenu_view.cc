@@ -121,7 +121,7 @@ void SubmenuView::Layout() {
   }
 }
 
-gfx::Size SubmenuView::GetPreferredSize() {
+gfx::Size SubmenuView::GetPreferredSize() const {
   if (!has_children())
     return gfx::Size();
 
@@ -132,11 +132,11 @@ gfx::Size SubmenuView::GetPreferredSize() {
   int max_simple_width = 0;
   int height = 0;
   for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+    const View* child = child_at(i);
     if (!child->visible())
       continue;
     if (child->id() == MenuItemView::kMenuItemViewID) {
-      MenuItemView* menu = static_cast<MenuItemView*>(child);
+      const MenuItemView* menu = static_cast<const MenuItemView*>(child);
       const MenuItemView::MenuItemDimensions& dimensions =
           menu->GetDimensions();
       max_simple_width = std::max(

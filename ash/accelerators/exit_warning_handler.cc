@@ -88,7 +88,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     SetLayoutManager(new views::FillLayout);
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(width_, height_);
   }
 

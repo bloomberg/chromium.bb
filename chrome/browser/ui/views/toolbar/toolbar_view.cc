@@ -538,7 +538,7 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
 
-gfx::Size ToolbarView::GetPreferredSize() {
+gfx::Size ToolbarView::GetPreferredSize() const {
   gfx::Size size(location_bar_->GetPreferredSize());
   if (is_display_mode_normal()) {
     int content_width = kLeftEdgeSpacing + back_->GetPreferredSize().width() +
@@ -554,7 +554,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
   return SizeForContentSize(size);
 }
 
-gfx::Size ToolbarView::GetMinimumSize() {
+gfx::Size ToolbarView::GetMinimumSize() const {
   gfx::Size size(location_bar_->GetMinimumSize());
   if (is_display_mode_normal()) {
     int content_width = kLeftEdgeSpacing + back_->GetMinimumSize().width() +

@@ -201,7 +201,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     return bb_view_.get();
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE { return bb_view_pref_; }
+  virtual gfx::Size GetPreferredSize() const OVERRIDE { return bb_view_pref_; }
 
   views::TextButton* GetBookmarkButton(int view_index) {
     return bb_view_->GetBookmarkButton(view_index);

@@ -193,7 +193,7 @@ class NotificationProgressBar : public views::ProgressBar {
 
  private:
   // Overriden from View
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationProgressBar);
@@ -205,7 +205,7 @@ NotificationProgressBar::NotificationProgressBar() {
 NotificationProgressBar::~NotificationProgressBar() {
 }
 
-gfx::Size NotificationProgressBar::GetPreferredSize() {
+gfx::Size NotificationProgressBar::GetPreferredSize() const {
   gfx::Size pref_size(kProgressBarWidth, message_center::kProgressBarThickness);
   gfx::Insets insets = GetInsets();
   pref_size.Enlarge(insets.width(), insets.height());
@@ -358,7 +358,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
 NotificationView::~NotificationView() {
 }
 
-gfx::Size NotificationView::GetPreferredSize() {
+gfx::Size NotificationView::GetPreferredSize() const {
   int top_width = top_view_->GetPreferredSize().width() +
                   icon_view_->GetPreferredSize().width();
   int bottom_width = bottom_view_->GetPreferredSize().width();
@@ -366,7 +366,7 @@ gfx::Size NotificationView::GetPreferredSize() {
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
 }
 
-int NotificationView::GetHeightForWidth(int width) {
+int NotificationView::GetHeightForWidth(int width) const {
   // Get the height assuming no line limit changes.
   int content_width = width - GetInsets().width();
   int top_height = top_view_->GetHeightForWidth(content_width);
@@ -724,7 +724,7 @@ void NotificationView::CreateOrUpdateActionButtonViews(
   }
 }
 
-int NotificationView::GetMessageLineLimit(int title_lines, int width) {
+int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
   // Image notifications require that the image must be kept flush against
   // their icons, but we can allow more text if no image.
   int effective_title_lines = std::max(0, title_lines - 1);
@@ -760,7 +760,7 @@ int NotificationView::GetMessageLineLimit(int title_lines, int width) {
   return message_line_limit;
 }
 
-int NotificationView::GetMessageHeight(int width, int limit) {
+int NotificationView::GetMessageHeight(int width, int limit) const {
   return message_view_ ?
          message_view_->GetSizeForWidthAndLines(width, limit).height() : 0;
 }

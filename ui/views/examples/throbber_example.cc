@@ -25,7 +25,7 @@ class ThrobberView : public View {
     throbber_->Start();
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(width(), height());
   }
 

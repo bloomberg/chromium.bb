@@ -395,7 +395,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
     return gfx::Size(kSeparatorWidth, 1);
@@ -664,8 +664,19 @@ int BookmarkBarView::GetToolbarOverlap() const {
           size_animation_->GetCurrentValue());
 }
 
-gfx::Size BookmarkBarView::GetPreferredSize() {
-  return LayoutItems(true);
+gfx::Size BookmarkBarView::GetPreferredSize() const {
+  gfx::Size prefsize;
+  if (IsDetached()) {
+    prefsize.set_height(
+        chrome::kBookmarkBarHeight +
+        static_cast<int>(
+            (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
+            (1 - size_animation_->GetCurrentValue())));
+  } else {
+    prefsize.set_height(static_cast<int>(chrome::kBookmarkBarHeight *
+                                         size_animation_->GetCurrentValue()));
+  }
+  return prefsize;
 }
 
 bool BookmarkBarView::HitTestRect(const gfx::Rect& rect) const {
@@ -681,7 +692,7 @@ bool BookmarkBarView::HitTestRect(const gfx::Rect& rect) const {
   return DetachableToolbarView::HitTestRect(rect);
 }
 
-gfx::Size BookmarkBarView::GetMinimumSize() {
+gfx::Size BookmarkBarView::GetMinimumSize() const {
   // The minimum width of the bookmark bar should at least contain the overflow
   // button, by which one can access all the Bookmark Bar items, and the "Other
   // Bookmarks" folder, along with appropriate margins and button padding.
@@ -718,7 +729,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 }
 
 void BookmarkBarView::Layout() {
-  LayoutItems(false);
+  LayoutItems();
 }
 
 void BookmarkBarView::ViewHierarchyChanged(
@@ -1299,7 +1310,7 @@ void BookmarkBarView::Init() {
   }
 }
 
-int BookmarkBarView::GetBookmarkButtonCount() {
+int BookmarkBarView::GetBookmarkButtonCount() const {
   // We contain four non-bookmark button views: other bookmarks, bookmarks
   // separator, chevrons (for overflow), apps page, and the instruction label.
   return child_count() - 5;
@@ -1714,10 +1725,9 @@ void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
       other_bookmarked_button_->visible());
 }
 
-gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
-  gfx::Size prefsize;
-  if (!parent() && !compute_bounds_only)
-    return prefsize;
+void BookmarkBarView::LayoutItems() {
+  if (!parent())
+    return;
 
   int x = kLeftMargin;
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
@@ -1757,36 +1767,29 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->visible()) {
-    if (!compute_bounds_only) {
-      apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
-                                     height);
-    }
+    apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
+                                   height);
     x += apps_page_shortcut_pref.width() + kButtonPadding;
   }
 
   // Then go through the bookmark buttons.
   if (GetBookmarkButtonCount() == 0 && model_ && model_->loaded()) {
     gfx::Size pref = instructions_->GetPreferredSize();
-    if (!compute_bounds_only) {
-      instructions_->SetBounds(
-          x + kInstructionsPadding, y,
-          std::min(static_cast<int>(pref.width()),
-          max_x - x),
-          height);
-      instructions_->SetVisible(true);
-    }
+    instructions_->SetBounds(
+        x + kInstructionsPadding, y,
+        std::min(static_cast<int>(pref.width()),
+                 max_x - x),
+        height);
+    instructions_->SetVisible(true);
   } else {
-    if (!compute_bounds_only)
-      instructions_->SetVisible(false);
+    instructions_->SetVisible(false);
 
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
       views::View* child = child_at(i);
       gfx::Size pref = child->GetPreferredSize();
       int next_x = x + pref.width() + kButtonPadding;
-      if (!compute_bounds_only) {
-        child->SetVisible(next_x < max_x);
-        child->SetBounds(x, y, pref.width(), height);
-      }
+      child->SetVisible(next_x < max_x);
+      child->SetBounds(x, y, pref.width(), height);
       x = next_x;
     }
   }
@@ -1796,58 +1799,30 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
                             child_at(GetBookmarkButtonCount() - 1)->visible());
 
   // Layout the right side buttons.
-  if (!compute_bounds_only)
-    x = max_x + kButtonPadding;
-  else
-    x += kButtonPadding;
+  x = max_x + kButtonPadding;
 
   // The overflow button.
-  if (!compute_bounds_only) {
-    overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
-    overflow_button_->SetVisible(!all_visible);
-  }
+  overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
+  overflow_button_->SetVisible(!all_visible);
   x += overflow_pref.width();
 
   // Separator.
   if (bookmarks_separator_view_->visible()) {
-    if (!compute_bounds_only) {
-      bookmarks_separator_view_->SetBounds(x,
-                                           y - top_margin,
-                                           bookmarks_separator_pref.width(),
-                                           height + top_margin + kBottomMargin -
-                                           separator_margin);
-    }
+    bookmarks_separator_view_->SetBounds(x,
+                                         y - top_margin,
+                                         bookmarks_separator_pref.width(),
+                                         height + top_margin + kBottomMargin -
+                                         separator_margin);
 
     x += bookmarks_separator_pref.width();
   }
 
   // The other bookmarks button.
   if (other_bookmarked_button_->visible()) {
-    if (!compute_bounds_only) {
-      other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
-                                          height);
-    }
+    other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
+                                        height);
     x += other_bookmarked_pref.width() + kButtonPadding;
   }
-
-  // Set the preferred size computed so far.
-  if (compute_bounds_only) {
-    x += kRightMargin;
-    prefsize.set_width(x);
-    if (IsDetached()) {
-      x += static_cast<int>(kNewtabHorizontalPadding *
-          (1 - size_animation_->GetCurrentValue()));
-      prefsize.set_height(
-          chrome::kBookmarkBarHeight +
-          static_cast<int>(
-              (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
-              (1 - size_animation_->GetCurrentValue())));
-    } else {
-      prefsize.set_height(static_cast<int>(chrome::kBookmarkBarHeight *
-                                           size_animation_->GetCurrentValue()));
-    }
-  }
-  return prefsize;
 }
 
 void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {

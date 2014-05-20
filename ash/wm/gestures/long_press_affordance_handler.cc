@@ -187,7 +187,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(2 * (kAffordanceOuterRadius + kAffordanceGlowWidth),
         2 * (kAffordanceOuterRadius + kAffordanceGlowWidth));
   }

@@ -27,7 +27,7 @@ class ScrollSeparator : public views::View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(gfx::Rect(0, height() / 2, width(), 1), kBorderLightColor);
   }
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(1, kTrayPopupScrollSeparatorHeight);
   }
 

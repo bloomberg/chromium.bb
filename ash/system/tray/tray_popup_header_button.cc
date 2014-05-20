@@ -49,7 +49,7 @@ const char* TrayPopupHeaderButton::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size TrayPopupHeaderButton::GetPreferredSize() {
+gfx::Size TrayPopupHeaderButton::GetPreferredSize() const {
   return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
 }
 

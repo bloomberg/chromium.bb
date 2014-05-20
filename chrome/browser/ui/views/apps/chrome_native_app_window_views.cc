@@ -567,7 +567,7 @@ void ChromeNativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
 
 // views::View implementation.
 
-gfx::Size ChromeNativeAppWindowViews::GetPreferredSize() {
+gfx::Size ChromeNativeAppWindowViews::GetPreferredSize() const {
   if (!preferred_size_.IsEmpty())
     return preferred_size_;
   return NativeAppWindowViews::GetPreferredSize();

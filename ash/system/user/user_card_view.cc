@@ -131,7 +131,7 @@ class PublicAccountUserDetails : public views::View,
  private:
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::LinkListener.
@@ -260,7 +260,7 @@ void PublicAccountUserDetails::Layout() {
   learn_more_->SetBoundsRect(learn_more_bounds);
 }
 
-gfx::Size PublicAccountUserDetails::GetPreferredSize() {
+gfx::Size PublicAccountUserDetails::GetPreferredSize() const {
   return preferred_size_;
 }
 

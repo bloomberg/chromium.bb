@@ -46,7 +46,7 @@ class PermissionMenuButton : public views::MenuButton,
   virtual ~PermissionMenuButton();
 
   // Overridden from views::MenuButton.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from views::TextButton.
   virtual void SetText(const base::string16& text) OVERRIDE;
@@ -85,7 +85,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
 PermissionMenuButton::~PermissionMenuButton() {
 }
 
-gfx::Size PermissionMenuButton::GetPreferredSize() {
+gfx::Size PermissionMenuButton::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
   // Scale the button to the current text size.
   gfx::Size prefsize(text_size_.width() + insets.width(),

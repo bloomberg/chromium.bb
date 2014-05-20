@@ -30,7 +30,7 @@ class OverlayScrollBarThumb : public BaseScrollBarThumb,
 
  protected:
   // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // gfx::AnimationDelegate overrides:
@@ -53,7 +53,7 @@ OverlayScrollBarThumb::OverlayScrollBarThumb(BaseScrollBar* scroll_bar)
 OverlayScrollBarThumb::~OverlayScrollBarThumb() {
 }
 
-gfx::Size OverlayScrollBarThumb::GetPreferredSize() {
+gfx::Size OverlayScrollBarThumb::GetPreferredSize() const {
   return gfx::Size(kThumbMinimumSize, kThumbMinimumSize);
 }
 
@@ -138,7 +138,7 @@ void OverlayScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   BaseScrollBar::OnGestureEvent(event);
 }
 
-gfx::Size OverlayScrollBar::GetPreferredSize() {
+gfx::Size OverlayScrollBar::GetPreferredSize() const {
   return gfx::Size();
 }
 

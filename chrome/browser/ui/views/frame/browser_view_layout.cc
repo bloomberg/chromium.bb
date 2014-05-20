@@ -370,7 +370,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
 
 // Return the preferred size which is the size required to give each
 // children their respective preferred size.
-gfx::Size BrowserViewLayout::GetPreferredSize(views::View* host) {
+gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
   return gfx::Size();
 }
 

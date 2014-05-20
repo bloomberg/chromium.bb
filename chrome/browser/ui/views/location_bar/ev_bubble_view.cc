@@ -25,7 +25,7 @@ EVBubbleView::EVBubbleView(const gfx::FontList& font_list,
 EVBubbleView::~EVBubbleView() {
 }
 
-gfx::Size EVBubbleView::GetMinimumSize() {
+gfx::Size EVBubbleView::GetMinimumSize() const {
   return GetMinimumSizeForPreferredSize(GetPreferredSize());
 }
 

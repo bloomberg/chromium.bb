@@ -49,7 +49,7 @@ bool GeneratedCreditCardBubbleViews::IsHiding() const {
   return GetWidget() && GetWidget()->IsClosed();
 }
 
-gfx::Size GeneratedCreditCardBubbleViews::GetPreferredSize() {
+gfx::Size GeneratedCreditCardBubbleViews::GetPreferredSize() const {
   return gfx::Size(
       GeneratedCreditCardBubbleView::kContentsWidth,
       GetHeightForWidth(GeneratedCreditCardBubbleViews::kContentsWidth));

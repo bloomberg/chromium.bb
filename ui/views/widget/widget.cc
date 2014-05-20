@@ -440,7 +440,7 @@ bool Widget::HasRemovalsObserver(WidgetRemovalsObserver* observer) {
   return removals_observers_.HasObserver(observer);
 }
 
-bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
+bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const {
   return false;
 }
 

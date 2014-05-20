@@ -65,7 +65,7 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
   trailing_label_->SetText(keyword_hint.substr(content_param_offsets.front()));
 }
 
-gfx::Size KeywordHintView::GetPreferredSize() {
+gfx::Size KeywordHintView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return gfx::Size(leading_label_->GetPreferredSize().width() +
                        tab_image_->GetPreferredSize().width() +
@@ -73,7 +73,7 @@ gfx::Size KeywordHintView::GetPreferredSize() {
                    0);
 }
 
-gfx::Size KeywordHintView::GetMinimumSize() {
+gfx::Size KeywordHintView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
   return tab_image_->GetPreferredSize();
 }

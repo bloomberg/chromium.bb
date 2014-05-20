@@ -28,8 +28,8 @@ class ASH_EXPORT PowerStatusView : public views::View,
   virtual ~PowerStatusView();
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from PowerStatus::Observer.

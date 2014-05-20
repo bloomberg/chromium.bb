@@ -218,7 +218,7 @@ int Label::GetBaseline() const {
   return GetInsets().top() + font_list_.GetBaseline();
 }
 
-gfx::Size Label::GetPreferredSize() {
+gfx::Size Label::GetPreferredSize() const {
   // Return a size of (0, 0) if the label is not visible and if the
   // collapse_when_hidden_ flag is set.
   // TODO(munjal): This logic probably belongs to the View class. But for now,
@@ -233,7 +233,7 @@ gfx::Size Label::GetPreferredSize() {
   return size;
 }
 
-gfx::Size Label::GetMinimumSize() {
+gfx::Size Label::GetMinimumSize() const {
   gfx::Size text_size(GetTextSize());
   if ((!visible() && collapse_when_hidden_) || text_size.IsEmpty())
     return gfx::Size();
@@ -247,7 +247,7 @@ gfx::Size Label::GetMinimumSize() {
   return size;
 }
 
-int Label::GetHeightForWidth(int w) {
+int Label::GetHeightForWidth(int w) const {
   if (!is_multi_line_)
     return View::GetHeightForWidth(w);
 

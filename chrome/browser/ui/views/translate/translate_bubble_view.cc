@@ -243,10 +243,10 @@ bool TranslateBubbleView::AcceleratorPressed(
   return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
-gfx::Size TranslateBubbleView::GetPreferredSize() {
+gfx::Size TranslateBubbleView::GetPreferredSize() const {
   int width = 0;
   for (int i = 0; i < child_count(); i++) {
-    views::View* child = child_at(i);
+    const views::View* child = child_at(i);
     width = std::max(width, child->GetPreferredSize().width());
   }
   int height = GetCurrentView()->GetPreferredSize().height();
@@ -305,7 +305,7 @@ TranslateBubbleView::TranslateBubbleView(
   translate_bubble_view_ = this;
 }
 
-views::View* TranslateBubbleView::GetCurrentView() {
+views::View* TranslateBubbleView::GetCurrentView() const {
   switch (model_->GetViewState()) {
     case TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE:
       return before_translate_view_;

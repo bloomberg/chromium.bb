@@ -30,8 +30,8 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
   virtual void UpdateWindowTitle() OVERRIDE;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 

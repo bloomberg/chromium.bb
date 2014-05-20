@@ -42,7 +42,7 @@ int NativeScrollBar::GetVerticalScrollBarWidth(
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeScrollBar, View overrides:
-gfx::Size NativeScrollBar::GetPreferredSize() {
+gfx::Size NativeScrollBar::GetPreferredSize() const {
   if (native_wrapper_)
     return native_wrapper_->GetView()->GetPreferredSize();
   return gfx::Size();

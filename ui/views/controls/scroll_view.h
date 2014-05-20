@@ -58,7 +58,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void ClipHeightTo(int min_height, int max_height);
 
   // Returns whether or not the ScrollView is bounded (as set by ClipHeightTo).
-  bool is_bounded() { return max_height_ >= 0 && min_height_ >= 0; }
+  bool is_bounded() const { return max_height_ >= 0 && min_height_ >= 0; }
 
   // Retrieves the width/height of scrollbars. These return 0 if the scrollbar
   // has not yet been created.
@@ -75,8 +75,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;

@@ -108,7 +108,7 @@ class WEBVIEW_EXPORT WebView : public View,
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from content::WebContentsDelegate:
   virtual void WebContentsFocused(content::WebContents* web_contents) OVERRIDE;

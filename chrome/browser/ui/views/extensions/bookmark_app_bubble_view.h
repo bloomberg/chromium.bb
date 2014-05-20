@@ -60,7 +60,7 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
 
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.

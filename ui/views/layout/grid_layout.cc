@@ -828,7 +828,7 @@ void GridLayout::Layout(View* host) {
   }
 }
 
-gfx::Size GridLayout::GetPreferredSize(View* host) {
+gfx::Size GridLayout::GetPreferredSize(const View* host) const {
   DCHECK(host_ == host);
   gfx::Size out;
   SizeRowsAndColumns(false, 0, 0, &out);
@@ -837,7 +837,7 @@ gfx::Size GridLayout::GetPreferredSize(View* host) {
   return out;
 }
 
-int GridLayout::GetPreferredHeightForWidth(View* host, int width) {
+int GridLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   DCHECK(host_ == host);
   gfx::Size pref;
   SizeRowsAndColumns(false, width, 0, &pref);
@@ -845,7 +845,7 @@ int GridLayout::GetPreferredHeightForWidth(View* host, int width) {
 }
 
 void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
-                                    gfx::Size* pref) {
+                                    gfx::Size* pref) const {
   // Make sure the master columns have been calculated.
   CalculateMasterColumnsIfNecessary();
   pref->SetSize(0, 0);
@@ -950,7 +950,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   }
 }
 
-void GridLayout::CalculateMasterColumnsIfNecessary() {
+void GridLayout::CalculateMasterColumnsIfNecessary() const {
   if (!calculated_master_columns_) {
     calculated_master_columns_ = true;
     for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
@@ -995,14 +995,14 @@ void GridLayout::AddRow(Row* row) {
   SkipPaddingColumns();
 }
 
-void GridLayout::UpdateRemainingHeightFromRows(ViewState* view_state) {
+void GridLayout::UpdateRemainingHeightFromRows(ViewState* view_state) const {
   for (int i = 0, start_row = view_state->start_row;
        i < view_state->row_span; ++i) {
     view_state->remaining_height -= rows_[i + start_row]->Size();
   }
 }
 
-void GridLayout::DistributeRemainingHeight(ViewState* view_state) {
+void GridLayout::DistributeRemainingHeight(ViewState* view_state) const {
   int height = view_state->remaining_height;
   if (height <= 0)
     return;

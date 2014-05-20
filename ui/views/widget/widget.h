@@ -358,7 +358,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
-  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
+  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
   void ViewHierarchyChanged(const View::ViewHierarchyChangedDetails& details);

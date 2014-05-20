@@ -64,7 +64,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 

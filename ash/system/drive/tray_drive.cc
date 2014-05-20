@@ -129,7 +129,7 @@ class DriveDetailedView : public TrayDetailsView,
    private:
 
     // Overridden from View:
-    virtual gfx::Size GetPreferredSize() OVERRIDE {
+    virtual gfx::Size GetPreferredSize() const OVERRIDE {
       return gfx::Size(kProgressBarWidth, kProgressBarHeight);
     }
 
@@ -198,7 +198,7 @@ class DriveDetailedView : public TrayDetailsView,
    private:
 
     // views::View overrides.
-    virtual gfx::Size GetPreferredSize() OVERRIDE {
+    virtual gfx::Size GetPreferredSize() const OVERRIDE {
       return gfx::Size(
           status_img_->GetPreferredSize().width() +
           label_container_->GetPreferredSize().width() +

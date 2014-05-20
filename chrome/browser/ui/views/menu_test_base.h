@@ -65,7 +65,7 @@ class MenuTestBase : public ViewEventTestBase,
   virtual void TearDown() OVERRIDE;
   virtual views::View* CreateContentsView() OVERRIDE;
   virtual void DoTestOnMessageLoop() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // views::MenuButtonListener implementation
   virtual void OnMenuButtonClicked(views::View* source,

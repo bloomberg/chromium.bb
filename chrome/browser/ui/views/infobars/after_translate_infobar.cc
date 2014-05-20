@@ -149,7 +149,7 @@ void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
     TranslateInfoBarBase::ButtonPressed(sender, event);
 }
 
-int AfterTranslateInfoBar::ContentMinimumWidth() {
+int AfterTranslateInfoBar::ContentMinimumWidth() const {
   return label_1_->GetMinimumSize().width() +
       label_2_->GetMinimumSize().width() + label_3_->GetMinimumSize().width() +
       NonLabelWidth();

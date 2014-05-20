@@ -164,8 +164,8 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int GetToolbarOverlap() const OVERRIDE;
 
   // View methods:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
@@ -285,7 +285,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Returns the number of buttons corresponding to starred urls/folders. This
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
-  int GetBookmarkButtonCount();
+  int GetBookmarkButtonCount() const;
 
   // Returns the button at the specified index.
   views::TextButton* GetBookmarkButton(int index);
@@ -369,11 +369,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the visibility of |bookmarks_separator_view_|.
   void UpdateBookmarksSeparatorVisibility();
 
-  // This method computes the bounds for the bookmark bar items. If
-  // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
-  // but are not set. This mode is used by GetPreferredSize() to obtain the
-  // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
-  gfx::Size LayoutItems(bool compute_bounds_only);
+  // This method computes the bounds for the bookmark bar items.
+  void LayoutItems();
 
   // Updates the visibility of the apps shortcut based on the pref value.
   void OnAppsPageShortcutVisibilityPrefChanged();

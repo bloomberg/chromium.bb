@@ -101,7 +101,7 @@ bool AppsContainerView::IsInFolderView() const {
   return show_state_ == SHOW_ACTIVE_FOLDER;
 }
 
-gfx::Size AppsContainerView::GetPreferredSize() {
+gfx::Size AppsContainerView::GetPreferredSize() const {
   const gfx::Size grid_size = apps_grid_view_->GetPreferredSize();
   const gfx::Size folder_view_size = app_list_folder_view_->GetPreferredSize();
 

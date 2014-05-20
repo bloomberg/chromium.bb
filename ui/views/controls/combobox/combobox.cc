@@ -378,7 +378,7 @@ void Combobox::ExecuteCommand(int id) {
   OnPerformAction();
 }
 
-bool Combobox::GetAccelerator(int id, ui::Accelerator* accel) {
+bool Combobox::GetAccelerator(int id, ui::Accelerator* accel) const {
   return false;
 }
 
@@ -405,10 +405,7 @@ base::string16 Combobox::GetTextForRow(int row) {
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, View overrides:
 
-gfx::Size Combobox::GetPreferredSize() {
-  if (content_size_.IsEmpty())
-    UpdateFromModel();
-
+gfx::Size Combobox::GetPreferredSize() const {
   // The preferred size will drive the local bounds which in turn is used to set
   // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();

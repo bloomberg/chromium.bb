@@ -224,7 +224,7 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
   return View::GetNativeViewAccessible();
 }
 
-gfx::Size WebView::GetPreferredSize() {
+gfx::Size WebView::GetPreferredSize() const {
   if (preferred_size_ == gfx::Size())
     return View::GetPreferredSize();
   else

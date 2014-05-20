@@ -233,6 +233,7 @@ class LocationBarView : public LocationBar,
   gfx::Point GetLocationBarAnchorPoint() const;
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
+  const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
   views::View* generated_credit_card_view();
 
@@ -258,7 +259,7 @@ class LocationBarView : public LocationBar,
   // views::View:
   virtual bool HasFocus() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // OmniboxEditController:

@@ -108,7 +108,7 @@ void SearchBoxView::InvalidateMenu() {
   menu_.reset();
 }
 
-gfx::Size SearchBoxView::GetPreferredSize() {
+gfx::Size SearchBoxView::GetPreferredSize() const {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 

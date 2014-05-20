@@ -97,7 +97,7 @@ void GlassAppWindowFrameViewWin::GetWindowMask(const gfx::Size& size,
   // We got nothing to say about no window mask.
 }
 
-gfx::Size GlassAppWindowFrameViewWin::GetPreferredSize() {
+gfx::Size GlassAppWindowFrameViewWin::GetPreferredSize() const {
   gfx::Size pref = widget_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
   return widget_->non_client_view()
@@ -109,7 +109,7 @@ const char* GlassAppWindowFrameViewWin::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size GlassAppWindowFrameViewWin::GetMinimumSize() {
+gfx::Size GlassAppWindowFrameViewWin::GetMinimumSize() const {
   gfx::Size min_size = widget_->client_view()->GetMinimumSize();
   gfx::Rect client_bounds = GetBoundsForClientView();
   min_size.Enlarge(0, client_bounds.y());

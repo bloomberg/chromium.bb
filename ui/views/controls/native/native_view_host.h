@@ -77,7 +77,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void NativeViewDestroyed();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;

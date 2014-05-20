@@ -57,9 +57,9 @@ class VIEWS_EXPORT ClientView : public View {
   virtual int NonClientHitTest(const gfx::Point& point);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 

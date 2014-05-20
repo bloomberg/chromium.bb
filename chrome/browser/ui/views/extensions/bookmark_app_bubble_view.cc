@@ -212,7 +212,7 @@ bool BookmarkAppBubbleView::AcceleratorPressed(
   return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
-gfx::Size BookmarkAppBubbleView::GetMinimumSize() {
+gfx::Size BookmarkAppBubbleView::GetMinimumSize() const {
   gfx::Size size(views::BubbleDelegateView::GetPreferredSize());
   size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
   return size;

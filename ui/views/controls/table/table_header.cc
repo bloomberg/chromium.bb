@@ -159,7 +159,7 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-gfx::Size TableHeader::GetPreferredSize() {
+gfx::Size TableHeader::GetPreferredSize() const {
   return gfx::Size(1, kVerticalPadding * 2 + font_list_.GetHeight());
 }
 

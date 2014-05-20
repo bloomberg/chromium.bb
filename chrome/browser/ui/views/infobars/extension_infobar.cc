@@ -169,9 +169,10 @@ void ExtensionInfoBar::ViewHierarchyChanged(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-int ExtensionInfoBar::ContentMinimumWidth() {
+int ExtensionInfoBar::ContentMinimumWidth() const {
   return NonExtensionViewWidth() +
-      GetDelegate()->extension_view_host()->view()->GetMinimumSize().width();
+      delegate()->AsExtensionInfoBarDelegate()->extension_view_host()->
+      view()->GetMinimumSize().width();
 }
 
 void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
@@ -219,6 +220,10 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {
+  return delegate()->AsExtensionInfoBarDelegate();
+}
+
+const ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() const {
   return delegate()->AsExtensionInfoBarDelegate();
 }
 

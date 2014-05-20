@@ -77,11 +77,11 @@ class AppWindowFrameView : public views::NonClientFrameView,
   virtual void UpdateWindowTitle() OVERRIDE {}
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
 
   // views::ButtonListener implementation.

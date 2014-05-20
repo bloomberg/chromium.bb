@@ -137,7 +137,7 @@ class AddUserView : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Create the additional client content for this item.
   void AddContent();
@@ -164,7 +164,7 @@ AddUserView::~AddUserView() {
   owner_->ForceBorderVisible(false);
 }
 
-gfx::Size AddUserView::GetPreferredSize() {
+gfx::Size AddUserView::GetPreferredSize() const {
   return owner_->bounds().size();
 }
 
@@ -257,7 +257,7 @@ gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
   return user_card_view_->GetBoundsInScreen();
 }
 
-gfx::Size UserView::GetPreferredSize() {
+gfx::Size UserView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   // Only the active user panel will be forced to a certain height.
   if (!multiprofile_index_) {
@@ -267,7 +267,7 @@ gfx::Size UserView::GetPreferredSize() {
   return size;
 }
 
-int UserView::GetHeightForWidth(int width) {
+int UserView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 

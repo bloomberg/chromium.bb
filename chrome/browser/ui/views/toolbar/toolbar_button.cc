@@ -46,7 +46,7 @@ bool ToolbarButton::IsMenuShowing() const {
   return menu_showing_;
 }
 
-gfx::Size ToolbarButton::GetPreferredSize() {
+gfx::Size ToolbarButton::GetPreferredSize() const {
   gfx::Size size(image()->GetPreferredSize());
   gfx::Size label_size = label()->GetPreferredSize();
   if (label_size.width() > 0)

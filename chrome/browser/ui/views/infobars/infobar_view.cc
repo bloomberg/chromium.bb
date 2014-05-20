@@ -304,7 +304,7 @@ void InfoBarView::ButtonPressed(views::Button* sender,
   }
 }
 
-int InfoBarView::ContentMinimumWidth() {
+int InfoBarView::ContentMinimumWidth() const {
   return 0;
 }
 
@@ -403,7 +403,7 @@ void InfoBarView::GetAccessibleState(ui::AXViewState* state) {
   state->keyboard_shortcut = base::ASCIIToUTF16("Alt+Shift+A");
 }
 
-gfx::Size InfoBarView::GetPreferredSize() {
+gfx::Size InfoBarView::GetPreferredSize() const {
   return gfx::Size(
       kEdgeItemPadding + (icon_ ? (icon_->width() + kIconToLabelSpacing) : 0) +
           ContentMinimumWidth() + kBeforeCloseButtonSpacing +

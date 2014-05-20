@@ -47,7 +47,7 @@ class MultiprofilesSessionAbortedView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   void InitDialog(const std::string& user_email);
@@ -105,7 +105,7 @@ ui::ModalType MultiprofilesSessionAbortedView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-gfx::Size MultiprofilesSessionAbortedView::GetPreferredSize() {
+gfx::Size MultiprofilesSessionAbortedView::GetPreferredSize() const {
   return gfx::Size(kDefaultWidth, kDefaultHeight);
 }
 

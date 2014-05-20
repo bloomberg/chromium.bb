@@ -153,7 +153,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 
@@ -343,7 +343,7 @@ class ExpandableContainerView : public views::View,
     virtual ~DetailsView() {}
 
     // views::View:
-    virtual gfx::Size GetPreferredSize() OVERRIDE;
+    virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
     void AddDetail(const base::string16& detail);
 
@@ -1085,7 +1085,7 @@ void ExtensionInstallDialogView::Layout() {
   DialogDelegateView::Layout();
 }
 
-gfx::Size ExtensionInstallDialogView::GetPreferredSize() {
+gfx::Size ExtensionInstallDialogView::GetPreferredSize() const {
   return dialog_size_;
 }
 
@@ -1172,7 +1172,7 @@ void ExpandableContainerView::DetailsView::AddDetail(
   layout_->AddView(detail_label);
 }
 
-gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() {
+gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   return gfx::Size(size.width(), size.height() * state_);
 }

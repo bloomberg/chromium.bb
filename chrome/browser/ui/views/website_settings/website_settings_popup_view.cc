@@ -400,7 +400,7 @@ void WebsiteSettingsPopupView::TabSelectedAt(int index) {
   SizeToContents();
 }
 
-gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
+gfx::Size WebsiteSettingsPopupView::GetPreferredSize() const {
   if (header_ == NULL && tabbed_pane_ == NULL)
     return views::View::GetPreferredSize();
 

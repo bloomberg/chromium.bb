@@ -26,7 +26,7 @@ class ContentsSwitcherView : public views::View, public views::ButtonListener {
   void AddSwitcherButton(int resource_id, int tag);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::ButtonListener:

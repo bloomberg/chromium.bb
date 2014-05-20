@@ -68,7 +68,7 @@ void ModeIndicatorView::ShowAndFadeOut() {
                &views::Widget::Close);
 }
 
-gfx::Size ModeIndicatorView::GetPreferredSize() {
+gfx::Size ModeIndicatorView::GetPreferredSize() const {
   gfx::Size size = label_view_->GetPreferredSize();
   size.SetToMax(gfx::Size(kMinSize, kMinSize));
   return size;

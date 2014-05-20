@@ -48,7 +48,7 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
   virtual ~TestWidgetConstraintsDelegate() {}
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
     return minimum_size_;
   }
 

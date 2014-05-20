@@ -66,8 +66,9 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
 
   // Overridden from views::LayoutManager:
   virtual void Layout(View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
-  virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(const View* host) const OVERRIDE;
+  virtual int GetPreferredHeightForWidth(const View* host,
+                                         int width) const OVERRIDE;
 
  private:
   // Returns the size and position along the main axis of |child_area|.
@@ -79,11 +80,12 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   void SetMainAxisPosition(int position, gfx::Rect* child_area) const;
 
   // The preferred size for the dialog given the width of the child area.
-  gfx::Size GetPreferredSizeForChildWidth(View* host, int child_area_width);
+  gfx::Size GetPreferredSizeForChildWidth(const View* host,
+                                          int child_area_width) const;
 
   // The amount of space the layout requires in addition to any space for the
   // child views.
-  gfx::Size NonChildSize(View* host);
+  gfx::Size NonChildSize(const View* host) const;
 
   const Orientation orientation_;
 

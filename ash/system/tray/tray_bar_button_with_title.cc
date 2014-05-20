@@ -84,7 +84,7 @@ void TrayBarButtonWithTitle::UpdateButton(bool control_on) {
   image_->Update(control_on);
 }
 
-gfx::Size TrayBarButtonWithTitle::GetPreferredSize() {
+gfx::Size TrayBarButtonWithTitle::GetPreferredSize() const {
   return gfx::Size(width_, kTrayPopupItemHeight);
 }
 

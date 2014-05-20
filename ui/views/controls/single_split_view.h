@@ -38,7 +38,7 @@ class VIEWS_EXPORT SingleSplitView : public View {
 
   // SingleSplitView's preferred size is the sum of the preferred widths
   // and the max of the heights.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overriden to return a resize cursor when over the divider.
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;

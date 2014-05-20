@@ -65,11 +65,11 @@ void SingleSplitView::GetAccessibleState(ui::AXViewState* state) {
   state->name = accessible_name_;
 }
 
-gfx::Size SingleSplitView::GetPreferredSize() {
+gfx::Size SingleSplitView::GetPreferredSize() const {
   int width = 0;
   int height = 0;
   for (int i = 0; i < 2 && i < child_count(); ++i) {
-    View* view = child_at(i);
+    const View* view = child_at(i);
     gfx::Size pref = view->GetPreferredSize();
     if (is_horizontal_) {
       width += pref.width();

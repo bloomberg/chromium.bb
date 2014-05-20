@@ -184,7 +184,7 @@ void Slider::OnPaintFocus(gfx::Canvas* canvas) {
   }
 }
 
-gfx::Size Slider::GetPreferredSize() {
+gfx::Size Slider::GetPreferredSize() const {
   const int kSizeMajor = 200;
   const int kSizeMinor = 40;
 

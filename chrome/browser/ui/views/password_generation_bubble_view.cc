@@ -54,7 +54,7 @@ class TextfieldWrapper : public views::View {
   virtual ~TextfieldWrapper();
 
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   gfx::Size GetImageSize() const;
@@ -96,7 +96,7 @@ void TextfieldWrapper::Layout() {
   image_button_->SetSize(GetImageSize());
 }
 
-gfx::Size TextfieldWrapper::GetPreferredSize() {
+gfx::Size TextfieldWrapper::GetPreferredSize() const {
   int width = (textfield_->GetPreferredSize().width() +
                GetImageSize().width() +
                kTextfieldHorizontalPadding * 3);
@@ -196,7 +196,7 @@ void PasswordGenerationBubbleView::Layout() {
       textfield_wrapper_->GetPreferredSize().height() + kWrapperBorderSize * 2);
 }
 
-gfx::Size PasswordGenerationBubbleView::GetPreferredSize() {
+gfx::Size PasswordGenerationBubbleView::GetPreferredSize() const {
   int width = (textfield_wrapper_->GetPreferredSize().width() +
                kButtonHorizontalSpacing +
                kButtonWidth - 1);
@@ -206,7 +206,7 @@ gfx::Size PasswordGenerationBubbleView::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-gfx::Rect PasswordGenerationBubbleView::GetAnchorRect() {
+gfx::Rect PasswordGenerationBubbleView::GetAnchorRect() const {
   return anchor_rect_;
 }
 

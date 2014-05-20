@@ -74,7 +74,7 @@ void ImageButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
 
-gfx::Size ImageButton::GetPreferredSize() {
+gfx::Size ImageButton::GetPreferredSize() const {
   gfx::Size size = preferred_size_;
   if (!images_[STATE_NORMAL].isNull()) {
     size = gfx::Size(images_[STATE_NORMAL].width(),

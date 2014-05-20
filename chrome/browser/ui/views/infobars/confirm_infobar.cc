@@ -109,7 +109,7 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   }
 }
 
-int ConfirmInfoBar::ContentMinimumWidth() {
+int ConfirmInfoBar::ContentMinimumWidth() const {
   return label_->GetMinimumSize().width() + link_->GetMinimumSize().width() +
       NonLabelWidth();
 }

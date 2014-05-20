@@ -25,7 +25,7 @@ class PageActionWithBadgeView : public views::View {
 
   // views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 

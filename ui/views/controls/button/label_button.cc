@@ -173,7 +173,7 @@ void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
   focus_painter_ = focus_painter.Pass();
 }
 
-gfx::Size LabelButton::GetPreferredSize() {
+gfx::Size LabelButton::GetPreferredSize() const {
   // Use a temporary label copy for sizing to avoid calculation side-effects.
   Label label(GetText(), cached_normal_font_list_);
   label.SetMultiLine(GetTextMultiLine());

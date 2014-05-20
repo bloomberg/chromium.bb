@@ -35,7 +35,7 @@ class MultilineExample::RenderTextView : public View {
     render_text_->Draw(canvas);
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     // Turn off multiline mode to get the single-line text size, which is the
     // preferred size for this view.
     render_text_->SetMultiline(false);
@@ -46,7 +46,7 @@ class MultilineExample::RenderTextView : public View {
     return size;
   }
 
-  virtual int GetHeightForWidth(int w) OVERRIDE {
+  virtual int GetHeightForWidth(int w) const OVERRIDE {
     // TODO(ckocagil): Why does this happen?
     if (w == 0)
       return View::GetHeightForWidth(w);

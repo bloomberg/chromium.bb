@@ -27,8 +27,8 @@ class NotificationButton : public views::CustomButton {
   void SetTitle(const base::string16& title);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;

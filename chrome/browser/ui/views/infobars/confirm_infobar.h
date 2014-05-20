@@ -34,7 +34,7 @@ class ConfirmInfoBar : public InfoBarView,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-  virtual int ContentMinimumWidth() OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

@@ -337,7 +337,7 @@ void FindBarView::Layout() {
       find_previous_button_->height());
 }
 
-gfx::Size FindBarView::GetPreferredSize() {
+gfx::Size FindBarView::GetPreferredSize() const {
   gfx::Size prefsize = find_text_->GetPreferredSize();
   prefsize.set_height(preferred_height_);
 

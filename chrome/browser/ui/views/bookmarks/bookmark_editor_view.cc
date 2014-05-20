@@ -134,7 +134,7 @@ bool BookmarkEditorView::Accept() {
   return true;
 }
 
-gfx::Size BookmarkEditorView::GetPreferredSize() {
+gfx::Size BookmarkEditorView::GetPreferredSize() const {
   if (!show_tree_)
     return views::View::GetPreferredSize();
 

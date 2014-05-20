@@ -209,7 +209,7 @@ void ContentsView::Prerender() {
   apps_container_view_->apps_grid_view()->Prerender(selected_page);
 }
 
-gfx::Size ContentsView::GetPreferredSize() {
+gfx::Size ContentsView::GetPreferredSize() const {
   const gfx::Size container_size = GetAppsContainerView(view_model_.get())->
       apps_grid_view()->GetPreferredSize();
   const gfx::Size results_size =

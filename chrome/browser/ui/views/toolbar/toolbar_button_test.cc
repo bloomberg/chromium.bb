@@ -38,7 +38,7 @@ class ToolbarButtonDragTest : public ViewEventTestBase,
     return button_;
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return button_->GetPreferredSize();
   }
 

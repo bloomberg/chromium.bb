@@ -65,7 +65,7 @@ class OriginChipView : public views::LabelButton,
   int host_label_x() const { return host_label_->x(); }
 
   // views::LabelButton:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   // Sets an image grid to represent the current security state.

@@ -35,7 +35,7 @@ class ExtensionViewViews : public views::NativeViewHost {
   virtual ~ExtensionViewViews();
 
   // views::NativeViewHost:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void SetVisible(bool is_visible) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
   virtual void ViewHierarchyChanged(

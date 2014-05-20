@@ -80,7 +80,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   bool ShouldCenterWindow() const;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;

@@ -92,7 +92,7 @@ class WrenchMenu : public views::MenuDelegate,
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int mouse_event_flags) OVERRIDE;
   virtual bool GetAccelerator(int command_id,
-                              ui::Accelerator* accelerator) OVERRIDE;
+                              ui::Accelerator* accelerator) const OVERRIDE;
   virtual void WillShowMenu(views::MenuItemView* menu) OVERRIDE;
   virtual void WillHideMenu(views::MenuItemView* menu) OVERRIDE;
 

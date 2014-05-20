@@ -23,7 +23,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   OnPaintAura(canvas);
 }
 
-gfx::Size MenuSeparator::GetPreferredSize() {
+gfx::Size MenuSeparator::GetPreferredSize() const {
   return GetPreferredSizeAura();
 }
 #endif
@@ -47,7 +47,7 @@ void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
                        ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
-gfx::Size MenuSeparator::GetPreferredSizeAura() {
+gfx::Size MenuSeparator::GetPreferredSizeAura() const {
   const MenuConfig& menu_config = parent_menu_item_->GetMenuConfig();
   int height = menu_config.separator_height;
   switch(type_) {

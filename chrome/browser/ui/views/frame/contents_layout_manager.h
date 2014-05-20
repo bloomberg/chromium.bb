@@ -26,7 +26,7 @@ class ContentsLayoutManager : public views::LayoutManager {
 
   // views::LayoutManager overrides:
   virtual void Layout(views::View* host) OVERRIDE;
-  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(const views::View* host) const OVERRIDE;
   virtual void Installed(views::View* host) OVERRIDE;
   virtual void Uninstalled(views::View* host) OVERRIDE;
 

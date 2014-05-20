@@ -326,7 +326,7 @@ void BrowserNonClientFrameViewAsh::GetAccessibleState(
   state->role = ui::AX_ROLE_TITLE_BAR;
 }
 
-gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
+gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
   int min_width = std::max(header_painter_->GetMinimumHeaderWidth(),
                            min_client_view_size.width());

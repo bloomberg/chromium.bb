@@ -91,7 +91,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   void UpdateSizeButtonVisibility(bool force_hidden);
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 

@@ -161,7 +161,7 @@ class TaskManagerView : public views::ButtonListener,
 
   // views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
@@ -447,7 +447,7 @@ void TaskManagerView::Layout() {
   tab_table_parent_->SetBoundsRect(rect);
 }
 
-gfx::Size TaskManagerView::GetPreferredSize() {
+gfx::Size TaskManagerView::GetPreferredSize() const {
   return gfx::Size(460, 270);
 }
 

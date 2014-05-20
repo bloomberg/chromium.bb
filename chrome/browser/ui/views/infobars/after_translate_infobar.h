@@ -30,7 +30,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-  virtual int ContentMinimumWidth() OVERRIDE;
+  virtual int ContentMinimumWidth() const OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,

@@ -42,8 +42,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   virtual ~NotificationView();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE;
@@ -85,8 +85,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
 
-  int GetMessageLineLimit(int title_lines, int width);
-  int GetMessageHeight(int width, int limit);
+  int GetMessageLineLimit(int title_lines, int width) const;
+  int GetMessageHeight(int width, int limit) const;
 
   MessageCenterController* controller_;  // Weak, lives longer then views.
 

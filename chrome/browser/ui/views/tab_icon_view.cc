@@ -155,6 +155,6 @@ void TabIconView::OnPaint(gfx::Canvas* canvas) {
     PaintFavicon(canvas, *g_default_favicon);
 }
 
-gfx::Size TabIconView::GetPreferredSize() {
+gfx::Size TabIconView::GetPreferredSize() const {
   return gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize);
 }

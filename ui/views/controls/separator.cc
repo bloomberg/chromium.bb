@@ -28,7 +28,7 @@ Separator::~Separator() {
 ////////////////////////////////////////////////////////////////////////////////
 // Separator, View overrides:
 
-gfx::Size Separator::GetPreferredSize() {
+gfx::Size Separator::GetPreferredSize() const {
   if (orientation_ == HORIZONTAL)
     return gfx::Size(width(), kSeparatorHeight);
   return gfx::Size(kSeparatorHeight, height());

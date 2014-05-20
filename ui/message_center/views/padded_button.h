@@ -24,7 +24,7 @@ class PaddedButton : public views::ImageButton {
   virtual ~PaddedButton();
 
   // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
 

@@ -61,7 +61,7 @@ class ChildModalWindow : public WidgetDelegateView {
  private:
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from WidgetDelegate:
   virtual View* GetContentsView() OVERRIDE;
@@ -87,7 +87,7 @@ void ChildModalWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), kChildColor);
 }
 
-gfx::Size ChildModalWindow::GetPreferredSize() {
+gfx::Size ChildModalWindow::GetPreferredSize() const {
   return gfx::Size(kChildWindowWidth, kChildWindowHeight);
 }
 

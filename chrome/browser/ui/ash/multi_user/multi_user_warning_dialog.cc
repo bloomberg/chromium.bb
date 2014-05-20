@@ -43,7 +43,7 @@ class TeleportWarningView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   void InitDialog();
@@ -87,7 +87,7 @@ ui::ModalType TeleportWarningView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-gfx::Size TeleportWarningView::GetPreferredSize() {
+gfx::Size TeleportWarningView::GetPreferredSize() const {
   return gfx::Size(kDefaultWidth, kDefaultHeight);
 }
 

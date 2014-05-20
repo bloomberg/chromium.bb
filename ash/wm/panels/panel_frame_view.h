@@ -52,7 +52,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   virtual void UpdateWindowTitle() OVERRIDE;
 
   // Overridden from views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

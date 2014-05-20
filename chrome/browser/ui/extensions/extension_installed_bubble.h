@@ -61,6 +61,7 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
 
   const extensions::Extension* extension() const { return extension_; }
   Browser* browser() { return browser_; }
+  const Browser* browser() const { return browser_; }
   const SkBitmap& icon() const { return icon_; }
   BubbleType type() const { return type_; }
 

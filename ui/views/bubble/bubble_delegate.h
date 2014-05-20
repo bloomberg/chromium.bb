@@ -95,7 +95,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
   // Get the arrow's anchor rect in screen space.
-  virtual gfx::Rect GetAnchorRect();
+  virtual gfx::Rect GetAnchorRect() const;
 
   // Allows delegates to provide custom parameters before widget initialization.
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
@@ -160,7 +160,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   Widget* anchor_widget_;
 
   // The anchor rect used in the absence of an anchor view.
-  gfx::Rect anchor_rect_;
+  mutable gfx::Rect anchor_rect_;
 
   // The arrow's location on the bubble.
   BubbleBorder::Arrow arrow_;

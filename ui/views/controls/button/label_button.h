@@ -75,7 +75,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // View:
   virtual void SetBorder(scoped_ptr<Border> border) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
@@ -148,7 +148,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   bool explicitly_set_colors_[STATE_COUNT];
 
   // |min_size_| increases monotonically with the preferred size.
-  gfx::Size min_size_;
+  mutable gfx::Size min_size_;
   // |max_size_| may be set to clamp the preferred size.
   gfx::Size max_size_;
 

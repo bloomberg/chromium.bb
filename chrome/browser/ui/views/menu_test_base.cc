@@ -61,7 +61,7 @@ void MenuTestBase::DoTestOnMessageLoop() {
   Click(button_, CreateEventTask(this, &MenuTestBase::DoTestWithMenuOpen));
 }
 
-gfx::Size MenuTestBase::GetPreferredSize() {
+gfx::Size MenuTestBase::GetPreferredSize() const {
   return button_->GetPreferredSize();
 }
 

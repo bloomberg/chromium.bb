@@ -320,7 +320,7 @@ bool OmniboxViewViews::IsImeComposing() const {
   return IsIMEComposing();
 }
 
-gfx::Size OmniboxViewViews::GetMinimumSize() {
+gfx::Size OmniboxViewViews::GetMinimumSize() const {
   const int kMinCharacters = 10;
   return gfx::Size(
       GetFontList().GetExpectedTextWidth(kMinCharacters) + GetInsets().width(),

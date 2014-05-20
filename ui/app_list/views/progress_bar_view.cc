@@ -34,7 +34,7 @@ ProgressBarView::ProgressBarView()
 
 ProgressBarView::~ProgressBarView() {}
 
-gfx::Size ProgressBarView::GetPreferredSize() {
+gfx::Size ProgressBarView::GetPreferredSize() const {
   return background_painter_->GetMinimumSize();
 }
 

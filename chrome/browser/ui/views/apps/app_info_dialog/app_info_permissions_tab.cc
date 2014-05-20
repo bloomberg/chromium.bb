@@ -74,7 +74,7 @@ class ExpandableContainerView : public views::View,
     virtual ~DetailsView() {}
 
     // views::View:
-    virtual gfx::Size GetPreferredSize() OVERRIDE;
+    virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
     // Animates this to be a height proportional to |ratio|.
     void AnimateToRatio(double ratio);
@@ -180,7 +180,7 @@ ExpandableContainerView::DetailsView::DetailsView(
   layout->AddPaddingRow(0, views::kPanelVertMargin);
 }
 
-gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() {
+gfx::Size ExpandableContainerView::DetailsView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   return gfx::Size(size.width(), size.height() * visible_ratio_);
 }

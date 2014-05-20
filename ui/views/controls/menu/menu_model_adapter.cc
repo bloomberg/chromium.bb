@@ -162,7 +162,7 @@ bool MenuModelAdapter::IsTriggerableEvent(MenuItemView* source,
 }
 
 bool MenuModelAdapter::GetAccelerator(int id,
-                                      ui::Accelerator* accelerator) {
+                                      ui::Accelerator* accelerator) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))

@@ -57,7 +57,7 @@ views::Widget* PanelWindow::CreateWidget() {
   return widget;
 }
 
-gfx::Size PanelWindow::GetPreferredSize() {
+gfx::Size PanelWindow::GetPreferredSize() const {
   return gfx::Size(kMinWidth, kMinHeight);
 }
 

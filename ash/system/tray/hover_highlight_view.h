@@ -68,8 +68,8 @@ class HoverHighlightView : public ActionableView {
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;

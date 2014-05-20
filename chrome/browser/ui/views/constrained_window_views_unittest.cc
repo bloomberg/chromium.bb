@@ -27,8 +27,10 @@ class DialogContents : public DialogDelegateView {
 
   // Overriden from DialogDelegateView:
   virtual View* GetContentsView() OVERRIDE { return this; }
-  virtual gfx::Size GetPreferredSize() OVERRIDE { return preferred_size_; }
-  virtual gfx::Size GetMinimumSize() OVERRIDE { return gfx::Size(); }
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return preferred_size_;
+  }
+  virtual gfx::Size GetMinimumSize() const OVERRIDE { return gfx::Size(); }
 
  private:
   gfx::Size preferred_size_;

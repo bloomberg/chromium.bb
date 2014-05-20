@@ -393,7 +393,7 @@ void TrayBubbleView::Init() {
   SetLayoutManager(layout);
 }
 
-gfx::Rect TrayBubbleView::GetAnchorRect() {
+gfx::Rect TrayBubbleView::GetAnchorRect() const {
   if (!delegate_)
     return gfx::Rect();
   return delegate_->GetAnchorRect(anchor_widget(),
@@ -420,7 +420,7 @@ void TrayBubbleView::GetWidgetHitTestMask(gfx::Path* mask) const {
   mask->addRect(gfx::RectToSkRect(GetBubbleFrameView()->GetContentsBounds()));
 }
 
-gfx::Size TrayBubbleView::GetPreferredSize() {
+gfx::Size TrayBubbleView::GetPreferredSize() const {
   return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
 }
 
@@ -430,11 +430,11 @@ gfx::Size TrayBubbleView::GetMaximumSize() {
   return size;
 }
 
-int TrayBubbleView::GetHeightForWidth(int width) {
+int TrayBubbleView::GetHeightForWidth(int width) const {
   int height = GetInsets().height();
   width = std::max(width - GetInsets().width(), 0);
   for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+    const View* child = child_at(i);
     if (child->visible())
       height += child->GetHeightForWidth(width);
   }

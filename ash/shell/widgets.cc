@@ -32,7 +32,7 @@ class WidgetsWindow : public views::WidgetDelegateView {
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
@@ -113,7 +113,7 @@ void WidgetsWindow::Layout() {
   }
 }
 
-gfx::Size WidgetsWindow::GetPreferredSize() {
+gfx::Size WidgetsWindow::GetPreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 

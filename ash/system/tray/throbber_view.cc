@@ -56,7 +56,7 @@ ThrobberView::ThrobberView() {
 ThrobberView::~ThrobberView() {
 }
 
-gfx::Size ThrobberView::GetPreferredSize() {
+gfx::Size ThrobberView::GetPreferredSize() const {
   return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
 }
 

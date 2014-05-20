@@ -40,7 +40,7 @@ const int kFadeInOutDuration = 200;
 }  // namespace.
 
 // static
-gfx::Size ToastContentsView::GetToastSizeForView(views::View* view) {
+gfx::Size ToastContentsView::GetToastSizeForView(const views::View* view) {
   int width = kNotificationWidth + view->GetInsets().width();
   return gfx::Size(width, view->GetHeightForWidth(width));
 }
@@ -282,7 +282,7 @@ void ToastContentsView::Layout() {
   }
 }
 
-gfx::Size ToastContentsView::GetPreferredSize() {
+gfx::Size ToastContentsView::GetPreferredSize() const {
   return child_count() ? GetToastSizeForView(child_at(0)) : gfx::Size();
 }
 

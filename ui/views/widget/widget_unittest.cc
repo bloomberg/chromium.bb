@@ -125,7 +125,7 @@ class MinimumSizeFrameView : public NativeFrameView {
 
  private:
   // Overridden from View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
     return gfx::Size(300, 400);
   }
 

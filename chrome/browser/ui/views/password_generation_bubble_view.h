@@ -51,13 +51,13 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   virtual ~PasswordGenerationBubbleView();
 
   // views::View
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:
   // views::BubbleDelegateView
   virtual void Init() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
   // views::ButtonListener

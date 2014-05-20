@@ -187,7 +187,7 @@ void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   vert_sb_ = vert_sb;
 }
 
-gfx::Size ScrollView::GetPreferredSize() {
+gfx::Size ScrollView::GetPreferredSize() const {
   if (!is_bounded())
     return View::GetPreferredSize();
 
@@ -199,7 +199,7 @@ gfx::Size ScrollView::GetPreferredSize() {
   return size;
 }
 
-int ScrollView::GetHeightForWidth(int width) {
+int ScrollView::GetHeightForWidth(int width) const {
   if (!is_bounded())
     return View::GetHeightForWidth(width);
 

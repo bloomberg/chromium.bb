@@ -63,7 +63,7 @@ void NewCreditCardBubbleViews::Hide() {
   GetWidget()->Close();
 }
 
-gfx::Size NewCreditCardBubbleViews::GetPreferredSize() {
+gfx::Size NewCreditCardBubbleViews::GetPreferredSize() const {
   return gfx::Size(
       NewCreditCardBubbleView::kContentsWidth,
       GetHeightForWidth(NewCreditCardBubbleView::kContentsWidth));

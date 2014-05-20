@@ -35,7 +35,7 @@ class TabIconView : public views::MenuButton {
 
   // Overridden from View
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   void PaintThrobber(gfx::Canvas* canvas);

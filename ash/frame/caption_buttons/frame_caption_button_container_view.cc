@@ -131,10 +131,10 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility(
       !force_hidden && frame_->widget_delegate()->CanMaximize());
 }
 
-gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {
+gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() const {
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+    const views::View* child = child_at(i);
     if (child->visible())
       width += child_at(i)->GetPreferredSize().width();
   }

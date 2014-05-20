@@ -56,7 +56,7 @@ bool AppInfoDialog::Cancel() {
   return true;
 }
 
-gfx::Size AppInfoDialog::GetPreferredSize() {
+gfx::Size AppInfoDialog::GetPreferredSize() const {
   // These numbers represent the size of the view, not the total size of the
   // dialog. The actual dialog will be slightly taller (have a larger height)
   // than what is specified here.

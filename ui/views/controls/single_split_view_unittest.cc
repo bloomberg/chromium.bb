@@ -64,10 +64,10 @@ class MinimumSizedView: public views::View {
 
  private:
   gfx::Size min_size_;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
 };
 
-gfx::Size MinimumSizedView::GetMinimumSize() {
+gfx::Size MinimumSizedView::GetMinimumSize() const {
   return min_size_;
 }
 

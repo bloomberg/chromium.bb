@@ -48,10 +48,10 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
   }
 }
 
-gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {
+gfx::Size BookmarkBarInstructionsView::GetPreferredSize() const {
   int ascent = 0, descent = 0, height = 0, width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    views::View* view = child_at(i);
+    const views::View* view = child_at(i);
     gfx::Size pref = view->GetPreferredSize();
     int baseline = view->GetBaseline();
     if (baseline != -1) {

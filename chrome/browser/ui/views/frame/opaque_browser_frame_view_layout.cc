@@ -675,7 +675,8 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
       host->width(), host->height());
 }
 
-gfx::Size OpaqueBrowserFrameViewLayout::GetPreferredSize(views::View* host) {
+gfx::Size OpaqueBrowserFrameViewLayout::GetPreferredSize(
+    const views::View* host) const {
   // This is never used; NonClientView::GetPreferredSize() will be called
   // instead.
   NOTREACHED();

@@ -37,7 +37,7 @@ class VIEWS_EXPORT Throbber : public View {
   void SetFrames(const gfx::ImageSkia* frames);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  protected:

@@ -47,7 +47,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
   void InitControls();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Overridden from views::DialogDelegate:
   virtual base::string16 GetDialogButtonLabel(

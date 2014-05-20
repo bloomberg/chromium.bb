@@ -58,13 +58,14 @@ void InfoBarContainer::ChangeInfoBarManager(InfoBarManager* infobar_manager) {
   OnInfoBarStateChanged(false);
 }
 
-int InfoBarContainer::GetVerticalOverlap(int* total_height) {
+int InfoBarContainer::GetVerticalOverlap(int* total_height) const {
   // Our |total_height| is the sum of the preferred heights of the InfoBars
   // contained within us plus the |vertical_overlap|.
   int vertical_overlap = 0;
   int next_infobar_y = 0;
 
-  for (InfoBars::iterator i(infobars_.begin()); i != infobars_.end(); ++i) {
+  for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
+       ++i) {
     InfoBar* infobar = *i;
     next_infobar_y -= infobar->arrow_height();
     vertical_overlap = std::max(vertical_overlap, -next_infobar_y);

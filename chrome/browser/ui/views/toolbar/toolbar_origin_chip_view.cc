@@ -263,7 +263,7 @@ void ToolbarOriginChipView::OnChanged() {
   // arrows are pointing to the right spot. Only needed for some edge cases.
 }
 
-gfx::Size ToolbarOriginChipView::GetPreferredSize() {
+gfx::Size ToolbarOriginChipView::GetPreferredSize() const {
   gfx::Size label_size = host_label_->GetPreferredSize();
   gfx::Size icon_size = location_icon_view_->GetPreferredSize();
   int icon_spacing = showing_16x16_icon_ ?

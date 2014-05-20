@@ -34,7 +34,7 @@ class SpeechView : public views::View,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   int GetIndicatorRadius(uint8 level);

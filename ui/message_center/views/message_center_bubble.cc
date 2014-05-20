@@ -20,7 +20,7 @@ class ContentsView : public views::View {
   virtual ~ContentsView();
 
   // Overridden from views::View:
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
 
  protected:
   // Overridden from views::View:
@@ -41,7 +41,7 @@ ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
 ContentsView::~ContentsView() {
 }
 
-int ContentsView::GetHeightForWidth(int width) {
+int ContentsView::GetHeightForWidth(int width) const {
   DCHECK_EQ(1, child_count());
   int contents_width = std::max(width - GetInsets().width(), 0);
   int contents_height = child_at(0)->GetHeightForWidth(contents_width);

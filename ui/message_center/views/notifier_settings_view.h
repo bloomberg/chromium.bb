@@ -95,8 +95,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 

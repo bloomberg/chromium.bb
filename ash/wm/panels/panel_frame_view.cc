@@ -59,7 +59,7 @@ int PanelFrameView::NonClientTopBorderHeight() const {
   return header_painter_->GetHeaderHeightForPainting();
 }
 
-gfx::Size PanelFrameView::GetMinimumSize() {
+gfx::Size PanelFrameView::GetMinimumSize() const {
   if (!header_painter_)
     return gfx::Size();
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());

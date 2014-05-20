@@ -55,7 +55,7 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   friend class test::SearchResultListViewTest;
@@ -79,7 +79,7 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual void VisibilityChanged(
       views::View* starting_from, bool is_visible) OVERRIDE;
 

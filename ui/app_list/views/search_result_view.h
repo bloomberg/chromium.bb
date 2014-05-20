@@ -62,7 +62,7 @@ class SearchResultView : public views::CustomButton,
 
   // views::View overrides:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;

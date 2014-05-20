@@ -127,7 +127,7 @@ views::NonClientFrameView* InfoBubble::CreateNonClientFrameView(
   return frame_;
 }
 
-gfx::Size InfoBubble::GetPreferredSize() {
+gfx::Size InfoBubble::GetPreferredSize() const {
   int pref_width = preferred_width_;
   pref_width -= frame_->GetInsets().width();
   pref_width -= 2 * kBubbleBorderVisibleWidth;

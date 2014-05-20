@@ -45,6 +45,10 @@ class ExtensionInfoBarDelegate : public infobars::InfoBarDelegate,
   extensions::ExtensionViewHost* extension_view_host() {
     return extension_view_host_.get();
   }
+  const extensions::ExtensionViewHost* extension_view_host() const {
+    return extension_view_host_.get();
+  }
+
   int height() { return height_; }
 
   bool closing() const { return closing_; }

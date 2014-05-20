@@ -29,7 +29,7 @@ class ASH_EXPORT TrayPopupHeaderButton : public views::ToggleImageButton {
  private:
   // Overridden from views::View:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::CustomButton:

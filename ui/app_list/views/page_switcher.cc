@@ -49,7 +49,7 @@ class PageSwitcherButton : public views::CustomButton {
   void set_button_width(int button_width) { button_width_ = button_width; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(button_width_, kButtonHeight);
   }
 
@@ -165,7 +165,7 @@ void PageSwitcher::UpdateUIForDragPoint(const gfx::Point& point) {
   }
 }
 
-gfx::Size PageSwitcher::GetPreferredSize() {
+gfx::Size PageSwitcher::GetPreferredSize() const {
   // Always return a size with correct height so that container resize is not
   // needed when more pages are added.
   return gfx::Size(buttons_->GetPreferredSize().width(),

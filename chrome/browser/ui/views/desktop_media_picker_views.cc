@@ -126,7 +126,7 @@ class DesktopMediaListView : public views::View,
   DesktopMediaSourceView* GetSelection();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
@@ -163,7 +163,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   void OnDoubleClick();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // views::DialogDelegateView overrides.
@@ -364,7 +364,7 @@ DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
   return NULL;
 }
 
-gfx::Size DesktopMediaListView::GetPreferredSize() {
+gfx::Size DesktopMediaListView::GetPreferredSize() const {
   int total_rows = (child_count() + kListColumns - 1) / kListColumns;
   return gfx::Size(kTotalListWidth, kListItemHeight * total_rows);
 }
@@ -540,7 +540,7 @@ void DesktopMediaPickerDialogView::DetachParent() {
   parent_ = NULL;
 }
 
-gfx::Size DesktopMediaPickerDialogView::GetPreferredSize() {
+gfx::Size DesktopMediaPickerDialogView::GetPreferredSize() const {
   return gfx::Size(600, 500);
 }
 

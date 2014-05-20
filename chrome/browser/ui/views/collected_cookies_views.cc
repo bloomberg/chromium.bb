@@ -155,7 +155,7 @@ class InfobarView : public views::View {
   }
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     if (!visible())
       return gfx::Size();
 
@@ -292,7 +292,7 @@ void CollectedCookiesViews::OnTreeViewSelectionChanged(
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::View overrides:
 
-gfx::Size CollectedCookiesViews::GetMinimumSize() {
+gfx::Size CollectedCookiesViews::GetMinimumSize() const {
   // Allow UpdateWebContentsModalDialogPosition to clamp the dialog width.
   return gfx::Size(0, View::GetMinimumSize().height());
 }

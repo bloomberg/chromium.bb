@@ -22,7 +22,7 @@ class FixedSizeView : public View {
     : size_(size) {}
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return size_;
   }
 

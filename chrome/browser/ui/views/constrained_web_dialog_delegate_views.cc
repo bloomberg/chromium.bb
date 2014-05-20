@@ -153,13 +153,13 @@ class ConstrainedWebDialogDelegateViewViews
     impl_->window()->Close();
     return true;
   }
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     gfx::Size size;
     if (!impl_->closed_via_webui())
       GetWebDialogDelegate()->GetDialogSize(&size);
     return size;
   }
-  virtual gfx::Size GetMinimumSize() OVERRIDE {
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
     // Return an empty size so that we can be made smaller.
     return gfx::Size();
   }

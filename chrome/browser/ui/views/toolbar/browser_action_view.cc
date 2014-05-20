@@ -76,7 +76,7 @@ void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_GROUP;
 }
 
-gfx::Size BrowserActionView::GetPreferredSize() {
+gfx::Size BrowserActionView::GetPreferredSize() const {
   return gfx::Size(BrowserActionsContainer::IconWidth(false),
                    BrowserActionsContainer::IconHeight());
 }

@@ -54,7 +54,7 @@ class VIEWS_EXPORT MenuButton : public TextButton {
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;

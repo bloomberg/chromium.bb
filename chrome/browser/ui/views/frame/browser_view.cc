@@ -571,7 +571,8 @@ bool BrowserView::ShouldShowAvatar() const {
 #endif
 }
 
-bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
+bool BrowserView::GetAccelerator(int cmd_id,
+                                 ui::Accelerator* accelerator) const {
   // We retrieve the accelerator information for standard accelerators
   // for cut, copy and paste.
   if (chrome::GetStandardAcceleratorForCommandId(cmd_id, accelerator))
@@ -1763,7 +1764,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
   return GetBrowserViewLayout()->NonClientHitTest(point);
 }
 
-gfx::Size BrowserView::GetMinimumSize() {
+gfx::Size BrowserView::GetMinimumSize() const {
   return GetBrowserViewLayout()->GetMinimumSize();
 }
 

@@ -77,7 +77,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   base::string16 GetTitle();
 
   // Overridden from views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:

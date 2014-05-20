@@ -47,7 +47,7 @@ class Tab : public View {
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:
@@ -76,7 +76,7 @@ class TabStrip : public View {
   virtual ~TabStrip();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -139,7 +139,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-gfx::Size Tab::GetPreferredSize() {
+gfx::Size Tab::GetPreferredSize() const {
   gfx::Size size(preferred_title_size_);
   size.Enlarge(21, 9);
   const int kTabMinWidth = 54;
@@ -182,7 +182,7 @@ TabStrip::TabStrip(TabbedPane* tabbed_pane) : tabbed_pane_(tabbed_pane) {}
 
 TabStrip::~TabStrip() {}
 
-gfx::Size TabStrip::GetPreferredSize() {
+gfx::Size TabStrip::GetPreferredSize() const {
   gfx::Size size;
   for (int i = 0; i < child_count(); ++i) {
     const gfx::Size child_size = child_at(i)->GetPreferredSize();
@@ -308,7 +308,7 @@ void TabbedPane::SelectTab(Tab* tab) {
     SelectTabAt(index);
 }
 
-gfx::Size TabbedPane::GetPreferredSize() {
+gfx::Size TabbedPane::GetPreferredSize() const {
   gfx::Size size;
   for (int i = 0; i < contents_->child_count(); ++i)
     size.SetToMax(contents_->child_at(i)->GetPreferredSize());

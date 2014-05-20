@@ -50,7 +50,7 @@ void PaddedButton::SetPressedImage(int resource_id) {
                resource_id));
 }
 
-gfx::Size PaddedButton::GetPreferredSize() {
+gfx::Size PaddedButton::GetPreferredSize() const {
   return gfx::Size(message_center::kControlButtonSize,
                    message_center::kControlButtonSize);
 }

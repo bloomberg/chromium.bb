@@ -188,7 +188,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // View overrides:
   virtual int GetBaseline() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

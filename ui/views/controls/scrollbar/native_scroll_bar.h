@@ -40,7 +40,7 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;

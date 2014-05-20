@@ -121,7 +121,7 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
 
   // View overrides:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;

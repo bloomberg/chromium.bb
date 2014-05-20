@@ -841,7 +841,7 @@ bool AppsGridView::IsAnimatingView(views::View* view) {
   return bounds_animator_.IsAnimating(view);
 }
 
-gfx::Size AppsGridView::GetPreferredSize() {
+gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
   const gfx::Size tile_size = gfx::Size(kPreferredTileWidth,
                                         kPreferredTileHeight);

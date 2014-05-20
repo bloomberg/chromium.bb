@@ -61,7 +61,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   // views::View methods.
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // views::CombboxListener methods.
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
@@ -120,7 +120,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
                       content::WebContents* web_contents);
 
   // Returns the current child view.
-  views::View* GetCurrentView();
+  views::View* GetCurrentView() const;
 
   // Handles the event when the user presses a button.
   void HandleButtonPressed(ButtonID sender_id);

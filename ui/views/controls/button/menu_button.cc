@@ -146,7 +146,7 @@ void MenuButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::Size MenuButton::GetPreferredSize() {
+gfx::Size MenuButton::GetPreferredSize() const {
   gfx::Size prefsize = TextButton::GetPreferredSize();
   if (show_menu_marker_) {
     prefsize.Enlarge(menu_marker_->width() + kMenuMarkerPaddingLeft +

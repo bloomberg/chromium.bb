@@ -221,12 +221,12 @@ void CustomFrameView::Layout() {
   LayoutClientView();
 }
 
-gfx::Size CustomFrameView::GetPreferredSize() {
+gfx::Size CustomFrameView::GetPreferredSize() const {
   return frame_->non_client_view()->GetWindowBoundsForClientBounds(
       gfx::Rect(frame_->client_view()->GetPreferredSize())).size();
 }
 
-gfx::Size CustomFrameView::GetMinimumSize() {
+gfx::Size CustomFrameView::GetMinimumSize() const {
   return frame_->non_client_view()->GetWindowBoundsForClientBounds(
       gfx::Rect(frame_->client_view()->GetMinimumSize())).size();
 }

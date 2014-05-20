@@ -68,7 +68,7 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;

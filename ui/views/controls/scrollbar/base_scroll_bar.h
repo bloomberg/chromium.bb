@@ -64,7 +64,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                            CustomButton::ButtonState new_state);
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE = 0;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE = 0;
   virtual void Layout() OVERRIDE = 0;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;

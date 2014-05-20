@@ -265,14 +265,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual int GetBaseline() const;
 
   // Get the size the View would like to be, if enough space were available.
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() const;
 
   // Convenience method that sizes this view to its preferred size.
   void SizeToPreferredSize();
 
   // Gets the minimum size of the view. View's implementation invokes
   // GetPreferredSize.
-  virtual gfx::Size GetMinimumSize();
+  virtual gfx::Size GetMinimumSize() const;
 
   // Gets the maximum size of the view. Currently only used for sizing shell
   // windows.
@@ -282,7 +282,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // View's implementation returns the value from getPreferredSize.cy.
   // Override if your View's preferred height depends upon the width (such
   // as with Labels).
-  virtual int GetHeightForWidth(int w);
+  virtual int GetHeightForWidth(int w) const;
 
   // Set whether this view is visible. Painting is scheduled as needed.
   virtual void SetVisible(bool visible);

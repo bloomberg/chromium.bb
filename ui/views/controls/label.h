@@ -176,13 +176,13 @@ class VIEWS_EXPORT Label : public View {
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
   // Overridden to compute the size required to display this label.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   // Returns the width of an ellipsis if the label is non-empty, or 0 otherwise.
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   // Returns the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line.
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
@@ -297,8 +297,8 @@ class VIEWS_EXPORT Label : public View {
   bool has_shadow_;
 
   // The cached heights to avoid recalculation in GetHeightForWidth().
-  std::vector<gfx::Size> cached_heights_;
-  int cached_heights_cursor_;
+  mutable std::vector<gfx::Size> cached_heights_;
+  mutable int cached_heights_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(Label);
 };

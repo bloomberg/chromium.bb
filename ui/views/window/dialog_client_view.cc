@@ -175,7 +175,7 @@ void DialogClientView::OnDidChangeFocus(View* focused_before,
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
-gfx::Size DialogClientView::GetPreferredSize() {
+gfx::Size DialogClientView::GetPreferredSize() const {
   // Initialize the size to fit the buttons and extra view row.
   gfx::Size size(
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +

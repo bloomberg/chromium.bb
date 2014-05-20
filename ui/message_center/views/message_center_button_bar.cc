@@ -51,7 +51,7 @@ class NotificationCenterButton : public views::ToggleImageButton {
 
  protected:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   gfx::Size size_;
@@ -83,7 +83,7 @@ NotificationCenterButton::NotificationCenterButton(
       gfx::Insets(1, 2, 2, 2)));
 }
 
-gfx::Size NotificationCenterButton::GetPreferredSize() { return size_; }
+gfx::Size NotificationCenterButton::GetPreferredSize() const { return size_; }
 
 // MessageCenterButtonBar /////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

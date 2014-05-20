@@ -33,12 +33,13 @@ class InfoBubble : public views::BubbleDelegateView {
   // views::BubbleDelegateView:
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
 
   views::View* anchor() { return anchor_; }
+  const views::View* anchor() const { return anchor_; }
 
   void set_align_to_anchor_edge(bool align_to_anchor_edge) {
     align_to_anchor_edge_ = align_to_anchor_edge;

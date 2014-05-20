@@ -47,7 +47,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   bool IsAnimatingImageSwap() const;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

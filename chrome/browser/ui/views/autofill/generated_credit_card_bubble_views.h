@@ -31,7 +31,7 @@ class GeneratedCreditCardBubbleViews : public GeneratedCreditCardBubbleView,
   virtual bool IsHiding() const OVERRIDE;
 
   // views::BubbleDelegateView:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual void Init() OVERRIDE;
 

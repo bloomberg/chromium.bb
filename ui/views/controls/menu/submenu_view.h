@@ -55,7 +55,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   // Positions and sizes the child views. This tiles the views vertically,
   // giving each child the available width.
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // Override from View.
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
@@ -201,7 +201,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   MenuScrollViewContainer* scroll_view_container_;
 
   // See description above getter.
-  int max_minor_text_width_;
+  mutable int max_minor_text_width_;
 
   // Minimum width returned in GetPreferredSize().
   int minimum_preferred_width_;

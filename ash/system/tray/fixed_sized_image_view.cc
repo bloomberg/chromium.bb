@@ -16,7 +16,7 @@ FixedSizedImageView::FixedSizedImageView(int width, int height)
 FixedSizedImageView::~FixedSizedImageView() {
 }
 
-gfx::Size FixedSizedImageView::GetPreferredSize() {
+gfx::Size FixedSizedImageView::GetPreferredSize() const {
   gfx::Size size = views::ImageView::GetPreferredSize();
   return gfx::Size(width_ ? width_ : size.width(),
                    height_ ? height_ : size.height());

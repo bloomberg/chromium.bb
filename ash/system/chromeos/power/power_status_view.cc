@@ -197,12 +197,12 @@ void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-gfx::Size PowerStatusView::GetPreferredSize() {
+gfx::Size PowerStatusView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   return gfx::Size(size.width(), kTrayPopupItemHeight);
 }
 
-int PowerStatusView::GetHeightForWidth(int width) {
+int PowerStatusView::GetHeightForWidth(int width) const {
   return kTrayPopupItemHeight;
 }
 

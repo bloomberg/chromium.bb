@@ -39,12 +39,12 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
 SelectedKeywordView::~SelectedKeywordView() {
 }
 
-gfx::Size SelectedKeywordView::GetPreferredSize() {
+gfx::Size SelectedKeywordView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
 }
 
-gfx::Size SelectedKeywordView::GetMinimumSize() {
+gfx::Size SelectedKeywordView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(partial_label_.GetMinimumSize().width());
 }

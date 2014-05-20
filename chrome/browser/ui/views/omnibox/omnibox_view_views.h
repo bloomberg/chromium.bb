@@ -88,7 +88,7 @@ class OmniboxViewViews
   virtual bool IsImeComposing() const OVERRIDE;
 
   // views::Textfield:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 

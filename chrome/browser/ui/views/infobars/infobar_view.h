@@ -87,7 +87,7 @@ class InfoBarView : public infobars::InfoBar,
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close
   // button from overlapping views that cannot be shrunk any further.
-  virtual int ContentMinimumWidth();
+  virtual int ContentMinimumWidth() const;
 
   // These return x coordinates delimiting the usable area for subclasses to lay
   // out their controls.
@@ -121,7 +121,7 @@ class InfoBarView : public infobars::InfoBar,
 
   // views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) OVERRIDE;
 

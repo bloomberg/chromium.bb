@@ -127,7 +127,7 @@ void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
   web_view_->RequestFocus();
 }
 
-gfx::Size UserManagerView::GetPreferredSize() {
+gfx::Size UserManagerView::GetPreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 

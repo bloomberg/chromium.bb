@@ -124,7 +124,7 @@ ui::ModalType PlatformVerificationDialog::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-gfx::Size PlatformVerificationDialog::GetPreferredSize() {
+gfx::Size PlatformVerificationDialog::GetPreferredSize() const {
   return gfx::Size(kDialogMaxWidthInPixel,
                    GetHeightForWidth(kDialogMaxWidthInPixel));
 }

@@ -34,7 +34,7 @@ class PageSwitcher : public views::View,
   void UpdateUIForDragPoint(const gfx::Point& point);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
 
  private:

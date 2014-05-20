@@ -902,7 +902,7 @@ void PanelView::Layout() {
     web_view_->SetBounds(0, 0, width(), height());
 }
 
-gfx::Size PanelView::GetMinimumSize() {
+gfx::Size PanelView::GetMinimumSize() const {
   // If the panel is minimized, it can be rendered to very small size, like
   // 4-pixel lines when it is docked. Otherwise, its size should not be less
   // than its minimum size.

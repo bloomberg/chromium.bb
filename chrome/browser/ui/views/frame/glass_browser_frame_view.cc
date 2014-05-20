@@ -162,7 +162,7 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
   }
 }
 
-gfx::Size GlassBrowserFrameView::GetMinimumSize() {
+gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   gfx::Size min_size(browser_view()->GetMinimumSize());
 
   // Account for the client area insets.

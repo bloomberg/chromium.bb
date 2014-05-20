@@ -172,8 +172,8 @@ class BrowserActionsContainer
   void RemoveObserver(BrowserActionsContainerObserver* observer);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool GetDropFormats(int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;

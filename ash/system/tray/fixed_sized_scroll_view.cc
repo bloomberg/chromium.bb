@@ -25,7 +25,7 @@ void FixedSizedScrollView::SetFixedSize(const gfx::Size& size) {
   PreferredSizeChanged();
 }
 
-gfx::Size FixedSizedScrollView::GetPreferredSize() {
+gfx::Size FixedSizedScrollView::GetPreferredSize() const {
   gfx::Size size = fixed_size_.IsEmpty() ?
       contents()->GetPreferredSize() : fixed_size_;
   gfx::Insets insets = GetInsets();

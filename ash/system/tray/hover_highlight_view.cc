@@ -147,14 +147,14 @@ void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
   }
 }
 
-gfx::Size HoverHighlightView::GetPreferredSize() {
+gfx::Size HoverHighlightView::GetPreferredSize() const {
   gfx::Size size = ActionableView::GetPreferredSize();
   if (!expandable_ || size.height() < kTrayPopupItemHeight)
     size.set_height(kTrayPopupItemHeight);
   return size;
 }
 
-int HoverHighlightView::GetHeightForWidth(int width) {
+int HoverHighlightView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 

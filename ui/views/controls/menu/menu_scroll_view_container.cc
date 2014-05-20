@@ -40,7 +40,7 @@ class MenuScrollButton : public View {
         pref_height_(MenuItemView::pref_menu_height()) {
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     return gfx::Size(
         host_->GetMenuItem()->GetMenuConfig().scroll_arrow_height * 2 - 1,
         pref_height_);
@@ -243,7 +243,7 @@ void MenuScrollViewContainer::Layout() {
   scroll_view_->Layout();
 }
 
-gfx::Size MenuScrollViewContainer::GetPreferredSize() {
+gfx::Size MenuScrollViewContainer::GetPreferredSize() const {
   gfx::Size prefsize = scroll_view_->GetContents()->GetPreferredSize();
   gfx::Insets insets = GetInsets();
   prefsize.Enlarge(insets.width(), insets.height());

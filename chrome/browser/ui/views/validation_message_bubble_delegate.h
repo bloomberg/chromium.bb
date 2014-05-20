@@ -33,7 +33,7 @@ class ValidationMessageBubbleDelegate : public views::BubbleDelegateView {
   void SetPositionRelativeToAnchor(const gfx::Rect& anchor_in_screen);
 
   // BubbleDelegateView overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 

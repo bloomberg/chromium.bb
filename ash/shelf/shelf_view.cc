@@ -702,7 +702,7 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
   }
 }
 
-void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
+void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
   int available_size = layout_manager_->PrimaryAxisValue(width(), height());
   DCHECK(model_->item_count() == view_model_->view_size());
   if (!available_size)
@@ -732,7 +732,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 
   if (is_overflow_mode()) {
-    UpdateAllButtonsVisibilityInOverflowMode();
+    const_cast<ShelfView*>(this)->UpdateAllButtonsVisibilityInOverflowMode();
     return;
   }
 
@@ -1162,7 +1162,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
   DestroyDragIconProxy();
 }
 
-ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) {
+ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   DCHECK(index >= 0 && index < model_->item_count());
   ShelfItemType type = model_->items()[index].type;
   if (type == TYPE_APP_LIST || type == TYPE_DIALOG || !delegate_->CanPin())
@@ -1253,7 +1253,7 @@ void ShelfView::StartFadeInLastVisibleItem() {
   }
 }
 
-void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) {
+void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
   const int first_overflow_index = last_visible_index_ + 1;
   const int last_overflow_index = last_hidden_index_;
   DCHECK_LE(first_overflow_index, last_overflow_index);
@@ -1356,7 +1356,7 @@ int ShelfView::CancelDrag(int modified_index) {
   return modified_view ? view_model_->GetIndexOfView(modified_view) : -1;
 }
 
-gfx::Size ShelfView::GetPreferredSize() {
+gfx::Size ShelfView::GetPreferredSize() const {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 

@@ -403,13 +403,13 @@ void MenuItemView::OnPaint(gfx::Canvas* canvas) {
   PaintButton(canvas, PB_NORMAL);
 }
 
-gfx::Size MenuItemView::GetPreferredSize() {
+gfx::Size MenuItemView::GetPreferredSize() const {
   const MenuItemDimensions& dimensions(GetDimensions());
   return gfx::Size(dimensions.standard_width + dimensions.children_width,
                    dimensions.height);
 }
 
-const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() {
+const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() const {
   if (!is_dimensions_valid())
     dimensions_ = CalculateDimensions();
   DCHECK(is_dimensions_valid());
@@ -689,7 +689,7 @@ int MenuItemView::GetDrawStringFlags() {
   return flags;
 }
 
-const gfx::FontList& MenuItemView::GetFontList() {
+const gfx::FontList& MenuItemView::GetFontList() const {
   const MenuDelegate* delegate = GetDelegate();
   if (delegate) {
     const gfx::FontList* font_list = delegate->GetLabelFontList(GetCommand());
@@ -895,38 +895,36 @@ void MenuItemView::DestroyAllMenuHosts() {
   }
 }
 
-int MenuItemView::GetTopMargin() {
+int MenuItemView::GetTopMargin() const {
   if (top_margin_ >= 0)
     return top_margin_;
 
-  MenuItemView* root = GetRootMenuItem();
+  const MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
       ? GetMenuConfig().item_top_margin :
         GetMenuConfig().item_no_icon_top_margin;
 }
 
-int MenuItemView::GetBottomMargin() {
+int MenuItemView::GetBottomMargin() const {
   if (bottom_margin_ >= 0)
     return bottom_margin_;
 
-  MenuItemView* root = GetRootMenuItem();
+  const MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
       ? GetMenuConfig().item_bottom_margin :
         GetMenuConfig().item_no_icon_bottom_margin;
 }
 
-gfx::Size MenuItemView::GetChildPreferredSize() {
+gfx::Size MenuItemView::GetChildPreferredSize() const {
   if (!has_children())
     return gfx::Size();
 
-  if (IsContainer()) {
-    View* child = child_at(0);
-    return child->GetPreferredSize();
-  }
+  if (IsContainer())
+    return child_at(0)->GetPreferredSize();
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
+    const View* child = child_at(i);
     if (icon_view_ && (icon_view_ == child))
       continue;
     if (i)
@@ -942,7 +940,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   return gfx::Size(width, height);
 }
 
-MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
+MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   gfx::Size child_size = GetChildPreferredSize();
 
   MenuItemDimensions dimensions;
@@ -1000,7 +998,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
   return dimensions;
 }
 
-int MenuItemView::GetLabelStartForThisItem() {
+int MenuItemView::GetLabelStartForThisItem() const {
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
   if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_) {
     label_start += icon_view_->size().width() +
@@ -1009,7 +1007,7 @@ int MenuItemView::GetLabelStartForThisItem() {
   return label_start;
 }
 
-base::string16 MenuItemView::GetMinorText() {
+base::string16 MenuItemView::GetMinorText() const {
   if (id() == kEmptyMenuItemViewID) {
     // Don't query the delegate for menus that represent no children.
     return base::string16();

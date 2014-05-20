@@ -94,7 +94,7 @@ bool FrameCaptionButton::IsAnimatingImageSwap() const {
   return swap_images_animation_->is_animating();
 }
 
-gfx::Size FrameCaptionButton::GetPreferredSize() {
+gfx::Size FrameCaptionButton::GetPreferredSize() const {
   return hovered_background_image_.isNull() ?
       gfx::Size() : hovered_background_image_.size();
 }

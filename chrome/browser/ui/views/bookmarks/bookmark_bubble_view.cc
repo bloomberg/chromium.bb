@@ -292,7 +292,7 @@ base::string16 BookmarkBubbleView::GetTitle() {
   return base::string16();
 }
 
-gfx::Size BookmarkBubbleView::GetMinimumSize() {
+gfx::Size BookmarkBubbleView::GetMinimumSize() const {
   gfx::Size size(views::BubbleDelegateView::GetPreferredSize());
   size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
   return size;

@@ -489,7 +489,7 @@ void PanelFrameView::UpdateWindowTitle() {
   title_label_->SetText(panel_view_->panel()->GetWindowTitle());
 }
 
-gfx::Size PanelFrameView::GetPreferredSize() {
+gfx::Size PanelFrameView::GetPreferredSize() const {
   gfx::Size pref_size =
       panel_view_->window()->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref_size.width(), pref_size.height());
@@ -501,7 +501,7 @@ const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::Size PanelFrameView::GetMinimumSize() {
+gfx::Size PanelFrameView::GetMinimumSize() const {
   return panel_view_->GetMinimumSize();
 }
 

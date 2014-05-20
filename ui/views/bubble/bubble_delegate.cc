@@ -181,7 +181,7 @@ View* BubbleDelegateView::GetAnchorView() const {
   return ViewStorage::GetInstance()->RetrieveView(anchor_view_storage_id_);
 }
 
-gfx::Rect BubbleDelegateView::GetAnchorRect() {
+gfx::Rect BubbleDelegateView::GetAnchorRect() const {
   if (!GetAnchorView())
     return anchor_rect_;
 

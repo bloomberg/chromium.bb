@@ -318,7 +318,7 @@ void TableView::Layout() {
   SetBounds(x(), y(), width, height);
 }
 
-gfx::Size TableView::GetPreferredSize() {
+gfx::Size TableView::GetPreferredSize() const {
   int width = 50;
   if (header_ && !visible_columns_.empty())
     width = visible_columns_.back().x + visible_columns_.back().width;

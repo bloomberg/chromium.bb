@@ -64,7 +64,7 @@ class OmniboxResultView : public views::View,
   void Invalidate();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   ResultViewState GetState() const;
 

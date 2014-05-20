@@ -373,7 +373,7 @@ class InstalledBubbleContent : public views::View,
     return height;
   }
 
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     int width = kHorizOuterMargin;
     width += kIconSize;
     width += views::kPanelHorizMargin;
@@ -583,11 +583,11 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
   return true;
 }
 
-gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() {
+gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() const {
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
   if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
-    LocationBarView* location_bar_view =
+    const LocationBarView* location_bar_view =
         BrowserView::GetBrowserViewForBrowser(bubble_.browser())->
         GetLocationBarView();
     return gfx::Rect(location_bar_view->GetOmniboxViewOrigin(),

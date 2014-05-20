@@ -153,7 +153,7 @@ void ContentSettingImageView::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-gfx::Size ContentSettingImageView::GetPreferredSize() {
+gfx::Size ContentSettingImageView::GetPreferredSize() const {
   // Height will be ignored by the LocationBarView.
   gfx::Size size(icon_->GetPreferredSize());
   if (background_showing()) {

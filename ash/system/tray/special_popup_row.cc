@@ -96,13 +96,13 @@ void SpecialPopupRow::AddThrobber(ThrobberView* throbber) {
   button_container_->AddChildView(throbber);
 }
 
-gfx::Size SpecialPopupRow::GetPreferredSize() {
+gfx::Size SpecialPopupRow::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
   size.set_height(kSpecialPopupRowHeight);
   return size;
 }
 
-int SpecialPopupRow::GetHeightForWidth(int width) {
+int SpecialPopupRow::GetHeightForWidth(int width) const {
   return kSpecialPopupRowHeight;
 }
 

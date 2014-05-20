@@ -217,7 +217,7 @@ class TabStrip : public views::View,
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   // NOTE: the drag and drop methods are invoked from FrameView. This is done
   // to allow for a drop region that extends outside the bounds of the TabStrip.
   virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;

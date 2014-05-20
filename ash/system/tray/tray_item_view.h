@@ -42,8 +42,8 @@ class ASH_EXPORT TrayItemView : public views::View,
 
   // Overridden from views::View.
   virtual void SetVisible(bool visible) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int width) const OVERRIDE;
 
  protected:
   // Makes sure the widget relayouts after the size/visibility of the view
@@ -54,7 +54,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   // returns GetPreferredSize. But since this class overrides GetPreferredSize
   // for animation purposes, we allow a different way to get this size, and do
   // not allow GetPreferredSize to be overridden.
-  virtual gfx::Size DesiredSize();
+  virtual gfx::Size DesiredSize() const;
 
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();

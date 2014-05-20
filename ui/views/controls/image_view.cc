@@ -70,7 +70,7 @@ void ImageView::SetImageSize(const gfx::Size& image_size) {
   PreferredSizeChanged();
 }
 
-bool ImageView::GetImageSize(gfx::Size* image_size) {
+bool ImageView::GetImageSize(gfx::Size* image_size) const {
   DCHECK(image_size);
   if (image_size_set_)
     *image_size = image_size_;
@@ -91,7 +91,7 @@ void ImageView::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
   focus_painter_ = focus_painter.Pass();
 }
 
-gfx::Size ImageView::GetPreferredSize() {
+gfx::Size ImageView::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
   if (image_size_set_) {
     gfx::Size image_size;

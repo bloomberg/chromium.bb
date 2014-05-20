@@ -47,7 +47,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
       ui::NativeTheme::kNormal, separator_bounds, extra);
 }
 
-gfx::Size MenuSeparator::GetPreferredSize() {
+gfx::Size MenuSeparator::GetPreferredSize() const {
   const MenuConfig& config = parent_menu_item_->GetMenuConfig();
 
   if (config.native_theme == ui::NativeThemeAura::instance())

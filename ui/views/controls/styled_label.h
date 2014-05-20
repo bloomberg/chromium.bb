@@ -87,7 +87,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // View implementation:
   virtual gfx::Insets GetInsets() const OVERRIDE;
-  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void PreferredSizeChanged() OVERRIDE;
 
@@ -138,7 +138,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
-  gfx::Size calculated_size_;
+  mutable gfx::Size calculated_size_;
 
   // Background color on which the label is drawn, for auto color readability.
   SkColor displayed_on_background_color_;

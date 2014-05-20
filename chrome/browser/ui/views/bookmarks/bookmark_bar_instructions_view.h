@@ -31,7 +31,7 @@ class BookmarkBarInstructionsView : public views::View,
       BookmarkBarInstructionsDelegate* delegate);
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual void ViewHierarchyChanged(

@@ -83,7 +83,7 @@ class PanelView : public NativePanel,
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // Overridden from views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
 
   // Return true if the mouse event is handled.

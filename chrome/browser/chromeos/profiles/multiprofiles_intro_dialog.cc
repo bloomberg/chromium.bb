@@ -43,7 +43,7 @@ class MultiprofilesIntroView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
   void InitDialog();
@@ -87,7 +87,7 @@ ui::ModalType MultiprofilesIntroView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-gfx::Size MultiprofilesIntroView::GetPreferredSize() {
+gfx::Size MultiprofilesIntroView::GetPreferredSize() const {
   return gfx::Size(kDefaultWidth, kDefaultHeight);
 }
 

@@ -90,7 +90,7 @@ class BrowserFrame
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual bool GetAccelerator(int command_id,
-                              ui::Accelerator* accelerator) OVERRIDE;
+                              ui::Accelerator* accelerator) const OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
