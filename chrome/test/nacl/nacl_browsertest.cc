@@ -82,7 +82,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
 // allowed.  Also not run on GLibc because it's a large test that is at risk of
 // causing timeouts.
 // crbug/338444
-#if defined(OS_WIN)
+// crbug.com/375103: fails on Mac after open sourcing PDF plugin.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_Bad DISABLED_Bad
 #else
 #define MAYBE_Bad Bad
