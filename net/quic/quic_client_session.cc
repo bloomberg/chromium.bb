@@ -668,16 +668,30 @@ void QuicClientSession::CloseAllObservers(int net_error) {
 }
 
 base::Value* QuicClientSession::GetInfoAsValue(
-    const std::set<HostPortPair>& aliases) const {
+    const std::set<HostPortPair>& aliases) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   // TODO(rch): remove "host_port_pair" when Chrome 34 is stable.
   dict->SetString("host_port_pair", aliases.begin()->ToString());
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
+  base::ListValue* stream_list = new base::ListValue();
+  for (base::hash_map<QuicStreamId, QuicDataStream*>::const_iterator it
+           = streams()->begin();
+       it != streams()->end();
+       ++it) {
+    stream_list->Append(new base::StringValue(
+        base::Uint64ToString(it->second->id())));
+  }
+  dict->Set("active_streams", stream_list);
+
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("connection_id", base::Uint64ToString(connection_id()));
   dict->SetBoolean("connected", connection()->connected());
+  const QuicConnectionStats& stats = connection()->GetStats();
+  dict->SetInteger("packets_sent", stats.packets_sent);
+  dict->SetInteger("packets_received", stats.packets_received);
+  dict->SetInteger("packets_lost", stats.packets_lost);
   SSLInfo ssl_info;
   dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert);
 

@@ -21,9 +21,13 @@
               <th>Secure</th>
               <th>Version</th>
               <th>Peer address</th>
-              <th>GUID</th>
+              <th>Connection UID</th>
+              <th>Active stream count</th>
               <th>Active streams</th>
-              <th>Total streams</th>
+              <th>Total stream count</th>
+              <th>Packets Sent</th>
+              <th>Packets Lost</th>
+              <th>Packets Received</th>
               <th>Connected</th>
             </tr>
           </thead>
@@ -33,9 +37,13 @@
               <td jscontent="!!secure"></td>
               <td jscontent="version"></td>
               <td jscontent="peer_address"></td>
-              <td jscontent="guid"></td>
+              <td jscontent="connection_id"></td>
               <td jscontent="open_streams"></td>
+              <td jscontent="$this.active_streams && $this.active_streams.length > 0 ? $this.active_streams.join(', ') : 'None'"></td>
               <td jscontent="total_streams"></td>
+              <td jscontent="packets_sent"></td>
+              <td jscontent="packets_lost"></td>
+              <td jscontent="packets_received"></td>
               <td jscontent="connected"></td>
             </tr>
           </tbody>
