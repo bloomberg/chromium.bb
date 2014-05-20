@@ -335,7 +335,6 @@ void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
 
 void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
-  LOG(ERROR) << "-----------------------------OnManagerFullyAuthenticated";
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
   // during the user image picker step are below it.

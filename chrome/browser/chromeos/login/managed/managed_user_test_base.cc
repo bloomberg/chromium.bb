@@ -215,7 +215,7 @@ void ManagedUserTestBase::TearDownInProcessBrowserTestFixture() {
 }
 
 void ManagedUserTestBase::JSEval(const std::string& script) {
-  EXPECT_TRUE(content::ExecuteScript(web_contents(), script));
+  EXPECT_TRUE(content::ExecuteScript(web_contents(), script)) << script;
 }
 
 void ManagedUserTestBase::JSExpectAsync(const std::string& function) {
@@ -225,7 +225,7 @@ void ManagedUserTestBase::JSExpectAsync(const std::string& function) {
       StringPrintf(
           "(%s)(function() { window.domAutomationController.send(true); });",
           function.c_str()),
-      &result));
+      &result)) << function;
   EXPECT_TRUE(result);
 }
 
