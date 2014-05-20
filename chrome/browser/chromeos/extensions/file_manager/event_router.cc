@@ -733,9 +733,10 @@ void EventRouter::DispatchDirectoryChangeEvent(
 void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
     bool watcher_error,
     const EntryDefinition& entry_definition) {
-  if (entry_definition.error != base::File::FILE_OK) {
-    DVLOG(1) << "Unable to dispatch event because resolving the entry "
-             << "definition failed.";
+  if (entry_definition.error != base::File::FILE_OK ||
+      !entry_definition.is_directory) {
+    DVLOG(1) << "Unable to dispatch event because resolving the directory "
+             << "entry definition failed.";
     return;
   }
 

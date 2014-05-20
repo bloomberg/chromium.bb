@@ -165,28 +165,20 @@ void FileDefinitionListConverter::OnResolvedURL(
     return;
   }
 
-  // Check the entry type.
-  if (iterator->is_directory &&
-      type == fileapi::FileSystemContext::RESOLVED_ENTRY_FILE) {
-    OnIteratorConverted(self_deleter.Pass(),
-                        iterator,
-                        CreateEntryDefinitionWithError(
-                            base::File::FILE_ERROR_NOT_A_DIRECTORY));
-    return;
-  }
-  if (!iterator->is_directory &&
-      type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY) {
-    OnIteratorConverted(self_deleter.Pass(),
-                        iterator,
-                        CreateEntryDefinitionWithError(
-                            base::File::FILE_ERROR_NOT_A_FILE));
-    return;
-  }
-
   EntryDefinition entry_definition;
   entry_definition.file_system_root_url = info.root_url.spec();
   entry_definition.file_system_name = info.name;
-  entry_definition.is_directory = iterator->is_directory;
+  switch (type) {
+    case fileapi::FileSystemContext::RESOLVED_ENTRY_FILE:
+      entry_definition.is_directory = false;
+      break;
+    case fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY:
+      entry_definition.is_directory = true;
+      break;
+    case fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND:
+      entry_definition.is_directory = iterator->is_directory;
+      break;
+  }
   entry_definition.error = base::File::FILE_OK;
 
   // Construct a target Entry.fullPath value from the virtual path and the

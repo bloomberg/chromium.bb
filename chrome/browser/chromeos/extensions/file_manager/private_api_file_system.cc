@@ -326,6 +326,11 @@ void FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition(
     return;
   }
 
+  if (!entry_definition.is_directory) {
+    DidFail(base::File::FILE_ERROR_NOT_A_DIRECTORY);
+    return;
+  }
+
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
   dict->SetString("name", entry_definition.file_system_name);
