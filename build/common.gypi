@@ -3176,7 +3176,7 @@
       },
     }],
     # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
-    ['os_posix==1 and disable_fatal_linker_warnings==0 and (chromeos==0 or target_arch!="arm")', {
+    ['os_posix==1 and disable_fatal_linker_warnings==0 and use_evdev_gestures==0 and (chromeos==0 or target_arch!="arm")', {
       'target_defaults': {
         'ldflags': [
           '-Wl,--fatal-warnings',
