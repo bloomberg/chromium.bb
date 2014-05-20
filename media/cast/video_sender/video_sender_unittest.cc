@@ -210,7 +210,7 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
   InitEncoder(false);
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  base::TimeTicks capture_time;
+  const base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
@@ -225,7 +225,7 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  base::TimeTicks capture_time;
+  const base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
@@ -240,7 +240,7 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  base::TimeTicks capture_time = testing_clock_->NowTicks();
+  const base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   // Make sure that we send at least one RTCP packet.
@@ -265,7 +265,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  base::TimeTicks capture_time;
+  const base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   // ACK the key frame.
@@ -297,7 +297,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   for (int i = 0; i < num_frames; i++) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-    base::TimeTicks capture_time;
+    const base::TimeTicks capture_time = testing_clock_->NowTicks();
     video_sender_->InsertRawVideoFrame(video_frame, capture_time);
     RunTasks(33);
   }
@@ -326,15 +326,13 @@ TEST_F(VideoSenderTest, StopSendingIntheAbsenceOfAck) {
   // than 4 frames in flight.
   // Store size in packets of frame 0, as it should be resent sue to timeout.
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-  base::TimeTicks capture_time;
-  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
   RunTasks(33);
   const int size_of_frame0 = transport_.number_of_rtp_packets();
 
   for (int i = 1; i < 4; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    base::TimeTicks capture_time;
-    video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
     RunTasks(33);
   }
 
@@ -343,8 +341,7 @@ TEST_F(VideoSenderTest, StopSendingIntheAbsenceOfAck) {
   // received any acks.
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    base::TimeTicks capture_time;
-    video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
     RunTasks(33);
   }
 

@@ -32,8 +32,7 @@ class TransportAudioSender : public base::NonThreadSafe {
 
   // Handles the encoded audio frames to be processed.
   // Frames will be encrypted, packetized and transmitted to the network.
-  void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                             const base::TimeTicks& recorded_time);
+  void SendFrame(const EncodedFrame& audio_frame);
 
   // Retransmision request.
   void ResendPackets(
@@ -49,8 +48,8 @@ class TransportAudioSender : public base::NonThreadSafe {
 
   // Caller must allocate the destination |encrypted_frame|. The data member
   // will be resized to hold the encrypted size.
-  bool EncryptAudioFrame(const EncodedAudioFrame& audio_frame,
-                         EncodedAudioFrame* encrypted_frame);
+  bool EncryptAudioFrame(const EncodedFrame& audio_frame,
+                         EncodedFrame* encrypted_frame);
 
   RtpSender rtp_sender_;
   TransportEncryptionHandler encryptor_;

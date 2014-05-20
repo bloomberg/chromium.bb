@@ -15,7 +15,7 @@ class VideoFrame;
 namespace media {
 namespace cast {
 namespace transport {
-struct EncodedVideoFrame;
+struct EncodedFrame;
 }  // namespace transport
 
 class SoftwareVideoEncoder {
@@ -28,7 +28,7 @@ class SoftwareVideoEncoder {
 
   // Encode a raw image (as a part of a video stream).
   virtual bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                      transport::EncodedVideoFrame* encoded_image) = 0;
+                      transport::EncodedFrame* encoded_image) = 0;
 
   // Update the encoder with a new target bit rate.
   virtual void UpdateRates(uint32 new_bitrate) = 0;

@@ -85,16 +85,13 @@ class VideoSender : public base::NonThreadSafe,
   void ScheduleNextSkippedFramesCheck();
   void SkippedFramesCheck();
 
-  void SendEncodedVideoFrame(const transport::EncodedVideoFrame* video_frame,
-                             const base::TimeTicks& capture_time);
   void ResendFrame(uint32 resend_frame_id);
   void ReceivedAck(uint32 acked_frame_id);
   void UpdateFramesInFlight();
 
   void SendEncodedVideoFrameMainThread(
       int requested_bitrate_before_encode,
-      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-      const base::TimeTicks& capture_time);
+      scoped_ptr<transport::EncodedFrame> encoded_frame);
 
   void InitializeTimers();
 

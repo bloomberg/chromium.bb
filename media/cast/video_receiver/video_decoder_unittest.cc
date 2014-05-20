@@ -61,10 +61,10 @@ class VideoDecoderTest
     total_video_frames_decoded_ = 0;
   }
 
-  // Called from the unit test thread to create another EncodedVideoFrame and
-  // push it into the decoding pipeline.
+  // Called from the unit test thread to create another EncodedFrame and push it
+  // into the decoding pipeline.
   void FeedMoreVideo(int num_dropped_frames) {
-    // Prepare a simulated EncodedVideoFrame to feed into the VideoDecoder.
+    // Prepare a simulated EncodedFrame to feed into the VideoDecoder.
 
     const gfx::Size frame_size(kWidth, kHeight);
     const scoped_refptr<VideoFrame> video_frame =
@@ -77,11 +77,10 @@ class VideoDecoderTest
     PopulateVideoFrame(video_frame, 0);
 
     // Encode |frame| into |encoded_frame->data|.
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
-        new transport::EncodedVideoFrame());
+    scoped_ptr<transport::EncodedFrame> encoded_frame(
+        new transport::EncodedFrame());
     CHECK_EQ(transport::kVp8, GetParam());  // Only support VP8 test currently.
     vp8_encoder_.Encode(video_frame, encoded_frame.get());
-    encoded_frame->codec = GetParam();
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
     last_frame_id_ = encoded_frame->frame_id;
 

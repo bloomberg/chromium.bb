@@ -21,8 +21,8 @@ namespace cast {
 
 class AudioEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
-                              const base::TimeTicks&)> FrameEncodedCallback;
+  typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
+      FrameEncodedCallback;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
                const AudioSenderConfig& audio_config,

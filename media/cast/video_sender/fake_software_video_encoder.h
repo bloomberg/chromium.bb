@@ -18,7 +18,7 @@ class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
   // SoftwareVideoEncoder implementations.
   virtual void Initialize() OVERRIDE;
   virtual bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                      transport::EncodedVideoFrame* encoded_image) OVERRIDE;
+                      transport::EncodedFrame* encoded_image) OVERRIDE;
   virtual void UpdateRates(uint32 new_bitrate) OVERRIDE;
   virtual void GenerateKeyFrame() OVERRIDE;
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;

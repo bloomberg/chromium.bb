@@ -18,7 +18,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -306,9 +305,7 @@ class TestReceiverAudioCallback
     EXPECT_TRUE(is_continuous);
   }
 
-  void CheckCodedAudioFrame(
-      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-      const base::TimeTicks& playout_time) {
+  void CheckCodedAudioFrame(scoped_ptr<transport::EncodedFrame> audio_frame) {
     ASSERT_TRUE(!!audio_frame);
     ASSERT_FALSE(expected_frames_.empty());
     const ExpectedAudioFrame& expected_audio_frame =
@@ -323,7 +320,7 @@ class TestReceiverAudioCallback
                   expected_audio_frame.audio_bus->frames(),
               num_elements);
     int16* const pcm_data =
-        reinterpret_cast<int16*>(string_as_array(&audio_frame->data));
+        reinterpret_cast<int16*>(audio_frame->mutable_bytes());
     for (int i = 0; i < num_elements; ++i)
       pcm_data[i] = static_cast<int16>(base::NetToHost16(pcm_data[i]));
     scoped_ptr<AudioBus> audio_bus(
@@ -332,7 +329,7 @@ class TestReceiverAudioCallback
     audio_bus->FromInterleaved(pcm_data, audio_bus->frames(), sizeof(int16));
 
     // Delegate the checking from here...
-    CheckAudioFrame(audio_bus.Pass(), playout_time, true);
+    CheckAudioFrame(audio_bus.Pass(), audio_frame->reference_time, true);
   }
 
   int number_times_called() const { return num_called_; }

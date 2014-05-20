@@ -114,15 +114,15 @@ void AudioReceiver::GetRawAudioFrame(
 
 void AudioReceiver::DecodeEncodedAudioFrame(
     const AudioFrameDecodedCallback& callback,
-    scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
-    const base::TimeTicks& playout_time) {
+    scoped_ptr<transport::EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!encoded_frame) {
-    callback.Run(make_scoped_ptr<AudioBus>(NULL), playout_time, false);
+    callback.Run(make_scoped_ptr<AudioBus>(NULL), base::TimeTicks(), false);
     return;
   }
   const uint32 frame_id = encoded_frame->frame_id;
   const uint32 rtp_timestamp = encoded_frame->rtp_timestamp;
+  const base::TimeTicks playout_time = encoded_frame->reference_time;
   audio_decoder_->DecodeFrame(encoded_frame.Pass(),
                               base::Bind(&AudioReceiver::EmitRawAudioFrame,
                                          cast_environment_,
@@ -153,8 +153,7 @@ void AudioReceiver::EmitRawAudioFrame(
   callback.Run(audio_bus.Pass(), playout_time, is_continuous);
 }
 
-void AudioReceiver::GetEncodedAudioFrame(
-    const AudioFrameEncodedCallback& callback) {
+void AudioReceiver::GetEncodedAudioFrame(const FrameEncodedCallback& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   frame_request_queue_.push_back(callback);
   EmitAvailableEncodedFrames();
@@ -167,8 +166,8 @@ void AudioReceiver::EmitAvailableEncodedFrames() {
     // Attempt to peek at the next completed frame from the |framer_|.
     // TODO(miu): We should only be peeking at the metadata, and not copying the
     // payload yet!  Or, at least, peek using a StringPiece instead of a copy.
-    scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
-        new transport::EncodedAudioFrame());
+    scoped_ptr<transport::EncodedFrame> encoded_frame(
+        new transport::EncodedFrame());
     bool is_consecutively_next_frame = false;
     if (!framer_.GetEncodedAudioFrame(encoded_frame.get(),
                                       &is_consecutively_next_frame)) {
@@ -216,14 +215,13 @@ void AudioReceiver::EmitAvailableEncodedFrames() {
       encoded_frame->data.swap(decrypted_audio_data);
     }
 
-    // At this point, we have a decrypted EncodedAudioFrame ready to be emitted.
-    encoded_frame->codec = codec_;
+    // At this point, we have a decrypted EncodedFrame ready to be emitted.
+    encoded_frame->reference_time = playout_time;
     framer_.ReleaseFrame(encoded_frame->frame_id);
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(frame_request_queue_.front(),
-                                           base::Passed(&encoded_frame),
-                                           playout_time));
+                                           base::Passed(&encoded_frame)));
     frame_request_queue_.pop_front();
   }
 }

@@ -54,13 +54,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver)
       OVERRIDE;
 
-  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                                     const base::TimeTicks& recorded_time)
-      OVERRIDE;
-
-  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                     const base::TimeTicks& capture_time)
-      OVERRIDE;
+  virtual void InsertCodedAudioFrame(const EncodedFrame& audio_frame) OVERRIDE;
+  virtual void InsertCodedVideoFrame(const EncodedFrame& video_frame) OVERRIDE;
 
   virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
                                      uint32 ntp_seconds,

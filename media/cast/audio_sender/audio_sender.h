@@ -46,9 +46,7 @@ class AudioSender : public base::NonThreadSafe,
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);
 
  protected:
-  void SendEncodedAudioFrame(
-      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-      const base::TimeTicks& recorded_time);
+  void SendEncodedAudioFrame(scoped_ptr<transport::EncodedFrame> audio_frame);
 
  private:
   friend class LocalRtcpAudioSenderFeedback;

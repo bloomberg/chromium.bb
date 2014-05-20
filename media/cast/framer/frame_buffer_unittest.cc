@@ -29,26 +29,26 @@ TEST_F(FrameBufferTest, OnePacketInsertSanity) {
   rtp_header_.frame_id = 5;
   rtp_header_.reference_frame_id = 5;
   buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
-  transport::EncodedVideoFrame frame;
-  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
+  transport::EncodedFrame frame;
+  EXPECT_TRUE(buffer_.AssembleEncodedFrame(&frame));
+  EXPECT_EQ(transport::EncodedFrame::KEY, frame.dependency);
   EXPECT_EQ(5u, frame.frame_id);
-  EXPECT_TRUE(frame.key_frame);
+  EXPECT_EQ(5u, frame.referenced_frame_id);
   EXPECT_EQ(3000u, frame.rtp_timestamp);
 }
 
 TEST_F(FrameBufferTest, EmptyBuffer) {
   EXPECT_FALSE(buffer_.Complete());
-  EXPECT_FALSE(buffer_.is_key_frame());
-  transport::EncodedVideoFrame frame;
-  EXPECT_FALSE(buffer_.GetEncodedVideoFrame(&frame));
+  transport::EncodedFrame frame;
+  EXPECT_FALSE(buffer_.AssembleEncodedFrame(&frame));
 }
 
 TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
   buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
-  transport::EncodedVideoFrame frame;
-  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
+  transport::EncodedFrame frame;
+  EXPECT_TRUE(buffer_.AssembleEncodedFrame(&frame));
   EXPECT_EQ(payload_.size(), frame.data.size());
 }
 
@@ -63,8 +63,8 @@ TEST_F(FrameBufferTest, MultiplePacketFrame) {
   ++rtp_header_.packet_id;
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_TRUE(buffer_.is_key_frame());
-  transport::EncodedVideoFrame frame;
-  EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame));
+  transport::EncodedFrame frame;
+  EXPECT_TRUE(buffer_.AssembleEncodedFrame(&frame));
   EXPECT_EQ(3 * payload_.size(), frame.data.size());
 }
 

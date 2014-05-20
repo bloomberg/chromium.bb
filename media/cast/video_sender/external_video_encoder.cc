@@ -222,21 +222,19 @@ class LocalVideoEncodeAcceleratorClient
       stream_header_.append(static_cast<const char*>(output_buffer->memory()),
                             payload_size);
     } else if (!encoded_frame_data_storage_.empty()) {
-      scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
-          new transport::EncodedVideoFrame());
-
-      encoded_frame->codec = codec_;
-      encoded_frame->key_frame = key_frame;
-      encoded_frame->last_referenced_frame_id = last_encoded_frame_id_;
-      last_encoded_frame_id_++;
-      encoded_frame->frame_id = last_encoded_frame_id_;
-      encoded_frame->rtp_timestamp = GetVideoRtpTimestamp(
-          encoded_frame_data_storage_.front().capture_time);
-      if (key_frame) {
-        // Self referenced.
-        encoded_frame->last_referenced_frame_id = encoded_frame->frame_id;
-      }
-
+      scoped_ptr<transport::EncodedFrame> encoded_frame(
+          new transport::EncodedFrame());
+      encoded_frame->dependency = key_frame ? transport::EncodedFrame::KEY :
+          transport::EncodedFrame::DEPENDENT;
+      encoded_frame->frame_id = ++last_encoded_frame_id_;
+      if (key_frame)
+        encoded_frame->referenced_frame_id = encoded_frame->frame_id;
+      else
+        encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
+      encoded_frame->reference_time =
+          encoded_frame_data_storage_.front().capture_time;
+      encoded_frame->rtp_timestamp =
+          GetVideoRtpTimestamp(encoded_frame->reference_time);
       if (!stream_header_.empty()) {
         encoded_frame->data = stream_header_;
         stream_header_.clear();
@@ -257,8 +255,7 @@ class LocalVideoEncodeAcceleratorClient
           CastEnvironment::MAIN,
           FROM_HERE,
           base::Bind(encoded_frame_data_storage_.front().frame_encoded_callback,
-                     base::Passed(&encoded_frame),
-                     encoded_frame_data_storage_.front().capture_time));
+                     base::Passed(&encoded_frame)));
 
       encoded_frame_data_storage_.pop_front();
     } else {

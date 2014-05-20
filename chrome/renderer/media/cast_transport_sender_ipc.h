@@ -34,11 +34,9 @@ class CastTransportSenderIPC
   virtual void InitializeVideo(
       const media::cast::transport::CastTransportVideoConfig& config) OVERRIDE;
   virtual void InsertCodedAudioFrame(
-      const media::cast::transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time) OVERRIDE;
+      const media::cast::transport::EncodedFrame& audio_frame) OVERRIDE;
   virtual void InsertCodedVideoFrame(
-      const media::cast::transport::EncodedVideoFrame* video_frame,
-      const base::TimeTicks& capture_time) OVERRIDE;
+      const media::cast::transport::EncodedFrame& video_frame) OVERRIDE;
   virtual void SendRtcpFromRtpSender(
       uint32 packet_type_flags,
       uint32 ntp_seconds,

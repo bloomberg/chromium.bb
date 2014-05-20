@@ -33,7 +33,7 @@ class LocalFrameReceiver : public FrameReceiver {
                                            callback));
   }
 
-  virtual void GetEncodedVideoFrame(const VideoFrameEncodedCallback& callback)
+  virtual void GetEncodedVideoFrame(const FrameEncodedCallback& callback)
       OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
@@ -51,7 +51,7 @@ class LocalFrameReceiver : public FrameReceiver {
                                            callback));
   }
 
-  virtual void GetCodedAudioFrame(const AudioFrameEncodedCallback& callback)
+  virtual void GetCodedAudioFrame(const FrameEncodedCallback& callback)
       OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,

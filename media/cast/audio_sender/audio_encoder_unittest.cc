@@ -40,11 +40,11 @@ class TestEncodedAudioFrameReceiver {
     upper_bound_ = upper_bound;
   }
 
-  void FrameEncoded(scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
-                    const base::TimeTicks& recorded_time) {
-    EXPECT_EQ(codec_, encoded_frame->codec);
+  void FrameEncoded(scoped_ptr<transport::EncodedFrame> encoded_frame) {
+    EXPECT_EQ(encoded_frame->dependency, transport::EncodedFrame::KEY);
     EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
               encoded_frame->frame_id);
+    EXPECT_EQ(encoded_frame->frame_id, encoded_frame->referenced_frame_id);
     // RTP timestamps should be monotonically increasing and integer multiples
     // of the fixed frame size.
     EXPECT_LE(rtp_lower_bound_, encoded_frame->rtp_timestamp);
@@ -54,9 +54,9 @@ class TestEncodedAudioFrameReceiver {
     EXPECT_EQ(0u, encoded_frame->rtp_timestamp % kSamplesPerFrame);
     EXPECT_TRUE(!encoded_frame->data.empty());
 
-    EXPECT_LE(lower_bound_, recorded_time);
-    lower_bound_ = recorded_time;
-    EXPECT_GT(upper_bound_, recorded_time);
+    EXPECT_LE(lower_bound_, encoded_frame->reference_time);
+    lower_bound_ = encoded_frame->reference_time;
+    EXPECT_GT(upper_bound_, encoded_frame->reference_time);
 
     ++frames_received_;
   }

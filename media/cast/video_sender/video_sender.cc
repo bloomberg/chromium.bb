@@ -147,7 +147,7 @@ void VideoSender::InsertRawVideoFrame(
       "cast_perf_test", "InsertRawVideoFrame",
       TRACE_EVENT_SCOPE_THREAD,
       "timestamp", capture_time.ToInternalValue(),
-      "rtp_timestamp", GetVideoRtpTimestamp(capture_time));
+      "rtp_timestamp", rtp_timestamp);
 
   if (video_encoder_->EncodeVideoFrame(
           video_frame,
@@ -162,14 +162,11 @@ void VideoSender::InsertRawVideoFrame(
 
 void VideoSender::SendEncodedVideoFrameMainThread(
     int requested_bitrate_before_encode,
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-    const base::TimeTicks& capture_time) {
+    scoped_ptr<transport::EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-  if (encoded_frame->key_frame) {
-    VLOG(1) << "Send encoded key frame; frame_id:"
-            << static_cast<int>(encoded_frame->frame_id);
-  }
+  VLOG_IF(1, encoded_frame->dependency == transport::EncodedFrame::KEY)
+      << "Send encoded key frame; frame_id: " << encoded_frame->frame_id;
 
   DCHECK_GT(frames_in_encoder_, 0);
   frames_in_encoder_--;
@@ -177,22 +174,23 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       last_send_time_, FRAME_ENCODED, VIDEO_EVENT, encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
-      encoded_frame->key_frame,
+      encoded_frame->dependency == transport::EncodedFrame::KEY,
       requested_bitrate_before_encode);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(
       "cast_perf_test", "VideoFrameEncoded",
       TRACE_EVENT_SCOPE_THREAD,
-      "rtp_timestamp", GetVideoRtpTimestamp(capture_time));
+      "rtp_timestamp", encoded_frame->rtp_timestamp);
 
   // Only use lowest 8 bits as key.
   frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
-  rtp_timestamp_helper_.StoreLatestTime(capture_time,
+  DCHECK(!encoded_frame->reference_time.is_null());
+  rtp_timestamp_helper_.StoreLatestTime(encoded_frame->reference_time,
                                         encoded_frame->rtp_timestamp);
-  transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
+  transport_sender_->InsertCodedVideoFrame(*encoded_frame);
   UpdateFramesInFlight();
   InitializeTimers();
 }

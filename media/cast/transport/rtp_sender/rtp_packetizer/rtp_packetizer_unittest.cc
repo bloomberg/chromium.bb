@@ -112,9 +112,9 @@ class RtpPacketizerTest : public ::testing::Test {
     pacer_->RegisterVideoSsrc(config_.ssrc);
     rtp_packetizer_.reset(new RtpPacketizer(
         pacer_.get(), &packet_storage_, config_));
-    video_frame_.key_frame = false;
+    video_frame_.dependency = EncodedFrame::DEPENDENT;
     video_frame_.frame_id = 0;
-    video_frame_.last_referenced_frame_id = kStartFrameId;
+    video_frame_.referenced_frame_id = kStartFrameId;
     video_frame_.data.assign(kFrameSize, 123);
     video_frame_.rtp_timestamp =
         GetVideoRtpTimestamp(testing_clock_.NowTicks());
@@ -130,7 +130,7 @@ class RtpPacketizerTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  EncodedVideoFrame video_frame_;
+  EncodedFrame video_frame_;
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;
   scoped_ptr<TestRtpPacketTransport> transport_;
@@ -146,9 +146,9 @@ TEST_F(RtpPacketizerTest, SendStandardPackets) {
   transport_->set_expected_number_of_packets(expected_num_of_packets);
   transport_->set_rtp_timestamp(video_frame_.rtp_timestamp);
 
-  base::TimeTicks time;
-  time += base::TimeDelta::FromMilliseconds(kTimestampMs);
-  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));
+  video_frame_.reference_time = testing_clock_.NowTicks();
+  rtp_packetizer_->SendFrameAsPackets(video_frame_);
   RunTasks(33 + 1);
   EXPECT_EQ(expected_num_of_packets, transport_->number_of_packets_received());
 }
@@ -162,8 +162,8 @@ TEST_F(RtpPacketizerTest, Stats) {
   transport_->set_rtp_timestamp(video_frame_.rtp_timestamp);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));
-  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,
-                                             testing_clock_.NowTicks());
+  video_frame_.reference_time = testing_clock_.NowTicks();
+  rtp_packetizer_->SendFrameAsPackets(video_frame_);
   RunTasks(33 + 1);
   EXPECT_EQ(expected_num_of_packets, rtp_packetizer_->send_packet_count());
   EXPECT_EQ(kFrameSize, rtp_packetizer_->send_octet_count());

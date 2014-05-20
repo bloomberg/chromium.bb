@@ -42,12 +42,10 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       const media::cast::transport::CastTransportVideoConfig& config);
   void OnInsertCodedAudioFrame(
       int32 channel_id,
-      const media::cast::transport::EncodedAudioFrame& audio_frame,
-      base::TimeTicks recorded_time);
+      const media::cast::transport::EncodedFrame& audio_frame);
   void OnInsertCodedVideoFrame(
       int32 channel_id,
-      const media::cast::transport::EncodedVideoFrame& video_frame,
-      base::TimeTicks capture_time);
+      const media::cast::transport::EncodedFrame& video_frame);
   void OnSendRtcpFromRtpSender(
       int32 channel_id,
       const media::cast::transport::SendRtcpFromRtpSenderData& data,

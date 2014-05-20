@@ -46,19 +46,13 @@ void CastTransportSenderIPC::InitializeVideo(
 }
 
 void CastTransportSenderIPC::InsertCodedAudioFrame(
-    const media::cast::transport::EncodedAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time) {
-  Send(new CastHostMsg_InsertCodedAudioFrame(channel_id_,
-                                             *audio_frame,
-                                             recorded_time));
+    const media::cast::transport::EncodedFrame& audio_frame) {
+  Send(new CastHostMsg_InsertCodedAudioFrame(channel_id_, audio_frame));
 }
 
 void CastTransportSenderIPC::InsertCodedVideoFrame(
-    const media::cast::transport::EncodedVideoFrame* video_frame,
-    const base::TimeTicks& capture_time) {
-  Send(new CastHostMsg_InsertCodedVideoFrame(channel_id_,
-                                             *video_frame,
-                                             capture_time));
+    const media::cast::transport::EncodedFrame& video_frame) {
+  Send(new CastHostMsg_InsertCodedVideoFrame(channel_id_, video_frame));
 }
 
 void CastTransportSenderIPC::SendRtcpFromRtpSender(

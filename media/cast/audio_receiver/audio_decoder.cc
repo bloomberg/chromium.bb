@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/cast/cast_defines.h"
 #include "third_party/opus/src/include/opus.h"
@@ -40,19 +39,9 @@ class AudioDecoder::ImplBase
     return cast_initialization_status_;
   }
 
-  void DecodeFrame(scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
+  void DecodeFrame(scoped_ptr<transport::EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
     DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
-
-    scoped_ptr<AudioBus> decoded_audio;
-    if (encoded_frame->codec != codec_) {
-      NOTREACHED();
-      cast_environment_->PostTask(CastEnvironment::MAIN,
-                                  FROM_HERE,
-                                  base::Bind(callback,
-                                             base::Passed(&decoded_audio),
-                                             false));
-    }
 
     COMPILE_ASSERT(sizeof(encoded_frame->frame_id) == sizeof(last_frame_id_),
                    size_of_frame_id_types_do_not_match);
@@ -68,8 +57,8 @@ class AudioDecoder::ImplBase
     }
     last_frame_id_ = encoded_frame->frame_id;
 
-    decoded_audio = Decode(
-        reinterpret_cast<uint8*>(string_as_array(&encoded_frame->data)),
+    scoped_ptr<AudioBus> decoded_audio = Decode(
+        encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
@@ -239,7 +228,7 @@ CastInitializationStatus AudioDecoder::InitializationResult() const {
 }
 
 void AudioDecoder::DecodeFrame(
-    scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
+    scoped_ptr<transport::EncodedFrame> encoded_frame,
     const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());

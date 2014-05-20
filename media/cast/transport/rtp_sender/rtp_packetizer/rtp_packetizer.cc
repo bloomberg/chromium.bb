@@ -45,61 +45,25 @@ RtpPacketizer::RtpPacketizer(PacedSender* const transport,
 
 RtpPacketizer::~RtpPacketizer() {}
 
-void RtpPacketizer::IncomingEncodedVideoFrame(
-    const EncodedVideoFrame* video_frame,
-    const base::TimeTicks& capture_time) {
-  DCHECK(!config_.audio) << "Invalid state";
-  if (config_.audio)
-    return;
-
-  Cast(video_frame->key_frame,
-       video_frame->frame_id,
-       video_frame->last_referenced_frame_id,
-       video_frame->rtp_timestamp,
-       video_frame->data,
-       capture_time);
-}
-
-void RtpPacketizer::IncomingEncodedAudioFrame(
-    const EncodedAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time) {
-  DCHECK(config_.audio) << "Invalid state";
-  if (!config_.audio)
-    return;
-
-  Cast(true,
-       audio_frame->frame_id,
-       0,
-       audio_frame->rtp_timestamp,
-       audio_frame->data,
-       recorded_time);
-}
-
 uint16 RtpPacketizer::NextSequenceNumber() {
   ++sequence_number_;
   return sequence_number_ - 1;
 }
 
-// TODO(mikhal): Switch to pass data with a const_ref.
-void RtpPacketizer::Cast(bool is_key,
-                         uint32 frame_id,
-                         uint32 reference_frame_id,
-                         uint32 timestamp,
-                         const std::string& data,
-                         const base::TimeTicks& capture_time) {
+void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
-  rtp_timestamp_ = timestamp;
+  rtp_timestamp_ = frame.rtp_timestamp;
 
   // Split the payload evenly (round number up).
-  size_t num_packets = (data.size() + max_length) / max_length;
-  size_t payload_length = (data.size() + num_packets) / num_packets;
+  size_t num_packets = (frame.data.size() + max_length) / max_length;
+  size_t payload_length = (frame.data.size() + num_packets) / num_packets;
   DCHECK_LE(payload_length, max_length) << "Invalid argument";
 
   SendPacketVector packets;
 
-  size_t remaining_size = data.size();
-  std::string::const_iterator data_iter = data.begin();
+  size_t remaining_size = frame.data.size();
+  std::string::const_iterator data_iter = frame.data.begin();
   while (remaining_size > 0) {
     PacketRef packet(new base::RefCountedData<Packet>);
 
@@ -107,31 +71,35 @@ void RtpPacketizer::Cast(bool is_key,
       payload_length = remaining_size;
     }
     remaining_size -= payload_length;
-    BuildCommonRTPheader(&packet->data, remaining_size == 0, timestamp);
+    BuildCommonRTPheader(
+        &packet->data, remaining_size == 0, frame.rtp_timestamp);
 
     // Build Cast header.
-    packet->data.push_back((is_key ? kCastKeyFrameBitMask : 0) |
-                           kCastReferenceFrameIdBitMask);
-    packet->data.push_back(frame_id);
+    // TODO(miu): Should we always set the ref frame bit and the ref_frame_id?
+    DCHECK_NE(frame.dependency, EncodedFrame::UNKNOWN_DEPENDENCY);
+    packet->data.push_back(
+        ((frame.dependency == EncodedFrame::KEY) ? kCastKeyFrameBitMask : 0) |
+             kCastReferenceFrameIdBitMask);
+    packet->data.push_back(static_cast<uint8>(frame.frame_id));
     size_t start_size = packet->data.size();
     packet->data.resize(start_size + 4);
     base::BigEndianWriter big_endian_writer(
         reinterpret_cast<char*>(&(packet->data[start_size])), 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
-    packet->data.push_back(static_cast<uint8>(reference_frame_id));
+    packet->data.push_back(static_cast<uint8>(frame.referenced_frame_id));
 
     // Copy payload data.
     packet->data.insert(packet->data.end(),
                         data_iter,
                         data_iter + payload_length);
 
-    PacketKey key = PacedPacketSender::MakePacketKey(capture_time,
+    PacketKey key = PacedPacketSender::MakePacketKey(frame.reference_time,
                                                      config_.ssrc,
                                                      packet_id_);
 
     // Store packet.
-    packet_storage_->StorePacket(frame_id, packet_id_, key, packet);
+    packet_storage_->StorePacket(frame.frame_id, packet_id_, key, packet);
     ++packet_id_;
     data_iter += payload_length;
 

@@ -20,8 +20,8 @@ namespace cast {
 // All these functions are called from the main cast thread.
 class VideoEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
-                              const base::TimeTicks&)> FrameEncodedCallback;
+  typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
+      FrameEncodedCallback;
 
   virtual ~VideoEncoder() {}
 

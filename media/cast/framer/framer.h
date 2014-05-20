@@ -44,10 +44,10 @@ class Framer {
   // frame.
   // Returns false if the frame does not exist or if the frame is not complete
   // within the given time frame.
-  bool GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
+  bool GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
                             bool* next_frame);
 
-  bool GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
+  bool GetEncodedAudioFrame(transport::EncodedFrame* audio_frame,
                             bool* next_frame);
 
   void ReleaseFrame(uint32 frame_id);

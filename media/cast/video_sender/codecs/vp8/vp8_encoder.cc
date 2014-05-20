@@ -135,7 +135,7 @@ void Vp8Encoder::InitEncode(int number_of_encode_threads) {
 }
 
 bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                        transport::EncodedVideoFrame* encoded_image) {
+                        transport::EncodedFrame* encoded_image) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Image in vpx_image_t format.
   // Input image is const. VP8's raw image is not defined as const.
@@ -199,35 +199,34 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // Get encoded frame.
   const vpx_codec_cx_pkt_t* pkt = NULL;
   vpx_codec_iter_t iter = NULL;
-  size_t total_size = 0;
+  bool is_key_frame = false;
   while ((pkt = vpx_codec_get_cx_data(encoder_.get(), &iter)) != NULL) {
-    if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-      total_size += pkt->data.frame.sz;
-      encoded_image->data.reserve(total_size);
-      encoded_image->data.insert(
-          encoded_image->data.end(),
-          static_cast<const uint8*>(pkt->data.frame.buf),
-          static_cast<const uint8*>(pkt->data.frame.buf) + pkt->data.frame.sz);
-      if (pkt->data.frame.flags & VPX_FRAME_IS_KEY) {
-        encoded_image->key_frame = true;
-      } else {
-        encoded_image->key_frame = false;
-      }
-    }
+    if (pkt->kind != VPX_CODEC_CX_FRAME_PKT)
+      continue;
+    encoded_image->data.assign(
+        static_cast<const uint8*>(pkt->data.frame.buf),
+        static_cast<const uint8*>(pkt->data.frame.buf) + pkt->data.frame.sz);
+    is_key_frame = !!(pkt->data.frame.flags & VPX_FRAME_IS_KEY);
+    break;  // Done, since all data is provided in one CX_FRAME_PKT packet.
   }
   // Don't update frame_id for zero size frames.
-  if (total_size == 0)
+  if (encoded_image->data.empty())
     return true;
 
   // Populate the encoded frame.
-  encoded_image->codec = transport::kVp8;
-  encoded_image->last_referenced_frame_id = latest_frame_id_to_reference;
   encoded_image->frame_id = ++last_encoded_frame_id_;
+  if (is_key_frame) {
+    encoded_image->dependency = transport::EncodedFrame::KEY;
+    encoded_image->referenced_frame_id = encoded_image->frame_id;
+  } else {
+    encoded_image->dependency = transport::EncodedFrame::DEPENDENT;
+    encoded_image->referenced_frame_id = latest_frame_id_to_reference;
+  }
 
-  VLOG(1) << "VP8 encoded frame:" << static_cast<int>(encoded_image->frame_id)
-          << " sized:" << total_size;
+  DVLOG(1) << "VP8 encoded frame_id " << encoded_image->frame_id
+           << ", sized:" << encoded_image->data.size();
 
-  if (encoded_image->key_frame) {
+  if (is_key_frame) {
     key_frame_requested_ = false;
 
     for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {

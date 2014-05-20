@@ -17,6 +17,9 @@
 #define IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_START CastMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(
+    media::cast::transport::EncodedFrame::Dependency,
+    media::cast::transport::EncodedFrame::DEPENDENCY_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::AudioCodec,
                           media::cast::transport::kAudioCodecLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::VideoCodec,
@@ -28,19 +31,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::EventMediaType,
                           media::cast::EVENT_MEDIA_TYPE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedAudioFrame)
-  IPC_STRUCT_TRAITS_MEMBER(codec)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedFrame)
+  IPC_STRUCT_TRAITS_MEMBER(dependency)
   IPC_STRUCT_TRAITS_MEMBER(frame_id)
+  IPC_STRUCT_TRAITS_MEMBER(referenced_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedVideoFrame)
-  IPC_STRUCT_TRAITS_MEMBER(codec)
-  IPC_STRUCT_TRAITS_MEMBER(key_frame)
-  IPC_STRUCT_TRAITS_MEMBER(frame_id)
-  IPC_STRUCT_TRAITS_MEMBER(last_referenced_frame_id)
-  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(reference_time)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
@@ -121,17 +117,15 @@ IPC_MESSAGE_CONTROL2(
   int32 /*channel_id*/,
   media::cast::transport::CastTransportVideoConfig /*config*/)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL2(
     CastHostMsg_InsertCodedAudioFrame,
     int32 /* channel_id */,
-    media::cast::transport::EncodedAudioFrame /* audio_frame */,
-    base::TimeTicks /* recorded_time */)
+    media::cast::transport::EncodedFrame /* audio_frame */)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL2(
     CastHostMsg_InsertCodedVideoFrame,
     int32 /* channel_id */,
-    media::cast::transport::EncodedVideoFrame /* video_frame */,
-    base::TimeTicks /* recorded_time */)
+    media::cast::transport::EncodedFrame /* video_frame */)
 
 IPC_MESSAGE_CONTROL3(
     CastHostMsg_SendRtcpFromRtpSender,

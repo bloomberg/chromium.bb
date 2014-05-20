@@ -55,17 +55,9 @@ bool RtpSender::InitializeVideo(const CastTransportVideoConfig& config) {
   return true;
 }
 
-void RtpSender::IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                          const base::TimeTicks& capture_time) {
+void RtpSender::SendFrame(const EncodedFrame& frame) {
   DCHECK(packetizer_);
-  packetizer_->IncomingEncodedVideoFrame(video_frame, capture_time);
-}
-
-void RtpSender::IncomingEncodedAudioFrame(
-    const EncodedAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time) {
-  DCHECK(packetizer_);
-  packetizer_->IncomingEncodedAudioFrame(audio_frame, recorded_time);
+  packetizer_->SendFrameAsPackets(frame);
 }
 
 void RtpSender::ResendPackets(

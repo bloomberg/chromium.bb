@@ -128,12 +128,11 @@ void CastTransportHostFilter::OnInitializeVideo(
 
 void CastTransportHostFilter::OnInsertCodedAudioFrame(
     int32 channel_id,
-    const media::cast::transport::EncodedAudioFrame& audio_frame,
-    base::TimeTicks recorded_time) {
+    const media::cast::transport::EncodedFrame& audio_frame) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
-    sender->InsertCodedAudioFrame(&audio_frame, recorded_time);
+    sender->InsertCodedAudioFrame(audio_frame);
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInsertCodedAudioFrame "
@@ -143,12 +142,11 @@ void CastTransportHostFilter::OnInsertCodedAudioFrame(
 
 void CastTransportHostFilter::OnInsertCodedVideoFrame(
     int32 channel_id,
-    const media::cast::transport::EncodedVideoFrame& video_frame,
-    base::TimeTicks capture_time) {
+    const media::cast::transport::EncodedFrame& video_frame) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
-    sender->InsertCodedVideoFrame(&video_frame, capture_time);
+    sender->InsertCodedVideoFrame(video_frame);
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInsertCodedVideoFrame "

@@ -26,8 +26,8 @@ class VideoEncoderImpl : public VideoEncoder {
     int bit_rate;
   };
 
-  typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
-                              const base::TimeTicks&)> FrameEncodedCallback;
+  typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
+      FrameEncodedCallback;
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config,

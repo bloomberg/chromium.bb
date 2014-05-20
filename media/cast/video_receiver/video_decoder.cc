@@ -9,7 +9,6 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_defines.h"
@@ -41,17 +40,9 @@ class VideoDecoder::ImplBase
     return cast_initialization_status_;
   }
 
-  void DecodeFrame(scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+  void DecodeFrame(scoped_ptr<transport::EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback) {
     DCHECK_EQ(cast_initialization_status_, STATUS_VIDEO_INITIALIZED);
-
-    if (encoded_frame->codec != codec_) {
-      NOTREACHED();
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(callback, scoped_refptr<VideoFrame>(NULL), false));
-    }
 
     COMPILE_ASSERT(sizeof(encoded_frame->frame_id) == sizeof(last_frame_id_),
                    size_of_frame_id_types_do_not_match);
@@ -68,7 +59,7 @@ class VideoDecoder::ImplBase
     last_frame_id_ = encoded_frame->frame_id;
 
     const scoped_refptr<VideoFrame> decoded_frame = Decode(
-        reinterpret_cast<uint8*>(string_as_array(&encoded_frame->data)),
+        encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
@@ -248,7 +239,7 @@ CastInitializationStatus VideoDecoder::InitializationResult() const {
 }
 
 void VideoDecoder::DecodeFrame(
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+    scoped_ptr<transport::EncodedFrame> encoded_frame,
     const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());

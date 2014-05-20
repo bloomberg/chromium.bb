@@ -27,31 +27,24 @@ TransportVideoSender::TransportVideoSender(
 
 TransportVideoSender::~TransportVideoSender() {}
 
-void TransportVideoSender::InsertCodedVideoFrame(
-    const EncodedVideoFrame* coded_frame,
-    const base::TimeTicks& capture_time) {
+void TransportVideoSender::SendFrame(const EncodedFrame& video_frame) {
   if (!initialized_) {
     return;
   }
   if (encryptor_.initialized()) {
-    EncodedVideoFrame encrypted_video_frame;
-
-    if (!EncryptVideoFrame(*coded_frame, &encrypted_video_frame))
+    EncodedFrame encrypted_frame;
+    if (!EncryptVideoFrame(video_frame, &encrypted_frame)) {
+      NOTREACHED();
       return;
-
-    rtp_sender_.IncomingEncodedVideoFrame(&encrypted_video_frame, capture_time);
+    }
+    rtp_sender_.SendFrame(encrypted_frame);
   } else {
-    rtp_sender_.IncomingEncodedVideoFrame(coded_frame, capture_time);
-  }
-  if (coded_frame->key_frame) {
-    VLOG(1) << "Send encoded key frame; frame_id:"
-            << static_cast<int>(coded_frame->frame_id);
+    rtp_sender_.SendFrame(video_frame);
   }
 }
 
 bool TransportVideoSender::EncryptVideoFrame(
-    const EncodedVideoFrame& video_frame,
-    EncodedVideoFrame* encrypted_frame) {
+    const EncodedFrame& video_frame, EncodedFrame* encrypted_frame) {
   if (!initialized_) {
     return false;
   }
@@ -59,11 +52,11 @@ bool TransportVideoSender::EncryptVideoFrame(
           video_frame.frame_id, video_frame.data, &(encrypted_frame->data)))
     return false;
 
-  encrypted_frame->codec = video_frame.codec;
-  encrypted_frame->key_frame = video_frame.key_frame;
+  encrypted_frame->dependency = video_frame.dependency;
   encrypted_frame->frame_id = video_frame.frame_id;
-  encrypted_frame->last_referenced_frame_id =
-      video_frame.last_referenced_frame_id;
+  encrypted_frame->referenced_frame_id = video_frame.referenced_frame_id;
+  encrypted_frame->rtp_timestamp = video_frame.rtp_timestamp;
+  encrypted_frame->reference_time = video_frame.reference_time;
   return true;
 }
 

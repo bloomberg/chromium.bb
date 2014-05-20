@@ -77,11 +77,8 @@ class CastTransportSender : public base::NonThreadSafe {
   // The following two functions handle the encoded media frames (audio and
   // video) to be processed.
   // Frames will be encrypted, packetized and transmitted to the network.
-  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                                     const base::TimeTicks& recorded_time) = 0;
-
-  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                     const base::TimeTicks& capture_time) = 0;
+  virtual void InsertCodedAudioFrame(const EncodedFrame& audio_frame) = 0;
+  virtual void InsertCodedVideoFrame(const EncodedFrame& video_frame) = 0;
 
   // Builds an RTCP packet and sends it to the network.
   // |ntp_seconds|, |ntp_fraction| and |rtp_timestamp| are used in the

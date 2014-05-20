@@ -48,13 +48,7 @@ class RtpSender {
   // video frames. Returns false if configuration is invalid.
   bool InitializeVideo(const CastTransportVideoConfig& config);
 
-  // The video_frame objects ownership is handled by the main cast thread.
-  void IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                 const base::TimeTicks& capture_time);
-
-  // The audio_frame objects ownership is handled by the main cast thread.
-  void IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                                 const base::TimeTicks& recorded_time);
+  void SendFrame(const EncodedFrame& frame);
 
   void ResendPackets(const MissingFramesAndPacketsMap& missing_packets);
 

@@ -69,7 +69,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
+bool Framer::GetEncodedAudioFrame(transport::EncodedFrame* audio_frame,
                                   bool* next_frame) {
   uint32 frame_id;
   // Find frame id.
@@ -88,11 +88,11 @@ bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
   if (it == frames_.end())
     return false;
 
-  return it->second->GetEncodedAudioFrame(audio_frame);
+  return it->second->AssembleEncodedFrame(audio_frame);
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
+bool Framer::GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
                                   bool* next_frame) {
   uint32 frame_id;
   // Find frame id.
@@ -115,7 +115,7 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
   if (it == frames_.end())
     return false;
 
-  return it->second->GetEncodedVideoFrame(video_frame);
+  return it->second->AssembleEncodedFrame(video_frame);
 }
 
 void Framer::Reset() {

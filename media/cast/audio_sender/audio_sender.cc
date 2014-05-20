@@ -95,13 +95,13 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
 }
 
 void AudioSender::SendEncodedAudioFrame(
-    scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-    const base::TimeTicks& recorded_time) {
+    scoped_ptr<transport::EncodedFrame> audio_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtp_timestamp_helper_.StoreLatestTime(recorded_time,
+  DCHECK(!audio_frame->reference_time.is_null());
+  rtp_timestamp_helper_.StoreLatestTime(audio_frame->reference_time,
                                         audio_frame->rtp_timestamp);
   InitializeTimers();
-  transport_sender_->InsertCodedAudioFrame(audio_frame.get(), recorded_time);
+  transport_sender_->InsertCodedAudioFrame(*audio_frame);
 }
 
 void AudioSender::ResendPackets(

@@ -108,8 +108,7 @@ TEST_F(AudioSenderTest, Encode20ms) {
                           TestAudioBusFactory::kMiddleANoteFreq,
                           0.5f).NextAudioBus(kDuration));
 
-  base::TimeTicks recorded_time = base::TimeTicks::Now();
-  audio_sender_->InsertAudio(bus.Pass(), recorded_time);
+  audio_sender_->InsertAudio(bus.Pass(), testing_clock_->NowTicks());
   task_runner_->RunTasks();
   EXPECT_GE(
       transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
@@ -124,8 +123,7 @@ TEST_F(AudioSenderTest, RtcpTimer) {
                           TestAudioBusFactory::kMiddleANoteFreq,
                           0.5f).NextAudioBus(kDuration));
 
-  base::TimeTicks recorded_time = base::TimeTicks::Now();
-  audio_sender_->InsertAudio(bus.Pass(), recorded_time);
+  audio_sender_->InsertAudio(bus.Pass(), testing_clock_->NowTicks());
   task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.

@@ -25,18 +25,23 @@ void FakeSoftwareVideoEncoder::Initialize() {}
 
 bool FakeSoftwareVideoEncoder::Encode(
     const scoped_refptr<media::VideoFrame>& video_frame,
-    transport::EncodedVideoFrame* encoded_image) {
-  encoded_image->codec = transport::kFakeSoftwareVideo;
-  encoded_image->key_frame = next_frame_is_key_;
-  next_frame_is_key_ = false;
+    transport::EncodedFrame* encoded_image) {
   encoded_image->frame_id = frame_id_++;
-  encoded_image->last_referenced_frame_id = encoded_image->frame_id - 1;
+  if (next_frame_is_key_) {
+    encoded_image->dependency = transport::EncodedFrame::KEY;
+    encoded_image->referenced_frame_id = encoded_image->frame_id;
+    next_frame_is_key_ = false;
+  } else {
+    encoded_image->dependency = transport::EncodedFrame::DEPENDENT;
+    encoded_image->referenced_frame_id = encoded_image->frame_id - 1;
+  }
 
   base::DictionaryValue values;
-  values.Set("key", base::Value::CreateBooleanValue(encoded_image->key_frame));
+  values.Set("key", base::Value::CreateBooleanValue(
+      encoded_image->dependency == transport::EncodedFrame::KEY));
   values.Set("id", base::Value::CreateIntegerValue(encoded_image->frame_id));
   values.Set("ref", base::Value::CreateIntegerValue(
-      encoded_image->last_referenced_frame_id));
+      encoded_image->referenced_frame_id));
   base::JSONWriter::Write(&values, &encoded_image->data);
   return true;
 }

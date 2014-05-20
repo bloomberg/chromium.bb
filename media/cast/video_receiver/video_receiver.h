@@ -76,7 +76,7 @@ class VideoReceiver : public RtpReceiver,
   //
   // The given |callback| is guaranteed to be run at some point in the future,
   // even if to respond with NULL at shutdown time.
-  void GetEncodedVideoFrame(const VideoFrameEncodedCallback& callback);
+  void GetEncodedVideoFrame(const FrameEncodedCallback& callback);
 
   // Deliver another packet, possibly a duplicate, and possibly out-of-order.
   void IncomingPacket(scoped_ptr<Packet> packet);
@@ -102,12 +102,11 @@ class VideoReceiver : public RtpReceiver,
   // EmitAvailableEncodedFrames().
   void EmitAvailableEncodedFramesAfterWaiting();
 
-  // Feeds an EncodedVideoFrame into |video_decoder_|.  GetRawVideoFrame() uses
-  // this as a callback for GetEncodedVideoFrame().
+  // Feeds an EncodedFrame into |video_decoder_|.  GetRawVideoFrame() uses this
+  // as a callback for GetEncodedVideoFrame().
   void DecodeEncodedVideoFrame(
       const VideoFrameDecodedCallback& callback,
-      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-      const base::TimeTicks& playout_time);
+      scoped_ptr<transport::EncodedFrame> encoded_frame);
 
   // Return the playout time based on the current time and rtp timestamp.
   base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
@@ -160,7 +159,7 @@ class VideoReceiver : public RtpReceiver,
   transport::TransportEncryptionHandler decryptor_;
 
   // Outstanding callbacks to run to deliver on client requests for frames.
-  std::list<VideoFrameEncodedCallback> frame_request_queue_;
+  std::list<FrameEncodedCallback> frame_request_queue_;
 
   // True while there's an outstanding task to re-invoke
   // EmitAvailableEncodedFrames().

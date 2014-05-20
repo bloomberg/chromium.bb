@@ -100,17 +100,15 @@ void CastTransportSenderImpl::SetPacketReceiver(
 }
 
 void CastTransportSenderImpl::InsertCodedAudioFrame(
-    const EncodedAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time) {
+    const EncodedFrame& audio_frame) {
   DCHECK(audio_sender_) << "Audio sender uninitialized";
-  audio_sender_->InsertCodedAudioFrame(audio_frame, recorded_time);
+  audio_sender_->SendFrame(audio_frame);
 }
 
 void CastTransportSenderImpl::InsertCodedVideoFrame(
-    const EncodedVideoFrame* video_frame,
-    const base::TimeTicks& capture_time) {
+    const EncodedFrame& video_frame) {
   DCHECK(video_sender_) << "Video sender uninitialized";
-  video_sender_->InsertCodedVideoFrame(video_frame, capture_time);
+  video_sender_->SendFrame(video_frame);
 }
 
 void CastTransportSenderImpl::SendRtcpFromRtpSender(

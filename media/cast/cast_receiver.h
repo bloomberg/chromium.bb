@@ -40,28 +40,23 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
                             const base::TimeTicks& playout_time,
                             bool is_continuous)> VideoFrameDecodedCallback;
 
-// The following callbacks deliver still-encoded audio/video frame data, along
-// with the frame's corresponding play-out time.  The client should examine the
-// EncodedXXXFrame::frame_id field to determine whether any frames have been
+// The following callback delivers encoded frame data and metadata.  The client
+// should examine the |frame_id| field to determine whether any frames have been
 // dropped (i.e., frame_id should be incrementing by one each time).  Note: A
 // NULL pointer can be returned on error.
-typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
-                            const base::TimeTicks&)> AudioFrameEncodedCallback;
-typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
-                            const base::TimeTicks&)> VideoFrameEncodedCallback;
+typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
+    FrameEncodedCallback;
 
 // This Class is thread safe.
 class FrameReceiver : public base::RefCountedThreadSafe<FrameReceiver> {
  public:
   virtual void GetRawAudioFrame(const AudioFrameDecodedCallback& callback) = 0;
 
-  virtual void GetCodedAudioFrame(
-      const AudioFrameEncodedCallback& callback) = 0;
+  virtual void GetCodedAudioFrame(const FrameEncodedCallback& callback) = 0;
 
   virtual void GetRawVideoFrame(const VideoFrameDecodedCallback& callback) = 0;
 
-  virtual void GetEncodedVideoFrame(
-      const VideoFrameEncodedCallback& callback) = 0;
+  virtual void GetEncodedVideoFrame(const FrameEncodedCallback& callback) = 0;
 
  protected:
   virtual ~FrameReceiver() {}

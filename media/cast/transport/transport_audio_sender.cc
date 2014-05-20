@@ -27,26 +27,24 @@ TransportAudioSender::TransportAudioSender(
 
 TransportAudioSender::~TransportAudioSender() {}
 
-void TransportAudioSender::InsertCodedAudioFrame(
-    const EncodedAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time) {
+void TransportAudioSender::SendFrame(const EncodedFrame& audio_frame) {
   if (!initialized_) {
     return;
   }
   if (encryptor_.initialized()) {
-    EncodedAudioFrame encrypted_frame;
-    if (!EncryptAudioFrame(*audio_frame, &encrypted_frame)) {
+    EncodedFrame encrypted_frame;
+    if (!EncryptAudioFrame(audio_frame, &encrypted_frame)) {
+      NOTREACHED();
       return;
     }
-    rtp_sender_.IncomingEncodedAudioFrame(&encrypted_frame, recorded_time);
+    rtp_sender_.SendFrame(encrypted_frame);
   } else {
-    rtp_sender_.IncomingEncodedAudioFrame(audio_frame, recorded_time);
+    rtp_sender_.SendFrame(audio_frame);
   }
 }
 
 bool TransportAudioSender::EncryptAudioFrame(
-    const EncodedAudioFrame& audio_frame,
-    EncodedAudioFrame* encrypted_frame) {
+    const EncodedFrame& audio_frame, EncodedFrame* encrypted_frame) {
   if (!initialized_) {
     return false;
   }
@@ -54,9 +52,11 @@ bool TransportAudioSender::EncryptAudioFrame(
           audio_frame.frame_id, audio_frame.data, &encrypted_frame->data))
     return false;
 
-  encrypted_frame->codec = audio_frame.codec;
+  encrypted_frame->dependency = audio_frame.dependency;
   encrypted_frame->frame_id = audio_frame.frame_id;
+  encrypted_frame->referenced_frame_id = audio_frame.referenced_frame_id;
   encrypted_frame->rtp_timestamp = audio_frame.rtp_timestamp;
+  encrypted_frame->reference_time = audio_frame.reference_time;
   return true;
 }
 

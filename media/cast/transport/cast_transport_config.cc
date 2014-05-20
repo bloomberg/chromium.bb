@@ -33,17 +33,13 @@ CastTransportVideoConfig::CastTransportVideoConfig() : codec(kVp8) {}
 
 CastTransportVideoConfig::~CastTransportVideoConfig() {}
 
-EncodedVideoFrame::EncodedVideoFrame()
-    : codec(kVp8),
-      key_frame(false),
+EncodedFrame::EncodedFrame()
+    : dependency(UNKNOWN_DEPENDENCY),
       frame_id(0),
-      last_referenced_frame_id(0),
+      referenced_frame_id(0),
       rtp_timestamp(0) {}
-EncodedVideoFrame::~EncodedVideoFrame() {}
 
-EncodedAudioFrame::EncodedAudioFrame()
-    : codec(kOpus), frame_id(0), rtp_timestamp(0) {}
-EncodedAudioFrame::~EncodedAudioFrame() {}
+EncodedFrame::~EncodedFrame() {}
 
 RtcpSenderInfo::RtcpSenderInfo()
     : ntp_seconds(0),
