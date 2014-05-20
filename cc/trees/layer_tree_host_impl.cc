@@ -215,6 +215,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     int id)
     : client_(client),
       proxy_(proxy),
+      use_gpu_rasterization_(false),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
@@ -1520,6 +1521,19 @@ bool LayerTreeHostImpl::IsContextLost() {
   return renderer_ && renderer_->IsContextLost();
 }
 
+void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
+  if (use_gpu == use_gpu_rasterization_)
+    return;
+
+  use_gpu_rasterization_ = use_gpu;
+  ReleaseTreeResources();
+
+  // We have released tilings for both active and pending tree.
+  // We would not have any content to draw until the pending tree is activated.
+  // Prevent the active tree from drawing until activation.
+  active_tree_->SetRequiresHighResToDraw();
+}
+
 const RendererCapabilitiesImpl&
 LayerTreeHostImpl::GetRendererCapabilities() const {
   return renderer_->Capabilities();
@@ -1773,13 +1787,10 @@ void LayerTreeHostImpl::SetNeedsRedraw() {
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
-  bool any_tree_use_gpu_rasterization =
-      (active_tree_ && active_tree_->use_gpu_rasterization()) ||
-      (pending_tree_ && pending_tree_->use_gpu_rasterization());
   if (debug_state_.rasterize_only_visible_content) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
-  } else if (any_tree_use_gpu_rasterization) {
+  } else if (use_gpu_rasterization()) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }

@@ -82,7 +82,6 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
       scrolling_layer_id_from_previous_tree_(0),
-      use_gpu_rasterization_(false),
       contents_textures_purged_(false),
       requires_high_res_to_draw_(false),
       viewport_size_invalid_(false),
@@ -441,14 +440,6 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_ = NULL;
 }
 
-void LayerTreeImpl::SetUseGpuRasterization(bool use_gpu) {
-  if (use_gpu == use_gpu_rasterization_)
-    return;
-
-  use_gpu_rasterization_ = use_gpu;
-  ReleaseResources();
-}
-
 void LayerTreeImpl::UpdateDrawProperties() {
   needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
@@ -747,6 +738,10 @@ LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
 
 void LayerTreeImpl::DidAnimateScrollOffset() {
   layer_tree_host_impl_->DidAnimateScrollOffset();
+}
+
+bool LayerTreeImpl::use_gpu_rasterization() const {
+  return layer_tree_host_impl_->use_gpu_rasterization();
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {

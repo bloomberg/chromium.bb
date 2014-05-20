@@ -1727,6 +1727,34 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   EXPECT_EQ(HIGH_RESOLUTION, high_res->resolution());
 }
 
+TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
+  SetupDefaultTrees(gfx::Size(10, 10));
+
+  const float kScale = 1.f;
+  pending_layer_->AddTiling(kScale);
+  EXPECT_TRUE(pending_layer_->tilings()->TilingAtScale(kScale));
+  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(kScale));
+
+  // Gpu rasterization is disabled by default.
+  EXPECT_FALSE(host_impl_.use_gpu_rasterization());
+  // Toggling the gpu rasterization clears all tilings on both trees.
+  host_impl_.SetUseGpuRasterization(true);
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+
+  // Make sure that we can still add tiling to the pending layer,
+  // that gets synced to the active layer.
+  pending_layer_->AddTiling(kScale);
+  EXPECT_TRUE(pending_layer_->tilings()->TilingAtScale(kScale));
+  EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(kScale));
+
+  // Toggling the gpu rasterization clears all tilings on both trees.
+  EXPECT_TRUE(host_impl_.use_gpu_rasterization());
+  host_impl_.SetUseGpuRasterization(false);
+  EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+  EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+}
+
 TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   SetupDefaultTrees(gfx::Size(10, 10));
   host_impl_.active_tree()->UpdateDrawProperties();
@@ -1789,7 +1817,7 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   gfx::Size result_bounds;
 
   SetupDefaultTrees(layer_bounds);
-  EXPECT_FALSE(pending_layer_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_.use_gpu_rasterization());
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
   pending_layer_->CalculateContentsScale(1.f,
                                          1.f,
@@ -1804,8 +1832,8 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
 
   ResetTilingsAndRasterScales();
 
-  host_impl_.pending_tree()->SetUseGpuRasterization(true);
-  EXPECT_TRUE(pending_layer_->use_gpu_rasterization());
+  host_impl_.SetUseGpuRasterization(true);
+  EXPECT_TRUE(host_impl_.use_gpu_rasterization());
   pending_layer_->CalculateContentsScale(1.f,
                                          1.f,
                                          1.f,

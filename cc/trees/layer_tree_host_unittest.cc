@@ -4696,19 +4696,13 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->pending_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->active_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
@@ -4767,19 +4761,13 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->pending_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->active_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
@@ -4838,19 +4826,13 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->pending_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_TRUE(layer_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root = host_impl->active_tree()->root_layer();
-    PictureLayerImpl* layer_impl =
-        static_cast<PictureLayerImpl*>(root->children()[0]);
-
-    EXPECT_TRUE(layer_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 

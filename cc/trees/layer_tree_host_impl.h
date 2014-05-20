@@ -274,6 +274,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   bool IsContextLost();
   TileManager* tile_manager() { return tile_manager_.get(); }
+  void SetUseGpuRasterization(bool use_gpu);
+  bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   Renderer* renderer() { return renderer_.get(); }
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
@@ -559,6 +561,7 @@ class CC_EXPORT LayerTreeHostImpl
   // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TileManager> tile_manager_;
+  bool use_gpu_rasterization_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;

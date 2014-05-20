@@ -539,7 +539,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   int flags = 0;
   if (is_using_lcd_text_)
     flags |= Tile::USE_LCD_TEXT;
-  if (use_gpu_rasterization())
+  if (layer_tree_impl()->use_gpu_rasterization())
     flags |= Tile::USE_GPU_RASTERIZATION;
   return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
@@ -562,8 +562,7 @@ const Region* PictureLayerImpl::GetInvalidation() {
 
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) const {
-  if (!twin_layer_ ||
-      twin_layer_->use_gpu_rasterization() != use_gpu_rasterization())
+  if (!twin_layer_)
     return NULL;
   for (size_t i = 0; i < twin_layer_->tilings_->num_tilings(); ++i)
     if (twin_layer_->tilings_->tiling_at(i)->contents_scale() ==
@@ -577,9 +576,10 @@ size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
 }
 
 float PictureLayerImpl::GetSkewportTargetTimeInSeconds() const {
-  float skewport_target_time_in_frames = use_gpu_rasterization()
-                                             ? kGpuSkewportTargetTimeInFrames
-                                             : kCpuSkewportTargetTimeInFrames;
+  float skewport_target_time_in_frames =
+      layer_tree_impl()->use_gpu_rasterization()
+          ? kGpuSkewportTargetTimeInFrames
+          : kCpuSkewportTargetTimeInFrames;
   return skewport_target_time_in_frames *
          layer_tree_impl()->begin_impl_frame_interval().InSecondsF() *
          layer_tree_impl()->settings().skewport_target_time_multiplier;
@@ -604,7 +604,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
       layer_tree_impl()->resource_provider()->max_texture_size();
 
   gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
-  if (use_gpu_rasterization()) {
+  if (layer_tree_impl()->use_gpu_rasterization()) {
     // TODO(ernstm) crbug.com/365877: We need a unified way to override the
     // default-tile-size.
     default_tile_size =
@@ -931,8 +931,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
 
   DCHECK(pile_->HasRecordings());
 
-  if (twin_layer_ &&
-      twin_layer_->use_gpu_rasterization() == use_gpu_rasterization())
+  if (twin_layer_)
     twin_layer_->SyncTiling(tiling);
 
   return tiling;
@@ -1336,7 +1335,6 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   }
   state->Set("coverage_tiles", coverage_tiles.release());
   state->SetBoolean("is_using_lcd_text", is_using_lcd_text_);
-  state->SetBoolean("using_gpu_rasterization", use_gpu_rasterization());
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
