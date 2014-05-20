@@ -198,7 +198,7 @@ class Parser(object):
 
   def p_handletype(self, p):
     """handletype : HANDLE
-                  | HANDLE LANGLE identifier RANGLE"""
+                  | HANDLE LANGLE NAME RANGLE"""
     if len(p) == 2:
       p[0] = p[1]
     else:
