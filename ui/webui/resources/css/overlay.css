@@ -7,6 +7,8 @@
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
+  /* TODO(dbeam): remove perspective when http://crbug.com/374970 is fixed. */
+  -webkit-perspective: 1px;
   -webkit-transition: 200ms opacity;
   background-color: rgba(255, 255, 255, 0.75);
   bottom: 0;
