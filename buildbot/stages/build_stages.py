@@ -212,6 +212,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self.name += ' [%s]' % constants.USE_PGO_USE
       useflags.append(constants.USE_PGO_USE)
 
+    if useflags:
+      if 'USE' in self._portage_extra_env:
+        self._portage_extra_env['USE'] += ' ' + ' '.join(useflags)
+      else:
+        self._portage_extra_env['USE'] = ' '.join(useflags)
+
   def _GetArchitectures(self):
     """Get the list of architectures built by this builder."""
     return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
