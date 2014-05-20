@@ -14,7 +14,8 @@ Job::~Job() {
     ::CloseHandle(job_handle_);
 };
 
-DWORD Job::Init(JobLevel security_level, wchar_t *job_name,
+DWORD Job::Init(JobLevel security_level,
+                const wchar_t* job_name,
                 DWORD ui_exceptions) {
   if (job_handle_)
     return ERROR_ALREADY_INITIALIZED;

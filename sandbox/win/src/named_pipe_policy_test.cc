@@ -109,9 +109,10 @@ TEST(NamedPipePolicyTest, CreatePipeCanonicalization) {
   // disable all string parsing and to send the string that follows it straight
   // to the file system."
   // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
-  wchar_t* argv[2] = { L"\\\\?\\pipe\\test\\..\\bleh",
-                       L"\\Device\\NamedPipe\\test" };
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, NamedPipe_Create(2, argv));
+  const wchar_t* argv[2] = { L"\\\\?\\pipe\\test\\..\\bleh",
+                             L"\\Device\\NamedPipe\\test" };
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            NamedPipe_Create(2, const_cast<wchar_t**>(argv)));
 }
 
 // The same test as CreatePipe but this time using strict interceptions.
