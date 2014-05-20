@@ -310,7 +310,22 @@ HTMLMediaElement::~HTMLMediaElement()
 
     m_asyncEventQueue->close();
 
+#if ENABLE(OILPAN)
+    // If the HTMLMediaElement dies with the document we are not
+    // allowed to touch the document to adjust delay load event counts
+    // because the document could have been already
+    // destructed. However, if the HTMLMediaElement dies with the
+    // document there is no need to change the delayed load counts
+    // because no load event will fire anyway. If the document is
+    // still alive we do have to decrement the load delay counts. We
+    // determine if the document is alive by inspecting the weak
+    // documentToElementSetMap. If the document is dead it has been
+    // removed from the map during weak processing.
+    if (documentToElementSetMap().contains(&document()))
+        setShouldDelayLoadEvent(false);
+#else
     setShouldDelayLoadEvent(false);
+#endif
 
 #if !ENABLE(OILPAN)
     if (m_textTracks)
