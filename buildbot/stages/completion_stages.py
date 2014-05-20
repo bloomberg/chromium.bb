@@ -16,6 +16,7 @@ from chromite.buildbot import portage_utilities
 from chromite.buildbot import validation_pool
 from chromite.buildbot.stages import generic_stages
 from chromite.buildbot.stages import sync_stages
+from chromite.lib import alerts
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 
@@ -338,6 +339,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # Start with all the changes in the validation pool.
     changes = self.sync_stage.pool.changes
 
+    self.SendInfraAlertIfNeeded(failing, inflight)
+
     if failing and not inflight:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
@@ -398,6 +401,37 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity,
                                                  changes=changes)
+
+  def ShouldDisableAlerts(self):
+    """Return whether alerts should be disabled due to debug mode.
+
+    This method only exists so that it can be overridden by tests.
+    """
+    return self._run.debug
+
+  def SendInfraAlertIfNeeded(self, failing, inflight):
+    """Send infra alerts if needed.
+
+    Args:
+      failing: The names of the failing builders.
+      inflight: The names of the builders that are still running.
+    """
+    msgs = [self._slave_statuses[x].message for x in failing]
+    msgs = [str(msg) for msg in msgs if
+            msg.HasFailureType(failures_lib.InfrastructureFailure)]
+    msgs += ['%s timed out' % x for x in inflight]
+    if msgs:
+      builder_name = self._run.config.name
+      title = '%s has encountered infra failures:' % (builder_name,)
+      msgs.insert(0, title)
+      msgs.append('See %s' % self.ConstructDashboardURL())
+      msg = '\n\n'.join(msgs)
+      if not self.ShouldDisableAlerts():
+        alerts.SendEmail('%s infra failures' % (builder_name,),
+                         self._run.config.health_alert_recipients,
+                         message=msg,
+                         smtp_server=constants.GOLO_SMTP_SERVER,
+                         extra_fields={'X-cbuildbot-alert': 'cq-infra-alert'})
 
   @staticmethod
   def _AllMatchFailureType(messages, cls):

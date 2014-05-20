@@ -20,6 +20,20 @@ import traceback
 DEFAULT_SMTP_SERVER = 'localhost'
 
 
+def _SendEmailHelper(smtp_server, sender, email_recipients, msg):
+  """Send an email.
+
+  Args:
+    smtp_server: The server with which to send the message.
+    sender: The from address of the sender of the email.
+    email_recipients: The recipients of the message.
+    msg: A MIMEMultipart() object containing the body of the message.
+  """
+  smtp_client = smtplib.SMTP(smtp_server)
+  smtp_client.sendmail(sender, email_recipients, msg.as_string())
+  smtp_client.quit()
+
+
 def SendEmail(subject, recipients, smtp_server=None, message='',
               attachment=None, extra_fields=None):
   """Send an e-mail job notification with the given message in the body.
@@ -63,9 +77,7 @@ def SendEmail(subject, recipients, smtp_server=None, message='',
     part.add_header('Content-Disposition', 'attachment', filename='logs.txt.gz')
     msg.attach(part)
 
-  smtp_client = smtplib.SMTP(smtp_server)
-  smtp_client.sendmail(sender, email_recipients, msg.as_string())
-  smtp_client.quit()
+  _SendEmailHelper(smtp_server, sender, email_recipients, msg)
 
 
 def SendEmailLog(subject, recipients, smtp_server=None, message='',

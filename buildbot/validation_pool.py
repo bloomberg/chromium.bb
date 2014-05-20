@@ -1104,10 +1104,11 @@ class ValidationFailedMessage(object):
 
   def MatchesFailureType(self, cls):
     """Check if all of the tracebacks match the specified failure type."""
-    for traceback in self.tracebacks:
-      if not isinstance(traceback.exception, cls):
-        return False
-    return True
+    return all(isinstance(tb.exception, cls) for tb in self.tracebacks)
+
+  def HasFailureType(self, cls):
+    """Check if any of the failures match the specified failure type."""
+    return any(isinstance(tb.exception, cls) for tb in self.tracebacks)
 
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""

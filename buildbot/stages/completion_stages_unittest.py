@@ -20,6 +20,7 @@ from chromite.buildbot.stages import completion_stages
 from chromite.buildbot.stages import generic_stages_unittest
 from chromite.buildbot.stages import sync_stages_unittest
 from chromite.buildbot.stages import sync_stages
+from chromite.lib import alerts
 from chromite.lib import cros_test_lib
 
 
@@ -216,7 +217,7 @@ class MasterSlaveSyncCompletionStageTest(
 class CommitQueueCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
-  BOT_ID = 'x86-generic-paladin'
+  BOT_ID = 'master-paladin'
 
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
@@ -239,6 +240,9 @@ class CommitQueueCompletionStageTest(
                              '_ToTSanity')
     self.mox.StubOutWithMock(validation_pool.ValidationPool,
                              'FilterChromiteChanges')
+    self.mox.StubOutWithMock(alerts, '_SendEmailHelper')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     'ShouldDisableAlerts', return_value=False)
 
   def ConstructStage(self):
     """Returns a CommitQueueCompletionStage object."""
@@ -326,6 +330,11 @@ class CommitQueueCompletionStageTest(
     stage.sync_stage.pool.HandleValidationFailure(
         mox.IgnoreArg(), sanity=True, changes=self.changes)
 
+    # An alert is sent, since we have an inflight build still.
+    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                            mox.IgnoreArg())
+
+
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, inflight)
     self.mox.VerifyAll()
@@ -366,6 +375,10 @@ class CommitQueueCompletionStageTest(
     stage.sync_stage.pool.HandleValidationFailure(
         mox.IgnoreArg(), sanity=False, changes=self.changes)
 
+    # Alerts are sent on lab failures.
+    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                            mox.IgnoreArg())
+
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, [])
     self.mox.VerifyAll()
@@ -394,12 +407,16 @@ class CommitQueueCompletionStageTest(
     stage.sync_stage.pool.HandleValidationFailure(
         mox.IgnoreArg(), sanity=False, changes=self.other_changes)
 
+    # Alerts are sent on infra failures.
+    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                            mox.IgnoreArg())
+
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, [])
     self.mox.VerifyAll()
 
   def testToTSaneWithInflightNoFail(self):
-    """Tests that we handle timeout only corretly when ToT was insane."""
+    """Tests that we handle timeout only correctly when ToT was insane."""
     # pylint: disable=E1120
     failing = infra_fail = lab_fail = []
     inflight = ['foo']
@@ -412,12 +429,16 @@ class CommitQueueCompletionStageTest(
     stage.sync_stage.pool.HandleValidationTimeout(
         sanity=True, changes=self.changes)
 
+    # Alerts are sent when we have timeouts.
+    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                            mox.IgnoreArg())
+
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, inflight)
     self.mox.VerifyAll()
 
   def testToTInsaneWithInflightNoFail(self):
-    """Tests that we handle timeout only corretly when ToT was sane."""
+    """Tests that we handle timeout only correctly when ToT was sane."""
     # pylint: disable=E1120
     failing = infra_fail = lab_fail = []
     inflight = ['foo']
@@ -429,6 +450,10 @@ class CommitQueueCompletionStageTest(
         mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(False)
     stage.sync_stage.pool.HandleValidationTimeout(
         sanity=False, changes=self.changes)
+
+    # Alerts are sent on timeouts.
+    alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
+                            mox.IgnoreArg())
 
     self.mox.ReplayAll()
     stage.CQMasterHandleFailure(failing, inflight)
