@@ -37,6 +37,8 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   virtual void DeviceListChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(
       const chromeos::NetworkState* network) OVERRIDE;
+  virtual void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
 

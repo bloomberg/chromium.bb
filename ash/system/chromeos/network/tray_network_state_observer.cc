@@ -41,16 +41,32 @@ void TrayNetworkStateObserver::DeviceListChanged() {
   delegate_->NetworkStateChanged(false);
 }
 
+// Any change to the Default (primary connected) network, including Strength
+// changes, should trigger a NetworkStateChanged update.
 void TrayNetworkStateObserver::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   delegate_->NetworkStateChanged(true);
 }
 
+// Any change to the Connection State should trigger a NetworkStateChanged
+// update. This is important when both a VPN and a physical network are
+// connected.
+void TrayNetworkStateObserver::NetworkConnectionStateChanged(
+    const chromeos::NetworkState* network) {
+  delegate_->NetworkStateChanged(true);
+}
+
+// This tracks Strength and other property changes for all networks. It will
+// be called in addition to NetworkConnectionStateChanged for connection state
+// changes.
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
   if (network ==
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork())
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork()) {
+    // Trigger NetworkStateChanged in case the Strength property of the
+    // Default network changed.
     delegate_->NetworkStateChanged(true);
+  }
   delegate_->NetworkServiceChanged(network);
 }
 
