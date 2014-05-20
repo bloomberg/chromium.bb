@@ -22,6 +22,8 @@ cr.define('uber', function() {
     headerElements = document.getElementsByTagName('header');
     document.addEventListener('scroll', handleScroll);
 
+    invokeMethodOnParent('ready');
+
     // Prevent the navigation from being stuck in a disabled state when a
     // content page is reloaded while an overlay is visible (crbug.com/246939).
     invokeMethodOnParent('stopInterceptingEvents');
@@ -60,6 +62,8 @@ cr.define('uber', function() {
       handleFrameSelected();
     else if (e.data.method === 'mouseWheel')
       handleMouseWheel(e.data.params);
+    else if (e.data.method === 'popState')
+      handlePopState(e.data.params.state, e.data.params.path);
   }
 
   /**
@@ -85,6 +89,22 @@ cr.define('uber', function() {
   }
 
   /**
+   * Called when the parent window restores some state saved by uber.pushState
+   * or uber.replaceState. Simulates a popstate event.
+   */
+  function handlePopState(state, path) {
+    history.replaceState(state, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate', {state: state}));
+  }
+
+  /**
+   * @return {boolean} Whether this frame has a parent.
+   */
+  function hasParent() {
+    return window != window.parent;
+  }
+
+  /**
    * Invokes a method on the parent window (UberPage). This is a convenience
    * method for API calls into the uber page.
    * @param {string} method The name of the method to invoke.
@@ -93,7 +113,7 @@ cr.define('uber', function() {
    * @private
    */
   function invokeMethodOnParent(method, opt_params) {
-    if (window.location == window.parent.location)
+    if (!hasParent())
       return;
 
     invokeMethodOnWindow(window.parent, method, opt_params, 'chrome://chrome');
@@ -112,9 +132,70 @@ cr.define('uber', function() {
     targetWindow.postMessage(data, opt_url ? opt_url : '*');
   }
 
+  /**
+   * Updates the page's history state. If the page is embedded in a child,
+   * forward the information to the parent for it to manage history for us. This
+   * is a replacement of history.replaceState and history.pushState.
+   * @param {Object} state A state object for replaceState and pushState.
+   * @param {string} title The title of the page to replace.
+   * @param {string} path The path the page navigated to.
+   * @param {boolean} replace If true, navigate with replacement.
+   * @private
+   */
+  function updateHistory(state, path, replace) {
+    var historyFunction = replace ?
+        window.history.replaceState :
+        window.history.pushState;
+
+    if (hasParent()) {
+      // If there's a parent, always replaceState. The parent will do the actual
+      // pushState.
+      historyFunction = window.history.replaceState;
+      invokeMethodOnParent('updateHistory', {
+        state: state, path: path, replace: replace});
+    }
+    historyFunction.call(window.history, state, '', '/' + path);
+  }
+
+  /**
+   * Sets the current title for the page. If the page is embedded in a child,
+   * forward the information to the parent. This is a replacement for setting
+   * document.title.
+   * @param {string} title The new title for the page.
+   */
+  function setTitle(title) {
+    document.title = title;
+    invokeMethodOnParent('setTitle', {title: title});
+  }
+
+  /**
+   * Pushes new history state for the page. If the page is embedded in a child,
+   * forward the information to the parent; when embedded, all history entries
+   * are attached to the parent. This is a replacement of history.pushState.
+   * @param {Object} state A state object for replaceState and pushState.
+   * @param {string} path The path the page navigated to.
+   */
+  function pushState(state, path) {
+    updateHistory(state, path, false);
+  }
+
+  /**
+   * Replaces the page's history state. If the page is embedded in a child,
+   * forward the information to the parent; when embedded, all history entries
+   * are attached to the parent. This is a replacement of history.replaceState.
+   * @param {Object} state A state object for replaceState and pushState.
+   * @param {string} path The path the page navigated to.
+   */
+  function replaceState(state, path) {
+    updateHistory(state, path, true);
+  }
+
   return {
     invokeMethodOnParent: invokeMethodOnParent,
     invokeMethodOnWindow: invokeMethodOnWindow,
     onContentFrameLoaded: onContentFrameLoaded,
+    pushState: pushState,
+    replaceState: replaceState,
+    setTitle: setTitle,
   };
 });

@@ -630,6 +630,9 @@ cr.define('options.contentSettings', function() {
      * @param {string} type The content type.
      */
     showList: function(type) {
+      // Update the title for the type that was shown.
+      this.title = loadTimeData.getString(type + 'TabTitle');
+
       var header = this.pageDiv.querySelector('h1');
       header.textContent = loadTimeData.getString(type + '_header');
 

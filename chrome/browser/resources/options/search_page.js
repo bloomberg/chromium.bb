@@ -272,8 +272,7 @@ cr.define('options', function() {
       // Set the hash on the current page, and the enclosing uber page
       var hash = text ? '#' + encodeURIComponent(text) : '';
       var path = text ? this.name : '';
-      window.location.hash = hash;
-      uber.invokeMethodOnParent('setPath', {path: path + hash});
+      uber.pushState({}, path + hash);
 
       // Toggle the search page if necessary.
       if (text) {

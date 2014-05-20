@@ -21,6 +21,15 @@ cr.define('uber', function() {
   var navFrame;
 
   /**
+   * A queue of method invocations on one of the iframes; if the iframe has not
+   * loaded by the time there is a method to invoke, delay the invocation until
+   * it is ready.
+   * @type {Object}
+   * @private
+   */
+  var queuedInvokes = {};
+
+  /**
    * Handles page initialization.
    */
   function onLoad(e) {
@@ -92,8 +101,25 @@ cr.define('uber', function() {
    * @param {Event} e The history event.
    */
   function onPopHistoryState(e) {
-    if (e.state && e.state.pageId)
-      showPage(e.state.pageId, HISTORY_STATE_OPTION.NONE);
+    if (e.state && e.state.pageId) {
+      var params = resolvePageInfo();
+      assert(params.id === e.state.pageId);
+
+      // If the page doesn't exist, create it. Otherwise, swap it in.
+      var frame = $(params.id).querySelector('iframe');
+      if (!frame)
+        showPage(params.id, HISTORY_STATE_OPTION.NONE, params.path);
+      else
+        selectPage(params.id);
+
+      // Either way, send the state down to it.
+      //
+      // Note: This assumes that the state and path parameters for every page
+      // under this origin are compatible. All of the downstream pages which
+      // navigate use pushState and replaceState.
+      invokeMethodOnPage(e.state.pageId, 'popState',
+                         {state: e.state.pageState, path: params.path});
+    }
   }
 
   /**
@@ -130,8 +156,11 @@ cr.define('uber', function() {
       backgroundNavigation();
     } else if (e.data.method === 'stopInterceptingEvents') {
       foregroundNavigation();
-    } else if (e.data.method === 'setPath') {
-      setPath(e.origin, e.data.params.path);
+    } else if (e.data.method === 'ready') {
+      pageReady(e.origin);
+    } else if (e.data.method === 'updateHistory') {
+      updateHistory(e.origin, e.data.params.state, e.data.params.path,
+                    e.data.params.replace);
     } else if (e.data.method === 'setTitle') {
       setTitle(e.origin, e.data.params.title);
     } else if (e.data.method === 'showPage') {
@@ -195,10 +224,11 @@ cr.define('uber', function() {
 
   /**
    * Changes the path past the page title (i.e. chrome://chrome/settings/(.*)).
+   * @param {Object} state The page's state object for the navigation.
    * @param {string} path The new /path/ to be set after the page name.
    * @param {number} historyOption The type of history modification to make.
    */
-  function changePathTo(path, historyOption) {
+  function changePathTo(state, path, historyOption) {
     assert(!path || path.substr(-1) != '/', 'invalid path given');
 
     var histFunc;
@@ -210,25 +240,32 @@ cr.define('uber', function() {
     assert(histFunc, 'invalid historyOption given ' + historyOption);
 
     var pageId = getSelectedIframe().id;
-    var args = [{pageId: pageId}, '', '/' + pageId + '/' + (path || '')];
+    var args = [{pageId: pageId, pageState: state},
+                '',
+                '/' + pageId + '/' + (path || '')];
     histFunc.apply(window.history, args);
   }
 
   /**
-   * Sets the "path" of the page (actually the path after the first '/' char).
-   * @param {Object} origin The origin of the source iframe.
-   * @param {string} title The new "path".
+   * Adds or replaces the current history entry based on a navigation from the
+   * source iframe.
+   * @param {string} origin The origin of the source iframe.
+   * @param {Object} state The source iframe's state object.
+   * @param {string} path The new "path" (e.g. "/createProfile").
+   * @param {boolean} replace Whether to replace the current history entry.
    */
-  function setPath(origin, path) {
+  function updateHistory(origin, state, path, replace) {
     assert(!path || path[0] != '/', 'invalid path sent from ' + origin);
+    var historyOption =
+        replace ? HISTORY_STATE_OPTION.REPLACE : HISTORY_STATE_OPTION.PUSH;
     // Only update the currently displayed path if this is the visible frame.
     if (getIframeFromOrigin(origin).parentNode == getSelectedIframe())
-      changePathTo(path, HISTORY_STATE_OPTION.REPLACE);
+      changePathTo(state, path, historyOption);
   }
 
   /**
    * Sets the title of the page.
-   * @param {Object} origin The origin of the source iframe.
+   * @param {string} origin The origin of the source iframe.
    * @param {string} title The title of the page.
    */
   function setTitle(origin, title) {
@@ -244,7 +281,41 @@ cr.define('uber', function() {
   }
 
   /**
-   * Selects a subpage. This is called from uber-frame.
+   * Invokes a method on a subpage. If the subpage has not signaled readiness,
+   * queue the message for when it does.
+   * @param {string} pageId Should match an id of one of the iframe containers.
+   * @param {string} method The name of the method to invoke.
+   * @param {Object=} opt_params Optional property page of parameters to pass to
+   *     the invoked method.
+   */
+  function invokeMethodOnPage(pageId, method, opt_params) {
+    var frame = $(pageId).querySelector('iframe');
+    if (!frame || !frame.dataset.ready) {
+      queuedInvokes[pageId] = (queuedInvokes[pageId] || []);
+      queuedInvokes[pageId].push([method, opt_params]);
+    } else {
+      uber.invokeMethodOnWindow(frame.contentWindow, method, opt_params);
+    }
+  }
+
+  /**
+   * Called in response to a page declaring readiness. Calls any deferred method
+   * invocations from invokeMethodOnPage.
+   * @param {string} origin The origin of the source iframe.
+   */
+  function pageReady(origin) {
+    var frame = getIframeFromOrigin(origin);
+    var container = frame.parentNode;
+    frame.dataset.ready = true;
+    var queue = queuedInvokes[container.id] || [];
+    queuedInvokes[container.id] = undefined;
+    for (var i = 0; i < queue.length; i++) {
+      uber.invokeMethodOnWindow(frame.contentWindow, queue[i][0], queue[i][1]);
+    }
+  }
+
+  /**
+   * Selects and navigates a subpage. This is called from uber-frame.
    * @param {string} pageId Should match an id of one of the iframe containers.
    * @param {integer} historyOption Indicates whether we should push or replace
    *     browser history.
@@ -252,7 +323,6 @@ cr.define('uber', function() {
    */
   function showPage(pageId, historyOption, path) {
     var container = $(pageId);
-    var lastSelected = document.querySelector('.iframe-container.selected');
 
     // Lazy load of iframe contents.
     var sourceUrl = container.dataset.url + (path || '');
@@ -267,7 +337,22 @@ cr.define('uber', function() {
       // content frame is as we don't have access to its contentWindow's
       // location, so just replace every time until necessary to do otherwise.
       frame.contentWindow.location.replace(sourceUrl);
+      frame.dataset.ready = false;
     }
+
+    selectPage(pageId);
+
+    if (historyOption != HISTORY_STATE_OPTION.NONE)
+      changePathTo({}, path, historyOption);
+  }
+
+  /**
+   * Switches to a subpage. The subpage must already exist.
+   * @param {string} pageId Should match an id of one of the iframe containers.
+   */
+  function selectPage(pageId) {
+    var container = getRequiredElement(pageId);
+    var lastSelected = document.querySelector('.iframe-container.selected');
 
     // If the last selected container is already showing, ignore the rest.
     if (lastSelected === container)
@@ -297,9 +382,6 @@ cr.define('uber', function() {
 
     var selectedFrame = getSelectedIframe().querySelector('iframe');
     uber.invokeMethodOnWindow(selectedFrame.contentWindow, 'frameSelected');
-
-    if (historyOption != HISTORY_STATE_OPTION.NONE)
-      changePathTo(path, historyOption);
 
     if (container.dataset.title)
       document.title = container.dataset.title;

@@ -56,8 +56,7 @@ cr.define('help', function() {
       uber.onContentFrameLoaded();
 
       // Set the title.
-      var title = loadTimeData.getString('helpTitle');
-      uber.invokeMethodOnParent('setTitle', {title: title});
+      uber.setTitle(loadTimeData.getString('helpTitle'));
 
       $('product-license').innerHTML = loadTimeData.getString('productLicense');
       if (cr.isChromeOS) {

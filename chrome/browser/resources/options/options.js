@@ -231,7 +231,7 @@ function load() {
     var pageName = path.slice(1).replace(/\/$/, '');
     OptionsPage.showPageByName(pageName, true, {replaceState: true});
   } else {
-    OptionsPage.showDefaultPage();
+    OptionsPage.showDefaultPage({replaceState: true});
   }
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');

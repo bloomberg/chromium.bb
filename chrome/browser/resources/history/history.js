@@ -1571,8 +1571,7 @@ function load() {
     $('filter-controls').hidden = false;
   }
 
-  var title = loadTimeData.getString('title');
-  uber.invokeMethodOnParent('setTitle', {title: title});
+  uber.setTitle(loadTimeData.getString('title'));
 
   // Adjust the position of the notification bar when the window size changes.
   window.addEventListener('resize',

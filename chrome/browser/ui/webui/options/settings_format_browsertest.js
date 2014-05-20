@@ -39,7 +39,7 @@ SettingsFormatWebUITest.prototype = {
   /**
    * Navigate to browser settings.
    */
-  browsePreload: 'chrome://settings-frame/settings',
+  browsePreload: 'chrome://settings-frame/',
 
   /**
    * List of errors generated during a test. Used instead of expect* functions

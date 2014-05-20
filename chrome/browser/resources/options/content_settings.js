@@ -37,17 +37,11 @@ cr.define('options', function() {
           // history so back/forward and tab restore works.
           var hash = event.currentTarget.getAttribute('contentType');
           var url = page.name + '#' + hash;
-          window.history.pushState({pageName: page.name},
-                                    page.title,
-                                    '/' + url);
+          uber.pushState({pageName: page.name}, url);
 
-          // Navigate after the history has been replaced in order to have the
-          // correct hash loaded.
+          // Navigate after the local history has been replaced in order to have
+          // the correct hash loaded.
           OptionsPage.showPageByName('contentExceptions', false);
-
-          uber.invokeMethodOnParent('setPath', {path: url});
-          uber.invokeMethodOnParent('setTitle',
-              {title: loadTimeData.getString(hash + 'TabTitle')});
         };
       }
 

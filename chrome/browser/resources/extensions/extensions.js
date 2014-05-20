@@ -103,8 +103,7 @@ cr.define('extensions', function() {
       measureCheckboxStrings();
 
       // Set the title.
-      var title = loadTimeData.getString('extensionSettings');
-      uber.invokeMethodOnParent('setTitle', {title: title});
+      uber.setTitle(loadTimeData.getString('extensionSettings'));
 
       // This will request the data to show on the page and will get a response
       // back in returnExtensionsData.

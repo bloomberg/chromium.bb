@@ -71,18 +71,22 @@ cr.define('options', function() {
 
   /**
    * Shows the default page.
+   * @param {Object=} opt_propertyBag An optional bag of properties including
+   *     replaceState (if history state should be replaced instead of pushed).
    */
-  OptionsPage.showDefaultPage = function() {
-    this.navigateToPage(this.getDefaultPage().name);
+  OptionsPage.showDefaultPage = function(opt_propertyBag) {
+    this.navigateToPage(this.getDefaultPage().name, opt_propertyBag);
   };
 
   /**
    * "Navigates" to a page, meaning that the page will be shown and the
    * appropriate entry is placed in the history.
    * @param {string} pageName Page name.
+   * @param {Object=} opt_propertyBag An optional bag of properties including
+   *     replaceState (if history state should be replaced instead of pushed).
    */
-  OptionsPage.navigateToPage = function(pageName) {
-    this.showPageByName(pageName, true);
+  OptionsPage.navigateToPage = function(pageName, opt_propertyBag) {
+    this.showPageByName(pageName, true, opt_propertyBag);
   };
 
   /**
@@ -120,6 +124,7 @@ cr.define('options', function() {
       if (!targetPage && this.showOverlay_(pageName, rootPage)) {
         if (updateHistory)
           this.updateHistoryState_(!!opt_propertyBag.replaceState);
+        this.updateTitle_();
         return;
       } else {
         targetPage = this.getDefaultPage();
@@ -166,9 +171,6 @@ cr.define('options', function() {
     if (updateHistory)
       this.updateHistoryState_(!!opt_propertyBag.replaceState);
 
-    // Update tab title.
-    this.setTitle_(targetPage.title);
-
     // Update focus if any other control was focused on the previous page,
     // or the previous page is not known.
     if (document.activeElement != document.body &&
@@ -188,16 +190,10 @@ cr.define('options', function() {
         page.didShowPage();
       }
     }
-  };
 
-  /**
-   * Sets the title of the page. This is accomplished by calling into the
-   * parent page API.
-   * @param {string} title The title string.
-   * @private
-   */
-  OptionsPage.setTitle_ = function(title) {
-    uber.invokeMethodOnParent('setTitle', {title: title});
+    // Update the document title. Do this after didShowPage was called, in case
+    // a page decides to change its title.
+    this.updateTitle_();
   };
 
   /**
@@ -213,8 +209,17 @@ cr.define('options', function() {
   };
 
   /**
-   * Pushes the current page onto the history stack, overriding the last page
-   * if it is the generic chrome://settings/.
+   * Updates the title to title of the current page.
+   * @private
+   */
+  OptionsPage.updateTitle_ = function() {
+    var page = this.getTopmostVisiblePage();
+    uber.setTitle(page.title);
+  };
+
+  /**
+   * Pushes the current page onto the history stack, replacing the current entry
+   * if appropriate.
    * @param {boolean} replace If true, allow no history events to be created.
    * @param {object=} opt_params A bag of optional params, including:
    *     {boolean} ignoreHash Whether to include the hash or not.
@@ -229,9 +234,6 @@ cr.define('options', function() {
     if (path)
       path = path.slice(1).replace(/\/(?:#|$)/, '');  // Remove trailing slash.
 
-    // Update tab title.
-    this.setTitle_(page.title);
-
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
     if (path == page.name && !OptionsPage.isLoading())
@@ -239,19 +241,9 @@ cr.define('options', function() {
 
     var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
 
-    // If settings are embedded, tell the outer page to set its "path" to the
-    // inner frame's path.
-    var outerPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
-    uber.invokeMethodOnParent('setPath', {path: outerPath});
-
-    // If there is no path, the current location is chrome://settings/.
-    // Override this with the new page.
-    var historyFunction = path && !replace ? window.history.pushState :
-                                             window.history.replaceState;
-    historyFunction.call(window.history,
-                         {pageName: page.name},
-                         page.title,
-                         '/' + page.name + hash);
+    var newPath = (page == this.getDefaultPage() ? '' : page.name) + hash;
+    var historyFunction = replace ? uber.replaceState : uber.pushState;
+    historyFunction.call(uber, {pageName: page.name}, newPath);
   };
 
   /**
@@ -280,9 +272,6 @@ cr.define('options', function() {
       overlay.visible = true;
       if (overlay.didShowPage) overlay.didShowPage();
     }
-
-    // Update tab title.
-    this.setTitle_(overlay.title);
 
     // Change focus to the overlay if any other control was focused by keyboard
     // before. Otherwise, no one should have focus.
@@ -350,6 +339,7 @@ cr.define('options', function() {
 
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_(false, {ignoreHash: true});
+    this.updateTitle_();
 
     this.restoreLastFocusedElement_();
   };

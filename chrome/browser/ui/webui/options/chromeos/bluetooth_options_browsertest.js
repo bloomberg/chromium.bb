@@ -12,7 +12,7 @@ BluetoothWebUITest.prototype = {
   /**
    * Start tests from the main-settings page.
    */
-  browsePreload: 'chrome://settings-frame/settings',
+  browsePreload: 'chrome://settings-frame/',
 
   /**
    * @override

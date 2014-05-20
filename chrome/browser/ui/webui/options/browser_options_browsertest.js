@@ -39,7 +39,7 @@ BrowserOptionsFrameWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings-frame/settings',
+  browsePreload: 'chrome://settings-frame/',
 };
 
 TEST_F('BrowserOptionsFrameWebUITest', 'testAdvancedSettingsHiddenByDefault',
