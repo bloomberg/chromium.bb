@@ -76,7 +76,8 @@ TEST_F(CldComponentInstallerTest, OnCustomInstall) {
 
 TEST_F(CldComponentInstallerTest, GetInstalledPath) {
   const base::FilePath base_dir;
-  const base::FilePath result = traits.GetInstalledPath(base_dir);
+  const base::FilePath result =
+      CldComponentInstallerTraits::GetInstalledPath(base_dir);
   ASSERT_TRUE(EndsWith(result.value(), chrome::kCLDDataFilename, true));
 }
 

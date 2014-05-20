@@ -12,6 +12,10 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/component_updater/default_component_installer.h"
 
+namespace test {
+class ScopedCLDDynamicDataHarness;
+}  // namespace test
+
 namespace component_updater {
 
 class ComponentUpdateService;
@@ -24,6 +28,7 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
 
  private:
   friend class CldComponentInstallerTest;  // For access within SetUp()
+  friend class test::ScopedCLDDynamicDataHarness;  // For browser tests only
   FRIEND_TEST_ALL_PREFIXES(CldComponentInstallerTest, ComponentReady);
   FRIEND_TEST_ALL_PREFIXES(CldComponentInstallerTest, GetBaseDirectory);
   FRIEND_TEST_ALL_PREFIXES(CldComponentInstallerTest, GetHash);
@@ -47,8 +52,8 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
   virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  base::FilePath GetInstalledPath(const base::FilePath& base) const;
-  void SetLatestCldDataFile(const base::FilePath& path);
+  static base::FilePath GetInstalledPath(const base::FilePath& base);
+  static void SetLatestCldDataFile(const base::FilePath& path);
   DISALLOW_COPY_AND_ASSIGN(CldComponentInstallerTraits);
 };
 

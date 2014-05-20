@@ -61,7 +61,7 @@ bool CldComponentInstallerTraits::OnCustomInstall(
 }
 
 base::FilePath CldComponentInstallerTraits::GetInstalledPath(
-    const base::FilePath& base) const {
+    const base::FilePath& base) {
   // Currently, all platforms have the file at the same location because there
   // is no binary difference in the generated file on any supported platform.
   // NB: This may change when 64-bit is officially supported.

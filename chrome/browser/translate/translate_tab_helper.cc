@@ -440,6 +440,7 @@ void TranslateTabHelper::HandleCLDDataRequest() {
     }
   }
 }
+
 #endif  // defined(CLD2_DYNAMIC_MODE)
 
 void TranslateTabHelper::InitiateTranslation(const std::string& page_lang,
