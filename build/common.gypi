@@ -3108,6 +3108,13 @@
                 'cflags': [
                   '<@(release_extra_cflags)',
                 ],
+                'conditions': [
+                  ['enable_resource_whitelist_generation==1', {
+                    'cflags': [
+                      '-Wunknown-pragmas -Wno-error=unknown-pragmas',
+                    ],
+                  }],
+                ],
               }],
             ],
           }],
@@ -4170,11 +4177,6 @@
                   # this and results in a library with unresolvable relocations.
                   # TODO(eugenis): find a way to reenable this.
                   '-mllvm -asan-globals=0',
-                ],
-              }],
-              ['enable_resource_whitelist_generation==1', {
-                'cflags': [
-                  '-Wunknown-pragmas -Wno-error=unknown-pragmas',
                 ],
               }],
               ['android_webview_build==0', {
