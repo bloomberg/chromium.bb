@@ -695,57 +695,6 @@ struct weston_region {
 	pixman_region32_t region;
 };
 
-struct weston_subsurface {
-	struct wl_resource *resource;
-
-	/* guaranteed to be valid and non-NULL */
-	struct weston_surface *surface;
-	struct wl_listener surface_destroy_listener;
-
-	/* can be NULL */
-	struct weston_surface *parent;
-	struct wl_listener parent_destroy_listener;
-	struct wl_list parent_link;
-	struct wl_list parent_link_pending;
-
-	struct {
-		int32_t x;
-		int32_t y;
-		int set;
-	} position;
-
-	struct {
-		int has_data;
-
-		/* wl_surface.attach */
-		int newly_attached;
-		struct weston_buffer_reference buffer_ref;
-		int32_t sx;
-		int32_t sy;
-
-		/* wl_surface.damage */
-		pixman_region32_t damage;
-
-		/* wl_surface.set_opaque_region */
-		pixman_region32_t opaque;
-
-		/* wl_surface.set_input_region */
-		pixman_region32_t input;
-
-		/* wl_surface.frame */
-		struct wl_list frame_callback_list;
-
-		/* wl_surface.set_buffer_transform */
-		/* wl_surface.set_buffer_scale */
-		struct weston_buffer_viewport buffer_viewport;
-	} cached;
-
-	int synchronized;
-
-	/* Used for constructing the view tree */
-	struct wl_list unused_views;
-};
-
 /* Using weston_view transformations
  *
  * To add a transformation to a view, create a struct weston_transform, and
@@ -925,6 +874,57 @@ struct weston_surface {
 	 */
 	struct wl_list subsurface_list; /* weston_subsurface::parent_link */
 	struct wl_list subsurface_list_pending; /* ...::parent_link_pending */
+};
+
+struct weston_subsurface {
+	struct wl_resource *resource;
+
+	/* guaranteed to be valid and non-NULL */
+	struct weston_surface *surface;
+	struct wl_listener surface_destroy_listener;
+
+	/* can be NULL */
+	struct weston_surface *parent;
+	struct wl_listener parent_destroy_listener;
+	struct wl_list parent_link;
+	struct wl_list parent_link_pending;
+
+	struct {
+		int32_t x;
+		int32_t y;
+		int set;
+	} position;
+
+	struct {
+		int has_data;
+
+		/* wl_surface.attach */
+		int newly_attached;
+		struct weston_buffer_reference buffer_ref;
+		int32_t sx;
+		int32_t sy;
+
+		/* wl_surface.damage */
+		pixman_region32_t damage;
+
+		/* wl_surface.set_opaque_region */
+		pixman_region32_t opaque;
+
+		/* wl_surface.set_input_region */
+		pixman_region32_t input;
+
+		/* wl_surface.frame */
+		struct wl_list frame_callback_list;
+
+		/* wl_surface.set_buffer_transform */
+		/* wl_surface.set_buffer_scale */
+		struct weston_buffer_viewport buffer_viewport;
+	} cached;
+
+	int synchronized;
+
+	/* Used for constructing the view tree */
+	struct wl_list unused_views;
 };
 
 enum weston_key_state_update {
