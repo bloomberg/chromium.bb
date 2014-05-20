@@ -75,18 +75,22 @@ void HTMLImportChild::wasAlreadyLoaded()
 {
     ASSERT(!m_loader);
     ASSERT(m_client);
-    ensureLoader();
+    shareLoader();
     stateWillChange();
 }
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
 {
-    ASSERT(!this->resource());
     ASSERT(!m_loader);
 
-    setResource(resource);
+    if (m_loader)
+        return;
 
-    ensureLoader();
+    m_loader = toHTMLImportsController(root())->createLoader();
+    m_loader->addImport(this);
+    m_loader->startLoading(resource);
+
+    createCustomElementMicrotaskStepIfNeeded();
 }
 
 void HTMLImportChild::didFinish()
@@ -97,7 +101,6 @@ void HTMLImportChild::didFinish()
 
 void HTMLImportChild::didFinishLoading()
 {
-    clearResource();
     stateWillChange();
     if (m_customElementMicrotaskStep)
         CustomElementMicrotaskDispatcher::instance().importDidFinish(m_customElementMicrotaskStep.get());
@@ -144,7 +147,6 @@ Document* HTMLImportChild::document() const
 void HTMLImportChild::stateWillChange()
 {
     toHTMLImportsController(root())->scheduleRecalcState();
-    ensureLoader();
 }
 
 void HTMLImportChild::stateDidChange()
@@ -177,33 +179,16 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
         toHTMLImportChild(child)->createCustomElementMicrotaskStepIfNeeded();
 }
 
-void HTMLImportChild::ensureLoader()
+void HTMLImportChild::shareLoader()
 {
-    if (m_loader)
-        return;
+    ASSERT(!m_loader);
 
-    if (HTMLImportChild* found = toHTMLImportsController(root())->findLinkFor(m_url, this))
-        shareLoader(found);
-    else
-        createLoader();
+    if (HTMLImportChild* childToShareWith = toHTMLImportsController(root())->findLinkFor(m_url, this)) {
+        m_loader = childToShareWith->m_loader;
+        m_loader->addImport(this);
+    }
 
     createCustomElementMicrotaskStepIfNeeded();
-}
-
-void HTMLImportChild::createLoader()
-{
-    ASSERT(!m_loader);
-    m_loader = toHTMLImportsController(root())->createLoader();
-    m_loader->addImport(this);
-    m_loader->startLoading(resource());
-}
-
-void HTMLImportChild::shareLoader(HTMLImportChild* loader)
-{
-    ASSERT(!m_loader);
-    m_loader = loader->m_loader;
-    m_loader->addImport(this);
-    stateWillChange();
 }
 
 bool HTMLImportChild::isDone() const

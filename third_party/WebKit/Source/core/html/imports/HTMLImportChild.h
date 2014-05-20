@@ -32,7 +32,6 @@
 #define HTMLImportChild_h
 
 #include "core/fetch/RawResource.h"
-#include "core/fetch/ResourceOwner.h"
 #include "core/html/imports/HTMLImport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -48,14 +47,11 @@ class HTMLLinkElement;
 
 //
 // An import tree node subclas to encapsulate imported document
-// lifecycle. This class is owned by LinkStyle. The actual loading
+// lifecycle. This class is owned by HTMLImportsController. The actual loading
 // is done by HTMLImportLoader, which can be shared among multiple
 // HTMLImportChild of same link URL.
 //
-// HTMLImportChild implements ResourceClient through ResourceOwner
-// so that it can speculatively request linked resources while it is unblocked.
-//
-class HTMLImportChild FINAL : public HTMLImport, public ResourceOwner<RawResource> {
+class HTMLImportChild FINAL : public HTMLImport {
 public:
     HTMLImportChild(Document&, const KURL&, SyncMode);
     virtual ~HTMLImportChild();
@@ -92,16 +88,8 @@ public:
     void normalize();
 
 private:
-    // RawResourceOwner doing nothing.
-    // HTMLImportChild owns the resource so that the contents of prefetched Resource doesn't go away.
-    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE { }
-    virtual void dataReceived(Resource*, const char*, int) OVERRIDE { }
-    virtual void notifyFinished(Resource*) OVERRIDE { }
-
     void didFinish();
-    void createLoader();
-    void shareLoader(HTMLImportChild*);
-    void ensureLoader();
+    void shareLoader();
     void createCustomElementMicrotaskStepIfNeeded();
 
 #if ENABLE(OILPAN)
