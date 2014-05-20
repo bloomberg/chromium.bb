@@ -1025,11 +1025,16 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
     applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForTransitions);
+
+    updateFont(state);
+
     applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForTransitions);
 
     // Start loading resources used by animations.
     loadPendingResources(state);
+
+    ASSERT(!state.fontBuilder().fontDirty());
 
     return true;
 }
