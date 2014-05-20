@@ -169,7 +169,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
 
-  permission_request_handler_.reset(new PermissionRequestHandler(this));
+  permission_request_handler_.reset(
+      new PermissionRequestHandler(this, web_contents_.get()));
 
   AwAutofillManagerDelegate* autofill_manager_delegate =
       AwAutofillManagerDelegate::FromWebContents(web_contents_.get());

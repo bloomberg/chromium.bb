@@ -9,19 +9,35 @@
 #include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
+namespace {
+
+int GetActiveEntryID(content::WebContents* web_contents) {
+  if (!web_contents) return 0;
+
+  content::NavigationEntry* active_entry =
+      web_contents->GetController().GetActiveEntry();
+  return active_entry ? active_entry->GetUniqueID() : 0;
+}
+
+}  // namespace
+
 PermissionRequestHandler::PermissionRequestHandler(
-    PermissionRequestHandlerClient* client)
-    : client_(client) {
+    PermissionRequestHandlerClient* client, content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      client_(client),
+      contents_unique_id_(GetActiveEntryID(web_contents)) {
 }
 
 PermissionRequestHandler::~PermissionRequestHandler() {
-  for (RequestIterator i = requests_.begin(); i != requests_.end(); ++i)
-    CancelRequest(i);
+  CancelAllRequests();
 }
 
 void PermissionRequestHandler::SendRequest(
@@ -64,6 +80,18 @@ void PermissionRequestHandler::PreauthorizePermission(const GURL& origin,
   preauthorized_permission_[key] |= resources;
 }
 
+void PermissionRequestHandler::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& details) {
+  const content::PageTransition transition = details.entry->GetTransitionType();
+  if (details.is_navigation_to_different_page() ||
+      content::PageTransitionStripQualifier(transition) ==
+      content::PAGE_TRANSITION_RELOAD ||
+      contents_unique_id_ != details.entry->GetUniqueID()) {
+    CancelAllRequests();
+    contents_unique_id_ = details.entry->GetUniqueID();
+  }
+}
+
 PermissionRequestHandler::RequestIterator
 PermissionRequestHandler::FindRequest(const GURL& origin,
                                       int64 resources) {
@@ -85,6 +113,11 @@ void PermissionRequestHandler::CancelRequest(RequestIterator i) {
   // exists.
   if (i->get())
     delete i->get();
+}
+
+void PermissionRequestHandler::CancelAllRequests() {
+  for (RequestIterator i = requests_.begin(); i != requests_.end(); ++i)
+    CancelRequest(i);
 }
 
 void PermissionRequestHandler::PruneRequests() {

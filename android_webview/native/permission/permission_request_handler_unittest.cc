@@ -106,7 +106,7 @@ class TestPermissionRequestHandlerClient :
 class TestPermissionRequestHandler : public PermissionRequestHandler {
  public:
   TestPermissionRequestHandler(PermissionRequestHandlerClient* client)
-      : PermissionRequestHandler(client) {
+      : PermissionRequestHandler(client, NULL) {
   }
 
   const std::vector<base::WeakPtr<AwPermissionRequest> > requests() {
