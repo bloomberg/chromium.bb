@@ -30,12 +30,23 @@
 # define NACL_SYSCALL_ADDR(syscall_number) (0x10000 + (syscall_number) * 32)
 
 /*
- * If we are not running under the IRT, we fall back to using the
- * syscall directly.  This is to support non-IRT-based tests and the
- * non-IRT-using sandboxed PNaCl translator.
+ * If we are not running under the IRT, we fall back to using a
+ * non-ABI-stable interface for reading the thread pointer -- either the
+ * NaCl syscall (for SFI mode) or an instruction sequence (for Non-SFI
+ * mode).  This is to support non-IRT-based tests and the non-IRT-using
+ * sandboxed PNaCl translator.
  */
-static void *(*g_nacl_read_tp_func)(void) =
-    (void *(*)(void)) NACL_SYSCALL_ADDR(NACL_sys_tls_get);
+# if defined(__native_client_nonsfi__) && defined(__i386__)
+static void *internal_read_tp(void) {
+  void *result;
+  __asm__("mov %%gs:0, %0" : "=r"(result));
+  return result;
+}
+# else
+#  define internal_read_tp (void *(*)(void)) NACL_SYSCALL_ADDR(NACL_sys_tls_get)
+# endif
+
+static void *(*g_nacl_read_tp_func)(void) = internal_read_tp;
 
 # if defined(__arm__) && defined(__native_client_nonsfi__)
 /*

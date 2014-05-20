@@ -6,4 +6,5 @@ include_rules = [
   # TODO(mseaborn): Move irt.h and irt_dev.h to src/public.
   "+native_client/src/untrusted/irt/irt.h",
   "+native_client/src/untrusted/irt/irt_dev.h",
+  "+native_client/src/untrusted/nacl",
 ]

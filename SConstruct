@@ -1617,7 +1617,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if args is not None:
     command += args
 
-  if env.Bit('pnacl_unsandboxed'):
+  if env.Bit('pnacl_unsandboxed') or (env.Bit('nonsfi_nacl') and
+                                      not env.Bit('tests_use_irt')):
     # Run unsandboxed executable directly, without sel_ldr.
     return env.CommandTest(name, command, size, **extra)
 
@@ -3120,6 +3121,7 @@ if not nacl_env.Bit('nacl_glibc'):
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/nonsfi/linux/nacl.scons',
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/ldr/nacl.scons',
@@ -3547,6 +3549,17 @@ nacl_irt_test_env.AddChromeFilesFromGroup('irt_variant_test_scons_files')
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_only_tests)
 TestsUsePublicLibs(nacl_irt_test_env)
 TestsUsePublicListMappingsLib(nacl_irt_test_env)
+
+# We add the following settings after creating nacl_irt_test_env because we
+# don't want them to be inherited by nacl_irt_test_env.
+if nacl_env.Bit('nonsfi_nacl'):
+  # Not-IRT-using non-SFI code uses Linux syscalls directly.  Since this
+  # involves using inline assembly, this requires turning off the PNaCl ABI
+  # checker.
+  nacl_env.SetBits('nonstable_bitcode')
+  nacl_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+  # Tell the PNaCl translator to link a Linux executable.
+  nacl_env.Append(TRANSLATEFLAGS=['--noirt'])
 
 # If a tests/.../nacl.scons file builds a library, we will just use
 # the one already built in nacl_env instead.

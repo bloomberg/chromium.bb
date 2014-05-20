@@ -41,6 +41,21 @@ void unhandled_relocation(void) {
 }
 
 void apply_relocations(void) {
+  /*
+   * Handle the case where the executable is linked as "-static", where
+   * there is no PT_DYNAMIC segment and no relocations to apply.  Note that
+   * the linker doesn't allow _DYNAMIC to be both weak and undefined when
+   * it's also hidden, so we use -defsym in pnacl-nativeld.py to define it
+   * instead.  Also note that we can't check "_DYNAMIC == NULL" here: the
+   * compiler may assume that is always false (for a non-weak symbol) and
+   * optimise the check away.
+   *
+   * TODO(mseaborn): Remove this once we link non-IRT-using non-SFI
+   * executables with "-pie" instead of "-static".
+   */
+  if (_DYNAMIC == (Elf32_Dyn *) 1)
+    return;
+
   uintptr_t rel_offset;
   uintptr_t rel_size;
   if (!find_dt_entry(DT_REL, &rel_offset) ||

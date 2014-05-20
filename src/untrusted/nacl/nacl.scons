@@ -228,4 +228,5 @@ if not env.Bit('nacl_glibc'):
                                  private_combine,
                                  '${LD} -relocatable -o ${TARGET} ${SOURCES}'))
 
-env.ComponentLibrary('libnacl_sys_private', sys_private)
+if not env.Bit('nonsfi_nacl'):
+  env.ComponentLibrary('libnacl_sys_private', sys_private)

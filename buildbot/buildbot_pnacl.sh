@@ -40,6 +40,10 @@ readonly SCONS_NONSFI_TESTS="\
     run_syscall_test_irt \
     run_getpid_test_irt"
 readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
+# Extra non-IRT-using test to run for x86-32 on toolchain bots.
+# TODO(mseaborn): Run this on the main bots after the toolchain revision is
+# updated, and run this on ARM too when it works on ARM.
+readonly SCONS_NONSFI_TC_X8632="${SCONS_NONSFI} run_hello_world_test"
 
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"
@@ -563,7 +567,7 @@ tc-tests-all() {
     "run_hello_world_test"
 
   # Test Non-SFI Mode.
-  scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI}"
+  scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI_TC_X8632}"
   scons-stage-irt "arm" "${scons_flags}" "${SCONS_NONSFI}"
 
   # Run the GCC torture tests just for x86-32.  Testing a single
@@ -633,7 +637,7 @@ mode-buildbot-tc-x8632-linux() {
     run_getpid_test_irt
 
   # Test Non-SFI Mode.
-  scons-stage-irt "x86-32" "-j8 -k" "${SCONS_NONSFI}"
+  scons-stage-irt "x86-32" "-j8 -k" "${SCONS_NONSFI_TC_X8632}"
 }
 
 mode-buildbot-tc-x8632-mac() {

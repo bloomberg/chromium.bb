@@ -53,7 +53,17 @@ EXTRA_ENV = {
                   '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
-                  '${NONSFI_NACL ? -pie : -static} ' +
+                  # Using "-pie" adds a PT_INTERP header to the executable
+                  # that we don't want.
+                  # TODO(mseaborn): Add a linker option to omit PT_INTERP.
+                  # We want non-IRT-using non-SFI executables to be
+                  # loadable by Linux, which the PT_INTERP header prevents,
+                  # so we use "-static" for this case for now.
+                  '${NONSFI_NACL && USE_IRT ? -pie : -static} ' +
+                  # Set _DYNAMIC to a dummy value.  TODO(mseaborn): Remove
+                  # this when we use "-pie" instead of "-static" for this
+                  # case.
+                  '${NONSFI_NACL && !USE_IRT ? -defsym=_DYNAMIC=1} ' +
                   # "_begin" allows a PIE to find its load address in
                   # order to apply dynamic relocations.
                   '${NONSFI_NACL ? -defsym=_begin=0} ' +

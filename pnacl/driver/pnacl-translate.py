@@ -69,7 +69,9 @@ EXTRA_ENV = {
   # the pexe, however for the IRT it comes from irt_entry.c and when linking it
   # using native object files, this reference is required to make sure it gets
   # pulled in from the archive.
-  'LD_ARGS_ENTRY': '--entry=__pnacl_start --undefined=_start',
+  'LD_ARGS_ENTRY': '${NONSFI_NACL && !USE_IRT '
+                   '  ? --entry=__pnacl_start_linux : --entry=__pnacl_start} '
+                   '--undefined=_start',
 
   'CRTBEGIN': '${ALLOW_ZEROCOST_CXX_EH ? -l:crtbegin_for_eh.o : -l:crtbegin.o}',
   'CRTEND': '-l:crtend.o',
