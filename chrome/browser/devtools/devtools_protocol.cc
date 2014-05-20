@@ -6,13 +6,23 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
+
+const char kErrorCodeParam[] = "code";
+const char kErrorParam[] = "error";
+const char kErrorMessageParam[] = "message";
 const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
-const char kErrorParam[] = "error";
-const char kErrorCodeParam[] = "code";
+const char kResultParam[] = "result";
+
+// JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
+enum Error {
+  kErrorInvalidParams = -32602
+};
+
 }  // namespace
 
 DevToolsProtocol::Message::~Message() {
@@ -46,6 +56,20 @@ std::string DevToolsProtocol::Command::Serialize() {
   return json_command;
 }
 
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsProtocol::Command::SuccessResponse(base::DictionaryValue* result) {
+  return scoped_ptr<DevToolsProtocol::Response>(
+      new DevToolsProtocol::Response(id_, result));
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+DevToolsProtocol::Command::InvalidParamResponse(const std::string& param) {
+  std::string message =
+      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str());
+  return scoped_ptr<DevToolsProtocol::Response>(
+      new DevToolsProtocol::Response(id_, kErrorInvalidParams, message));
+}
+
 DevToolsProtocol::Notification::~Notification() {
 }
 
@@ -57,9 +81,55 @@ DevToolsProtocol::Notification::Notification(const std::string& method,
 DevToolsProtocol::Response::~Response() {
 }
 
-DevToolsProtocol::Response::Response(int id, int error_code)
+DevToolsProtocol::Response::Response(int id,
+                                     int error_code,
+                                     const std::string error_message)
     : id_(id),
-      error_code_(error_code) {
+      error_code_(error_code),
+      error_message_(error_message) {
+}
+
+DevToolsProtocol::Response::Response(int id, base::DictionaryValue* result)
+    : id_(id),
+      error_code_(0),
+      result_(result) {
+}
+
+base::DictionaryValue* DevToolsProtocol::Response::Serialize() {
+  base::DictionaryValue* response = new base::DictionaryValue();
+
+  response->SetInteger(kIdParam, id_);
+
+  if (error_code_) {
+    base::DictionaryValue* error_object = new base::DictionaryValue();
+    response->Set(kErrorParam, error_object);
+    error_object->SetInteger(kErrorCodeParam, error_code_);
+    if (!error_message_.empty())
+      error_object->SetString(kErrorMessageParam, error_message_);
+  } else if (result_) {
+    response->Set(kResultParam, result_->DeepCopy());
+  }
+
+  return response;
+}
+
+// static
+DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
+    base::DictionaryValue* command_dict) {
+  if (!command_dict)
+    return NULL;
+
+  int id;
+  if (!command_dict->GetInteger(kIdParam, &id) || id < 0)
+    return NULL;
+
+  std::string method;
+  if (!command_dict->GetString(kMethodParam, &method))
+    return NULL;
+
+  base::DictionaryValue* params = NULL;
+  command_dict->GetDictionary(kParamsParam, &params);
+  return new Command(id, method, params ? params->DeepCopy() : NULL);
 }
 
 // static
@@ -98,5 +168,5 @@ DevToolsProtocol::Response* DevToolsProtocol::ParseResponse(
   base::DictionaryValue* error_dict = NULL;
   if (dict->GetDictionary(kErrorParam, &error_dict))
     error_dict->GetInteger(kErrorCodeParam, &error_code);
-  return new Response(id, error_code);
+  return new Response(id, error_code, std::string());
 }

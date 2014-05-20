@@ -26,3 +26,9 @@ void ChromeDevToolsManagerDelegate::Inspect(
     DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
 #endif
 }
+
+base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
+    content::DevToolsAgentHost* agent_host,
+    base::DictionaryValue* command_dict) {
+  return NULL;
+}

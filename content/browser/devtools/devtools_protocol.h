@@ -157,8 +157,16 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Handler);
   };
 
+  CONTENT_EXPORT static base::DictionaryValue* ParseMessage(
+      const std::string& json,
+      std::string* error_response);
+
   CONTENT_EXPORT static scoped_refptr<Command> ParseCommand(
       const std::string& json,
+      std::string* error_response);
+
+  CONTENT_EXPORT static scoped_refptr<Command> ParseCommand(
+      base::DictionaryValue* command_dict,
       std::string* error_response);
 
   CONTENT_EXPORT static scoped_refptr<Command> CreateCommand(
@@ -166,15 +174,14 @@ class DevToolsProtocol {
       const std::string& method,
       base::DictionaryValue* params);
 
+  CONTENT_EXPORT static scoped_refptr<Response> ParseResponse(
+      base::DictionaryValue* response_dict);
+
   static scoped_refptr<Notification> ParseNotification(
       const std::string& json);
 
   static scoped_refptr<Notification> CreateNotification(
       const std::string& method, base::DictionaryValue* params);
-
- private:
-  static base::DictionaryValue* ParseMessage(const std::string& json,
-                                             std::string* error_response);
 
   DevToolsProtocol() {}
   ~DevToolsProtocol() {}

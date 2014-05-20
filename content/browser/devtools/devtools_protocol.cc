@@ -216,13 +216,20 @@ scoped_refptr<DevToolsProtocol::Command> DevToolsProtocol::ParseCommand(
     std::string* error_response) {
   scoped_ptr<base::DictionaryValue> command_dict(
       ParseMessage(json, error_response));
+  return ParseCommand(command_dict.get(), error_response);
+}
+
+// static
+scoped_refptr<DevToolsProtocol::Command> DevToolsProtocol::ParseCommand(
+    base::DictionaryValue* command_dict,
+    std::string* error_response) {
   if (!command_dict)
     return NULL;
 
   int id;
   std::string method;
   bool ok = command_dict->GetInteger(kIdParam, &id) && id >= 0;
-  ok = ok && ParseMethod(command_dict.get(), &method);
+  ok = ok && ParseMethod(command_dict, &method);
   if (!ok) {
     scoped_refptr<Response> response =
         new Response(kNoId, kErrorInvalidRequest, "No such method");
@@ -242,6 +249,29 @@ DevToolsProtocol::CreateCommand(
     const std::string& method,
     base::DictionaryValue* params) {
   return new Command(id, method, params);
+}
+
+//static
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsProtocol::ParseResponse(
+    base::DictionaryValue* response_dict) {
+  int id;
+  if (!response_dict->GetInteger(kIdParam, &id))
+    id = kNoId;
+
+  int error_code;
+  if (!response_dict->GetInteger(kErrorCodeParam, &error_code))
+    return new Response(id, kErrorInternalError, "Invalid response");
+
+  if (error_code) {
+    std::string error_message;
+    response_dict->GetString(kErrorMessageParam, &error_message);
+    return new Response(id, error_code, error_message);
+  }
+
+  const base::DictionaryValue* result = NULL;
+  response_dict->GetDictionary(kResultParam, &result);
+  return new Response(id, result ? result->DeepCopy() : NULL);
 }
 
 // static

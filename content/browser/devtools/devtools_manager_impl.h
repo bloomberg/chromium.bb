@@ -51,6 +51,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
   void DispatchOnInspectorFrontend(DevToolsAgentHost* agent_host,
                                    const std::string& message);
 
+  DevToolsManagerDelegate* delegate() const { return delegate_.get(); }
+
   // DevToolsManager implementation
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) OVERRIDE;

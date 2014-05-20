@@ -20,6 +20,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -184,12 +185,26 @@ RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
 void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
     const std::string& message) {
   std::string error_message;
+
+  scoped_ptr<base::DictionaryValue> message_dict(
+      DevToolsProtocol::ParseMessage(message, &error_message));
   scoped_refptr<DevToolsProtocol::Command> command =
-      DevToolsProtocol::ParseCommand(message, &error_message);
+      DevToolsProtocol::ParseCommand(message_dict.get(), &error_message);
 
   if (command) {
-    scoped_refptr<DevToolsProtocol::Response> overridden_response =
-        overrides_handler_->HandleCommand(command);
+    scoped_refptr<DevToolsProtocol::Response> overridden_response;
+
+    DevToolsManagerDelegate* delegate =
+        DevToolsManagerImpl::GetInstance()->delegate();
+    if (delegate) {
+      scoped_ptr<base::DictionaryValue> overridden_response_value(
+          delegate->HandleCommand(this, message_dict.get()));
+      if (overridden_response_value)
+        overridden_response = DevToolsProtocol::ParseResponse(
+            overridden_response_value.get());
+    }
+    if (!overridden_response)
+      overridden_response = overrides_handler_->HandleCommand(command);
     if (!overridden_response)
       overridden_response = tracing_handler_->HandleCommand(command);
     if (!overridden_response)

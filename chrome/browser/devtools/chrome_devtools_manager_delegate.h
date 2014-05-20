@@ -17,6 +17,9 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate overrides:
   virtual void Inspect(content::BrowserContext* browser_context,
                        content::DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual base::DictionaryValue* HandleCommand(
+      content::DevToolsAgentHost* agent_host,
+      base::DictionaryValue* command_dict) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
