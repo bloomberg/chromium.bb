@@ -83,7 +83,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
 // causing timeouts.
 // crbug/338444
 // crbug.com/375103: fails on Mac after open sourcing PDF plugin.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// crbug.com/375103: fails on Linux too after open sourcing PDF plugin.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_Bad DISABLED_Bad
 #else
 #define MAYBE_Bad Bad
