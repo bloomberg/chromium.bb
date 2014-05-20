@@ -242,6 +242,7 @@ class BuildImageStage(BuildPackagesStage):
   """Build standard Chromium OS images."""
 
   option_name = 'build'
+  config_name = 'images'
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
@@ -302,8 +303,7 @@ class BuildImageStage(BuildPackagesStage):
     return super(BuildImageStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
-    if self._run.config.images:
-      self._BuildImages()
+    self._BuildImages()
 
 
 class UprevStage(generic_stages.BuilderStage):
@@ -311,6 +311,7 @@ class UprevStage(generic_stages.BuilderStage):
   validate.
   """
 
+  config_name = 'uprev'
   option_name = 'uprev'
 
   def __init__(self, builder_run, boards=None, enter_chroot=True, **kwargs):
@@ -321,9 +322,8 @@ class UprevStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     # Perform other uprevs.
-    if self._run.config.uprev:
-      overlays, _ = self._ExtractOverlays()
-      commands.UprevPackages(self._build_root,
-                             self._boards,
-                             overlays,
-                             enter_chroot=self._enter_chroot)
+    overlays, _ = self._ExtractOverlays()
+    commands.UprevPackages(self._build_root,
+                           self._boards,
+                           overlays,
+                           enter_chroot=self._enter_chroot)
