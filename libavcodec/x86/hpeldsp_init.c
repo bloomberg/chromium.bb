@@ -1,5 +1,5 @@
 /*
- * MMX optimized DSP utils
+ * SIMD-optimized halfpel functions
  * Copyright (c) 2000, 2001 Fabrice Bellard
  * Copyright (c) 2002-2004 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -22,11 +22,15 @@
  * MMX optimization by Nick Kurshev <nickols_k@mail.ru>
  */
 
+#include "libavutil/attributes.h"
 #include "libavutil/cpu.h"
 #include "libavutil/x86/asm.h"
 #include "libavutil/x86/cpu.h"
+#include "libavcodec/avcodec.h"
 #include "libavcodec/hpeldsp.h"
-#include "dsputil_x86.h"
+#include "libavcodec/pixels.h"
+#include "fpel.h"
+#include "hpeldsp.h"
 
 void ff_put_pixels8_x2_mmxext(uint8_t *block, const uint8_t *pixels,
                               ptrdiff_t line_size, int h);
@@ -107,11 +111,11 @@ void ff_avg_pixels8_xy2_3dnow(uint8_t *block, const uint8_t *pixels,
 #undef PAVGB
 #undef STATIC
 
-PIXELS16(static, avg_no_rnd, , _y2, _mmx)
-PIXELS16(static, put_no_rnd, , _y2, _mmx)
+CALL_2X_PIXELS(avg_no_rnd_pixels16_y2_mmx, avg_no_rnd_pixels8_y2_mmx, 8)
+CALL_2X_PIXELS(put_no_rnd_pixels16_y2_mmx, put_no_rnd_pixels8_y2_mmx, 8)
 
-PIXELS16(static, avg_no_rnd, , _xy2, _mmx)
-PIXELS16(static, put_no_rnd, , _xy2, _mmx)
+CALL_2X_PIXELS(avg_no_rnd_pixels16_xy2_mmx, avg_no_rnd_pixels8_xy2_mmx, 8)
+CALL_2X_PIXELS(put_no_rnd_pixels16_xy2_mmx, put_no_rnd_pixels8_xy2_mmx, 8)
 
 /***********************************/
 /* MMX rounding */
@@ -124,26 +128,35 @@ PIXELS16(static, put_no_rnd, , _xy2, _mmx)
 #include "hpeldsp_rnd_template.c"
 
 #undef DEF
+#define DEF(x, y) ff_ ## x ## _ ## y ## _mmx
+#define STATIC
+
+#include "rnd_template.c"
+
+#undef DEF
 #undef SET_RND
 #undef PAVGBP
 #undef PAVGB
 
-PIXELS16(static, avg, , _y2, _mmx)
-PIXELS16(static, put, , _y2, _mmx)
+CALL_2X_PIXELS(avg_pixels16_y2_mmx, avg_pixels8_y2_mmx, 8)
+CALL_2X_PIXELS(put_pixels16_y2_mmx, put_pixels8_y2_mmx, 8)
+
+CALL_2X_PIXELS_EXPORT(ff_avg_pixels16_xy2_mmx, ff_avg_pixels8_xy2_mmx, 8)
+CALL_2X_PIXELS_EXPORT(ff_put_pixels16_xy2_mmx, ff_put_pixels8_xy2_mmx, 8)
 
 #endif /* HAVE_INLINE_ASM */
 
 
 #if HAVE_YASM
 
-#define HPELDSP_AVG_PIXELS16(CPUEXT)                \
-    PIXELS16(static, put_no_rnd, ff_,  _x2, CPUEXT) \
-    PIXELS16(static, put,        ff_,  _y2, CPUEXT) \
-    PIXELS16(static, put_no_rnd, ff_,  _y2, CPUEXT) \
-    PIXELS16(static, avg,        ff_,     , CPUEXT) \
-    PIXELS16(static, avg,        ff_,  _x2, CPUEXT) \
-    PIXELS16(static, avg,        ff_,  _y2, CPUEXT) \
-    PIXELS16(static, avg,        ff_, _xy2, CPUEXT)
+#define HPELDSP_AVG_PIXELS16(CPUEXT)                      \
+    CALL_2X_PIXELS(put_no_rnd_pixels16_x2 ## CPUEXT, ff_put_no_rnd_pixels8_x2 ## CPUEXT, 8) \
+    CALL_2X_PIXELS(put_pixels16_y2        ## CPUEXT, ff_put_pixels8_y2        ## CPUEXT, 8) \
+    CALL_2X_PIXELS(put_no_rnd_pixels16_y2 ## CPUEXT, ff_put_no_rnd_pixels8_y2 ## CPUEXT, 8) \
+    CALL_2X_PIXELS(avg_pixels16           ## CPUEXT, ff_avg_pixels8           ## CPUEXT, 8) \
+    CALL_2X_PIXELS(avg_pixels16_x2        ## CPUEXT, ff_avg_pixels8_x2        ## CPUEXT, 8) \
+    CALL_2X_PIXELS(avg_pixels16_y2        ## CPUEXT, ff_avg_pixels8_y2        ## CPUEXT, 8) \
+    CALL_2X_PIXELS(avg_pixels16_xy2       ## CPUEXT, ff_avg_pixels8_xy2       ## CPUEXT, 8)
 
 HPELDSP_AVG_PIXELS16(_3dnow)
 HPELDSP_AVG_PIXELS16(_mmxext)
@@ -251,7 +264,7 @@ static void hpeldsp_init_sse2(HpelDSPContext *c, int flags, int cpu_flags)
 #endif /* HAVE_SSE2_EXTERNAL */
 }
 
-void ff_hpeldsp_init_x86(HpelDSPContext *c, int flags)
+av_cold void ff_hpeldsp_init_x86(HpelDSPContext *c, int flags)
 {
     int cpu_flags = av_get_cpu_flags();
 

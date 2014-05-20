@@ -32,9 +32,10 @@
 #include "mpegvideo.h"
 #include "h263.h"
 #include "internal.h"
-#include "libavutil/avassert.h"
+#include "mpegutils.h"
 #include "svq1.h"
 #include "svq1enc_cb.h"
+#include "libavutil/avassert.h"
 
 
 typedef struct SVQ1Context {
@@ -257,6 +258,15 @@ static int encode_block(SVQ1Context *s, uint8_t *src, uint8_t *ref,
     return best_score;
 }
 
+static void init_block_index(MpegEncContext *s){
+    s->block_index[0]= s->b8_stride*(s->mb_y*2    )     + s->mb_x*2;
+    s->block_index[1]= s->b8_stride*(s->mb_y*2    ) + 1 + s->mb_x*2;
+    s->block_index[2]= s->b8_stride*(s->mb_y*2 + 1)     + s->mb_x*2;
+    s->block_index[3]= s->b8_stride*(s->mb_y*2 + 1) + 1 + s->mb_x*2;
+    s->block_index[4]= s->mb_stride*(s->mb_y + 1)                + s->b8_stride*s->mb_height*2 + s->mb_x;
+    s->block_index[5]= s->mb_stride*(s->mb_y + s->mb_height + 2) + s->b8_stride*s->mb_height*2 + s->mb_x;
+}
+
 static int svq1_encode_plane(SVQ1Context *s, int plane,
                              unsigned char *src_plane,
                              unsigned char *ref_plane,
@@ -285,11 +295,11 @@ static int svq1_encode_plane(SVQ1Context *s, int plane,
         s->m.avctx                         = s->avctx;
         s->m.current_picture_ptr           = &s->m.current_picture;
         s->m.last_picture_ptr              = &s->m.last_picture;
-        s->m.last_picture.f.data[0]        = ref_plane;
+        s->m.last_picture.f->data[0]        = ref_plane;
         s->m.linesize                      =
-        s->m.last_picture.f.linesize[0]    =
-        s->m.new_picture.f.linesize[0]     =
-        s->m.current_picture.f.linesize[0] = stride;
+        s->m.last_picture.f->linesize[0]    =
+        s->m.new_picture.f->linesize[0]     =
+        s->m.current_picture.f->linesize[0] = stride;
         s->m.width                         = width;
         s->m.height                        = height;
         s->m.mb_width                      = block_width;
@@ -337,7 +347,7 @@ static int svq1_encode_plane(SVQ1Context *s, int plane,
         s->m.me.dia_size      = s->avctx->dia_size;
         s->m.first_slice_line = 1;
         for (y = 0; y < block_height; y++) {
-            s->m.new_picture.f.data[0] = src - y * 16 * stride; // ugly
+            s->m.new_picture.f->data[0] = src - y * 16 * stride; // ugly
             s->m.mb_y                  = y;
 
             for (i = 0; i < 16 && i + 16 * y < height; i++) {
@@ -352,8 +362,7 @@ static int svq1_encode_plane(SVQ1Context *s, int plane,
 
             for (x = 0; x < block_width; x++) {
                 s->m.mb_x = x;
-                ff_init_block_index(&s->m);
-                ff_update_block_index(&s->m);
+                init_block_index(&s->m);
 
                 ff_estimate_p_frame_motion(&s->m, x, y);
             }
@@ -393,8 +402,7 @@ static int svq1_encode_plane(SVQ1Context *s, int plane,
             }
 
             s->m.mb_x = x;
-            ff_init_block_index(&s->m);
-            ff_update_block_index(&s->m);
+            init_block_index(&s->m);
 
             if (f->pict_type == AV_PICTURE_TYPE_I ||
                 (s->m.mb_type[x + y * s->m.mb_stride] &
@@ -507,6 +515,9 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
            s->rd_total / (double)(avctx->width * avctx->height *
                                   avctx->frame_number));
 
+    s->m.mb_type = NULL;
+    ff_MPV_common_end(&s->m);
+
     av_freep(&s->m.me.scratchpad);
     av_freep(&s->m.me.map);
     av_freep(&s->m.me.score_map);
@@ -529,6 +540,7 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
 static av_cold int svq1_encode_init(AVCodecContext *avctx)
 {
     SVQ1Context *const s = avctx->priv_data;
+    int ret;
 
     ff_dsputil_init(&s->dsp, avctx);
     ff_hpeldsp_init(&s->hdsp, avctx->flags);
@@ -552,6 +564,12 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
 
     s->avctx               = avctx;
     s->m.avctx             = avctx;
+
+    if ((ret = ff_MPV_common_init(&s->m)) < 0) {
+        svq1_encode_end(avctx);
+        return ret;
+    }
+
     s->m.picture_structure = PICT_FRAME;
     s->m.me.temp           =
     s->m.me.scratchpad     = av_mallocz((avctx->width + 64) *

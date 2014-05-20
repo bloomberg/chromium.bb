@@ -23,6 +23,7 @@
 #include "libavutil/opt.h"
 #include "error_resilience.h"
 #include "internal.h"
+#include "mpegutils.h"
 #include "mpegvideo.h"
 #include "mpeg4video.h"
 #include "h263.h"
@@ -611,7 +612,7 @@ static int mpeg4_decode_partition_a(Mpeg4DecContext *ctx)
                     cbpc = get_vlc2(&s->gb, ff_h263_intra_MCBPC_vlc.table, INTRA_MCBPC_VLC_BITS, 2);
                     if (cbpc < 0) {
                         av_log(s->avctx, AV_LOG_ERROR,
-                               "cbpc corrupted at %d %d\n", s->mb_x, s->mb_y);
+                               "mcbpc corrupted at %d %d\n", s->mb_x, s->mb_y);
                         return -1;
                     }
                 } while (cbpc == 8);
@@ -683,7 +684,7 @@ try_again:
                 cbpc = get_vlc2(&s->gb, ff_h263_inter_MCBPC_vlc.table, INTER_MCBPC_VLC_BITS, 2);
                 if (cbpc < 0) {
                     av_log(s->avctx, AV_LOG_ERROR,
-                           "cbpc corrupted at %d %d\n", s->mb_x, s->mb_y);
+                           "mcbpc corrupted at %d %d\n", s->mb_x, s->mb_y);
                     return -1;
                 }
                 if (cbpc == 20)
@@ -1081,7 +1082,8 @@ static inline int mpeg4_decode_block(Mpeg4DecContext *ctx, int16_t *block,
                                 if (SHOW_UBITS(re, &s->gb, 1) == 0) {
                                     av_log(s->avctx, AV_LOG_ERROR,
                                            "1. marker bit missing in 3. esc\n");
-                                    return -1;
+                                    if (!(s->err_recognition & AV_EF_IGNORE_ERR))
+                                        return -1;
                                 }
                                 SKIP_CACHE(re, &s->gb, 1);
 
@@ -1091,7 +1093,8 @@ static inline int mpeg4_decode_block(Mpeg4DecContext *ctx, int16_t *block,
                                 if (SHOW_UBITS(re, &s->gb, 1) == 0) {
                                     av_log(s->avctx, AV_LOG_ERROR,
                                            "2. marker bit missing in 3. esc\n");
-                                    return -1;
+                                    if (!(s->err_recognition & AV_EF_IGNORE_ERR))
+                                        return -1;
                                 }
 
                                 SKIP_COUNTER(re, &s->gb, 1 + 12 + 1);
@@ -1162,6 +1165,7 @@ static inline int mpeg4_decode_block(Mpeg4DecContext *ctx, int16_t *block,
                 level = (level ^ SHOW_SBITS(re, &s->gb, 1)) - SHOW_SBITS(re, &s->gb, 1);
                 LAST_SKIP_BITS(re, &s->gb, 1);
             }
+            tprintf(s->avctx, "dct[%d][%d] = %- 4d end?:%d\n", scan_table[i&63]&7, scan_table[i&63] >> 3, level, i>62);
             if (i > 62) {
                 i -= 192;
                 if (i & (~63)) {
@@ -1328,7 +1332,7 @@ static int mpeg4_decode_mb(MpegEncContext *s, int16_t block[6][64])
             cbpc = get_vlc2(&s->gb, ff_h263_inter_MCBPC_vlc.table, INTER_MCBPC_VLC_BITS, 2);
             if (cbpc < 0) {
                 av_log(s->avctx, AV_LOG_ERROR,
-                       "cbpc damaged at %d %d\n", s->mb_x, s->mb_y);
+                       "mcbpc damaged at %d %d\n", s->mb_x, s->mb_y);
                 return -1;
             }
         } while (cbpc == 20);
@@ -1737,7 +1741,7 @@ static int decode_vol_header(Mpeg4DecContext *ctx, GetBitContext *gb)
         }
     } else {
         /* is setting low delay flag only once the smartest thing to do?
-         * low delay detection won't be overriden. */
+         * low delay detection won't be overridden. */
         if (s->picture_number == 0)
             s->low_delay = 0;
     }
@@ -1913,6 +1917,11 @@ static int decode_vol_header(Mpeg4DecContext *ctx, GetBitContext *gb)
             s->quarter_sample = get_bits1(gb);
         else
             s->quarter_sample = 0;
+
+        if (get_bits_left(gb) < 4) {
+            av_log(s->avctx, AV_LOG_ERROR, "VOL Header truncated\n");
+            return AVERROR_INVALIDDATA;
+        }
 
         if (!get_bits1(gb)) {
             int pos               = get_bits_count(gb);
@@ -2295,8 +2304,10 @@ static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb)
                             ROUNDED_DIV(s->last_non_b_time - s->pp_time, ctx->t_frame)) * 2;
         s->pb_field_time = (ROUNDED_DIV(s->time, ctx->t_frame) -
                             ROUNDED_DIV(s->last_non_b_time - s->pp_time, ctx->t_frame)) * 2;
-        if (!s->progressive_sequence) {
-            if (s->pp_field_time <= s->pb_field_time || s->pb_field_time <= 1)
+        if (s->pp_field_time <= s->pb_field_time || s->pb_field_time <= 1) {
+            s->pb_field_time = 2;
+            s->pp_field_time = 4;
+            if (!s->progressive_sequence)
                 return FRAME_SKIPPED;
         }
     }
@@ -2651,10 +2662,9 @@ int ff_mpeg4_frame_end(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
         }
 
         if (startcode_found) {
-            av_fast_malloc(&s->bitstream_buffer,
+            av_fast_padded_malloc(&s->bitstream_buffer,
                            &s->allocated_bitstream_buffer_size,
-                           buf_size - current_pos +
-                           FF_INPUT_BUFFER_PADDING_SIZE);
+                           buf_size - current_pos);
             if (!s->bitstream_buffer)
                 return AVERROR(ENOMEM);
             memcpy(s->bitstream_buffer, buf + current_pos,

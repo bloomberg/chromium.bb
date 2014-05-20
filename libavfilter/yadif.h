@@ -1,24 +1,25 @@
 /*
  * This file is part of FFmpeg.
  *
- * FFmpeg is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * FFmpeg is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
  * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with FFmpeg; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef AVFILTER_YADIF_H
 #define AVFILTER_YADIF_H
 
+#include "libavutil/pixdesc.h"
 #include "avfilter.h"
 
 enum YADIFMode {
@@ -39,37 +40,35 @@ enum YADIFDeint {
     YADIF_DEINT_INTERLACED = 1, ///< only deinterlace frames marked as interlaced
 };
 
-void ff_yadif_filter_line_mmxext(void *dst, void *prev, void *cur,
-                                 void *next, int w, int prefs,
-                                 int mrefs, int parity, int mode);
-void ff_yadif_filter_line_sse2(void *dst, void *prev, void *cur,
-                               void *next, int w, int prefs,
-                               int mrefs, int parity, int mode);
-void ff_yadif_filter_line_ssse3(void *dst, void *prev, void *cur,
-                                void *next, int w, int prefs,
-                                int mrefs, int parity, int mode);
+typedef struct YADIFContext {
+    const AVClass *class;
 
-void ff_yadif_filter_line_16bit_mmxext(void *dst, void *prev, void *cur,
-                                       void *next, int w, int prefs,
-                                       int mrefs, int parity, int mode);
-void ff_yadif_filter_line_16bit_sse2(void *dst, void *prev, void *cur,
-                                     void *next, int w, int prefs,
-                                     int mrefs, int parity, int mode);
-void ff_yadif_filter_line_16bit_ssse3(void *dst, void *prev, void *cur,
-                                      void *next, int w, int prefs,
-                                      int mrefs, int parity, int mode);
-void ff_yadif_filter_line_16bit_sse4(void *dst, void *prev, void *cur,
-                                     void *next, int w, int prefs,
-                                     int mrefs, int parity, int mode);
+    enum YADIFMode   mode;
+    enum YADIFParity parity;
+    enum YADIFDeint  deint;
 
-void ff_yadif_filter_line_10bit_mmxext(void *dst, void *prev, void *cur,
-                                       void *next, int w, int prefs,
-                                       int mrefs, int parity, int mode);
-void ff_yadif_filter_line_10bit_sse2(void *dst, void *prev, void *cur,
-                                     void *next, int w, int prefs,
-                                     int mrefs, int parity, int mode);
-void ff_yadif_filter_line_10bit_ssse3(void *dst, void *prev, void *cur,
-                                      void *next, int w, int prefs,
-                                      int mrefs, int parity, int mode);
+    int frame_pending;
+
+    AVFrame *cur;
+    AVFrame *next;
+    AVFrame *prev;
+    AVFrame *out;
+
+    /**
+     * Required alignment for filter_line
+     */
+    void (*filter_line)(void *dst,
+                        void *prev, void *cur, void *next,
+                        int w, int prefs, int mrefs, int parity, int mode);
+    void (*filter_edges)(void *dst, void *prev, void *cur, void *next,
+                         int w, int prefs, int mrefs, int parity, int mode);
+
+    const AVPixFmtDescriptor *csp;
+    int eof;
+    uint8_t *temp_line;
+    int temp_line_size;
+} YADIFContext;
+
+void ff_yadif_init_x86(YADIFContext *yadif);
 
 #endif /* AVFILTER_YADIF_H */

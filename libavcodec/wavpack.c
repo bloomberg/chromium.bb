@@ -487,6 +487,13 @@ static inline int wv_unpack_stereo(WavpackFrameContext *s, GetBitContext *gb,
     } while (!last && count < s->samples);
 
     wv_reset_saved_context(s);
+
+    if (last && count < s->samples) {
+        int size = av_get_bytes_per_sample(type);
+        memset((uint8_t*)dst_l + count*size, 0, (s->samples-count)*size);
+        memset((uint8_t*)dst_r + count*size, 0, (s->samples-count)*size);
+    }
+
     if ((s->avctx->err_recognition & AV_EF_CRCCHECK) &&
         wv_check_crc(s, crc, crc_extra_bits))
         return AVERROR_INVALIDDATA;
@@ -548,6 +555,12 @@ static inline int wv_unpack_mono(WavpackFrameContext *s, GetBitContext *gb,
     } while (!last && count < s->samples);
 
     wv_reset_saved_context(s);
+
+    if (last && count < s->samples) {
+        int size = av_get_bytes_per_sample(type);
+        memset((uint8_t*)dst + count*size, 0, (s->samples-count)*size);
+    }
+
     if (s->avctx->err_recognition & AV_EF_CRCCHECK) {
         int ret = wv_check_crc(s, crc, crc_extra_bits);
         if (ret < 0 && s->avctx->err_recognition & AV_EF_EXPLODE)
@@ -609,7 +622,7 @@ static int wavpack_decode_block(AVCodecContext *avctx, int block_no,
     ThreadFrame tframe = { .f = frame };
     WavpackFrameContext *s;
     GetByteContext gb;
-    void *samples_l, *samples_r;
+    void *samples_l = NULL, *samples_r = NULL;
     int ret;
     int got_terms   = 0, got_weights = 0, got_samples = 0,
         got_entropy = 0, got_bs      = 0, got_float   = 0, got_hybrid = 0;

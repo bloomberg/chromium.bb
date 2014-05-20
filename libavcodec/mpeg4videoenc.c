@@ -23,6 +23,7 @@
 #include "libavutil/attributes.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
+#include "mpegutils.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "mpeg4video.h"
@@ -277,19 +278,19 @@ static inline void mpeg4_encode_dc(PutBitContext *s, int level, int n)
 
     if (n < 4) {
         /* luminance */
-        put_bits(&s->pb, ff_mpeg4_DCtab_lum[size][1], ff_mpeg4_DCtab_lum[size][0]);
+        put_bits(s, ff_mpeg4_DCtab_lum[size][1], ff_mpeg4_DCtab_lum[size][0]);
     } else {
         /* chrominance */
-        put_bits(&s->pb, ff_mpeg4_DCtab_chrom[size][1], ff_mpeg4_DCtab_chrom[size][0]);
+        put_bits(s, ff_mpeg4_DCtab_chrom[size][1], ff_mpeg4_DCtab_chrom[size][0]);
     }
 
     /* encode remaining bits */
     if (size > 0) {
         if (level < 0)
             level = (-level) ^ ((1 << size) - 1);
-        put_bits(&s->pb, size, level);
+        put_bits(s, size, level);
         if (size > 8)
-            put_bits(&s->pb, 1, 1);
+            put_bits(s, 1, 1);
     }
 #endif
 }
@@ -670,7 +671,7 @@ void ff_mpeg4_encode_mb(MpegEncContext *s, int16_t block[6][64],
                     y = s->mb_y * 16;
 
                     offset = x + y * s->linesize;
-                    p_pic  = s->new_picture.f.data[0] + offset;
+                    p_pic  = s->new_picture.f->data[0] + offset;
 
                     s->mb_skipped = 1;
                     for (i = 0; i < s->max_b_frames; i++) {
@@ -678,10 +679,10 @@ void ff_mpeg4_encode_mb(MpegEncContext *s, int16_t block[6][64],
                         int diff;
                         Picture *pic = s->reordered_input_picture[i + 1];
 
-                        if (!pic || pic->f.pict_type != AV_PICTURE_TYPE_B)
+                        if (!pic || pic->f->pict_type != AV_PICTURE_TYPE_B)
                             break;
 
-                        b_pic = pic->f.data[0] + offset;
+                        b_pic = pic->f->data[0] + offset;
                         if (!pic->shared)
                             b_pic += INPLACE_OFFSET;
 
@@ -915,9 +916,9 @@ static void mpeg4_encode_gop_header(MpegEncContext *s)
     put_bits(&s->pb, 16, 0);
     put_bits(&s->pb, 16, GOP_STARTCODE);
 
-    time = s->current_picture_ptr->f.pts;
+    time = s->current_picture_ptr->f->pts;
     if (s->reordered_input_picture[1])
-        time = FFMIN(time, s->reordered_input_picture[1]->f.pts);
+        time = FFMIN(time, s->reordered_input_picture[1]->f->pts);
     time = time * s->avctx->time_base.num;
     s->last_time_base = FFUDIV(time, s->avctx->time_base.den);
 
@@ -1125,7 +1126,7 @@ void ff_mpeg4_encode_picture_header(MpegEncContext *s, int picture_number)
     }
     put_bits(&s->pb, 3, 0);     /* intra dc VLC threshold */
     if (!s->progressive_sequence) {
-        put_bits(&s->pb, 1, s->current_picture_ptr->f.top_field_first);
+        put_bits(&s->pb, 1, s->current_picture_ptr->f->top_field_first);
         put_bits(&s->pb, 1, s->alternate_scan);
     }
     // FIXME sprite stuff

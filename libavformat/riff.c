@@ -39,9 +39,10 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_H264,         MKTAG('S', 'M', 'V', '2') },
     { AV_CODEC_ID_H264,         MKTAG('V', 'S', 'S', 'H') },
     { AV_CODEC_ID_H264,         MKTAG('Q', '2', '6', '4') }, /* QNAP surveillance system */
-    { AV_CODEC_ID_H264,         MKTAG('V', '2', '6', '4') },
+    { AV_CODEC_ID_H264,         MKTAG('V', '2', '6', '4') }, /* CCTV recordings */
     { AV_CODEC_ID_H264,         MKTAG('G', 'A', 'V', 'C') }, /* GeoVision camera */
     { AV_CODEC_ID_H264,         MKTAG('U', 'M', 'S', 'V') },
+    { AV_CODEC_ID_H264,         MKTAG('I', 'N', 'M', 'C') },
     { AV_CODEC_ID_H263,         MKTAG('H', '2', '6', '3') },
     { AV_CODEC_ID_H263,         MKTAG('X', '2', '6', '3') },
     { AV_CODEC_ID_H263,         MKTAG('T', '2', '6', '3') },
@@ -92,7 +93,6 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'M', 'K', '2') },
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'Y', 'M', '4') },
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'I', 'G', 'I') },
-    { AV_CODEC_ID_MPEG4,        MKTAG('I', 'N', 'M', 'C') },
     /* Ephv MPEG-4 */
     { AV_CODEC_ID_MPEG4,        MKTAG('E', 'P', 'H', 'V') },
     { AV_CODEC_ID_MPEG4,        MKTAG('E', 'M', '4', 'A') },
@@ -258,6 +258,8 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_VP6A,         MKTAG('V', 'P', '6', 'A') },
     { AV_CODEC_ID_VP6F,         MKTAG('V', 'P', '6', 'F') },
     { AV_CODEC_ID_VP6F,         MKTAG('F', 'L', 'V', '4') },
+    { AV_CODEC_ID_VP7,          MKTAG('V', 'P', '7', '0') },
+    { AV_CODEC_ID_VP7,          MKTAG('V', 'P', '7', '1') },
     { AV_CODEC_ID_VP8,          MKTAG('V', 'P', '8', '0') },
     { AV_CODEC_ID_VP9,          MKTAG('V', 'P', '9', '0') },
     { AV_CODEC_ID_ASV1,         MKTAG('A', 'S', 'V', '1') },
@@ -300,7 +302,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_LOCO,         MKTAG('L', 'O', 'C', 'O') },
     { AV_CODEC_ID_WNV1,         MKTAG('W', 'N', 'V', '1') },
     { AV_CODEC_ID_WNV1,         MKTAG('Y', 'U', 'V', '8') },
-    { AV_CODEC_ID_AASC,         MKTAG('A', 'A', 'S', '4') },
+    { AV_CODEC_ID_AASC,         MKTAG('A', 'A', 'S', '4') }, /* Autodesk 24 bit RLE compressor */
     { AV_CODEC_ID_AASC,         MKTAG('A', 'A', 'S', 'C') },
     { AV_CODEC_ID_INDEO2,       MKTAG('R', 'T', '2', '1') },
     { AV_CODEC_ID_FRAPS,        MKTAG('F', 'P', 'S', '1') },
@@ -356,6 +358,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_G2M,          MKTAG('G', '2', 'M', '2') },
     { AV_CODEC_ID_G2M,          MKTAG('G', '2', 'M', '3') },
     { AV_CODEC_ID_G2M,          MKTAG('G', '2', 'M', '4') },
+    { AV_CODEC_ID_FIC,          MKTAG('F', 'I', 'C', 'V') },
     { AV_CODEC_ID_NONE,         0 }
 };
 
@@ -407,12 +410,16 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_ADPCM_G722,      0x028F },
     { AV_CODEC_ID_IMC,             0x0401 },
     { AV_CODEC_ID_IAC,             0x0402 },
+    { AV_CODEC_ID_ON2AVC,          0x0500 },
+    { AV_CODEC_ID_ON2AVC,          0x0501 },
     { AV_CODEC_ID_GSM_MS,          0x1500 },
     { AV_CODEC_ID_TRUESPEECH,      0x1501 },
     /* ADTS AAC */
     { AV_CODEC_ID_AAC,             0x1600 },
     { AV_CODEC_ID_AAC_LATM,        0x1602 },
     { AV_CODEC_ID_AC3,             0x2000 },
+    /* There is no Microsoft Format Tag for E-AC3, the GUID has to be used */
+    { AV_CODEC_ID_EAC3,            0x2000 },
     { AV_CODEC_ID_DTS,             0x2001 },
     { AV_CODEC_ID_SONIC,           0x2048 },
     { AV_CODEC_ID_SONIC_LS,        0x2048 },
@@ -420,7 +427,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_AAC,             0x706d },
     { AV_CODEC_ID_AAC,             0x4143 },
     { AV_CODEC_ID_XAN_DPCM,        0x594a },
-    { AV_CODEC_ID_G723_1,          0xA100 },
+    { AV_CODEC_ID_G723_1,          0xA100 }, /* Comverse Infosys Ltd. G723 1 */
     { AV_CODEC_ID_AAC,             0xA106 },
     { AV_CODEC_ID_SPEEX,           0xA109 },
     { AV_CODEC_ID_FLAC,            0xF1AC },
@@ -456,3 +463,11 @@ const struct AVCodecTag *avformat_get_riff_audio_tags(void)
 {
     return ff_codec_wav_tags;
 }
+
+const AVCodecGuid ff_codec_wav_guids[] = {
+    { AV_CODEC_ID_AC3,      { 0x2C, 0x80, 0x6D, 0xE0, 0x46, 0xDB, 0xCF, 0x11, 0xB4, 0xD1, 0x00, 0x80, 0x5F, 0x6C, 0xBB, 0xEA } },
+    { AV_CODEC_ID_ATRAC3P,  { 0xBF, 0xAA, 0x23, 0xE9, 0x58, 0xCB, 0x71, 0x44, 0xA1, 0x19, 0xFF, 0xFA, 0x01, 0xE4, 0xCE, 0x62 } },
+    { AV_CODEC_ID_EAC3,     { 0xAF, 0x87, 0xFB, 0xA7, 0x02, 0x2D, 0xFB, 0x42, 0xA4, 0xD4, 0x05, 0xCD, 0x93, 0x84, 0x3B, 0xDD } },
+    { AV_CODEC_ID_MP2,      { 0x2B, 0x80, 0x6D, 0xE0, 0x46, 0xDB, 0xCF, 0x11, 0xB4, 0xD1, 0x00, 0x80, 0x5F, 0x6C, 0xBB, 0xEA } },
+    { AV_CODEC_ID_NONE }
+};

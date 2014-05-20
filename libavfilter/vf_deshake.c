@@ -132,7 +132,7 @@ static void find_block_motion(DeshakeContext *deshake, uint8_t *src1,
     int smallest = INT_MAX;
     int tmp, tmp2;
 
-    #define CMP(i, j) deshake->c.sad[0](deshake, src1 + cy * stride + cx, \
+    #define CMP(i, j) deshake->c.sad[0](NULL, src1 + cy * stride + cx, \
                                         src2 + (j) * stride + (i), stride, \
                                         deshake->blocksize)
 
@@ -306,8 +306,8 @@ static void find_motion(DeshakeContext *deshake, uint8_t *src1, uint8_t *src2,
         //av_log(NULL, AV_LOG_ERROR, "\n");
     }
 
-    p_x = (center_x - width / 2);
-    p_y = (center_y - height / 2);
+    p_x = (center_x - width / 2.0);
+    p_y = (center_y - height / 2.0);
     t->vector.x += (cos(t->angle)-1)*p_x  - sin(t->angle)*p_y;
     t->vector.y += sin(t->angle)*p_x  + (cos(t->angle)-1)*p_y;
 

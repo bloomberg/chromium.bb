@@ -31,6 +31,9 @@ fate-vp8-alpha: CMD = framecrc -i $(TARGET_SAMPLES)/vp8_alpha/vp8_video_with_alp
 FATE_SAMPLES_AVCONV += $(FATE_VP6-yes)
 fate-vp6: $(FATE_VP6-yes)
 
+FATE_SAMPLES_AVCONV-$(call DEMDEC, AVI, VP7) += fate-vp7
+fate-vp7: CMD = framecrc -flags +bitexact -i $(TARGET_SAMPLES)/vp7/potter-40.vp7 -frames 30 -an
+
 VP8_SUITE = 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017
 
 define FATE_VP8_SUITE
@@ -54,7 +57,7 @@ fate-vp8-size-change$(1): REF = $(SRC_PATH)/tests/ref/fate/vp8-size-change
 endef
 
 $(eval $(call FATE_VP8_FULL))
-$(eval $(call FATE_VP8_FULL,-emu-edge,-flags +emu_edge))
+
 FATE_SAMPLES_AVCONV-$(CONFIG_VP8_DECODER) += $(FATE_VP8-yes)
 fate-vp8: $(FATE_VP8-yes)
 
@@ -79,14 +82,13 @@ $(foreach W,$(VP9_SIZE_A),$(eval $(foreach H,$(VP9_SIZE_A),$(eval $(call FATE_VP
 $(foreach W,$(VP9_SIZE_B),$(eval $(foreach H,$(VP9_SIZE_B),$(eval $(call FATE_VP9_SUITE,03-size-$(W)x$(H),$(1),$(2))))))
 $(eval $(call FATE_VP9_SUITE,03-deltaq,$(1),$(2)))
 $(eval $(call FATE_VP9_SUITE,2pass-akiyo,$(1),$(2)))
-$(eval $(call FATE_VP9_SUITE,segmentation-sf-akiyo,$(1),$(2)))
-$(eval $(call FATE_VP9_SUITE,segmentation-aq-akiyo,$(1),$(2)))
-$(eval $(call FATE_VP9_SUITE,tiling-pedestrian,$(1),$(2)))
 $(eval $(call FATE_VP9_SUITE,parallelmode-akiyo,$(1),$(2)))
+$(eval $(call FATE_VP9_SUITE,segmentation-aq-akiyo,$(1),$(2)))
+$(eval $(call FATE_VP9_SUITE,segmentation-sf-akiyo,$(1),$(2)))
+$(eval $(call FATE_VP9_SUITE,tiling-pedestrian,$(1),$(2)))
 endef
 
 $(eval $(call FATE_VP9_FULL))
-$(eval $(call FATE_VP9_FULL,-emu-edge,-flags +emu_edge))
 
 FATE_SAMPLES_AVCONV-$(CONFIG_VP9_DECODER) += $(FATE_VP9-yes)
 fate-vp9: $(FATE_VP9-yes)

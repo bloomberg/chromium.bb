@@ -165,10 +165,17 @@
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
             'PIC',
+            # Disable deprecated features which generate spammy warnings.
+            'FF_API_PIX_FMT_DESC=0',
+            'FF_API_OLD_DECODE_AUDIO=0',
+            'FF_API_DESTRUCT_PACKET=0',
+            'FF_API_GET_BUFFER=0',
           ],
           'cflags': [
             '-fPIC',
             '-fomit-frame-pointer',
+            # ffmpeg uses its own deprecated functions.
+            '-Wno-deprecated-declarations',
           ],
           'conditions': [
             ['target_arch != "arm" and target_arch != "mipsel" and os_config != "linux-noasm"', {
@@ -194,7 +201,6 @@
               },
               'cflags': [
                 '-Wno-absolute-value',
-                '-Wno-deprecated-declarations',
                 '-Wno-incompatible-pointer-types',
                 '-Wno-logical-op-parentheses',
                 '-Wno-parentheses',
@@ -298,9 +304,6 @@
                 '-fno-math-errno',
                 '-fno-signed-zeros',
                 '-fno-tree-vectorize',
-                '-fomit-frame-pointer',
-                # Don't warn about libavformat using its own deprecated APIs.
-                '-Wno-deprecated-declarations',
               ],
               'cflags!': [
                 # Ensure the symbols are exported.

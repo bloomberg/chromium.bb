@@ -45,18 +45,26 @@ void av_fifo_free(AVFifoBuffer *f)
     }
 }
 
+void av_fifo_freep(AVFifoBuffer **f)
+{
+    if (f) {
+        av_fifo_free(*f);
+        *f = NULL;
+    }
+}
+
 void av_fifo_reset(AVFifoBuffer *f)
 {
     f->wptr = f->rptr = f->buffer;
     f->wndx = f->rndx = 0;
 }
 
-int av_fifo_size(AVFifoBuffer *f)
+int av_fifo_size(FF_CONST_AVUTIL53 AVFifoBuffer *f)
 {
     return (uint32_t)(f->wndx - f->rndx);
 }
 
-int av_fifo_space(AVFifoBuffer *f)
+int av_fifo_space(FF_CONST_AVUTIL53 AVFifoBuffer *f)
 {
     return f->end - f->buffer - av_fifo_size(f);
 }

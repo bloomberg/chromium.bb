@@ -17,18 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**
+ * @file
+ * @ingroup lavu_frame
+ * reference-counted frame API
+ */
+
 #ifndef AVUTIL_FRAME_H
 #define AVUTIL_FRAME_H
 
 #include <stdint.h>
-
-#include "libavcodec/version.h"
 
 #include "avutil.h"
 #include "buffer.h"
 #include "dict.h"
 #include "rational.h"
 #include "samplefmt.h"
+#include "version.h"
+
 
 enum AVColorSpace{
     AVCOL_SPC_RGB         =  0,
@@ -53,6 +59,14 @@ enum AVColorRange{
 };
 
 
+/**
+ * @defgroup lavu_frame AVFrame
+ * @ingroup lavu_data
+ *
+ * @{
+ * AVFrame is an abstraction for reference-counted raw multimedia data.
+ */
+
 enum AVFrameSideDataType {
     /**
      * The data is the AVPanScan struct defined in libavcodec.
@@ -69,6 +83,19 @@ enum AVFrameSideDataType {
      * The data is the AVStereo3D struct defined in libavutil/stereo3d.h.
      */
     AV_FRAME_DATA_STEREO3D,
+    /**
+     * The data is the AVMatrixEncoding enum defined in libavutil/channel_layout.h.
+     */
+    AV_FRAME_DATA_MATRIXENCODING,
+    /**
+     * Metadata relevant to a downmix procedure.
+     * The data is the AVDownmixInfo struct defined in libavutil/downmix_info.h.
+     */
+    AV_FRAME_DATA_DOWNMIX_INFO,
+    /**
+     * ReplayGain information in the form of the AVReplayGain struct.
+     */
+    AV_FRAME_DATA_REPLAYGAIN,
 };
 
 typedef struct AVFrameSideData {
@@ -181,8 +208,7 @@ typedef struct AVFrame {
     enum AVPictureType pict_type;
 
 #if FF_API_AVFRAME_LAVC
-    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
-    // attribute_deprecated
+    attribute_deprecated
     uint8_t *base[AV_NUM_DATA_POINTERS];
 #endif
 
@@ -257,7 +283,6 @@ typedef struct AVFrame {
      * motion_val[direction][x + y*mv_stride][0->mv_x, 1->mv_y];
      * @endcode
      */
-    attribute_deprecated
     int16_t (*motion_val[2])[2];
 
     /**
@@ -292,8 +317,7 @@ typedef struct AVFrame {
     uint64_t error[AV_NUM_DATA_POINTERS];
 
 #if FF_API_AVFRAME_LAVC
-    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
-    // attribute_deprecated
+    attribute_deprecated
     int type;
 #endif
 
@@ -355,7 +379,6 @@ typedef struct AVFrame {
      * log2 of the size of the block which a single vector in motion_val represents:
      * (4->16x16, 3->8x8, 2-> 4x4, 1-> 2x2)
      */
-    attribute_deprecated
     uint8_t motion_subsample_log2;
 #endif
 
@@ -403,12 +426,22 @@ typedef struct AVFrame {
     int            nb_side_data;
 
 /**
+ * @defgroup lavu_frame_flags AV_FRAME_FLAGS
+ * Flags describing additional frame properties.
+ *
+ * @{
+ */
+
+/**
  * The frame data may be corrupted, e.g. due to decoding errors.
  */
 #define AV_FRAME_FLAG_CORRUPT       (1 << 0)
+/**
+ * @}
+ */
 
     /**
-     * Frame flags, a combination of AV_FRAME_FLAG_*
+     * Frame flags, a combination of @ref lavu_frame_flags
      */
     int flags;
 
@@ -565,7 +598,7 @@ AVFrame *av_frame_alloc(void);
 void av_frame_free(AVFrame **frame);
 
 /**
- * Setup a new reference to the data described by a given frame.
+ * Set up a new reference to the data described by the source frame.
  *
  * Copy frame properties from src to dst and create a new reference for each
  * AVBufferRef from src.
@@ -643,6 +676,19 @@ int av_frame_is_writable(AVFrame *frame);
 int av_frame_make_writable(AVFrame *frame);
 
 /**
+ * Copy the frame data from src to dst.
+ *
+ * This function does not allocate anything, dst must be already initialized and
+ * allocated with the same parameters as src.
+ *
+ * This function only copies the frame data (i.e. the contents of the data /
+ * extended data arrays), not any other properties.
+ *
+ * @return >= 0 on success, a negative AVERROR on error.
+ */
+int av_frame_copy(AVFrame *dst, const AVFrame *src);
+
+/**
  * Copy only "metadata" fields from src to dst.
  *
  * Metadata for the purpose of this function are those fields that do not affect
@@ -681,5 +727,15 @@ AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
  */
 AVFrameSideData *av_frame_get_side_data(const AVFrame *frame,
                                         enum AVFrameSideDataType type);
+
+/**
+ * If side data of the supplied type exists in the frame, free it and remove it
+ * from the frame.
+ */
+void av_frame_remove_side_data(AVFrame *frame, enum AVFrameSideDataType type);
+
+/**
+ * @}
+ */
 
 #endif /* AVUTIL_FRAME_H */

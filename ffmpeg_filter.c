@@ -44,12 +44,17 @@ enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodec *codec, enum AVPixelFo
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(target);
         int has_alpha = desc ? desc->nb_components % 2 == 0 : 0;
         enum AVPixelFormat best= AV_PIX_FMT_NONE;
+        static const enum AVPixelFormat mjpeg_formats[] =
+            { AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_NONE };
+        static const enum AVPixelFormat ljpeg_formats[] =
+            { AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUV420P,
+              AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_BGRA, AV_PIX_FMT_NONE };
+
         if (st->codec->strict_std_compliance <= FF_COMPLIANCE_UNOFFICIAL) {
             if (st->codec->codec_id == AV_CODEC_ID_MJPEG) {
-                p = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_NONE };
+                p = mjpeg_formats;
             } else if (st->codec->codec_id == AV_CODEC_ID_LJPEG) {
-                p = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUV420P,
-                                                 AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_BGRA, AV_PIX_FMT_NONE };
+                p =ljpeg_formats;
             }
         }
         for (; *p != AV_PIX_FMT_NONE; p++) {
@@ -94,7 +99,7 @@ void choose_sample_fmt(AVStream *st, AVCodec *codec)
 
 static char *choose_pix_fmts(OutputStream *ost)
 {
-    AVDictionaryEntry *strict_dict = av_dict_get(ost->opts, "strict", NULL, 0);
+    AVDictionaryEntry *strict_dict = av_dict_get(ost->encoder_opts, "strict", NULL, 0);
     if (strict_dict)
         // used by choose_pixel_fmt() and below
         av_opt_set(ost->st->codec, "strict", strict_dict->value, 0);
@@ -869,7 +874,7 @@ int configure_filtergraph(FilterGraph *fg)
             args[strlen(args) - 1] = '\0';
         fg->graph->resample_lavr_opts = av_strdup(args);
 
-        e = av_dict_get(ost->opts, "threads", NULL, 0);
+        e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
         if (e)
             av_opt_set(fg->graph, "threads", e->value, 0);
     }

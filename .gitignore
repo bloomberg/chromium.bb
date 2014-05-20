@@ -34,20 +34,21 @@
 /doc/config.texi
 /doc/avoptions_codec.texi
 /doc/avoptions_format.texi
+/doc/doxy/html/
+/doc/examples/avio_reading
 /doc/examples/decoding_encoding
 /doc/examples/demuxing_decoding
+/doc/examples/filter_audio
 /doc/examples/filtering_audio
 /doc/examples/filtering_video
 /doc/examples/metadata
 /doc/examples/muxing
 /doc/examples/pc-uninstalled
+/doc/examples/remuxing
 /doc/examples/resampling_audio
 /doc/examples/scaling_video
 /doc/examples/transcode_aac
 /doc/fate.txt
-/doc/doxy/html/
-/doc/examples/output
-/doc/examples/transcode_aac
 /doc/print_options
 /lcov/
 /libavcodec/*_tablegen
@@ -79,6 +80,7 @@
 /tools/qt-faststart
 /tools/trasher
 /tools/seek_print
+/tools/uncoded_frame
 /tools/zmqsend
 
 # Chromium stuff.

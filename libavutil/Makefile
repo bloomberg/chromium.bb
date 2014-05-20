@@ -19,6 +19,7 @@ HEADERS = adler32.h                                                     \
           common.h                                                      \
           cpu.h                                                         \
           crc.h                                                         \
+          downmix_info.h                                                \
           error.h                                                       \
           eval.h                                                        \
           fifo.h                                                        \
@@ -31,6 +32,7 @@ HEADERS = adler32.h                                                     \
           intreadwrite.h                                                \
           lfg.h                                                         \
           log.h                                                         \
+          macros.h                                                      \
           mathematics.h                                                 \
           md5.h                                                         \
           mem.h                                                         \
@@ -42,6 +44,7 @@ HEADERS = adler32.h                                                     \
           pixdesc.h                                                     \
           pixfmt.h                                                      \
           random_seed.h                                                 \
+          replaygain.h                                                  \
           rational.h                                                    \
           ripemd.h                                                      \
           samplefmt.h                                                   \
@@ -79,12 +82,14 @@ OBJS = adler32.o                                                        \
        cpu.o                                                            \
        crc.o                                                            \
        des.o                                                            \
+       downmix_info.o                                                   \
        error.o                                                          \
        eval.o                                                           \
        fifo.o                                                           \
        file.o                                                           \
        file_open.o                                                      \
        float_dsp.o                                                      \
+       fixed_dsp.o                                                      \
        frame.o                                                          \
        hash.o                                                           \
        hmac.o                                                           \
@@ -148,15 +153,18 @@ TESTPROGS = adler32                                                     \
             eval                                                        \
             file                                                        \
             fifo                                                        \
+            float_dsp                                                   \
             hmac                                                        \
             lfg                                                         \
             lls1                                                        \
             lls2                                                        \
+            log                                                         \
             md5                                                         \
             murmur3                                                     \
             opt                                                         \
             pca                                                         \
             parseutils                                                  \
+            pixdesc                                                     \
             random_seed                                                 \
             rational                                                    \
             ripemd                                                      \

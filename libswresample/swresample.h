@@ -166,6 +166,13 @@ struct SwrContext *swr_alloc(void);
 int swr_init(struct SwrContext *s);
 
 /**
+ * Check whether an swr context has been initialized or not.
+ *
+ * @return positive if it has been initialized, 0 if not initialized
+ */
+int swr_is_initialized(struct SwrContext *s);
+
+/**
  * Allocate SwrContext if needed and set/reset common parameters.
  *
  * This function does not require s to be allocated with swr_alloc(). On the
@@ -196,6 +203,16 @@ struct SwrContext *swr_alloc_set_opts(struct SwrContext *s,
 void swr_free(struct SwrContext **s);
 
 /**
+ * Closes the context so that swr_is_initialized() returns 0.
+ *
+ * the context can be brougt back to life by running swr_init(),
+ * swr_init() can also be used without swr_close().
+ * This function is mainly provided for simplifying the usecase
+ * where one tries to support libavresample and libswresample
+ */
+void swr_close(struct SwrContext *s);
+
+/**
  * Convert audio.
  *
  * in and in_count can be set to 0 to flush the last few samples out at the
@@ -203,7 +220,7 @@ void swr_free(struct SwrContext **s);
  *
  * If more input is provided than output space then the input will be buffered.
  * You can avoid this buffering by providing more output space than input.
- * Convertion will run directly without copying whenever possible.
+ * Conversion will run directly without copying whenever possible.
  *
  * @param s         allocated Swr context, with parameters set
  * @param out       output buffers, only the first one need be set in case of packed audio

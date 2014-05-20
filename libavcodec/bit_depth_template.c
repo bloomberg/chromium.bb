@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "mathops.h"
 #include "rnd_avg.h"
 #include "libavutil/intreadwrite.h"
 
@@ -23,7 +24,7 @@
 #define BIT_DEPTH 8
 #endif
 
-#ifdef AVCODEC_H264_HIGH_DEPTH_H
+#ifdef AVCODEC_BIT_DEPTH_TEMPLATE_C
 #   undef pixel
 #   undef pixel2
 #   undef pixel4
@@ -43,7 +44,7 @@
 #   undef av_clip_pixel
 #   undef PIXEL_SPLAT_X4
 #else
-#   define AVCODEC_H264_HIGH_DEPTH_H
+#   define AVCODEC_BIT_DEPTH_TEMPLATE_C
 #endif
 
 #if BIT_DEPTH > 8

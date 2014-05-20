@@ -221,6 +221,12 @@ static int decode_residuals(FLACContext *s, int32_t *decoded, int pred_order)
     rice_order = get_bits(&s->gb, 4);
 
     samples= s->blocksize >> rice_order;
+    if (samples << rice_order != s->blocksize) {
+        av_log(s->avctx, AV_LOG_ERROR, "invalid rice order: %i blocksize %i\n",
+               rice_order, s->blocksize);
+        return AVERROR_INVALIDDATA;
+    }
+
     if (pred_order > samples) {
         av_log(s->avctx, AV_LOG_ERROR, "invalid predictor order: %i > %i\n",
                pred_order, samples);
@@ -506,12 +512,12 @@ static int flac_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     if (buf_size > 5 && !memcmp(buf, "\177FLAC", 5)) {
-        av_log(s->avctx, AV_LOG_DEBUG, "skiping flac header packet 1\n");
+        av_log(s->avctx, AV_LOG_DEBUG, "skipping flac header packet 1\n");
         return buf_size;
     }
 
     if (buf_size > 0 && (*buf & 0x7F) == FLAC_METADATA_TYPE_VORBIS_COMMENT) {
-        av_log(s->avctx, AV_LOG_DEBUG, "skiping vorbis comment\n");
+        av_log(s->avctx, AV_LOG_DEBUG, "skipping vorbis comment\n");
         return buf_size;
     }
 

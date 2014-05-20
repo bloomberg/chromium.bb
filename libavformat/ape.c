@@ -264,7 +264,7 @@ static int ape_read_header(AVFormatContext * s)
     }
     if (ape->seektablelength / sizeof(*ape->seektable) < ape->totalframes) {
         av_log(s, AV_LOG_ERROR,
-               "Number of seek entries is less than number of frames: %zu vs. %"PRIu32"\n",
+               "Number of seek entries is less than number of frames: %"SIZE_SPECIFIER" vs. %"PRIu32"\n",
                ape->seektablelength / sizeof(*ape->seektable), ape->totalframes);
         return AVERROR_INVALIDDATA;
     }
@@ -282,18 +282,20 @@ static int ape_read_header(AVFormatContext * s)
         ape->totalsamples += ape->blocksperframe * (ape->totalframes - 1);
 
     if (ape->seektablelength > 0) {
-        ape->seektable = av_malloc(ape->seektablelength);
+        ape->seektable = av_mallocz(ape->seektablelength);
         if (!ape->seektable)
             return AVERROR(ENOMEM);
         for (i = 0; i < ape->seektablelength / sizeof(uint32_t) && !pb->eof_reached; i++)
             ape->seektable[i] = avio_rl32(pb);
         if (ape->fileversion < 3810) {
-            ape->bittable = av_malloc(ape->totalframes);
+            ape->bittable = av_mallocz(ape->totalframes);
             if (!ape->bittable)
                 return AVERROR(ENOMEM);
             for (i = 0; i < ape->totalframes && !pb->eof_reached; i++)
                 ape->bittable[i] = avio_r8(pb);
         }
+        if (pb->eof_reached)
+            av_log(s, AV_LOG_WARNING, "File truncated\n");
     }
 
     ape->frames[0].pos     = ape->firstframe;
@@ -415,8 +417,10 @@ static int ape_read_packet(AVFormatContext * s, AVPacket * pkt)
     AV_WL32(pkt->data    , nblocks);
     AV_WL32(pkt->data + 4, ape->frames[ape->currentframe].skip);
     ret = avio_read(s->pb, pkt->data + extra_size, ape->frames[ape->currentframe].size);
-    if (ret < 0)
+    if (ret < 0) {
+        av_free_packet(pkt);
         return ret;
+    }
 
     pkt->pts = ape->frames[ape->currentframe].pts;
     pkt->stream_index = 0;

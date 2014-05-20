@@ -432,6 +432,7 @@ static int shorten_decode_frame(AVCodecContext *avctx, void *data,
             av_log(avctx, AV_LOG_ERROR, "error allocating bitstream buffer\n");
             return AVERROR(ENOMEM);
         }
+        memset(tmp_ptr, 0, s->allocated_bitstream_size);
         s->bitstream = tmp_ptr;
     }
 
@@ -504,9 +505,16 @@ static int shorten_decode_frame(AVCodecContext *avctx, void *data,
                 while (len--)
                     get_ur_golomb_shorten(&s->gb, VERBATIM_BYTE_SIZE);
                 break;
-            case FN_BITSHIFT:
-                s->bitshift = get_ur_golomb_shorten(&s->gb, BITSHIFTSIZE);
+            case FN_BITSHIFT: {
+                unsigned bitshift = get_ur_golomb_shorten(&s->gb, BITSHIFTSIZE);
+                if (bitshift > 31) {
+                    av_log(avctx, AV_LOG_ERROR, "bitshift %d is invalid\n",
+                           bitshift);
+                    return AVERROR_PATCHWELCOME;
+                }
+                s->bitshift = bitshift;
                 break;
+            }
             case FN_BLOCKSIZE: {
                 unsigned blocksize = get_uint(s, av_log2(s->blocksize));
                 if (blocksize > s->blocksize) {

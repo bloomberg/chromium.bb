@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavformat/avformat.h"
@@ -48,6 +49,7 @@ extern AVFormatContext *avformat_opts;
 extern struct SwsContext *sws_opts;
 extern AVDictionary *swr_opts;
 extern AVDictionary *format_opts, *codec_opts, *resample_opts;
+extern int hide_banner;
 
 /**
  * Register a program-specific cleanup routine.
@@ -57,7 +59,7 @@ void register_exit(void (*cb)(int ret));
 /**
  * Wraps exit with a program-specific cleanup routine.
  */
-void exit_program(int ret);
+void exit_program(int ret) av_noreturn;
 
 /**
  * Initialize the cmdutils option system, in particular

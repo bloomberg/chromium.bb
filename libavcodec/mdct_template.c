@@ -31,14 +31,14 @@
  * MDCT/IMDCT transforms.
  */
 
-#if CONFIG_FFT_FLOAT
+#if FFT_FLOAT
 #   define RSCALE(x) (x)
 #else
-#if CONFIG_FFT_FIXED_32
+#if FFT_FIXED_32
 #   define RSCALE(x) (((x) + 32) >> 6)
-#else /* CONFIG_FFT_FIXED_32 */
+#else /* FFT_FIXED_32 */
 #   define RSCALE(x) ((x) >> 1)
-#endif /* CONFIG_FFT_FIXED_32 */
+#endif /* FFT_FIXED_32 */
 #endif
 
 /**
@@ -60,7 +60,7 @@ av_cold int ff_mdct_init(FFTContext *s, int nbits, int inverse, double scale)
     if (ff_fft_init(s, s->mdct_bits - 2, inverse) < 0)
         goto fail;
 
-    s->tcos = av_malloc(n/2 * sizeof(FFTSample));
+    s->tcos = av_malloc_array(n/2, sizeof(FFTSample));
     if (!s->tcos)
         goto fail;
 

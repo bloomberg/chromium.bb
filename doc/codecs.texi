@@ -285,6 +285,11 @@ detect bitstream specification deviations
 detect improper bitstream length
 @item explode
 abort decoding on minor error detection
+@item ignore_err
+ignore decoding errors, and continue decoding.
+This is useful if you want to analyze the content of a video and thus want
+everything to be decoded no matter what. This option will not result in a video
+that is pleasing to watch in case of errors.
 @item careful
 consider things that violate the spec and have not been seen in the wild as errors
 @item compliant
@@ -424,6 +429,8 @@ Possible values:
 iterative motion vector (MV) search (slow)
 @item deblock
 use strong deblock filter for damaged MBs
+@item favor_inter
+favor predicting from the previous frame instead of the current
 @end table
 
 @item bits_per_coded_sample @var{integer}
@@ -877,6 +884,9 @@ Set frame skip factor.
 
 @item skip_exp @var{integer} (@emph{encoding,video})
 Set frame skip exponent.
+Negative values behave identical to the corresponding positive ones, except
+that the score is normalized.
+Positive values exist primarly for compatibility reasons and are not so useful.
 
 @item skipcmp @var{integer} (@emph{encoding,video})
 Set frame skip compare function.
@@ -1089,5 +1099,9 @@ instead of alpha. Default is 0.
 
 @c man end CODEC OPTIONS
 
+@ifclear config-writeonly
 @include decoders.texi
+@end ifclear
+@ifclear config-readonly
 @include encoders.texi
+@end ifclear

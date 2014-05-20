@@ -25,7 +25,8 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "dsputil_x86.h"
+#include "fpel.h"
+#include "inline_asm.h"
 
 #if HAVE_MMX_INLINE
 
