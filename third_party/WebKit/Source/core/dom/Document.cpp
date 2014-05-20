@@ -42,6 +42,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/CSSFontSelector.h"
@@ -475,6 +476,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
+    , m_animationClock(AnimationClock::create())
     , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
