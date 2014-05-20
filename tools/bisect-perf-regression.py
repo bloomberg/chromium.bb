@@ -2094,7 +2094,10 @@ class BisectPerformanceMetrics(object):
       }
       return (fake_results, success_code)
 
-    args = shlex.split(command_to_run)
+    # For Windows platform set posix=False, to parse windows paths correctly.
+    # On Windows, path separators '\' or '\\' are replace by '' when posix=True,
+    # refer to http://bugs.python.org/issue1724822. By default posix=True.
+    args = shlex.split(command_to_run, posix=not IsWindows())
 
     if not self._GenerateProfileIfNecessary(args):
       err_text = 'Failed to generate profile for performance test.'
