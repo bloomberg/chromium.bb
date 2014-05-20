@@ -271,6 +271,7 @@ deadlock:net::SSLClientSocketNSS::Core::DoHandshakeLoop
 # http://crbug.com/374135
 race:media::AlsaWrapper::PcmWritei
 deadlock:media::AudioOutputDispatcherImpl::StopStream
+deadlock:media::AudioStreamHandler::AudioStreamContainer::OnMoreData
 
 # http://crbug.com/374151
 deadlock:media::FakeAudioConsumer::Worker::DoRead
