@@ -269,6 +269,7 @@ var availableTests = [
         assertEq({ "Connectable": true,
                    "ConnectionState": "Connected",
                    "GUID": "stub_wifi1",
+                   "MacAddress": "00:11:22:AA:BB:CC",
                    "IPConfigs": [{
                      "Gateway": "0.0.0.1",
                      "IPAddress": "0.0.0.0",

@@ -131,10 +131,9 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
   void OnPolicyAppliedToNetwork(const std::string& service_path);
 
-  // Helper method to append "IPConfigs" property to |properties| by extracting
-  // them from the associated DeviceState.
-  void GetIPConfigs(const std::string& service_path,
-                    base::DictionaryValue* properties);
+  // Helper method to append associated Device properties to |properties|.
+  void GetDeviceProperties(const std::string& service_path,
+                           base::DictionaryValue* properties);
 
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;

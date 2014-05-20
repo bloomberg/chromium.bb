@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/shill_property_util.h"
@@ -290,6 +291,7 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
   onc_object_->SetStringWithoutPathExpansion(::onc::network_config::kName,
                                              name);
 
+  // Limit ONC state to "NotConnected", "Connected", or "Connecting".
   std::string state;
   if (shill_dictionary_->GetStringWithoutPathExpansion(shill::kStateProperty,
                                                        &state)) {
@@ -303,8 +305,19 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
         ::onc::network_config::kConnectionState, onc_state);
   }
 
-  // Shill's Service has an IPConfig property (note the singular, and not a
-  // IPConfigs property). However, we require the caller of the translation to
+  // Use a human-readable aa:bb format for any hardware MAC address. Note:
+  // this property is provided by the caller but is not part of the Shill
+  // Service properties (it is copied from the Device properties).
+  std::string address;
+  if (shill_dictionary_->GetStringWithoutPathExpansion(shill::kAddressProperty,
+                                                       &address)) {
+    onc_object_->SetStringWithoutPathExpansion(
+        ::onc::network_config::kMacAddress,
+        network_util::FormattedMacAddress(address));
+  }
+
+  // Shill's Service has an IPConfig property (note the singular), not an
+  // IPConfigs property. However, we require the caller of the translation to
   // patch the Shill dictionary before passing it to the translator.
   const base::ListValue* shill_ipconfigs = NULL;
   if (shill_dictionary_->GetListWithoutPathExpansion(shill::kIPConfigsProperty,

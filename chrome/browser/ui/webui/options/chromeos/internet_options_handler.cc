@@ -1524,8 +1524,11 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   // Device hardware address
   const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
       GetDeviceState(network->device_path());
-  if (device)
-    dictionary.SetString(kTagHardwareAddress, device->GetFormattedMacAddress());
+  if (device) {
+    dictionary.SetString(
+        kTagHardwareAddress,
+        network_util::FormattedMacAddress(device->mac_address()));
+  }
 
   // IP config
   scoped_ptr<base::DictionaryValue> ipconfig_dhcp(new base::DictionaryValue);

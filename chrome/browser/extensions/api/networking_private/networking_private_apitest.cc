@@ -244,8 +244,8 @@ class ExtensionNetworkingPrivateApiTest
     ipconfig.SetStringWithoutPathExpansion(shill::kAddressProperty, "0.0.0.0");
     ipconfig.SetStringWithoutPathExpansion(shill::kGatewayProperty, "0.0.0.1");
     ipconfig.SetIntegerWithoutPathExpansion(shill::kPrefixlenProperty, 0);
-    ipconfig.SetStringWithoutPathExpansion(
-        shill::kMethodProperty, shill::kTypeIPv4);
+    ipconfig.SetStringWithoutPathExpansion(shill::kMethodProperty,
+                                           shill::kTypeIPv4);
     ip_config_test->AddIPConfig(kIPConfigPath, ipconfig);
 
     // Add Devices
@@ -255,6 +255,9 @@ class ExtensionNetworkingPrivateApiTest
     wifi_ip_configs.AppendString(kIPConfigPath);
     device_test->SetDeviceProperty(
         kWifiDevicePath, shill::kIPConfigsProperty, wifi_ip_configs);
+    device_test->SetDeviceProperty(kWifiDevicePath,
+                                   shill::kAddressProperty,
+                                   base::StringValue("001122aabbcc"));
     device_test->AddDevice(
         kCellularDevicePath, shill::kTypeCellular, "stub_cellular_device1");
 

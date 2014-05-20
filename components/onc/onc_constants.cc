@@ -37,6 +37,7 @@ const char kCellular[] = "Cellular";
 const char kEthernet[] = "Ethernet";
 const char kGUID[] = "GUID";
 const char kIPConfigs[] = "IPConfigs";
+const char kMacAddress[] = "MacAddress";
 const char kName[] = "Name";
 const char kNameServers[] = "NameServers";
 const char kProxySettings[] = "ProxySettings";

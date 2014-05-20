@@ -5,6 +5,7 @@
 #include "chromeos/network/network_util.h"
 
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_state.h"
@@ -97,6 +98,18 @@ int32 NetmaskToPrefixLength(const std::string& netmask) {
   if (count < 4)
     return -1;
   return prefix_length;
+}
+
+std::string FormattedMacAddress(const std::string& shill_mac_address) {
+  if (shill_mac_address.size() % 2 != 0)
+    return shill_mac_address;
+  std::string result;
+  for (size_t i = 0; i < shill_mac_address.size(); ++i) {
+    if ((i != 0) && (i % 2 == 0))
+      result.push_back(':');
+    result.push_back(base::ToUpperASCII(shill_mac_address[i]));
+  }
+  return result;
 }
 
 bool ParseCellularScanResults(const base::ListValue& list,

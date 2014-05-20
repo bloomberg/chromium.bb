@@ -162,8 +162,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
 
   scoped_ptr<base::DictionaryValue> properties_copy(
       shill_properties.DeepCopy());
-  // Add the IPConfigs to the dictionary before the ONC translation.
-  GetIPConfigs(service_path, properties_copy.get());
+  // Add associated Device properties before the ONC translation.
+  GetDeviceProperties(service_path, properties_copy.get());
 
   scoped_ptr<base::DictionaryValue> active_settings(
       onc::TranslateShillServiceToONCPart(
@@ -223,8 +223,8 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
     const base::DictionaryValue& shill_properties) {
   scoped_ptr<base::DictionaryValue> properties_copy(
       shill_properties.DeepCopy());
-  // Add the IPConfigs to the dictionary before the ONC translation.
-  GetIPConfigs(service_path, properties_copy.get());
+  // Add associated Device properties before the ONC translation.
+  GetDeviceProperties(service_path, properties_copy.get());
 
   scoped_ptr<base::DictionaryValue> onc_network(
       onc::TranslateShillServiceToONCPart(
@@ -613,7 +613,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
       NetworkPolicyObserver, observers_, PolicyApplied(service_path));
 }
 
-void ManagedNetworkConfigurationHandlerImpl::GetIPConfigs(
+void ManagedNetworkConfigurationHandlerImpl::GetDeviceProperties(
     const std::string& service_path,
     base::DictionaryValue* properties) {
   std::string connection_state;
@@ -631,9 +631,16 @@ void ManagedNetworkConfigurationHandlerImpl::GetIPConfigs(
   const DeviceState* device_state =
       network_state_handler_->GetDeviceState(device);
   if (!device_state) {
-    NET_LOG_ERROR("GetIPConfigs: no device: " + device, service_path);
+    NET_LOG_ERROR("GetDeviceProperties: no device: " + device, service_path);
     return;
   }
+
+  // Get the hardware MAC address from the DeviceState.
+  if (!device_state->mac_address().empty()) {
+    properties->SetStringWithoutPathExpansion(
+        shill::kAddressProperty, device_state->mac_address());
+  }
+
   // Convert IPConfig dictionary to a ListValue.
   base::ListValue* ip_configs = new base::ListValue;
   for (base::DictionaryValue::Iterator iter(device_state->ip_configs());

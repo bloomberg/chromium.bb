@@ -282,6 +282,7 @@ const OncFieldSignature network_with_state_fields[] = {
     { ::onc::network_config::kConnectionState, &kStringSignature},
     { ::onc::network_config::kConnectable, &kBoolSignature},
     { ::onc::network_config::kErrorState, &kStringSignature},
+    { ::onc::network_config::kMacAddress, &kStringSignature},
     { ::onc::network_config::kWiFi, &kWiFiWithStateSignature},
     {NULL}};
 

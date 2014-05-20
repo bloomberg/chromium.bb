@@ -81,6 +81,10 @@ CHROMEOS_EXPORT std::string PrefixLengthToNetmask(int32 prefix_length);
 // e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
 CHROMEOS_EXPORT int32 NetmaskToPrefixLength(const std::string& netmask);
 
+// Returns |shill_mac_address| in aa:bb format.
+CHROMEOS_EXPORT std::string FormattedMacAddress(
+    const std::string& shill_mac_address);
+
 // Parses |list|, which contains DictionaryValues and returns a vector of
 // CellularScanResult in |scan_results|. Returns false if parsing fails,
 // in which case the contents of |scan_results| will be undefined.

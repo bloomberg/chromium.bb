@@ -260,7 +260,7 @@ std::string NetworkStateHandler::FormattedHardwareAddressForType(
     device = GetDeviceStateByType(type);
   if (!device)
     return std::string();
-  return device->GetFormattedMacAddress();
+  return network_util::FormattedMacAddress(device->mac_address());
 }
 
 void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
