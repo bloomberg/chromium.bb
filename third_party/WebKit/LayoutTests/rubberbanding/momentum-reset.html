@@ -8,13 +8,13 @@
     if (window.internals) {
         document.getElementById('info').style.visibility = 'hidden';
         internals.settings.setMockScrollbarsEnabled(false);
-		
+
         eventSender.mouseMoveTo(10, 10);
         eventSender.mouseDragBegin();
         eventSender.mouseDragEnd();
 
         // Simulate a momentum scroll following the end of a normal scroll.
-        eventSender.mouseMomentumBegin();
+        eventSender.mouseMomentumBegin2(0, 0, false, true);
         eventSender.mouseMomentumScrollBy(0, 250, false, true);
         eventSender.mouseMomentumEnd();
 
