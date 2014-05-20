@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentTimeline_h
-#define DocumentTimeline_h
+#ifndef AnimationTimeline_h
+#define AnimationTimeline_h
 
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationPlayer.h"
@@ -46,13 +46,13 @@ namespace WebCore {
 class Document;
 class TimedItem;
 
-// DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
-class DocumentTimeline : public RefCountedWillBeGarbageCollectedFinalized<DocumentTimeline> {
+// AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
+class AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline> {
 public:
     class PlatformTiming : public NoBaseWillBeGarbageCollectedFinalized<PlatformTiming> {
 
     public:
-        // Calls DocumentTimeline's wake() method after duration seconds.
+        // Calls AnimationTimeline's wake() method after duration seconds.
         virtual void wakeAfter(double duration) = 0;
         virtual void cancelWake() = 0;
         virtual void serviceOnNextFrame() = 0;
@@ -60,8 +60,8 @@ public:
         virtual void trace(Visitor*) { }
     };
 
-    static PassRefPtrWillBeRawPtr<DocumentTimeline> create(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming> = nullptr);
-    ~DocumentTimeline();
+    static PassRefPtrWillBeRawPtr<AnimationTimeline> create(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming> = nullptr);
+    ~AnimationTimeline();
 
     void serviceAnimations(TimingUpdateReason);
 
@@ -99,7 +99,7 @@ public:
     void trace(Visitor*);
 
 protected:
-    DocumentTimeline(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming>);
+    AnimationTimeline(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming>);
 
 private:
     RawPtrWillBeMember<Document> m_document;
@@ -113,11 +113,11 @@ private:
 
     OwnPtrWillBeMember<PlatformTiming> m_timing;
 
-    class DocumentTimelineTiming FINAL : public PlatformTiming {
+    class AnimationTimelineTiming FINAL : public PlatformTiming {
     public:
-        DocumentTimelineTiming(DocumentTimeline* documentTimeline)
-            : m_timeline(documentTimeline)
-            , m_timer(this, &DocumentTimelineTiming::timerFired)
+        AnimationTimelineTiming(AnimationTimeline* timeline)
+            : m_timeline(timeline)
+            , m_timer(this, &AnimationTimelineTiming::timerFired)
         {
             ASSERT(m_timeline);
         }
@@ -126,16 +126,16 @@ private:
         virtual void cancelWake() OVERRIDE;
         virtual void serviceOnNextFrame() OVERRIDE;
 
-        void timerFired(Timer<DocumentTimelineTiming>*) { m_timeline->wake(); }
+        void timerFired(Timer<AnimationTimelineTiming>*) { m_timeline->wake(); }
 
         virtual void trace(Visitor*) OVERRIDE;
 
     private:
-        RawPtrWillBeMember<DocumentTimeline> m_timeline;
-        Timer<DocumentTimelineTiming> m_timer;
+        RawPtrWillBeMember<AnimationTimeline> m_timeline;
+        Timer<AnimationTimelineTiming> m_timer;
     };
 
-    friend class AnimationDocumentTimelineTest;
+    friend class AnimationAnimationTimelineTest;
 };
 
 } // namespace

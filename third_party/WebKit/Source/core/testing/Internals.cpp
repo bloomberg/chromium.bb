@@ -44,7 +44,7 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8ThrowException.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"

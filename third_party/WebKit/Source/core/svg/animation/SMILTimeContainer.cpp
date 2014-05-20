@@ -27,7 +27,7 @@
 #include "core/svg/animation/SMILTimeContainer.h"
 
 #include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/svg/SVGSVGElement.h"
@@ -258,10 +258,10 @@ void SMILTimeContainer::scheduleAnimationFrame(SMILTime fireTime)
     ASSERT(!m_wakeupTimer.isActive());
 
     SMILTime delay = fireTime - elapsed();
-    if (delay.value() < DocumentTimeline::s_minimumDelay) {
+    if (delay.value() < AnimationTimeline::s_minimumDelay) {
         serviceOnNextFrame();
     } else {
-        scheduleWakeUp(delay.value() - DocumentTimeline::s_minimumDelay, FutureAnimationFrame);
+        scheduleWakeUp(delay.value() - AnimationTimeline::s_minimumDelay, FutureAnimationFrame);
     }
 }
 

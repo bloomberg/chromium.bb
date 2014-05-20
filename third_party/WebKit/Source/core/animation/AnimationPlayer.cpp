@@ -32,7 +32,7 @@
 #include "core/animation/AnimationPlayer.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
 
@@ -48,12 +48,12 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(DocumentTimeline& timeline, TimedItem* content)
+PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(AnimationTimeline& timeline, TimedItem* content)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayer(timeline, content));
 }
 
-AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
+AnimationPlayer::AnimationPlayer(AnimationTimeline& timeline, TimedItem* content)
     : m_playbackRate(1)
     , m_startTime(nullValue())
     , m_holdTime(nullValue())

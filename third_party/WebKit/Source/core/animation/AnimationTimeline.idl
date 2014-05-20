@@ -4,9 +4,8 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-    ImplementedAs=DocumentTimeline,
     WillBeGarbageCollected,
-] interface Timeline {
+] interface AnimationTimeline {
     readonly attribute double? currentTime;
     AnimationPlayer play(TimedItem source);
 };

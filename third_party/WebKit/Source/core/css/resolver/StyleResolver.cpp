@@ -36,7 +36,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"

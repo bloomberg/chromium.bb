@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationClock.h"
@@ -42,26 +42,26 @@ namespace WebCore {
 
 // This value represents 1 frame at 30Hz plus a little bit of wiggle room.
 // TODO: Plumb a nominal framerate through and derive this value from that.
-const double DocumentTimeline::s_minimumDelay = 0.04;
+const double AnimationTimeline::s_minimumDelay = 0.04;
 
 
-PassRefPtrWillBeRawPtr<DocumentTimeline> DocumentTimeline::create(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
+PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
 {
-    return adoptRefWillBeNoop(new DocumentTimeline(document, timing));
+    return adoptRefWillBeNoop(new AnimationTimeline(document, timing));
 }
 
-DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
+AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
 {
     if (!timing)
-        m_timing = adoptPtrWillBeNoop(new DocumentTimelineTiming(this));
+        m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
     else
         m_timing = timing;
 
     ASSERT(document);
 }
 
-DocumentTimeline::~DocumentTimeline()
+AnimationTimeline::~AnimationTimeline()
 {
 #if !ENABLE(OILPAN)
     for (WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> >::iterator it = m_players.begin(); it != m_players.end(); ++it)
@@ -69,7 +69,7 @@ DocumentTimeline::~DocumentTimeline()
 #endif
 }
 
-AnimationPlayer* DocumentTimeline::createAnimationPlayer(TimedItem* child)
+AnimationPlayer* AnimationTimeline::createAnimationPlayer(TimedItem* child)
 {
     RefPtrWillBeRawPtr<AnimationPlayer> player = AnimationPlayer::create(*this, child);
     AnimationPlayer* result = player.get();
@@ -78,7 +78,7 @@ AnimationPlayer* DocumentTimeline::createAnimationPlayer(TimedItem* child)
     return result;
 }
 
-AnimationPlayer* DocumentTimeline::play(TimedItem* child)
+AnimationPlayer* AnimationTimeline::play(TimedItem* child)
 {
     if (!m_document)
         return 0;
@@ -88,14 +88,14 @@ AnimationPlayer* DocumentTimeline::play(TimedItem* child)
     return player;
 }
 
-void DocumentTimeline::wake()
+void AnimationTimeline::wake()
 {
     m_timing->serviceOnNextFrame();
 }
 
-void DocumentTimeline::serviceAnimations(TimingUpdateReason reason)
+void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 {
-    TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
+    TRACE_EVENT0("webkit", "AnimationTimeline::serviceAnimations");
 
     m_timing->cancelWake();
 
@@ -122,34 +122,34 @@ void DocumentTimeline::serviceAnimations(TimingUpdateReason reason)
     ASSERT(!hasOutdatedAnimationPlayer());
 }
 
-void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
+void AnimationTimeline::AnimationTimelineTiming::wakeAfter(double duration)
 {
     m_timer.startOneShot(duration, FROM_HERE);
 }
 
-void DocumentTimeline::DocumentTimelineTiming::cancelWake()
+void AnimationTimeline::AnimationTimelineTiming::cancelWake()
 {
     m_timer.stop();
 }
 
-void DocumentTimeline::DocumentTimelineTiming::serviceOnNextFrame()
+void AnimationTimeline::AnimationTimelineTiming::serviceOnNextFrame()
 {
     if (m_timeline->m_document && m_timeline->m_document->view())
         m_timeline->m_document->view()->scheduleAnimation();
 }
 
-void DocumentTimeline::DocumentTimelineTiming::trace(Visitor* visitor)
+void AnimationTimeline::AnimationTimelineTiming::trace(Visitor* visitor)
 {
     visitor->trace(m_timeline);
-    DocumentTimeline::PlatformTiming::trace(visitor);
+    AnimationTimeline::PlatformTiming::trace(visitor);
 }
 
-double DocumentTimeline::currentTime(bool& isNull)
+double AnimationTimeline::currentTime(bool& isNull)
 {
     return currentTimeInternal(isNull) * 1000;
 }
 
-double DocumentTimeline::currentTimeInternal(bool& isNull)
+double AnimationTimeline::currentTimeInternal(bool& isNull)
 {
     if (!m_document) {
         isNull = true;
@@ -160,31 +160,31 @@ double DocumentTimeline::currentTimeInternal(bool& isNull)
     return result;
 }
 
-double DocumentTimeline::currentTime()
+double AnimationTimeline::currentTime()
 {
     return currentTimeInternal() * 1000;
 }
 
-double DocumentTimeline::currentTimeInternal()
+double AnimationTimeline::currentTimeInternal()
 {
     bool isNull;
     return currentTimeInternal(isNull);
 }
 
-double DocumentTimeline::effectiveTime()
+double AnimationTimeline::effectiveTime()
 {
     double time = currentTimeInternal();
     return std::isnan(time) ? 0 : time;
 }
 
-void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
+void AnimationTimeline::pauseAnimationsForTesting(double pauseTime)
 {
     for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
         (*it)->pauseForTesting(pauseTime);
     serviceAnimations(TimingUpdateOnDemand);
 }
 
-bool DocumentTimeline::hasOutdatedAnimationPlayer() const
+bool AnimationTimeline::hasOutdatedAnimationPlayer() const
 {
     for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
         if ((*it)->outdated())
@@ -193,7 +193,7 @@ bool DocumentTimeline::hasOutdatedAnimationPlayer() const
     return false;
 }
 
-void DocumentTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
+void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 {
     ASSERT(player->outdated());
     m_playersNeedingUpdate.add(player);
@@ -201,7 +201,7 @@ void DocumentTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
         m_timing->serviceOnNextFrame();
 }
 
-size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
+size_t AnimationTimeline::numberOfActiveAnimationsForTesting() const
 {
     // Includes all players whose directly associated timed items
     // are current or in effect.
@@ -215,14 +215,14 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 }
 
 #if !ENABLE(OILPAN)
-void DocumentTimeline::detachFromDocument()
+void AnimationTimeline::detachFromDocument()
 {
-    // FIXME: DocumentTimeline should keep Document alive.
+    // FIXME: AnimationTimeline should keep Document alive.
     m_document = nullptr;
 }
 #endif
 
-void DocumentTimeline::trace(Visitor* visitor)
+void AnimationTimeline::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
     visitor->trace(m_timing);

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class DocumentTimeline;
+class AnimationTimeline;
 class ExceptionState;
 
 class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>, public EventTargetWithInlineData {
@@ -45,7 +45,7 @@ class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<
 public:
 
     ~AnimationPlayer();
-    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, TimedItem*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);
@@ -81,8 +81,8 @@ public:
 
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
-    const DocumentTimeline* timeline() const { return m_timeline; }
-    DocumentTimeline* timeline() { return m_timeline; }
+    const AnimationTimeline* timeline() const { return m_timeline; }
+    AnimationTimeline* timeline() { return m_timeline; }
 
 #if !ENABLE(OILPAN)
     void timelineDestroyed() { m_timeline = nullptr; }
@@ -150,7 +150,7 @@ public:
     void trace(Visitor*);
 
 private:
-    AnimationPlayer(DocumentTimeline&, TimedItem*);
+    AnimationPlayer(AnimationTimeline&, TimedItem*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
     double currentTimeWithoutLag() const;
@@ -166,7 +166,7 @@ private:
     SortInfo m_sortInfo;
 
     RefPtrWillBeMember<TimedItem> m_content;
-    RawPtrWillBeMember<DocumentTimeline> m_timeline;
+    RawPtrWillBeMember<AnimationTimeline> m_timeline;
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;
     bool m_held;

@@ -34,7 +34,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/weborigin/KURL.h"
@@ -56,7 +56,7 @@ protected:
     {
         document = Document::create();
         document->animationClock().resetTimeForTesting();
-        timeline = DocumentTimeline::create(document.get());
+        timeline = AnimationTimeline::create(document.get());
         player = timeline->createAnimationPlayer(0);
         player->setStartTimeInternal(0);
         player->setSource(makeAnimation().get());
@@ -83,7 +83,7 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtrWillBePersistent<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<AnimationTimeline> timeline;
     RefPtrWillBePersistent<AnimationPlayer> player;
     TrackExceptionState exceptionState;
 };

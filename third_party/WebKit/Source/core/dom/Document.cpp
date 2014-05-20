@@ -43,8 +43,8 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/AnimationClock.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentAnimations.h"
-#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
@@ -476,7 +476,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
     , m_animationClock(AnimationClock::create())
-    , m_timeline(DocumentTimeline::create(this))
+    , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
     , m_hasViewportUnits(false)

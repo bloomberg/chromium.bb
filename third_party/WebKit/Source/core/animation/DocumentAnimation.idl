@@ -5,5 +5,5 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
 ] partial interface Document {
-    readonly attribute Timeline timeline;
+    readonly attribute AnimationTimeline timeline;
 };

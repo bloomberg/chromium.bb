@@ -33,8 +33,8 @@
 
 #include "StylePropertyShorthand.h"
 #include "core/animation/ActiveAnimations.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
-#include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSPropertyEquality.h"

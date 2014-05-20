@@ -33,7 +33,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Element.h"

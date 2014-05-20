@@ -32,7 +32,7 @@
 #include "core/animation/CompositorPendingAnimations.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"

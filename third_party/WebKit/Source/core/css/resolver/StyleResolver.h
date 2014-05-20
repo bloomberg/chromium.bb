@@ -55,7 +55,7 @@ class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
 class Document;
-class DocumentTimeline;
+class AnimationTimeline;
 class Element;
 class ElementRuleCollector;
 class KeyframeList;

@@ -8,7 +8,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimatableDouble.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include <gtest/gtest.h>
 
@@ -20,7 +20,7 @@ protected:
     {
         document = Document::create();
         document->animationClock().resetTimeForTesting();
-        timeline = DocumentTimeline::create(document.get());
+        timeline = AnimationTimeline::create(document.get());
         element = document->createElement("foo", ASSERT_NO_EXCEPTION);
     }
 
@@ -76,7 +76,7 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtrWillBePersistent<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<AnimationTimeline> timeline;
     RefPtrWillBePersistent<Element> element;
 };
 

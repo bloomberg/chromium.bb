@@ -90,7 +90,7 @@ class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
 class DocumentState;
-class DocumentTimeline;
+class AnimationTimeline;
 class DocumentType;
 class Element;
 class ElementDataCache;
@@ -1029,7 +1029,7 @@ public:
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
     AnimationClock& animationClock() { return *m_animationClock; }
-    DocumentTimeline& timeline() const { return *m_timeline; }
+    AnimationTimeline& timeline() const { return *m_timeline; }
     CompositorPendingAnimations& compositorPendingAnimations() { return m_compositorPendingAnimations; }
 
     void addToTopLayer(Element*, const Element* before = 0);
@@ -1375,7 +1375,7 @@ private:
     LocaleIdentifierToLocaleMap m_localeCache;
 
     OwnPtr<AnimationClock> m_animationClock;
-    RefPtrWillBeMember<DocumentTimeline> m_timeline;
+    RefPtrWillBeMember<AnimationTimeline> m_timeline;
     CompositorPendingAnimations m_compositorPendingAnimations;
 
     RefPtrWillBeMember<Document> m_templateDocument;

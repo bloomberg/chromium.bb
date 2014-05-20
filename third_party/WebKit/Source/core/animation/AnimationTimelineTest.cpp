@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
@@ -45,7 +45,7 @@
 
 namespace WebCore {
 
-class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
+class MockPlatformTiming : public AnimationTimeline::PlatformTiming {
 public:
 
     MOCK_METHOD1(wakeAfter, void(double));
@@ -53,7 +53,7 @@ public:
     MOCK_METHOD0(serviceOnNextFrame, void());
 
     /**
-     * DocumentTimelines should do one of the following things after servicing animations:
+     * AnimationTimelines should do one of the following things after servicing animations:
      *  - cancel the timer and not request to be woken again (expectNoMoreActions)
      *  - cancel the timer and request to be woken on the next frame (expectNextFrameAction)
      *  - cancel the timer and request to be woken at some point in the future (expectDelayedAction)
@@ -80,11 +80,11 @@ public:
 
     void trace(Visitor* visitor)
     {
-        DocumentTimeline::PlatformTiming::trace(visitor);
+        AnimationTimeline::PlatformTiming::trace(visitor);
     }
 };
 
-class AnimationDocumentTimelineTest : public ::testing::Test {
+class AnimationAnimationTimelineTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -92,7 +92,7 @@ protected:
         document->animationClock().resetTimeForTesting();
         element = Element::create(nullQName() , document.get());
         platformTiming = new MockPlatformTiming;
-        timeline = DocumentTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
+        timeline = AnimationTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
@@ -111,7 +111,7 @@ protected:
 
     RefPtr<Document> document;
     RefPtr<Element> element;
-    RefPtrWillBePersistent<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<AnimationTimeline> timeline;
     Timing timing;
     MockPlatformTiming* platformTiming;
 
@@ -122,16 +122,16 @@ protected:
 
     double minimumDelay()
     {
-        return DocumentTimeline::s_minimumDelay;
+        return AnimationTimeline::s_minimumDelay;
     }
 };
 
-TEST_F(AnimationDocumentTimelineTest, HasStarted)
+TEST_F(AnimationAnimationTimelineTest, HasStarted)
 {
-    timeline = DocumentTimeline::create(document.get());
+    timeline = AnimationTimeline::create(document.get());
 }
 
-TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
+TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 {
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     RefPtrWillBeRawPtr<Animation> anim = Animation::create(element.get(), effect, timing);
@@ -148,7 +148,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
     EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
 
-TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
+TEST_F(AnimationAnimationTimelineTest, EmptyForwardsKeyframeAnimation)
 {
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     timing.fillMode = Timing::FillModeForwards;
@@ -166,9 +166,9 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
     EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
 
-TEST_F(AnimationDocumentTimelineTest, ZeroTime)
+TEST_F(AnimationAnimationTimelineTest, ZeroTime)
 {
-    timeline = DocumentTimeline::create(document.get());
+    timeline = AnimationTimeline::create(document.get());
     bool isNull;
 
     document->animationClock().updateTime(100);
@@ -182,7 +182,7 @@ TEST_F(AnimationDocumentTimelineTest, ZeroTime)
     EXPECT_FALSE(isNull);
 }
 
-TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
+TEST_F(AnimationAnimationTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
     timing.fillMode = Timing::FillModeForwards;
@@ -196,7 +196,7 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
     EXPECT_FLOAT_EQ(seekTime, player2->currentTimeInternal());
 }
 
-TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
+TEST_F(AnimationAnimationTimelineTest, NumberOfActiveAnimations)
 {
     Timing timingForwardFill;
     timingForwardFill.iterationDuration = 2;
@@ -245,7 +245,7 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     EXPECT_EQ(0U, timeline->numberOfActiveAnimationsForTesting());
 }
 
-TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
+TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)
 {
     timing.iterationDuration = 2;
     timing.startDelay = 5;
@@ -268,7 +268,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
     updateClockAndService(4.98);
 }
 
-TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
+TEST_F(AnimationAnimationTimelineTest, PlayAfterDocumentDeref)
 {
     timing.iterationDuration = 2;
     timing.startDelay = 5;
@@ -282,7 +282,7 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     timeline->play(anim.get());
 }
 
-TEST_F(AnimationDocumentTimelineTest, UseAnimationPlayerAfterTimelineDeref)
+TEST_F(AnimationAnimationTimelineTest, UseAnimationPlayerAfterTimelineDeref)
 {
     RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(0);
     timeline.clear();

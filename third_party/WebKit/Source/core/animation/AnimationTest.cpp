@@ -9,7 +9,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationHelpers.h"
 #include "core/animation/AnimationTestHelper.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/TimedItemTiming.h"
 #include "core/animation/Timing.h"

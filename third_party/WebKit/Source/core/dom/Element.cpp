@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/animation/DocumentTimeline.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSStyleSheet.h"
