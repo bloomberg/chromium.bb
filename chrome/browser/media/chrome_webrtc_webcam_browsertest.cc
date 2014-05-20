@@ -76,6 +76,14 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     return actual_stream_size;
   }
 
+  bool IsOnQtKit() const {
+#if defined(OS_MACOSX)
+    return GetParam() && std::string(GetParam()) == switches::kForceQTKit;
+#else
+    return false;
+#endif
+  }
+
   int get_user_media_call_count_;
 };
 
@@ -92,14 +100,23 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
     return;
   }
 
+  if (!IsOnQtKit()) {
+    // Temporarily disabled on QtKit due to http://crbug.com/375185.
+    EXPECT_EQ("320x240",
+              GetUserMediaAndGetStreamSize(tab,
+                                           kAudioVideoCallConstraintsQVGA));
+  }
+
   EXPECT_EQ("640x480",
             GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraintsVGA));
-  EXPECT_EQ("320x240",
-            GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraintsQVGA));
   EXPECT_EQ("640x360",
             GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints360p));
   EXPECT_EQ("1280x720",
             GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints720p));
+
+  if (IsOnQtKit())
+    return;  // QTKit only supports up to 720p.
+
   EXPECT_EQ("1920x1080",
             GetUserMediaAndGetStreamSize(tab, kAudioVideoCallConstraints1080p));
 }
