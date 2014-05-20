@@ -36,7 +36,7 @@
       'refcount_base.cc',
     ],
     'conditions': [
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="android"', {
         'platform_sources': [
           'linux/nacl_clock.c',
           'linux/nacl_host_dir.c',
@@ -51,7 +51,7 @@
           'osx/strnlen_osx.c',
         ],
       }],
-      ['OS=="linux" or OS=="mac"', {
+      ['os_posix==1', {
         'platform_sources': [
           'posix/aligned_malloc.c',
           'posix/condition_variable.c',
@@ -103,7 +103,7 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['OS=="linux" or OS=="mac"', {
+      ['<(os_posix)==1', {
         'cflags': [
           '-Wno-long-long',
         ],

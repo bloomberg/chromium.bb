@@ -20,7 +20,7 @@
           'nacl_os_qualify.h',
         ],
         'conditions': [
-          ['OS=="linux"', {
+          ['OS=="linux" or OS=="android"', {
             'sources': [
               'linux/nacl_os_qualify.c',
               'posix/nacl_dep_qualify.c',

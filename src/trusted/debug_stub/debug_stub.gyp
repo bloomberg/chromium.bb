@@ -27,7 +27,7 @@
       'test.cc',
     ],
     'conditions': [
-      ['OS=="linux" or OS=="mac"', {
+      ['os_posix==1', {
         'platform_sources': [
           'posix/debug_stub_posix.cc',
           'posix/platform_impl.cc',
@@ -49,7 +49,7 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['OS=="linux" or OS=="mac"', {
+      ['<(os_posix)==1', {
         'cflags': [
           '-fexceptions',
         ],
@@ -63,7 +63,7 @@
           'GCC_ENABLE_CPP_RTTI': 'YES',            # -frtti
         }
       }],
-      ['OS=="linux" or OS=="mac"', {
+      ['<(os_posix)==1', {
         'cflags': [
           '-Wno-long-long',
         ],

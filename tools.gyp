@@ -18,14 +18,10 @@
     'disable_arm_untar%': 0,
     'disable_pnacl_untar%': 0,
     'conditions': [
-      ['OS=="win"', {
-        'TOOLCHAIN_OS': 'i686_w64_mingw32'
-      }],
-      ['OS=="linux"', {
-        'TOOLCHAIN_OS': 'i686_linux'
-      }],
-      ['OS=="mac"', {
-        'TOOLCHAIN_OS': 'x86_64_apple_darwin'
+      ['OS=="android"', {
+        'TOOLCHAIN_OS': 'linux',
+      }, {
+        'TOOLCHAIN_OS': '<(OS)',
       }],
     ]
   },
@@ -66,9 +62,9 @@
               'description': 'Untar x86 newlib toolchain',
               'inputs': [
                  '<(DEPTH)/native_client/build/package_version/package_version.py',
-                 '<(DEPTH)/native_client/toolchain/.tars/<(OS)_x86/nacl_x86_newlib.json',
+                 '<(DEPTH)/native_client/toolchain/.tars/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib.json',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json'],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json'],
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
@@ -89,9 +85,9 @@
               'description': 'Untar x86 glibc toolchain',
               'inputs': [
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
-                '<(DEPTH)/native_client/toolchain/.tars/<(OS)_x86/nacl_x86_glibc.json',
+                '<(DEPTH)/native_client/toolchain/.tars/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc.json',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json'],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json'],
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
@@ -112,9 +108,9 @@
               'description': 'Untar pnacl toolchain',
               'inputs': [
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
-                '<(DEPTH)/native_client/toolchain/.tars/<(OS)_x86/pnacl_newlib.json',
+                '<(DEPTH)/native_client/toolchain/.tars/<(TOOLCHAIN_OS)_x86/pnacl_newlib.json',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/pnacl_newlib/pnacl_newlib.json'],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json'],
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
@@ -135,9 +131,9 @@
               'description': 'Untar arm toolchain',
               'inputs': [
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
-                '<(DEPTH)/native_client/toolchain/.tars/<(OS)_x86/nacl_arm_newlib.json',
+                '<(DEPTH)/native_client/toolchain/.tars/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib.json',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json'],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json'],
               'action': [
                 'python',
                 '<(DEPTH)/native_client/build/package_version/package_version.py',
@@ -159,10 +155,10 @@
         'untar_toolchains',
       ],
       'variables': {
-        'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_newlib',
-        'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_glibc',
-        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/pnacl_newlib',
-        'arm_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_arm_newlib',
+        'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib',
+        'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc',
+        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib',
+        'arm_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib',
       },
       'conditions': [
         ['disable_newlib==0', {

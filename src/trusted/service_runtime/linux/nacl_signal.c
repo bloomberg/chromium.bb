@@ -423,6 +423,12 @@ void NaClSignalHandlerInit(void) {
   struct sigaction sa;
   unsigned int a;
 
+  /*
+   * Android adds a handler for SIGPIPE in the dynamic linker.
+   */
+  if (NACL_ANDROID)
+    CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+
   AssertNoOtherSignalHandlers();
 
   memset(&sa, 0, sizeof(sa));

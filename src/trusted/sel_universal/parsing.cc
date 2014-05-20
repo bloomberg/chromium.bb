@@ -9,6 +9,7 @@
 // this code merely aims at being maitainable.
 // Efficiency and proper dealing with bad input are non-goals.
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

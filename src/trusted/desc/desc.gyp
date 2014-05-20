@@ -97,7 +97,7 @@
           ]
         },
         'conditions': [
-          ['OS=="linux" or OS=="mac"', {
+          ['os_posix==1', {
             'sources': [
               'posix/nacl_desc.c',
             ],

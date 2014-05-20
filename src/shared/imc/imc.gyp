@@ -12,7 +12,7 @@
       'nacl_imc_c.h',
     ],
     'conditions': [
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="android"', {
         'common_sources': [
           'linux/nacl_imc.cc',
           'posix/nacl_imc_posix.cc',

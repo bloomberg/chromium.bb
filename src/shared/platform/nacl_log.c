@@ -60,7 +60,7 @@ static int              g_initialized = 0;
  * level check has fired.
  */
 #if NACL_PLATFORM_HAS_TLS
-THREAD char const       *gTls_ModuleName = NULL;
+THREAD char const       *gTls_ModuleName;
 #elif NACL_PLATFORM_HAS_TSD
 #  include <pthread.h>
 pthread_key_t           gModuleNameKey;

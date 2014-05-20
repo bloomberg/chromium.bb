@@ -127,6 +127,13 @@
         ['nacl_standalone!=0', {
           'sysroot%': '',
         }],
+        #
+        # A flag for POSIX platforms
+        ['OS=="win"', {
+          'os_posix%': 0,
+         }, {
+          'os_posix%': 1,
+        }],
       ],
 
       # This variable is to allow us to build components as either static
@@ -145,6 +152,8 @@
     'nacl_validator_ragel%': 1,
 
     'linux2%': 0,
+
+    'os_posix%': '<(os_posix)',
   },
 
   'target_defaults': {
@@ -269,7 +278,7 @@
     ],
   },
   'conditions': [
-    ['OS=="linux"', {
+    ['OS=="linux" or OS=="android"', {
       'target_defaults': {
         # Enable -Werror by default, but put it in a variable so it can
         # be disabled in ~/.gyp/include.gypi on the valgrind builders.
@@ -277,14 +286,25 @@
           'werror%': '-Werror',
         },
         'cflags': [
-           '<(werror)',  # See note above about the werror variable.
-           '-pthread',
+          '<(werror)',  # See note above about the werror variable.
+          '-pthread',
           '-fno-exceptions',
           '-Wall', # TODO(bradnelson): why does this disappear?!?
         ],
         'conditions': [
           ['nacl_standalone==1 and OS=="linux"', {
             'cflags': ['-fPIC'],
+          }],
+          ['OS=="android"', {
+            'defines': ['NACL_ANDROID=1'],
+           }, {
+            'defines': ['NACL_ANDROID=0'],
+            'link_settings': {
+              'libraries': [
+                '-lrt',
+                '-lpthread',
+              ],
+            }
           }],
           ['nacl_standalone==1 and nacl_strict_warnings==1', {
             # TODO(gregoryd): remove the condition when the issues in
@@ -397,7 +417,6 @@
         ],
         'defines': [
           'NACL_LINUX=1',
-          'NACL_ANDROID=0',
           'NACL_OSX=0',
           'NACL_WINDOWS=0',
           '_BSD_SOURCE=1',
@@ -406,12 +425,6 @@
           '_GNU_SOURCE=1',
           '__STDC_LIMIT_MACROS=1',
         ],
-        'link_settings': {
-          'libraries': [
-            '-lrt',
-            '-lpthread',
-          ],
-        },
         'configurations': {
           'Debug': {
             'variables': {
@@ -778,6 +791,11 @@
         ['LINK.host', '$(LINK)'],
       ],
     }],
+    ['OS=="android"', {
+      'includes': [
+        'android_settings.gypi',
+      ],
+    }],  # OS=="android"
   ],
   'xcode_settings': {
     # The Xcode generator will look for an xcode_settings section at the root

@@ -28,7 +28,7 @@
               'win/sel_ldr_launcher_win.cc',
             ],
           }],
-          ['OS=="linux"', {
+          ['OS=="linux" or OS=="android"', {
             'sources': [
               'posix/sel_ldr_launcher_posix.cc',
               'posix/sel_ldr_launcher_zygote_posix.cc',
