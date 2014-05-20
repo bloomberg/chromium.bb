@@ -330,9 +330,12 @@ class ReportStage(generic_stages.BuilderStage,
         archive_urls.update(run_archive_urls)
 
         # Also update the LATEST files, since this run did archive something.
+        upload_urls = self._GetUploadUrls(
+            'LATEST-*', board=builder_run.config['boards'][0])
         archive = builder_run.GetArchive()
         archive.UpdateLatestMarkers(builder_run.manifest_branch,
-                                    builder_run.debug)
+                                    builder_run.debug,
+                                    upload_urls=upload_urls)
 
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,

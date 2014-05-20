@@ -692,17 +692,20 @@ class ArchivingStageMixin(object):
         return True
     return False
 
-  def _GetUploadUrls(self, filename):
+  def _GetUploadUrls(self, filename, board=None):
     """Returns a list of all urls for which to upload filename to.
 
     Args:
       filename: The filename of the file we want to upload.
+      board: Board whose overlay to search for the artifacts.json file.
+             If none, self._current_board is used if it exists.
     """
     urls = [self.upload_url]
     if (not self._IsInUploadBlacklist(filename) and
-        hasattr(self, '_current_board')):
+        (hasattr(self, '_current_board') or board)):
+      board = board if board else self._current_board
       custom_artifacts_file = portage_utilities.ReadOverlayFile(
-          'scripts/artifacts.json', board=self._current_board)
+          'scripts/artifacts.json', board=board)
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)
         for url in json_file.get('extra_upload_urls', []):
