@@ -2170,3 +2170,7 @@ name=bug_374105b
 ...
 gpu.dll!gpu::gles2::ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation
 *!gpu::gles2::ShaderTranslatorTest_OptionsString_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_313788
+*!ToolbarOriginChipView::Update
