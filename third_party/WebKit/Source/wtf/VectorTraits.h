@@ -36,7 +36,6 @@ namespace WTF {
     struct VectorTraitsBase
     {
         static const bool needsDestruction = !IsPod<T>::value;
-        static const bool needsInitialization = !IsPod<T>::value;
         static const bool canInitializeWithMemset = IsPod<T>::value;
         static const bool canMoveWithMemcpy = IsPod<T>::value;
         static const bool canCopyWithMemcpy = IsPod<T>::value;
@@ -79,7 +78,6 @@ namespace WTF {
         typedef VectorTraits<Second> SecondTraits;
 
         static const bool needsDestruction = FirstTraits::needsDestruction || SecondTraits::needsDestruction;
-        static const bool needsInitialization = FirstTraits::needsInitialization || SecondTraits::needsInitialization;
         static const bool canInitializeWithMemset = FirstTraits::canInitializeWithMemset && SecondTraits::canInitializeWithMemset;
         static const bool canMoveWithMemcpy = FirstTraits::canMoveWithMemcpy && SecondTraits::canMoveWithMemcpy;
         static const bool canCopyWithMemcpy = FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
