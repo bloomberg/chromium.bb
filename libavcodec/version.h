@@ -51,11 +51,9 @@
 #ifndef FF_API_REQUEST_CHANNELS
 #define FF_API_REQUEST_CHANNELS (LIBAVCODEC_VERSION_MAJOR < 56)
 #endif
-// TODO(dalecurtis): Disable unused features which generate spammy deprecation
-// warnings.
-// #ifndef FF_API_OLD_DECODE_AUDIO
-// #define FF_API_OLD_DECODE_AUDIO (LIBAVCODEC_VERSION_MAJOR < 56)
-// #endif
+#ifndef FF_API_OLD_DECODE_AUDIO
+#define FF_API_OLD_DECODE_AUDIO (LIBAVCODEC_VERSION_MAJOR < 56)
+#endif
 #ifndef FF_API_OLD_ENCODE_AUDIO
 #define FF_API_OLD_ENCODE_AUDIO (LIBAVCODEC_VERSION_MAJOR < 56)
 #endif
@@ -74,14 +72,12 @@
 #ifndef FF_API_DEINTERLACE
 #define FF_API_DEINTERLACE       (LIBAVCODEC_VERSION_MAJOR < 56)
 #endif
-// TODO(dalecurtis): Disable unused features which generate spammy deprecation
-// warnings.
-// #ifndef FF_API_DESTRUCT_PACKET
-// #define FF_API_DESTRUCT_PACKET   (LIBAVCODEC_VERSION_MAJOR < 56)
-// #endif
-// #ifndef FF_API_GET_BUFFER
-// #define FF_API_GET_BUFFER        (LIBAVCODEC_VERSION_MAJOR < 56)
-// #endif
+#ifndef FF_API_DESTRUCT_PACKET
+#define FF_API_DESTRUCT_PACKET   (LIBAVCODEC_VERSION_MAJOR < 56)
+#endif
+#ifndef FF_API_GET_BUFFER
+#define FF_API_GET_BUFFER        (LIBAVCODEC_VERSION_MAJOR < 56)
+#endif
 #ifndef FF_API_MISSING_SAMPLE
 #define FF_API_MISSING_SAMPLE    (LIBAVCODEC_VERSION_MAJOR < 56)
 #endif

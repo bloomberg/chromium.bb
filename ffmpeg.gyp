@@ -165,6 +165,11 @@
             '_POSIX_C_SOURCE=200112',
             '_XOPEN_SOURCE=600',
             'PIC',
+            # Disable deprecated features which generate spammy warnings.
+            'FF_API_PIX_FMT_DESC=0',
+            'FF_API_OLD_DECODE_AUDIO=0',
+            'FF_API_DESTRUCT_PACKET=0',
+            'FF_API_GET_BUFFER=0',
           ],
           'cflags': [
             '-fPIC',
