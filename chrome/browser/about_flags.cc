@@ -9,7 +9,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -100,7 +99,7 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
 CommandLine::StringType GetSwitchString(const std::string& flag) {
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line.AppendSwitch(flag);
-  DCHECK(cmd_line.argv().size() == 2);
+  DCHECK_EQ(2U, cmd_line.argv().size());
   return cmd_line.argv()[1];
 }
 
@@ -1217,12 +1216,12 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     MULTI_VALUE_TYPE(kLCDTextChoices)
   },
-#ifndef USE_AURA
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
   {
     "delegated-renderer",
     IDS_FLAGS_DELEGATED_RENDERER_NAME,
     IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION,
-    kOsAndroid,
+    kOsAndroid,  // TODO(ccameron) Add mac support soon.
     MULTI_VALUE_TYPE(kDelegatedRendererChoices)
   },
 #endif

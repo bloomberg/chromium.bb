@@ -1036,9 +1036,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
             Add As Search En&amp;gine...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
-            Input &amp;Methods
-          </message>
         </if>
 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
@@ -5629,13 +5626,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION" desc="Description for the flag to enable the new NTP.">
           Whether or not the new style New Tab Page is enabled.
         </message>
+        <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
+          Enable Contextual Search.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
+          Whether or not Contextual Search is enabled.
+        </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH" desc="Title for the flag to enable Contextual Search.">
-        Enable Contextual Search.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
-        Whether or not Contextual Search is enabled.
-      </message>
       <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
       </message>
@@ -5746,20 +5743,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBRTC_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC hardware video encoding support.">
         This option disables support in WebRTC for encoding video streams using platform hardware.
       </message>
-      <if expr="not use_webaudio_enable_message">
+      <if expr="is_android">
         <message name="IDS_FLAGS_DISABLE_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
           Disable WebAudio
         </message>
         <message name="IDS_FLAGS_DISABLE_WEBAUDIO_DESCRIPTION" desc="Description for the flag to disable WebAudio.">
           Enabling this option prevents web sites from accessing the WebAudio API.
-        </message>
-      </if>
-      <if expr="use_webaudio_enable_message">
-        <message name="IDS_FLAGS_ENABLE_WEBAUDIO_NAME" desc="Name of the 'Enable WebAudio' lab.">
-          Enable WebAudio
-        </message>
-        <message name="IDS_FLAGS_ENABLE_WEBAUDIO_DESCRIPTION" desc="Description for the flag to enable WebAudio.">
-          Enabling this option allows web sites to access the WebAudio API.
         </message>
       </if>
       <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME" desc="Name of the 'Fixed position creates stacking context' lab.">
@@ -5865,12 +5854,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable supervised users.">
-        Enable supervised users
-      </message>
-      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable supervised users.">
-        Enables support for user profiles that are managed by another user and can have restrictions applied.
-      </message>
       <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME" desc="Title for the flag to enable native style frames for apps.">
         Native style window frames for packaged apps
       </message>
@@ -6121,12 +6104,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION" desc="Description of about:flags option for distance field text.">
         If enabled, text is rendered with signed distance fields rather than bitmap alpha masks.
       </message>
-      <message name="IDS_FLAGS_DELEGATED_RENDERER_NAME" desc="Name of about:flags option for delegated renderer.">
-        Delegated Renderer (AKA Übercompositor).
-      </message>
-      <message name="IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION" desc="Description of about:flags option for delegated renderer.">
-        If enabled, the renderer delegates compositing to the browser, merging both compositing passes.
-      </message>
+      <if expr="is_android or is_macosx">
+        <message name="IDS_FLAGS_DELEGATED_RENDERER_NAME" desc="Name of about:flags option for delegated renderer.">
+          Delegated Renderer (AKA Übercompositor).
+        </message>
+        <message name="IDS_FLAGS_DELEGATED_RENDERER_DESCRIPTION" desc="Description of about:flags option for delegated renderer.">
+          If enabled, the renderer delegates compositing to the browser, merging both compositing passes.
+        </message>
+      </if>
       <message name="IDS_FLAGS_ONE_COPY_NAME" desc="Name of about:flags option for one-copy rasterizer.">
         Enable one-copy rasterizer
       </message>
@@ -6144,9 +6129,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION" desc="Description of about:flags option for maximum tiles for interest area.">
         Specify the maximum tiles for interest area.
-      </message>
-      <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DEFAULT" desc="">
-        Default
       </message>
       <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_SHORT" desc="">
         64
@@ -6187,9 +6169,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_DESCRIPTION" desc="Description of about:flags option for default tile width.">
         Specify the default tile width.
       </message>
-      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_DEFAULT" desc="">
-        Default
-      </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_SHORT" desc="">
         128
       </message>
@@ -6208,9 +6187,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_DESCRIPTION" desc="Description of about:flags option for default tile height.">
         Specify the default tile height.
       </message>
-      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_DEFAULT" desc="">
-        Default
-      </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_SHORT" desc="">
         128
       </message>
@@ -6228,9 +6204,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_NUM_RASTER_THREADS_DESCRIPTION" desc="Description of about:flags option for number of raster threads.">
         Specify the number of raster threads.
-      </message>
-      <message name="IDS_FLAGS_NUM_RASTER_THREADS_DEFAULT" desc="">
-        Default
       </message>
       <message name="IDS_FLAGS_NUM_RASTER_THREADS_ONE" desc="">
         1
@@ -13446,12 +13419,6 @@ Do you accept?
       Dark Theme
     </message>
 
-    <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_NAME" desc="Name of about:flags option to turn on desktop guest mode">
-      Enable desktop guest mode
-    </message>
-    <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_DESCRIPTION" desc="Description of about:flags option to turn on desktop guest mode">
-      When enabled, a guest user will be available in desktop Chrome.
-    </message>
     <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag to enable the new profile management.">
       Enable new profile management system
     </message>
@@ -13483,12 +13450,6 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the google profile information">
       Enables using Google information to populate the profile name and icon in the avatar menu.
     </message>
-    <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_NAME" desc="Name of the flag to make reads in offline mode come from the cache even if it's stale">
-      Enable Offline Cache Mode
-    </message>
-    <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_DESCRIPTION" desc="Description of the flag to make reads in offline mode come from the cache even if it's stale">
-      Reads from web resources when the source is unavailable will be satisfied from available stale cache entries.
-    </message>
     <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
       Enable Offline Auto-Reload Mode
     </message>
@@ -13502,21 +13463,21 @@ Do you accept?
       When a page fails to load, if a stale copy of the page exists in the browser, a button will be presented to allow the user to load that stale copy.
     </message>
 
-    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
-      Virtual Keyboard
-    </message>
-    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on the virtual keyboard">
-      Enable virtual keyboard support.
-    </message>
-
-    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the virtual keyboard">
-      Virtual Keyboard Overscroll
-    </message>
-    <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
-      Enable virtual keyboard overscroll support.
-    </message>
-
     <if expr="chromeos">
+      <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
+        Virtual Keyboard
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn on the virtual keyboard">
+        Enable virtual keyboard support.
+      </message>
+
+      <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the virtual keyboard">
+        Virtual Keyboard Overscroll
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the virtual keyboard">
+        Enable virtual keyboard overscroll support.
+      </message>
+
       <message name="IDS_FLAGS_ENABLE_SWIPE_SELECTION_NAME" desc="Name of about:flags option to turn on swipe selection for the virtual keyboard">
         Swipe Selection
       </message>
@@ -14149,12 +14110,14 @@ Do you accept?
     </message>
 
     <!-- Instant search clicks experiment flags -->
-    <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_NAME" desc="Title for the flag to enable instant search clicks">
-      Prefetch search results
-    </message>
-    <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_DESCRIPTION" desc="Description to enable instant search clicks">
-      If enabled, prefetch previews for search results and swap them with original page when is downloaded and rendered.
-    </message>
+    <if expr="is_android">
+      <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_NAME" desc="Title for the flag to enable instant search clicks">
+        Prefetch search results
+      </message>
+      <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_DESCRIPTION" desc="Description to enable instant search clicks">
+        If enabled, prefetch previews for search results and swap them with original page when is downloaded and rendered.
+      </message>
+    </if>
 
     <!-- Mixed content issue workaround flags -->
     <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_NAME" desc="Title for the flag to allow insecure WebSocket from https origin">
@@ -14164,23 +14127,23 @@ Do you accept?
       This flag makes Chrome unsafe. Use this only if you understand what this does. Note that this flag may be removed without any notice. If enabled, frames with an https origin can use WebSockets with an insecure URL (ws://).
     </message>
 
-    <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
     <if expr="is_android">
-    <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
-      Enable EmbeddedSearch API
-    </message>
-    <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
-     If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
-    </message>
-    </if>
+      <!-- Experiment flags to enable EmbeddedSearch API in the search results page -->
+      <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_NAME" desc="An about::flags experiment title to enable EmbeddedSearch API in the search results page">
+        Enable EmbeddedSearch API
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EMBEDDEDSEARCH_API_DESCRIPTION" desc="Describes an about:flags experiment for enabling EmbeddedSearch API in the search results page">
+       If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
+      </message>
 
-    <!-- App install alerts flags -->
-    <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_NAME" desc="Title for the flag to allow app install alerts">
-      Enable app install alerts
-    </message>
-    <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
-      If enabled, websites will be parsed for app install alert meta tags.
-    </message>
+      <!-- App install alerts flags -->
+      <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_NAME" desc="Title for the flag to allow app install alerts">
+        Enable app install alerts
+      </message>
+      <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
+        If enabled, websites will be parsed for app install alert meta tags.
+      </message>
+    </if>
 
    <!-- Extension Content Verification -->
     <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_NAME" desc="Name of the 'Extension Content Verification' flag">
