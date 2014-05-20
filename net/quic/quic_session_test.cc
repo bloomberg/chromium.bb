@@ -114,8 +114,8 @@ class StreamBlocker {
 
 class TestSession : public QuicSession {
  public:
-  explicit TestSession(QuicConnection* connection,
-                       uint32 max_initial_flow_control_window)
+  TestSession(QuicConnection* connection,
+              uint32 max_initial_flow_control_window)
       : QuicSession(connection, max_initial_flow_control_window,
                     DefaultQuicConfig()),
         crypto_stream_(this),

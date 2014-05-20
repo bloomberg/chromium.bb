@@ -93,9 +93,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
 
-  // Called to ask if the visitor wants to schedule write resumption as it has
-  // both has pending data to write, and is able to write (e.g. based on flow
-  // control limits).
+  // Called to ask if the visitor wants to schedule write resumption as it both
+  // has pending data to write, and is able to write (e.g. based on flow control
+  // limits).
   // Writes may be pending because they were write-blocked, congestion-throttled
   // or yielded to other connections.
   virtual bool WillingAndAbleToWrite() const = 0;

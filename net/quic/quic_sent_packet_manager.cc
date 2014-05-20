@@ -173,8 +173,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     }
 
     if (IsAwaitingPacket(received_info, sequence_number)) {
-      // Remove any packets not being tracked by the send algorithm, allowing
-      // the high water mark to be raised if necessary.
+      // Remove any rtt only packets less than or equal to the largest observed,
+      // since they will not produce an RTT measurement.
       if (QuicUnackedPacketMap::IsForRttOnly(it->second)) {
         it = MarkPacketHandled(sequence_number, delta_largest_observed);
       } else {

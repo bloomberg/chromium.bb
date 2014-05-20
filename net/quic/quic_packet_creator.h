@@ -57,9 +57,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   virtual void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
                                           base::StringPiece payload) OVERRIDE;
 
-  // Turn on FEC protection for subsequently created packets. FEC should
-  // be enabled first (set_max_packets_per_fec_group should be non-zero) for
-  // FEC protection to start.
+  // Turn on FEC protection for subsequently created packets. FEC should be
+  // enabled first (max_packets_per_fec_group should be non-zero) for FEC
+  // protection to start.
   void StartFecProtectingPackets();
 
   // Turn off FEC protection for subsequently created packets. If the creator
@@ -126,7 +126,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // Re-serializes frames with the original packet's sequence number length.
   // Used for retransmitting packets to ensure they aren't too long.
-  // Caller must ensure that any open FEC group are closed before calling this
+  // Caller must ensure that any open FEC group is closed before calling this
   // method.
   SerializedPacket ReserializeAllFrames(
       const QuicFrames& frames, QuicSequenceNumberLength original_length);
@@ -136,7 +136,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // Returns whether FEC protection is currently enabled. Note: Enabled does not
   // mean that an FEC group is currently active; i.e., IsFecProtected() may
-  // still return NOT_IN_FEC_GROUP, and fec_group_.get() may still be NULL.
+  // still return false.
   bool IsFecEnabled() const;
 
   // Returns true if subsequent packets will be FEC protected. Note: True does

@@ -22,7 +22,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/udp/datagram_client_socket.h"
 
-using net::test::kInitialFlowControlWindowForTest;
 using testing::_;
 
 namespace net {
