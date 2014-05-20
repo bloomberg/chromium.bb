@@ -118,4 +118,27 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
 }
 
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
+  DistillerPageWebContents distiller_page(
+      shell()->web_contents()->GetBrowserContext());
+  distiller_page_ = &distiller_page;
+
+  // visble_style.html and invisible_style.html only differ by the visibility
+  // internal stylesheet.
+
+  {
+    base::RunLoop run_loop;
+    DistillPage(run_loop.QuitClosure(), "/visible_style.html");
+    run_loop.Run();
+    EXPECT_THAT(page_info_.get()->html, HasSubstr("Lorem ipsum"));
+  }
+
+  {
+    base::RunLoop run_loop;
+    DistillPage(run_loop.QuitClosure(), "/invisible_style.html");
+    run_loop.Run();
+    EXPECT_THAT(page_info_.get()->html, Not(HasSubstr("Lorem ipsum")));
+  }
+}
+
 }  // namespace dom_distiller
