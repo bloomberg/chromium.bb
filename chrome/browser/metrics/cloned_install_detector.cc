@@ -5,14 +5,16 @@
 #include "chrome/browser/metrics/cloned_install_detector.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/metrics/cloned_install_detector.h"
 #include "chrome/browser/metrics/machine_id_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_hashes.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace metrics {
 
@@ -48,12 +50,13 @@ ClonedInstallDetector::ClonedInstallDetector(MachineIdProvider* raw_id_provider)
 
 ClonedInstallDetector::~ClonedInstallDetector() {}
 
-void ClonedInstallDetector::CheckForClonedInstall(PrefService* local_state) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
+void ClonedInstallDetector::CheckForClonedInstall(
+    PrefService* local_state,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(),
       FROM_HERE,
-      base::Bind(&metrics::MachineIdProvider::GetMachineId,
-                 raw_id_provider_),
+      base::Bind(&metrics::MachineIdProvider::GetMachineId, raw_id_provider_),
       base::Bind(&metrics::ClonedInstallDetector::SaveMachineId,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_state));

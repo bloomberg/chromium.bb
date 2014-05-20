@@ -280,7 +280,8 @@ class MetricsService
   // Check if this install was cloned or imaged from another machine. If a
   // clone is detected, reset the client id and low entropy source. This
   // should not be called more than once.
-  void CheckForClonedInstall();
+  void CheckForClonedInstall(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.

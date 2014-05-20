@@ -629,7 +629,8 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
     return;
   }
 
-  metrics->CheckForClonedInstall();
+  metrics->CheckForClonedInstall(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   const bool metrics_enabled = metrics->StartIfMetricsReportingEnabled();
   if (metrics_enabled) {
     // TODO(asvitkine): Since this function is not run on Android, RAPPOR is

@@ -109,7 +109,8 @@ void MetricsStateManager::ForceClientIdCreation() {
   local_state_->ClearPref(prefs::kMetricsOldClientID);
 }
 
-void MetricsStateManager::CheckForClonedInstall() {
+void MetricsStateManager::CheckForClonedInstall(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!cloned_install_detector_);
 
   MachineIdProvider* provider = MachineIdProvider::CreateInstance();
@@ -117,7 +118,7 @@ void MetricsStateManager::CheckForClonedInstall() {
     return;
 
   cloned_install_detector_.reset(new ClonedInstallDetector(provider));
-  cloned_install_detector_->CheckForClonedInstall(local_state_);
+  cloned_install_detector_->CheckForClonedInstall(local_state_, task_runner);
 }
 
 scoped_ptr<const base::FieldTrial::EntropyProvider>

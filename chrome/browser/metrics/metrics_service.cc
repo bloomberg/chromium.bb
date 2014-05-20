@@ -1721,8 +1721,9 @@ void MetricsService::RegisterSyntheticFieldTrial(
   synthetic_trial_groups_.push_back(trial_group);
 }
 
-void MetricsService::CheckForClonedInstall() {
-  state_manager_->CheckForClonedInstall();
+void MetricsService::CheckForClonedInstall(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  state_manager_->CheckForClonedInstall(task_runner);
 }
 
 void MetricsService::GetCurrentSyntheticFieldTrials(

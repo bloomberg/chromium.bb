@@ -12,6 +12,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace metrics {
 
 class MachineIdProvider;
@@ -23,12 +27,15 @@ class ClonedInstallDetector {
   explicit ClonedInstallDetector(MachineIdProvider* raw_id_provider);
   virtual ~ClonedInstallDetector();
 
-  // Posts a task to generate a machine ID and store it to a local state pref.
-  // If the newly generated ID is different than the previously stored one, then
-  // the install is considered cloned. The ID is a 24-bit value based off of
-  // machine characteristics. This value should never be sent over the network.
+  // Posts a task to |task_runner| to generate a machine ID and store it to a
+  // local state pref. If the newly generated ID is different than the
+  // previously stored one, then the install is considered cloned. The ID is a
+  // 24-bit value based off of machine characteristics. This value should never
+  // be sent over the network.
   // TODO(jwd): Implement change detection.
-  void CheckForClonedInstall(PrefService* local_state);
+  void CheckForClonedInstall(
+      PrefService* local_state,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

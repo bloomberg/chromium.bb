@@ -5,14 +5,11 @@
 #include "chrome/browser/metrics/machine_id_provider.h"
 
 #include "base/memory/ref_counted.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
 
 TEST(MachineIdProviderTest, GetId) {
-  content::TestBrowserThreadBundle thread_bundle;
-
   scoped_refptr<MachineIdProvider> provider(
       MachineIdProvider::CreateInstance());
   std::string id1 = provider->GetMachineId();

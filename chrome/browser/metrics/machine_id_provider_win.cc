@@ -10,8 +10,8 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace metrics {
 
@@ -21,7 +21,7 @@ MachineIdProvider::~MachineIdProvider() {}
 // On windows, the machine id is based on the serial number of the drive Chrome
 // is running from.
 std::string MachineIdProvider::GetMachineId() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Use the program's path to get the drive used for the machine id. This means
   // that whenever the underlying drive changes, it's considered a new machine.
