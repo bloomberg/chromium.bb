@@ -19,10 +19,11 @@
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
-#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/managed_mode/permission_request_creator_apiary.h"
+#include "chrome/browser/managed_mode/permission_request_creator_sync.h"
 #include "chrome/browser/managed_mode/supervised_user_pref_mapping_service.h"
 #include "chrome/browser/managed_mode/supervised_user_pref_mapping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,16 +61,6 @@
 using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
-
-const char kManagedUserAccessRequestKeyPrefix[] =
-    "X-ManagedUser-AccessRequests";
-const char kManagedUserAccessRequestTime[] = "timestamp";
-const char kManagedUserName[] = "name";
-
-// Key for the notification setting of the custodian. This is a shared setting
-// so we can include the setting in the access request data that is used to
-// trigger notifications.
-const char kNotificationSetting[] = "custodian-notification-setting";
 
 ManagedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new ManagedModeURLFilter),
@@ -140,6 +131,7 @@ ManagedUserService::ManagedUserService(Profile* profile)
       is_profile_active_(false),
       elevated_for_testing_(false),
       did_shutdown_(false),
+      waiting_for_permissions_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -444,6 +436,9 @@ void ManagedUserService::UpdateSiteLists() {
 }
 
 bool ManagedUserService::AccessRequestsEnabled() {
+  if (waiting_for_permissions_)
+    return false;
+
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   GoogleServiceAuthError::State state = service->GetAuthError().state();
@@ -453,6 +448,13 @@ bool ManagedUserService::AccessRequestsEnabled() {
           state == GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
+void ManagedUserService::OnPermissionRequestIssued() {
+  waiting_for_permissions_ = false;
+  // TODO(akuegel): Figure out how to show the result of issuing the permission
+  // request in the UI. Currently, we assume the permission request was created
+  // successfully.
+}
+
 void ManagedUserService::AddAccessRequest(const GURL& url) {
   // Normalize the URL.
   GURL normalized_url = ManagedModeURLFilter::Normalize(url);
@@ -460,35 +462,11 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
   // Escape the URL.
   std::string output(net::EscapeQueryParamValue(normalized_url.spec(), true));
 
-  // Add the prefix.
-  std::string key = ManagedUserSettingsService::MakeSplitSettingKey(
-      kManagedUserAccessRequestKeyPrefix, output);
-
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-
-  // TODO(sergiu): Use sane time here when it's ready.
-  dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
-
-  dict->SetString(kManagedUserName,
-                  profile_->GetPrefs()->GetString(prefs::kProfileName));
-
-  // Copy the notification setting of the custodian.
-  std::string managed_user_id =
-      profile_->GetPrefs()->GetString(prefs::kManagedUserId);
-  const base::Value* value =
-      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile_)
-          ->GetValue(managed_user_id, kNotificationSetting);
-  bool notifications_enabled = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAccessRequestNotifications)) {
-    notifications_enabled = true;
-  } else if (value) {
-    bool success = value->GetAsBoolean(&notifications_enabled);
-    DCHECK(success);
-  }
-  dict->SetBoolean(kNotificationSetting, notifications_enabled);
-
-  GetSettingsService()->UploadItem(key, dict.PassAs<base::Value>());
+  waiting_for_permissions_ = true;
+  permissions_creator_->CreatePermissionRequest(
+      output,
+      base::Bind(&ManagedUserService::OnPermissionRequestIssued,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
@@ -568,6 +546,18 @@ void ManagedUserService::Init() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->LoadCredentials(managed_users::kManagedUserPseudoEmail);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPermissionRequestApiUrl)) {
+    permissions_creator_ =
+        PermissionRequestCreatorApiary::CreateWithProfile(profile_);
+  } else {
+    PrefService* pref_service = profile_->GetPrefs();
+    permissions_creator_.reset(new PermissionRequestCreatorSync(
+        settings_service,
+        ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(profile_),
+        pref_service->GetString(prefs::kProfileName),
+        pref_service->GetString(prefs::kManagedUserId)));
+  }
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile_);

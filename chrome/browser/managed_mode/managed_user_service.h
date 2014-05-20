@@ -28,6 +28,7 @@ class ManagedModeURLFilter;
 class ManagedModeSiteList;
 class ManagedUserRegistrationUtility;
 class ManagedUserSettingsService;
+class PermissionRequestCreator;
 class Profile;
 
 namespace user_prefs {
@@ -80,6 +81,8 @@ class ManagedUserService : public KeyedService,
 
   // Whether the user can request access to blocked URLs.
   bool AccessRequestsEnabled();
+
+  void OnPermissionRequestIssued();
 
   // Adds an access request for the given URL. The requests are stored using
   // a prefix followed by a URIEncoded version of the URL. Each entry contains
@@ -243,6 +246,12 @@ class ManagedUserService : public KeyedService,
   bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
+
+  // Used to create permission requests.
+  scoped_ptr<PermissionRequestCreator> permissions_creator_;
+
+  // True iff we are waiting for a permission request to be issued.
+  bool waiting_for_permissions_;
 
   base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 };

@@ -982,6 +982,11 @@ const char kParentProfile[]                 = "parent-profile";
 // default interval is used).
 const char kPerformanceMonitorGathering[]   = "performance-monitor-gathering";
 
+// Development flag for permission request API. This flag is needed until
+// the API is finalized.
+// TODO(akuegel): Remove when this flag is not needed anymore.
+const char kPermissionRequestApiUrl[] = "permission-request-api-url";
+
 // Read previously recorded data from the cache. Only cached data is read.
 // See kRecordMode.
 const char kPlaybackMode[]                  = "playback-mode";
