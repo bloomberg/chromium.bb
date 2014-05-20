@@ -789,6 +789,32 @@ struct weston_view {
 	uint32_t output_mask;
 };
 
+struct weston_surface_state {
+	/* wl_surface.attach */
+	int newly_attached;
+	struct weston_buffer *buffer;
+	struct wl_listener buffer_destroy_listener;
+	int32_t sx;
+	int32_t sy;
+
+	/* wl_surface.damage */
+	pixman_region32_t damage;
+
+	/* wl_surface.set_opaque_region */
+	pixman_region32_t opaque;
+
+	/* wl_surface.set_input_region */
+	pixman_region32_t input;
+
+	/* wl_surface.frame */
+	struct wl_list frame_callback_list;
+
+	/* wl_surface.set_buffer_transform */
+	/* wl_surface.set_scaling_factor */
+	/* wl_viewport.set */
+	struct weston_buffer_viewport buffer_viewport;
+};
+
 struct weston_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
@@ -833,31 +859,7 @@ struct weston_surface {
 	struct wl_resource *viewport_resource;
 
 	/* All the pending state, that wl_surface.commit will apply. */
-	struct {
-		/* wl_surface.attach */
-		int newly_attached;
-		struct weston_buffer *buffer;
-		struct wl_listener buffer_destroy_listener;
-		int32_t sx;
-		int32_t sy;
-
-		/* wl_surface.damage */
-		pixman_region32_t damage;
-
-		/* wl_surface.set_opaque_region */
-		pixman_region32_t opaque;
-
-		/* wl_surface.set_input_region */
-		pixman_region32_t input;
-
-		/* wl_surface.frame */
-		struct wl_list frame_callback_list;
-
-		/* wl_surface.set_buffer_transform */
-		/* wl_surface.set_scaling_factor */
-		/* wl_viewport.set */
-		struct weston_buffer_viewport buffer_viewport;
-	} pending;
+	struct weston_surface_state pending;
 
 	/*
 	 * If non-NULL, this function will be called on
@@ -895,31 +897,9 @@ struct weston_subsurface {
 		int set;
 	} position;
 
-	struct {
-		int has_data;
-
-		/* wl_surface.attach */
-		int newly_attached;
-		struct weston_buffer_reference buffer_ref;
-		int32_t sx;
-		int32_t sy;
-
-		/* wl_surface.damage */
-		pixman_region32_t damage;
-
-		/* wl_surface.set_opaque_region */
-		pixman_region32_t opaque;
-
-		/* wl_surface.set_input_region */
-		pixman_region32_t input;
-
-		/* wl_surface.frame */
-		struct wl_list frame_callback_list;
-
-		/* wl_surface.set_buffer_transform */
-		/* wl_surface.set_buffer_scale */
-		struct weston_buffer_viewport buffer_viewport;
-	} cached;
+	int has_cached_data;
+	struct weston_surface_state cached;
+	struct weston_buffer_reference cached_buffer_ref;
 
 	int synchronized;
 
