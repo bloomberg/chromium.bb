@@ -13,6 +13,9 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
+#include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -94,10 +97,15 @@ void ContinueCheckingForFileExistence(
 // on the download history DB.
 bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
                               DownloadItem* download) {
-  // Persisted downloads are not in IN_PROGRESS state when created, while newly
-  // created downloads are.
-  return drive_tmp_download_path.IsParent(download->GetTargetFilePath()) &&
-      download->GetState() != DownloadItem::IN_PROGRESS;
+  if (!drive_tmp_download_path.IsParent(download->GetTargetFilePath()))
+    return false;
+
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForBrowserContext(
+          download->GetBrowserContext());
+  DownloadHistory* download_history = download_service->GetDownloadHistory();
+
+  return download_history && download_history->WasRestoredFromHistory(download);
 }
 
 }  // namespace
