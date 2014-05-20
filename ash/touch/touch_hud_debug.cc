@@ -465,10 +465,11 @@ void TouchHudDebug::OnTouchEvent(ui::TouchEvent* event) {
   label_container_->SetSize(label_container_->GetPreferredSize());
 }
 
-void TouchHudDebug::OnDisplayBoundsChanged(const gfx::Display& display) {
-  TouchObserverHUD::OnDisplayBoundsChanged(display);
+void TouchHudDebug::OnDisplayMetricsChanged(const gfx::Display& display,
+                                            uint32_t metrics) {
+  TouchObserverHUD::OnDisplayMetricsChanged(display, metrics);
 
-  if (display.id() != display_id())
+  if (display.id() != display_id() || !(metrics & DISPLAY_METRIC_BOUNDS))
     return;
   const gfx::Size& size = display.size();
   canvas_->SetSize(size);

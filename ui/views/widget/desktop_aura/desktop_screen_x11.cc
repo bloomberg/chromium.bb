@@ -137,15 +137,31 @@ void DesktopScreenX11::ProcessDisplayChange(
     bool found = false;
     for (std::vector<gfx::Display>::const_iterator old_it =
          old_displays.begin(); old_it != old_displays.end(); ++old_it) {
-      if (new_it->id() == old_it->id()) {
-        if (new_it->bounds() != old_it->bounds()) {
-          FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                            OnDisplayBoundsChanged(*new_it));
-        }
+      if (new_it->id() != old_it->id())
+        continue;
 
-        found = true;
-        break;
+      uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_NONE;
+
+      if (new_it->bounds() != old_it->bounds())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+
+      if (new_it->rotation() != old_it->rotation())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_ROTATION;
+
+      if (new_it->work_area() != old_it->work_area())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+
+      if (new_it->device_scale_factor() != old_it->device_scale_factor())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+
+      if (metrics != gfx::DisplayObserver::DISPLAY_METRIC_NONE) {
+        FOR_EACH_OBSERVER(gfx::DisplayObserver,
+                          observer_list_,
+                          OnDisplayMetricsChanged(*new_it, metrics));
       }
+
+      found = true;
+      break;
     }
 
     if (!found) {

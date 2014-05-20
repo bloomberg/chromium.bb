@@ -59,9 +59,10 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   // Overridden from gfx::DisplayObserver.
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t metrics) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // Overriden from ui::DisplayConfigurator::Observer.

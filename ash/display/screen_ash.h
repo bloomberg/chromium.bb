@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
 
 namespace gfx {
@@ -81,7 +82,7 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   friend class DisplayManager;
 
   // Notifies observers of display configuration changes.
-  void NotifyBoundsChanged(const gfx::Display& display);
+  void NotifyMetricsChanged(const gfx::Display& display, uint32_t metrics);
   void NotifyDisplayAdded(const gfx::Display& display);
   void NotifyDisplayRemoved(const gfx::Display& display);
 

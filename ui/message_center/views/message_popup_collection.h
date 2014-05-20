@@ -111,7 +111,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // Updates |work_area_| and re-calculates the alignment of notification toasts
   // rearranging them if necessary.
-  // This is separated from methods from OnDisplayBoundsChanged(), since
+  // This is separated from methods from OnDisplayMetricsChanged(), since
   // sometimes the display info has to be specified directly. One example is
   // shelf's auto-hide change. When the shelf in ChromeOS is temporarily shown
   // from auto hide status, it doesn't change the display's work area but the
@@ -120,9 +120,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                       const gfx::Rect& screen_bounds);
 
   // Overridden from gfx::DislayObserver:
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t metrics) OVERRIDE;
 
   // Used by ToastContentsView to locate itself.
   gfx::NativeView parent() const { return parent_; }

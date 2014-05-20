@@ -115,17 +115,17 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   }
 }
 
-void MaximizeModeWindowManager::OnDisplayBoundsChanged(
-    const gfx::Display& display) {
-  // Nothing to do here.
-}
-
 void MaximizeModeWindowManager::OnDisplayAdded(const gfx::Display& display) {
   DisplayConfigurationChanged();
 }
 
 void MaximizeModeWindowManager::OnDisplayRemoved(const gfx::Display& display) {
   DisplayConfigurationChanged();
+}
+
+void MaximizeModeWindowManager::OnDisplayMetricsChanged(const gfx::Display&,
+                                                        uint32_t) {
+  // Nothing to do here.
 }
 
 void MaximizeModeWindowManager::OnTouchEvent(ui::TouchEvent* event) {

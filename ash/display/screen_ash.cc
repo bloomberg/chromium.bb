@@ -188,9 +188,11 @@ const gfx::Display& ScreenAsh::GetDisplayForId(int64 display_id) {
   return GetDisplayManager()->GetDisplayForId(display_id);
 }
 
-void ScreenAsh::NotifyBoundsChanged(const gfx::Display& display) {
-  FOR_EACH_OBSERVER(gfx::DisplayObserver, observers_,
-                    OnDisplayBoundsChanged(display));
+void ScreenAsh::NotifyMetricsChanged(const gfx::Display& display,
+                                     uint32_t metrics) {
+  FOR_EACH_OBSERVER(gfx::DisplayObserver,
+                    observers_,
+                    OnDisplayMetricsChanged(display, metrics));
 }
 
 void ScreenAsh::NotifyDisplayAdded(const gfx::Display& display) {

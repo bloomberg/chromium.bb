@@ -81,10 +81,6 @@ void DisplayOverscanHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void DisplayOverscanHandler::OnDisplayBoundsChanged(
-    const gfx::Display& display) {
-}
-
 void DisplayOverscanHandler::OnDisplayAdded(const gfx::Display& new_display) {
   web_ui()->CallJavascriptFunction(
       "options.DisplayOverscan.onOverscanCanceled");
@@ -93,6 +89,10 @@ void DisplayOverscanHandler::OnDisplayAdded(const gfx::Display& new_display) {
 void DisplayOverscanHandler::OnDisplayRemoved(const gfx::Display& old_display) {
   web_ui()->CallJavascriptFunction(
       "options.DisplayOverscan.onOverscanCanceled");
+}
+
+void DisplayOverscanHandler::OnDisplayMetricsChanged(const gfx::Display&,
+                                                     uint32_t) {
 }
 
 void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
