@@ -4785,6 +4785,7 @@ includeFile (FileInfo * nested, CharsString * includedFile)
   int k;
   char includeThis[MAXSTRING];
   char **tableFiles;
+  int rv;
   for (k = 0; k < includedFile->length; k++)
     includeThis[k] = (char) includedFile->chars[k];
   includeThis[k] = 0;
@@ -4792,15 +4793,19 @@ includeFile (FileInfo * nested, CharsString * includedFile)
   if (tableFiles == NULL)
     {
       errorCount++;
+      free(tableFiles);
       return 0;
     }
   if (tableFiles[1] != NULL)
     {
       errorCount++;
+      free(tableFiles);
       lou_logPrint ("Table list not supported in include statement: 'include %s'", includeThis);
       return 0;
     }
-  return compileFile (*tableFiles);
+  rv = compileFile (*tableFiles);
+  free(tableFiles);
+  return rv;
 }
 
 /**
@@ -4845,6 +4850,7 @@ compileTranslationTable (const char *tableList)
   
 /* Clean up after compiling files */
 cleanup:
+  free(tableFiles);
   if (characterClasses)
     deallocateCharacterClasses ();
   if (ruleNames)
