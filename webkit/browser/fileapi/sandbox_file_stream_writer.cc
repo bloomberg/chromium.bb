@@ -5,7 +5,6 @@
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
 #include "base/files/file_util_proxy.h"
-#include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

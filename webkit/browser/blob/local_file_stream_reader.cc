@@ -8,7 +8,6 @@
 #include "base/files/file_util_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -18,9 +17,9 @@ namespace webkit_blob {
 
 namespace {
 
-const int kOpenFlagsForRead = base::PLATFORM_FILE_OPEN |
-                              base::PLATFORM_FILE_READ |
-                              base::PLATFORM_FILE_ASYNC;
+const int kOpenFlagsForRead = base::File::FLAG_OPEN |
+                              base::File::FLAG_READ |
+                              base::File::FLAG_ASYNC;
 
 }  // namespace
 

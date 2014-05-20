@@ -10,7 +10,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "third_party/WebKit/public/platform/WebFileError.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "webkit/common/fileapi/file_system_info.h"

@@ -14,12 +14,12 @@ namespace fileapi {
 
 namespace {
 
-const int kOpenFlagsForWrite = base::PLATFORM_FILE_OPEN |
-                               base::PLATFORM_FILE_WRITE |
-                               base::PLATFORM_FILE_ASYNC;
-const int kCreateFlagsForWrite = base::PLATFORM_FILE_CREATE |
-                                 base::PLATFORM_FILE_WRITE |
-                                 base::PLATFORM_FILE_ASYNC;
+const int kOpenFlagsForWrite = base::File::FLAG_OPEN |
+                               base::File::FLAG_WRITE |
+                               base::File::FLAG_ASYNC;
+const int kCreateFlagsForWrite = base::File::FLAG_CREATE |
+                                 base::File::FLAG_WRITE |
+                                 base::File::FLAG_ASYNC;
 
 }  // namespace
 

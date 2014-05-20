@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/platform_file.h"
+#include "base/files/file_path.h"
 #include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"
