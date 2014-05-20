@@ -3370,6 +3370,7 @@
             'dom/RangeTest.cpp',
             'dom/TreeScopeTest.cpp',
             'editing/TextIteratorTest.cpp',
+            'editing/VisibleSelectionTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
