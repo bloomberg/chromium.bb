@@ -329,6 +329,8 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
         mainFrame()->deviceOrPageScaleFactorChanged();
         m_chrome->client().deviceOrPageScaleFactorChanged();
 
+        // FIXME: In virtual-viewport pinch mode, scale doesn't change the fixed-pos viewport;
+        // remove once it's the only pinch mode in town.
         if (view)
             view->viewportConstrainedVisibleContentSizeChanged(true, true);
 

@@ -8,6 +8,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -621,6 +622,24 @@ TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
     webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
     EXPECT_POINT_EQ(IntPoint(200-30-75, 600-50-65), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(30, 50), pinchViewport.visibleRect().location());
+}
+
+// Test that resizing the WebView causes ViewportConstrained objects to relayout.
+TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(500, 300));
+
+    registerMockedHttpURLLoad("pinch-viewport-fixed-pos.html");
+    navigateTo(m_baseURL + "pinch-viewport-fixed-pos.html");
+
+    RenderObject* navbar = frame()->document()->getElementById("navbar")->renderer();
+
+    EXPECT_FALSE(navbar->needsLayout());
+
+    frame()->view()->resize(IntSize(500, 200));
+
+    EXPECT_TRUE(navbar->needsLayout());
 }
 
 } // namespace

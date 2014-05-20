@@ -1295,10 +1295,17 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
 
 void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged)
 {
+    if (!hasViewportConstrainedObjects())
+        return;
+
     // If viewport is not enabled, frameRect change will cause layout size change and then layout.
     // Otherwise, viewport constrained objects need their layout flags set separately to ensure
-    // they are positioned correctly.
-    if ((m_frame->settings() && !m_frame->settings()->viewportEnabled()) || !hasViewportConstrainedObjects())
+    // they are positioned correctly. In the virtual-viewport pinch mode frame rect changes wont
+    // necessarily cause a layout size change so only take this early-out if we're in old-style
+    // pinch.
+    if (m_frame->settings()
+        && !m_frame->settings()->viewportEnabled()
+        && !m_frame->settings()->pinchVirtualViewportEnabled())
         return;
 
     ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
