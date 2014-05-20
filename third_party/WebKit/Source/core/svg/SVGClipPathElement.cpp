@@ -84,7 +84,7 @@ void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChang
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+        object->setNeedsLayoutAndFullRepaint();
 }
 
 RenderObject* SVGClipPathElement::createRenderer(RenderStyle*)

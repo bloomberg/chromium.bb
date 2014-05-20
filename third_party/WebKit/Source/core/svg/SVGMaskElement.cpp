@@ -126,7 +126,7 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+        object->setNeedsLayoutAndFullRepaint();
 }
 
 RenderObject* SVGMaskElement::createRenderer(RenderStyle*)

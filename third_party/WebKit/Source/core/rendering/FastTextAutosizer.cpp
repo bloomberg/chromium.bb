@@ -553,7 +553,7 @@ void FastTextAutosizer::setAllTextNeedsLayout()
     RenderObject* renderer = m_document->renderer();
     while (renderer) {
         if (renderer->isText())
-            renderer->setNeedsLayout();
+            renderer->setNeedsLayoutAndFullRepaint();
         renderer = renderer->nextInPreOrder();
     }
 }
@@ -955,7 +955,7 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
         m_stylesRetainedDuringLayout.append(currentStyle);
 
         renderer->setStyleInternal(style.release());
-        renderer->setNeedsLayout();
+        renderer->setNeedsLayoutAndFullRepaint();
         if (renderer->isRenderBlock())
             toRenderBlock(renderer)->invalidateLineHeight();
         break;

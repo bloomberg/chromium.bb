@@ -59,7 +59,7 @@ public:
         // and we need that layout to know of the new size otherwise
         // the rendering may be incorrectly using the old size.
         if (m_containerSize != containerSize)
-            setNeedsLayout();
+            setNeedsLayoutAndFullRepaint();
         m_containerSize = containerSize;
     }
 

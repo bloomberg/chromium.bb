@@ -94,7 +94,7 @@ void RenderSVGInlineText::styleDidChange(StyleDifference diff, const RenderStyle
 
     // The text metrics may be influenced by style changes.
     if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(this))
-        textRenderer->setNeedsLayout();
+        textRenderer->setNeedsLayoutAndFullRepaint();
 }
 
 InlineTextBox* RenderSVGInlineText::createTextBox()

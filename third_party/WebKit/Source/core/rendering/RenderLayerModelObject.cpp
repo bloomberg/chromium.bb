@@ -152,7 +152,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
         if (s_wasFloating && isFloating())
             setChildNeedsLayout();
         if (hadTransform)
-            setNeedsLayoutAndPrefWidthsRecalc();
+            setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
     }
 
     if (layer()) {

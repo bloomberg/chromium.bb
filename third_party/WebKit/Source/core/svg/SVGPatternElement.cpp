@@ -132,7 +132,7 @@ void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+        object->setNeedsLayoutAndFullRepaint();
 }
 
 RenderObject* SVGPatternElement::createRenderer(RenderStyle*)

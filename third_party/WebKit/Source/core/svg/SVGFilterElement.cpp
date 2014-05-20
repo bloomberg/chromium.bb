@@ -141,7 +141,7 @@ void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange,
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout();
+        object->setNeedsLayoutAndFullRepaint();
 }
 
 RenderObject* SVGFilterElement::createRenderer(RenderStyle*)

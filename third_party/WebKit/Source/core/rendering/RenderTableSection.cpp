@@ -1520,7 +1520,7 @@ void RenderTableSection::recalcCells()
     }
 
     m_grid.shrinkToFit();
-    setNeedsLayout();
+    setNeedsLayoutAndFullRepaint();
 }
 
 // FIXME: This function could be made O(1) in certain cases (like for the non-most-constrainive cells' case).

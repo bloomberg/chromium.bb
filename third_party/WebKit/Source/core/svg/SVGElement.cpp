@@ -482,7 +482,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
         if (renderer->isSVGResourceContainer())
             toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
         else
-            renderer->setNeedsLayout(MarkContainingBlockChain, layoutScope);
+            renderer->setNeedsLayoutAndFullRepaint(MarkContainingBlockChain, layoutScope);
     }
 
     HashSet<SVGElement*>::iterator end = m_elementsWithRelativeLengths.end();

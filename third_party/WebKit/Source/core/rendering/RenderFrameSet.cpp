@@ -514,7 +514,7 @@ void RenderFrameSet::positionFrames()
             if (width != child->width() || height != child->height()) {
                 child->setWidth(width);
                 child->setHeight(height);
-                child->setNeedsLayout();
+                child->setNeedsLayoutAndFullRepaint();
                 child->layout();
             }
 
@@ -554,7 +554,7 @@ void RenderFrameSet::continueResizing(GridAxis& axis, int position)
         return;
     axis.m_deltas[axis.m_splitBeingResized - 1] += delta;
     axis.m_deltas[axis.m_splitBeingResized] -= delta;
-    setNeedsLayout();
+    setNeedsLayoutAndFullRepaint();
 }
 
 bool RenderFrameSet::userResize(MouseEvent* evt)

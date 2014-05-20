@@ -739,7 +739,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     RefPtr<FrameView> frameView = ownerRenderer->frame()->view();
 
     // Mark the owner renderer as needing layout.
-    ownerRenderer->setNeedsLayoutAndPrefWidthsRecalc();
+    ownerRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
 
     // Synchronously enter layout, to layout the view containing the host object/embed/iframe.
     ASSERT(frameView);
@@ -1309,13 +1309,13 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
             if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayout();
+                renderer->setNeedsLayoutAndFullRepaint();
         }
         if (heightChanged) {
             if (style->height().isFixed() && (style->top().isAuto() || style->bottom().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayout();
+                renderer->setNeedsLayoutAndFullRepaint();
         }
     }
 }
@@ -1928,7 +1928,7 @@ bool FrameView::needsLayout() const
 void FrameView::setNeedsLayout()
 {
     if (RenderView* renderView = this->renderView())
-        renderView->setNeedsLayout();
+        renderView->setNeedsLayoutAndFullRepaint();
 }
 
 bool FrameView::isTransparent() const
@@ -2941,7 +2941,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         LayoutUnit flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
         renderView->setLogicalWidth(flooredPageLogicalWidth);
         renderView->setPageLogicalHeight(flooredPageLogicalHeight);
-        renderView->setNeedsLayoutAndPrefWidthsRecalc();
+        renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         forceLayout();
 
         // If we don't fit in the given page width, we'll lay out again. If we don't fit in the
@@ -2961,7 +2961,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
             renderView->setLogicalWidth(flooredPageLogicalWidth);
             renderView->setPageLogicalHeight(flooredPageLogicalHeight);
-            renderView->setNeedsLayoutAndPrefWidthsRecalc();
+            renderView->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
             forceLayout();
 
             const LayoutRect& updatedDocumentRect = renderView->documentRect();

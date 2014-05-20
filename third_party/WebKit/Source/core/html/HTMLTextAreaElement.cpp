@@ -162,7 +162,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         if (m_rows != rows) {
             m_rows = rows;
             if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalc();
+                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         }
     } else if (name == colsAttr) {
         int cols = value.toInt();
@@ -171,7 +171,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         if (m_cols != cols) {
             m_cols = cols;
             if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalc();
+                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         }
     } else if (name == wrapAttr) {
         // The virtual/physical values were a Netscape extension of HTML 3.0, now deprecated.
@@ -186,7 +186,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         if (wrap != m_wrap) {
             m_wrap = wrap;
             if (renderer())
-                renderer()->setNeedsLayoutAndPrefWidthsRecalc();
+                renderer()->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         }
     } else if (name == accesskeyAttr) {
         // ignore for the moment

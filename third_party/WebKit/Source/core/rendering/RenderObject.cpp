@@ -2057,7 +2057,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 
     if (!diff.needsFullLayout()) {
         if (updatedDiff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalc();
+            setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         else if (updatedDiff.needsPositionedMovementLayout())
             setNeedsPositionedMovementLayout();
     }
@@ -2225,7 +2225,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
             markContainingBlocksForOverflowRecalc();
 
         if (diff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalc();
+            setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
     } else if (diff.needsPositionedMovementLayout())
         setNeedsPositionedMovementLayout();
 

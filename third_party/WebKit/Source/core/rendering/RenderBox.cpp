@@ -4641,7 +4641,7 @@ static void markBoxForRelayoutAfterSplit(RenderBox* box)
     } else if (box->isTableSection())
         toRenderTableSection(box)->setNeedsCellRecalc();
 
-    box->setNeedsLayoutAndPrefWidthsRecalc();
+    box->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
 }
 
 RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChild)

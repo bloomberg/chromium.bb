@@ -1080,7 +1080,7 @@ RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
 void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
 
     RenderBox::styleWillChange(diff, newStyle);
 }
@@ -1350,7 +1350,7 @@ void RenderListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
         return;
 
     if (width() != m_image->imageSize(this, style()->effectiveZoom()).width() || height() != m_image->imageSize(this, style()->effectiveZoom()).height() || m_image->errorOccurred())
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
     else
         repaint();
 }

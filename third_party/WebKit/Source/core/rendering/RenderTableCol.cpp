@@ -66,7 +66,7 @@ void RenderTableCol::updateFromElement()
     } else
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
     if (m_span != oldSpan && style() && parent())
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
 }
 
 void RenderTableCol::insertedIntoTree()

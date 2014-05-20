@@ -114,7 +114,7 @@ void RenderMenuList::adjustInnerStyle()
 
     if (m_optionStyle) {
         if ((m_optionStyle->direction() != innerStyle->direction() || m_optionStyle->unicodeBidi() != innerStyle->unicodeBidi()))
-            m_innerBlock->setNeedsLayoutAndPrefWidthsRecalc();
+            m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
         innerStyle->setTextAlign(style()->isLeftToRightDirection() ? LEFT : RIGHT);
         innerStyle->setDirection(m_optionStyle->direction());
         innerStyle->setUnicodeBidi(m_optionStyle->unicodeBidi());
@@ -191,7 +191,7 @@ void RenderMenuList::updateOptionsWidth()
 
     m_optionsWidth = width;
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
 }
 
 void RenderMenuList::updateFromElement()

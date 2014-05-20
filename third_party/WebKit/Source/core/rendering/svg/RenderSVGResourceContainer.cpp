@@ -200,7 +200,7 @@ void RenderSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutSc
     if (selfNeedsLayout())
         return;
 
-    setNeedsLayout(MarkContainingBlockChain, layoutScope);
+    setNeedsLayoutAndFullRepaint(MarkContainingBlockChain, layoutScope);
 
     if (everHadLayout())
         removeAllClientsFromCache();
@@ -231,7 +231,7 @@ void RenderSVGResourceContainer::registerResource()
         StyleDifference diff;
         diff.setNeedsFullLayout();
         SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->style());
-        renderer->setNeedsLayout();
+        renderer->setNeedsLayoutAndFullRepaint();
     }
 }
 
