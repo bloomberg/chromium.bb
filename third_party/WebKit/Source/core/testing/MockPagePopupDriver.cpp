@@ -43,6 +43,7 @@ class MockPagePopup : public PagePopup, public RefCounted<MockPagePopup> {
 public:
     static PassRefPtr<MockPagePopup> create(PagePopupClient*, const IntRect& originBoundsInRootView, LocalFrame*);
     virtual ~MockPagePopup();
+    bool initialize();
     void closeLater();
 
 private:
@@ -68,10 +69,18 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     m_iframe->setInlineStyleProperty(CSSPropertyTop, originBoundsInRootView.maxY(), CSSPrimitiveValue::CSS_PX, true);
     if (document->body())
         document->body()->appendChild(m_iframe.get());
+}
+
+bool MockPagePopup::initialize()
+{
     const char scriptToSetUpPagePopupController[] = "<script>window.pagePopupController = parent.internals.pagePopupController;</script>";
     RefPtr<SharedBuffer> data = SharedBuffer::create(scriptToSetUpPagePopupController, sizeof(scriptToSetUpPagePopupController));
     m_popupClient->writeDocument(data.get());
-    toLocalFrame(m_iframe->contentFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
+    LocalFrame* localFrame = toLocalFrame(m_iframe->contentFrame());
+    if (!localFrame)
+        return false;
+    localFrame->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
+    return true;
 }
 
 PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, LocalFrame* mainFrame)
@@ -123,6 +132,10 @@ PagePopup* MockPagePopupDriver::openPagePopup(PagePopupClient* client, const Int
         return 0;
     m_pagePopupController = PagePopupController::create(client);
     m_mockPagePopup = MockPagePopup::create(client, originBoundsInRootView, m_mainFrame);
+    if (!m_mockPagePopup->initialize()) {
+        m_mockPagePopup->closeLater();
+        m_mockPagePopup.clear();
+    }
     return m_mockPagePopup.get();
 }
 
