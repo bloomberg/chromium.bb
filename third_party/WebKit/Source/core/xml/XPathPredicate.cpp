@@ -43,7 +43,7 @@ Number::Number(double value)
 
 void Number::trace(Visitor* visitor)
 {
-    // FIXME: Oilpan: Make m_value traceable and trace it.
+    visitor->trace(m_value);
     Expression::trace(visitor);
 }
 
@@ -59,7 +59,7 @@ StringExpression::StringExpression(const String& value)
 
 void StringExpression::trace(Visitor* visitor)
 {
-    // FIXME: Oilpan: Make m_value traceable and trace it.
+    visitor->trace(m_value);
     Expression::trace(visitor);
 }
 

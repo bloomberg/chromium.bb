@@ -55,7 +55,7 @@ XPathResult::XPathResult(Document* document, const Value& value)
         case Value::NodeSetValue:
             m_resultType = UNORDERED_NODE_ITERATOR_TYPE;
             m_nodeSetPosition = 0;
-            m_nodeSet = m_value.toNodeSet();
+            m_nodeSet = NodeSet::create(m_value.toNodeSet());
             m_document = document;
             m_domTreeVersion = document->domTreeVersion();
             return;
@@ -65,6 +65,13 @@ XPathResult::XPathResult(Document* document, const Value& value)
 
 XPathResult::~XPathResult()
 {
+}
+
+void XPathResult::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
+    visitor->trace(m_nodeSet);
+    visitor->trace(m_document);
 }
 
 void XPathResult::convertTo(unsigned short type, ExceptionState& exceptionState)
@@ -99,7 +106,7 @@ void XPathResult::convertTo(unsigned short type, ExceptionState& exceptionState)
                 exceptionState.throwTypeError("The result is not a node set, and therefore cannot be converted to the desired type.");
                 return;
             }
-            m_nodeSet.sort();
+            nodeSet().sort();
             m_resultType = type;
             break;
         case ORDERED_NODE_SNAPSHOT_TYPE:
@@ -190,10 +197,10 @@ Node* XPathResult::iterateNext(ExceptionState& exceptionState)
         return 0;
     }
 
-    if (m_nodeSetPosition + 1 > m_nodeSet.size())
+    if (m_nodeSetPosition + 1 > nodeSet().size())
         return 0;
 
-    Node* node = m_nodeSet[m_nodeSetPosition];
+    Node* node = nodeSet()[m_nodeSetPosition];
 
     m_nodeSetPosition++;
 

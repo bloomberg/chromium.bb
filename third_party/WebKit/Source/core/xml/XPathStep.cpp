@@ -132,9 +132,9 @@ void Step::evaluate(Node* context, NodeSet& nodes) const
     for (unsigned i = 0; i < m_predicates.size(); i++) {
         Predicate* predicate = m_predicates[i].get();
 
-        NodeSet newNodes;
+        OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
         if (!nodes.isSorted())
-            newNodes.markSorted(false);
+            newNodes->markSorted(false);
 
         for (unsigned j = 0; j < nodes.size(); j++) {
             Node* node = nodes[j];
@@ -143,10 +143,10 @@ void Step::evaluate(Node* context, NodeSet& nodes) const
             evaluationContext.size = nodes.size();
             evaluationContext.position = j + 1;
             if (predicate->evaluate())
-                newNodes.append(node);
+                newNodes->append(node);
         }
 
-        nodes.swap(newNodes);
+        nodes.swap(*newNodes);
     }
 }
 
