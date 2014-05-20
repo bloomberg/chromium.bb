@@ -55,9 +55,9 @@ public:
         AuthorShadowRoot
     };
 
-    static PassRefPtr<ShadowRoot> create(Document& document, ShadowRootType type)
+    static PassRefPtrWillBeRawPtr<ShadowRoot> create(Document& document, ShadowRootType type)
     {
-        return adoptRef(new ShadowRoot(document, type));
+        return adoptRefWillBeRefCountedGarbageCollected(new ShadowRoot(document, type));
     }
 
     void recalcStyle(StyleRecalcChange);

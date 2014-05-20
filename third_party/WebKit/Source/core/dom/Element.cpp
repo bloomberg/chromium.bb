@@ -1738,7 +1738,7 @@ CustomElementDefinition* Element::customElementDefinition() const
     return 0;
 }
 
-PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
 {
     if (alwaysCreateUserAgentShadowRoot())
         ensureUserAgentShadowRoot();
@@ -1751,7 +1751,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return PassRefPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
 }
 
 ShadowRoot* Element::shadowRoot() const

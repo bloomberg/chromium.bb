@@ -331,7 +331,7 @@ public:
 
     ElementShadow* shadow() const;
     ElementShadow& ensureShadow();
-    PassRefPtr<ShadowRoot> createShadowRoot(ExceptionState&);
+    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(ExceptionState&);
     ShadowRoot* shadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;
 

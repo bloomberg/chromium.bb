@@ -131,9 +131,9 @@ Vector<String> createVectorString(const char* const* rawStrings, size_t size)
     return result;
 }
 
-PassRefPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
+PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
 {
-    RefPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
     return shadowRoot.release();
 }
@@ -265,7 +265,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees)
     Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
 
     setBodyInnerHTML(bodyContent);
-    RefPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
 
     EXPECT_EQ(expectedTextChunks, iterate());
@@ -338,7 +338,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
     Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
 
     setBodyInnerHTML(bodyContent);
-    RefPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
 
     EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
@@ -377,7 +377,7 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
     Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
 
     setBodyInnerHTML(bodyContent);
-    RefPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(spanInShadow, Position::PositionIsBeforeChildren);
@@ -397,7 +397,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
     Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
 
     setBodyInnerHTML(bodyContent);
-    RefPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(outerDiv, Position::PositionIsBeforeChildren);

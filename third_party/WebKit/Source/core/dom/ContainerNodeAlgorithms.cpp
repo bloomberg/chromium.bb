@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class ShadowRootVector : public Vector<RefPtr<ShadowRoot> > {
+class ShadowRootVector : public WillBeHeapVector<RefPtrWillBeMember<ShadowRoot> > {
 public:
     explicit ShadowRootVector(ElementShadow* tree)
     {

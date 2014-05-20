@@ -143,7 +143,7 @@ ElementShadow::~ElementShadow()
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
-    RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
 
     if (type == ShadowRoot::AuthorShadowRoot && (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot))
         shadowHost.willAddFirstAuthorShadowRoot();
@@ -171,7 +171,7 @@ void ElementShadow::removeDetachedShadowRoots()
     Element* shadowHost = host();
     ASSERT(shadowHost);
 
-    while (RefPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
+    while (RefPtrWillBeRawPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
         shadowHost->document().removeFocusedElementOfSubtree(oldRoot.get());
         m_shadowRoots.removeHead();
