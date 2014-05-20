@@ -258,7 +258,9 @@ class OzonePlatformEgltest : public OzonePlatform {
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
   }
 
-  virtual void InitializeGPU() OVERRIDE {}
+  virtual void InitializeGPU() OVERRIDE {
+    surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
+  }
 
  private:
   LibeglplatformShimLoader eglplatform_shim_;
