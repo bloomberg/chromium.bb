@@ -960,9 +960,6 @@ const char kDisableGestureRequirementForMediaFullscreen[] =
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";
 
-// Disable history logging for media elements.
-const char kDisableMediaHistoryLogging[]    = "disable-media-history";
-
 // Disable the click delay by sending click events during double tap.
 const char kDisableClickDelay[]             = "disable-click-delay";
 

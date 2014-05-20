@@ -274,7 +274,6 @@ CONTENT_EXPORT extern const char kEnableWebRtcHWVp8Encoding[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaFullscreen[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
-extern const char kDisableMediaHistoryLogging[];
 CONTENT_EXPORT extern const char kDisableClickDelay[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 CONTENT_EXPORT extern const char kDisableWebRTC[];
