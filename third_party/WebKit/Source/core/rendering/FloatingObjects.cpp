@@ -213,7 +213,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         LayoutUnit lowestFloatBottomLeft = 0;
         LayoutUnit lowestFloatBottomRight = 0;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = (*it).get();
+            FloatingObject* floatingObject = it->get();
             if (floatingObject->isPlaced()) {
                 FloatingObject::Type curType = floatingObject->type();
                 LayoutUnit curFloatLogicalBottom = m_renderer->logicalBottomForFloat(floatingObject);
@@ -228,7 +228,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
     } else {
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = (*it).get();
+            FloatingObject* floatingObject = it->get();
             if (floatingObject->isPlaced() && floatingObject->type() == floatType)
                 lowestFloatBottom = max(lowestFloatBottom, m_renderer->logicalBottomForFloat(floatingObject));
         }
@@ -363,7 +363,7 @@ void FloatingObjects::computePlacedFloatsTree()
     FloatingObjectSetIterator it = m_set.begin();
     FloatingObjectSetIterator end = m_set.end();
     for (; it != end; ++it) {
-        FloatingObject* floatingObject = (*it).get();
+        FloatingObject* floatingObject = it->get();
         if (floatingObject->isPlaced())
             m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
     }

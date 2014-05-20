@@ -150,7 +150,7 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
 
     HashSet<RefPtr<Node> >::iterator layerEnd = m_clientsToAdd.end();
     for (HashSet<RefPtr<Node> >::iterator it = m_clientsToAdd.begin(); it != layerEnd; ++it)
-        renderer->addClientRenderLayer((*it).get());
+        renderer->addClientRenderLayer(it->get());
     m_clientsToAdd.clear();
 
     return renderer;

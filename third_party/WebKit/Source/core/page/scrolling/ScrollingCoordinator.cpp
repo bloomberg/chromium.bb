@@ -764,7 +764,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
             if (!(*it)->isPluginView())
                 continue;
 
-            PluginView* pluginView = toPluginView((*it).get());
+            PluginView* pluginView = toPluginView(it->get());
             if (pluginView->wantsWheelEvents())
                 shouldHandleScrollGestureOnMainThreadRegion.unite(pluginView->frameRect());
         }

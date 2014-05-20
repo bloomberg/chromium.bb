@@ -787,7 +787,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(con
 
     Vector<RefPtr<FilterOperation> >::const_iterator end = style.filter().operations().end();
     for (Vector<RefPtr<FilterOperation> >::const_iterator it = style.filter().operations().begin(); it != end; ++it) {
-        FilterOperation* filterOperation = (*it).get();
+        FilterOperation* filterOperation = it->get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
             filterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);

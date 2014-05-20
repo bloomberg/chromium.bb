@@ -1122,7 +1122,7 @@ void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, Vector
 {
     const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
     for (WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
-        StyleSheet* styleSheet = (*it).get();
+        StyleSheet* styleSheet = it->get();
         if (styleSheet->isCSSStyleSheet())
             collectStyleSheets(toCSSStyleSheet(styleSheet), result);
     }

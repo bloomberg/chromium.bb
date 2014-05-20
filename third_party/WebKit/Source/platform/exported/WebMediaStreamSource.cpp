@@ -221,7 +221,7 @@ bool WebMediaStreamSource::removeAudioConsumer(WebAudioDestinationConsumer* cons
 
     const Vector<RefPtr<AudioDestinationConsumer> >& consumers = m_private->audioConsumers();
     for (Vector<RefPtr<AudioDestinationConsumer> >::const_iterator it = consumers.begin(); it != consumers.end(); ++it) {
-        ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>((*it).get());
+        ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it->get());
         if (wrapper->consumer() == consumer) {
             m_private->removeAudioConsumer(wrapper);
             return true;

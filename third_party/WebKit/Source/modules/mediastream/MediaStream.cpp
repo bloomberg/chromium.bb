@@ -239,12 +239,12 @@ MediaStreamTrack* MediaStream::getTrackById(String id)
 {
     for (MediaStreamTrackVector::iterator iter = m_audioTracks.begin(); iter != m_audioTracks.end(); ++iter) {
         if ((*iter)->id() == id)
-            return (*iter).get();
+            return iter->get();
     }
 
     for (MediaStreamTrackVector::iterator iter = m_videoTracks.begin(); iter != m_videoTracks.end(); ++iter) {
         if ((*iter)->id() == id)
-            return (*iter).get();
+            return iter->get();
     }
 
     return 0;

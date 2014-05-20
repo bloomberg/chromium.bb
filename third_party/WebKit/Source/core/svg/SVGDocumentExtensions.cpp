@@ -132,7 +132,7 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
 
     WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator end = timeContainers.end();
     for (WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator it = timeContainers.begin(); it != end; ++it) {
-        SVGSVGElement* outerSVG = (*it).get();
+        SVGSVGElement* outerSVG = it->get();
         if (!outerSVG->isOutermostSVGSVGElement())
             continue;
 

@@ -413,7 +413,7 @@ Vector<String> DocumentState::toStateVector()
     OwnPtrWillBeRawPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
     OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
     for (FormElementListHashSet::const_iterator it = m_formControls.begin(); it != m_formControls.end(); ++it) {
-        HTMLFormControlElementWithState* control = (*it).get();
+        HTMLFormControlElementWithState* control = it->get();
         ASSERT(control->inDocument());
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
