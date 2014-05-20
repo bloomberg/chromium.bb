@@ -379,9 +379,18 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
       return GenerateFailureResult(accounts, NULL)
              << "getAccounts did not return a result.";
     }
-    const base::ListValue* results = func->GetResultList();
-    if (!results || (results->GetSize() != accounts.size()))
-      return GenerateFailureResult(accounts, results);
+    const base::ListValue* callback_arguments = func->GetResultList();
+    if (!callback_arguments)
+      return GenerateFailureResult(accounts, NULL) << "NULL result";
+
+    if (callback_arguments->GetSize() != 1) {
+      return GenerateFailureResult(accounts, NULL)
+             << "Expected 1 argument but got " << callback_arguments->GetSize();
+    }
+
+    const base::ListValue* results;
+    if (!callback_arguments->GetList(0, &results))
+      GenerateFailureResult(accounts, NULL) << "Result was not an array";
 
     std::set<std::string> result_ids;
     for (base::ListValue::const_iterator it = results->begin();
