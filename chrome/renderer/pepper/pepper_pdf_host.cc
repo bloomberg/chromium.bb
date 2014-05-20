@@ -206,10 +206,6 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  // Only want to show an info bar if the pdf is the whole tab.
-  if (!instance->IsFullPagePlugin())
-    return PP_OK;
-
   blink::WebView* view =
       instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
