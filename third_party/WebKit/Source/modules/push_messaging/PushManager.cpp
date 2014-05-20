@@ -11,10 +11,11 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushRegistration.h"
-#include "public/platform/WebPushError.h"
-#include "wtf/OwnPtr.h"
+#include "public/platform/WebPushClient.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -29,11 +30,12 @@ PushManager::~PushManager()
 
 ScriptPromise PushManager::registerPushMessaging(ExecutionContext* context, const String& senderId)
 {
+    ASSERT(context->isDocument());
     RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context)));
     ScriptPromise promise = resolver->promise();
-    // FIXME: Implement registration.
-    OwnPtr<CallbackPromiseAdapter<PushRegistration, PushError> > adapter = adoptPtr(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
-    adapter->onError(new blink::WebPushError(blink::WebPushError::ErrorTypeAbort, "FIXME"));
+    blink::WebPushClient* client = PushController::clientFrom(toDocument(context)->page());
+    ASSERT(client);
+    client->registerPushMessaging(senderId, new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
     return promise;
 }
 
