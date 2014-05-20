@@ -1,3 +1,6 @@
+# This is needed because of * in testing/OWNERS .
+set noparent
+
 darin@chromium.org
 phajdan.jr@chromium.org
 sky@chromium.org
