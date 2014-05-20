@@ -142,6 +142,8 @@ var testing = {};
       if (!this.accessibilityAuditConfig_) {
         this.accessibilityAuditConfig_ = new axs.AuditConfiguration();
 
+        this.accessibilityAuditConfig_.showUnsupportedRulesWarning = false;
+
         this.accessibilityAuditConfig_.auditRulesToIgnore = [
             // The "elements with meaningful background image" accessibility
             // audit (AX_IMAGE_01) does not apply, since Chrome doesn't
