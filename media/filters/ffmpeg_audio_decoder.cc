@@ -327,8 +327,8 @@ bool FFmpegAudioDecoder::FFmpegDecode(
           << "This is quite possibly a bug in the audio decoder not handling "
           << "end of stream AVPackets correctly.";
 
-      DLOG(WARNING)
-          << "Failed to decode an audio frame with timestamp: "
+      MEDIA_LOG(log_cb_)
+          << "Dropping audio frame which failed decode with timestamp: "
           << buffer->timestamp().InMicroseconds() << " us, duration: "
           << buffer->duration().InMicroseconds() << " us, packet size: "
           << buffer->data_size() << " bytes";
