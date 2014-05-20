@@ -463,6 +463,22 @@ void Directory::UpdateAttachmentIndex(
   AddToAttachmentIndex(metahandle, new_metadata, lock);
 }
 
+void Directory::GetMetahandlesByAttachmentId(
+    BaseTransaction* trans,
+    const sync_pb::AttachmentIdProto& attachment_id_proto,
+    Metahandles* result) {
+  DCHECK(result);
+  result->clear();
+  ScopedKernelLock lock(this);
+  IndexByAttachmentId::const_iterator index_iter =
+      kernel_->index_by_attachment_id.find(attachment_id_proto.unique_id());
+  if (index_iter == kernel_->index_by_attachment_id.end())
+    return;
+  const MetahandleSet& metahandle_set = index_iter->second;
+  std::copy(
+      metahandle_set.begin(), metahandle_set.end(), back_inserter(*result));
+}
+
 bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {
   DCHECK(trans != NULL);
   return unrecoverable_error_set_;

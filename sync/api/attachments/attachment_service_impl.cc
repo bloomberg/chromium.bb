@@ -14,9 +14,11 @@ namespace syncer {
 
 AttachmentServiceImpl::AttachmentServiceImpl(
     scoped_ptr<AttachmentStore> attachment_store,
-    scoped_ptr<AttachmentUploader> attachment_uploader)
+    scoped_ptr<AttachmentUploader> attachment_uploader,
+    Delegate* delegate)
     : attachment_store_(attachment_store.Pass()),
       attachment_uploader_(attachment_uploader.Pass()),
+      delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_store_);
@@ -34,8 +36,8 @@ scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(attachment_store.Pass(),
-                                        attachment_uploader.Pass()));
+      new syncer::AttachmentServiceImpl(
+          attachment_store.Pass(), attachment_uploader.Pass(), NULL));
   return attachment_service.Pass();
 }
 
@@ -66,8 +68,14 @@ void AttachmentServiceImpl::StoreAttachments(const AttachmentList& attachments,
                            base::Bind(&AttachmentServiceImpl::WriteDone,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       callback));
-  // TODO(maniscalco): Ensure the linked attachments are schedule for upload to
-  // the server (bug 356351).
+  for (AttachmentList::const_iterator iter = attachments.begin();
+       iter != attachments.end();
+       ++iter) {
+    attachment_uploader_->UploadAttachment(
+        *iter,
+        base::Bind(&AttachmentServiceImpl::UploadDone,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AttachmentServiceImpl::OnSyncDataDelete(const SyncData& sync_data) {
@@ -122,6 +130,17 @@ void AttachmentServiceImpl::WriteDone(const StoreCallback& callback,
   // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, store_result));
+}
+
+void AttachmentServiceImpl::UploadDone(
+    const AttachmentUploader::UploadResult& result,
+    const AttachmentId& attachment_id) {
+  // TODO(pavely): crbug/372622: Deal with UploadAttachment failures.
+  if (result != AttachmentUploader::UPLOAD_SUCCESS)
+    return;
+  if (delegate_) {
+    delegate_->OnAttachmentUploaded(attachment_id);
+  }
 }
 
 }  // namespace syncer

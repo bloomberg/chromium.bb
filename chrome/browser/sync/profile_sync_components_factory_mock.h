@@ -45,8 +45,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    const base::FilePath& sync_folder));
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
-  virtual scoped_ptr<syncer::AttachmentStore>
-      CreateCustomAttachmentStoreForType(syncer::ModelType type) OVERRIDE;
+  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      syncer::AttachmentService::Delegate* delegate) OVERRIDE;
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));

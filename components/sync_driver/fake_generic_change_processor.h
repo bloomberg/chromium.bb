@@ -8,6 +8,7 @@
 #include "components/sync_driver/generic_change_processor.h"
 
 #include "components/sync_driver/generic_change_processor_factory.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/sync_error.h"
 
 namespace browser_sync {
@@ -15,7 +16,7 @@ namespace browser_sync {
 // A fake GenericChangeProcessor that can return arbitrary values.
 class FakeGenericChangeProcessor : public GenericChangeProcessor {
  public:
-  FakeGenericChangeProcessor();
+  FakeGenericChangeProcessor(SyncApiComponentFactory* sync_factory);
   virtual ~FakeGenericChangeProcessor();
 
   // Setters for GenericChangeProcessor implementation results.
@@ -52,7 +53,8 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       browser_sync::DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      scoped_ptr<syncer::AttachmentService> attachment_service) OVERRIDE;
+      SyncApiComponentFactory* sync_factory) OVERRIDE;
+
  private:
   scoped_ptr<FakeGenericChangeProcessor> processor_;
   DISALLOW_COPY_AND_ASSIGN(FakeGenericChangeProcessorFactory);

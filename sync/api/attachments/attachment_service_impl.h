@@ -18,8 +18,13 @@ namespace syncer {
 class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                           public base::NonThreadSafe {
  public:
+  // |delegate| is optional delegate for AttachmentService to notify about
+  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
+  // provided. AttachmentService doesn't take ownership of delegate, the pointer
+  // must be valid throughout AttachmentService lifetime.
   AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
-                        scoped_ptr<AttachmentUploader> attachment_uploader);
+                        scoped_ptr<AttachmentUploader> attachment_uploader,
+                        Delegate* delegate);
   virtual ~AttachmentServiceImpl();
 
   // Create an AttachmentServiceImpl suitable for use in tests.
@@ -45,9 +50,12 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                 const AttachmentStore::Result& result);
   void WriteDone(const StoreCallback& callback,
                  const AttachmentStore::Result& result);
+  void UploadDone(const AttachmentUploader::UploadResult& result,
+                  const AttachmentId& attachment_id);
 
   const scoped_ptr<AttachmentStore> attachment_store_;
   const scoped_ptr<AttachmentUploader> attachment_uploader_;
+  Delegate* delegate_;
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;
 

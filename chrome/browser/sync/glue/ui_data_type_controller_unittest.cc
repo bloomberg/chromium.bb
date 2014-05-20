@@ -58,7 +58,8 @@ class SyncUIDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    scoped_ptr<FakeGenericChangeProcessor> p(new FakeGenericChangeProcessor());
+    scoped_ptr<FakeGenericChangeProcessor> p(
+        new FakeGenericChangeProcessor(profile_sync_factory_.get()));
     change_processor_ = p.get();
     scoped_ptr<GenericChangeProcessorFactory> f(
         new FakeGenericChangeProcessorFactory(p.Pass()));

@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/api/attachments/attachment_store.h"
+#include "sync/api/attachments/attachment_service.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -17,17 +17,22 @@ namespace browser_sync {
 // service (like SyncableService) implementations.
 class SyncApiComponentFactory {
  public:
+  virtual ~SyncApiComponentFactory() {}
+
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.
   // Note: Should only be called from the model type thread.
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) = 0;
 
-  // Returns the custom attachment store for a model type, if there is one.
-  // May return NULL, which implies sync should use a default implementation.
+  // Creates attachment service.
   // Note: Should only be called from the model type thread.
-  virtual scoped_ptr<syncer::AttachmentStore>
-      CreateCustomAttachmentStoreForType(syncer::ModelType type) = 0;
+  // |delegate| is optional delegate for AttachmentService to notify about
+  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
+  // provided. AttachmentService doesn't take ownership of delegate, the pointer
+  // must be valid throughout AttachmentService lifetime.
+  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+      syncer::AttachmentService::Delegate* delegate) = 0;
 };
 
 }  // namespace browser_sync

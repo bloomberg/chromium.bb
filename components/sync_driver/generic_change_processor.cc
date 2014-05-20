@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -91,12 +92,12 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
-    scoped_ptr<syncer::AttachmentService> attachment_service)
+    SyncApiComponentFactory* sync_factory)
     : ChangeProcessor(error_handler),
       local_service_(local_service),
       merge_result_(merge_result),
       share_handle_(user_share),
-      attachment_service_(attachment_service.Pass()),
+      attachment_service_(sync_factory->CreateAttachmentService(this)),
       attachment_service_weak_ptr_factory_(attachment_service_.get()),
       attachment_service_proxy_(
           base::MessageLoopProxy::current(),
@@ -207,6 +208,12 @@ syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
   // trigger a datatype nudge if |refresh_status == REFRESH_NEEDED|.
 
   return syncer::SyncError();
+}
+
+void GenericChangeProcessor::OnAttachmentUploaded(
+    const syncer::AttachmentId& attachment_id) {
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  trans.UpdateEntriesWithAttachmentId(attachment_id);
 }
 
 syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(

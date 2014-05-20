@@ -397,6 +397,13 @@ class SYNC_EXPORT Directory {
   bool IsAttachmentLinked(
       const sync_pb::AttachmentIdProto& attachment_id_proto) const;
 
+  // Given attachment id return metahandles to all entries that reference this
+  // attachment.
+  void GetMetahandlesByAttachmentId(
+      BaseTransaction* trans,
+      const sync_pb::AttachmentIdProto& attachment_id_proto,
+      Metahandles* result);
+
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,

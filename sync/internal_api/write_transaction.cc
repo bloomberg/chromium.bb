@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/write_transaction.h"
 
 #include "sync/syncable/directory.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_write_transaction.h"
 
 namespace syncer {
@@ -78,6 +79,19 @@ void WriteTransaction::SetDataTypeContext(
   // after the context update to override the cleared progress markers.
   // TODO(zea): add a flag in the directory to prevent this from happening.
   // See crbug.com/360280
+}
+
+void WriteTransaction::UpdateEntriesWithAttachmentId(
+    const AttachmentId& attachment_id) {
+  syncable::Directory::Metahandles handles;
+  GetDirectory()->GetMetahandlesByAttachmentId(
+      transaction_, attachment_id.GetProto(), &handles);
+  for (syncable::Directory::Metahandles::iterator iter = handles.begin();
+       iter != handles.end();
+       ++iter) {
+    syncable::MutableEntry entry(transaction_, syncable::GET_BY_HANDLE, *iter);
+    entry.UpdateAttachmentIdWithServerInfo(attachment_id.GetProto());
+  }
 }
 
 }  // namespace syncer

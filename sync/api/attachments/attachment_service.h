@@ -54,6 +54,19 @@ class SYNC_EXPORT AttachmentService {
 
   typedef base::Callback<void(const StoreResult&)> StoreCallback;
 
+  // An interface that embedder code implements to be notified about different
+  // events that originate from AttachmentService.
+  // This interface will be called from the same thread AttachmentService was
+  // created and called.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Attachment is uploaded to server and attachment_id is updated with server
+    // url.
+    virtual void OnAttachmentUploaded(const AttachmentId& attachment_id) = 0;
+  };
+
   AttachmentService();
   virtual ~AttachmentService();
 

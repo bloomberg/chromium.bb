@@ -15,18 +15,17 @@ GenericChangeProcessorFactory::~GenericChangeProcessorFactory() {}
 
 scoped_ptr<GenericChangeProcessor>
 GenericChangeProcessorFactory::CreateGenericChangeProcessor(
-      syncer::UserShare* user_share,
-      browser_sync::DataTypeErrorHandler* error_handler,
-      const base::WeakPtr<syncer::SyncableService>& local_service,
-      const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      scoped_ptr<syncer::AttachmentService> attachment_service) {
-    DCHECK(user_share);
-    return make_scoped_ptr(new GenericChangeProcessor(
-        error_handler,
-        local_service,
-        merge_result,
-        user_share,
-        attachment_service.Pass())).Pass();
+    syncer::UserShare* user_share,
+    browser_sync::DataTypeErrorHandler* error_handler,
+    const base::WeakPtr<syncer::SyncableService>& local_service,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
+    SyncApiComponentFactory* sync_factory) {
+  DCHECK(user_share);
+  return make_scoped_ptr(new GenericChangeProcessor(error_handler,
+                                                    local_service,
+                                                    merge_result,
+                                                    user_share,
+                                                    sync_factory)).Pass();
   }
 
 }  // namespace browser_sync

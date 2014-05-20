@@ -59,8 +59,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "sync/api/attachments/attachment_service.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
+#include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -564,13 +566,24 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
   }
 }
 
-scoped_ptr<syncer::AttachmentStore>
-    ProfileSyncComponentsFactoryImpl::CreateCustomAttachmentStoreForType(
-    syncer::ModelType type) {
-  scoped_ptr<syncer::AttachmentStore> store(
+scoped_ptr<syncer::AttachmentService>
+ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
+    syncer::AttachmentService::Delegate* delegate) {
+  // TODO(maniscalco): Use a shared (one per profile) thread-safe instance of
+  // AttachmentUpload instead of creating a new one per AttachmentService (bug
+  // 369536).
+  scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
+      new syncer::FakeAttachmentUploader);
+
+  scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  return store.Pass();
+
+  scoped_ptr<syncer::AttachmentService> attachment_service(
+      new syncer::AttachmentServiceImpl(
+          attachment_store.Pass(), attachment_uploader.Pass(), delegate));
+
+  return attachment_service.Pass();
 }
 
 ProfileSyncComponentsFactory::SyncComponents

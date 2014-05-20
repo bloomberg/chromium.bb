@@ -1599,19 +1599,62 @@ TEST_F(SyncableDirectoryTest, MutableEntry_PutAttachmentMetadata) {
         &trans, CREATE, PREFERENCES, trans.root_id(), "some entry");
     entry.PutId(TestIdFactory::FromNumber(-1));
     entry.PutIsUnsynced(true);
+
+    Directory::Metahandles metahandles;
     ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+    dir()->GetMetahandlesByAttachmentId(
+        &trans, attachment_id_proto, &metahandles);
+    ASSERT_TRUE(metahandles.empty());
 
     // Now add the attachment metadata and see that Directory believes it is
     // linked.
     entry.PutAttachmentMetadata(attachment_metadata);
     ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id_proto));
+    dir()->GetMetahandlesByAttachmentId(
+        &trans, attachment_id_proto, &metahandles);
+    ASSERT_FALSE(metahandles.empty());
+    ASSERT_EQ(metahandles[0], entry.GetMetahandle());
 
     // Clear out the attachment metadata and see that it's no longer linked.
     sync_pb::AttachmentMetadata empty_attachment_metadata;
     entry.PutAttachmentMetadata(empty_attachment_metadata);
     ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+    dir()->GetMetahandlesByAttachmentId(
+        &trans, attachment_id_proto, &metahandles);
+    ASSERT_TRUE(metahandles.empty());
   }
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id_proto));
+}
+
+// Verify that UpdateAttachmentId updates attachment_id and is_on_server flag.
+TEST_F(SyncableDirectoryTest, MutableEntry_UpdateAttachmentId) {
+  sync_pb::AttachmentMetadata attachment_metadata;
+  sync_pb::AttachmentMetadataRecord* r1 = attachment_metadata.add_record();
+  sync_pb::AttachmentMetadataRecord* r2 = attachment_metadata.add_record();
+  *r1->mutable_id() = syncer::CreateAttachmentIdProto();
+  *r2->mutable_id() = syncer::CreateAttachmentIdProto();
+  sync_pb::AttachmentIdProto attachment_id_proto = r1->id();
+
+  WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+  MutableEntry entry(
+      &trans, CREATE, PREFERENCES, trans.root_id(), "some entry");
+  entry.PutId(TestIdFactory::FromNumber(-1));
+  entry.PutAttachmentMetadata(attachment_metadata);
+
+  const sync_pb::AttachmentMetadata& entry_metadata =
+      entry.GetAttachmentMetadata();
+  ASSERT_EQ(2, entry_metadata.record_size());
+  ASSERT_FALSE(entry_metadata.record(0).is_on_server());
+  ASSERT_FALSE(entry_metadata.record(1).is_on_server());
+  ASSERT_FALSE(entry.GetIsUnsynced());
+
+  // TODO(pavely): When we add server info to proto, add test for it here.
+  entry.UpdateAttachmentIdWithServerInfo(attachment_id_proto);
+
+  ASSERT_TRUE(entry_metadata.record(0).is_on_server());
+  ASSERT_FALSE(entry_metadata.record(1).is_on_server());
+  ASSERT_TRUE(entry.GetIsUnsynced());
 }
 
 // Verify that deleted entries with attachments will retain the attachments.

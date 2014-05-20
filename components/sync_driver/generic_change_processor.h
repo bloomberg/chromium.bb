@@ -28,6 +28,7 @@ typedef std::vector<syncer::SyncData> SyncDataList;
 }  // namespace syncer
 
 namespace browser_sync {
+class SyncApiComponentFactory;
 
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
 // is created for each datatype and lives on the datatype's thread. It then
@@ -39,6 +40,7 @@ namespace browser_sync {
 // be used on the same thread in which it was created.
 class GenericChangeProcessor : public ChangeProcessor,
                                public syncer::SyncChangeProcessor,
+                               public syncer::AttachmentService::Delegate,
                                public base::NonThreadSafe {
  public:
   // Create a change processor and connect it to the syncer.
@@ -47,7 +49,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,
-      scoped_ptr<syncer::AttachmentService> attachment_service);
+      SyncApiComponentFactory* sync_factory);
   virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
@@ -70,6 +72,10 @@ class GenericChangeProcessor : public ChangeProcessor,
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) OVERRIDE;
+
+  // syncer::AttachmentService::Delegate implementation.
+  virtual void OnAttachmentUploaded(
+      const syncer::AttachmentId& attachment_id) OVERRIDE;
 
   // Similar to above, but returns a SyncError for use by direct clients
   // of GenericChangeProcessor that may need more error visibility.

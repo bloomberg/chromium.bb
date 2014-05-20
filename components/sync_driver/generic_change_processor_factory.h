@@ -18,6 +18,7 @@ namespace browser_sync {
 
 class DataTypeErrorHandler;
 class GenericChangeProcessor;
+class SyncApiComponentFactory;
 
 // Because GenericChangeProcessors are created and used only from the model
 // thread, their lifetime is strictly shorter than other components like
@@ -26,6 +27,8 @@ class GenericChangeProcessor;
 // The GCP is created "on the fly" at just the right time, on just the right
 // thread. Given that, we use a factory to instantiate GenericChangeProcessors
 // so that tests can choose to use a fake processor (i.e instead of injection).
+// |sync_factory| is used to create AttachmentServicefor GenericChangeProcessor.
+// It is not retained after CreateGenericChangeProcessor exits.
 class GenericChangeProcessorFactory {
  public:
   GenericChangeProcessorFactory();
@@ -35,7 +38,8 @@ class GenericChangeProcessorFactory {
       browser_sync::DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      scoped_ptr<syncer::AttachmentService> attachment_service);
+      SyncApiComponentFactory* sync_factory);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessorFactory);
 };

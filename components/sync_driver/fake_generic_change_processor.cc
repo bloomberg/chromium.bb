@@ -11,12 +11,13 @@
 
 namespace browser_sync {
 
-FakeGenericChangeProcessor::FakeGenericChangeProcessor()
+FakeGenericChangeProcessor::FakeGenericChangeProcessor(
+    SyncApiComponentFactory* sync_factory)
     : GenericChangeProcessor(NULL,
                              base::WeakPtr<syncer::SyncableService>(),
                              base::WeakPtr<syncer::SyncMergeResult>(),
                              NULL,
-                             syncer::AttachmentServiceImpl::CreateForTest()),
+                             sync_factory),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true) {}
 
@@ -75,7 +76,7 @@ FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     browser_sync::DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-    scoped_ptr<syncer::AttachmentService> attachment_service) {
+    SyncApiComponentFactory* sync_factory) {
   return processor_.PassAs<GenericChangeProcessor>();
 }
 

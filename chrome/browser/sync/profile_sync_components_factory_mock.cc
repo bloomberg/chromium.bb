@@ -6,6 +6,7 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
 using browser_sync::AssociatorInterface;
@@ -28,18 +29,14 @@ ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
 
 ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
 
-scoped_ptr<syncer::AttachmentStore>
-    ProfileSyncComponentsFactoryMock::CreateCustomAttachmentStoreForType(
-        syncer::ModelType type) {
-  scoped_ptr<syncer::AttachmentStore> store(
-      new syncer::FakeAttachmentStore(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO)));
-  return store.Pass();
+scoped_ptr<syncer::AttachmentService>
+ProfileSyncComponentsFactoryMock::CreateAttachmentService(
+    syncer::AttachmentService::Delegate* delegate) {
+  return syncer::AttachmentServiceImpl::CreateForTest();
 }
 
 ProfileSyncComponentsFactory::SyncComponents
-    ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
+ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
   return SyncComponents(model_associator_.release(),
                         change_processor_.release());
 }

@@ -61,8 +61,8 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     search_engine_dtc_->SetGenericChangeProcessorFactoryForTest(
         make_scoped_ptr<GenericChangeProcessorFactory>(
-            new FakeGenericChangeProcessorFactory(
-                make_scoped_ptr(new FakeGenericChangeProcessor()))));
+            new FakeGenericChangeProcessorFactory(make_scoped_ptr(
+                new FakeGenericChangeProcessor(profile_sync_factory_.get())))));
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_,
                 GetSyncableServiceForType(syncer::SEARCH_ENGINES)).
