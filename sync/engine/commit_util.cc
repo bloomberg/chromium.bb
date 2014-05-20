@@ -182,6 +182,10 @@ void BuildCommitItem(
   // Deletion is final on the server, let's move things and then delete them.
   if (meta_entry.GetIsDel()) {
     sync_entry->set_deleted(true);
+
+    sync_pb::EntitySpecifics type_only_specifics;
+    AddDefaultFieldValue(meta_entry.GetModelType(),
+                         sync_entry->mutable_specifics());
   } else {
     SetEntrySpecifics(meta_entry, sync_entry);
   }
