@@ -1045,6 +1045,76 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   EXPECT_FALSE(session.get());
 }
 
+// Verifies that an unstalled pending stream creation racing with a new stream
+// creation doesn't violate the maximum stream concurrency. Regression test for
+// crbug.com/373858.
+TEST_P(SpdySessionTest, UnstallRacesWithStreamCreation) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  // Fix max_concurrent_streams to allow for one open stream.
+  session->max_concurrent_streams_ = 1;
+
+  // Create two streams: one synchronously, and one which stalls.
+  GURL url(kDefaultURL);
+  base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+
+  SpdyStreamRequest request2;
+  TestCompletionCallback callback2;
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM,
+                                  session,
+                                  url,
+                                  MEDIUM,
+                                  BoundNetLog(),
+                                  callback2.callback()));
+
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(1u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Cancel the first stream. A callback to unstall the second stream was
+  // posted. Don't run it yet.
+  stream1->Cancel();
+
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Create a third stream prior to the second stream's callback.
+  base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // NOW run the message loop. The unstalled stream will re-stall itself.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(1u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Cancel the third stream and run the message loop. Verify that the second
+  // stream creation now completes.
+  stream3->Cancel();
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(OK, callback2.WaitForResult());
+}
+
 TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.time_func = TheNearFuture;

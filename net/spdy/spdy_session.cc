@@ -826,6 +826,9 @@ void SpdySession::ProcessPendingStreamRequests() {
     if (!pending_request)
       break;
 
+    // Note that this post can race with other stream creations, and it's
+    // possible that the un-stalled stream will be stalled again if it loses.
+    // TODO(jgraettinger): Provide stronger ordering guarantees.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SpdySession::CompleteStreamRequest,
@@ -2860,13 +2863,16 @@ void SpdySession::CompleteStreamRequest(
     return;
 
   base::WeakPtr<SpdyStream> stream;
-  int rv = CreateStream(*pending_request, &stream);
+  int rv = TryCreateStream(pending_request, &stream);
 
   if (rv == OK) {
     DCHECK(stream);
     pending_request->OnRequestCompleteSuccess(stream);
-  } else {
-    DCHECK(!stream);
+    return;
+  }
+  DCHECK(!stream);
+
+  if (rv != ERR_IO_PENDING) {
     pending_request->OnRequestCompleteFailure(rv);
   }
 }
