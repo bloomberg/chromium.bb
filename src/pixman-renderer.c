@@ -140,32 +140,20 @@ region_global_to_output(struct weston_output *output, pixman_region32_t *region)
 #define D2F(v) pixman_double_to_fixed((double)v)
 
 static void
-transform_apply_viewport(pixman_transform_t *transform,
-			 struct weston_surface *surface)
+weston_matrix_to_pixman_transform(pixman_transform_t *pt,
+				  const struct weston_matrix *wm)
 {
-	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
-	double src_width, src_height;
-	double src_x, src_y;
-
-	if (vp->buffer.src_width == wl_fixed_from_int(-1)) {
-		if (vp->surface.width == -1)
-			return;
-
-		src_x = 0.0;
-		src_y = 0.0;
-		src_width = surface->width_from_buffer;
-		src_height = surface->height_from_buffer;
-	} else {
-		src_x = wl_fixed_to_double(vp->buffer.src_x);
-		src_y = wl_fixed_to_double(vp->buffer.src_y);
-		src_width = wl_fixed_to_double(vp->buffer.src_width);
-		src_height = wl_fixed_to_double(vp->buffer.src_height);
-	}
-
-	pixman_transform_scale(transform, NULL,
-			       D2F(src_width / surface->width),
-			       D2F(src_height / surface->height));
-	pixman_transform_translate(transform, NULL, D2F(src_x), D2F(src_y));
+	/* Pixman supports only 2D transform matrix, but Weston uses 3D, *
+	 * so we're omitting Z coordinate here. */
+	pt->matrix[0][0] = pixman_double_to_fixed(wm->d[0]);
+	pt->matrix[0][1] = pixman_double_to_fixed(wm->d[4]);
+	pt->matrix[0][2] = pixman_double_to_fixed(wm->d[12]);
+	pt->matrix[1][0] = pixman_double_to_fixed(wm->d[1]);
+	pt->matrix[1][1] = pixman_double_to_fixed(wm->d[5]);
+	pt->matrix[1][2] = pixman_double_to_fixed(wm->d[13]);
+	pt->matrix[2][0] = pixman_double_to_fixed(wm->d[3]);
+	pt->matrix[2][1] = pixman_double_to_fixed(wm->d[7]);
+	pt->matrix[2][2] = pixman_double_to_fixed(wm->d[15]);
 }
 
 static void
@@ -181,7 +169,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	pixman_region32_t final_region;
 	float view_x, view_y;
 	pixman_transform_t transform;
-	pixman_fixed_t fw, fh;
+	struct weston_matrix matrix;
 	pixman_image_t *mask_image;
 	pixman_color_t mask = { 0, };
 
@@ -218,121 +206,18 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	/* Set up the source transformation based on the surface
 	   position, the output position/transform/scale and the client
 	   specified buffer transform/scale */
-	pixman_transform_init_identity(&transform);
-	pixman_transform_scale(&transform, NULL,
-			       pixman_double_to_fixed ((double)1.0/output->current_scale),
-			       pixman_double_to_fixed ((double)1.0/output->current_scale));
-
-	fw = pixman_int_to_fixed(output->width);
-	fh = pixman_int_to_fixed(output->height);
-	switch (output->transform) {
-	default:
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, 0, fh);
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
-		pixman_transform_translate(&transform, NULL, fw, fh);
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, fw, 0);
-		break;
-	}
-
-	switch (output->transform) {
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		pixman_transform_scale(&transform, NULL,
-				       pixman_int_to_fixed (-1),
-				       pixman_int_to_fixed (1));
-		pixman_transform_translate(&transform, NULL, fw, 0);
-		break;
-	}
-
-        pixman_transform_translate(&transform, NULL,
-				   pixman_double_to_fixed (output->x),
-				   pixman_double_to_fixed (output->y));
+	weston_matrix_invert(&matrix, &output->matrix);
 
 	if (ev->transform.enabled) {
-		/* Pixman supports only 2D transform matrix, but Weston uses 3D,
-		 * so we're omitting Z coordinate here
-		 */
-		pixman_transform_t surface_transform = {{
-				{ D2F(ev->transform.matrix.d[0]),
-				  D2F(ev->transform.matrix.d[4]),
-				  D2F(ev->transform.matrix.d[12]),
-				},
-				{ D2F(ev->transform.matrix.d[1]),
-				  D2F(ev->transform.matrix.d[5]),
-				  D2F(ev->transform.matrix.d[13]),
-				},
-				{ D2F(ev->transform.matrix.d[3]),
-				  D2F(ev->transform.matrix.d[7]),
-				  D2F(ev->transform.matrix.d[15]),
-				}
-			}};
-
-		pixman_transform_invert(&surface_transform, &surface_transform);
-		pixman_transform_multiply (&transform, &surface_transform, &transform);
+		weston_matrix_multiply(&matrix, &ev->transform.inverse);
 	} else {
-		pixman_transform_translate(&transform, NULL,
-					   pixman_double_to_fixed ((double)-ev->geometry.x),
-					   pixman_double_to_fixed ((double)-ev->geometry.y));
+		weston_matrix_translate(&matrix,
+					-ev->geometry.x, -ev->geometry.y, 0);
 	}
 
-	transform_apply_viewport(&transform, ev->surface);
+	weston_matrix_multiply(&matrix, &ev->surface->surface_to_buffer_matrix);
 
-	fw = pixman_int_to_fixed(ev->surface->width_from_buffer);
-	fh = pixman_int_to_fixed(ev->surface->height_from_buffer);
-
-	switch (vp->buffer.transform) {
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		pixman_transform_scale(&transform, NULL,
-				       pixman_int_to_fixed (-1),
-				       pixman_int_to_fixed (1));
-		pixman_transform_translate(&transform, NULL, fw, 0);
-		break;
-	}
-
-	switch (vp->buffer.transform) {
-	default:
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		pixman_transform_rotate(&transform, NULL, 0, pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, fh, 0);
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		pixman_transform_rotate(&transform, NULL, -pixman_fixed_1, 0);
-		pixman_transform_translate(&transform, NULL, fw, fh);
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		pixman_transform_rotate(&transform, NULL, 0, -pixman_fixed_1);
-		pixman_transform_translate(&transform, NULL, 0, fw);
-		break;
-	}
-
-	pixman_transform_scale(&transform, NULL,
-			       pixman_double_to_fixed(vp->buffer.scale),
-			       pixman_double_to_fixed(vp->buffer.scale));
-
+	weston_matrix_to_pixman_transform(&transform, &matrix);
 	pixman_image_set_transform(ps->image, &transform);
 
 	if (ev->transform.enabled || output->current_scale != vp->buffer.scale)
