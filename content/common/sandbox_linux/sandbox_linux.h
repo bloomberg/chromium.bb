@@ -85,6 +85,9 @@ class LinuxSandbox {
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 
+  LinuxSandbox();
+  ~LinuxSandbox();
+
   // Some methods are static and get an instance of the Singleton. These
   // are the non-static implementations.
   bool InitializeSandboxImpl();
@@ -118,8 +121,7 @@ class LinuxSandbox {
   bool yama_is_enforcing_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
 
-  ~LinuxSandbox();
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LinuxSandbox);
+  DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
 };
 
 }  // namespace content

@@ -92,10 +92,13 @@ class SANDBOX_EXPORT SetuidSandboxClient {
   void SetupLaunchEnvironment();
 
  private:
+  SetuidSandboxClient();
+
   // Holds the environment. Will never be NULL.
   base::Environment* env_;
   bool sandboxed_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SetuidSandboxClient);
+
+  DISALLOW_COPY_AND_ASSIGN(SetuidSandboxClient);
 };
 
 }  // namespace sandbox
