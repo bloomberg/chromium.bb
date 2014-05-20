@@ -55,14 +55,14 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
 
     if (element.hasClass() && m_classes) {
         const SpaceSplitString& classNames = element.classNames();
-        for (HashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it) {
             if (classNames.contains(*it))
                 return true;
         }
     }
 
     if (element.hasAttributes() && m_attributes) {
-        for (HashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it) {
             if (element.hasAttribute(*it))
                 return true;
         }
@@ -86,55 +86,55 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
         setCustomPseudoInvalid();
 
     if (other.m_classes) {
-        HashSet<AtomicString>::const_iterator end = other.m_classes->end();
-        for (HashSet<AtomicString>::const_iterator it = other.m_classes->begin(); it != end; ++it)
+        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_classes->end();
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_classes->begin(); it != end; ++it)
             addClass(*it);
     }
 
     if (other.m_ids) {
-        HashSet<AtomicString>::const_iterator end = other.m_ids->end();
-        for (HashSet<AtomicString>::const_iterator it = other.m_ids->begin(); it != end; ++it)
+        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_ids->end();
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_ids->begin(); it != end; ++it)
             addId(*it);
     }
 
     if (other.m_tagNames) {
-        HashSet<AtomicString>::const_iterator end = other.m_tagNames->end();
-        for (HashSet<AtomicString>::const_iterator it = other.m_tagNames->begin(); it != end; ++it)
+        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_tagNames->end();
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_tagNames->begin(); it != end; ++it)
             addTagName(*it);
     }
 
     if (other.m_attributes) {
-        HashSet<AtomicString>::const_iterator end = other.m_attributes->end();
-        for (HashSet<AtomicString>::const_iterator it = other.m_attributes->begin(); it != end; ++it)
+        WillBeHeapHashSet<AtomicString>::const_iterator end = other.m_attributes->end();
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = other.m_attributes->begin(); it != end; ++it)
             addAttribute(*it);
     }
 }
 
-HashSet<AtomicString>& DescendantInvalidationSet::ensureClassSet()
+WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureClassSet()
 {
     if (!m_classes)
-        m_classes = adoptPtr(new HashSet<AtomicString>);
+        m_classes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_classes;
 }
 
-HashSet<AtomicString>& DescendantInvalidationSet::ensureIdSet()
+WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureIdSet()
 {
     if (!m_ids)
-        m_ids = adoptPtr(new HashSet<AtomicString>);
+        m_ids = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_ids;
 }
 
-HashSet<AtomicString>& DescendantInvalidationSet::ensureTagNameSet()
+WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureTagNameSet()
 {
     if (!m_tagNames)
-        m_tagNames = adoptPtr(new HashSet<AtomicString>);
+        m_tagNames = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_tagNames;
 }
 
-HashSet<AtomicString>& DescendantInvalidationSet::ensureAttributeSet()
+WillBeHeapHashSet<AtomicString>& DescendantInvalidationSet::ensureAttributeSet()
 {
     if (!m_attributes)
-        m_attributes = adoptPtr(new HashSet<AtomicString>);
+        m_attributes = adoptPtrWillBeNoop(new WillBeHeapHashSet<AtomicString>);
     return *m_attributes;
 }
 
@@ -176,6 +176,16 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
     m_ids = nullptr;
     m_tagNames = nullptr;
     m_attributes = nullptr;
+}
+
+void DescendantInvalidationSet::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_classes);
+    visitor->trace(m_ids);
+    visitor->trace(m_tagNames);
+    visitor->trace(m_attributes);
+#endif
 }
 
 } // namespace WebCore

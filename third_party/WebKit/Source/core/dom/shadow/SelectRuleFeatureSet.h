@@ -40,6 +40,7 @@ class Element;
 class SpaceSplitString;
 
 class SelectRuleFeatureSet {
+    DISALLOW_ALLOCATION();
 public:
     SelectRuleFeatureSet();
 
@@ -63,6 +64,8 @@ public:
 
     bool checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const;
     bool checkSelectorsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses) const;
+
+    void trace(Visitor* visitor) { visitor->trace(m_cssRuleFeatureSet); }
 
 private:
     void setSelectRuleFeature(AffectedSelectorType feature) { m_featureFlags |= feature; }

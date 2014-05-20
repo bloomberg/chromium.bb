@@ -357,6 +357,7 @@ void ElementShadow::clearDistribution()
 void ElementShadow::trace(Visitor* visitor)
 {
     visitor->trace(m_nodeToInsertionPoints);
+    visitor->trace(m_selectFeatures);
     // Shadow roots are linked with previous and next pointers which are traced.
     // It is therefore enough to trace one of the shadow roots here and the
     // rest will be traced from there.

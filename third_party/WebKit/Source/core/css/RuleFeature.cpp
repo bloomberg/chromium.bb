@@ -34,6 +34,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
+#include "core/css/StyleRule.h"
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -101,6 +102,18 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
     default:
         return false;
     }
+}
+
+RuleFeature::RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin)
+    : rule(rule)
+    , selectorIndex(selectorIndex)
+    , hasDocumentSecurityOrigin(hasDocumentSecurityOrigin)
+{
+}
+
+void RuleFeature::trace(Visitor* visitor)
+{
+    visitor->trace(rule);
 }
 
 // This method is somewhat conservative in what it accepts.
@@ -456,37 +469,49 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
 
 void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element& element)
 {
-    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName()))
+
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName()))
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, Element& element)
 {
     if (!oldId.isEmpty()) {
-        if (RefPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(oldId))
+        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(oldId))
             m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
     }
     if (!newId.isEmpty()) {
-        if (RefPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(newId))
+        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(newId))
             m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
     }
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoType pseudo, Element& element)
 {
-    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo))
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo))
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
 }
 
 void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element& element)
 {
-    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className))
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className))
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
 }
 
 StyleInvalidator& RuleFeatureSet::styleInvalidator()
 {
     return m_styleInvalidator;
+}
+
+void RuleFeatureSet::trace(Visitor* visitor)
+{
+    visitor->trace(siblingRules);
+    visitor->trace(uncommonAttributeRules);
+    visitor->trace(m_classInvalidationSets);
+    visitor->trace(m_attributeInvalidationSets);
+    visitor->trace(m_idInvalidationSets);
+    visitor->trace(m_pseudoInvalidationSets);
+    visitor->trace(m_styleInvalidator);
 }
 
 } // namespace WebCore

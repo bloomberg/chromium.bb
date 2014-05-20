@@ -394,6 +394,7 @@ void RuleSet::trace(Visitor* visitor)
     visitor->trace(m_cuePseudoRules);
     visitor->trace(m_focusPseudoClassRules);
     visitor->trace(m_universalRules);
+    visitor->trace(m_features);
     visitor->trace(m_pageRules);
     visitor->trace(m_viewportRules);
     visitor->trace(m_fontFaceRules);

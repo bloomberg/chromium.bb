@@ -38,8 +38,7 @@ namespace WebCore {
 struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
     IntSize scrollOffset;
-    void* pointers[11];
-    OwnPtrWillBeMember<ActiveAnimations> activeAnimations;
+    void* pointers[12];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
