@@ -20,29 +20,5 @@
         ],
       },
     }],
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libicui18n.so',
-          '<(PRODUCT_DIR)/lib/libicuuc.so',
-        ],
-      },
-    }],
-    ['OS=="mac" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libicui18n.dylib',
-          '<(PRODUCT_DIR)/libicuuc.dylib',
-        ],
-      },
-    }],
-    ['OS=="win" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/icui18n.dll',
-          '<(PRODUCT_DIR)/icuuc.dll',
-        ],
-      },
-    }],
   ],
 }
