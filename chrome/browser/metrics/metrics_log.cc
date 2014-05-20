@@ -930,8 +930,6 @@ void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
         omnibox_event->add_provider_info();
     provider_info->CopyFrom(*i);
   }
-
-  ++num_events_;
 }
 
 void MetricsLog::WriteGoogleUpdateProto(

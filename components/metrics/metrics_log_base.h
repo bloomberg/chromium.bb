@@ -70,7 +70,10 @@ class MetricsLogBase {
   // record.  Must only be called after CloseLog() has been called.
   void GetEncodedLog(std::string* encoded_log);
 
-  int num_events() { return num_events_; }
+  int num_events() const {
+    return uma_proto_.omnibox_event_size() +
+           uma_proto_.user_action_event_size();
+  }
 
   void set_hardware_class(const std::string& hardware_class) {
     uma_proto_.mutable_system_profile()->mutable_hardware()->set_hardware_class(
@@ -86,9 +89,6 @@ class MetricsLogBase {
   const metrics::ChromeUserMetricsExtension* uma_proto() const {
     return &uma_proto_;
   }
-
-  // TODO(isherman): Remove this once the XML pipeline is outta here.
-  int num_events_;  // the number of events recorded in this log
 
  private:
   // locked_ is true when record has been packed up for sending, and should

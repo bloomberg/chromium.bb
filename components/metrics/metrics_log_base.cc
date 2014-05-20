@@ -35,8 +35,7 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id,
                                int session_id,
                                LogType log_type,
                                const std::string& version_string)
-    : num_events_(0),
-      locked_(false),
+    : locked_(false),
       log_type_(log_type) {
   DCHECK_NE(NO_LOG, log_type);
   if (IsTestingID(client_id))
@@ -100,8 +99,6 @@ void MetricsLogBase::RecordUserAction(const std::string& key) {
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();
   user_action->set_name_hash(Hash(key));
   user_action->set_time(GetCurrentTime());
-
-  ++num_events_;
 }
 
 void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
