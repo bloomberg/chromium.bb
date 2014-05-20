@@ -419,7 +419,7 @@ void XMLDocumentParser::end()
         insertErrorMessageBlock();
     else {
         exitText();
-        document()->styleResolverChanged(RecalcStyleImmediately);
+        document()->styleResolverChanged(RecalcStyleDeferred);
     }
 
     if (isParsing())
@@ -1443,7 +1443,7 @@ void XMLDocumentParser::doEnd()
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
 
         document()->setParsing(false); // Make the document think it's done, so it will apply XSL stylesheets.
-        document()->styleResolverChanged(RecalcStyleImmediately);
+        document()->styleResolverChanged(RecalcStyleDeferred);
 
         // styleResolverChanged() call can detach the parser and null out its document.
         // In that case, we just bail out.
