@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,6 +43,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
+#include "extensions/browser/event_router.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
@@ -63,9 +63,8 @@ using content::URLRequestSlowDownloadJob;
 
 namespace errors = download_extension_errors;
 
-namespace downloads = extensions::api::downloads;
-
 namespace extensions {
+namespace downloads = api::downloads;
 
 namespace {
 
@@ -276,15 +275,15 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser(),
         extension_->GetResourceURL("empty.html"),
         content::PAGE_TRANSITION_LINK);
-    extensions::EventRouter::Get(current_browser()->profile())
+    EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnCreated::kEventName,
                            tab->GetRenderProcessHost(),
                            GetExtensionId());
-    extensions::EventRouter::Get(current_browser()->profile())
+    EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnChanged::kEventName,
                            tab->GetRenderProcessHost(),
                            GetExtensionId());
-    extensions::EventRouter::Get(current_browser()->profile())
+    EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnErased::kEventName,
                            tab->GetRenderProcessHost(),
                            GetExtensionId());
@@ -297,8 +296,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser(),
         extension_->GetResourceURL("empty.html"),
         content::PAGE_TRANSITION_LINK);
-    extensions::ExtensionSystem::Get(current_browser()->profile())
-        ->event_router()
+    EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnDeterminingFilename::kEventName,
                            tab->GetRenderProcessHost(),
                            GetExtensionId());
@@ -306,11 +304,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   void RemoveFilenameDeterminer(content::RenderProcessHost* host) {
-    extensions::ExtensionSystem::Get(current_browser()->profile())
-        ->event_router()
-        ->RemoveEventListener(downloads::OnDeterminingFilename::kEventName,
-                              host,
-                              GetExtensionId());
+    EventRouter::Get(current_browser()->profile())->RemoveEventListener(
+        downloads::OnDeterminingFilename::kEventName, host, GetExtensionId());
   }
 
   Browser* current_browser() { return current_browser_; }
@@ -603,7 +598,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   base::ScopedTempDir downloads_directory_;
-  const extensions::Extension* extension_;
+  const Extension* extension_;
   Browser* incognito_browser_;
   Browser* current_browser_;
   scoped_ptr<DownloadsEventsListener> events_listener_;
@@ -4038,7 +4033,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   base::FilePath filename;
   downloads::FilenameConflictAction conflict_action =
       downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY;
-  extensions::ExtensionWarningSet warnings;
+  ExtensionWarningSet warnings;
 
   // Empty incumbent determiner
   warnings.clear();
@@ -4075,7 +4070,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   EXPECT_EQ(FILE_PATH_LITERAL("a"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_OVERWRITE, conflict_action);
   EXPECT_FALSE(warnings.empty());
-  EXPECT_EQ(extensions::ExtensionWarning::kDownloadFilenameConflict,
+  EXPECT_EQ(ExtensionWarning::kDownloadFilenameConflict,
             warnings.begin()->warning_type());
   EXPECT_EQ("suggester", warnings.begin()->extension_id());
 
@@ -4096,7 +4091,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   EXPECT_EQ(FILE_PATH_LITERAL("b"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_PROMPT, conflict_action);
   EXPECT_FALSE(warnings.empty());
-  EXPECT_EQ(extensions::ExtensionWarning::kDownloadFilenameConflict,
+  EXPECT_EQ(ExtensionWarning::kDownloadFilenameConflict,
             warnings.begin()->warning_type());
   EXPECT_EQ("incumbent", warnings.begin()->extension_id());
 }
