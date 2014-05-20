@@ -848,31 +848,32 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
         request_info_.privacy_mode,
         net_log_,
         num_streams_);
-  } else {
-    // If we can't use a SPDY session, don't both checking for one after
-    // the hostname is resolved.
-    OnHostResolutionCallback resolution_callback = CanUseExistingSpdySession() ?
-        base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                   GetSpdySessionKey()) :
-        OnHostResolutionCallback();
-    if (stream_factory_->for_websockets_) {
-      // TODO(ricea): Re-enable NPN when WebSockets over SPDY is supported.
-      SSLConfig websocket_server_ssl_config = server_ssl_config_;
-      websocket_server_ssl_config.next_protos.clear();
-      return InitSocketHandleForWebSocketRequest(
-          origin_url_, request_info_.extra_headers, request_info_.load_flags,
-          priority_, session_, proxy_info_, ShouldForceSpdySSL(),
-          want_spdy_over_npn, websocket_server_ssl_config, proxy_ssl_config_,
-          request_info_.privacy_mode, net_log_,
-          connection_.get(), resolution_callback, io_callback_);
-    }
-    return InitSocketHandleForHttpRequest(
+  }
+
+  // If we can't use a SPDY session, don't both checking for one after
+  // the hostname is resolved.
+  OnHostResolutionCallback resolution_callback = CanUseExistingSpdySession() ?
+      base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
+                 GetSpdySessionKey()) :
+      OnHostResolutionCallback();
+  if (stream_factory_->for_websockets_) {
+    // TODO(ricea): Re-enable NPN when WebSockets over SPDY is supported.
+    SSLConfig websocket_server_ssl_config = server_ssl_config_;
+    websocket_server_ssl_config.next_protos.clear();
+    return InitSocketHandleForWebSocketRequest(
         origin_url_, request_info_.extra_headers, request_info_.load_flags,
         priority_, session_, proxy_info_, ShouldForceSpdySSL(),
-        want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
+        want_spdy_over_npn, websocket_server_ssl_config, proxy_ssl_config_,
         request_info_.privacy_mode, net_log_,
         connection_.get(), resolution_callback, io_callback_);
   }
+
+  return InitSocketHandleForHttpRequest(
+      origin_url_, request_info_.extra_headers, request_info_.load_flags,
+      priority_, session_, proxy_info_, ShouldForceSpdySSL(),
+      want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
+      request_info_.privacy_mode, net_log_,
+      connection_.get(), resolution_callback, io_callback_);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
