@@ -313,6 +313,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This is the scm used to checkout self.url. It may be used by dependencies
     # to get the datetime of the revision we checked out.
     self._used_scm = None
+    self._used_revision = None
     # The actual revision we ended up getting, or None if that information is
     # unavailable
     self._got_revision = None
@@ -601,8 +602,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
 
-  def maybeGetParentRevision(
-      self, command, options, parsed_url, parent_name, revision_overrides):
+  def maybeGetParentRevision(self, command, options, parsed_url, parent):
     """Uses revision/timestamp of parent if no explicit revision was specified.
 
     If we are performing an update and --transitive is set, use
@@ -615,7 +615,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if command == 'update' and options.transitive and not options.revision:
       _, revision = gclient_utils.SplitUrlRevision(parsed_url)
       if not revision:
-        options.revision = revision_overrides.get(parent_name)
+        options.revision = getattr(parent, '_used_revision', None)
         if (options.revision and
             not gclient_utils.IsDateRevision(options.revision)):
           assert self.parent and self.parent.used_scm
@@ -636,7 +636,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             if options.verbose:
               print('Using parent\'s revision date %s since we are in a '
                     'different repository.' % options.revision)
-          revision_overrides[self.name] = options.revision
 
   # Arguments number differs from overridden method
   # pylint: disable=W0221
@@ -667,9 +666,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       else:
         # Create a shallow copy to mutate revision.
         options = copy.copy(options)
-        options.revision = revision_overrides.get(self.name)
+        options.revision = revision_overrides.pop(self.name, None)
         self.maybeGetParentRevision(
-            command, options, parsed_url, self.parent.name, revision_overrides)
+            command, options, parsed_url, self.parent)
+        self._used_revision = options.revision
         self._used_scm = gclient_scm.CreateSCM(
             parsed_url, self.root.root_dir, self.name, self.outbuf,
             out_cb=work_queue.out_cb)
@@ -1218,13 +1218,8 @@ want to set 'managed': False in .gclient.
       if not '@' in revision:
         # Support for --revision 123
         revision = '%s@%s' % (solutions_names[index], revision)
-      sol, rev = revision.split('@', 1)
-      if not sol in solutions_names:
-        #raise gclient_utils.Error('%s is not a valid solution.' % sol)
-        print >> sys.stderr, ('Please fix your script, having invalid '
-                              '--revision flags will soon considered an error.')
-      else:
-        revision_overrides[sol] = rev
+      name, rev = revision.split('@', 1)
+      revision_overrides[name] = rev
       index += 1
     return revision_overrides
 
@@ -1278,6 +1273,9 @@ want to set 'managed': False in .gclient.
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush(revision_overrides, command, args, options=self._options)
+    if revision_overrides:
+      print >> sys.stderr, ('Please fix your script, having invalid '
+                            '--revision flags will soon considered an error.')
 
     # Once all the dependencies have been processed, it's now safe to run the
     # hooks.
