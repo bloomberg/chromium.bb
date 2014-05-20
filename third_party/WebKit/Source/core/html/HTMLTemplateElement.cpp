@@ -47,8 +47,10 @@ inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
 
 HTMLTemplateElement::~HTMLTemplateElement()
 {
+#if !ENABLE(OILPAN)
     if (m_content)
         m_content->clearHost();
+#endif
 }
 
 PassRefPtrWillBeRawPtr<HTMLTemplateElement> HTMLTemplateElement::create(Document& document)
@@ -81,6 +83,12 @@ void HTMLTemplateElement::didMoveToNewDocument(Document& oldDocument)
     if (!m_content)
         return;
     document().ensureTemplateDocument().adoptIfNeeded(*m_content);
+}
+
+void HTMLTemplateElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_content);
+    HTMLElement::trace(visitor);
 }
 
 } // namespace WebCore

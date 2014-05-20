@@ -33,13 +33,21 @@ namespace WebCore {
 
 class TemplateContentDocumentFragment FINAL : public DocumentFragment {
 public:
-    static PassRefPtr<TemplateContentDocumentFragment> create(Document& document, Element* host)
+    static PassRefPtrWillBeRawPtr<TemplateContentDocumentFragment> create(Document& document, Element* host)
     {
-        return adoptRef(new TemplateContentDocumentFragment(document, host));
+        return adoptRefWillBeRefCountedGarbageCollected(new TemplateContentDocumentFragment(document, host));
     }
 
     Element* host() const { return m_host; }
-    void clearHost() { m_host = 0; }
+#if !ENABLE(OILPAN)
+    void clearHost() { m_host = nullptr; }
+#endif
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_host);
+        DocumentFragment::trace(visitor);
+    }
 
 private:
     TemplateContentDocumentFragment(Document& document, Element* host)
@@ -50,7 +58,7 @@ private:
 
     virtual bool isTemplateContent() const OVERRIDE { return true; }
 
-    Element* m_host;
+    RawPtrWillBeMember<Element> m_host;
 };
 
 } // namespace WebCore
