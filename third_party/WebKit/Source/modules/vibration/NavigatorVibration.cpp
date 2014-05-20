@@ -145,6 +145,9 @@ bool NavigatorVibration::vibrate(Navigator& navigator, unsigned time)
 
 bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& pattern)
 {
+    if (!navigator.frame())
+        return false;
+
     Page* page = navigator.frame()->page();
     if (!page)
         return false;
