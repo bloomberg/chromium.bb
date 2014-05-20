@@ -324,10 +324,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   sink_ = AudioDeviceFactory::NewOutputDevice(
       source_render_view_id_, source_render_frame_id_);
 
-  // TODO(tommi): Rename InitializeUnifiedStream to rather reflect association
-  // with a session.
   DCHECK_GE(session_id_, 0);
-  sink_->InitializeUnifiedStream(sink_params_, this, session_id_);
+  sink_->InitializeWithSessionId(sink_params_, this, session_id_);
 
   sink_->Start();
 

@@ -32,7 +32,6 @@ class AudioOutputDevice::AudioThreadCallback
 
  private:
   AudioRendererSink::RenderCallback* render_callback_;
-  scoped_ptr<AudioBus> input_bus_;
   scoped_ptr<AudioBus> output_bus_;
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
@@ -57,10 +56,10 @@ AudioOutputDevice::AudioOutputDevice(
   COMPILE_ASSERT(PAUSED < PLAYING, invalid_enum_value_assignment_3);
 }
 
-void AudioOutputDevice::InitializeUnifiedStream(const AudioParameters& params,
+void AudioOutputDevice::InitializeWithSessionId(const AudioParameters& params,
                                                 RenderCallback* callback,
                                                 int session_id) {
-  DCHECK(!callback_) << "Calling InitializeUnifiedStream() twice?";
+  DCHECK(!callback_) << "Calling InitializeWithSessionId() twice?";
   DCHECK(params.IsValid());
   audio_parameters_ = params;
   callback_ = callback;
@@ -69,7 +68,7 @@ void AudioOutputDevice::InitializeUnifiedStream(const AudioParameters& params,
 
 void AudioOutputDevice::Initialize(const AudioParameters& params,
                                    RenderCallback* callback) {
-  InitializeUnifiedStream(params, callback, 0);
+  InitializeWithSessionId(params, callback, 0);
 }
 
 AudioOutputDevice::~AudioOutputDevice() {
@@ -279,26 +278,10 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
   CHECK_EQ(total_segments_, 1);
   CHECK(shared_memory_.Map(memory_length_));
-
-  // Calculate output and input memory size.
-  int output_memory_size = AudioBus::CalculateMemorySize(audio_parameters_);
-  int input_channels = audio_parameters_.input_channels();
-  int frames = audio_parameters_.frames_per_buffer();
-  int input_memory_size = AudioBus::CalculateMemorySize(input_channels, frames);
-
-  int io_size = output_memory_size + input_memory_size;
-
-  DCHECK_EQ(memory_length_, io_size);
+  DCHECK_EQ(memory_length_, AudioBus::CalculateMemorySize(audio_parameters_));
 
   output_bus_ =
       AudioBus::WrapMemory(audio_parameters_, shared_memory_.memory());
-
-  if (input_channels > 0) {
-    // The input data is after the output data.
-    char* input_data =
-        static_cast<char*>(shared_memory_.memory()) + output_memory_size;
-    input_bus_ = AudioBus::WrapMemory(input_channels, frames, input_data);
-  }
 }
 
 // Called whenever we receive notifications about pending data.
@@ -315,13 +298,7 @@ void AudioOutputDevice::AudioThreadCallback::Process(int pending_data) {
   // Update the audio-delay measurement then ask client to render audio.  Since
   // |output_bus_| is wrapping the shared memory the Render() call is writing
   // directly into the shared memory.
-  int input_channels = audio_parameters_.input_channels();
-  if (input_bus_ && input_channels > 0) {
-    render_callback_->RenderIO(
-        input_bus_.get(), output_bus_.get(), audio_delay_milliseconds);
-  } else {
-    render_callback_->Render(output_bus_.get(), audio_delay_milliseconds);
-  }
+  render_callback_->Render(output_bus_.get(), audio_delay_milliseconds);
 }
 
 }  // namespace media.

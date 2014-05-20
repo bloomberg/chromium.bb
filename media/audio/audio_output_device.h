@@ -86,10 +86,7 @@ class MEDIA_EXPORT AudioOutputDevice
   // number of input channels which will be at the same sample-rate
   // and buffer-size as the output as specified in |params|. |session_id| is
   // used for the browser to select the correct input device.
-  // In this case, the callback's RenderIO() method will be called instead
-  // of Render(), providing the synchronized input data at the same time as
-  // when new output data is to be rendered.
-  void InitializeUnifiedStream(const AudioParameters& params,
+  void InitializeWithSessionId(const AudioParameters& params,
                                RenderCallback* callback,
                                int session_id);
 

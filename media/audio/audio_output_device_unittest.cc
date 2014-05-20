@@ -37,9 +37,6 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
   virtual ~MockRenderCallback() {}
 
   MOCK_METHOD2(Render, int(AudioBus* dest, int audio_delay_milliseconds));
-  MOCK_METHOD3(RenderIO, void(AudioBus* source,
-                              AudioBus* dest,
-                              int audio_delay_milliseconds));
   MOCK_METHOD0(OnRenderError, void());
 };
 
@@ -114,8 +111,6 @@ class AudioOutputDeviceTest
  private:
   int CalculateMemorySize();
 
-  const bool synchronized_io_;
-  const int input_channels_;
   SharedMemory shared_memory_;
   CancelableSyncSocket browser_socket_;
   CancelableSyncSocket renderer_socket_;
@@ -124,24 +119,14 @@ class AudioOutputDeviceTest
 };
 
 int AudioOutputDeviceTest::CalculateMemorySize() {
-  // Calculate output and input memory size.
-  int output_memory_size =
-      AudioBus::CalculateMemorySize(default_audio_parameters_);
-
-  int frames = default_audio_parameters_.frames_per_buffer();
-  int input_memory_size =
-      AudioBus::CalculateMemorySize(input_channels_, frames);
-
-  return output_memory_size + input_memory_size;
+  // Calculate output memory size.
+ return AudioBus::CalculateMemorySize(default_audio_parameters_);
 }
 
-AudioOutputDeviceTest::AudioOutputDeviceTest()
-    : synchronized_io_(GetParam()),
-      input_channels_(synchronized_io_ ? 2 : 0) {
+AudioOutputDeviceTest::AudioOutputDeviceTest() {
   default_audio_parameters_.Reset(
       AudioParameters::AUDIO_PCM_LINEAR,
-      CHANNEL_LAYOUT_STEREO, 2, input_channels_,
-      48000, 16, 1024);
+      CHANNEL_LAYOUT_STEREO, 2, 0, 48000, 16, 1024);
 
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
@@ -207,18 +192,11 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // writing the interleaved audio data into the shared memory section.
   // So, for the sake of this test, we consider the call to Render a sign
   // of success and quit the loop.
-  if (synchronized_io_) {
-    // For synchronized I/O, we expect RenderIO().
-    EXPECT_CALL(callback_, RenderIO(_, _, _))
-        .WillOnce(QuitLoop(io_loop_.message_loop_proxy()));
-  } else {
-    // For output only we expect Render().
-    const int kNumberOfFramesToProcess = 0;
-    EXPECT_CALL(callback_, Render(_, _))
-        .WillOnce(DoAll(
-            QuitLoop(io_loop_.message_loop_proxy()),
-            Return(kNumberOfFramesToProcess)));
-  }
+  const int kNumberOfFramesToProcess = 0;
+  EXPECT_CALL(callback_, Render(_, _))
+      .WillOnce(DoAll(
+          QuitLoop(io_loop_.message_loop_proxy()),
+          Return(kNumberOfFramesToProcess)));
 }
 
 void AudioOutputDeviceTest::WaitUntilRenderCallback() {
@@ -280,6 +258,5 @@ TEST_P(AudioOutputDeviceTest, CreateStream) {
 }
 
 INSTANTIATE_TEST_CASE_P(Render, AudioOutputDeviceTest, Values(false));
-INSTANTIATE_TEST_CASE_P(RenderIO, AudioOutputDeviceTest, Values(true));
 
 }  // namespace media.

@@ -28,11 +28,6 @@ class AudioRendererSink
     // number of frames filled.
     virtual int Render(AudioBus* dest, int audio_delay_milliseconds) = 0;
 
-    // Synchronized audio I/O - see InitializeIO() below.
-    virtual void RenderIO(AudioBus* source,
-                          AudioBus* dest,
-                          int audio_delay_milliseconds) {}
-
     // Signals an error has occurred.
     virtual void OnRenderError() = 0;
 

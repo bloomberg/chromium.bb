@@ -57,7 +57,7 @@ void RendererWebAudioDeviceImpl::start() {
   output_device_ = AudioDeviceFactory::NewOutputDevice(
       render_view ? render_view->routing_id() : MSG_ROUTING_NONE,
       render_frame ? render_frame->GetRoutingID(): MSG_ROUTING_NONE);
-  output_device_->InitializeUnifiedStream(params_, this, session_id_);
+  output_device_->InitializeWithSessionId(params_, this, session_id_);
   output_device_->Start();
   // Note: Default behavior is to auto-play on start.
 }
@@ -77,32 +77,22 @@ double RendererWebAudioDeviceImpl::sampleRate() {
 
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
                                        int audio_delay_milliseconds) {
-  RenderIO(NULL, dest, audio_delay_milliseconds);
-  return dest->frames();
-}
-
-void RendererWebAudioDeviceImpl::RenderIO(media::AudioBus* source,
-                                          media::AudioBus* dest,
-                                          int audio_delay_milliseconds) {
-  // Make the client callback for an I/O cycle.
   if (client_callback_) {
-    // Wrap the input pointers using WebVector.
-    size_t source_channels =
-        source ? static_cast<size_t>(source->channels()) : 0;
-    WebVector<float*> web_audio_source_data(source_channels);
-    for (size_t i = 0; i < source_channels; ++i)
-      web_audio_source_data[i] = source->channel(i);
-
     // Wrap the output pointers using WebVector.
     WebVector<float*> web_audio_dest_data(
         static_cast<size_t>(dest->channels()));
     for (int i = 0; i < dest->channels(); ++i)
       web_audio_dest_data[i] = dest->channel(i);
 
+    // TODO(xians): Remove the following |web_audio_source_data| after
+    // changing the blink interface.
+    WebVector<float*> web_audio_source_data(static_cast<size_t>(0));
     client_callback_->render(web_audio_source_data,
                              web_audio_dest_data,
                              dest->frames());
   }
+
+  return dest->frames();
 }
 
 void RendererWebAudioDeviceImpl::OnRenderError() {

@@ -287,7 +287,7 @@ void WebRtcLocalAudioRenderer::MaybeStartSink() {
     return;
 
   DVLOG(1) << "WebRtcLocalAudioRenderer::MaybeStartSink() -- Starting sink_.";
-  sink_->InitializeUnifiedStream(sink_params_, this, session_id_);
+  sink_->InitializeWithSessionId(sink_params_, this, session_id_);
   sink_->Start();
   sink_started_ = true;
   UMA_HISTOGRAM_ENUMERATION("Media.LocalRendererSinkStates",
