@@ -13,16 +13,17 @@
 # AutofillTest.*
 # AcceleratedCompositingBlockedTest.*
 # AppApiTest.*
+A*
 # BrowserAccessibilityStateImplTest.*
-# B*
+B*
 # C*: ~190 tests
 C*
 # D*: ~210 tests
 D*
 # E*: ~535 tests
 E*
-# F*
-# G*
+F*
+G*
 # H*: ~52  tests
 H*
 # DrM-i#1052-c#53
@@ -39,10 +40,10 @@ J*
 K*
 # L*: 62   tests
 L*
-# M*
-# N*
-O*
-P*
+M*
+N*
+# O*
+# P*
 Q*
 R*
 S*
