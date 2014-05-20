@@ -44,6 +44,222 @@
 // Size of extension icon in top left of dialog.
 const int kIconSize = 64;
 
+namespace {
+
+// A small summary panel with the app's name, icon, version, and a link to the
+// web store (if they exist).
+class AppInfoSummaryPanel : public views::View,
+                            public views::LinkListener,
+                            public base::SupportsWeakPtr<AppInfoSummaryPanel> {
+ public:
+  AppInfoSummaryPanel(Profile* profile, const extensions::Extension* app);
+  virtual ~AppInfoSummaryPanel();
+
+ private:
+  void CreateControls();
+  void LayoutAppNameAndVersionInto(views::View* parent_view);
+  void LayoutViews();
+
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
+  void LoadAppImageAsync();
+  // Called when the app's icon is loaded.
+  void OnAppImageLoaded(const gfx::Image& image);
+
+  // Opens the app in the web store. Must only be called if
+  // CanShowAppInWebStore() returns true.
+  void ShowAppInWebStore() const;
+  bool CanShowAppInWebStore() const;
+
+  views::ImageView* app_icon_;
+  views::Label* app_name_label_;
+  views::Label* app_version_label_;
+  views::Link* view_in_store_link_;
+
+  Profile* profile_;
+  const extensions::Extension* app_;
+
+  base::WeakPtrFactory<AppInfoSummaryPanel> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppInfoSummaryPanel);
+};
+
+AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
+                                         const extensions::Extension* app)
+    : app_icon_(NULL),
+      app_name_label_(NULL),
+      app_version_label_(NULL),
+      view_in_store_link_(NULL),
+      profile_(profile),
+      app_(app),
+      weak_ptr_factory_(this) {
+  CreateControls();
+
+  // Layout elements.
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           0,
+                           0,
+                           views::kRelatedControlHorizontalSpacing));
+
+  AddChildView(app_icon_);
+
+  if (!app_version_label_ && !view_in_store_link_) {
+    // If there's no link to the webstore _and_ no version, allow the app's name
+    // to take up multiple lines.
+    app_name_label_->SetMultiLine(true);
+    AddChildView(app_name_label_);
+  } else {
+    // Create a vertical container to store the app's name and info.
+    views::View* vertical_container = new views::View();
+    views::BoxLayout* vertical_container_layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+    vertical_container_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    vertical_container->SetLayoutManager(vertical_container_layout);
+
+    if (app_version_label_ && view_in_store_link_) {
+      // First line: title and version, Second line: web store link.
+      LayoutAppNameAndVersionInto(vertical_container);
+      vertical_container->AddChildView(view_in_store_link_);
+    } else {
+      // Put the title on the first line, and whatever other information we have
+      // on the second line.
+      vertical_container->AddChildView(app_name_label_);
+
+      if (app_version_label_) {
+        vertical_container->AddChildView(app_version_label_);
+      } else if (view_in_store_link_) {
+        vertical_container->AddChildView(view_in_store_link_);
+      }
+    }
+
+    AddChildView(vertical_container);
+  }
+}
+
+AppInfoSummaryPanel::~AppInfoSummaryPanel() {
+}
+
+void AppInfoSummaryPanel::CreateControls() {
+  app_name_label_ =
+      new views::Label(base::UTF8ToUTF16(app_->name()),
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
+                           ui::ResourceBundle::BoldFont));
+  app_name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  // The version number doesn't make sense for bookmarked apps.
+  if (!app_->from_bookmark()) {
+    app_version_label_ =
+        new views::Label(base::UTF8ToUTF16(app_->VersionString()));
+    app_version_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
+  app_icon_ = new views::ImageView();
+  app_icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  LoadAppImageAsync();
+
+  if (CanShowAppInWebStore()) {
+    view_in_store_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
+    view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    view_in_store_link_->set_listener(this);
+  }
+}
+
+void AppInfoSummaryPanel::LayoutAppNameAndVersionInto(
+    views::View* parent_view) {
+  views::View* view = new views::View();
+  // We need a horizontal BoxLayout here to ensure that the GridLayout does
+  // not stretch beyond the size of its content.
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+
+  views::View* container_view = new views::View();
+  view->AddChildView(container_view);
+  views::GridLayout* layout = new views::GridLayout(container_view);
+  container_view->SetLayoutManager(layout);
+
+  static const int kColumnId = 1;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,  // Stretch the title to as wide as needed
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,  // Do not stretch the version
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+
+  layout->StartRow(1, kColumnId);
+  layout->AddView(app_name_label_);
+  if (app_version_label_)
+    layout->AddView(app_version_label_);
+
+  parent_view->AddChildView(view);
+}
+
+void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
+  if (source == view_in_store_link_) {
+    ShowAppInWebStore();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void AppInfoSummaryPanel::LoadAppImageAsync() {
+  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
+      app_,
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
+  int pixel_size =
+      static_cast<int>(kIconSize * gfx::ImageSkia::GetMaxSupportedScale());
+  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
+      app_,
+      image,
+      gfx::Size(pixel_size, pixel_size),
+      base::Bind(&AppInfoSummaryPanel::OnAppImageLoaded, AsWeakPtr()));
+}
+
+void AppInfoSummaryPanel::OnAppImageLoaded(const gfx::Image& image) {
+  const SkBitmap* bitmap;
+  if (image.IsEmpty()) {
+    bitmap = &extensions::util::GetDefaultAppIcon()
+                  .GetRepresentation(gfx::ImageSkia::GetMaxSupportedScale())
+                  .sk_bitmap();
+  } else {
+    bitmap = image.ToSkBitmap();
+  }
+
+  app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+}
+
+void AppInfoSummaryPanel::ShowAppInWebStore() const {
+  DCHECK(CanShowAppInWebStore());
+  const GURL url = extensions::ManifestURL::GetDetailsURL(app_);
+  DCHECK_NE(url, GURL::EmptyGURL());
+  chrome::NavigateParams params(
+      profile_,
+      net::AppendQueryParameter(url,
+                                extension_urls::kWebstoreSourceField,
+                                extension_urls::kLaunchSourceAppListInfoDialog),
+      content::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
+}
+
+bool AppInfoSummaryPanel::CanShowAppInWebStore() const {
+  return app_->from_webstore();
+}
+
+}  // namespace
+
 // A model for a combobox selecting the launch options for a hosted app.
 // Displays different options depending on the host OS.
 class LaunchOptionsComboboxModel : public ui::ComboboxModel {
@@ -131,105 +347,52 @@ int LaunchOptionsComboboxModel::GetIndexForLaunchType(
 
 int LaunchOptionsComboboxModel::GetItemCount() const {
   return launch_types_.size();
-};
+}
 
 base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
   return launch_type_messages_[index];
-};
+}
 
 AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
                                      Profile* profile,
                                      const extensions::Extension* app,
                                      const base::Closure& close_callback)
     : AppInfoTab(parent_window, profile, app, close_callback),
-      app_icon_(NULL),
-      view_in_store_link_(NULL),
+      app_summary_panel_(NULL),
+      app_description_label_(NULL),
       create_shortcuts_button_(NULL),
       uninstall_button_(NULL),
-      launch_options_combobox_(NULL),
-      weak_ptr_factory_(this) {
+      launch_options_combobox_(NULL) {
   // Create UI elements.
-  views::Label* app_name_label =
-      new views::Label(base::UTF8ToUTF16(app_->name()),
-                       ui::ResourceBundle::GetSharedInstance().GetFontList(
-                           ui::ResourceBundle::BoldFont));
-  app_name_label->SetMultiLine(true);
-  app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  app_summary_panel_ = new AppInfoSummaryPanel(profile_, app_);
+  CreateDescriptionControl();
+  CreateLaunchOptionControl();
+  CreateButtons();
 
-  app_icon_ = new views::ImageView();
-  app_icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
-  LoadAppImageAsync();
-
-  // Create the layout.
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
-
-  // Create a Header column set with app icon and information.
-  static const int kHeaderColumnSetId = 0;
-  views::ColumnSet* header_column_set =
-      layout->AddColumnSet(kHeaderColumnSetId);
-  header_column_set->AddColumn(views::GridLayout::FILL,
-                               views::GridLayout::CENTER,
-                               0,
-                               views::GridLayout::FIXED,
-                               kIconSize,
-                               0);
-  header_column_set->AddPaddingColumn(0,
-                                      views::kRelatedControlHorizontalSpacing);
-  header_column_set->AddColumn(views::GridLayout::FILL,
-                               views::GridLayout::CENTER,
-                               100.0f,
-                               views::GridLayout::FIXED,
-                               0,
-                               0);
-
-  // Create a main column set for the rest of the dialog content.
-  static const int kMainColumnSetId = 1;
-  views::ColumnSet* main_column_set = layout->AddColumnSet(kMainColumnSetId);
-  main_column_set->AddColumn(views::GridLayout::FILL,
-                             views::GridLayout::LEADING,
-                             100.0f,
-                             views::GridLayout::FIXED,
-                             0,
-                             0);
-
-  // To vertically align the app's information to the center of the icon, we
-  // need to place the info in its own view. This view can then be vertically
-  // centered in its column.
-  views::View* appInfoTextContainer = new views::View();
-  appInfoTextContainer->SetLayoutManager(
+  // Layout elements.
+  SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
-                           0,
-                           0,
-                           views::kRelatedControlSmallVerticalSpacing));
+                           views::kButtonHEdgeMarginNew,
+                           views::kPanelVertMargin,
+                           views::kUnrelatedControlVerticalSpacing));
 
-  // All apps have a name.
-  appInfoTextContainer->AddChildView(app_name_label);
+  AddChildView(app_summary_panel_);
 
-  // The version number doesn't make sense for bookmarked apps.
-  if (!app_->from_bookmark()) {
-    views::Label* app_version_label =
-        new views::Label(base::UTF8ToUTF16(app_->VersionString()));
-    app_version_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  if (app_description_label_)
+    AddChildView(app_description_label_);
 
-    appInfoTextContainer->AddChildView(app_version_label);
-  }
+  if (launch_options_combobox_)
+    AddChildView(launch_options_combobox_);
 
-  // Add a link to the web store for apps that have it.
-  if (CanShowAppInWebStore()) {
-    view_in_store_link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
-    view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    view_in_store_link_->set_listener(this);
+  LayoutButtons();
+}
 
-    appInfoTextContainer->AddChildView(view_in_store_link_);
-  }
+AppInfoSummaryTab::~AppInfoSummaryTab() {
+  // Destroy view children before their models.
+  RemoveAllChildViews(true);
+}
 
-  layout->StartRow(0, kHeaderColumnSetId);
-  layout->AddView(app_icon_);
-  layout->AddView(appInfoTextContainer);
-
-  // Add the description, if the app has one.
+void AppInfoSummaryTab::CreateDescriptionControl() {
   if (!app_->description().empty()) {
     const size_t kMaxLength = 400;
 
@@ -239,16 +402,13 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
       text += base::ASCIIToUTF16(" ... ");
     }
 
-    views::Label* app_description_label = new views::Label(text);
-    app_description_label->SetMultiLine(true);
-    app_description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-    layout->StartRow(0, kMainColumnSetId);
-    layout->AddView(app_description_label);
+    app_description_label_ = new views::Label(text);
+    app_description_label_->SetMultiLine(true);
+    app_description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
+}
 
-  // Add hosted app launch options for non-platform apps.
+void AppInfoSummaryTab::CreateLaunchOptionControl() {
   if (CanSetLaunchType()) {
     launch_options_combobox_model_.reset(new LaunchOptionsComboboxModel());
     launch_options_combobox_ =
@@ -257,69 +417,41 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
     launch_options_combobox_->set_listener(this);
     launch_options_combobox_->SetSelectedIndex(
         launch_options_combobox_model_->GetIndexForLaunchType(GetLaunchType()));
-
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-    layout->StartRow(0, kMainColumnSetId);
-    layout->AddView(launch_options_combobox_);
-  }
-
-  if (CanCreateShortcuts() || CanUninstallApp()) {
-    // Create a column set specifically for the left-aligned buttons at the
-    // bottom of the dialog.
-    static const int kButtonsColumnSetId = 2;
-    views::ColumnSet* buttons_column_set =
-        layout->AddColumnSet(kButtonsColumnSetId);
-    buttons_column_set->AddColumn(views::GridLayout::LEADING,
-                                  views::GridLayout::LEADING,
-                                  0,
-                                  views::GridLayout::USE_PREF,
-                                  0,  // No fixed width
-                                  0);
-    buttons_column_set->AddPaddingColumn(
-        0, views::kRelatedControlHorizontalSpacing);
-    buttons_column_set->AddColumn(views::GridLayout::LEADING,
-                                  views::GridLayout::LEADING,
-                                  0,
-                                  views::GridLayout::USE_PREF,
-                                  0,  // No fixed width
-                                  0);
-
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-    layout->StartRow(0, kButtonsColumnSetId);
-
-    // Add a Create Shortcuts button for apps that can have shortcuts.
-    if (CanCreateShortcuts()) {
-      create_shortcuts_button_ = new views::LabelButton(
-          this,
-          l10n_util::GetStringUTF16(
-              IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
-      create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
-      layout->AddView(create_shortcuts_button_);
-    }
-
-    // Add an uninstall button for apps that can be uninstalled.
-    if (CanUninstallApp()) {
-      uninstall_button_ = new views::LabelButton(
-          this,
-          l10n_util::GetStringUTF16(
-              IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
-      uninstall_button_->SetStyle(views::Button::STYLE_BUTTON);
-      layout->AddView(uninstall_button_);
-    }
   }
 }
 
-AppInfoSummaryTab::~AppInfoSummaryTab() {
-  // Destroy view children before their models.
-  RemoveAllChildViews(true);
+void AppInfoSummaryTab::CreateButtons() {
+  if (CanCreateShortcuts()) {
+    create_shortcuts_button_ = new views::LabelButton(
+        this,
+        l10n_util::GetStringUTF16(
+            IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
+    create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
+  }
+
+  if (CanUninstallApp()) {
+    uninstall_button_ = new views::LabelButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
+    uninstall_button_->SetStyle(views::Button::STYLE_BUTTON);
+  }
 }
 
-void AppInfoSummaryTab::LinkClicked(views::Link* source, int event_flags) {
-  if (source == view_in_store_link_) {
-    ShowAppInWebStore();
-  } else {
-    NOTREACHED();
-  }
+void AppInfoSummaryTab::LayoutButtons() {
+  views::View* app_buttons = new views::View();
+  app_buttons->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           0,
+                           0,
+                           views::kRelatedControlVerticalSpacing));
+
+  if (create_shortcuts_button_)
+    app_buttons->AddChildView(create_shortcuts_button_);
+
+  if (uninstall_button_)
+    app_buttons->AddChildView(uninstall_button_);
+
+  AddChildView(app_buttons);
 }
 
 void AppInfoSummaryTab::OnPerformAction(views::Combobox* combobox) {
@@ -355,33 +487,6 @@ void AppInfoSummaryTab::ExtensionUninstallCanceled() {
   extension_uninstall_dialog_.reset();
 }
 
-void AppInfoSummaryTab::LoadAppImageAsync() {
-  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
-      app_,
-      extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER);
-  int pixel_size =
-      static_cast<int>(kIconSize * gfx::ImageSkia::GetMaxSupportedScale());
-  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
-      app_,
-      image,
-      gfx::Size(pixel_size, pixel_size),
-      base::Bind(&AppInfoSummaryTab::OnAppImageLoaded, AsWeakPtr()));
-}
-
-void AppInfoSummaryTab::OnAppImageLoaded(const gfx::Image& image) {
-  const SkBitmap* bitmap;
-  if (image.IsEmpty()) {
-    bitmap = &extensions::util::GetDefaultAppIcon()
-                  .GetRepresentation(gfx::ImageSkia::GetMaxSupportedScale())
-                  .sk_bitmap();
-  } else {
-    bitmap = image.ToSkBitmap();
-  }
-
-  app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
-}
-
 extensions::LaunchType AppInfoSummaryTab::GetLaunchType() const {
   return extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
                                    app_);
@@ -398,23 +503,6 @@ void AppInfoSummaryTab::SetLaunchType(
 bool AppInfoSummaryTab::CanSetLaunchType() const {
   // V2 apps don't have a launch type.
   return !app_->is_platform_app();
-}
-
-void AppInfoSummaryTab::ShowAppInWebStore() const {
-  DCHECK(CanShowAppInWebStore());
-  const GURL url = extensions::ManifestURL::GetDetailsURL(app_);
-  DCHECK_NE(url, GURL::EmptyGURL());
-  chrome::NavigateParams params(
-      profile_,
-      net::AppendQueryParameter(url,
-                                extension_urls::kWebstoreSourceField,
-                                extension_urls::kLaunchSourceAppListInfoDialog),
-      content::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
-}
-
-bool AppInfoSummaryTab::CanShowAppInWebStore() const {
-  return app_->from_webstore();
 }
 
 void AppInfoSummaryTab::UninstallApp() {

@@ -28,6 +28,7 @@ class Event;
 namespace views {
 class Combobox;
 class ImageView;
+class Label;
 class LabelButton;
 }
 
@@ -36,11 +37,9 @@ class LaunchOptionsComboboxModel;
 // The Summary tab of the app info dialog, which provides basic information and
 // controls related to the app.
 class AppInfoSummaryTab : public AppInfoTab,
-                          public views::LinkListener,
                           public views::ComboboxListener,
                           public views::ButtonListener,
-                          public ExtensionUninstallDialog::Delegate,
-                          public base::SupportsWeakPtr<AppInfoSummaryTab> {
+                          public ExtensionUninstallDialog::Delegate {
  public:
   AppInfoSummaryTab(gfx::NativeWindow parent_window,
                     Profile* profile,
@@ -50,8 +49,12 @@ class AppInfoSummaryTab : public AppInfoTab,
   virtual ~AppInfoSummaryTab();
 
  private:
-  // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // Internal initialisation methods.
+  void CreateDescriptionControl();
+  void CreateLaunchOptionControl();
+  void CreateButtons();
+
+  void LayoutButtons();
 
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
@@ -64,11 +67,6 @@ class AppInfoSummaryTab : public AppInfoTab,
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
-  // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
-  void LoadAppImageAsync();
-  // Called when the app's icon is loaded.
-  void OnAppImageLoaded(const gfx::Image& image);
-
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;
 
@@ -76,11 +74,6 @@ class AppInfoSummaryTab : public AppInfoTab,
   // CanSetLaunchType() returns true.
   void SetLaunchType(extensions::LaunchType) const;
   bool CanSetLaunchType() const;
-
-  // Opens the app in the web store. Must only be called if
-  // CanShowAppInWebStore() returns true.
-  void ShowAppInWebStore() const;
-  bool CanShowAppInWebStore() const;
 
   // Uninstall the app. Must only be called if CanUninstallApp() returns true.
   void UninstallApp();
@@ -92,8 +85,8 @@ class AppInfoSummaryTab : public AppInfoTab,
   bool CanCreateShortcuts() const;
 
   // UI elements on the dialog.
-  views::ImageView* app_icon_;
-  views::Link* view_in_store_link_;
+  views::View* app_summary_panel_;
+  views::Label* app_description_label_;
   views::LabelButton* create_shortcuts_button_;
 
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
@@ -101,8 +94,6 @@ class AppInfoSummaryTab : public AppInfoTab,
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;
-
-  base::WeakPtrFactory<AppInfoSummaryTab> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoSummaryTab);
 };
