@@ -628,6 +628,7 @@ public:
     Element* offsetParent() const;
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0, SubtreeLayoutScope* = 0);
+    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsLayoutAndFullRepaint(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
     void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
@@ -636,6 +637,11 @@ public:
     void clearPreferredLogicalWidthsDirty();
     void invalidateContainerPreferredLogicalWidths();
 
+    void setNeedsLayoutAndPrefWidthsRecalc()
+    {
+        setNeedsLayout();
+        setPreferredLogicalWidthsDirty();
+    }
     void setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint()
     {
         setNeedsLayoutAndFullRepaint();
@@ -1325,7 +1331,9 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-inline void RenderObject::setNeedsLayoutAndFullRepaint(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+// If repaintAfterLayout is enabled, setNeedsLayout() won't cause full repaint as
+// setNeedsLayoutAndFullRepaint() does. Otherwise the two methods are identical.
+inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
@@ -1336,10 +1344,14 @@ inline void RenderObject::setNeedsLayoutAndFullRepaint(MarkingBehavior markParen
     }
 }
 
+inline void RenderObject::setNeedsLayoutAndFullRepaint(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+{
+    setNeedsLayout(markParents, layouter);
+    setShouldDoFullRepaintAfterLayout(true);
+}
+
 inline void RenderObject::clearNeedsLayout()
 {
-    if (!shouldDoFullRepaintAfterLayout())
-        setShouldDoFullRepaintAfterLayout(selfNeedsLayout());
     if (needsPositionedMovementLayoutOnly())
         setOnlyNeededPositionedMovementLayout(true);
     setLayoutDidGetCalled(true);

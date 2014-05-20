@@ -1909,7 +1909,7 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
         diff.setNeedsFullLayout();
 
     // If transform changed, and the layer does not paint into its own separate backing, then we need to repaint.
-    if (contextSensitiveProperties & ContextSensitivePropertyTransform  && !diff.needsLayout()) {
+    if (contextSensitiveProperties & ContextSensitivePropertyTransform) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasDirectReasonsForCompositing()))
@@ -2056,7 +2056,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 
     if (!diff.needsFullLayout()) {
         if (updatedDiff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            setNeedsLayoutAndPrefWidthsRecalc();
         else if (updatedDiff.needsPositionedMovementLayout())
             setNeedsPositionedMovementLayout();
     }
@@ -2068,14 +2068,13 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             toRenderBox(this)->updateLayerTransform();
     }
 
-    // FIXME: The !needsFullLayout() check is temporary to keep the original StyleDifference
-    // behavior that we did't repaint here on StyleDifferenceLayout.
-    // In the next steps we will not always repaint on selfNeedsLayout(), and should force
-    // repaint here if needsRepaint is set.
-    if (updatedDiff.needsRepaint() && !updatedDiff.needsFullLayout()) {
-        // Do a repaint with the new style now, e.g., for example if we go from
-        // not having an outline to having an outline.
-        repaint();
+    if (updatedDiff.needsRepaint()) {
+        // Repaint with the new style, e.g., for example if we go from not having
+        // an outline to having an outline.
+        if (needsLayout())
+            setShouldDoFullRepaintAfterLayout(true);
+        else
+            repaint();
     }
 }
 
@@ -2112,12 +2111,12 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
             }
         }
 
-        // FIXME: The !needsFullLayout() check is temporary to keep the original StyleDifference
-        // behavior that we did't repaint here on StyleDifferenceLayout.
-        // In the next steps we will not always repaint on selfNeedsLayout(), and should force
-        // repaint here if needsRepaintObject is set.
-        if (m_parent && diff.needsRepaintObject() && !diff.needsFullLayout())
-            repaint();
+        if (m_parent && diff.needsRepaintObject()) {
+            if (diff.needsLayout() || needsLayout())
+                setShouldDoFullRepaintAfterLayout(true);
+            else
+                repaint();
+        }
 
         if (isFloating() && (m_style->floating() != newStyle.floating()))
             // For changes in float styles, we need to conceivably remove ourselves
@@ -2224,7 +2223,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
             markContainingBlocksForOverflowRecalc();
 
         if (diff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalcAndFullRepaint();
+            setNeedsLayoutAndPrefWidthsRecalc();
     } else if (diff.needsPositionedMovementLayout())
         setNeedsPositionedMovementLayout();
 

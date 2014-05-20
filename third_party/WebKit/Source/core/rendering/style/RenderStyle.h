@@ -1779,6 +1779,7 @@ private:
     void appendContent(PassOwnPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);
 
+    bool diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const;
     bool diffNeedsFullLayout(const RenderStyle& other) const;
     bool diffNeedsRepaintLayer(const RenderStyle& other) const;
     bool diffNeedsRepaintObject(const RenderStyle& other) const;

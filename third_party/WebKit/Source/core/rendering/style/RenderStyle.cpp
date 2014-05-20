@@ -376,6 +376,11 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
     if (m_svgStyle.get() != other.m_svgStyle.get())
         diff = m_svgStyle->diff(other.m_svgStyle.get());
 
+    if ((!diff.needsFullLayout() || !diff.needsRepaint()) && diffNeedsFullLayoutAndRepaint(other)) {
+        diff.setNeedsFullLayout();
+        diff.setNeedsRepaintObject();
+    }
+
     if (!diff.needsFullLayout() && diffNeedsFullLayout(other))
         diff.setNeedsFullLayout();
 
@@ -411,8 +416,14 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
     return diff;
 }
 
-bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
+bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
 {
+    // FIXME: Not all cases in this method need both full layout and repaint.
+    // Should move cases into diffNeedsFullLayout() if
+    // - don't need repaint at all;
+    // - or the renderer knows how to exactly repaint caused by the layout change
+    //   instead of forced full repaint.
+
     if (m_box.get() != other.m_box.get()) {
         if (m_box->width() != other.m_box->width()
             || m_box->minWidth() != other.m_box->minWidth()
@@ -600,6 +611,11 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
 
     // Movement of non-static-positioned object is special cased in RenderStyle::visualInvalidationDiff().
 
+    return false;
+}
+
+bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
+{
     return false;
 }
 
