@@ -365,7 +365,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
                         OnParseUpdateManifest)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImage, OnDecodeImage)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafile,
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                         OnRenderPDFPagesToMetafile)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                         OnRenderPDFPagesToPWGRaster)
@@ -567,23 +567,29 @@ void ChromeContentUtilityClient::OnCreateZipFile(
 #endif  // defined(OS_CHROMEOS)
 
 void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
-    base::PlatformFile pdf_file,
+    IPC::PlatformFileForTransit pdf_transit,
     const base::FilePath& metafile_path,
     const printing::PdfRenderSettings& settings,
-    const std::vector<printing::PageRange>& page_ranges) {
+    const std::vector<printing::PageRange>& page_ranges_const) {
   bool succeeded = false;
 #if defined(OS_WIN)
+  base::PlatformFile pdf_file =
+      IPC::PlatformFileForTransitToPlatformFile(pdf_transit);
   int highest_rendered_page_number = 0;
   double scale_factor = 1.0;
+  std::vector<printing::PageRange> page_ranges = page_ranges_const;
   succeeded = RenderPDFToWinMetafile(pdf_file,
                                      metafile_path,
                                      settings,
-                                     page_ranges,
+                                     &page_ranges,
                                      &highest_rendered_page_number,
                                      &scale_factor);
   if (succeeded) {
-    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(
-        highest_rendered_page_number, scale_factor));
+    // TODO(vitalybuka|scottmg): http://crbug.com/170859. These could
+    // potentially be sent as each page is converted so that the spool could
+    // start sooner.
+    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded(
+        page_ranges, scale_factor));
   }
 #endif  // defined(OS_WIN)
   if (!succeeded) {
@@ -614,9 +620,10 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
     base::PlatformFile pdf_file,
     const base::FilePath& metafile_path,
     const printing::PdfRenderSettings& settings,
-    const std::vector<printing::PageRange>& page_ranges,
+    std::vector<printing::PageRange>* page_ranges,
     int* highest_rendered_page_number,
     double* scale_factor) {
+  DCHECK(page_ranges);
   *highest_rendered_page_number = -1;
   *scale_factor = 1.0;
   base::win::ScopedHandle file(pdf_file);
@@ -645,26 +652,37 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
     return false;
   }
 
-  printing::Emf metafile;
-  metafile.InitToFile(metafile_path);
-  // We need to scale down DC to fit an entire page into DC available area.
-  // Current metafile is based on screen DC and have current screen size.
-  // Writing outside of those boundaries will result in the cut-off output.
-  // On metafiles (this is the case here), scaling down will still record
-  // original coordinates and we'll be able to print in full resolution.
-  // Before playback we'll need to counter the scaling up that will happen
-  // in the service (print_system_win.cc).
-  *scale_factor = gfx::CalculatePageScale(metafile.context(),
-                                          settings.area().right(),
-                                          settings.area().bottom());
-  gfx::ScaleDC(metafile.context(), *scale_factor);
+  // If no range supplied, do all pages.
+  if (page_ranges->empty()) {
+    printing::PageRange page_range_all;
+    page_range_all.from = 0;
+    page_range_all.to = total_page_count - 1;
+    page_ranges->push_back(page_range_all);
+  }
 
   bool ret = false;
   std::vector<printing::PageRange>::const_iterator iter;
-  for (iter = page_ranges.begin(); iter != page_ranges.end(); ++iter) {
+  for (iter = page_ranges->begin(); iter != page_ranges->end(); ++iter) {
     for (int page_number = iter->from; page_number <= iter->to; ++page_number) {
       if (page_number >= total_page_count)
         break;
+
+      printing::Emf metafile;
+      metafile.InitToFile(metafile_path.InsertBeforeExtensionASCII(
+          base::StringPrintf(".%d", page_number)));
+
+      // We need to scale down DC to fit an entire page into DC available area.
+      // Current metafile is based on screen DC and have current screen size.
+      // Writing outside of those boundaries will result in the cut-off output.
+      // On metafiles (this is the case here), scaling down will still record
+      // original coordinates and we'll be able to print in full resolution.
+      // Before playback we'll need to counter the scaling up that will happen
+      // in the service (print_system_win.cc).
+      *scale_factor = gfx::CalculatePageScale(metafile.context(),
+                                              settings.area().right(),
+                                              settings.area().bottom());
+      gfx::ScaleDC(metafile.context(), *scale_factor);
+
       // The underlying metafile is of type Emf and ignores the arguments passed
       // to StartPage.
       metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
@@ -679,9 +697,9 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
         ret = true;
       }
       metafile.FinishPage();
+      metafile.FinishDocument();
     }
   }
-  metafile.FinishDocument();
   return ret;
 }
 #endif  // defined(OS_WIN)

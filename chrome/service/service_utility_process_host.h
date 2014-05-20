@@ -139,8 +139,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   base::ProcessHandle handle() const { return handle_; }
 
   // Messages handlers:
-  void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number,
-                                           double scale_factor);
+  void OnRenderPDFPagesToMetafilesSucceeded(
+      const std::vector<printing::PageRange>& page_ranges,
+      double scale_factor);
   void OnRenderPDFPagesToMetafileFailed();
   void OnGetPrinterCapsAndDefaultsSucceeded(
       const std::string& printer_name,
@@ -158,7 +159,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<Client> client_;
   scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
   bool waiting_for_reply_;
-  // The path to the temp file where the metafile will be written to.
+  // The base path to the temp file where the metafile will be written to.
   base::FilePath metafile_path_;
   // The temporary folder created for the metafile.
   scoped_ptr<base::ScopedTempDir> scratch_metafile_dir_;

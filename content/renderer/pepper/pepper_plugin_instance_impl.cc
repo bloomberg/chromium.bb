@@ -1637,7 +1637,8 @@ bool PepperPluginInstanceImpl::PrintPage(int page_number,
   // The canvas only has a metafile on it for print preview.
   bool save_for_later =
       (printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas) != NULL);
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || \
+    (defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING))
   save_for_later = save_for_later && skia::IsPreviewMetafile(*canvas);
 #endif
   if (save_for_later) {

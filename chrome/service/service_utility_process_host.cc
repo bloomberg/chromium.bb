@@ -107,35 +107,18 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   scratch_metafile_dir_.reset(new base::ScopedTempDir);
   if (!scratch_metafile_dir_->CreateUniqueTempDir())
     return false;
-  if (!base::CreateTemporaryFileInDir(scratch_metafile_dir_->path(),
-                                      &metafile_path_)) {
-    return false;
-  }
-
+  metafile_path_ = scratch_metafile_dir_->path().AppendASCII("output.emf");
   if (!StartProcess(false, scratch_metafile_dir_->path()))
     return false;
 
-  base::win::ScopedHandle pdf_file(
-      ::CreateFile(pdf_path.value().c_str(),
-                   GENERIC_READ,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_ATTRIBUTE_NORMAL,
-                   NULL));
-  if (pdf_file == INVALID_HANDLE_VALUE)
-    return false;
-  HANDLE pdf_file_in_utility_process = NULL;
-  ::DuplicateHandle(::GetCurrentProcess(), pdf_file, handle(),
-                    &pdf_file_in_utility_process, 0, false,
-                    DUPLICATE_SAME_ACCESS);
-  if (!pdf_file_in_utility_process)
-    return false;
+  base::File pdf_file(
+      pdf_path,
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
   return child_process_host_->Send(
-      new ChromeUtilityMsg_RenderPDFPagesToMetafile(
-          pdf_file_in_utility_process,
+      new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
+          IPC::TakeFileHandleForProcess(pdf_file.Pass(), handle()),
           metafile_path_,
           render_settings,
           page_ranges));
@@ -248,8 +231,8 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
     IPC_MESSAGE_HANDLER(
-        ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
-        OnRenderPDFPagesToMetafileSucceeded)
+        ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
+        OnRenderPDFPagesToMetafilesSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed,
                         OnRenderPDFPagesToMetafileFailed)
     IPC_MESSAGE_HANDLER(
@@ -272,8 +255,8 @@ base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
   return handle_;
 }
 
-void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
-    int highest_rendered_page_number,
+void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesSucceeded(
+    const std::vector<printing::PageRange>& page_ranges,
     double scale_factor) {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
                             SERVICE_UTILITY_METAFILE_SUCCEEDED,
@@ -286,10 +269,21 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
   // scratch metafile directory. The client will delete it when it is done with
   // metafile.
   scratch_metafile_dir_->Take();
+
+  // TODO(vitalybuka|scottmg): http://crbug.com/170859: Currently, only one
+  // page is printed at a time. This would need to be refactored to change
+  // this.
+  CHECK_EQ(1u, page_ranges.size());
+  CHECK_EQ(page_ranges[0].from, page_ranges[0].to);
+  int page_number = page_ranges[0].from;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::MetafileAvailable, client_.get(), metafile_path_,
-                 highest_rendered_page_number, scale_factor));
+      base::Bind(&Client::MetafileAvailable,
+                 client_.get(),
+                 metafile_path_.InsertBeforeExtensionASCII(
+                     base::StringPrintf(".%d", page_number)),
+                 page_number,
+                 scale_factor));
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {

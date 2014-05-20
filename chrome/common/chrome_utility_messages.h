@@ -186,10 +186,11 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImageBase64,
                      std::string)  // base64 encoded image contents
 
 // Tell the utility process to render the given PDF into a metafile.
-// TODO(vitalybuka): switch to IPC::PlatformFileForTransit.
-IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafile,
-                     base::PlatformFile,       // PDF file
-                     base::FilePath,           // Location for output metafile
+// The metafile path will have ".%d" inserted where the %d is the page number.
+// If no page range is specified, all pages will be converted.
+IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
+                     IPC::PlatformFileForTransit,  // PDF file
+                     base::FilePath,  // Base location for output metafile
                      printing::PdfRenderSettings,  // PDF render settings
                      std::vector<printing::PageRange>)
 
@@ -374,9 +375,9 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DecodeImage_Succeeded,
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_DecodeImage_Failed)
 
 // Reply when the utility process has succeeded in rendering the PDF.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
-                     int,          // Highest rendered page number
-                     double)       // Scale factor
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
+                     std::vector<printing::PageRange>,  // Pages rendered
+                     double)                            // Scale factor
 
 // Reply when an error occurred rendering the PDF.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed)

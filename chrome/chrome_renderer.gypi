@@ -242,7 +242,6 @@
         'renderer/printing/print_web_view_helper_android.cc',
         'renderer/printing/print_web_view_helper_linux.cc',
         'renderer/printing/print_web_view_helper_mac.mm',
-        'renderer/printing/print_web_view_helper_win.cc',
         'renderer/safe_browsing/feature_extractor_clock.cc',
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',
@@ -356,6 +355,15 @@
           'sources/': [
             ['exclude', '^renderer/printing/']
           ]
+        }],
+        ['win_pdf_metafile_for_printing', {
+          'sources': [
+            'renderer/printing/print_web_view_helper_pdf_win.cc',
+          ],
+        }, {
+          'sources': [
+            'renderer/printing/print_web_view_helper_win.cc',
+          ],
         }],
         ['OS=="android"', {
           'sources!': [

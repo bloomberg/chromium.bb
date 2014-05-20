@@ -1648,6 +1648,8 @@
         'browser/printing/cloud_print/cloud_print_proxy_service.h',
         'browser/printing/cloud_print/cloud_print_proxy_service_factory.cc',
         'browser/printing/cloud_print/cloud_print_proxy_service_factory.h',
+        'browser/printing/pdf_to_emf_converter.cc',
+        'browser/printing/pdf_to_emf_converter.h',
         'browser/printing/print_dialog_cloud.cc',
         'browser/printing/print_dialog_cloud.h',
         'browser/printing/print_error_dialog.cc',

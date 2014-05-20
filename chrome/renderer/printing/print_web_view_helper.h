@@ -206,6 +206,15 @@ class PrintWebViewHelper
                          const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
                          Metafile* metafile);
+#elif defined(WIN_PDF_METAFILE_FOR_PRINTING)
+  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
+                         const gfx::Size& canvas_size,
+                         blink::WebFrame* frame,
+                         Metafile* metafile,
+                         bool is_preview,
+                         double* actual_shrink,
+                         gfx::Size* page_size_in_dpi,
+                         gfx::Rect* content_area_in_dpi);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
@@ -217,7 +226,7 @@ class PrintWebViewHelper
                            const blink::WebNode& node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
   void RenderPage(const PrintMsg_Print_Params& params,
                   int page_number,
                   blink::WebFrame* frame,

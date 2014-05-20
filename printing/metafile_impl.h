@@ -13,10 +13,10 @@
 
 namespace printing {
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
 typedef Emf NativeMetafile;
 typedef PdfMetafileSkia PreviewMetafile;
-#elif defined(OS_POSIX)
+#else
 typedef PdfMetafileSkia NativeMetafile;
 typedef PdfMetafileSkia PreviewMetafile;
 #endif
