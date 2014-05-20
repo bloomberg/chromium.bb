@@ -422,6 +422,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_paginatedForScreen(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
+    , m_executeScriptsWaitingForResourcesTimer(this, &Document::executeScriptsWaitingForResourcesTimerFired)
     , m_hasAutofocused(false)
     , m_clearFocusedElementTimer(this, &Document::clearFocusedElementTimerFired)
     , m_domTreeVersion(++s_globalTreeVersion)
@@ -3010,21 +3011,19 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    executeScriptsWaitingForResourcesIfNeeded();
+    m_executeScriptsWaitingForResourcesTimer.startOneShot(0, FROM_HERE);
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
         view()->scrollToFragment(m_url);
 }
 
-
-void Document::executeScriptsWaitingForResourcesIfNeeded()
+void Document::executeScriptsWaitingForResourcesTimerFired(Timer<Document>*)
 {
     if (!isRenderingReady())
         return;
     if (ScriptableDocumentParser* parser = scriptableDocumentParser())
         parser->executeScriptsWaitingForResources();
 }
-
 
 CSSStyleSheet& Document::elementSheet()
 {

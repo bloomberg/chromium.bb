@@ -23,6 +23,7 @@
 #define ContainerNodeAlgorithms_h
 
 #include "core/dom/Document.h"
+#include "core/dom/ScriptForbiddenScope.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/Assertions.h"
@@ -235,6 +236,7 @@ inline void ChildNodeInsertionNotifier::notify(Node& node)
 
 inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromDocument(Node& node)
 {
+    ScriptForbiddenScope forbidScript;
     ASSERT(m_insertionPoint.inDocument());
     node.removedFrom(&m_insertionPoint);
 
@@ -244,6 +246,7 @@ inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromDocument(Node& node)
 
 inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromTree(ContainerNode& node)
 {
+    ScriptForbiddenScope forbidScript;
     NoEventDispatchAssertion assertNoEventDispatch;
     ASSERT(!m_insertionPoint.inDocument());
 

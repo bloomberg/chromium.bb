@@ -9,7 +9,7 @@ function handle(event)
     list.push(event.type + '@' + event.target.id);
     if (list.length < 3)
         return;
-    expected = ['click@toClick', 'load@shouldLoad', 'error@shouldError'];
+    expected = ['load@shouldLoad', 'error@shouldError', 'click@toClick'];
     shouldBe('window.list', 'expected');
     finishJSTest();
 }

@@ -1149,7 +1149,7 @@ private:
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
-    void executeScriptsWaitingForResourcesIfNeeded();
+    void executeScriptsWaitingForResourcesTimerFired(Timer<Document>*);
 
     PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 
@@ -1227,6 +1227,8 @@ private:
 
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
+
+    Timer<Document> m_executeScriptsWaitingForResourcesTimer;
 
     bool m_hasAutofocused;
     Timer<Document> m_clearFocusedElementTimer;
