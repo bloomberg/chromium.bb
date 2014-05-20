@@ -480,9 +480,8 @@ class UploadTestArtifactsStageTest(
       with self.RunStageWithConfig() as rc:
         cfg = self._run.config
         hw = cfg['upload_hw_test_artifacts']
-        canary = (cfg['build_type'] == constants.CANARY_TYPE)
-        rc.assertCommandContains(['--full_payload'], expected=hw and not canary)
-        rc.assertCommandContains(['--nplus1'], expected=hw and canary)
+        rc.assertCommandContains(['--full_payload'], expected=hw)
+        rc.assertCommandContains(['--nplus1'], expected=hw)
 
 
 # TODO: Delete ArchivingMock once ArchivingStage is deprecated.

@@ -777,15 +777,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
         logging.info('Generating payloads to upload for %s', image_name)
         image_path = os.path.join(self.GetImageDirSymlink(), image_name)
-        # For non release builds, we are only interested in generating
-        # payloads for the purpose of imaging machines. This means we
-        # shouldn't generate delta payloads for n-1->n testing.
-        # TODO: Add a config flag for generating delta payloads instead.
-        if self._run.config.build_type == constants.CANARY_TYPE:
-          commands.GenerateFullAndDeltaPayloads(
-              self._build_root, self.bot_archive_root, image_path, tempdir)
-        else:
-          commands.GenerateFullPayload(self._build_root, image_path, tempdir)
+        commands.GeneratePayloads(self._build_root, image_path, tempdir)
 
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])

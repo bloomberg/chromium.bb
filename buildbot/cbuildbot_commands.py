@@ -1855,8 +1855,8 @@ def CreateTestRoot(build_root):
   return os.path.sep + os.path.relpath(test_root, start=chroot)
 
 
-def GenerateFullPayload(build_root, target_image_path, archive_dir):
-  """Generates the full and stateful payloads for hw testing.
+def GeneratePayloads(build_root, target_image_path, archive_dir):
+  """Generates the payloads for hw testing.
 
   Args:
     build_root: The root of the chromium os checkout.
@@ -1868,30 +1868,6 @@ def GenerateFullPayload(build_root, target_image_path, archive_dir):
   cmd = [os.path.join(crostestutils, payload_generator),
          '--target=%s' % target_image_path,
          '--full_payload',
-         '--nplus1_archive_dir=%s' % archive_dir,
-        ]
-  cros_build_lib.RunCommand(cmd, capture_output=True)
-
-
-def GenerateFullAndDeltaPayloads(build_root, previous_versions_dir,
-                                 target_image_path, archive_dir):
-  """Generates full and n->n delta payloads.
-
-  These include the full and stateful payloads. We only end up using the full
-  payloads. The delta payloads are just generated for testing purposes.
-
-  Args:
-    build_root: The root of the chromium os checkout.
-    previous_versions_dir: Path containing images for versions previously
-      archived.
-    target_image_path: The path to the image to generate payloads to.
-    archive_dir: Where to store payloads we generated.
-  """
-  crostestutils = os.path.join(build_root, 'src', 'platform', 'crostestutils')
-  payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
-  cmd = [os.path.join(crostestutils, payload_generator),
-         '--target=%s' % target_image_path,
-         '--base_latest_from_dir=%s' % previous_versions_dir,
          '--nplus1',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
