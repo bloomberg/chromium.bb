@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_API_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_API_FEATURE_H_
 
+#include <string>
+
 #include "extensions/common/features/simple_feature.h"
 
 namespace extensions {

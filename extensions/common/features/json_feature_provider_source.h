@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_FEATURE_JSON_FEATURE_PROVIDER_SOURCE_H_
-#define EXTENSIONS_COMMON_FEATURE_JSON_FEATURE_PROVIDER_SOURCE_H_
+#ifndef EXTENSIONS_COMMON_FEATURES_JSON_FEATURE_PROVIDER_SOURCE_H_
+#define EXTENSIONS_COMMON_FEATURES_JSON_FEATURE_PROVIDER_SOURCE_H_
+
+#include <string>
 
 #include "base/values.h"
 
@@ -34,4 +36,4 @@ class JSONFeatureProviderSource {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_COMMON_FEATURE_JSON_FEATURE_PROVIDER_SOURCE_H_
+#endif  // EXTENSIONS_COMMON_FEATURES_JSON_FEATURE_PROVIDER_SOURCE_H_

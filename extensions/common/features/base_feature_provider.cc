@@ -5,6 +5,7 @@
 #include "extensions/common/features/base_feature_provider.h"
 
 #include <stack>
+#include <utility>
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -171,4 +172,4 @@ std::vector<Feature*> BaseFeatureProvider::GetChildren(const Feature& parent)
   return result;
 }
 
-} // namespace extensions
+}  // namespace extensions

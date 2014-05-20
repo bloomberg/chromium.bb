@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_COMPLEX_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_COMPLEX_FEATURE_H_
 
+#include <set>
 #include <string>
 
 #include "base/memory/scoped_vector.h"

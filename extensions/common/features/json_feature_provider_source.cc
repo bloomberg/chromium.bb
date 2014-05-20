@@ -4,8 +4,6 @@
 
 #include "extensions/common/features/json_feature_provider_source.h"
 
-#include <string>
-
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,4 +49,4 @@ void JSONFeatureProviderSource::LoadJSON(int resource_id) {
   dictionary_.MergeDictionary(value_as_dict.get());
 }
 
-}  // namespace
+}  // namespace extensions

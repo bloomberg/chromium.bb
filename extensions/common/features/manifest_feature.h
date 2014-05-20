@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_MANIFEST_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_MANIFEST_FEATURE_H_
 
+#include <string>
+
 #include "extensions/common/features/simple_feature.h"
 
 namespace extensions {
@@ -23,6 +25,6 @@ class ManifestFeature : public SimpleFeature {
   virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_FEATURES_MANIFEST_FEATURE_H_
