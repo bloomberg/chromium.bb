@@ -11,28 +11,25 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
+import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.ContentMain;
 import org.chromium.net.test.util.TestWebServer;
 
+
 /**
- * Test for the CookieManager in the case where it's used before Chromium is started.
+ * Tests for CookieManager/Chromium startup ordering weirdness.
  */
 public class CookieManagerStartupTest extends AwTestBase {
 
-    private AwCookieManager mCookieManager;
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        mCookieManager = new AwCookieManager();
-        assertNotNull(mCookieManager);
-
         ContentMain.initApplicationContext(getActivity().getApplicationContext());
     }
 
@@ -42,6 +39,10 @@ public class CookieManagerStartupTest extends AwTestBase {
     }
 
     private void startChromium() throws Exception {
+        startChromiumWithClient(new TestAwContentsClient());
+    }
+
+    private void startChromiumWithClient(TestAwContentsClient contentsClient) throws Exception {
         final Context context = getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -50,7 +51,7 @@ public class CookieManagerStartupTest extends AwTestBase {
             }
         });
 
-        mContentsClient = new TestAwContentsClient();
+        mContentsClient = contentsClient;
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
@@ -66,12 +67,16 @@ public class CookieManagerStartupTest extends AwTestBase {
             String path = "/cookie_test.html";
             String url = webServer.setResponse(path, CommonResources.ABOUT_HTML, null);
 
-            CookieUtils.clearCookies(this, mCookieManager);
+            AwCookieManager cookieManager = new AwCookieManager();
+            assertNotNull(cookieManager);
 
-            mCookieManager.setAcceptCookie(true);
-            assertTrue(mCookieManager.acceptCookie());
+            CookieUtils.clearCookies(this, cookieManager);
+            assertFalse(cookieManager.hasCookies());
 
-            mCookieManager.setCookie(url, "count=41");
+            cookieManager.setAcceptCookie(true);
+            assertTrue(cookieManager.acceptCookie());
+
+            cookieManager.setCookie(url, "count=41");
 
             startChromium();
             loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -80,7 +85,7 @@ public class CookieManagerStartupTest extends AwTestBase {
                     mContentsClient,
                     "var c=document.cookie.split('=');document.cookie=c[0]+'='+(1+(+c[1]));");
 
-            assertEquals("count=42", mCookieManager.getCookie(url));
+            assertEquals("count=42", cookieManager.getCookie(url));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
@@ -89,20 +94,38 @@ public class CookieManagerStartupTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAllowFileSchemeCookies() throws Throwable {
-        assertFalse(mCookieManager.allowFileSchemeCookies());
-        mCookieManager.setAcceptFileSchemeCookies(true);
-        assertTrue(mCookieManager.allowFileSchemeCookies());
-        mCookieManager.setAcceptFileSchemeCookies(false);
-        assertFalse(mCookieManager.allowFileSchemeCookies());
+        AwCookieManager cookieManager = new AwCookieManager();
+        assertFalse(cookieManager.allowFileSchemeCookies());
+        cookieManager.setAcceptFileSchemeCookies(true);
+        assertTrue(cookieManager.allowFileSchemeCookies());
+        cookieManager.setAcceptFileSchemeCookies(false);
+        assertFalse(cookieManager.allowFileSchemeCookies());
     }
 
     @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testAllowCookies() throws Throwable {
-        assertTrue(mCookieManager.acceptCookie());
-        mCookieManager.setAcceptCookie(false);
-        assertFalse(mCookieManager.acceptCookie());
-        mCookieManager.setAcceptCookie(true);
-        assertTrue(mCookieManager.acceptCookie());
+        AwCookieManager cookieManager = new AwCookieManager();
+        assertTrue(cookieManager.acceptCookie());
+        cookieManager.setAcceptCookie(false);
+        assertFalse(cookieManager.acceptCookie());
+        cookieManager.setAcceptCookie(true);
+        assertTrue(cookieManager.acceptCookie());
+    }
+
+    // https://code.google.com/p/chromium/issues/detail?id=374203
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testShouldInterceptRequestDeadlock() throws Throwable {
+        String url = "http://www.example.com";
+        TestAwContentsClient contentsClient = new TestAwContentsClient() {
+            @Override
+            public InterceptedRequestData shouldInterceptRequest(String url) {
+                (new AwCookieManager()).getCookie("www.example.com");
+                return null;
+            }
+        };
+        startChromiumWithClient(contentsClient);
+        loadUrlSync(mAwContents, contentsClient.getOnPageFinishedHelper(), url);
     }
 }

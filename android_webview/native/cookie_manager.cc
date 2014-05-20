@@ -145,8 +145,7 @@ class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  scoped_refptr<net::CookieStore> CreateBrowserThreadCookieStore(
-      AwBrowserContext* browser_context);
+  scoped_refptr<net::CookieStore> GetCookieStore();
 
   void SetAcceptCookie(bool accept);
   bool AcceptCookie();
@@ -214,8 +213,6 @@ class CookieManager {
   scoped_refptr<base::MessageLoopProxy> cookie_monster_proxy_;
   base::Lock cookie_monster_lock_;
 
-  // Both these threads are normally NULL. They only exist if CookieManager was
-  // accessed before Chromium was started.
   scoped_ptr<base::Thread> cookie_monster_client_thread_;
   scoped_ptr<base::Thread> cookie_monster_backend_thread_;
 
@@ -327,33 +324,9 @@ void CookieManager::ExecCookieTask(const base::Closure& task) {
   cookie_monster_proxy_->PostTask(FROM_HERE, task);
 }
 
-scoped_refptr<net::CookieStore> CookieManager::CreateBrowserThreadCookieStore(
-    AwBrowserContext* browser_context) {
+scoped_refptr<net::CookieStore> CookieManager::GetCookieStore() {
   base::AutoLock lock(cookie_monster_lock_);
-
-  if (cookie_monster_client_thread_) {
-    // We created a cookie monster already on its own threads; we'll just keep
-    // using it rather than creating one on the normal Chromium threads.
-    // CookieMonster is threadsafe, so this is fine.
-    return cookie_monster_;
-  }
-
-  // Go ahead and create the cookie monster using the normal Chromium threads.
-  DCHECK(!cookie_monster_.get());
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-
-  FilePath user_data_dir;
-  GetUserDataDir(&user_data_dir);
-  DCHECK(browser_context->GetPath() == user_data_dir);
-
-  cookie_monster_proxy_ =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          BrowserThread::GetBlockingPool()->GetSequenceToken());
-  CreateCookieMonster(user_data_dir,
-                      cookie_monster_proxy_,
-                      background_task_runner);
+  EnsureCookieMonsterExistsLocked();
   return cookie_monster_;
 }
 
@@ -649,8 +622,7 @@ static void SetAcceptFileSchemeCookies(JNIEnv* env, jobject obj,
 
 scoped_refptr<net::CookieStore> CreateCookieStore(
     AwBrowserContext* browser_context) {
-  return CookieManager::GetInstance()->CreateBrowserThreadCookieStore(
-      browser_context);
+  return CookieManager::GetInstance()->GetCookieStore();
 }
 
 bool RegisterCookieManager(JNIEnv* env) {
