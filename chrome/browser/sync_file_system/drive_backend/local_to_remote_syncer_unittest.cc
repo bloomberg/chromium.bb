@@ -93,7 +93,6 @@ class LocalToRemoteSyncerTest : public testing::Test {
   void InitializeMetadataDatabase() {
     SyncEngineInitializer* initializer =
         new SyncEngineInitializer(context_.get(),
-                                  base::MessageLoopProxy::current(),
                                   database_dir_.path(),
                                   in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;

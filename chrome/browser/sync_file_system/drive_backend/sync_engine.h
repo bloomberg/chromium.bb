@@ -44,12 +44,9 @@ namespace drive_backend {
 
 class DriveServiceWrapper;
 class DriveUploaderWrapper;
-class LocalToRemoteSyncer;
 class MetadataDatabase;
 class RemoteChangeProcessorOnWorker;
 class RemoteChangeProcessorWrapper;
-class RemoteToLocalSyncer;
-class SyncEngineInitializer;
 class SyncTaskManager;
 class SyncWorker;
 

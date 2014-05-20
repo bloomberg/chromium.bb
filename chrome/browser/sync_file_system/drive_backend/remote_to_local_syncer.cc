@@ -113,7 +113,7 @@ void RemoteToLocalSyncer::RunExclusive(const SyncStatusCallback& callback) {
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Remote -> Local] Nothing to do.");
-  base::MessageLoopProxy::current()->PostTask(
+  sync_context_->GetWorkerTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC));
 }

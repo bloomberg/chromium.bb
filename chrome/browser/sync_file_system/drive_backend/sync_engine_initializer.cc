@@ -77,18 +77,15 @@ ScopedVector<google_apis::FileResource> ConvertResourceEntriesToFileResources(
 
 SyncEngineInitializer::SyncEngineInitializer(
     SyncEngineContext* sync_context,
-    base::SequencedTaskRunner* task_runner,
     const base::FilePath& database_path,
     leveldb::Env* env_override)
     : sync_context_(sync_context),
       env_override_(env_override),
-      task_runner_(task_runner),
       database_path_(database_path),
       find_sync_root_retry_count_(0),
       largest_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(sync_context);
-  DCHECK(task_runner);
 }
 
 SyncEngineInitializer::~SyncEngineInitializer() {
@@ -109,13 +106,11 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
-  // TODO(tzik): Stop using MessageLoopProxy before moving out from UI thread.
-  scoped_refptr<base::SequencedTaskRunner> worker_task_runner(
-      base::MessageLoopProxy::current());
-
   MetadataDatabase::Create(
-      worker_task_runner.get(),
-      task_runner_.get(), database_path_, env_override_,
+      sync_context_->GetWorkerTaskRunner(),
+      sync_context_->GetFileTaskRunner(),
+      database_path_,
+      env_override_,
       base::Bind(&SyncEngineInitializer::DidCreateMetadataDatabase,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }

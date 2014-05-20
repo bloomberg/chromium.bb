@@ -427,7 +427,6 @@ void SyncWorker::PostInitializeTask() {
   // already initialized when it runs.
   SyncEngineInitializer* initializer =
       new SyncEngineInitializer(context_.get(),
-                                context_->GetFileTaskRunner(),
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
   task_manager_->ScheduleSyncTask(

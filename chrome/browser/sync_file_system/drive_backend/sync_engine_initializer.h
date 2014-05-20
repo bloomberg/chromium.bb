@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "google_apis/drive/drive_common_callbacks.h"
@@ -67,7 +66,6 @@ class SyncEngineContext;
 class SyncEngineInitializer : public SyncTask {
  public:
   SyncEngineInitializer(SyncEngineContext* sync_context,
-                        base::SequencedTaskRunner* task_runner,
                         const base::FilePath& database_path,
                         leveldb::Env* env_override);
   virtual ~SyncEngineInitializer();
@@ -110,7 +108,6 @@ class SyncEngineInitializer : public SyncTask {
   SyncEngineContext* sync_context_;  // Not owned.
   leveldb::Env* env_override_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   google_apis::CancelCallback cancel_callback_;
   base::FilePath database_path_;
 
