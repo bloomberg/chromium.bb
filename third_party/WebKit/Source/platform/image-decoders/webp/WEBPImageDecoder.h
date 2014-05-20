@@ -82,6 +82,9 @@ private:
     int m_repetitionCount;
     int m_decodedHeight;
 
+    typedef void (*AlphaBlendFunction)(ImageFrame&, ImageFrame&, int, int, int);
+    AlphaBlendFunction m_blendFunction;
+
     void clear();
     void clearDecoder();
 };
