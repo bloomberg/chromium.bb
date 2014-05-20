@@ -8989,14 +8989,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="LevelDBPrefStore.ReadErrors" enum="LevelDBPrefStoreErrorCodes">
-  <owner>dgrogan@chromium.org</owner>
-  <summary>
-    Bitfield that indicates errors and recovery that occurred when opening a
-    LevelDB preferences database.
-  </summary>
-</histogram>
-
 <histogram name="LibraryLoader.NativeLibraryHack" enum="BooleanUsage">
   <owner>feng@chromium.org</owner>
   <summary>
@@ -37281,36 +37273,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="18" label="NewLogger"/>
   <int value="19" label="SyncParent"/>
   <int value="20" label="GetChildren"/>
-</enum>
-
-<enum name="LevelDBPrefStoreErrorCodes" type="int">
-  <int value="1" label="OPENED"/>
-  <int value="5" label="REPAIRED | OPENED"/>
-  <int value="6" label="REPAIRED | DESTROYED"/>
-  <int value="7" label="REPAIRED | DESTROYED | OPENED"/>
-  <int value="12" label="REPAIRED | DESTROY_FAILED"/>
-  <int value="18" label="REPAIR_FAILED | DESTROYED"/>
-  <int value="19" label="REPAIR_FAILED | DESTROYED | OPENED"/>
-  <int value="24" label="REPAIR_FAILED | DESTROY_FAILED"/>
-  <int value="32" label="IO_ERROR"/>
-  <int value="36" label="REPAIRED | IO_ERROR"/>
-  <int value="38" label="REPAIRED | DESTROYED | IO_ERROR"/>
-  <int value="50" label="REPAIR_FAILED | DESTROYED | IO_ERROR"/>
-  <int value="65" label="OPENED | DATA_LOST"/>
-  <int value="69" label="REPAIRED | OPENED | DATA_LOST"/>
-  <int value="71" label="REPAIRED | DESTROYED | OPENED | DATA_LOST"/>
-  <int value="83" label="REPAIR_FAILED | DESTROYED | OPENED | DATA_LOST"/>
-  <int value="129" label="OPENED | ITER_NOT_OK"/>
-  <int value="133" label="REPAIRED | OPENED | ITER_NOT_OK"/>
-  <int value="135" label="REPAIRED | DESTROYED | OPENED | ITER_NOT_OK"/>
-  <int value="147" label="REPAIR_FAILED | DESTROYED | OPENED | ITER_NOT_OK"/>
-  <int value="193" label="OPENED | DATA_LOST | ITER_NOT_OK"/>
-  <int value="197" label="REPAIRED | OPENED | DATA_LOST | ITER_NOT_OK"/>
-  <int value="199"
-      label="REPAIRED | DESTROYED | OPENED | DATA_LOST | ITER_NOT_OK"/>
-  <int value="211"
-      label="REPAIR_FAILED | DESTROYED | OPENED | DATA_LOST | ITER_NOT_OK"/>
-  <int value="256" label="FILE_NOT_SPECIFIED"/>
 </enum>
 
 <enum name="LinkMonitorFailureType" type="int">
