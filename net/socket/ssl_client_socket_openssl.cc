@@ -370,6 +370,7 @@ void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   cert_request_info->host_and_port = host_and_port_;
   cert_request_info->cert_authorities = cert_authorities_;
+  cert_request_info->cert_key_types = cert_key_types_;
 }
 
 SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
@@ -473,6 +474,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   completed_handshake_ = false;
 
   cert_authorities_.clear();
+  cert_key_types_.clear();
   client_auth_cert_needed_ = false;
 }
 
@@ -1264,7 +1266,6 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
   DCHECK(ssl == ssl_);
   DCHECK(*x509 == NULL);
   DCHECK(*pkey == NULL);
-#if defined(USE_OPENSSL_CERTS)
   if (!ssl_config_.send_client_cert) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand.
@@ -1280,11 +1281,21 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
       OPENSSL_free(str);
     }
 
+    const unsigned char* client_cert_types;
+    size_t num_client_cert_types;
+    SSL_get_client_certificate_types(ssl, &client_cert_types,
+                                     &num_client_cert_types);
+    for (size_t i = 0; i < num_client_cert_types; i++) {
+      cert_key_types_.push_back(
+          static_cast<SSLClientCertType>(client_cert_types[i]));
+    }
+
     return -1;  // Suspends handshake.
   }
 
   // Second pass: a client certificate should have been selected.
   if (ssl_config_.client_cert.get()) {
+#if defined(USE_OPENSSL_CERTS)
     // A note about ownership: FetchClientCertPrivateKey() increments
     // the reference count of the EVP_PKEY. Ownership of this reference
     // is passed directly to OpenSSL, which will release the reference
@@ -1300,11 +1311,11 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
       return 1;
     }
     LOG(WARNING) << "Client cert found without private key";
-  }
 #else  // !defined(USE_OPENSSL_CERTS)
-  // OS handling of client certificates is not yet implemented.
-  NOTIMPLEMENTED();
+    // OS handling of client certificates is not yet implemented.
+    NOTIMPLEMENTED();
 #endif  // defined(USE_OPENSSL_CERTS)
+  }
 
   // Send no client certificate.
   return 0;

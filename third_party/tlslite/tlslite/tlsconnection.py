@@ -1062,7 +1062,7 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServer(self, verifierDB=None,
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
-                        reqCAs = None, 
+                        reqCAs = None, reqCertTypes = None,
                         tacks=None, activationFlags=0,
                         nextProtos=None, anon=False,
                         tlsIntolerant=None, signedCertTimestamps=None,
@@ -1130,6 +1130,10 @@ class TLSConnection(TLSRecordLayer):
         will be sent along with a certificate request. This does not affect
         verification.        
 
+        @type reqCertTypes: list of int
+        @param reqCertTypes: A list of certificate_type values to be sent
+        along with a certificate request. This does not affect verification.
+
         @type nextProtos: list of strings.
         @param nextProtos: A list of upper layer protocols to expose to the
         clients through the Next-Protocol Negotiation Extension, 
@@ -1169,7 +1173,7 @@ class TLSConnection(TLSRecordLayer):
         """
         for result in self.handshakeServerAsync(verifierDB,
                 certChain, privateKey, reqCert, sessionCache, settings,
-                checker, reqCAs, 
+                checker, reqCAs, reqCertTypes,
                 tacks=tacks, activationFlags=activationFlags, 
                 nextProtos=nextProtos, anon=anon, tlsIntolerant=tlsIntolerant,
                 signedCertTimestamps=signedCertTimestamps,
@@ -1180,7 +1184,7 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServerAsync(self, verifierDB=None,
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None,
-                             reqCAs=None, 
+                             reqCAs=None, reqCertTypes=None,
                              tacks=None, activationFlags=0,
                              nextProtos=None, anon=False,
                              tlsIntolerant=None,
@@ -1203,7 +1207,7 @@ class TLSConnection(TLSRecordLayer):
             verifierDB=verifierDB, certChain=certChain,
             privateKey=privateKey, reqCert=reqCert,
             sessionCache=sessionCache, settings=settings, 
-            reqCAs=reqCAs, 
+            reqCAs=reqCAs, reqCertTypes=reqCertTypes,
             tacks=tacks, activationFlags=activationFlags, 
             nextProtos=nextProtos, anon=anon,
             tlsIntolerant=tlsIntolerant,
@@ -1216,7 +1220,7 @@ class TLSConnection(TLSRecordLayer):
 
     def _handshakeServerAsyncHelper(self, verifierDB,
                              certChain, privateKey, reqCert, sessionCache,
-                             settings, reqCAs, 
+                             settings, reqCAs, reqCertTypes,
                              tacks, activationFlags, 
                              nextProtos, anon,
                              tlsIntolerant, signedCertTimestamps, fallbackSCSV,
@@ -1232,6 +1236,8 @@ class TLSConnection(TLSRecordLayer):
             raise ValueError("Caller passed a privateKey but no certChain")
         if reqCAs and not reqCert:
             raise ValueError("Caller passed reqCAs but not reqCert")            
+        if reqCertTypes and not reqCert:
+            raise ValueError("Caller passed reqCertTypes but not reqCert")
         if certChain and not isinstance(certChain, X509CertChain):
             raise ValueError("Unrecognized certificate type")
         if activationFlags and not tacks:
@@ -1320,7 +1326,7 @@ class TLSConnection(TLSRecordLayer):
                 assert(False)
             for result in self._serverCertKeyExchange(clientHello, serverHello, 
                                         certChain, keyExchange,
-                                        reqCert, reqCAs, cipherSuite,
+                                        reqCert, reqCAs, reqCertTypes, cipherSuite,
                                         settings, ocspResponse):
                 if result in (0,1): yield result
                 else: break
@@ -1597,7 +1603,7 @@ class TLSConnection(TLSRecordLayer):
 
     def _serverCertKeyExchange(self, clientHello, serverHello, 
                                 serverCertChain, keyExchange,
-                                reqCert, reqCAs, cipherSuite,
+                                reqCert, reqCAs, reqCertTypes, cipherSuite,
                                 settings, ocspResponse):
         #Send ServerHello, Certificate[, ServerKeyExchange]
         #[, CertificateRequest], ServerHelloDone
@@ -1613,11 +1619,12 @@ class TLSConnection(TLSRecordLayer):
         serverKeyExchange = keyExchange.makeServerKeyExchange()
         if serverKeyExchange is not None:
             msgs.append(serverKeyExchange)
-        if reqCert and reqCAs:
-            msgs.append(CertificateRequest().create(\
-                [ClientCertificateType.rsa_sign], reqCAs))
-        elif reqCert:
-            msgs.append(CertificateRequest())
+        if reqCert:
+            reqCAs = reqCAs or []
+            #Apple's Secure Transport library rejects empty certificate_types,
+            #so default to rsa_sign.
+            reqCertTypes = reqCertTypes or [ClientCertificateType.rsa_sign]
+            msgs.append(CertificateRequest().create(reqCertTypes, reqCAs))
         msgs.append(ServerHelloDone())
         for result in self._sendMsgs(msgs):
             yield result

@@ -2,7 +2,8 @@
 # See the LICENSE file for legal information regarding use of this file.
 
 __version__ = "0.4.6"
-from .constants import AlertLevel, AlertDescription, Fault
+from .constants import AlertLevel, AlertDescription, ClientCertificateType, \
+                       Fault
 from .errors import *
 from .checker import Checker
 from .handshakesettings import HandshakeSettings

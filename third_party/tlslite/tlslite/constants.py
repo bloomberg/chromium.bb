@@ -14,10 +14,14 @@ class CertificateType:
     openpgp = 1
 
 class ClientCertificateType:
+    # http://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-2
     rsa_sign = 1
     dss_sign = 2
     rsa_fixed_dh = 3
     dss_fixed_dh = 4
+    ecdsa_sign = 64
+    rsa_fixed_ecdh = 65
+    ecdsa_fixed_ecdh = 66
  
 class HandshakeType:
     hello_request = 0

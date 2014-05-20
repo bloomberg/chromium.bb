@@ -16,6 +16,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
 
 // Avoid including misc OpenSSL headers, i.e.:
@@ -197,6 +198,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // List of DER-encoded X.509 DistinguishedName of certificate authorities
   // allowed by the server.
   std::vector<std::string> cert_authorities_;
+  // List of SSLClientCertType values for client certificates allowed by the
+  // server.
+  std::vector<SSLClientCertType> cert_key_types_;
 
   CertVerifier* const cert_verifier_;
   scoped_ptr<SingleRequestCertVerifier> verifier_;

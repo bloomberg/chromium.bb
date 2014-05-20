@@ -31,3 +31,5 @@ Local Modifications:
 - patches/fix_test_file.patch: Fix #! line in random test file to appease our
   presubmit checks.
 - patches/dhe_rsa.patch: Implement DHE_RSA-based cipher suites.
+- patches/req_cert_types.patch: Add a reqCertTypes parameter to populate the
+  certificate_types field of CertificateRequest.

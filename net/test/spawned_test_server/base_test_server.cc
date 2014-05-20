@@ -40,6 +40,20 @@ std::string GetHostname(BaseTestServer::Type type,
   return BaseTestServer::kLocalhost;
 }
 
+std::string GetClientCertType(SSLClientCertType type) {
+  switch (type) {
+    case CLIENT_CERT_RSA_SIGN:
+      return "rsa_sign";
+    case CLIENT_CERT_DSS_SIGN:
+      return "dss_sign";
+    case CLIENT_CERT_ECDSA_SIGN:
+      return "ecdsa_sign";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 void GetKeyExchangesList(int key_exchange, base::ListValue* values) {
   if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_RSA)
     values->Append(new base::StringValue("rsa"));
@@ -386,6 +400,14 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
     if (ssl_client_certs->GetSize())
       arguments->Set("ssl-client-ca", ssl_client_certs.release());
+
+    scoped_ptr<base::ListValue> client_cert_types(new base::ListValue());
+    for (size_t i = 0; i < ssl_options_.client_cert_types.size(); i++) {
+      client_cert_types->Append(new base::StringValue(
+          GetClientCertType(ssl_options_.client_cert_types[i])));
+    }
+    if (client_cert_types->GetSize())
+      arguments->Set("ssl-client-cert-type", client_cert_types.release());
   }
 
   if (type_ == TYPE_HTTPS) {

@@ -704,6 +704,8 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     sock->GetSSLCertRequestInfo(request_info.get());
     sock->Disconnect();
     EXPECT_FALSE(sock->IsConnected());
+    EXPECT_TRUE(
+        test_server.host_port_pair().Equals(request_info->host_and_port));
 
     return request_info;
   }
@@ -2218,6 +2220,21 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       std::string(reinterpret_cast<const char*>(kDiginotarDN), kDiginotarLen),
       request_info->cert_authorities[1]);
 }
+
+// cert_key_types is currently only populated on OpenSSL.
+#if defined(USE_OPENSSL)
+TEST_F(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ssl_options.client_cert_types.push_back(CLIENT_CERT_RSA_SIGN);
+  ssl_options.client_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
+  scoped_refptr<SSLCertRequestInfo> request_info = GetCertRequest(ssl_options);
+  ASSERT_TRUE(request_info.get());
+  ASSERT_EQ(2u, request_info->cert_key_types.size());
+  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, request_info->cert_key_types[0]);
+  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, request_info->cert_key_types[1]);
+}
+#endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   SpawnedTestServer::SSLOptions ssl_options;

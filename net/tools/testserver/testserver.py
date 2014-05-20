@@ -152,7 +152,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
   client verification."""
 
   def __init__(self, server_address, request_hander_class, pem_cert_and_key,
-               ssl_client_auth, ssl_client_cas,
+               ssl_client_auth, ssl_client_cas, ssl_client_cert_types,
                ssl_bulk_ciphers, ssl_key_exchanges, enable_npn,
                record_resume_info, tls_intolerant, signed_cert_timestamps,
                fallback_scsv_enabled, ocsp_response):
@@ -167,6 +167,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                                implementations=['python'])
     self.ssl_client_auth = ssl_client_auth
     self.ssl_client_cas = []
+    self.ssl_client_cert_types = []
     if enable_npn:
       self.next_protos = ['http/1.1']
     else:
@@ -179,11 +180,20 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     self.fallback_scsv_enabled = fallback_scsv_enabled
     self.ocsp_response = ocsp_response
 
-    for ca_file in ssl_client_cas:
-      s = open(ca_file).read()
-      x509 = tlslite.api.X509()
-      x509.parse(s)
-      self.ssl_client_cas.append(x509.subject)
+    if ssl_client_auth:
+      for ca_file in ssl_client_cas:
+        s = open(ca_file).read()
+        x509 = tlslite.api.X509()
+        x509.parse(s)
+        self.ssl_client_cas.append(x509.subject)
+
+      for cert_type in ssl_client_cert_types:
+        self.ssl_client_cert_types.append({
+            "rsa_sign": tlslite.api.ClientCertificateType.rsa_sign,
+            "dss_sign": tlslite.api.ClientCertificateType.dss_sign,
+            "ecdsa_sign": tlslite.api.ClientCertificateType.ecdsa_sign,
+            }[cert_type])
+
     self.ssl_handshake_settings = tlslite.api.HandshakeSettings()
     if ssl_bulk_ciphers is not None:
       self.ssl_handshake_settings.cipherNames = ssl_bulk_ciphers
@@ -211,6 +221,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                                     reqCert=self.ssl_client_auth,
                                     settings=self.ssl_handshake_settings,
                                     reqCAs=self.ssl_client_cas,
+                                    reqCertTypes=self.ssl_client_cert_types,
                                     nextProtos=self.next_protos,
                                     tlsIntolerant=self.tls_intolerant,
                                     signedCertTimestamps=
@@ -1989,6 +2000,7 @@ class ServerRunner(testserver_base.TestServerRunner):
         server = HTTPSServer((host, port), TestPageHandler, pem_cert_and_key,
                              self.options.ssl_client_auth,
                              self.options.ssl_client_ca,
+                             self.options.ssl_client_cert_type,
                              self.options.ssl_bulk_cipher,
                              self.options.ssl_key_exchange,
                              self.options.enable_npn,
@@ -2172,6 +2184,15 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'file. This option may appear multiple '
                                   'times, indicating multiple CA names should '
                                   'be sent in the request.')
+    self.option_parser.add_option('--ssl-client-cert-type', action='append',
+                                  default=[], help='Specify that the client '
+                                  'certificate request should include the '
+                                  'specified certificate_type value. This '
+                                  'option may appear multiple times, '
+                                  'indicating multiple values should be send '
+                                  'in the request. Valid values are '
+                                  '"rsa_sign", "dss_sign", and "ecdsa_sign". '
+                                  'If omitted, "rsa_sign" will be used.')
     self.option_parser.add_option('--ssl-bulk-cipher', action='append',
                                   help='Specify the bulk encryption '
                                   'algorithm(s) that will be accepted by the '
