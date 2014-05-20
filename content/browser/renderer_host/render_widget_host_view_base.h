@@ -53,8 +53,9 @@ class BrowserAccessibilityManager;
 class SyntheticGesture;
 class SyntheticGestureTarget;
 class WebCursor;
-struct WebPluginGeometry;
+struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
+struct WebPluginGeometry;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
@@ -170,6 +171,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // or ignored (when |ack_result| is CONSUMED).
   virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                       InputEventAckState ack_result) {}
+
+  virtual void DidOverscroll(const DidOverscrollParams& params) {}
 
   virtual void DidStopFlinging() {}
 

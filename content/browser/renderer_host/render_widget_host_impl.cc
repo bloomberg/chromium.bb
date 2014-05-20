@@ -1828,6 +1828,11 @@ void RenderWidgetHostImpl::DidFlush() {
     view_->OnDidFlushInput();
 }
 
+void RenderWidgetHostImpl::DidOverscroll(const DidOverscrollParams& params) {
+  if (view_)
+    view_->DidOverscroll(params);
+}
+
 void RenderWidgetHostImpl::OnKeyboardEventAck(
       const NativeWebKeyboardEvent& event,
       InputEventAckState ack_result) {

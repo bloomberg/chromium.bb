@@ -1054,11 +1054,12 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
 
   if (!WebInputEventTraits::IgnoresAckDisposition(*input_event)) {
+    InputHostMsg_HandleInputEvent_ACK_Params ack;
+    ack.type = input_event->type;
+    ack.state = ack_result;
+    ack.latency = swap_latency_info;
     scoped_ptr<IPC::Message> response(
-        new InputHostMsg_HandleInputEvent_ACK(routing_id_,
-                                              input_event->type,
-                                              ack_result,
-                                              swap_latency_info));
+        new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
     if (rate_limiting_wanted && event_type_can_be_rate_limited &&
         frame_pending && !is_hidden_) {
       // We want to rate limit the input events in this case, so we'll wait for

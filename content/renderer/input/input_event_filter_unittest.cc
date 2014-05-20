@@ -180,8 +180,8 @@ TEST_F(InputEventFilterTest, Basic) {
 
     InputHostMsg_HandleInputEvent_ACK::Param params;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
-    WebInputEvent::Type event_type = params.a;
-    InputEventAckState ack_result = params.b;
+    WebInputEvent::Type event_type = params.a.type;
+    InputEventAckState ack_result = params.a.state;
 
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -232,8 +232,8 @@ TEST_F(InputEventFilterTest, Basic) {
 
     InputHostMsg_HandleInputEvent_ACK::Param params;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
-    WebInputEvent::Type event_type = params.a;
-    InputEventAckState ack_result = params.b;
+    WebInputEvent::Type event_type = params.a.type;
+    InputEventAckState ack_result = params.a.state;
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }

@@ -293,10 +293,10 @@ class InputRouterImplTest : public testing::Test {
 
   void SendInputEventACK(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result) {
-    scoped_ptr<IPC::Message> response(
-        new InputHostMsg_HandleInputEvent_ACK(0, type, ack_result,
-                                              ui::LatencyInfo()));
-    input_router_->OnMessageReceived(*response);
+    InputHostMsg_HandleInputEvent_ACK_Params ack;
+    ack.type = type;
+    ack.state = ack_result;
+    input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   }
 
   InputRouterImpl* input_router() const {
@@ -1651,6 +1651,44 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
+}
+
+// Test proper routing of overscroll notifications received either from
+// event acks or from |DidOverscroll| IPC messages.
+TEST_F(InputRouterImplTest, OverscrollDispatch) {
+  DidOverscrollParams overscroll;
+  overscroll.accumulated_overscroll = gfx::Vector2dF(-14, 14);
+  overscroll.latest_overscroll_delta = gfx::Vector2dF(-7, 0);
+  overscroll.current_fling_velocity = gfx::Vector2dF(-1, 0);
+
+  input_router_->OnMessageReceived(InputHostMsg_DidOverscroll(0, overscroll));
+  DidOverscrollParams client_overscroll = client_->GetAndResetOverscroll();
+  EXPECT_EQ(overscroll.accumulated_overscroll,
+            client_overscroll.accumulated_overscroll);
+  EXPECT_EQ(overscroll.latest_overscroll_delta,
+            client_overscroll.latest_overscroll_delta);
+  EXPECT_EQ(overscroll.current_fling_velocity,
+            client_overscroll.current_fling_velocity);
+
+  DidOverscrollParams wheel_overscroll;
+  wheel_overscroll.accumulated_overscroll = gfx::Vector2dF(7, -7);
+  wheel_overscroll.latest_overscroll_delta = gfx::Vector2dF(3, 0);
+  wheel_overscroll.current_fling_velocity = gfx::Vector2dF(1, 0);
+
+  SimulateWheelEvent(3, 0, 0, false);
+  InputHostMsg_HandleInputEvent_ACK_Params ack;
+  ack.type = WebInputEvent::MouseWheel;
+  ack.state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  ack.overscroll.reset(new DidOverscrollParams(wheel_overscroll));
+  input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
+
+  client_overscroll = client_->GetAndResetOverscroll();
+  EXPECT_EQ(wheel_overscroll.accumulated_overscroll,
+            client_overscroll.accumulated_overscroll);
+  EXPECT_EQ(wheel_overscroll.latest_overscroll_delta,
+            client_overscroll.latest_overscroll_delta);
+  EXPECT_EQ(wheel_overscroll.current_fling_velocity,
+            client_overscroll.current_fling_velocity);
 }
 
 }  // namespace content

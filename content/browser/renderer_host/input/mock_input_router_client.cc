@@ -50,6 +50,22 @@ void MockInputRouterClient::OnHasTouchEventHandlers(
   has_touch_handler_ = has_handlers;
 }
 
+OverscrollController* MockInputRouterClient::GetOverscrollController() const {
+  return NULL;
+}
+
+void MockInputRouterClient::DidFlush() {
+  ++did_flush_called_count_;
+}
+
+void MockInputRouterClient::DidOverscroll(const DidOverscrollParams& params) {
+  overscroll_ = params;
+}
+
+void MockInputRouterClient::SetNeedsFlush() {
+  set_needs_flush_called_ = true;
+}
+
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {
   bool filter_input_event_called = filter_input_event_called_;
   filter_input_event_called_ = false;
@@ -62,16 +78,10 @@ size_t MockInputRouterClient::GetAndResetDidFlushCount() {
   return did_flush_called_count;
 }
 
-OverscrollController* MockInputRouterClient::GetOverscrollController() const {
-  return NULL;
-}
-
-void MockInputRouterClient::DidFlush() {
-  ++did_flush_called_count_;
-}
-
-void MockInputRouterClient::SetNeedsFlush() {
-  set_needs_flush_called_ = true;
+DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
+  DidOverscrollParams overscroll;
+  std::swap(overscroll_, overscroll);
+  return overscroll;
 }
 
 }  // namespace content

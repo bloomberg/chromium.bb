@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_param_traits.h"
@@ -25,6 +26,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d_f.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -50,6 +52,12 @@ IPC_ENUM_TRAITS_VALIDATE(content::TouchAction, (
         (value == content::TOUCH_ACTION_NONE)) &&
     (!(value & content::TOUCH_ACTION_PINCH_ZOOM) ||
         (value == content::TOUCH_ACTION_MANIPULATION))))
+
+IPC_STRUCT_TRAITS_BEGIN(content::DidOverscrollParams)
+  IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
+  IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
+  IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::EditCommand)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -87,6 +95,14 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticTapGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(position)
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
 IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_BEGIN(InputHostMsg_HandleInputEvent_ACK_Params)
+  IPC_STRUCT_MEMBER(blink::WebInputEvent::Type, type)
+  IPC_STRUCT_MEMBER(content::InputEventAckState, state)
+  IPC_STRUCT_MEMBER(ui::LatencyInfo, latency)
+  // TODO(jdduke): Use Optional<T> type to avoid heap alloc, crbug.com/375002.
+  IPC_STRUCT_MEMBER(scoped_ptr<content::DidOverscrollParams>, overscroll)
+IPC_STRUCT_END()
 
 // Sends an input event to the render widget.
 IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
@@ -177,10 +193,8 @@ IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted);
 // Messages sent from the renderer to the browser.
 
 // Acknowledges receipt of a InputMsg_HandleInputEvent message.
-IPC_MESSAGE_ROUTED3(InputHostMsg_HandleInputEvent_ACK,
-                    blink::WebInputEvent::Type,
-                    content::InputEventAckState /* ack_result */,
-                    ui::LatencyInfo /* latency_info */)
+IPC_MESSAGE_ROUTED1(InputHostMsg_HandleInputEvent_ACK,
+                    InputHostMsg_HandleInputEvent_ACK_Params)
 
 IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
                     content::SyntheticGesturePacket)
@@ -188,6 +202,11 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
 // Notifies the allowed touch actions for a new touch point.
 IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
                     content::TouchAction /* touch_action */)
+
+// Sent by the compositor when input scroll events are dropped due to bounds
+// restrictions on the root scroll offset.
+IPC_MESSAGE_ROUTED1(InputHostMsg_DidOverscroll,
+                    content::DidOverscrollParams /* params */)
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent InputMsg, then ifdefs for platform specific InputMsg, then

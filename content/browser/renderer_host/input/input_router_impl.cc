@@ -270,6 +270,7 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
     IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
+    IPC_MESSAGE_HANDLER(InputHostMsg_DidOverscroll, OnDidOverscroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
@@ -486,16 +487,21 @@ void InputRouterImpl::SendSyntheticWheelEventForPinch(
       MouseWheelEventWithLatencyInfo(wheelEvent, pinch_event.latency), true));
 }
 
-void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
-                                      InputEventAckState ack_result,
-                                      const ui::LatencyInfo& latency_info) {
+void InputRouterImpl::OnInputEventAck(
+    const InputHostMsg_HandleInputEvent_ACK_Params& ack) {
   client_->DecrementInFlightEventCount();
 
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
-  ProcessInputEventAck(event_type, ack_result, latency_info, RENDERER);
+  if (ack.overscroll) {
+    DCHECK(ack.type == WebInputEvent::MouseWheel ||
+           ack.type == WebInputEvent::GestureScrollUpdate);
+    OnDidOverscroll(*ack.overscroll);
+  }
+
+  ProcessInputEventAck(ack.type, ack.state, ack.latency, RENDERER);
   // WARNING: |this| may be deleted at this point.
 
   // This is used only for testing, and the other end does not use the
@@ -505,11 +511,15 @@ void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
   // (ProcessInputEventAck) method, but not on other platforms; using
   // 'void' instead is just as safe (since NotificationSource
   // is not actually typesafe) and avoids this error.
-  int type = static_cast<int>(event_type);
+  int type = static_cast<int>(ack.type);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       Source<void>(this),
       Details<int>(&type));
+}
+
+void InputRouterImpl::OnDidOverscroll(const DidOverscrollParams& params) {
+  client_->DidOverscroll(params);
 }
 
 void InputRouterImpl::OnMsgMoveCaretAck() {

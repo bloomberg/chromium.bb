@@ -14,8 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cookie_data.h"
-#include "content/common/input/did_overscroll_params.h"
-#include "content/common/input/input_event_ack_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
@@ -152,12 +150,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::DateTimeSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(localized_value)
   IPC_STRUCT_TRAITS_MEMBER(label)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::DidOverscrollParams)
-  IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
-  IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
-  IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
@@ -1503,11 +1495,6 @@ IPC_MESSAGE_ROUTED1(
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SwapCompositorFrame,
                     uint32 /* output_surface_id */,
                     cc::CompositorFrame /* frame */)
-
-// Sent by the compositor when input scroll events are dropped due to bounds
-// restricions on the root scroll offset.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidOverscroll,
-                    content::DidOverscrollParams /* params */)
 
 // Sent by the compositor when a flinging animation is stopped.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopFlinging)

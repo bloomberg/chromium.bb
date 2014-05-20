@@ -82,6 +82,7 @@ class NullInputRouterClient : public InputRouterClient {
   }
   virtual void DidFlush() OVERRIDE {}
   virtual void SetNeedsFlush() OVERRIDE {}
+  virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE {}
 };
 
 class NullIPCSender : public IPC::Sender {
@@ -237,8 +238,10 @@ class InputRouterImplPerfTest : public testing::Test {
                                InputEventAckState ack_result) {
     if (WebInputEventTraits::IgnoresAckDisposition(event))
       return;
-    InputHostMsg_HandleInputEvent_ACK response(
-        0, event.type, ack_result, ui::LatencyInfo());
+    InputHostMsg_HandleInputEvent_ACK_Params ack;
+    ack.type = event.type;
+    ack.state = ack_result;
+    InputHostMsg_HandleInputEvent_ACK response(0, ack);
     input_router_->OnMessageReceived(response);
   }
 

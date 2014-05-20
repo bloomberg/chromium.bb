@@ -14,6 +14,7 @@
 #include "base/containers/small_map.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -703,6 +704,40 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("<base::SmallMap>");
+  }
+};
+
+template <class P>
+struct ParamTraits<scoped_ptr<P> > {
+  typedef scoped_ptr<P> param_type;
+  static void Write(Message* m, const param_type& p) {
+    bool valid = !!p;
+    WriteParam(m, valid);
+    if (valid)
+      WriteParam(m, *p);
+  }
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+    bool valid = false;
+    if (!ReadParam(m, iter, &valid))
+      return false;
+
+    if (!valid) {
+      r->reset();
+      return true;
+    }
+
+    param_type temp(new P());
+    if (!ReadParam(m, iter, temp.get()))
+      return false;
+
+    r->swap(temp);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    if (p)
+      LogParam(*p, l);
+    else
+      l->append("NULL");
   }
 };
 

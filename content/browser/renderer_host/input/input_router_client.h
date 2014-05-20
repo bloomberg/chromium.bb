@@ -18,6 +18,7 @@ struct LatencyInfo;
 namespace content {
 
 class OverscrollController;
+struct DidOverscrollParams;
 
 class CONTENT_EXPORT InputRouterClient {
  public:
@@ -56,6 +57,8 @@ class CONTENT_EXPORT InputRouterClient {
   // of the call to Flush.  The call will typically be asynchronous with
   // respect to the call to |Flush| on the InputRouter.
   virtual void DidFlush() = 0;
+
+  virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
 };
 
 } // namespace content

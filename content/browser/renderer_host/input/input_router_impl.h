@@ -18,6 +18,8 @@
 #include "content/common/input/input_event_stream_validator.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+struct InputHostMsg_HandleInputEvent_ACK_Params;
+
 namespace IPC {
 class Sender;
 }
@@ -32,6 +34,7 @@ class InputAckHandler;
 class InputRouterClient;
 class OverscrollController;
 class RenderWidgetHostImpl;
+struct DidOverscrollParams;
 
 // A default implementation for browser input event routing.
 class CONTENT_EXPORT InputRouterImpl
@@ -146,9 +149,8 @@ private:
       const GestureEventWithLatencyInfo& pinch_event);
 
   // IPC message handlers
-  void OnInputEventAck(blink::WebInputEvent::Type event_type,
-                       InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency_info);
+  void OnInputEventAck(const InputHostMsg_HandleInputEvent_ACK_Params& ack);
+  void OnDidOverscroll(const DidOverscrollParams& params);
   void OnMsgMoveCaretAck();
   void OnSelectRangeAck();
   void OnHasTouchEventHandlers(bool has_handlers);

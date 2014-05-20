@@ -4,6 +4,7 @@
 
 #include "content/renderer/input/input_event_filter.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -45,7 +46,8 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_loop_(target_loop),
-      overscroll_notifications_enabled_(false) {
+      overscroll_notifications_enabled_(false),
+      current_overscroll_params_(NULL) {
   DCHECK(target_loop_.get());
   overscroll_notifications_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -73,11 +75,18 @@ void InputEventFilter::DidOverscroll(int routing_id,
   if (!overscroll_notifications_enabled_)
     return;
 
-  SendMessage(ViewHostMsg_DidOverscroll(routing_id, params));
+  if (current_overscroll_params_) {
+    current_overscroll_params_->reset(new DidOverscrollParams(params));
+    return;
+  }
+
+  SendMessage(scoped_ptr<IPC::Message>(
+      new InputHostMsg_DidOverscroll(routing_id, params)));
 }
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
-  SendMessage(ViewHostMsg_DidStopFlinging(routing_id));
+  SendMessage(
+      scoped_ptr<IPC::Message>(new ViewHostMsg_DidStopFlinging(routing_id)));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -121,6 +130,7 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 InputEventFilter::~InputEventFilter() {
+  DCHECK(!current_overscroll_params_);
 }
 
 void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
@@ -154,9 +164,17 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   bool is_keyboard_shortcut = params.c;
   DCHECK(event);
 
-  InputEventAckState ack = handler_.Run(routing_id, event, &latency_info);
+  // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
+  // response with the input event ack.
+  scoped_ptr<DidOverscrollParams> overscroll_params;
+  base::AutoReset<scoped_ptr<DidOverscrollParams>*>
+      auto_reset_current_overscroll_params(&current_overscroll_params_,
+                                           &overscroll_params);
 
-  if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+  InputEventAckState ack_state = handler_.Run(routing_id, event, &latency_info);
+
+  if (ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+    DCHECK(!overscroll_params);
     TRACE_EVENT_INSTANT0(
         "input",
         "InputEventFilter::ForwardToHandler::ForwardToMainListener",
@@ -170,33 +188,34 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
-  if (!WebInputEventTraits::IgnoresAckDisposition(*event))
-    SendACK(event->type, ack, latency_info, routing_id);
+  if (WebInputEventTraits::IgnoresAckDisposition(*event))
+    return;
+
+  InputHostMsg_HandleInputEvent_ACK_Params ack;
+  ack.type = event->type;
+  ack.state = ack_state;
+  ack.latency = latency_info;
+  ack.overscroll = overscroll_params.Pass();
+  SendMessage(scoped_ptr<IPC::Message>(
+      new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }
 
-void InputEventFilter::SendACK(blink::WebInputEvent::Type type,
-                               InputEventAckState ack_result,
-                               const ui::LatencyInfo& latency_info,
-                               int routing_id) {
-  SendMessage(InputHostMsg_HandleInputEvent_ACK(
-      routing_id, type, ack_result, latency_info));
-}
-
-void InputEventFilter::SendMessage(const IPC::Message& message) {
+void InputEventFilter::SendMessage(scoped_ptr<IPC::Message> message) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
-  io_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputEventFilter::SendMessageOnIOThread, this, message));
+  io_loop_->PostTask(FROM_HERE,
+                     base::Bind(&InputEventFilter::SendMessageOnIOThread,
+                                this,
+                                base::Passed(&message)));
 }
 
-void InputEventFilter::SendMessageOnIOThread(const IPC::Message& message) {
+void InputEventFilter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
   DCHECK(io_loop_->BelongsToCurrentThread());
 
   if (!sender_)
     return;  // Filter was removed.
 
-  sender_->Send(new IPC::Message(message));
+  sender_->Send(message.release());
 }
 
 }  // namespace content

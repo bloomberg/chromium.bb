@@ -685,6 +685,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void OnHasTouchEventHandlers(bool has_handlers) OVERRIDE;
   virtual OverscrollController* GetOverscrollController() const OVERRIDE;
   virtual void DidFlush() OVERRIDE;
+  virtual void DidOverscroll(const DidOverscrollParams& params) OVERRIDE;
 
   // InputAckHandler
   virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
