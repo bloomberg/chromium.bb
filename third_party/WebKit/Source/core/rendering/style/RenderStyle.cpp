@@ -30,7 +30,6 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"

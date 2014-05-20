@@ -82,7 +82,6 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGUseElement.h"

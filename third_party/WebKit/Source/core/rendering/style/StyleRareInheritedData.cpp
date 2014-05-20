@@ -23,7 +23,7 @@
 #include "core/rendering/style/StyleRareInheritedData.h"
 
 #include "core/rendering/style/AppliedTextDecoration.h"
-#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/CursorData.h"
 #include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"

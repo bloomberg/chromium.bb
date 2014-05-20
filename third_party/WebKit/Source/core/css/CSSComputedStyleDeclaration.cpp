@@ -63,7 +63,6 @@
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CounterContent.h"
-#include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/ShapeValue.h"

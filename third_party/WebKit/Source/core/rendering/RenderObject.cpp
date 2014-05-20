@@ -75,7 +75,6 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/JSONValues.h"

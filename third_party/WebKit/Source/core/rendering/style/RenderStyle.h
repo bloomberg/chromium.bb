@@ -101,7 +101,6 @@ class FilterOperations;
 class AppliedTextDecoration;
 class BorderData;
 class CounterContent;
-class CursorList;
 class Font;
 class FontMetrics;
 class IntRect;

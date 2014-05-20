@@ -19,6 +19,8 @@ public:
 
     const T& operator[](size_t i) const { return m_vector[i]; }
     T& operator[](size_t i) { return m_vector[i]; }
+    const T& at(size_t i) const { return m_vector.at(i); }
+    T& at(size_t i) { return m_vector.at(i); }
 
     bool operator==(const RefVector& o) const { return m_vector == o.m_vector; }
     bool operator!=(const RefVector& o) const { return m_vector != o.m_vector; }

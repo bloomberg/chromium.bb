@@ -30,7 +30,6 @@
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/style/ContentData.h"
-#include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleFetchedImage.h"
