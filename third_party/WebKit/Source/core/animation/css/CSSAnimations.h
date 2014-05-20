@@ -211,7 +211,7 @@ private:
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
-    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSTransitionData&, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
+    static void calculateTransitionUpdateForProperty(CSSPropertyID, CSSPropertyID eventId, const CSSTransitionData&, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);

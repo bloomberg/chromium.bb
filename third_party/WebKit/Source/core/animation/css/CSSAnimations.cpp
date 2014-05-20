@@ -402,7 +402,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     }
 }
 
-void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSTransitionData& transitionData, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPropertyID eventId, const CSSTransitionData& transitionData, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update, const Element* element)
 {
     RefPtrWillBeRawPtr<AnimatableValue> to = nullptr;
     if (activeTransitions) {
@@ -447,9 +447,6 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     keyframes.append(endKeyframe);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
-
-    const CSSTransitionData::TransitionProperty& transitionProperty = transitionData.propertyList()[transitionIndex];
-    CSSPropertyID eventId = transitionProperty.propertyType == CSSTransitionData::TransitionAll ? id : transitionProperty.propertyId;
     update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, false));
     ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
 }
@@ -492,6 +489,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
             // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
             for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : property;
+                CSSPropertyID eventId = id;
 
                 if (!animateAll) {
                     id = propertyForAnimation(id);
@@ -505,7 +503,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 // but this is a bit hard to do with the current applyMatchedProperties system.
                 if (!update->activeInterpolationsForAnimations().contains(id)
                     && (!activeAnimations || !activeAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(id))) {
-                    calculateTransitionUpdateForProperty(id, *transitionData, i, oldStyle, style, activeTransitions, update, element);
+                    calculateTransitionUpdateForProperty(id, eventId, *transitionData, i, oldStyle, style, activeTransitions, update, element);
                 }
             }
         }
