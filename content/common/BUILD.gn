@@ -1,0 +1,39 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(brettw) this file is a work in progress, it is not currently hooked up
+# to the build, but currently represents the state of content/common's deps.
+
+import("//content/common/common.gni")
+
+source_set("common") {
+  # Only targets in the content tree can depend directly on this target.
+  visibility = [ "//content/*" ]
+
+  sources = rebase_path(content_common_gypi_values.private_common_sources,
+                        ".", "//content")
+
+  forward_dependent_configs_from = [
+    # TODO(GYP) convert these dependencies.
+    #'../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+  ]
+
+  deps = [
+    "//base",
+    "//components/tracing",
+    "//gpu/command_buffer/common",
+    "//net",
+    "//skia",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/base:ui_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//url",
+    # TODO(GYP) convert these dependencies.
+    #'../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+    #'../third_party/libjingle/libjingle.gyp:libjingle',
+    #'../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+  ]
+}

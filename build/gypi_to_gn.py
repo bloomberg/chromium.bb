@@ -7,9 +7,12 @@
 It is assumed that the file contains a toplevel dictionary, and this script
 will return that dictionary as a GN "scope" (see example below). This script
 does not know anything about GYP and it will not expand variables or execute
-conditions (it will check for the presence of a "conditions" value in the
-dictionary and will abort if it is present). It also does not support nested
-dictionaries.
+conditions.
+
+It will strip conditions blocks.
+
+A variables block at the top level will be flattened so that the variables
+appear in the root dictionary. This way they can be returned to the GN code.
 
 Say your_file.gypi looked like this:
   {
@@ -81,8 +84,17 @@ def LoadPythonDictionary(path):
     raise Exception("Unexpected error while reading %s: %s" % (path, str(e)))
 
   assert isinstance(file_data, dict), "%s does not eval to a dictionary" % path
-  assert 'conditions' not in file_data, \
-      "The file %s has conditions in it, these aren't supported." % path
+
+  # Strip any conditions.
+  if 'conditions' in file_data:
+    del file_data['conditions']
+  if 'target_conditions' in file_data:
+    del file_data['target_conditions']
+
+  # Flatten any varaiables to the top level.
+  if 'variables' in file_data:
+    file_data.update(file_data['variables'])
+    del file_data['variables']
 
   # If the contents of the root is a dictionary with exactly one kee
   # "variables", promote the contents of that to the top level. Some .gypi

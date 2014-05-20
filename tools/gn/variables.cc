@@ -693,7 +693,7 @@ const char kPublic_Help[] =
     "  visibility list, the include will be rejected.\n"
     "\n"
     "  GN only knows about files declared in the \"sources\" and \"public\"\n"
-    "  sections of targets. If a file is included that is now known to the\n"
+    "  sections of targets. If a file is included that is not known to the\n"
     "  build, it will be allowed.\n"
     "\n"
     "Examples:\n"

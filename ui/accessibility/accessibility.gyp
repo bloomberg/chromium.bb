@@ -42,7 +42,7 @@
         'ax_tree_update.cc',
         'ax_tree_update.h',
         'ax_view_state.cc',
-        'ax_view_state.cc',
+        'ax_view_state.h',
       ]
     },
     {
