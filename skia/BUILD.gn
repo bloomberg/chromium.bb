@@ -415,6 +415,13 @@ component("skia") {
     ]
   }
 
+  if (is_android) {
+    deps += [
+      "//third_party/expat",
+      "//third_party/freetype",
+    ]
+  }
+
   if (skia_support_pdf) {
     deps += [ "//third_party/sfntly" ]
   }
@@ -422,6 +429,9 @@ component("skia") {
 
 # Separated out so it can be compiled with different flags for SSE.
 source_set("skia_opts") {
+  cflags = []
+  defines = []
+
   if (cpu_arch == "x86" || cpu_arch == "x64") {
     sources = [
       # SSE 2
@@ -447,10 +457,88 @@ source_set("skia_opts") {
     ]
 
     if (is_linux || is_mac) {
-      cflags = [ "-mssse3" ]  # Note third 's'.
+      cflags += [ "-mssse3" ]  # Note third 's'.
     }
+  } else if (cpu_arch == "arm") {
+    sources = [
+      "//third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp",
+    ]
+
+    # The assembly uses the frame pointer register (r7 in Thumb/r11 in
+    # ARM), the compiler doesn't like that.
+    cflags += [ "-fomit-frame-pointer" ]
+
+    if (arm_version >= 7) {
+      if (arm_use_neon || arm_optionally_use_neon) {
+        sources += [
+          "//third_party/skia/src/opts/memset16_neon.S",
+          "//third_party/skia/src/opts/memset32_neon.S",
+          "//third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp",
+          "//third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp",
+          "//third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h",
+          "//third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h",
+          "//third_party/skia/src/opts/SkBlitMask_opts_arm_neon.cpp",
+          "//third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp",
+          "//third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp",
+          "//third_party/skia/src/opts/SkBlurImage_opts_neon.cpp",
+          "//third_party/skia/src/opts/SkMorphology_opts_neon.cpp",
+        ]
+
+        cflags += [
+          # The neon assembly contains conditional instructions which aren't
+          # enclosed in an IT block. The assembler complains without this
+          # option. See #86592.
+          "-Wa,-mimplicit-it=always",
+        ]
+
+        # Root build config sets -mfpu=$arm_fpu, which we expect to be neon
+        # when running this.
+        assert(arm_fpu == "neon")
+
+        #ldflags = [
+        #  "-march=armv7-a",
+        #  "-Wl,--fix-cortex-a8",
+        #]
+      }
+
+      if (arm_use_neon) {
+        defines += [ "__ARM_HAVE_NEON" ]
+      }
+      if (arm_optionally_use_neon) {
+        defines += [ "__ARM_HAVE_OPTIONAL_NEON_SUPPORT" ]
+      }
+    }
+
+    # Non-Neon ARM code.
+    if (arm_version < 7 || (!arm_use_neon && arm_optionally_use_neon)) {
+      sources += [ "//third_party/skia/src/opts/memset.arm.S" ]
+    }
+
+    if (arm_version < 6) {
+      sources += [
+        "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
+        "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
+        "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
+        "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
+        "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
+        "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
+      ]
+    } else {
+      # arm version >= 6.
+      sources += [
+        "//third_party/skia/src/opts/SkBlitMask_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkBlitRow_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkBlitRow_opts_arm.h",
+        "//third_party/skia/src/opts/SkBlurImage_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkMorphology_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkUtils_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
+      ]
+    }
+
+
   } else {
-    assert(false, "Need to port ARM/MIPS stuff from skia_library_opts.gyp")
+    assert(false, "Need to port MIPS stuff from skia_library_opts.gyp")
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

@@ -78,7 +78,6 @@ group("root") {
       "//crypto",
       "//gpu/command_buffer/client",  # Needs Skia.
       "//net",
-      "//skia",  # Needs some ARM stuff
       "//third_party/libusb",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.
       "//tools/gn",

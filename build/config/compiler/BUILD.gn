@@ -674,8 +674,18 @@ if (is_win) {
     "-fdata-sections",
     "-ffunction-sections",
   ]
-
   common_optimize_on_ldflags = []
+
+  if (is_android) {
+    common_optimize_on_cflags += [
+      "-fomit-frame-pointer",
+    ]
+    common_optimize_on_ldflags += [
+      # Warn in case of text relocations.
+      "-Wl,--warn-shared-textrel",
+    ]
+  }
+
   if (is_mac) {
     if (symbol_level == 2) {
       # Mac dead code stripping requires symbols.
