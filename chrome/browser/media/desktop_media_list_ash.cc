@@ -180,7 +180,11 @@ void DesktopMediaListAsh::EnumerateSources(
     if (source_types_ & SCREENS) {
       SourceDescription screen_source(
           content::DesktopMediaID::RegisterAuraWindow(*iter), (*iter)->title());
-      sources->push_back(screen_source);
+      if (*iter == ash::Shell::GetPrimaryRootWindow()) {
+        sources->insert(sources->begin(), screen_source);
+      } else {
+        sources->push_back(screen_source);
+      }
 
       CaptureThumbnail(screen_source.id, *iter);
     }
