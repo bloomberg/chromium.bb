@@ -734,8 +734,8 @@ class PatchSeries(object):
     """Look up the Gerrit/CQ dependency changes for |change|.
 
     Returns:
-      A tuple of GerritPatch objects which are change's Gerrit
-      dependencies, and CQ dependencies.
+      (gerrit_deps, cq_deps): The change's Gerrit dependencies and CQ
+      dependencies, as lists of GerritPatch objects.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
