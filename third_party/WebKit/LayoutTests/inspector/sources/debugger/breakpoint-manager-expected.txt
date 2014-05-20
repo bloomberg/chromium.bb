@@ -67,9 +67,9 @@ Running: testSetConditionalBreakpoint
   Dumping Storage
     a.js:30 enabled:true condition:condition
   Updating condition
-    debuggerModel.removeBreakpoint(a.js:30)
     breakpointRemoved(a.js, 30, 0)
     Location disposed: a.js:30
+    debuggerModel.removeBreakpoint(a.js:30)
     breakpointAdded(a.js, 30, 0, , true)
     debuggerModel.setBreakpoint(a.js:30:)
     breakpointRemoved(a.js, 30, 0)
@@ -242,8 +242,6 @@ Running: testSetBreakpointOutsideScript
   Adding UISourceCode: a.js
     breakpointAdded(a.js, 2500, 0, , true)
     debuggerModel.setBreakpoint(a.js:2500:)
-    breakpointRemoved(a.js, 2500, 0)
-    breakpointAdded(a.js, 2500, 0, , true)
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
       Location: (2500, 0)
@@ -298,11 +296,13 @@ Running: testNavigation
     breakpointAdded(a.js, 11, 0, foo == bar, true)
     Location created: a.js:11
   Adding UISourceCode: a.js
-    debuggerModel.removeBreakpoint(a.js:10)
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
-    breakpointAdded(a.js, 20, 0, , false)
     breakpointRemoved(a.js, 11, 0)
     Location disposed: a.js:11
+    debuggerModel.removeBreakpoint(a.js:10)
+    breakpointAdded(a.js, 10, 0, foo == bar, true)
+    debuggerModel.setBreakpoint(a.js:10:foo == bar)
+    breakpointAdded(a.js, 20, 0, , false)
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
   Dumping Breakpoint Locations
@@ -417,9 +417,9 @@ Running: testSourceMappingReload
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
+    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
@@ -439,13 +439,17 @@ Running: testSourceMappingReload
     Location created: a.js:10
   Adding UISourceCode: a.js
   Adding UISourceCode: b.js
+    breakpointRemoved(a.js, 10, 0)
+    Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
+    breakpointAdded(b.js, 20, 0, foo == bar, true)
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
+    breakpointRemoved(b.js, 20, 0)
+    breakpointAdded(b.js, 20, 0, foo == bar, true)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
-    breakpointRemoved(a.js, 10, 0)
-    Location disposed: a.js:10
+    breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
   Dumping Breakpoint Locations
@@ -471,8 +475,6 @@ Running: testBreakpointInCollectedReload
   Setting breakpoint at a.js:10:0 enabled:true condition:
     breakpointAdded(a.js, 10, 0, , true)
     debuggerModel.setBreakpoint(a.js:10:)
-    breakpointRemoved(a.js, 10, 0)
-    breakpointAdded(a.js, 10, 0, , true)
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
       Location: (10, 0)
@@ -485,11 +487,13 @@ Running: testBreakpointInCollectedReload
   Adding file with script:
   Adding UISourceCode: a.js
     debuggerModel.removeBreakpoint(a.js:10)
+    breakpointAdded(a.js, 10, 0, , true)
     debuggerModel.setBreakpoint(a.js:10:)
 
   Emulating breakpoint resolved event:
 
   Waiting for breakpoint to be set in debugger again:
+    breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, , true)
     Location created: a.js:10
   Dumping Breakpoint Locations
