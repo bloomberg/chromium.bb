@@ -9,6 +9,25 @@ export CHROME_WRAPPER="`readlink -f "$0"`"
 
 HERE="`dirname "$CHROME_WRAPPER"`"
 
+# Check if the CPU supports SSE2. If not, try to pop up a dialog to explain the
+# problem and exit. Otherwise the browser will just crash with a SIGILL.
+# http://crbug.com/348761
+grep ^flags /proc/cpuinfo|grep -qs sse2
+if [ $? != 0 ]; then
+  SSE2_DEPRECATION_MSG="This computer can no longer run Google Chrome because \
+its hardware is no longer supported."
+  if which zenity &> /dev/null; then
+    zenity --warning --text="$SSE2_DEPRECATION_MSG"
+  elif which gmessage &> /dev/null; then
+    gmessage "$SSE2_DEPRECATION_MSG"
+  elif which xmessage &> /dev/null; then
+    xmessage "$SSE2_DEPRECATION_MSG"
+  else
+    echo "$SSE2_DEPRECATION_MSG" 1>&2
+  fi
+  exit 1
+fi
+
 # We include some xdg utilities next to the binary, and we want to prefer them
 # over the system versions when we know the system versions are very old. We
 # detect whether the system xdg utilities are sufficiently new to be likely to
