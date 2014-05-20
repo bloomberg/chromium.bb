@@ -135,15 +135,6 @@ void GetDownloadFilePath(
                           base::Bind(callback, file));
 }
 
-bool UseSeparateWebstoreDownloadDirectory() {
-  const char kFieldTrial[] = "WebstoreDownloadDirectory";
-  const char kSeparateDirectoryUnderUDD[] = "SeparateDirectoryUnderUDD";
-
-  std::string field_trial_group =
-      base::FieldTrialList::FindFullName(kFieldTrial);
-  return field_trial_group == kSeparateDirectoryUnderUDD;
-}
-
 void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
   if (authuser.empty())
     return;
@@ -565,15 +556,9 @@ void WebstoreInstaller::DownloadCrx(
   download_url_ = GetWebstoreInstallURL(extension_id, source);
   MaybeAppendAuthUserParameter(approval_->authuser, &download_url_);
 
-  base::FilePath download_path;
-  if (UseSeparateWebstoreDownloadDirectory()) {
-    base::FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    download_path = user_data_dir.Append(kWebstoreDownloadFolder);
-  } else {
-    download_path = DownloadPrefs::FromDownloadManager(
-        BrowserContext::GetDownloadManager(profile_))->DownloadPath();
-  }
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath download_path = user_data_dir.Append(kWebstoreDownloadFolder);
 
   base::FilePath download_directory(g_download_directory_for_tests ?
       *g_download_directory_for_tests : download_path);
