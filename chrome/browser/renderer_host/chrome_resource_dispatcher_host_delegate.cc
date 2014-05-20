@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -247,7 +248,8 @@ void AppendComponentUpdaterThrottles(
   if (crx_id) {
     // We got a component we need to install, so throttle the resource
     // until the component is installed.
-    throttles->push_back(cus->GetOnDemandResourceThrottle(request, crx_id));
+    throttles->push_back(
+        cus->GetOnDemandUpdater().GetOnDemandResourceThrottle(request, crx_id));
   }
 }
 

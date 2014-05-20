@@ -247,7 +247,7 @@ void ComponentUpdaterTest::RunThreadsUntilIdle() {
 ComponentUpdateService::Status OnDemandTester::OnDemand(
     ComponentUpdateService* cus,
     const std::string& component_id) {
-  return cus->OnDemandUpdate(component_id);
+  return cus->GetOnDemandUpdater().OnDemandUpdate(component_id);
 }
 
 // Verify that our test fixture work and the component updater can
@@ -1296,7 +1296,8 @@ content::ResourceThrottle* RequestTestResourceThrottle(
                                   &context);
 
   content::ResourceThrottle* rt =
-      cus->GetOnDemandResourceThrottle(&url_request, crx_id);
+      cus->GetOnDemandUpdater().GetOnDemandResourceThrottle(&url_request,
+                                                            crx_id);
   rt->set_controller_for_testing(controller);
   controller->SetThrottle(rt);
   return rt;

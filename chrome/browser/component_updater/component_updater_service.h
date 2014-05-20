@@ -29,7 +29,7 @@ class ResourceThrottle;
 
 namespace component_updater {
 
-class OnDemandTester;
+class OnDemandUpdater;
 
 // Component specific installers must derive from this class and implement
 // OnUpdateError() and Install(). A valid instance of this class must be
@@ -208,29 +208,42 @@ class ComponentUpdateService {
   // Returns a list of registered components.
   virtual void GetComponents(std::vector<CrxComponentInfo>* components) = 0;
 
+  // Returns an interface for on-demand updates. On-demand updates are
+  // proactively triggered outside the normal component update service schedule.
+  virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
+
+  virtual ~ComponentUpdateService() {}
+
+ private:
+  friend class ::ComponentsUI;
+};
+
+typedef ComponentUpdateService::Observer ServiceObserver;
+
+class OnDemandUpdater {
+ public:
+  virtual ~OnDemandUpdater() {}
+
   // Returns a network resource throttle. It means that a component will be
-  // downloaded and installed before the resource is unthrottled. This is the
-  // only function callable from the IO thread.
+  // downloaded and installed before the resource is unthrottled. This function
+  // can be called from the IO thread.
   virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
       net::URLRequest* request,
       const std::string& crx_id) = 0;
 
-  virtual ~ComponentUpdateService() {}
-
-  friend class ::ComponentsUI;
-  friend class OnDemandTester;
-
  private:
-  // Ask the component updater to do an update check for a previously
-  // registered component, immediately. If an update or check is already
-  // in progress, returns |kInProgress|.
-  // There is no guarantee that the item will actually be updated,
-  // since an update may not be available. Listeners for the component will
-  // know the outcome of the check.
-  virtual Status OnDemandUpdate(const std::string& component_id) = 0;
-};
+  friend class OnDemandTester;
+  friend class ::ComponentsUI;
 
-typedef ComponentUpdateService::Observer ServiceObserver;
+  // Triggers an update check for a component. |component_id| is a value
+  // returned by GetCrxComponentID(). If an update for this component is already
+  // in progress, the function returns |kInProgress|. If an update is available,
+  // the update will be applied. The caller can subscribe to component update
+  // service notifications to get an indication about the outcome of the
+  // on-demand update.
+  virtual ComponentUpdateService::Status OnDemandUpdate(
+      const std::string& component_id) = 0;
+};
 
 // Creates the component updater. You must pass a valid |config| allocated on
 // the heap which the component updater will own.

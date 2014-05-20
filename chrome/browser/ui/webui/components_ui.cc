@@ -163,7 +163,7 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
   component_updater::ComponentUpdateService* cus =
       g_browser_process->component_updater();
-  cus->OnDemandUpdate(component_id);
+  cus->GetOnDemandUpdater().OnDemandUpdate(component_id);
 }
 
 // static
