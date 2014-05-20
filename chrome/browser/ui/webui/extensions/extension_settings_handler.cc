@@ -779,8 +779,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   // Promote the Chrome Apps & Extensions Developer Tools if they are not
   // installed and the user has not previously dismissed the warning.
   bool promote_apps_dev_tools = false;
-  if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
-      !ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->
+  if (!ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->
           GetExtensionById(kAppsDeveloperToolsExtensionId,
                            ExtensionRegistry::EVERYTHING) &&
       !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDismissedADTPromo)) {
