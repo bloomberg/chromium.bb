@@ -107,7 +107,7 @@ public:
     virtual void setRate(double) = 0;
     virtual void setVolume(double) = 0;
     virtual void setPreload(Preload) { };
-    virtual const WebTimeRanges& buffered() = 0;
+    virtual WebTimeRanges buffered() const = 0;
     virtual double maxTimeSeekable() const = 0;
 
     virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha) = 0;
