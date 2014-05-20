@@ -858,7 +858,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, cppValue, toNodeFilter(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, cppValue, toNodeFilter(v8Value, info.Holder(), info.GetIsolate()));
     impl->setNodeFilterAttribute(WTF::getPtr(cppValue));
 }
 
@@ -5946,7 +5946,7 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, nodeFilterArg, toNodeFilter(info[0], info.GetIsolate()));
+    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, nodeFilterArg, toNodeFilter(info[0], info.Holder(), info.GetIsolate()));
     impl->voidMethodNodeFilterArg(nodeFilterArg.release());
 }
 
