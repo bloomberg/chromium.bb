@@ -146,29 +146,6 @@ void PnaclTranslateThread::PutBytes(std::vector<char>* bytes,
   bytes->resize(buffer_size);
 }
 
-NaClSubprocess* PnaclTranslateThread::StartSubprocess(
-    const nacl::string& url_for_nexe,
-    int32_t manifest_id,
-    ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("PnaclTranslateThread::StartSubprocess (url_for_nexe=%s)\n",
-                 url_for_nexe.c_str()));
-  nacl::DescWrapper* wrapper = resources_->WrapperForUrl(url_for_nexe);
-  // Supply a URL for the translator components, different from the app URL,
-  // so that NaCl GDB can filter-out the translator processes (and not debug
-  // the translator itself). Must have a full URL with schema, otherwise the
-  // string gets silently dropped by GURL.
-  nacl::string full_url = resources_->GetFullUrl(
-      url_for_nexe, plugin_->nacl_interface()->GetSandboxArch());
-  nacl::scoped_ptr<NaClSubprocess> subprocess(plugin_->LoadHelperNaClModule(
-      full_url, wrapper, manifest_id, error_info));
-  if (subprocess.get() == NULL) {
-    PLUGIN_PRINTF((
-        "PnaclTranslateThread::StartSubprocess: subprocess creation failed\n"));
-    return NULL;
-  }
-  return subprocess.release();
-}
-
 void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
   PnaclTranslateThread* translator =
       reinterpret_cast<PnaclTranslateThread*>(arg);
@@ -180,25 +157,29 @@ void PnaclTranslateThread::DoTranslate() {
   SrpcParams params;
   std::vector<nacl::DescWrapper*> llc_out_files;
   size_t i;
-  for (i = 0; i < obj_files_->size(); i++) {
+  for (i = 0; i < obj_files_->size(); i++)
     llc_out_files.push_back((*obj_files_)[i]->write_wrapper());
-  }
-  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++) {
+  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++)
     llc_out_files.push_back(invalid_desc_wrapper_);
-  }
 
   pp::Core* core = pp::Module::Get()->core();
   {
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
-    llc_subprocess_.reset(
-      StartSubprocess(resources_->GetLlcUrl(), manifest_id_, &error_info));
-    if (llc_subprocess_ == NULL) {
+    PP_FileHandle llc_file_handle = resources_->TakeLlcFileHandle();
+
+    // On success, ownership of llc_file_handle is transferred.
+    llc_subprocess_.reset(plugin_->LoadHelperNaClModule(
+        resources_->GetLlcUrl(), llc_file_handle, manifest_id_, &error_info));
+    if (llc_subprocess_.get() == NULL) {
+      if (llc_file_handle != PP_kInvalidFileHandle)
+        CloseFileHandle(llc_file_handle);
       TranslateFailed(PP_NACL_ERROR_PNACL_LLC_SETUP,
                       "Compile process could not be created: " +
                       error_info.message());
       return;
     }
+
     llc_subprocess_active_ = true;
     core->CallOnMainThread(0,
                            coordinator_->GetUMATimeCallback(
@@ -353,9 +334,8 @@ bool PnaclTranslateThread::RunLdSubprocess() {
     }
     ld_in_files.push_back((*obj_files_)[i]->read_wrapper());
   }
-  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++) {
+  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++)
     ld_in_files.push_back(invalid_desc_wrapper_);
-  }
 
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   pp::Core* core = pp::Module::Get()->core();
@@ -363,9 +343,14 @@ bool PnaclTranslateThread::RunLdSubprocess() {
     // Create LD process
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
-    ld_subprocess_.reset(
-      StartSubprocess(resources_->GetLdUrl(), manifest_id_, &error_info));
+    PP_FileHandle ld_file_handle = resources_->TakeLdFileHandle();
+
+    // On success, ownership of ld_file_handle is transferred.
+    ld_subprocess_.reset(plugin_->LoadHelperNaClModule(
+        resources_->GetLdUrl(), ld_file_handle, manifest_id_, &error_info));
     if (ld_subprocess_ == NULL) {
+      if (ld_file_handle != PP_kInvalidFileHandle)
+        CloseFileHandle(ld_file_handle);
       TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                       "Link process could not be created: " +
                       error_info.message());

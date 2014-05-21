@@ -67,10 +67,6 @@ class PnaclTranslateThread {
   int64_t GetCompileTime() const { return compile_time_; }
 
  private:
-  // Starts an individual llc or ld subprocess used for translation.
-  NaClSubprocess* StartSubprocess(const nacl::string& url,
-                                  int32_t manifest_id,
-                                  ErrorInfo* error_info);
   // Helper thread entry point for translation. Takes a pointer to
   // PnaclTranslateThread and calls DoTranslate().
   static void WINAPI DoTranslateThread(void* arg);

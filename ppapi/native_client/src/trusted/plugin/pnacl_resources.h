@@ -46,7 +46,9 @@ class PnaclResources {
   PnaclResources(Plugin* plugin,
                  PnaclCoordinator* coordinator)
       : plugin_(plugin),
-        coordinator_(coordinator) {
+        coordinator_(coordinator),
+        llc_file_handle_(PP_kInvalidFileHandle),
+        ld_file_handle_(PP_kInvalidFileHandle) {
   }
   virtual ~PnaclResources();
 
@@ -63,14 +65,8 @@ class PnaclResources {
   const nacl::string& GetLlcUrl() { return llc_tool_name_; }
   const nacl::string& GetLdUrl() { return ld_tool_name_; }
 
-  nacl::string GetFullUrl(const nacl::string& partial_url,
-                          const nacl::string& sandbox_arch) const;
-
-  // Get file descs by name. Only valid after StartLoad's completion callback
-  // fired.
-  nacl::DescWrapper* WrapperForUrl(const nacl::string& url);
-
-  static int32_t GetPnaclFD(Plugin* plugin, const char* filename);
+  PP_FileHandle TakeLlcFileHandle();
+  PP_FileHandle TakeLdFileHandle();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclResources);
@@ -79,13 +75,16 @@ class PnaclResources {
   Plugin* plugin_;
   // The coordinator responsible for reporting errors, etc.
   PnaclCoordinator* coordinator_;
-  // The descriptor wrappers for the downloaded URLs.  Only valid
-  // once all_loaded_callback_ has been invoked.
-  std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
 
   // Tool names for llc and ld; read from the resource info file.
   nacl::string llc_tool_name_;
   nacl::string ld_tool_name_;
+
+  // File handles for llc and ld executables, after they've been opened.
+  // Only valid after the callback for StartLoad() has been called, and until
+  // TakeLlcFileHandle()/TakeLdFileHandle() is called.
+  PP_FileHandle llc_file_handle_;
+  PP_FileHandle ld_file_handle_;
 };
 
 }  // namespace plugin;

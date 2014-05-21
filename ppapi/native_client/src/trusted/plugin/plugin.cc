@@ -49,27 +49,6 @@ const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
 
-// Converts a PP_FileHandle to a POSIX file descriptor.
-int32_t ConvertFileDescriptor(PP_FileHandle handle) {
-  PLUGIN_PRINTF(("ConvertFileDescriptor, handle=%d\n", handle));
-#if NACL_WINDOWS
-  int32_t file_desc = NACL_NO_FILE_DESC;
-  // On Windows, valid handles are 32 bit unsigned integers so this is safe.
-  file_desc = reinterpret_cast<intptr_t>(handle);
-  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
-  int32_t posix_desc = _open_osfhandle(file_desc, _O_RDWR | _O_BINARY);
-  if (posix_desc == -1) {
-    // Close the Windows HANDLE if it can't be converted.
-    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
-    return -1;
-  }
-  return posix_desc;
-#else
-  return handle;
-#endif
-}
-
-
 }  // namespace
 
 void Plugin::ShutDownSubprocesses() {
@@ -111,7 +90,7 @@ void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
 }
 
 bool Plugin::LoadNaClModuleFromBackgroundThread(
-    nacl::DescWrapper* wrapper,
+    PP_FileHandle file_handle,
     NaClSubprocess* subprocess,
     int32_t manifest_id,
     const SelLdrStartParams& params) {
@@ -143,9 +122,12 @@ bool Plugin::LoadNaClModuleFromBackgroundThread(
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleFromBackgroundThread "
                  "(service_runtime_started=%d)\n",
                  service_runtime_started));
-  if (!service_runtime_started) {
+  if (!service_runtime_started)
     return false;
-  }
+
+  // TODO(teravest): Get rid of this conversion to DescWrapper.
+  int32_t fd = ConvertFileDescriptor(file_handle, true);
+  nacl::DescWrapper* wrapper = wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
 
   // Now actually load the nexe, which can happen on a background thread.
   bool nexe_loaded = service_runtime->LoadNexeAndStart(
@@ -269,7 +251,7 @@ bool Plugin::LoadNaClModuleContinuationIntern() {
 }
 
 NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
-                                             nacl::DescWrapper* wrapper,
+                                             PP_FileHandle file_handle,
                                              int32_t manifest_id,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
@@ -296,7 +278,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
                            false /* enable_dyncode_syscalls */,
                            false /* enable_exception_handling */,
                            true /* enable_crash_throttling */);
-  if (!LoadNaClModuleFromBackgroundThread(wrapper, nacl_subprocess.get(),
+  if (!LoadNaClModuleFromBackgroundThread(file_handle, nacl_subprocess.get(),
                                           manifest_id, params)) {
     return NULL;
   }
@@ -435,7 +417,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK)
     return;
 
-  int32_t desc = ConvertFileDescriptor(nexe_handle_);
+  int32_t desc = ConvertFileDescriptor(nexe_handle_, true);
   nexe_handle_ = PP_kInvalidFileHandle;  // Clear out nexe handle.
 
   nacl::scoped_ptr<nacl::DescWrapper>

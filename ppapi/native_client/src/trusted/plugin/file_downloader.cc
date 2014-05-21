@@ -187,7 +187,7 @@ void FileDownloader::OpenFast(const nacl::string& url,
   mode_ = DOWNLOAD_NONE;
   if (file_handle != PP_kInvalidFileHandle) {
     NaClFileInfo tmp_info = NoFileInfo();
-    tmp_info.desc = ConvertFileDescriptor(file_handle);
+    tmp_info.desc = ConvertFileDescriptor(file_handle, true);
     tmp_info.file_token.lo = file_token_lo;
     tmp_info.file_token.hi = file_token_hi;
     file_info_.TakeOwnership(&tmp_info);
@@ -407,7 +407,7 @@ void FileDownloader::GotFileHandleNotify(int32_t pp_error,
       pp_error));
   if (pp_error == PP_OK) {
     NaClFileInfo tmp_info = NoFileInfo();
-    tmp_info.desc = ConvertFileDescriptor(handle);
+    tmp_info.desc = ConvertFileDescriptor(handle, false);
     file_info_.TakeOwnership(&tmp_info);
   }
 

@@ -105,12 +105,12 @@ class Plugin : public pp::Instance {
   bool LoadNaClModuleContinuation(int32_t pp_error);
 
   // Load support.
-  // A helper SRPC NaCl module can be loaded given a DescWrapper.
+  // A helper SRPC NaCl module can be loaded given a PP_FileHandle.
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
   NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
-                                       nacl::DescWrapper* wrapper,
+                                       PP_FileHandle file_handle,
                                        int32_t manifest_id,
                                        ErrorInfo* error_info);
 
@@ -186,10 +186,10 @@ class Plugin : public pp::Instance {
   void HistogramEnumerateLoadStatus(PP_NaClError error_code);
   void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code);
 
-  // Load a nacl module from the file specified in wrapper.
+  // Load a nacl module from the file specified in file_handle.
   // Only to be used from a background (non-main) thread.
   // This will fully initialize the |subprocess| if the load was successful.
-  bool LoadNaClModuleFromBackgroundThread(nacl::DescWrapper* wrapper,
+  bool LoadNaClModuleFromBackgroundThread(PP_FileHandle file_handle,
                                           NaClSubprocess* subprocess,
                                           int32_t manifest_id,
                                           const SelLdrStartParams& params);

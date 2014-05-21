@@ -368,9 +368,12 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   if (PnaclUrls::IsPnaclComponent(mapped_url)) {
     // Special PNaCl support files, that are installed on the
     // user machine.
-    int32_t fd = PnaclResources::GetPnaclFD(
-        plugin_,
+    PP_FileHandle handle = plugin_->nacl_interface()->GetReadonlyPnaclFd(
         PnaclUrls::PnaclComponentURLToFilename(mapped_url).c_str());
+    int32_t fd = -1;
+    if (handle != PP_kInvalidFileHandle)
+      fd = ConvertFileDescriptor(handle, true);
+
     if (fd < 0) {
       // We checked earlier if the pnacl component wasn't installed
       // yet, so this shouldn't happen. At this point, we can't do much

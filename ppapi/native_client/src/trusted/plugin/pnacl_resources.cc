@@ -16,6 +16,15 @@
 
 namespace plugin {
 
+namespace {
+
+nacl::string GetFullUrl(const nacl::string& partial_url) {
+  return PnaclUrls::GetBaseUrl() + GetNaClInterface()->GetSandboxArch() + "/" +
+         partial_url;
+}
+
+}  // namespace
+
 static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
 
 nacl::string PnaclUrls::GetBaseUrl() {
@@ -55,41 +64,10 @@ nacl::string PnaclUrls::GetResourceInfoUrl() {
 //////////////////////////////////////////////////////////////////////
 
 PnaclResources::~PnaclResources() {
-  for (std::map<nacl::string, nacl::DescWrapper*>::iterator
-           i = resource_wrappers_.begin(), e = resource_wrappers_.end();
-       i != e;
-       ++i) {
-    delete i->second;
-  }
-  resource_wrappers_.clear();
-}
-
-// static
-int32_t PnaclResources::GetPnaclFD(Plugin* plugin, const char* filename) {
-  PP_FileHandle file_handle =
-      plugin->nacl_interface()->GetReadonlyPnaclFd(filename);
-  if (file_handle == PP_kInvalidFileHandle)
-    return -1;
-
-#if NACL_WINDOWS
-  //////// Now try the posix view.
-  int32_t posix_desc = _open_osfhandle(reinterpret_cast<intptr_t>(file_handle),
-                                       _O_RDONLY | _O_BINARY);
-  if (posix_desc == -1) {
-    PLUGIN_PRINTF((
-        "PnaclResources::GetPnaclFD failed to convert HANDLE to posix\n"));
-    // Close the Windows HANDLE if it can't be converted.
-    CloseHandle(file_handle);
-  }
-  return posix_desc;
-#else
-  return file_handle;
-#endif
-}
-
-nacl::DescWrapper* PnaclResources::WrapperForUrl(const nacl::string& url) {
-  CHECK(resource_wrappers_.find(url) != resource_wrappers_.end());
-  return resource_wrappers_[url];
+  if (llc_file_handle_ != PP_kInvalidFileHandle)
+    CloseFileHandle(llc_file_handle_);
+  if (ld_file_handle_ != PP_kInvalidFileHandle)
+    CloseFileHandle(ld_file_handle_);
 }
 
 void PnaclResources::ReadResourceInfo(
@@ -117,53 +95,52 @@ void PnaclResources::ReadResourceInfo(
 
   pp::Var llc_tool_name(pp::PASS_REF, pp_llc_tool_name_var);
   pp::Var ld_tool_name(pp::PASS_REF, pp_ld_tool_name_var);
-  llc_tool_name_ = llc_tool_name.AsString();
-  ld_tool_name_ = ld_tool_name.AsString();
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, resource_info_read_cb, PP_OK);
+  llc_tool_name_ = GetFullUrl(llc_tool_name.AsString());
+  ld_tool_name_ = GetFullUrl(ld_tool_name.AsString());
+  pp::Module::Get()->core()->CallOnMainThread(0, resource_info_read_cb, PP_OK);
 }
 
-nacl::string PnaclResources::GetFullUrl(
-    const nacl::string& partial_url, const nacl::string& sandbox_arch) const {
-  return PnaclUrls::GetBaseUrl() + sandbox_arch + "/" + partial_url;
+PP_FileHandle PnaclResources::TakeLlcFileHandle() {
+  PP_FileHandle to_return = llc_file_handle_;
+  llc_file_handle_ = PP_kInvalidFileHandle;
+  return to_return;
+}
+
+PP_FileHandle PnaclResources::TakeLdFileHandle() {
+  PP_FileHandle to_return = ld_file_handle_;
+  ld_file_handle_ = PP_kInvalidFileHandle;
+  return to_return;
 }
 
 void PnaclResources::StartLoad(
     const pp::CompletionCallback& all_loaded_callback) {
   PLUGIN_PRINTF(("PnaclResources::StartLoad\n"));
 
-  std::vector<nacl::string> resource_urls;
-  resource_urls.push_back(llc_tool_name_);
-  resource_urls.push_back(ld_tool_name_);
-
-  PLUGIN_PRINTF(("PnaclResources::StartLoad -- local install of PNaCl.\n"));
   // Do a blocking load of each of the resources.
-  int32_t result = PP_OK;
-  for (size_t i = 0; i < resource_urls.size(); ++i) {
-    nacl::string full_url = GetFullUrl(
-        resource_urls[i], plugin_->nacl_interface()->GetSandboxArch());
-    nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);
+  nacl::string llc_filename =
+      PnaclUrls::PnaclComponentURLToFilename(llc_tool_name_);
+  llc_file_handle_ =
+      plugin_->nacl_interface()->GetReadonlyPnaclFd(llc_filename.c_str());
 
-    int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());
-    if (fd < 0) {
-      // File-open failed. Assume this means that the file is
-      // not actually installed. This shouldn't actually occur since
-      // ReadResourceInfo() should happen first, and error out.
-      coordinator_->ReportNonPpapiError(
-          PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client (pnacl) component is not "
-                     "installed. Please consult chrome://components for more "
-                     "information."));
-      result = PP_ERROR_FILENOTFOUND;
-      break;
-    } else {
-      resource_wrappers_[resource_urls[i]] =
-          plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
-    }
+  nacl::string ld_filename =
+      PnaclUrls::PnaclComponentURLToFilename(ld_tool_name_);
+  ld_file_handle_ =
+      plugin_->nacl_interface()->GetReadonlyPnaclFd(ld_filename.c_str());
+
+  int32_t result = PP_OK;
+  if (llc_file_handle_ == PP_kInvalidFileHandle ||
+      ld_file_handle_ == PP_kInvalidFileHandle) {
+    // File-open failed. Assume this means that the file is
+    // not actually installed. This shouldn't actually occur since
+    // ReadResourceInfo() fail first.
+    coordinator_->ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+      nacl::string("The Portable Native Client (pnacl) component is not "
+                   "installed. Please consult chrome://components for more "
+                   "information."));
+    result = PP_ERROR_FILENOTFOUND;
   }
-  // We're done!  Queue the callback.
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, all_loaded_callback, result);
+  pp::Module::Get()->core()->CallOnMainThread(0, all_loaded_callback, result);
 }
 
 }  // namespace plugin

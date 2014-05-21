@@ -117,4 +117,34 @@ void SetNaClInterface(const PPB_NaCl_Private* nacl_interface) {
   g_nacl_interface = nacl_interface;
 }
 
+void CloseFileHandle(PP_FileHandle file_handle) {
+#if NACL_WINDOWS
+  CloseHandle(file_handle);
+#else
+  close(file_handle);
+#endif
+}
+
+// Converts a PP_FileHandle to a POSIX file descriptor.
+int32_t ConvertFileDescriptor(PP_FileHandle handle, bool read_only) {
+  PLUGIN_PRINTF(("ConvertFileDescriptor, handle=%d\n", handle));
+#if NACL_WINDOWS
+  int32_t file_desc = NACL_NO_FILE_DESC;
+  // On Windows, valid handles are 32 bit unsigned integers so this is safe.
+  file_desc = reinterpret_cast<intptr_t>(handle);
+  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
+  int flags = _O_BINARY;
+  flags |= read_only ? _O_RDONLY : _O_RDWR;
+  int32_t posix_desc = _open_osfhandle(file_desc, flags);
+  if (posix_desc == -1) {
+    // Close the Windows HANDLE if it can't be converted.
+    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
+    return -1;
+  }
+  return posix_desc;
+#else
+  return handle;
+#endif
+}
+
 }  // namespace plugin
