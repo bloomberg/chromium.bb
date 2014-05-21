@@ -73,6 +73,28 @@ ErrorCode RestrictFcntlCommands(SandboxBPF* sb) {
          sb->Trap(sandbox::CrashSIGSYS_Handler, NULL))));
 }
 
+ErrorCode RestrictClockID(SandboxBPF* sb) {
+  // We allow accessing only CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID,
+  // CLOCK_REALTIME, and CLOCK_THREAD_CPUTIME_ID.  In particular, this disallows
+  // access to arbitrary per-{process,thread} CPU-time clock IDs (such as those
+  // returned by {clock,pthread}_getcpuclockid), which can leak information
+  // about the state of the host OS.
+  COMPILE_ASSERT(4 == sizeof(clockid_t), clockid_is_not_32bit);
+  return sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_MONOTONIC,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_PROCESS_CPUTIME_ID,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_REALTIME,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Cond(0, ErrorCode::TP_32BIT,
+                  ErrorCode::OP_EQUAL, CLOCK_THREAD_CPUTIME_ID,
+                  ErrorCode(ErrorCode::ERR_ALLOWED),
+         sb->Trap(sandbox::CrashSIGSYS_Handler, NULL)))));
+}
+
 ErrorCode RestrictClone(SandboxBPF* sb) {
   // We allow clone only for new thread creation.
   return sb->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
@@ -212,9 +234,6 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(SandboxBPF* sb,
 #elif defined(__x86_64__)
     case __NR_lseek:
 #endif
-    // NaCl runtime exposes clock_gettime and clock_getres to untrusted code.
-    case __NR_clock_getres:
-    case __NR_clock_gettime:
     case __NR_close:
     case __NR_dup:
     case __NR_dup2:
@@ -251,6 +270,10 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(SandboxBPF* sb,
     case __ARM_NR_cacheflush:
 #endif
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+    case __NR_clock_getres:
+    case __NR_clock_gettime:
+      return RestrictClockID(sb);
 
     case __NR_clone:
       return RestrictClone(sb);

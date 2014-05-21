@@ -22,6 +22,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "base/bind.h"
@@ -32,6 +33,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 
 namespace {
 
@@ -389,6 +391,45 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   errno = 0;
   BPF_ASSERT_EQ(-1, brk(next_brk));
   BPF_ASSERT_EQ(ENOMEM, errno);
+}
+
+void CheckClock(clockid_t clockid) {
+  struct timespec ts;
+  ts.tv_sec = ts.tv_nsec = -1;
+  BPF_ASSERT_EQ(0, clock_gettime(clockid, &ts));
+  BPF_ASSERT_LE(0, ts.tv_sec);
+  BPF_ASSERT_LE(0, ts.tv_nsec);
+}
+
+BPF_TEST_C(NaClNonSfiSandboxTest,
+           clock_gettime_allowed,
+           nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  CheckClock(CLOCK_MONOTONIC);
+  CheckClock(CLOCK_PROCESS_CPUTIME_ID);
+  CheckClock(CLOCK_REALTIME);
+  CheckClock(CLOCK_THREAD_CPUTIME_ID);
+}
+
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 clock_gettime_crash_monotonic_raw,
+                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+}
+
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 clock_gettime_crash_cpu_clock,
+                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  // We can't use clock_getcpuclockid() because it's not implemented in newlib,
+  // and it might not work inside the sandbox anyway.
+  const pid_t kInitPID = 1;
+  const clockid_t kInitCPUClockID =
+      MAKE_PROCESS_CPUCLOCK(kInitPID, CPUCLOCK_SCHED);
+
+  struct timespec ts;
+  clock_gettime(kInitCPUClockID, &ts);
 }
 
 // The following test cases check if syscalls return EPERM regardless
