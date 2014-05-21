@@ -4775,7 +4775,17 @@ compileFile (const char *fileName)
   return 0;
 }
 
-/*
+/** 
+ * Macro to free a char** array 
+ */
+#define free_tablelist(list) {			\
+  char **string;				\
+  for (string = list; *string; string++)	\
+    free(*string);				\
+  free(list);					\
+  }
+
+/**
  * Implement include opcode
  *
  */
@@ -4804,7 +4814,7 @@ includeFile (FileInfo * nested, CharsString * includedFile)
       return 0;
     }
   rv = compileFile (*tableFiles);
-  free(tableFiles);
+  free_tablelist(tableFiles);
   return rv;
 }
 
@@ -4850,7 +4860,7 @@ compileTranslationTable (const char *tableList)
   
 /* Clean up after compiling files */
 cleanup:
-  free(tableFiles);
+  free_tablelist(tableFiles);
   if (characterClasses)
     deallocateCharacterClasses ();
   if (ruleNames)
