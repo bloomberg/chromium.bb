@@ -108,7 +108,9 @@ class MEDIA_EXPORT DecoderBuffer
 
   // A discard window indicates the amount of data which should be discard from
   // this buffer after decoding.  The first value is the amount of the front and
-  // the second the amount off the back.
+  // the second the amount off the back.  A value of kInfiniteDuration() for the
+  // first value indicates the entire buffer should be discarded; the second
+  // value must be base::TimeDelta() in this case.
   typedef std::pair<base::TimeDelta, base::TimeDelta> DiscardPadding;
   const DiscardPadding& discard_padding() const {
     DCHECK(!end_of_stream());

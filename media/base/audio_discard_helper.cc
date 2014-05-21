@@ -86,8 +86,13 @@ bool AudioDiscardHelper::ProcessBuffers(
   // buffer's discard padding for processing with the current decoded buffer.
   DecoderBuffer::DiscardPadding current_discard_padding =
       encoded_buffer->discard_padding();
-  if (delayed_discard_)
+  if (delayed_discard_) {
+    // For simplicity disallow cases where decoder delay is present with delayed
+    // discard (no codecs at present).  Doing so allows us to avoid complexity
+    // around endpoint tracking when handling complete buffer discards.
+    DCHECK_EQ(decoder_delay_, 0u);
     std::swap(current_discard_padding, delayed_discard_padding_);
+  }
 
   if (discard_frames_ > 0) {
     const size_t decoded_frames = decoded_buffer->frame_count();
@@ -110,8 +115,17 @@ bool AudioDiscardHelper::ProcessBuffers(
   // Handle front discard padding.
   if (current_discard_padding.first > base::TimeDelta()) {
     const size_t decoded_frames = decoded_buffer->frame_count();
+
+    // If a complete buffer discard is requested and there's no decoder delay,
+    // just discard all remaining frames from this buffer.  With decoder delay
+    // we have to estimate the correct number of frames to discard based on the
+    // duration of the encoded buffer.
     const size_t start_frames_to_discard =
-        TimeDeltaToFrames(current_discard_padding.first);
+        current_discard_padding.first == kInfiniteDuration()
+            ? (decoder_delay_ > 0
+                   ? TimeDeltaToFrames(encoded_buffer->duration())
+                   : decoded_frames)
+            : TimeDeltaToFrames(current_discard_padding.first);
 
     // Regardless of the timestamp on the encoded buffer, the corresponding
     // decoded output will appear |decoder_delay_| frames later.
