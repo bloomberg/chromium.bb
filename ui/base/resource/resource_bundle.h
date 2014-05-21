@@ -256,6 +256,10 @@ class UI_BASE_EXPORT ResourceBundle {
   // Returns SCALE_FACTOR_100P if no resource is loaded.
   ScaleFactor GetMaxScaleFactor() const;
 
+ protected:
+  // Returns true if |scale_factor| is supported by this platform.
+  static bool IsScaleFactorSupported(ScaleFactor scale_factor);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetImageNamed);

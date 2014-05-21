@@ -36,7 +36,7 @@ void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(
       "chrome_100_percent.pak"), SCALE_FACTOR_100P);
 
-  if (ui::IsScaleFactorSupported(SCALE_FACTOR_200P)) {
+  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
     AddOptionalDataPackFromPath(GetResourcesPakFilePath(
         "chrome_200_percent.pak"), SCALE_FACTOR_200P);
   }

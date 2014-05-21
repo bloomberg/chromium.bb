@@ -90,30 +90,6 @@ float GetImageScale(ScaleFactor scale_factor) {
   return GetScaleForScaleFactor(scale_factor);
 }
 
-bool IsScaleFactorSupported(ScaleFactor scale_factor) {
-  DCHECK(g_supported_scale_factors != NULL);
-  return std::find(g_supported_scale_factors->begin(),
-                   g_supported_scale_factors->end(),
-                   scale_factor) != g_supported_scale_factors->end();
-}
-
-// Returns the scale factor closest to |scale| from the full list of factors.
-// Note that it does NOT rely on the list of supported scale factors.
-// Finding the closest match is inefficient and shouldn't be done frequently.
-ScaleFactor FindClosestScaleFactorUnsafe(float scale) {
-  float smallest_diff =  std::numeric_limits<float>::max();
-  ScaleFactor closest_match = SCALE_FACTOR_100P;
-  for (int i = SCALE_FACTOR_100P; i < NUM_SCALE_FACTORS; ++i) {
-    const ScaleFactor scale_factor = static_cast<ScaleFactor>(i);
-    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
-    if (diff < smallest_diff) {
-      closest_match = scale_factor;
-      smallest_diff = diff;
-    }
-  }
-  return closest_match;
-}
-
 float GetScaleForScaleFactor(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }

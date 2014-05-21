@@ -55,14 +55,6 @@ UI_BASE_EXPORT ScaleFactor GetSupportedScaleFactor(float image_scale);
 // Returns the ScaleFactor used by |view|.
 UI_BASE_EXPORT float GetScaleFactorForNativeView(gfx::NativeView view);
 
-// Returns true if |scale_factor| is supported by this platform.
-UI_BASE_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
-
-// Returns the scale factor closest to |scale| from the full list of factors.
-// Note that it does NOT rely on the list of supported scale factors.
-// Finding the closest match is inefficient and shouldn't be done frequently.
-UI_BASE_EXPORT ScaleFactor FindClosestScaleFactorUnsafe(float scale);
-
 // Returns the image scale for the scale factor passed in.
 UI_BASE_EXPORT float GetScaleForScaleFactor(ScaleFactor scale_factor);
 
