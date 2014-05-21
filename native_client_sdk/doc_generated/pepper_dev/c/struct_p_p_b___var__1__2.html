@@ -1,4 +1,4 @@
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.standard_nacl_api}}
 <h1>PPB_Var Struct Reference</h1>
 <div id="doxygen-ref">
 {{- dummy div to appease doxygen -}}
@@ -53,6 +53,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p><a class="el" href="struct_p_p_b___var__1__2.html#a3ca6fe76b51c14df6cc6a04d77edb807" title="Release() removes a reference to given var, deleting it if the internal reference count becomes 0...">Release()</a> removes a reference to given var, deleting it if the internal reference count becomes 0. </p>
+<p>If the <code><a class="el" href="struct_p_p___var.html" title="The PP_VAR struct is a variant data type and can contain any value of one of the types named in the P...">PP_Var</a></code> is of type <code>PP_VARTYPE_RESOURCE</code>, it will implicitly release a reference count on the <code>PP_Resource</code> (equivalent to <a class="el" href="struct_p_p_b___core__1__0.html#af3163aefc33071af39cd085a0a2d44fe" title="ReleaseResource() removes a reference from a resource.">PPB_Core::ReleaseResource()</a>).</p>
 <p>If the given var is not a refcounted object, this function will do nothing so you can always call it no matter what the type.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
@@ -73,6 +74,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Creates a new <code><a class="el" href="struct_p_p___var.html" title="The PP_VAR struct is a variant data type and can contain any value of one of the types named in the P...">PP_Var</a></code> from a given resource. </p>
+<p>Implicitly adds a reference count on the <code>PP_Resource</code> (equivalent to PPB_Core::AddRefResource(resource)).</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">resource</td><td>A <code>PP_Resource</code> to be wrapped in a var.</td></tr>
@@ -94,7 +96,7 @@ Data Fields</h2><table class="memberdecls">
 <div class="memdoc">
 <p><a class="el" href="struct_p_p_b___var__1__2.html#a5c7ce303ae72998f54ba5da3357f7641" title="VarFromUtf8() creates a string var from a string.">VarFromUtf8()</a> creates a string var from a string. </p>
 <p>The string must be encoded in valid UTF-8 and is NOT NULL-terminated, the length must be specified in <code>len</code>. It is an error if the string is not valid UTF-8.</p>
-<p>If the length is 0, the <code>*data</code> pointer will not be dereferenced and may be <code>NULL</code>. Note, however if length is 0, the "NULL-ness" will not be preserved, as <code>VarToUtf8</code> will never return <code>NULL</code> on success, even for empty strings.</p>
+<p>If the length is 0, the <code>*data</code> pointer will not be dereferenced and may be <code>NULL</code>. Note, however if length is 0, the "NULL-ness" will not be preserved, as <a class="el" href="struct_p_p_b___var__1__2.html#a573919f500ea491afe6c8c9dddc0106f" title="VarToUtf8() converts a string-type var to a char* encoded in UTF-8.">VarToUtf8()</a> will never return <code>NULL</code> on success, even for empty strings.</p>
 <p>The resulting object will be a refcounted string object. It will be AddRef'ed for the caller. When the caller is done with it, it should be Released.</p>
 <p>On error (basically out of memory to allocate the string, or input that is not valid UTF-8), this function will return a Null var.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -156,4 +158,4 @@ Data Fields</h2><table class="memberdecls">
 </ul>
 </div><!-- contents -->
 </div>
-{{/partials.standard_nacl_article}}
+{{/partials.standard_nacl_api}}

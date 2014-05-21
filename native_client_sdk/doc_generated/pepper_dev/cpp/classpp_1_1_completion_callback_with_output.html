@@ -1,4 +1,4 @@
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.standard_nacl_api}}
 <h1>pp::CompletionCallbackWithOutput&lt; T &gt; Class Template Reference</h1>
 <div id="doxygen-ref">
 {{- dummy div to appease doxygen -}}
@@ -10,27 +10,29 @@
 </div>
 <!--header-->
 <div class="contents">
-<!-- doxytag: class="pp::CompletionCallbackWithOutput" --><!-- doxytag: inherits="CompletionCallbackWithOutputBase&lt; T, internal::CallbackOutputTraits&lt; T &gt; &gt;" --><div class="dynheader">
+<!-- doxytag: class="pp::CompletionCallbackWithOutput" --><!-- doxytag: inherits="pp::CompletionCallback" --><div class="dynheader">
 Inheritance diagram for pp::CompletionCallbackWithOutput&lt; T &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classpp_1_1_completion_callback_with_output__inherit__graph.png" border="0" usemap="#pp_1_1_completion_callback_with_output_3_01_t_01_4_inherit__map" alt="Inheritance graph" /></div>
 <map name="pp_1_1_completion_callback_with_output_3_01_t_01_4_inherit__map" id="pp_1_1_completion_callback_with_output_3_01_t_01_4_inherit__map">
-<area shape="rect" id="node2" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html" title="pp::internal::CompletionCallbackWithOutputBase\&lt; T, internal::CallbackOutputTraits\&lt; T \&gt; \&gt;" alt="" coords="228,5,825,35"></area><area shape="rect" id="node4" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl..." alt="" coords="7,5,177,35"></area></map>
+<area shape="rect" id="node2" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl..." alt="" coords="60,5,231,35"></area></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <p><a href="classpp_1_1_completion_callback_with_output-members.html">List of all members.</a></p>
 <h2>
 Public Types</h2><table class="memberdecls">
 
 <tr><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak" />
-<a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html">internal::CompletionCallbackWithOutputBase</a><br class="typebreak" />
-&lt; T, <br class="typebreak" />
 internal::CallbackOutputTraits<br class="typebreak" />
-&lt; T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#adbba776ebc9de6001a08400826f9bf0f">BaseType</a></td></tr>
+&lt; T &gt;::StorageType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak" />
+internal::CallbackOutputTraits<br class="typebreak" />
+&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a></td></tr>
 </table><h2>
 Public Member Functions</h2><table class="memberdecls">
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#ab09283a1e9899537a5a1cf89bd03857f">CompletionCallbackWithOutput</a> (typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *<a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a23ceea58754e1d1b6570a268f6b669b8">output</a>)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#ac1b54281207b04f5646b02fc00e9ae3b">CompletionCallbackWithOutput</a> (PP_CompletionCallback_Func func, void *user_data, typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *<a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a23ceea58754e1d1b6570a268f6b669b8">output</a>)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#afabe9939e7b82c645cdb66dde80426d4">CompletionCallbackWithOutput</a> (PP_CompletionCallback_Func func, void *user_data, int32_t <a class="el" href="classpp_1_1_completion_callback.html#a60e466572fe7de362969dd41179c971f">flags</a>, typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *<a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a23ceea58754e1d1b6570a268f6b669b8">output</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a29dd26e95218dce78e2475f29ea669cb">CompletionCallbackWithOutput</a> (<a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *<a class="el" href="classpp_1_1_completion_callback_with_output.html#a8fac51ce72828752c025ca888897f2ef">output</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a36bc9e5fd9e8d503020fe338b8b9802e">CompletionCallbackWithOutput</a> (PP_CompletionCallback_Func func, void *user_data, <a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *<a class="el" href="classpp_1_1_completion_callback_with_output.html#a8fac51ce72828752c025ca888897f2ef">output</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a311725af061d86e58cc89a588fa542f9">CompletionCallbackWithOutput</a> (PP_CompletionCallback_Func func, void *user_data, int32_t <a class="el" href="classpp_1_1_completion_callback.html#a60e466572fe7de362969dd41179c971f">flags</a>, <a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *<a class="el" href="classpp_1_1_completion_callback_with_output.html#a8fac51ce72828752c025ca888897f2ef">output</a>)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a8fac51ce72828752c025ca888897f2ef">output</a> () const </td></tr>
 </table>
 <hr /><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename T&gt;<br />
@@ -40,22 +42,38 @@ class pp::CompletionCallbackWithOutput&lt; T &gt;</h3>
 <p>You can create this yourself, but it is most common to use with the <a class="el" href="classpp_1_1_completion_callback_factory.html" title="CompletionCallbackFactory&lt;T&gt; may be used to create CompletionCallback objects that are bound to membe...">CompletionCallbackFactory</a>'s NewCallbackWithOutput, which manages the storage for the output parameter for you and passes it as an argument to your callback function.</p>
 <p>Note that this class doesn't actually do anything with the output data, it just stores a pointer to it. C++ wrapper objects that accept a <a class="el" href="classpp_1_1_completion_callback_with_output.html" title="A CompletionCallbackWithOutput defines a completion callback that additionally stores a pointer to so...">CompletionCallbackWithOutput</a> will retrieve this pointer and pass it to the browser as the output parameter. </p>
 </div><hr /><h2>Member Typedef Documentation</h2>
-<a class="anchor" id="adbba776ebc9de6001a08400826f9bf0f"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::BaseType" ref="adbba776ebc9de6001a08400826f9bf0f" args="" -->
+<a class="anchor" id="aca381518bda2f9cb12c4ddc725da91ce"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::APIArgType" ref="aca381518bda2f9cb12c4ddc725da91ce" args="" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename T &gt; </div>
 <table class="memname">
 <tr>
-<td class="memname">typedef <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html">internal::CompletionCallbackWithOutputBase</a>&lt; T, internal::CallbackOutputTraits&lt;T&gt; &gt; <a class="el" href="classpp_1_1_completion_callback_with_output.html">pp::CompletionCallbackWithOutput</a>&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#adbba776ebc9de6001a08400826f9bf0f">BaseType</a></td>
+<td class="memname">typedef internal::CallbackOutputTraits&lt;T&gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a> <a class="el" href="classpp_1_1_completion_callback_with_output.html">pp::CompletionCallbackWithOutput</a>&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a></td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
 </div>
 </div>
+<a class="anchor" id="a333f3b00a9f6549b3b70291787f31459"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::OutputStorageType" ref="a333f3b00a9f6549b3b70291787f31459" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="memname">
+<tr>
+<td class="memname">typedef internal::CallbackOutputTraits&lt;T&gt;::StorageType <a class="el" href="classpp_1_1_completion_callback_with_output.html">pp::CompletionCallbackWithOutput</a>&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>The type that will actually be stored in the completion callback. </p>
+<p>In the common case, this will be equal to the template parameter (for example, CompletionCallbackWithOutput&lt;int&gt; would obviously take an int*. However, resources are passed as PP_Resource, vars as PP_Var, and arrays as our special ArrayOutputAdapter object. The CallbackOutputTraits defines specializations for all of these cases. </p>
+</div>
+</div>
 <hr /><h2>Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="ab09283a1e9899537a5a1cf89bd03857f"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="ab09283a1e9899537a5a1cf89bd03857f" args="(typename BaseType::OutputStorageType *output)" -->
+<a class="anchor" id="a29dd26e95218dce78e2475f29ea669cb"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="a29dd26e95218dce78e2475f29ea669cb" args="(OutputStorageType *output)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -64,24 +82,24 @@ template&lt;typename T &gt; </div>
 <tr>
 <td class="memname"><a class="el" href="classpp_1_1_completion_callback_with_output.html">pp::CompletionCallbackWithOutput</a>&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html">CompletionCallbackWithOutput</a> </td>
 <td>(</td>
-<td class="paramtype">typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *&#160;</td>
+<td class="paramtype"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *&#160;</td>
 <td class="paramname"><em>output</em></td><td>)</td>
-<td><code> [inline, explicit]</code></td>
+<td><code> [inline]</code></td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
-<p>The default constructor will create a blocking <code><a class="el" href="classpp_1_1_completion_callback_with_output.html" title="A CompletionCallbackWithOutput defines a completion callback that additionally stores a pointer to so...">CompletionCallbackWithOutput</a></code> that references the given output data. </p>
+<p>The default constructor will create a blocking <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> that references the given output data. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
-<tr><td class="paramdir">[in]</td><td class="paramname">output</td><td>A pointer to the data associated with the callback. The caller must ensure that this pointer outlives the completion callback. In the common case, <code>OutputStorageType</code> will be equal to the template parameter T (for example, <code>CompletionCallbackWithOutput&lt;int&gt;</code> would obviously take an int*. However, resources are passed as PP_Resource, vars as PP_Var, and arrays as our special ArrayOutputAdapter object. <code>internal::CallbackOutputTraits</code> defines specializations for all of these cases.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">output</td><td>A pointer to the data associated with the callback. The caller must ensure that this pointer outlives the completion callback.</td></tr>
 </table>
 </dd>
 </dl>
-<p><b>Note:</b> Blocking completion callbacks are only allowed from background threads. </p>
+<p><b>Note:</b> Blocking completion callbacks are only allowed from from background threads. </p>
 </div>
 </div>
-<a class="anchor" id="ac1b54281207b04f5646b02fc00e9ae3b"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="ac1b54281207b04f5646b02fc00e9ae3b" args="(PP_CompletionCallback_Func func, void *user_data, typename BaseType::OutputStorageType *output)" -->
+<a class="anchor" id="a36bc9e5fd9e8d503020fe338b8b9802e"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="a36bc9e5fd9e8d503020fe338b8b9802e" args="(PP_CompletionCallback_Func func, void *user_data, OutputStorageType *output)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -102,7 +120,7 @@ template&lt;typename T &gt; </div>
 <tr>
 <td class="paramkey"></td>
 <td></td>
-<td class="paramtype">typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *&#160;</td>
+<td class="paramtype"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *&#160;</td>
 <td class="paramname"><em>output</em>&#160;</td>
 </tr>
 <tr>
@@ -113,7 +131,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div>
 <div class="memdoc">
-<p>A constructor for creating a <code><a class="el" href="classpp_1_1_completion_callback_with_output.html" title="A CompletionCallbackWithOutput defines a completion callback that additionally stores a pointer to so...">CompletionCallbackWithOutput</a></code> that references the given output data. </p>
+<p>A constructor for creating a <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> that references the given output data. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>The function to be called on completion. </td></tr>
@@ -124,7 +142,7 @@ template&lt;typename T &gt; </div>
 </dl>
 </div>
 </div>
-<a class="anchor" id="afabe9939e7b82c645cdb66dde80426d4"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="afabe9939e7b82c645cdb66dde80426d4" args="(PP_CompletionCallback_Func func, void *user_data, int32_t flags, typename BaseType::OutputStorageType *output)" -->
+<a class="anchor" id="a311725af061d86e58cc89a588fa542f9"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::CompletionCallbackWithOutput" ref="a311725af061d86e58cc89a588fa542f9" args="(PP_CompletionCallback_Func func, void *user_data, int32_t flags, OutputStorageType *output)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -151,7 +169,7 @@ template&lt;typename T &gt; </div>
 <tr>
 <td class="paramkey"></td>
 <td></td>
-<td class="paramtype">typename <a class="el" href="classpp_1_1internal_1_1_completion_callback_with_output_base.html#a6b6f033dd376edc4507951d82bd1ea18">BaseType::OutputStorageType</a> *&#160;</td>
+<td class="paramtype"><a class="el" href="classpp_1_1_completion_callback_with_output.html#a333f3b00a9f6549b3b70291787f31459">OutputStorageType</a> *&#160;</td>
 <td class="paramname"><em>output</em>&#160;</td>
 </tr>
 <tr>
@@ -162,7 +180,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div>
 <div class="memdoc">
-<p>A constructor for creating a <code><a class="el" href="classpp_1_1_completion_callback_with_output.html" title="A CompletionCallbackWithOutput defines a completion callback that additionally stores a pointer to so...">CompletionCallbackWithOutput</a></code> that references the given output data. </p>
+<p>A constructor for creating a <code><a class="el" href="classpp_1_1_completion_callback.html" title="This API enables you to implement and receive callbacks when Pepper operations complete asynchronousl...">CompletionCallback</a></code> that references the given output data. </p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>The function to be called on completion.</td></tr>
@@ -174,9 +192,27 @@ template&lt;typename T &gt; </div>
 </dl>
 </div>
 </div>
+<hr /><h2>Member Function Documentation</h2>
+<a class="anchor" id="a8fac51ce72828752c025ca888897f2ef"></a><!-- doxytag: member="pp::CompletionCallbackWithOutput::output" ref="a8fac51ce72828752c025ca888897f2ef" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_completion_callback_with_output.html#aca381518bda2f9cb12c4ddc725da91ce">APIArgType</a> <a class="el" href="classpp_1_1_completion_callback_with_output.html">pp::CompletionCallbackWithOutput</a>&lt; T &gt;::<a class="el" href="classpp_1_1_completion_callback_with_output.html#a8fac51ce72828752c025ca888897f2ef">output</a> </td>
+<td>(</td>
+<td class="paramname"></td><td>)</td>
+<td> const<code> [inline]</code></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+</div>
+</div>
 <hr />The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="completion__callback_8h.html">completion_callback.h</a></li>
 </ul>
 </div><!-- contents -->
 </div>
-{{/partials.standard_nacl_article}}
+{{/partials.standard_nacl_api}}

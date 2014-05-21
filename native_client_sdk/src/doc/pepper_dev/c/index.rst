@@ -51,7 +51,7 @@ run in Chrome 36 or higher.
 
   * `PPB_MediaStreamAudioTrack <struct_p_p_b___media_stream_audio_track__0__1.html>`_
 
-  * `PPB_MediaStreamVideoTrack <struct_p_p_b___media_stream_video_track__0__1.html>`_
+  * `PPB_MediaStreamVideoTrack <struct_p_p_b___media_stream_video_track__1__0.html>`_
 
   * `PPB_MessageLoop <struct_p_p_b___message_loop__1__0.html>`_
 
@@ -92,6 +92,8 @@ run in Chrome 36 or higher.
   * `PPB_VarArrayBuffer <struct_p_p_b___var_array_buffer__1__0.html>`_
 
   * `PPB_VarDictionary <struct_p_p_b___var_dictionary__1__0.html>`_
+
+  * `PPB_VideoDecoder <struct_p_p_b___video_decoder__0__1.html>`_
 
   * `PPB_VideoFrame <struct_p_p_b___video_frame__0__1.html>`_
 
@@ -154,6 +156,8 @@ run in Chrome 36 or higher.
 
   * `PP_Var <struct_p_p___var.html>`_
 
+  * `PP_VideoPicture <struct_p_p___video_picture.html>`_
+
   * `PP_VarValue <union_p_p___var_value.html>`_
 
 
@@ -174,6 +178,8 @@ Files
   * `pp_array_output.h <pp__array__output_8h.html>`_
 
   * `pp_bool.h <pp__bool_8h.html>`_
+
+  * `pp_codecs.h <pp__codecs_8h.html>`_
 
   * `pp_completion_callback.h <pp__completion__callback_8h.html>`_
 
@@ -282,6 +288,8 @@ Files
   * `ppb_var_array_buffer.h <ppb__var__array__buffer_8h.html>`_
 
   * `ppb_var_dictionary.h <ppb__var__dictionary_8h.html>`_
+
+  * `ppb_video_decoder.h <ppb__video__decoder_8h.html>`_
 
   * `ppb_video_frame.h <ppb__video__frame_8h.html>`_
 

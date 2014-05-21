@@ -1,4 +1,4 @@
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.standard_nacl_api}}
 <h1>pp::MediaStreamVideoTrack Class Reference</h1>
 <div id="doxygen-ref">
 {{- dummy div to appease doxygen -}}
@@ -24,6 +24,7 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#afab1665269ee190c464473f521f5473a">MediaStreamVideoTrack</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a08eec69e7bbf66c711de2821478cb4d4">MediaStreamVideoTrack</a> (const <a class="el" href="classpp_1_1_media_stream_video_track.html">MediaStreamVideoTrack</a> &amp;other)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a338b214467629e34e2d7981b1c7371e1">MediaStreamVideoTrack</a> (const <a class="el" href="classpp_1_1_resource.html">Resource</a> &amp;resource)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#ad2d03ab8d65a7ca1b7f1528a07babdd6">MediaStreamVideoTrack</a> (const <a class="el" href="classpp_1_1_instance_handle.html">InstanceHandle</a> &amp;instance)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#af9edc2e09f5a446493630b67ef99c557">MediaStreamVideoTrack</a> (<a class="el" href="namespacepp.html#a339083c1beec620267bf8b3c55decaa5">PassRef</a>, PP_Resource resource)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a2ea78c7d8c2c7446407b5556d5992fbb">~MediaStreamVideoTrack</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a1a7050062a28190a931e4b70b0e0b04d">Configure</a> (const int32_t attributes[], const <a class="el" href="classpp_1_1_completion_callback.html">CompletionCallback</a> &amp;callback)</td></tr>
@@ -33,6 +34,8 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#aeea5ef2549e1caeddea6ed783d0efe32">GetFrame</a> (const <a class="el" href="classpp_1_1_completion_callback_with_output.html">CompletionCallbackWithOutput</a>&lt; <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &gt; &amp;callback)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#ab3df0710c423f1c2b1e45da957bc65e4">RecycleFrame</a> (const <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &amp;frame)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a14c2317a98dd4f9458ba277783e57a7d">Close</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a0b37dca2ecdb94582b3cb6527328098d">GetEmptyFrame</a> (const <a class="el" href="classpp_1_1_completion_callback_with_output.html">CompletionCallbackWithOutput</a>&lt; <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &gt; &amp;callback)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a33a83be29146dc26f5eb2dca77131b05">PutFrame</a> (const <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &amp;frame)</td></tr>
 </table><h2>
 Static Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_media_stream_video_track.html#a53a235a74b0d6393d04d1ecda9125268">IsMediaStreamVideoTrack</a> (const <a class="el" href="classpp_1_1_resource.html">Resource</a> &amp;resource)</td></tr>
@@ -100,6 +103,23 @@ Static Public Member Functions</h2><table class="memberdecls">
 </table>
 </dd>
 </dl>
+</div>
+</div>
+<a class="anchor" id="ad2d03ab8d65a7ca1b7f1528a07babdd6"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::MediaStreamVideoTrack" ref="ad2d03ab8d65a7ca1b7f1528a07babdd6" args="(const InstanceHandle &amp;instance)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname"><a class="el" href="classpp_1_1_media_stream_video_track.html#afab1665269ee190c464473f521f5473a">pp::MediaStreamVideoTrack::MediaStreamVideoTrack</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_instance_handle.html">InstanceHandle</a> &amp;&#160;</td>
+<td class="paramname"><em>instance</em></td><td>)</td>
+<td><code> [explicit]</code></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Constructs a <code><a class="el" href="classpp_1_1_media_stream_video_track.html" title="The MediaStreamVideoTrack class contains methods for receiving video frames from a MediaStream video ...">MediaStreamVideoTrack</a></code> that outputs given frames to a new video track, which will be consumed by Javascript. </p>
 </div>
 </div>
 <a class="anchor" id="af9edc2e09f5a446493630b67ef99c557"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::MediaStreamVideoTrack" ref="af9edc2e09f5a446493630b67ef99c557" args="(PassRef, PP_Resource resource)" -->
@@ -243,6 +263,22 @@ Static Public Member Functions</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code>pp_errors.h</code>. </dd></dl>
 </div>
 </div>
+<a class="anchor" id="a0b37dca2ecdb94582b3cb6527328098d"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::GetEmptyFrame" ref="a0b37dca2ecdb94582b3cb6527328098d" args="(const CompletionCallbackWithOutput&lt; VideoFrame &gt; &amp;callback)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_media_stream_video_track.html#a0b37dca2ecdb94582b3cb6527328098d">pp::MediaStreamVideoTrack::GetEmptyFrame</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_completion_callback_with_output.html">CompletionCallbackWithOutput</a>&lt; <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &gt; &amp;&#160;</td>
+<td class="paramname"><em>callback</em></td><td>)</td>
+<td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+</div>
+</div>
 <a class="anchor" id="aeea5ef2549e1caeddea6ed783d0efe32"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::GetFrame" ref="aeea5ef2549e1caeddea6ed783d0efe32" args="(const CompletionCallbackWithOutput&lt; VideoFrame &gt; &amp;callback)" -->
 <div class="memitem">
 <div class="memproto">
@@ -325,6 +361,22 @@ Static Public Member Functions</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>True if <code>resource</code> is a MediaStream video track. </dd></dl>
 </div>
 </div>
+<a class="anchor" id="a33a83be29146dc26f5eb2dca77131b05"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::PutFrame" ref="a33a83be29146dc26f5eb2dca77131b05" args="(const VideoFrame &amp;frame)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_media_stream_video_track.html#a33a83be29146dc26f5eb2dca77131b05">pp::MediaStreamVideoTrack::PutFrame</a> </td>
+<td>(</td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_video_frame.html">VideoFrame</a> &amp;&#160;</td>
+<td class="paramname"><em>frame</em></td><td>)</td>
+<td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+</div>
+</div>
 <a class="anchor" id="ab3df0710c423f1c2b1e45da957bc65e4"></a><!-- doxytag: member="pp::MediaStreamVideoTrack::RecycleFrame" ref="ab3df0710c423f1c2b1e45da957bc65e4" args="(const VideoFrame &amp;frame)" -->
 <div class="memitem">
 <div class="memproto">
@@ -355,4 +407,4 @@ Static Public Member Functions</h2><table class="memberdecls">
 </ul>
 </div><!-- contents -->
 </div>
-{{/partials.standard_nacl_article}}
+{{/partials.standard_nacl_api}}

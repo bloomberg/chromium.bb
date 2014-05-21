@@ -24,11 +24,11 @@ from sphinx.util.console import bold
 # TODO(eliben): it may be interesting to use an actual Sphinx template here at
 # some point.
 PAGE_TEMPLATE = string.Template(r'''
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.${doc_template}}}
 
 ${doc_body}
 
-{{/partials.standard_nacl_article}}
+{{/partials.${doc_template}}}
 '''.lstrip())
 
 
@@ -245,12 +245,17 @@ class ChromesiteBuilder(StandaloneHTMLBuilder):
     if not 'body' in context:
       return
 
+    template = context.get('meta', {}).get('template', 'standard_nacl_article')
+    title = context.get('title', '')
+    body = context.get('body', '')
+
     # codecs.open is the fast Python 2.x way of emulating the encoding= argument
     # in Python 3's builtin open.
     with codecs.open(filename, 'w', encoding='utf-8') as f:
       f.write(PAGE_TEMPLATE.substitute(
-        doc_title=context.get('title', ''),
-        doc_body=context.get('body')))
+        doc_template=template,
+        doc_title=title,
+        doc_body=body))
 
   def _conditional_chromesite(self, s):
     # return s if self.chromesite_production_mode else ''

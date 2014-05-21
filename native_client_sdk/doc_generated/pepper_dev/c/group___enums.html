@@ -1,4 +1,4 @@
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.standard_nacl_api}}
 <h1>Enums</h1>
 <div id="doxygen-ref">
 {{- dummy div to appease doxygen -}}
@@ -13,6 +13,25 @@ Enumerations</h2><table class="memberdecls">
 
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga4f272d99be14aacafe08dfd4ef830918">PP_Bool</a> { <a class="el" href="group___enums.html#gga4f272d99be14aacafe08dfd4ef830918aeb6cdb899071a9ea4695a184bfdc3e81">PP_FALSE</a> =  0, 
 <a class="el" href="group___enums.html#gga4f272d99be14aacafe08dfd4ef830918a177ce110df585fe2b468dba9a0eefda5">PP_TRUE</a> =  1
+ }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga4d50d27186f68b2de578e82162206fea">PP_VideoProfile</a> { <br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa65c543f4e17057ba76e3e2828fb4a5ae">PP_VIDEOPROFILE_H264BASELINE</a> =  0, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa6f9ded5bf74362fb7e6df40392fd90c7">PP_VIDEOPROFILE_H264MAIN</a> =  1, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaaa74e0356fd0b9dcaf2865990d2ee8207">PP_VIDEOPROFILE_H264EXTENDED</a> =  2, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa7d5e540d7216fc360f3b4f99c14fd837">PP_VIDEOPROFILE_H264HIGH</a> =  3, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaacbc34512b326995cf23b8b8dfcf8c260">PP_VIDEOPROFILE_H264HIGH10PROFILE</a> =  4, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa3b55e48bed2ba19917e5b791f95819e9">PP_VIDEOPROFILE_H264HIGH422PROFILE</a> =  5, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaaa9ab0bbdc15d31fc792b84625c03ae89">PP_VIDEOPROFILE_H264HIGH444PREDICTIVEPROFILE</a> =  6, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaae20ea71b1a0277758cbbb86d0d328b65">PP_VIDEOPROFILE_H264SCALABLEBASELINE</a> =  7, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaac565b4f0d08b233697503835578e8388">PP_VIDEOPROFILE_H264SCALABLEHIGH</a> =  8, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa4534b74ad8afbee8d66486f33ab9568d">PP_VIDEOPROFILE_H264STEREOHIGH</a> =  9, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaaca0c8b85774a9e4d1e515c71e2e021f7">PP_VIDEOPROFILE_H264MULTIVIEWHIGH</a> =  10, 
+<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa5a1224be7d26b54d799b91d05270f999">PP_VIDEOPROFILE_VP8MAIN</a> =  11, 
+<br />
+&#160;&#160;<a class="el" href="group___enums.html#gga4d50d27186f68b2de578e82162206feaa884e0f18fee1bae2472a15f6fb1d7e79">PP_VIDEOPROFILE_MAX</a> =  PP_VIDEOPROFILE_VP8MAIN
+<br />
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga7610f0fba2396d46384859caa4d91798">PP_CompletionCallback_Flag</a> { <a class="el" href="group___enums.html#gga7610f0fba2396d46384859caa4d91798a6eedc0f315784a4cb47c5806b828c7cc">PP_COMPLETIONCALLBACK_FLAG_NONE</a> =  0 &lt;&lt; 0, 
 <a class="el" href="group___enums.html#gga7610f0fba2396d46384859caa4d91798aebb176d8930b14219b7966fd93a2e967">PP_COMPLETIONCALLBACK_FLAG_OPTIONAL</a> =  1 &lt;&lt; 0
@@ -1802,26 +1821,28 @@ Variables</h2><table class="memberdecls">
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852eda079c1c085b9b0f1b076807a0eb5ba6bd"></a><!-- doxytag: member="PP_VARTYPE_STRING" ref="gga9815041477d810724e44da862f9852eda079c1c085b9b0f1b076807a0eb5ba6bd" args="" -->PP_VARTYPE_STRING</em>&nbsp;</td><td>
 <p>The Var represents a string. </p>
-<p>The <code>as_id</code> field is used to identify the string, which may be created and retrieved from the <code>PPB_Var</code> interface. These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>The <code>as_id</code> field is used to identify the string, which may be created and retrieved from the <code>PPB_Var</code> interface. These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852eda7060b95352ff46ed2f0144e08cc949cc"></a><!-- doxytag: member="PP_VARTYPE_OBJECT" ref="gga9815041477d810724e44da862f9852eda7060b95352ff46ed2f0144e08cc949cc" args="" -->PP_VARTYPE_OBJECT</em>&nbsp;</td><td>
 <p>Represents a JavaScript object. </p>
-<p>This vartype is not currently usable from modules, although it is used internally for some tasks. These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>This vartype is not currently usable from modules, although it is used internally for some tasks. These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852eda50df125d91ade69f5b2de4d08427508c"></a><!-- doxytag: member="PP_VARTYPE_ARRAY" ref="gga9815041477d810724e44da862f9852eda50df125d91ade69f5b2de4d08427508c" args="" -->PP_VARTYPE_ARRAY</em>&nbsp;</td><td>
 <p>Represents an array of Vars. </p>
-<p>The <code>as_id</code> field is used to identify the array, which may be created and manipulated from the <code>PPB_VarArray</code> interface. These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>The <code>as_id</code> field is used to identify the array, which may be created and manipulated from the <code>PPB_VarArray</code> interface. These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852edae44188e85906d83c2f52f34aa5b38687"></a><!-- doxytag: member="PP_VARTYPE_DICTIONARY" ref="gga9815041477d810724e44da862f9852edae44188e85906d83c2f52f34aa5b38687" args="" -->PP_VARTYPE_DICTIONARY</em>&nbsp;</td><td>
 <p>Represents a mapping from strings to Vars. </p>
-<p>The <code>as_id</code> field is used to identify the dictionary, which may be created and manipulated from the <code>PPB_VarDictionary</code> interface. These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>The <code>as_id</code> field is used to identify the dictionary, which may be created and manipulated from the <code>PPB_VarDictionary</code> interface. These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852eda363024b8067811f2f2f42f969be44529"></a><!-- doxytag: member="PP_VARTYPE_ARRAY_BUFFER" ref="gga9815041477d810724e44da862f9852eda363024b8067811f2f2f42f969be44529" args="" -->PP_VARTYPE_ARRAY_BUFFER</em>&nbsp;</td><td>
 <p>ArrayBuffer represents a JavaScript ArrayBuffer. </p>
-<p>This is the type which represents Typed Arrays in JavaScript. Unlike JavaScript 'Array', it is only meant to contain basic numeric types, and is always stored contiguously. See PPB_VarArrayBuffer_Dev for functions special to ArrayBuffer vars. These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>This is the type which represents Typed Arrays in JavaScript. Unlike JavaScript 'Array', it is only meant to contain basic numeric types, and is always stored contiguously. See PPB_VarArrayBuffer_Dev for functions special to ArrayBuffer vars. These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga9815041477d810724e44da862f9852eda898e69540595e8b95681d850ddecc7f1"></a><!-- doxytag: member="PP_VARTYPE_RESOURCE" ref="gga9815041477d810724e44da862f9852eda898e69540595e8b95681d850ddecc7f1" args="" -->PP_VARTYPE_RESOURCE</em>&nbsp;</td><td>
-<p>Resources are not currently supported but will be added in the future These objects are reference counted, so AddRef and Release must be used properly to avoid memory leaks. </p>
+<p>This type allows the <code><a class="el" href="struct_p_p___var.html" title="The PP_VAR struct is a variant data type and can contain any value of one of the types named in the P...">PP_Var</a></code> to wrap a <code>PP_Resource </code>. </p>
+<p>This can be useful for sending or receiving some types of <code>PP_Resource</code> using <code>PPB_Messaging</code> or <code>PPP_Messaging</code>.</p>
+<p>These objects are reference counted, so AddRef() and Release() must be used properly to avoid memory leaks. Under normal circumstances, the <code><a class="el" href="struct_p_p___var.html" title="The PP_VAR struct is a variant data type and can contain any value of one of the types named in the P...">PP_Var</a></code> will implicitly hold a reference count on the <code>PP_Resource</code> on your behalf. For example, if you call VarFromResource(), it implicitly calls <a class="el" href="struct_p_p_b___core__1__0.html#a63ea7047ef5278cc3735dbfd60bd5b81" title="AddRefResource() adds a reference to a resource.">PPB_Core::AddRefResource()</a> on the <code>PP_Resource</code>. Likewise, <a class="el" href="struct_p_p_b___var__1__2.html#a3ca6fe76b51c14df6cc6a04d77edb807" title="Release() removes a reference to given var, deleting it if the internal reference count becomes 0...">PPB_Var::Release()</a> on a Resource <code><a class="el" href="struct_p_p___var.html" title="The PP_VAR struct is a variant data type and can contain any value of one of the types named in the P...">PP_Var</a></code> will invoke <a class="el" href="struct_p_p_b___core__1__0.html#af3163aefc33071af39cd085a0a2d44fe" title="ReleaseResource() removes a reference from a resource.">PPB_Core::ReleaseResource()</a> when the Var reference count goes to zero. </p>
 </td></tr>
 </table>
 </dd>
@@ -1853,6 +1874,48 @@ Variables</h2><table class="memberdecls">
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga4e7cf746d8acbfa268db1f5ebe8061bfa9c2ef109d6a4b3f32ab8c10b260aeab4"></a><!-- doxytag: member="PP_VIDEOFRAME_FORMAT_LAST" ref="gga4e7cf746d8acbfa268db1f5ebe8061bfa9c2ef109d6a4b3f32ab8c10b260aeab4" args="" -->PP_VIDEOFRAME_FORMAT_LAST</em>&nbsp;</td><td>
 <p>The last format. </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+</div>
+<a class="anchor" id="ga4d50d27186f68b2de578e82162206fea"></a><!-- doxytag: member="pp_codecs.h::PP_VideoProfile" ref="ga4d50d27186f68b2de578e82162206fea" args="" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">enum <a class="el" href="group___enums.html#ga4d50d27186f68b2de578e82162206fea">PP_VideoProfile</a></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa65c543f4e17057ba76e3e2828fb4a5ae"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264BASELINE" ref="gga4d50d27186f68b2de578e82162206feaa65c543f4e17057ba76e3e2828fb4a5ae" args="" -->PP_VIDEOPROFILE_H264BASELINE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa6f9ded5bf74362fb7e6df40392fd90c7"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264MAIN" ref="gga4d50d27186f68b2de578e82162206feaa6f9ded5bf74362fb7e6df40392fd90c7" args="" -->PP_VIDEOPROFILE_H264MAIN</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaaa74e0356fd0b9dcaf2865990d2ee8207"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264EXTENDED" ref="gga4d50d27186f68b2de578e82162206feaaa74e0356fd0b9dcaf2865990d2ee8207" args="" -->PP_VIDEOPROFILE_H264EXTENDED</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa7d5e540d7216fc360f3b4f99c14fd837"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264HIGH" ref="gga4d50d27186f68b2de578e82162206feaa7d5e540d7216fc360f3b4f99c14fd837" args="" -->PP_VIDEOPROFILE_H264HIGH</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaacbc34512b326995cf23b8b8dfcf8c260"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264HIGH10PROFILE" ref="gga4d50d27186f68b2de578e82162206feaacbc34512b326995cf23b8b8dfcf8c260" args="" -->PP_VIDEOPROFILE_H264HIGH10PROFILE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa3b55e48bed2ba19917e5b791f95819e9"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264HIGH422PROFILE" ref="gga4d50d27186f68b2de578e82162206feaa3b55e48bed2ba19917e5b791f95819e9" args="" -->PP_VIDEOPROFILE_H264HIGH422PROFILE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaaa9ab0bbdc15d31fc792b84625c03ae89"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264HIGH444PREDICTIVEPROFILE" ref="gga4d50d27186f68b2de578e82162206feaaa9ab0bbdc15d31fc792b84625c03ae89" args="" -->PP_VIDEOPROFILE_H264HIGH444PREDICTIVEPROFILE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaae20ea71b1a0277758cbbb86d0d328b65"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264SCALABLEBASELINE" ref="gga4d50d27186f68b2de578e82162206feaae20ea71b1a0277758cbbb86d0d328b65" args="" -->PP_VIDEOPROFILE_H264SCALABLEBASELINE</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaac565b4f0d08b233697503835578e8388"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264SCALABLEHIGH" ref="gga4d50d27186f68b2de578e82162206feaac565b4f0d08b233697503835578e8388" args="" -->PP_VIDEOPROFILE_H264SCALABLEHIGH</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa4534b74ad8afbee8d66486f33ab9568d"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264STEREOHIGH" ref="gga4d50d27186f68b2de578e82162206feaa4534b74ad8afbee8d66486f33ab9568d" args="" -->PP_VIDEOPROFILE_H264STEREOHIGH</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaaca0c8b85774a9e4d1e515c71e2e021f7"></a><!-- doxytag: member="PP_VIDEOPROFILE_H264MULTIVIEWHIGH" ref="gga4d50d27186f68b2de578e82162206feaaca0c8b85774a9e4d1e515c71e2e021f7" args="" -->PP_VIDEOPROFILE_H264MULTIVIEWHIGH</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa5a1224be7d26b54d799b91d05270f999"></a><!-- doxytag: member="PP_VIDEOPROFILE_VP8MAIN" ref="gga4d50d27186f68b2de578e82162206feaa5a1224be7d26b54d799b91d05270f999" args="" -->PP_VIDEOPROFILE_VP8MAIN</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga4d50d27186f68b2de578e82162206feaa884e0f18fee1bae2472a15f6fb1d7e79"></a><!-- doxytag: member="PP_VIDEOPROFILE_MAX" ref="gga4d50d27186f68b2de578e82162206feaa884e0f18fee1bae2472a15f6fb1d7e79" args="" -->PP_VIDEOPROFILE_MAX</em>&nbsp;</td><td>
 </td></tr>
 </table>
 </dd>
@@ -2331,4 +2394,4 @@ Variables</h2><table class="memberdecls">
 </div>
 </div><!-- contents -->
 </div>
-{{/partials.standard_nacl_article}}
+{{/partials.standard_nacl_api}}

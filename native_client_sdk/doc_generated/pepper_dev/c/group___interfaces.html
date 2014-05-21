@@ -1,4 +1,4 @@
-{{+bindTo:partials.standard_nacl_article}}
+{{+bindTo:partials.standard_nacl_api}}
 <h1>Interfaces</h1>
 <div id="doxygen-ref">
 {{- dummy div to appease doxygen -}}
@@ -53,7 +53,7 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___instance__1__0.html">PPB_Instance</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The PPB_Instance interface contains pointers to functions related to the module instance on a web page.  <a href="struct_p_p_b___instance__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_video_track__0__1.html">PPB_MediaStreamVideoTrack</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_video_track__1__0.html">PPB_MediaStreamVideoTrack</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A message loop allows PPAPI calls to be issued on a thread.  <a href="struct_p_p_b___message_loop__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a></td></tr>
@@ -89,6 +89,8 @@ Data Structures</h2><table class="memberdecls">
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>PPB_VarArrayBuffer</code> interface provides a way to interact with JavaScript ArrayBuffers, which represent a contiguous sequence of bytes.  <a href="struct_p_p_b___var_array_buffer__1__0.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___var_dictionary__1__0.html">PPB_VarDictionary</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">A dictionary var contains key-value pairs with unique keys.  <a href="struct_p_p_b___var_dictionary__1__0.html#details">More...</a><br /></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___video_decoder__0__1.html">PPB_VideoDecoder</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Video decoder interface.  <a href="struct_p_p_b___video_decoder__0__1.html#details">More...</a><br /></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___video_frame__0__1.html">PPB_VideoFrame</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___view__1__1.html">PPB_View</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>PPB_View</code> represents the state of the view of an instance.  <a href="struct_p_p_b___view__1__1.html#details">More...</a><br /></td></tr>
@@ -133,8 +135,6 @@ Typedefs</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___instance__1__0.html">PPB_Instance</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gaf2ed3cc24968d8681b52cf70eae066ca">PPB_Instance</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
 <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#ga7eb38be0c7c0450e02840804b0b8b9d3">PPB_MediaStreamAudioTrack</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef struct <br class="typebreak" />
-<a class="el" href="struct_p_p_b___media_stream_video_track__0__1.html">PPB_MediaStreamVideoTrack</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae45ed88179e2ba2329adb60af0d8fb9e">PPB_MediaStreamVideoTrack</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___message_loop__1__0.html">PPB_MessageLoop</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae3eb3482b0fb57fb6a4eb05c07908788">PPB_MessageLoop</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___messaging__1__0.html">PPB_Messaging</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gac53fe3a3b5941f8b3608349f58ee24f0">PPB_Messaging</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_p_p_b___mouse_cursor__1__0.html">PPB_MouseCursor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___interfaces.html#gae583d9ea6381e1e4cb7b462c35c5d1de">PPB_MouseCursor</a></td></tr>
@@ -391,18 +391,6 @@ Typedefs</h2><table class="memberdecls">
 <table class="memname">
 <tr>
 <td class="memname">typedef struct <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html">PPB_MediaStreamAudioTrack</a> <a class="el" href="group___interfaces.html#ga7eb38be0c7c0450e02840804b0b8b9d3">PPB_MediaStreamAudioTrack</a></td>
-</tr>
-</table>
-</div>
-<div class="memdoc">
-</div>
-</div>
-<a class="anchor" id="gae45ed88179e2ba2329adb60af0d8fb9e"></a><!-- doxytag: member="ppb_media_stream_video_track.h::PPB_MediaStreamVideoTrack" ref="gae45ed88179e2ba2329adb60af0d8fb9e" args="" -->
-<div class="memitem">
-<div class="memproto">
-<table class="memname">
-<tr>
-<td class="memname">typedef struct <a class="el" href="struct_p_p_b___media_stream_video_track__0__1.html">PPB_MediaStreamVideoTrack</a> <a class="el" href="group___interfaces.html#gae45ed88179e2ba2329adb60af0d8fb9e">PPB_MediaStreamVideoTrack</a></td>
 </tr>
 </table>
 </div>
@@ -759,4 +747,4 @@ Typedefs</h2><table class="memberdecls">
 </div>
 </div><!-- contents -->
 </div>
-{{/partials.standard_nacl_article}}
+{{/partials.standard_nacl_api}}
