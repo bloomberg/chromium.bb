@@ -17,8 +17,8 @@ public:
     static GamepadButton* create();
     ~GamepadButton();
 
-    double value() const { return m_value; }
-    void setValue(double val) { m_value = val; }
+    float value() const { return m_value; }
+    void setValue(float val) { m_value = val; }
 
     bool pressed() const { return m_pressed; }
     void setPressed(bool val) { m_pressed = val; }
@@ -27,7 +27,7 @@ public:
 
 private:
     GamepadButton();
-    double m_value;
+    float m_value;
     bool m_pressed;
 };
 

@@ -7,5 +7,5 @@
     GarbageCollected,
 ] interface GamepadButton {
     readonly attribute boolean pressed;
-    readonly attribute double value;
+    readonly attribute float value;
 };
