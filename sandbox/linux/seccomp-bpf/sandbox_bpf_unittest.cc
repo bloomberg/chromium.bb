@@ -22,6 +22,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
@@ -84,29 +85,38 @@ intptr_t FakeGetPid(const struct arch_seccomp_data& args, void* aux) {
   return (*pid_ptr)++;
 }
 
-ErrorCode VerboseAPITestingPolicy(SandboxBPF* sandbox, int sysno, void* aux) {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
-  } else if (sysno == __NR_getpid) {
-    return sandbox->Trap(FakeGetPid, aux);
-  } else {
+class VerboseAPITestingPolicy : public SandboxBPFPolicy {
+ public:
+  VerboseAPITestingPolicy(pid_t* pid_ptr) : pid_ptr_(pid_ptr) {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    if (sysno == __NR_getpid) {
+      return sandbox->Trap(FakeGetPid, pid_ptr_);
+    }
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
-}
+
+ private:
+  pid_t* pid_ptr_;
+  DISALLOW_COPY_AND_ASSIGN(VerboseAPITestingPolicy);
+};
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
   if (SandboxBPF::SupportsSeccompSandbox(-1) ==
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
-    pid_t test_var = 0;
+    pid_t pid = 0;
+
     SandboxBPF sandbox;
-    sandbox.SetSandboxPolicyDeprecated(VerboseAPITestingPolicy, &test_var);
+    sandbox.SetSandboxPolicy(new VerboseAPITestingPolicy(&pid));
     BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
-    BPF_ASSERT(test_var == 0);
-    BPF_ASSERT(syscall(__NR_getpid) == 0);
-    BPF_ASSERT(test_var == 1);
-    BPF_ASSERT(syscall(__NR_getpid) == 1);
-    BPF_ASSERT(test_var == 2);
+    BPF_ASSERT_EQ(0, pid);
+    BPF_ASSERT_EQ(0, syscall(__NR_getpid));
+    BPF_ASSERT_EQ(1, pid);
+    BPF_ASSERT_EQ(1, syscall(__NR_getpid));
+    BPF_ASSERT_EQ(2, pid);
 
     // N.B.: Any future call to getpid() would corrupt the stack.
     //       This is OK. The SANDBOX_TEST() macro is guaranteed to
@@ -284,43 +294,53 @@ BPF_TEST(SandboxBPF, ErrnoTest, ErrnoTestPolicy) {
 
 // Testing the stacking of two sandboxes
 
-ErrorCode StackingPolicyPartOne(SandboxBPF* sandbox, int sysno, void*) {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
+class StackingPolicyPartOne : public SandboxBPFPolicy {
+ public:
+  StackingPolicyPartOne() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    switch (sysno) {
+      case __NR_getppid:
+        return sandbox->Cond(0,
+                             ErrorCode::TP_32BIT,
+                             ErrorCode::OP_EQUAL,
+                             0,
+                             ErrorCode(ErrorCode::ERR_ALLOWED),
+                             ErrorCode(EPERM));
+      default:
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+    }
   }
 
-  switch (sysno) {
-    case __NR_getppid:
-      return sandbox->Cond(0,
-                           ErrorCode::TP_32BIT,
-                           ErrorCode::OP_EQUAL,
-                           0,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-                           ErrorCode(EPERM));
-    default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StackingPolicyPartOne);
+};
 
-ErrorCode StackingPolicyPartTwo(SandboxBPF* sandbox, int sysno, void*) {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
+class StackingPolicyPartTwo : public SandboxBPFPolicy {
+ public:
+  StackingPolicyPartTwo() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    switch (sysno) {
+      case __NR_getppid:
+        return sandbox->Cond(0,
+                             ErrorCode::TP_32BIT,
+                             ErrorCode::OP_EQUAL,
+                             0,
+                             ErrorCode(EINVAL),
+                             ErrorCode(ErrorCode::ERR_ALLOWED));
+      default:
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+    }
   }
 
-  switch (sysno) {
-    case __NR_getppid:
-      return sandbox->Cond(0,
-                           ErrorCode::TP_32BIT,
-                           ErrorCode::OP_EQUAL,
-                           0,
-                           ErrorCode(EINVAL),
-                           ErrorCode(ErrorCode::ERR_ALLOWED));
-    default:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StackingPolicyPartTwo);
+};
 
-BPF_TEST(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
+BPF_TEST_C(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
   errno = 0;
   BPF_ASSERT(syscall(__NR_getppid, 0) > 0);
   BPF_ASSERT(errno == 0);
@@ -331,7 +351,7 @@ BPF_TEST(SandboxBPF, StackingPolicy, StackingPolicyPartOne) {
   // Stack a second sandbox with its own policy. Verify that we can further
   // restrict filters, but we cannot relax existing filters.
   SandboxBPF sandbox;
-  sandbox.SetSandboxPolicyDeprecated(StackingPolicyPartTwo, NULL);
+  sandbox.SetSandboxPolicy(new StackingPolicyPartTwo());
   BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
   errno = 0;

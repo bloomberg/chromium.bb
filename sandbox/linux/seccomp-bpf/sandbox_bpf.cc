@@ -22,10 +22,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_compatibility_policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
@@ -57,20 +57,26 @@ void WriteFailedStderrSetupMessage(int out_fd) {
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.
-ErrorCode ProbeEvaluator(SandboxBPF*, int sysnum, void*) __attribute__((const));
-ErrorCode ProbeEvaluator(SandboxBPF*, int sysnum, void*) {
-  switch (sysnum) {
-    case __NR_getpid:
-      // Return EPERM so that we can check that the filter actually ran.
-      return ErrorCode(EPERM);
-    case __NR_exit_group:
-      // Allow exit() with a non-default return code.
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-    default:
-      // Make everything else fail in an easily recognizable way.
-      return ErrorCode(EINVAL);
+class ProbePolicy : public SandboxBPFPolicy {
+ public:
+  ProbePolicy() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysnum) const OVERRIDE {
+    switch (sysnum) {
+      case __NR_getpid:
+        // Return EPERM so that we can check that the filter actually ran.
+        return ErrorCode(EPERM);
+      case __NR_exit_group:
+        // Allow exit() with a non-default return code.
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+      default:
+        // Make everything else fail in an easily recognizable way.
+        return ErrorCode(EINVAL);
+    }
   }
-}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProbePolicy);
+};
 
 void ProbeProcess(void) {
   if (syscall(__NR_getpid) < 0 && errno == EPERM) {
@@ -78,10 +84,17 @@ void ProbeProcess(void) {
   }
 }
 
-ErrorCode AllowAllEvaluator(SandboxBPF*, int sysnum, void*) {
-  DCHECK(SandboxBPF::IsValidSyscallNumber(sysnum));
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
-}
+class AllowAllPolicy : public SandboxBPFPolicy {
+ public:
+  AllowAllPolicy() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF*, int sysnum) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysnum));
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
+};
 
 void TryVsyscallProcess(void) {
   time_t current_time;
@@ -239,8 +252,7 @@ bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
 }
 
 bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
-                                     EvaluateSyscall syscall_evaluator,
-                                     void* aux) {
+                                     scoped_ptr<SandboxBPFPolicy> policy) {
   // Block all signals before forking a child process. This prevents an
   // attacker from manipulating our test by sending us an unexpected signal.
   sigset_t old_mask, new_mask;
@@ -310,7 +322,7 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
 #endif
     }
 
-    SetSandboxPolicyDeprecated(syscall_evaluator, aux);
+    SetSandboxPolicy(policy.release());
     if (!StartSandbox(PROCESS_SINGLE_THREADED)) {
       SANDBOX_DIE(NULL);
     }
@@ -359,8 +371,11 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
 }
 
 bool SandboxBPF::KernelSupportSeccompBPF() {
-  return RunFunctionInPolicy(ProbeProcess, ProbeEvaluator, 0) &&
-         RunFunctionInPolicy(TryVsyscallProcess, AllowAllEvaluator, 0);
+  return RunFunctionInPolicy(ProbeProcess,
+                             scoped_ptr<SandboxBPFPolicy>(new ProbePolicy())) &&
+         RunFunctionInPolicy(
+             TryVsyscallProcess,
+             scoped_ptr<SandboxBPFPolicy>(new AllowAllPolicy()));
 }
 
 SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox(int proc_fd) {
@@ -473,15 +488,6 @@ void SandboxBPF::PolicySanityChecks(SandboxBPFPolicy* policy) {
     SANDBOX_DIE("Policies should deny invalid system calls.");
   }
   return;
-}
-
-// Deprecated API, supported with a wrapper to the new API.
-void SandboxBPF::SetSandboxPolicyDeprecated(EvaluateSyscall syscall_evaluator,
-                                            void* aux) {
-  if (sandbox_has_started_ || !conds_) {
-    SANDBOX_DIE("Cannot change policy after sandbox has started");
-  }
-  SetSandboxPolicy(new CompatibilityPolicy<void>(syscall_evaluator, aux));
 }
 
 // Don't take a scoped_ptr here, polymorphism make their use awkward.
