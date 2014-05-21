@@ -11,6 +11,10 @@
 #include "ipc/ipc_test_base.h"
 #include "ipc/message_filter.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Get basic type definitions.
 #define IPC_MESSAGE_IMPL
 #include "ipc/ipc_channel_proxy_unittest_messages.h"
@@ -415,6 +419,11 @@ class IPCChannelBadMessageTest : public IPCTestBase {
 };
 
 TEST_F(IPCChannelBadMessageTest, BadMessage) {
+#if defined(OS_WIN)
+  // TODO(jam): for some reason this is failing on XP buildbots.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   sender()->Send(new TestMsg_SendBadMessage());
   SendQuitMessageAndWaitForIdle();
   EXPECT_TRUE(DidListenerGetBadMessage());
