@@ -70,7 +70,7 @@ config("compiler") {
     }
 
     # Linker warnings.
-    if (!(is_chromeos && cpu_arch == "arm")) {
+    if (!(is_chromeos && cpu_arch == "arm") && !is_mac) {
       # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
