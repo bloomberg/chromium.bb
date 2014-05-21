@@ -180,6 +180,7 @@ void PrefHashFilter::FinalizeFilterOnLoad(
     pref_store_contents->Set(prefs::kPreferenceResetTime,
                              new base::StringValue(base::Int64ToString(
                                  base::Time::Now().ToInternalValue())));
+    FilterUpdate(prefs::kPreferenceResetTime);
   }
 
   // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
