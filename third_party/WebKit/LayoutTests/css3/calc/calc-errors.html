@@ -17,6 +17,10 @@
 <div style="width: 100px; width: calc( flim;">unclosed calc with garbage</div>
 <div style="width: 100px; width: calc( flim );">garbage</div>
 
+<!-- unsupported units -->
+<div style="width: 100px; width: calc(10dpi);">dpi</div>
+<div style="width: 100px; width: calc(10dpi / 4);">dpi / number</div>
+<div style="width: 100px; width: calc(5dpi + 5dpi);">dpi + dpi</div>
 
 <!-- zero division -->
 <div style="width: 100px; width: calc(1ex / 0);">zero division</div>

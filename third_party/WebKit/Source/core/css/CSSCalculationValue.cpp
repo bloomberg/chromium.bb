@@ -70,6 +70,8 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
         return CalcLength;
+    // FIXME: Support angle, time and frequency units.
+    // http://www.w3.org/TR/css3-values/#calc-notation
     default:
         return CalcOther;
     }
@@ -628,7 +630,11 @@ private:
         if (!value || !value->isPrimitiveValue())
             return false;
 
-        result->value = CSSCalcPrimitiveValue::create(toCSSPrimitiveValue(value.get()), parserValue->isInt);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
+        if (unitCategory((CSSPrimitiveValue::UnitTypes)primitiveValue->primitiveType()) == CalcOther)
+            return false;
+
+        result->value = CSSCalcPrimitiveValue::create(primitiveValue, parserValue->isInt);
 
         ++*index;
         return true;

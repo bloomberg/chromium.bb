@@ -91,6 +91,7 @@ protected:
         : m_category(category)
         , m_isInteger(isInteger)
     {
+        ASSERT(category != CalcOther);
     }
 
     CalculationCategory m_category;
