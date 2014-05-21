@@ -53,7 +53,7 @@ class HTMLLinkElement;
 //
 class HTMLImportChild FINAL : public HTMLImport {
 public:
-    HTMLImportChild(Document&, const KURL&, SyncMode);
+    HTMLImportChild(const KURL&, SyncMode);
     virtual ~HTMLImportChild();
 
     HTMLLinkElement* link() const;
@@ -92,11 +92,6 @@ private:
     void shareLoader();
     void createCustomElementMicrotaskStepIfNeeded();
 
-#if ENABLE(OILPAN)
-    Persistent<Document> m_master;
-#else
-    Document& m_master;
-#endif
     KURL m_url;
     WeakPtrFactory<HTMLImportChild> m_weakFactory;
     WeakPtr<CustomElementMicrotaskImportStep> m_customElementMicrotaskStep;

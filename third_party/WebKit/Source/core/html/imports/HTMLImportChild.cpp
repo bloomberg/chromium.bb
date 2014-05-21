@@ -41,21 +41,13 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, SyncMode sync)
+HTMLImportChild::HTMLImportChild(const KURL& url, SyncMode sync)
     : HTMLImport(sync)
-#if ENABLE(OILPAN)
-    , m_master(&master)
-#else
-    , m_master(master)
-#endif
     , m_url(url)
     , m_weakFactory(this)
     , m_loader(0)
     , m_client(0)
 {
-#if !ENABLE(OILPAN)
-    m_master.guardRef();
-#endif
 }
 
 HTMLImportChild::~HTMLImportChild()
@@ -65,10 +57,6 @@ HTMLImportChild::~HTMLImportChild()
 
     if (m_client)
         m_client->importChildWasDestroyed(this);
-
-#if !ENABLE(OILPAN)
-    m_master.guardDeref();
-#endif
 }
 
 void HTMLImportChild::wasAlreadyLoaded()
