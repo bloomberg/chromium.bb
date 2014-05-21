@@ -72,7 +72,7 @@ MediaControlElementType mediaControlElementType(Node*);
 
 // ----------------------------
 
-class MediaControlElement {
+class MediaControlElement : public WillBeGarbageCollectedMixin {
 public:
     void hide();
     void show();
@@ -96,6 +96,8 @@ private:
 // ----------------------------
 
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
+
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
     MediaControlDivElement(MediaControls&, MediaControlElementType);
@@ -104,6 +106,8 @@ protected:
 // ----------------------------
 
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
+
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
     MediaControlInputElement(MediaControls&, MediaControlElementType);

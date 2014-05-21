@@ -40,29 +40,29 @@ static const double timeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document())
-    , m_mediaElement(mediaElement)
-    , m_panel(0)
-    , m_textDisplayContainer(0)
-    , m_overlayPlayButton(0)
-    , m_overlayEnclosure(0)
-    , m_playButton(0)
-    , m_currentTimeDisplay(0)
-    , m_timeline(0)
-    , m_muteButton(0)
-    , m_volumeSlider(0)
-    , m_toggleClosedCaptionsButton(0)
-    , m_fullScreenButton(0)
-    , m_durationDisplay(0)
-    , m_enclosure(0)
+    , m_mediaElement(&mediaElement)
+    , m_panel(nullptr)
+    , m_textDisplayContainer(nullptr)
+    , m_overlayPlayButton(nullptr)
+    , m_overlayEnclosure(nullptr)
+    , m_playButton(nullptr)
+    , m_currentTimeDisplay(nullptr)
+    , m_timeline(nullptr)
+    , m_muteButton(nullptr)
+    , m_volumeSlider(nullptr)
+    , m_toggleClosedCaptionsButton(nullptr)
+    , m_fullScreenButton(nullptr)
+    , m_durationDisplay(nullptr)
+    , m_enclosure(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
     , m_isMouseOverControls(false)
     , m_isPausedForScrubbing(false)
 {
 }
 
-PassRefPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
+PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
 {
-    RefPtr<MediaControls> controls = adoptRef(new MediaControls(mediaElement));
+    RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeRefCountedGarbageCollected(new MediaControls(mediaElement));
 
     if (controls->initializeControls())
         return controls.release();
@@ -75,8 +75,8 @@ bool MediaControls::initializeControls()
     TrackExceptionState exceptionState;
 
     if (document().settings() && document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
-        RefPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
-        RefPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
+        RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
+        RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
         m_overlayPlayButton = overlayPlayButton.get();
         overlayEnclosure->appendChild(overlayPlayButton.release(), exceptionState);
         if (exceptionState.hadException())
@@ -89,54 +89,54 @@ bool MediaControls::initializeControls()
     }
 
     // Create an enclosing element for the panel so we can visually offset the controls correctly.
-    RefPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(*this);
 
-    RefPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(*this);
 
-    RefPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(*this);
     m_playButton = playButton.get();
     panel->appendChild(playButton.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(*this);
     m_timeline = timeline.get();
     panel->appendChild(timeline.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(*this);
     m_currentTimeDisplay = currentTimeDisplay.get();
     m_currentTimeDisplay->hide();
     panel->appendChild(currentTimeDisplay.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(*this);
     m_durationDisplay = durationDisplay.get();
     panel->appendChild(durationDisplay.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
     m_muteButton = muteButton.get();
     panel->appendChild(muteButton.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
     m_volumeSlider = slider.get();
     panel->appendChild(slider.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
     m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
     panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
     if (exceptionState.hadException())
         return false;
 
-    RefPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
     m_fullScreenButton = fullscreenButton.get();
     panel->appendChild(fullscreenButton.release(), exceptionState);
     if (exceptionState.hadException())
@@ -406,7 +406,7 @@ void MediaControls::createTextTrackDisplay()
     if (m_textDisplayContainer)
         return;
 
-    RefPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(*this);
+    RefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> textDisplayContainer = MediaControlTextTrackContainerElement::create(*this);
     m_textDisplayContainer = textDisplayContainer.get();
 
     // Insert it before (behind) all other control elements.
@@ -436,6 +436,25 @@ void MediaControls::updateTextTrackDisplay()
         createTextTrackDisplay();
 
     m_textDisplayContainer->updateDisplay();
+}
+
+void MediaControls::trace(Visitor* visitor)
+{
+    visitor->trace(m_mediaElement);
+    visitor->trace(m_panel);
+    visitor->trace(m_textDisplayContainer);
+    visitor->trace(m_overlayPlayButton);
+    visitor->trace(m_overlayEnclosure);
+    visitor->trace(m_playButton);
+    visitor->trace(m_currentTimeDisplay);
+    visitor->trace(m_timeline);
+    visitor->trace(m_muteButton);
+    visitor->trace(m_volumeSlider);
+    visitor->trace(m_toggleClosedCaptionsButton);
+    visitor->trace(m_fullScreenButton);
+    visitor->trace(m_durationDisplay);
+    visitor->trace(m_enclosure);
+    HTMLDivElement::trace(visitor);
 }
 
 }
