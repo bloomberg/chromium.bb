@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,10 @@
 #include "webkit/browser/database/databases_table.h"
 
 using base::ASCIIToUTF16;
+using webkit_database::DatabaseDetails;
+using webkit_database::DatabasesTable;
 
-namespace webkit_database {
+namespace content {
 
 static void CheckDetailsAreEqual(const DatabaseDetails& d1,
                                  const DatabaseDetails& d2) {
@@ -147,4 +149,4 @@ TEST(DatabasesTableTest, TestIt) {
   ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
 }
 
-}  // namespace webkit_database
+}  // namespace content

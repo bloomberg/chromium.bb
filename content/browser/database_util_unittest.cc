@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ static void TestValidOriginIdentifier(bool expected_result,
             DatabaseUtil::IsValidOriginIdentifier(id));
 }
 
-namespace webkit_database {
+namespace content {
 
 // Test DatabaseUtil::CrackVfsFilePath on various inputs.
 TEST(DatabaseUtilTest, CrackVfsFilePathTest) {
@@ -72,4 +72,4 @@ TEST(DatabaseUtilTest, IsValidOriginIdentifier) {
   TestValidOriginIdentifier(false, std::string("bad\0id", 6));
 }
 
-}  // namespace webkit_database
+}  // namespace content

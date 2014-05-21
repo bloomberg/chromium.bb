@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,11 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
-namespace webkit_database {
+using webkit_database::DatabaseQuotaClient;
+using webkit_database::DatabaseTracker;
+using webkit_database::OriginInfo;
+
+namespace content {
 
 // Declared to shorten the line lengths.
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
@@ -282,4 +286,4 @@ TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
   EXPECT_EQ(2, mock_tracker()->delete_called_count());
 }
 
-}  // namespace webkit_database
+}  // namespace content
