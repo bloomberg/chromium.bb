@@ -4,12 +4,12 @@
 
 """Module containing the various stages that a builder runs."""
 
-import ConfigParser
 import json
 import logging
 import os
 
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_failures
 from chromite.buildbot import cbuildbot_run
 from chromite.buildbot.stages import artifact_stages
 from chromite.lib import cros_build_lib
@@ -40,32 +40,32 @@ class SignerTestStage(artifact_stages.ArchivingStage):
       commands.RunSignerTests(self._build_root, self._current_board)
 
 
-class SignerResultsException(Exception):
-  """An expected failure from the SignerResultsStage."""
-
-
-class SignerResultsTimeout(SignerResultsException):
+class SignerResultsTimeout(cbuildbot_failures.StepFailure):
   """The signer did not produce any results inside the expected time."""
 
 
-class SignerFailure(SignerResultsException):
+class SignerFailure(cbuildbot_failures.StepFailure):
   """The signer returned an error result."""
 
 
-class MissingInstructionException(SignerResultsException):
+class MissingInstructionException(cbuildbot_failures.StepFailure):
   """We didn't receive the list of signing instructions PushImage uploaded."""
 
 
-class MalformedResultsException(SignerResultsException):
+class MalformedResultsException(cbuildbot_failures.StepFailure):
   """The Signer results aren't formatted as we expect."""
 
 
-class PaygenSigningRequirementsError(Exception):
+class PaygenSigningRequirementsError(cbuildbot_failures.StepFailure):
   """Paygen stage can't run if signing failed."""
 
 
-class PaygenCrostoolsNotAvailableError(Exception):
+class PaygenCrostoolsNotAvailableError(cbuildbot_failures.StepFailure):
   """Paygen stage can't run if signing failed."""
+
+
+class PaygenNoPaygenConfigForBoard(cbuildbot_failures.StepFailure):
+  """Paygen can't run with a release.conf config for the board."""
 
 
 class PaygenStage(artifact_stages.ArchivingStage):
@@ -113,7 +113,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
     # If Paygen fails to find anything needed in release.conf, treat it
     # as a warning, not a failure. This is common during new board bring up.
-    if issubclass(exc_type, ConfigParser.Error):
+    if issubclass(exc_type, PaygenNoPaygenConfigForBoard):
       return self._HandleExceptionAsWarning(exc_info)
 
     return super(PaygenStage, self)._HandleStageException(exc_info)
@@ -293,6 +293,19 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
     assert version, "We can't generate payloads without a release_tag."
     logging.info("Generating payloads for: %s, %s", board, version)
+
+    # Test to see if the current board has a Paygen configuration. We do
+    # this here, no in the sub-process so we don't have to pass back a
+    # failure reason.
+    try:
+      from crostools.lib import paygen_build_lib
+      paygen_build_lib.ValidateBoardConfig(board)
+    except  paygen_build_lib.BoardNotConfigured:
+      raise PaygenNoPaygenConfigForBoard(
+          'No release.conf entry was found for board %s. Get a TPM to fix.' %
+          board)
+    except  ImportError:
+      raise PaygenCrostoolsNotAvailableError()
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       def channel_notifier(channel):

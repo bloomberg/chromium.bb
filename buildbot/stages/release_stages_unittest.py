@@ -287,6 +287,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
         notifier(channel)
     return side_effect
 
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
 
@@ -306,6 +308,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False, True))
       queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False, True))
 
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
   def testPerformStageSigningFailed(self):
     """Test that SignerResultsStage works when signing works."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
@@ -324,6 +328,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # Ensure no work was queued up.
       self.assertFalse(queue.put.called)
 
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
   def testPerformStageTrybot(self):
     """Test the PerformStage alternate behavior for trybot runs."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
@@ -345,6 +351,16 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # still got results right away.
       queue.put.assert_any_call(('foo', 'x86-mario', '0.0.1', False, True))
       queue.put.assert_any_call(('bar', 'x86-mario', '0.0.1', False, True))
+
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
+  def testPerformStageUnknownBoard(self):
+    """Test that SignerResultsStage works when signing works."""
+    self._current_board = 'unknown-board-name'
+    stage = self.ConstructStage()
+
+    self.assertRaises(release_stages.PaygenNoPaygenConfigForBoard,
+                      stage.PerformStage)
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
