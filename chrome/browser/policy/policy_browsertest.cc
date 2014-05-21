@@ -56,6 +56,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/translate/translate_browser_test_utils.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -1862,6 +1863,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 
 // http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
+  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
+  ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
   TranslateService::SetUseInfobar(true);
 
   // Verifies that translate can be forced enabled or disabled by policy.
