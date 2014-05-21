@@ -411,7 +411,7 @@ void Parser::reset(const String& data)
     m_data = data;
     m_lastTokenType = 0;
 
-    m_topExpr = 0;
+    m_topExpr = nullptr;
     m_gotNamespaceError = false;
 }
 
@@ -494,7 +494,7 @@ PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statemen
 
         m_strings.clear();
 
-        m_topExpr = 0;
+        m_topExpr = nullptr;
 
         if (m_gotNamespaceError)
             exceptionState.throwDOMException(NamespaceError, "The string '" + statement + "' contains unresolvable namespaces.");
@@ -513,7 +513,7 @@ PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statemen
 #endif
 
     Expression* result = m_topExpr;
-    m_topExpr = 0;
+    m_topExpr = nullptr;
 
     return adoptPtrWillBeNoop(result);
 }

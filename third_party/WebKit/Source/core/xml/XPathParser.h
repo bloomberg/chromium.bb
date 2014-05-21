@@ -78,7 +78,7 @@ public:
 
     int lex(void* yylval);
 
-    Expression* m_topExpr;
+    RawPtrWillBeMember<Expression> m_topExpr;
     bool m_gotNamespaceError;
 
     void registerParseNode(ParseNode*);
