@@ -917,10 +917,17 @@
   fun:gfx::GtkInitFromCommandLine
 }
 {
-  bug_239350
+  bug_239350_a
   ThreadSanitizer:Race
   fun:av_buffer_unref
   fun:av_frame_unref
+  ...
+}
+{
+  bug_239350_b
+  ThreadSanitizer:Race
+  fun:av_buffer_get_opaque
+  fun:av_buffer_get_opaque
   ...
 }
 {
