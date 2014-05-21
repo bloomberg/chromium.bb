@@ -35,20 +35,8 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
       .WillByDefault(Return(&mock_local_change_processor_));
-  ON_CALL(*this, IsConflicting(_))
-      .WillByDefault(Return(false));
   ON_CALL(*this, GetCurrentState())
       .WillByDefault(Invoke(this, &self::GetCurrentStateStub));
-  ON_CALL(*this, SetDefaultConflictResolutionPolicy(_))
-      .WillByDefault(
-          Invoke(this, &self::SetDefaultConflictResolutionPolicyStub));
-  ON_CALL(*this, SetConflictResolutionPolicy(_, _))
-      .WillByDefault(Invoke(this, &self::SetConflictResolutionPolicyStub));
-  ON_CALL(*this, GetDefaultConflictResolutionPolicy())
-      .WillByDefault(
-          Invoke(this, &self::GetDefaultConflictResolutionPolicyStub));
-  ON_CALL(*this, GetConflictResolutionPolicy(_))
-      .WillByDefault(Invoke(this, &self::GetConflictResolutionPolicyStub));
 }
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
@@ -122,31 +110,6 @@ void MockRemoteFileSyncService::ProcessRemoteChangeStub(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  fileapi::FileSystemURL()));
-}
-
-SyncStatusCode
-MockRemoteFileSyncService::SetDefaultConflictResolutionPolicyStub(
-    ConflictResolutionPolicy policy) {
-  conflict_resolution_policy_ = policy;
-  return SYNC_STATUS_OK;
-}
-
-SyncStatusCode MockRemoteFileSyncService::SetConflictResolutionPolicyStub(
-    const GURL& origin,
-    ConflictResolutionPolicy policy) {
-  conflict_resolution_policy_ = policy;
-  return SYNC_STATUS_OK;
-}
-
-ConflictResolutionPolicy
-MockRemoteFileSyncService::GetDefaultConflictResolutionPolicyStub() const {
-  return conflict_resolution_policy_;
-}
-
-ConflictResolutionPolicy
-MockRemoteFileSyncService::GetConflictResolutionPolicyStub(
-    const GURL& origin) const {
-  return conflict_resolution_policy_;
 }
 
 RemoteServiceState MockRemoteFileSyncService::GetCurrentStateStub() const {

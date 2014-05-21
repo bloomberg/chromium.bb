@@ -348,15 +348,6 @@ void SyncFileSystemService::GetFileSyncStatus(
     return;
   }
 
-  if (GetRemoteService(url.origin())->IsConflicting(url)) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   SYNC_STATUS_OK,
-                   SYNC_FILE_STATUS_CONFLICTING));
-    return;
-  }
-
   local_service_->HasPendingLocalChanges(
       url,
       base::Bind(&SyncFileSystemService::DidGetLocalChangeStatus,
@@ -370,19 +361,6 @@ void SyncFileSystemService::AddSyncEventObserver(SyncEventObserver* observer) {
 void SyncFileSystemService::RemoveSyncEventObserver(
     SyncEventObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-ConflictResolutionPolicy SyncFileSystemService::GetConflictResolutionPolicy(
-    const GURL& origin) {
-  return GetRemoteService(origin)->GetConflictResolutionPolicy(origin);
-}
-
-SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
-    const GURL& origin,
-    ConflictResolutionPolicy policy) {
-  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.ConflictResolutionPolicy",
-                            policy, CONFLICT_RESOLUTION_POLICY_MAX);
-  return GetRemoteService(origin)->SetConflictResolutionPolicy(origin, policy);
 }
 
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
@@ -804,8 +782,6 @@ RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
     v2_remote_service_->AddFileStatusObserver(this);
     v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
     v2_remote_service_->SetSyncEnabled(sync_enabled_);
-    v2_remote_service_->SetDefaultConflictResolutionPolicy(
-        remote_service_->GetDefaultConflictResolutionPolicy());
     remote_sync_runners_.push_back(v2_remote_syncer.release());
   }
   return v2_remote_service_.get();

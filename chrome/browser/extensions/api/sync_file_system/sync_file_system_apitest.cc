@@ -114,7 +114,6 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
-  EXPECT_CALL(*mock_remote_service(), IsConflicting(_)).WillOnce(Return(true));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_status"))
       << message_;
 }
@@ -122,13 +121,6 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatuses) {
   // Mocking to return IsConflicting() == true only for the path "Conflicting".
   base::FilePath conflicting = base::FilePath::FromUTF8Unsafe("Conflicting");
-  EXPECT_CALL(*mock_remote_service(),
-              IsConflicting(Property(&FileSystemURL::path, Eq(conflicting))))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*mock_remote_service(),
-              IsConflicting(Property(&FileSystemURL::path, Ne(conflicting))))
-      .WillRepeatedly(Return(false));
-
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_statuses"))
       << message_;
 }

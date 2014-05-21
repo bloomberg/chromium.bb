@@ -54,24 +54,6 @@ const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
-void RemoteVersionsCallbackAdapter(
-    const DriveFileSyncService::RemoteVersionsCallback& versions_callback,
-    const SyncStatusCallback& completion_callback,
-    SyncStatusCode status,
-    const std::vector<DriveFileSyncService::Version>& versions) {
-  completion_callback.Run(status);
-  versions_callback.Run(status, versions);
-}
-
-void DownloadVersionCallbackAdapter(
-    const DriveFileSyncService::DownloadVersionCallback& download_callback,
-    const SyncStatusCallback& completion_callback,
-    SyncStatusCode status,
-    webkit_blob::ScopedFile downloaded) {
-  completion_callback.Run(status);
-  download_callback.Run(status, downloaded.Pass());
-}
-
 }  // namespace
 
 ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
@@ -213,16 +195,6 @@ LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
   return this;
 }
 
-bool DriveFileSyncService::IsConflicting(const FileSystemURL& url) {
-  DriveMetadata metadata;
-  const SyncStatusCode status = metadata_store_->ReadEntry(url, &metadata);
-  if (status != SYNC_STATUS_OK) {
-    DCHECK_EQ(SYNC_DATABASE_ERROR_NOT_FOUND, status);
-    return false;
-  }
-  return metadata.conflicted();
-}
-
 RemoteServiceState DriveFileSyncService::GetCurrentState() const {
   if (!sync_enabled_)
     return REMOTE_SERVICE_DISABLED;
@@ -274,52 +246,6 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
-}
-
-SyncStatusCode DriveFileSyncService::SetDefaultConflictResolutionPolicy(
-    ConflictResolutionPolicy policy) {
-  conflict_resolution_resolver_.set_policy(policy);
-  return SYNC_STATUS_OK;
-}
-
-SyncStatusCode DriveFileSyncService::SetConflictResolutionPolicy(
-    const GURL& origin,
-    ConflictResolutionPolicy policy) {
-  conflict_resolution_resolver_.set_policy(policy);
-  return SYNC_STATUS_OK;
-}
-
-ConflictResolutionPolicy
-DriveFileSyncService::GetDefaultConflictResolutionPolicy() const {
-  return conflict_resolution_resolver_.policy();
-}
-
-ConflictResolutionPolicy
-DriveFileSyncService::GetConflictResolutionPolicy(const GURL& origin) const {
-  return conflict_resolution_resolver_.policy();
-}
-
-void DriveFileSyncService::GetRemoteVersions(
-    const fileapi::FileSystemURL& url,
-    const RemoteVersionsCallback& callback) {
-  task_manager_->ScheduleTask(
-      FROM_HERE,
-      base::Bind(&DriveFileSyncService::DoGetRemoteVersions, AsWeakPtr(),
-                 url, callback),
-      drive_backend::SyncTaskManager::PRIORITY_MED,
-      base::Bind(&EmptyStatusCallback));
-}
-
-void DriveFileSyncService::DownloadRemoteVersion(
-    const fileapi::FileSystemURL& url,
-    const std::string& version_id,
-    const DownloadVersionCallback& callback) {
-  task_manager_->ScheduleTask(
-      FROM_HERE,
-      base::Bind(&DriveFileSyncService::DoDownloadRemoteVersion, AsWeakPtr(),
-                 url, version_id, callback),
-      drive_backend::SyncTaskManager::PRIORITY_MED,
-      base::Bind(&EmptyStatusCallback));
 }
 
 void DriveFileSyncService::PromoteDemotedChanges() {
@@ -687,89 +613,6 @@ void DriveFileSyncService::DoApplyLocalChange(
       this, local_file_change, local_file_path, local_file_metadata, url));
   running_local_sync_task_->Run(base::Bind(
       &DriveFileSyncService::DidApplyLocalChange, AsWeakPtr(), callback));
-}
-
-void DriveFileSyncService::DoGetRemoteVersions(
-    const fileapi::FileSystemURL& url,
-    const RemoteVersionsCallback& versions_callback,
-    const SyncStatusCallback& completion_callback) {
-  RemoteVersionsCallback callback =
-      base::Bind(&RemoteVersionsCallbackAdapter,
-                 versions_callback, completion_callback);
-
-  DriveMetadata drive_metadata;
-  SyncStatusCode status = metadata_store_->ReadEntry(url, &drive_metadata);
-  if (drive_metadata.resource_id().empty())
-    status = SYNC_DATABASE_ERROR_NOT_FOUND;
-  if (status != SYNC_STATUS_OK) {
-    callback.Run(status, std::vector<Version>());
-    return;
-  }
-
-  api_util_->GetResourceEntry(
-      drive_metadata.resource_id(),
-      base::Bind(
-          &DriveFileSyncService::DidGetEntryForRemoteVersions,
-          AsWeakPtr(), callback));
-}
-
-void DriveFileSyncService::DidGetEntryForRemoteVersions(
-    const RemoteVersionsCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error != google_apis::HTTP_SUCCESS) {
-    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error),
-                 std::vector<Version>());
-    return;
-  }
-  DCHECK(entry);
-
-  SyncFileType file_type =
-      entry->is_file() ? SYNC_FILE_TYPE_FILE :
-      entry->is_folder() ? SYNC_FILE_TYPE_DIRECTORY :
-      SYNC_FILE_TYPE_UNKNOWN;
-
-  Version version;
-  version.id = "dummy";  // Not used in the current version.
-  version.metadata = SyncFileMetadata(file_type,
-                                      entry->file_size(),
-                                      entry->updated_time());
-  std::vector<Version> versions;
-  versions.push_back(version);
-  callback.Run(SYNC_STATUS_OK, versions);
-}
-
-void DriveFileSyncService::DoDownloadRemoteVersion(
-    const fileapi::FileSystemURL& url,
-    const std::string& /* version_id */,
-    const DownloadVersionCallback& download_callback,
-    const SyncStatusCallback& completion_callback) {
-  DownloadVersionCallback callback =
-      base::Bind(&DownloadVersionCallbackAdapter,
-                 download_callback, completion_callback);
-
-  DriveMetadata metadata;
-  if (metadata_store_->ReadEntry(url, &metadata) != SYNC_STATUS_OK) {
-    // The conflict may have been already resolved.
-    callback.Run(SYNC_FILE_ERROR_NOT_FOUND, webkit_blob::ScopedFile());
-    return;
-  }
-
-  api_util_->DownloadFile(
-      metadata.resource_id(), std::string(),
-      base::Bind(&DriveFileSyncService::DidDownloadVersion, AsWeakPtr(),
-                 callback));
-}
-
-void DriveFileSyncService::DidDownloadVersion(
-    const DownloadVersionCallback& download_callback,
-    google_apis::GDataErrorCode error,
-    const std::string& file_md5,
-    int64 file_size,
-    const base::Time& last_updated,
-    webkit_blob::ScopedFile downloaded) {
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
-  download_callback.Run(status, downloaded.Pass());
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {

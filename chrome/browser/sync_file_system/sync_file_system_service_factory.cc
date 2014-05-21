@@ -15,10 +15,6 @@
 
 namespace sync_file_system {
 
-namespace {
-const char kDisableLastWriteWin[] = "disable-syncfs-last-write-win";
-}
-
 // static
 SyncFileSystemService* SyncFileSystemServiceFactory::GetForProfile(
     Profile* profile) {
@@ -73,11 +69,6 @@ KeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   } else {
     remote_file_service = RemoteFileSyncService::CreateForBrowserContext(
         RemoteFileSyncService::V1, context);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableLastWriteWin)) {
-    remote_file_service->SetDefaultConflictResolutionPolicy(
-        CONFLICT_RESOLUTION_POLICY_MANUAL);
   }
 
   service->Initialize(local_file_service.Pass(),

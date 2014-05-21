@@ -97,29 +97,12 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void SetRemoteChangeProcessor(
       RemoteChangeProcessor* processor) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
-  virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) OVERRIDE;
   virtual void DumpFiles(const GURL& origin,
                          const ListCallback& callback) OVERRIDE;
   virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
-      ConflictResolutionPolicy policy) OVERRIDE;
-  virtual SyncStatusCode SetConflictResolutionPolicy(
-      const GURL& origin,
-      ConflictResolutionPolicy policy) OVERRIDE;
-  virtual ConflictResolutionPolicy GetDefaultConflictResolutionPolicy() const
-      OVERRIDE;
-  virtual ConflictResolutionPolicy GetConflictResolutionPolicy(
-      const GURL& origin) const OVERRIDE;
-  virtual void GetRemoteVersions(const fileapi::FileSystemURL& url,
-                                 const RemoteVersionsCallback& callback)
-      OVERRIDE;
-  virtual void DownloadRemoteVersion(
-      const fileapi::FileSystemURL& url,
-      const std::string& version_id,
-      const DownloadVersionCallback& callback) OVERRIDE;
   virtual void PromoteDemotedChanges() OVERRIDE;
 
   // LocalChangeProcessor overrides.
@@ -212,28 +195,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const SyncFileMetadata& local_file_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback);
-
-  void DoGetRemoteVersions(
-      const fileapi::FileSystemURL& url,
-      const RemoteVersionsCallback& callback,
-      const SyncStatusCallback& completion_callback);
-  void DidGetEntryForRemoteVersions(
-      const RemoteVersionsCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceEntry> entry);
-
-  void DoDownloadRemoteVersion(
-      const fileapi::FileSystemURL& url,
-      const std::string& version_id,
-      const DownloadVersionCallback& callback,
-      const SyncStatusCallback& completion_callback);
-  void DidDownloadVersion(
-      const DownloadVersionCallback& download_callback,
-      google_apis::GDataErrorCode error,
-      const std::string& file_md5,
-      int64 file_size,
-      const base::Time& last_updated,
-      webkit_blob::ScopedFile downloaded);
 
   void UpdateRegisteredOrigins();
 

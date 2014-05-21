@@ -11,12 +11,12 @@ var testStep = [
     fileSystem.root.getFile('Test.txt', {create: true}, testStep.shift(),
         errorHandler);
   },
-  // Confirm file is conflicting as this is the mocked value.
+  // Confirm file is pending as this is the mocked value.
   function(fileEntry) {
     chrome.syncFileSystem.getFileStatus(fileEntry, testStep.shift());
   },
   function(fileStatus) {
-    chrome.test.assertEq("conflicting", fileStatus);
+    chrome.test.assertEq("pending", fileStatus);
     chrome.test.succeed();
   }
 ];

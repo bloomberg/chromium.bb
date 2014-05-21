@@ -439,12 +439,9 @@ TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
   SyncStatusCode status;
   SyncFileStatus sync_file_status;
 
-  // 1. The file is not in conflicting nor in pending change state.
+  // 1. The file is synced state.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
-        .WillOnce(Return(false));
-
     status = SYNC_STATUS_UNKNOWN;
     sync_file_status = SYNC_FILE_STATUS_UNKNOWN;
     sync_service_->GetFileSyncStatus(
@@ -457,31 +454,10 @@ TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
     EXPECT_EQ(SYNC_FILE_STATUS_SYNCED, sync_file_status);
   }
 
-  // 2. Conflicting case.
+  // 2. The file has pending local changes.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
-        .WillOnce(Return(true));
-
-    status = SYNC_STATUS_UNKNOWN;
-    sync_file_status = SYNC_FILE_STATUS_UNKNOWN;
-    sync_service_->GetFileSyncStatus(
-        kFile,
-        base::Bind(&AssignValueAndQuit<SyncFileStatus>,
-                   &run_loop, &status, &sync_file_status));
-    run_loop.Run();
-
-    EXPECT_EQ(SYNC_STATUS_OK, status);
-    EXPECT_EQ(SYNC_FILE_STATUS_CONFLICTING, sync_file_status);
-  }
-
-  // 3. The file has pending local changes.
-  {
     EXPECT_EQ(base::File::FILE_OK, file_system_->CreateFile(kFile));
-
-    base::RunLoop run_loop;
-    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
-        .WillOnce(Return(false));
 
     status = SYNC_STATUS_UNKNOWN;
     sync_file_status = SYNC_FILE_STATUS_UNKNOWN;
@@ -493,27 +469,6 @@ TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
 
     EXPECT_EQ(SYNC_STATUS_OK, status);
     EXPECT_EQ(SYNC_FILE_STATUS_HAS_PENDING_CHANGES, sync_file_status);
-  }
-
-  // 4. The file has a conflict and pending local changes. In this case
-  // we return SYNC_FILE_STATUS_CONFLICTING.
-  {
-    EXPECT_EQ(base::File::FILE_OK, file_system_->TruncateFile(kFile, 1U));
-
-    base::RunLoop run_loop;
-    EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
-        .WillOnce(Return(true));
-
-    status = SYNC_STATUS_UNKNOWN;
-    sync_file_status = SYNC_FILE_STATUS_UNKNOWN;
-    sync_service_->GetFileSyncStatus(
-        kFile,
-        base::Bind(&AssignValueAndQuit<SyncFileStatus>,
-                   &run_loop, &status, &sync_file_status));
-    run_loop.Run();
-
-    EXPECT_EQ(SYNC_STATUS_OK, status);
-    EXPECT_EQ(SYNC_FILE_STATUS_CONFLICTING, sync_file_status);
   }
 }
 

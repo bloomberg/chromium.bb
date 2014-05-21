@@ -47,27 +47,11 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(SetRemoteChangeProcessor,
                void(RemoteChangeProcessor* processor));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
-  MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
   MOCK_METHOD1(GetOriginStatusMap,
                void(RemoteFileSyncService::OriginStatusMap* status_map));
   MOCK_METHOD1(SetSyncEnabled, void(bool enabled));
-  MOCK_METHOD1(SetDefaultConflictResolutionPolicy,
-               SyncStatusCode(ConflictResolutionPolicy));
-  MOCK_METHOD2(SetConflictResolutionPolicy,
-               SyncStatusCode(const GURL&, ConflictResolutionPolicy));
-  MOCK_CONST_METHOD0(GetDefaultConflictResolutionPolicy,
-                     ConflictResolutionPolicy());
-  MOCK_CONST_METHOD1(GetConflictResolutionPolicy,
-                     ConflictResolutionPolicy(const GURL&));
-  MOCK_METHOD2(GetRemoteVersions,
-               void(const fileapi::FileSystemURL&,
-                    const RemoteVersionsCallback&));
-  MOCK_METHOD3(DownloadRemoteVersion,
-               void(const fileapi::FileSystemURL&,
-                    const std::string&,
-                    const DownloadVersionCallback&));
   MOCK_METHOD0(PromoteDemotedChanges, void());
 
   virtual void DumpFiles(const GURL& origin,
@@ -97,14 +81,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       const GURL& origin, UninstallFlag flag,
       const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(const SyncFileCallback& callback);
-  SyncStatusCode SetDefaultConflictResolutionPolicyStub(
-      ConflictResolutionPolicy policy);
-  SyncStatusCode SetConflictResolutionPolicyStub(
-      const GURL& origin,
-      ConflictResolutionPolicy policy);
-  ConflictResolutionPolicy GetDefaultConflictResolutionPolicyStub() const;
-  ConflictResolutionPolicy GetConflictResolutionPolicyStub(
-      const GURL& origin) const;
   RemoteServiceState GetCurrentStateStub() const;
 
   // For default implementation.

@@ -741,45 +741,6 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Folder() {
       resource_id, ExtensionNameToGURL(kExtensionName1)));
 }
 
-void DriveFileSyncServiceFakeTest::TestGetRemoteVersions() {
-  SetUpDriveSyncService(true);
-  const std::string origin_resource_id =
-      SetUpOriginRootDirectory(kExtensionName1);
-
-  const GURL origin(ExtensionNameToGURL(kExtensionName1));
-  const std::string title("file");
-  const std::string content("data1");
-  const fileapi::FileSystemURL& url(CreateURL(origin, title));
-
-  scoped_ptr<google_apis::ResourceEntry> entry;
-  AddNewFile(origin, origin_resource_id, title, content, &entry);
-
-  SyncStatusCode status = SYNC_STATUS_FAILED;
-  std::vector<RemoteFileSyncService::Version> versions;
-  sync_service_->GetRemoteVersions(
-      url, CreateResultReceiver(&status, &versions));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(SYNC_STATUS_OK, status);
-  ASSERT_FALSE(versions.empty());
-  EXPECT_EQ(1u, versions.size());
-  EXPECT_EQ(static_cast<int64>(content.length()), versions[0].metadata.size);
-  EXPECT_EQ(entry->file_size(), versions[0].metadata.size);
-  EXPECT_EQ(entry->updated_time(), versions[0].metadata.last_modified);
-
-  status = SYNC_STATUS_FAILED;
-  webkit_blob::ScopedFile downloaded;
-  sync_service_->DownloadRemoteVersion(
-      url, versions[0].id, CreateResultReceiver(&status, &downloaded));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(SYNC_STATUS_OK, status);
-
-  std::string downloaded_content;
-  EXPECT_TRUE(base::ReadFileToString(downloaded.path(), &downloaded_content));
-  EXPECT_EQ(content, downloaded_content);
-}
-
 TEST_F(DriveFileSyncServiceFakeTest, RegisterNewOrigin) {
   ASSERT_FALSE(IsDriveAPIDisabled());
   TestRegisterNewOrigin();
@@ -888,16 +849,6 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder) {
 TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder_WAPI) {
   ScopedDisableDriveAPI disable_drive_api;
   TestRemoteChange_Folder();
-}
-
-TEST_F(DriveFileSyncServiceFakeTest, GetRemoteVersions) {
-  ASSERT_FALSE(IsDriveAPIDisabled());
-  TestGetRemoteVersions();
-}
-
-TEST_F(DriveFileSyncServiceFakeTest, GetRemoteVersions_WAPI) {
-  ScopedDisableDriveAPI disable_drive_api;
-  TestGetRemoteVersions();
 }
 
 #endif  // !defined(OS_ANDROID)

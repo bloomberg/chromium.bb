@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var fileSystem;
-var testFiles = ['Test1', 'Test2', 'Conflicting'];
+var testFiles = ['Test1', 'Test2'];
 
 var testStep = [
   function() {
@@ -38,8 +38,7 @@ var testStep = [
                            fileStatuses[i].fileEntry.fullPath);
       chrome.test.assertTrue(fileStatuses[i].fileEntry.isFile);
       chrome.test.assertTrue(!fileStatuses[i].error);
-      var expectedStatus =
-          (testFiles[i] == 'Conflicting') ? 'conflicting' : 'pending';
+      var expectedStatus = 'pending';
       chrome.test.assertEq(expectedStatus, fileStatuses[i].status);
     }
     chrome.test.succeed();

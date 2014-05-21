@@ -183,9 +183,6 @@ class RemoteFileSyncService {
   // storage backed by this service.
   virtual LocalChangeProcessor* GetLocalChangeProcessor() = 0;
 
-  // Returns true if the file |url| is marked conflicted in the remote service.
-  virtual bool IsConflicting(const fileapi::FileSystemURL& url) = 0;
-
   // Returns the current remote service state (should equal to the value
   // returned by the last OnRemoteServiceStateUpdated notification.
   virtual RemoteServiceState GetCurrentState() const = 0;
@@ -208,34 +205,6 @@ class RemoteFileSyncService {
   // (for example if Chrome is offline the service state will become
   // REMOTE_SERVICE_TEMPORARY_UNAVAILABLE).
   virtual void SetSyncEnabled(bool enabled) = 0;
-
-  // Sets the conflict resolution policy. Returns SYNC_STATUS_OK on success,
-  // or returns an error code if the given policy is not supported or had
-  // an error.
-  virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
-      ConflictResolutionPolicy policy) = 0;
-  virtual SyncStatusCode SetConflictResolutionPolicy(
-      const GURL& origin,
-      ConflictResolutionPolicy policy) = 0;
-
-  // Gets the conflict resolution policy.
-  virtual ConflictResolutionPolicy GetDefaultConflictResolutionPolicy()
-      const = 0;
-  virtual ConflictResolutionPolicy GetConflictResolutionPolicy(
-      const GURL& origin) const = 0;
-
-  // Returns a list of remote versions with their metadata.
-  // This method is typically called for a file which is in conflicting state.
-  virtual void GetRemoteVersions(
-      const fileapi::FileSystemURL& url,
-      const RemoteVersionsCallback& callback) = 0;
-
-  // Downloads the remote image.  The |id| should be the ID string for a
-  // version returned by GetRemoteVersions.
-  virtual void DownloadRemoteVersion(
-      const fileapi::FileSystemURL& url,
-      const std::string& id,
-      const DownloadVersionCallback& callback) = 0;
 
   virtual void PromoteDemotedChanges() = 0;
 

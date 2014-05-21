@@ -345,32 +345,18 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
   ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
       api::sync_file_system::ParseConflictResolutionPolicy(policy_string));
-  if (policy == sync_file_system::CONFLICT_RESOLUTION_POLICY_UNKNOWN) {
+  if (policy != sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN) {
     SetError(base::StringPrintf(kUnsupportedConflictResolutionPolicy,
                                 policy_string.c_str()));
-    return false;
-  }
-  sync_file_system::SyncFileSystemService* service =
-      GetSyncFileSystemService(GetProfile());
-  DCHECK(service);
-  SyncStatusCode status = service->SetConflictResolutionPolicy(
-      source_url().GetOrigin(), policy);
-  if (status != sync_file_system::SYNC_STATUS_OK) {
-    SetError(ErrorToString(status));
     return false;
   }
   return true;
 }
 
 bool SyncFileSystemGetConflictResolutionPolicyFunction::RunSync() {
-  sync_file_system::SyncFileSystemService* service =
-      GetSyncFileSystemService(GetProfile());
-  DCHECK(service);
-  api::sync_file_system::ConflictResolutionPolicy policy =
-      ConflictResolutionPolicyToExtensionEnum(
-          service->GetConflictResolutionPolicy(source_url().GetOrigin()));
   SetResult(new base::StringValue(
-          api::sync_file_system::ToString(policy)));
+      api::sync_file_system::ToString(
+          api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN)));
   return true;
 }
 
