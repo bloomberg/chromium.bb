@@ -25,7 +25,7 @@ bool InitializeComSecurity(const std::string& security_descriptor,
   // Convert the SDDL description into a security descriptor in absolute format.
   ScopedSd relative_sd = ConvertSddlToSd(sddl);
   if (!relative_sd) {
-    LOG_GETLASTERROR(ERROR) << "Failed to create a security descriptor";
+    PLOG(ERROR) << "Failed to create a security descriptor";
     return false;
   }
   ScopedSd absolute_sd;
@@ -35,7 +35,7 @@ bool InitializeComSecurity(const std::string& security_descriptor,
   ScopedAcl sacl;
   if (!MakeScopedAbsoluteSd(relative_sd, &absolute_sd, &dacl, &group, &owner,
                             &sacl)) {
-    LOG_GETLASTERROR(ERROR) << "MakeScopedAbsoluteSd() failed";
+    PLOG(ERROR) << "MakeScopedAbsoluteSd() failed";
     return false;
   }
 

@@ -94,8 +94,7 @@ DWORD OpenService(ScopedScHandle* service_out) {
                        SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to connect to the service control manager";
+    PLOG(ERROR) << "Failed to connect to the service control manager";
     return error;
   }
 
@@ -104,8 +103,8 @@ DWORD OpenService(ScopedScHandle* service_out) {
   if (!service.IsValid()) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_DOES_NOT_EXIST) {
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to open to the '" << kWindowsServiceName << "' service";
+      PLOG(ERROR) << "Failed to open to the '" << kWindowsServiceName
+                  << "' service";
     }
     return error;
   }
@@ -157,9 +156,8 @@ DaemonController::State DaemonControllerDelegateWin::GetState() {
       if (::QueryServiceStatus(service, &status)) {
         return ConvertToDaemonState(status.dwCurrentState);
       } else {
-        LOG_GETLASTERROR(ERROR)
-            << "Failed to query the state of the '" << kWindowsServiceName
-            << "' service";
+        PLOG(ERROR) << "Failed to query the state of the '"
+                    << kWindowsServiceName << "' service";
         return DaemonController::STATE_UNKNOWN;
       }
       break;

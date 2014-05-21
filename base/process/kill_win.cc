@@ -96,9 +96,9 @@ bool KillProcess(ProcessHandle process, int exit_code, bool wait) {
   if (result && wait) {
     // The process may not end immediately due to pending I/O
     if (WAIT_OBJECT_0 != WaitForSingleObject(process, 60 * 1000))
-      DLOG_GETLASTERROR(ERROR) << "Error waiting for process exit";
+      DPLOG(ERROR) << "Error waiting for process exit";
   } else if (!result) {
-    DLOG_GETLASTERROR(ERROR) << "Unable to terminate process";
+    DPLOG(ERROR) << "Unable to terminate process";
   }
   return result;
 }
@@ -111,7 +111,7 @@ bool KillProcessById(ProcessId process_id, int exit_code, bool wait) {
                                FALSE,  // Don't inherit handle
                                process_id);
   if (!process) {
-    DLOG_GETLASTERROR(ERROR) << "Unable to open process " << process_id;
+    DPLOG(ERROR) << "Unable to open process " << process_id;
     return false;
   }
   bool ret = KillProcess(process, exit_code, wait);
@@ -123,7 +123,7 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DWORD tmp_exit_code = 0;
 
   if (!::GetExitCodeProcess(handle, &tmp_exit_code)) {
-    DLOG_GETLASTERROR(FATAL) << "GetExitCodeProcess() failed";
+    DPLOG(FATAL) << "GetExitCodeProcess() failed";
     if (exit_code) {
       // This really is a random number.  We haven't received any
       // information about the exit code, presumably because this
@@ -149,7 +149,7 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
     }
 
     if (wait_result == WAIT_FAILED) {
-      DLOG_GETLASTERROR(ERROR) << "WaitForSingleObject() failed";
+      DPLOG(ERROR) << "WaitForSingleObject() failed";
     } else {
       DCHECK_EQ(WAIT_OBJECT_0, wait_result);
 

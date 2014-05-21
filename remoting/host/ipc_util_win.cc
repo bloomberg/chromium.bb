@@ -78,7 +78,7 @@ bool CreateConnectedIpcChannel(
                             FILE_FLAG_OVERLAPPED,
                         NULL));
   if (!client.IsValid()) {
-    LOG_GETLASTERROR(ERROR) << "Failed to connect to '" << pipe_name << "'";
+    PLOG(ERROR) << "Failed to connect to '" << pipe_name << "'";
     return false;
   }
 
@@ -94,8 +94,8 @@ bool CreateIpcChannel(
   // Create security descriptor for the channel.
   ScopedSd sd = ConvertSddlToSd(pipe_security_descriptor);
   if (!sd) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to create a security descriptor for the Chromoting IPC channel";
+    PLOG(ERROR) << "Failed to create a security descriptor for the Chromoting "
+                   "IPC channel";
     return false;
   }
 
@@ -121,8 +121,8 @@ bool CreateIpcChannel(
       5000,
       &security_attributes));
   if (!pipe.IsValid()) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to create the server end of the Chromoting IPC channel";
+    PLOG(ERROR)
+        << "Failed to create the server end of the Chromoting IPC channel";
     return false;
   }
 

@@ -176,7 +176,7 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
     ScopedHandle job;
     job.Set(CreateJobObject(NULL, NULL));
     if (!job.IsValid()) {
-      LOG_GETLASTERROR(ERROR) << "Failed to create a job object";
+      PLOG(ERROR) << "Failed to create a job object";
       return false;
     }
 
@@ -192,7 +192,7 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
                                  JobObjectExtendedLimitInformation,
                                  &info,
                                  sizeof(info))) {
-      LOG_GETLASTERROR(ERROR) << "Failed to set limits on the job object";
+      PLOG(ERROR) << "Failed to set limits on the job object";
       return false;
     }
 
@@ -307,7 +307,7 @@ void WtsSessionProcessDelegate::Core::OnChannelConnected(int32 peer_pid) {
   if (launch_elevated_) {
     DWORD pid;
     if (!get_named_pipe_client_pid_(pipe_, &pid)) {
-      LOG_GETLASTERROR(ERROR) << "Failed to retrive PID of the client";
+      PLOG(ERROR) << "Failed to retrive PID of the client";
       ReportFatalError();
       return;
     }
@@ -324,7 +324,7 @@ void WtsSessionProcessDelegate::Core::OnChannelConnected(int32 peer_pid) {
         SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
     ScopedHandle worker_process(OpenProcess(desired_access, false, pid));
     if (!worker_process.IsValid()) {
-      LOG_GETLASTERROR(ERROR) << "Failed to open process " << pid;
+      PLOG(ERROR) << "Failed to open process " << pid;
       ReportFatalError();
       return;
     }
@@ -408,15 +408,14 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   if (launch_elevated_) {
     if (!AssignProcessToJobObject(job_, worker_process)) {
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to assign the worker to the job object";
+      PLOG(ERROR) << "Failed to assign the worker to the job object";
       ReportFatalError();
       return;
     }
   }
 
   if (!ResumeThread(worker_thread)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to resume the worker thread";
+    PLOG(ERROR) << "Failed to resume the worker thread";
     ReportFatalError();
     return;
   }
@@ -460,8 +459,7 @@ void WtsSessionProcessDelegate::Core::InitializeJob(
 
   // Register to receive job notifications via the I/O thread's completion port.
   if (!base::MessageLoopForIO::current()->RegisterJobObject(job->Get(), this)) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to associate the job object with a completion port";
+    PLOG(ERROR) << "Failed to associate the job object with a completion port";
     return;
   }
 
@@ -521,7 +519,7 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
                        desired_access,
                        FALSE,
                        0)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to duplicate a handle";
+    PLOG(ERROR) << "Failed to duplicate a handle";
     ReportFatalError();
     return;
   }

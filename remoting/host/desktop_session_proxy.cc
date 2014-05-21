@@ -233,8 +233,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   HANDLE temp_handle;
   if (!DuplicateHandle(desktop_process_, desktop_pipe, GetCurrentProcess(),
                        &temp_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to duplicate the desktop-to-network"
-                               " pipe handle";
+    PLOG(ERROR) << "Failed to duplicate the desktop-to-network pipe handle";
 
     desktop_process_ = base::kNullProcessHandle;
     base::CloseProcessHandle(desktop_process);

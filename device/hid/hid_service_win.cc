@@ -227,7 +227,7 @@ scoped_refptr<HidConnection> HidServiceWin::Connect(
     return NULL;
   scoped_refptr<HidConnectionWin> connection(new HidConnectionWin(device_info));
   if (!connection->available()) {
-    LOG_GETLASTERROR(ERROR) << "Failed to open device.";
+    PLOG(ERROR) << "Failed to open device.";
     return NULL;
   }
   return connection;

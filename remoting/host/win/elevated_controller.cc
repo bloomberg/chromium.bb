@@ -108,8 +108,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
 
   if (!file.IsValid()) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to open '" << filename.value() << "'";
+    PLOG(ERROR) << "Failed to open '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -117,8 +116,7 @@ HRESULT ReadConfig(const base::FilePath& filename,
   DWORD size = kMaxConfigFileSize;
   if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to read '" << filename.value() << "'";
+    PLOG(ERROR) << "Failed to read '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -151,8 +149,8 @@ HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
   ScopedSd sd = ConvertSddlToSd(security_descriptor);
   if (!sd) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to create a security descriptor for the configuration file";
+    PLOG(ERROR)
+        << "Failed to create a security descriptor for the configuration file";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -174,16 +172,14 @@ HRESULT WriteConfigFileToTemp(const base::FilePath& filename,
 
   if (!file.IsValid()) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to create '" << filename.value() << "'";
+    PLOG(ERROR) << "Failed to create '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
   }
 
   DWORD written;
   if (!WriteFile(file, content, static_cast<DWORD>(length), &written, NULL)) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to write to '" << filename.value() << "'";
+    PLOG(ERROR) << "Failed to write to '" << filename.value() << "'";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -199,9 +195,8 @@ HRESULT MoveConfigFileFromTemp(const base::FilePath& filename) {
                    filename.value().c_str(),
                    MOVEFILE_REPLACE_EXISTING)) {
       DWORD error = GetLastError();
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to rename '" << tempname.value() << "' to '"
-          << filename.value() << "'";
+      PLOG(ERROR) << "Failed to rename '" << tempname.value() << "' to '"
+                  << filename.value() << "'";
       return HRESULT_FROM_WIN32(error);
   }
 
@@ -389,9 +384,8 @@ STDMETHODIMP ElevatedController::StartDaemon() {
                               NULL,
                               NULL)) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to change the '" << kWindowsServiceName
-        << "'service start type to 'auto'";
+    PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
+                << "'service start type to 'auto'";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -399,8 +393,8 @@ STDMETHODIMP ElevatedController::StartDaemon() {
   if (!StartService(service, 0, NULL)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_ALREADY_RUNNING) {
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to start the '" << kWindowsServiceName << "'service";
+      PLOG(ERROR) << "Failed to start the '" << kWindowsServiceName
+                  << "'service";
 
       return HRESULT_FROM_WIN32(error);
     }
@@ -429,9 +423,8 @@ STDMETHODIMP ElevatedController::StopDaemon() {
                               NULL,
                               NULL)) {
     DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to change the '" << kWindowsServiceName
-        << "'service start type to 'manual'";
+    PLOG(ERROR) << "Failed to change the '" << kWindowsServiceName
+                << "'service start type to 'manual'";
     return HRESULT_FROM_WIN32(error);
   }
 
@@ -440,8 +433,8 @@ STDMETHODIMP ElevatedController::StopDaemon() {
   if (!ControlService(service, SERVICE_CONTROL_STOP, &status)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_NOT_ACTIVE) {
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to stop the '" << kWindowsServiceName << "'service";
+      PLOG(ERROR) << "Failed to stop the '" << kWindowsServiceName
+                  << "'service";
       return HRESULT_FROM_WIN32(error);
     }
   }
@@ -512,8 +505,7 @@ HRESULT ElevatedController::OpenService(ScopedScHandle* service_out) {
                        SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
   if (!scmanager.IsValid()) {
     error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to connect to the service control manager";
+    PLOG(ERROR) << "Failed to connect to the service control manager";
 
     return HRESULT_FROM_WIN32(error);
   }
@@ -524,8 +516,8 @@ HRESULT ElevatedController::OpenService(ScopedScHandle* service_out) {
       ::OpenServiceW(scmanager, kWindowsServiceName, desired_access));
   if (!service.IsValid()) {
     error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to open to the '" << kWindowsServiceName << "' service";
+    PLOG(ERROR) << "Failed to open to the '" << kWindowsServiceName
+                << "' service";
 
     return HRESULT_FROM_WIN32(error);
   }

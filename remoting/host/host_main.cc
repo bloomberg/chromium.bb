@@ -119,7 +119,7 @@ int RunElevated() {
 
   if (!ShellExecuteEx(&info)) {
     DWORD exit_code = GetLastError();
-    LOG_GETLASTERROR(ERROR) << "Unable to launch '" << binary.value() << "'";
+    PLOG(ERROR) << "Unable to launch '" << binary.value() << "'";
     return exit_code;
   }
 

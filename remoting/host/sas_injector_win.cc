@@ -65,8 +65,7 @@ ScopedSoftwareSasPolicy::~ScopedSoftwareSasPolicy() {
     LONG result = system_policy_.DeleteValue(kSoftwareSasValueName);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to restore the software SAS generation policy";
+      PLOG(ERROR) << "Failed to restore the software SAS generation policy";
     }
   }
 }
@@ -79,8 +78,7 @@ bool ScopedSoftwareSasPolicy::Apply() {
                                         KEY_WOW64_64KEY);
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
-    LOG_GETLASTERROR(ERROR) << "Failed to open 'HKLM\\"
-                            << kSystemPolicyKeyName << "'";
+    PLOG(ERROR) << "Failed to open 'HKLM\\" << kSystemPolicyKeyName << "'";
     return false;
   }
 
@@ -92,8 +90,7 @@ bool ScopedSoftwareSasPolicy::Apply() {
                                        kEnableSoftwareSasByServices);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);
-      LOG_GETLASTERROR(ERROR)
-          << "Failed to enable software SAS generation by services";
+      PLOG(ERROR) << "Failed to enable software SAS generation by services";
       return false;
     } else {
       restore_policy_ = true;
@@ -193,22 +190,20 @@ bool SasInjectorXp::InjectSas() {
   scoped_ptr<webrtc::Desktop> winlogon_desktop(
       webrtc::Desktop::GetDesktop(kWinlogonDesktopName));
   if (!winlogon_desktop.get()) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to open '" << kWinlogonDesktopName << "' desktop";
+    PLOG(ERROR) << "Failed to open '" << kWinlogonDesktopName << "' desktop";
     return false;
   }
 
   webrtc::ScopedThreadDesktop desktop;
   if (!desktop.SetThreadDesktop(winlogon_desktop.release())) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to switch to '" << kWinlogonDesktopName << "' desktop";
+    PLOG(ERROR) << "Failed to switch to '" << kWinlogonDesktopName
+                << "' desktop";
     return false;
   }
 
   HWND window = FindWindow(kSasWindowClassName, kSasWindowTitle);
   if (!window) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to find '" << kSasWindowTitle << "' window";
+    PLOG(ERROR) << "Failed to find '" << kSasWindowTitle << "' window";
     return false;
   }
 
@@ -216,8 +211,7 @@ bool SasInjectorXp::InjectSas() {
                   WM_HOTKEY,
                   0,
                   MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE)) == 0) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to post WM_HOTKEY message";
+    PLOG(ERROR) << "Failed to post WM_HOTKEY message";
     return false;
   }
 

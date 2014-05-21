@@ -57,7 +57,7 @@ void DesktopShapeTrackerWin::RefreshDesktopShape() {
   // Accumulate a new desktop shape from current window positions.
   scoped_ptr<EnumDesktopShapeData> shape_data(new EnumDesktopShapeData);
   if (!EnumWindows(EnumWindowsCallback, (LPARAM)shape_data.get())) {
-    LOG_GETLASTERROR(ERROR) << "Failed to enumerate windows";
+    PLOG(ERROR) << "Failed to enumerate windows";
     desktop_shape_.Clear();
     return;
   }

@@ -33,7 +33,7 @@ bool CurtainModeWin::Activate() {
 
   DWORD session_id;
   if (!ProcessIdToSessionId(GetCurrentProcessId(), &session_id)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to map the current PID to session ID";
+    PLOG(ERROR) << "Failed to map the current PID to session ID";
     return false;
   }
 

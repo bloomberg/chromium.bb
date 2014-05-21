@@ -86,8 +86,7 @@ bool SetUsageStatsConsent(bool allowed) {
     }
   }
 
-  LOG_GETLASTERROR(ERROR)
-      << "Failed to record the user's consent to crash dump reporting";
+  PLOG(ERROR) << "Failed to record the user's consent to crash dump reporting";
   return false;
 }
 

@@ -65,7 +65,7 @@ void RawInputDataFetcher::StartMonitor() {
     window_.reset(new base::win::MessageWindow());
     if (!window_->Create(base::Bind(&RawInputDataFetcher::HandleMessage,
                                     base::Unretained(this)))) {
-      LOG_GETLASTERROR(ERROR) << "Failed to create the raw input window";
+      PLOG(ERROR) << "Failed to create the raw input window";
       window_.reset();
       return;
     }
@@ -75,8 +75,7 @@ void RawInputDataFetcher::StartMonitor() {
   scoped_ptr<RAWINPUTDEVICE[]> devices(GetRawInputDevices(RIDEV_INPUTSINK));
   if (!RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
       sizeof(RAWINPUTDEVICE))) {
-    LOG_GETLASTERROR(ERROR)
-        << "RegisterRawInputDevices() failed for RIDEV_INPUTSINK";
+    PLOG(ERROR) << "RegisterRawInputDevices() failed for RIDEV_INPUTSINK";
     window_.reset();
     return;
   }
@@ -99,8 +98,7 @@ void RawInputDataFetcher::StopMonitor() {
 
   if (!RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
       sizeof(RAWINPUTDEVICE))) {
-    LOG_GETLASTERROR(INFO)
-        << "RegisterRawInputDevices() failed for RIDEV_REMOVE";
+    PLOG(INFO) << "RegisterRawInputDevices() failed for RIDEV_REMOVE";
   }
 
   events_monitored_ = false;
@@ -127,7 +125,7 @@ std::vector<RawGamepadInfo*> RawInputDataFetcher::EnumerateDevices() {
   UINT count = 0;
   UINT result = GetRawInputDeviceList(NULL, &count, sizeof(RAWINPUTDEVICELIST));
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceList() failed";
+    PLOG(ERROR) << "GetRawInputDeviceList() failed";
     return valid_controllers;
   }
   DCHECK_EQ(0u, result);
@@ -136,7 +134,7 @@ std::vector<RawGamepadInfo*> RawInputDataFetcher::EnumerateDevices() {
   result = GetRawInputDeviceList(device_list.get(), &count,
       sizeof(RAWINPUTDEVICELIST));
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceList() failed";
+    PLOG(ERROR) << "GetRawInputDeviceList() failed";
     return valid_controllers;
   }
   DCHECK_EQ(count, result);
@@ -173,7 +171,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   UINT result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICEINFO,
       NULL, &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(0u, result);
@@ -184,7 +182,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICEINFO,
       di_buffer.get(), &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(size, result);
@@ -215,7 +213,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICENAME,
       NULL, &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(0u, result);
@@ -224,7 +222,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICENAME,
       name_buffer.get(), &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(size, result);
@@ -252,7 +250,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   result = GetRawInputDeviceInfo(hDevice, RIDI_PREPARSEDDATA,
       NULL, &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(0u, result);
@@ -263,7 +261,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   result = GetRawInputDeviceInfo(hDevice, RIDI_PREPARSEDDATA,
        gamepad_info->ppd_buffer.get(), &size);
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputDeviceInfo() failed";
+    PLOG(ERROR) << "GetRawInputDeviceInfo() failed";
     return NULL;
   }
   DCHECK_EQ(size, result);
@@ -421,7 +419,7 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
   UINT result = GetRawInputData(
       input_handle, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputData() failed";
+    PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
   DCHECK_EQ(0u, result);
@@ -432,7 +430,7 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
   result = GetRawInputData(
       input_handle, RID_INPUT, buffer.get(), &size, sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputData() failed";
+    PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
   DCHECK_EQ(size, result);

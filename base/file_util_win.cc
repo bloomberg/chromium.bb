@@ -605,8 +605,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
                                           0,
                                           NULL));
   if (!file) {
-    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
-                               << UTF16ToUTF8(filename.value());
+    DPLOG(WARNING) << "CreateFile failed for path "
+                   << UTF16ToUTF8(filename.value());
     return -1;
   }
 
@@ -617,8 +617,8 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG_GETLASTERROR(WARNING) << "writing file "
-                               << UTF16ToUTF8(filename.value()) << " failed";
+    DPLOG(WARNING) << "writing file " << UTF16ToUTF8(filename.value())
+                   << " failed";
   } else {
     // Didn't write all the bytes.
     DLOG(WARNING) << "wrote" << written << " bytes to "
@@ -637,8 +637,8 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
                                           0,
                                           NULL));
   if (!file) {
-    DLOG_GETLASTERROR(WARNING) << "CreateFile failed for path "
-                               << UTF16ToUTF8(filename.value());
+    DPLOG(WARNING) << "CreateFile failed for path "
+                   << UTF16ToUTF8(filename.value());
     return -1;
   }
 
@@ -649,9 +649,8 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
 
   if (!result) {
     // WriteFile failed.
-    DLOG_GETLASTERROR(WARNING) << "writing file "
-                               << UTF16ToUTF8(filename.value())
-                               << " failed";
+    DPLOG(WARNING) << "writing file " << UTF16ToUTF8(filename.value())
+                   << " failed";
   } else {
     // Didn't write all the bytes.
     DLOG(WARNING) << "wrote" << written << " bytes to "

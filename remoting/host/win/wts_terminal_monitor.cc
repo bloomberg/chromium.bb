@@ -61,7 +61,7 @@ uint32 WtsTerminalMonitor::LookupSessionId(const std::string& terminal_id) {
   DWORD session_info_count;
   if (!WTSEnumerateSessions(WTS_CURRENT_SERVER_HANDLE, 0, 1, &session_info,
                             &session_info_count)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to enumerate all sessions";
+    PLOG(ERROR) << "Failed to enumerate all sessions";
     return kInvalidSessionId;
   }
   for (DWORD i = 0; i < session_info_count; ++i) {

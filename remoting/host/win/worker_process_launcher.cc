@@ -171,8 +171,7 @@ void WorkerProcessLauncher::OnObjectSignaled(HANDLE object) {
 
   // Get exit code of the worker process if it is available.
   if (!::GetExitCodeProcess(worker_process_, &exit_code_)) {
-    LOG_GETLASTERROR(INFO)
-        << "Failed to query the exit code of the worker process";
+    PLOG(INFO) << "Failed to query the exit code of the worker process";
     exit_code_ = CONTROL_C_EXIT;
   }
 

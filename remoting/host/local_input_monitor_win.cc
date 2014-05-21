@@ -128,7 +128,7 @@ void LocalInputMonitorWin::Core::StartOnUiThread() {
   window_.reset(new base::win::MessageWindow());
   if (!window_->Create(base::Bind(&Core::HandleMessage,
                                   base::Unretained(this)))) {
-    LOG_GETLASTERROR(ERROR) << "Failed to create the raw input window";
+    PLOG(ERROR) << "Failed to create the raw input window";
     window_.reset();
 
     // If the local input cannot be monitored, the remote user can take over
@@ -168,7 +168,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
                                 &size,
                                 sizeof(RAWINPUTHEADER));
   if (result == -1) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputData() failed";
+    PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
 
@@ -181,7 +181,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
                            &size,
                            sizeof(RAWINPUTHEADER));
   if (result == -1) {
-    LOG_GETLASTERROR(ERROR) << "GetRawInputData() failed";
+    PLOG(ERROR) << "GetRawInputData() failed";
     return 0;
   }
 
@@ -217,7 +217,7 @@ bool LocalInputMonitorWin::Core::HandleMessage(
       if (RegisterRawInputDevices(&device, 1, sizeof(device))) {
         *result = 0;
       } else {
-        LOG_GETLASTERROR(ERROR) << "RegisterRawInputDevices() failed";
+        PLOG(ERROR) << "RegisterRawInputDevices() failed";
         *result = -1;
       }
       return true;

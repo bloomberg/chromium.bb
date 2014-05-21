@@ -112,7 +112,7 @@ bool ConnectToExecutionServer(uint32 session_id,
   }
 
   if (!pipe.IsValid()) {
-    LOG_GETLASTERROR(ERROR) << "Failed to connect to '" << pipe_name << "'";
+    PLOG(ERROR) << "Failed to connect to '" << pipe_name << "'";
     return false;
   }
 
@@ -127,7 +127,7 @@ bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
   if (!OpenProcessToken(GetCurrentProcess(),
                         TOKEN_DUPLICATE | desired_access,
                         &temp_handle)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to open process token";
+    PLOG(ERROR) << "Failed to open process token";
     return false;
   }
   ScopedHandle process_token(temp_handle);
@@ -138,7 +138,7 @@ bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
                         SecurityImpersonation,
                         TokenPrimary,
                         &temp_handle)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to duplicate the process token";
+    PLOG(ERROR) << "Failed to duplicate the process token";
     return false;
   }
 
@@ -160,15 +160,13 @@ bool CreatePrivilegedToken(ScopedHandle* token_out) {
   state.PrivilegeCount = 1;
   state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
   if (!LookupPrivilegeValue(NULL, SE_TCB_NAME, &state.Privileges[0].Luid)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to lookup the LUID for the SE_TCB_NAME privilege";
+    PLOG(ERROR) << "Failed to lookup the LUID for the SE_TCB_NAME privilege";
     return false;
   }
 
   // Enable the SE_TCB_NAME privilege.
   if (!AdjustTokenPrivileges(privileged_token, FALSE, &state, 0, NULL, 0)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to enable SE_TCB_NAME privilege in a token";
+    PLOG(ERROR) << "Failed to enable SE_TCB_NAME privilege in a token";
     return false;
   }
 
@@ -206,8 +204,8 @@ bool ProcessCreateProcessResponse(DWORD creation_flags,
                     FALSE,
                     process_information->dwProcessId);
     if (!process_information->hProcess) {
-      LOG_GETLASTERROR(ERROR) << "Failed to open the process "
-                              << process_information->dwProcessId;
+      PLOG(ERROR) << "Failed to open the process "
+                  << process_information->dwProcessId;
       return false;
     }
   }
@@ -233,8 +231,8 @@ bool ProcessCreateProcessResponse(DWORD creation_flags,
                    FALSE,
                    process_information->dwThreadId);
     if (!process_information->hThread) {
-      LOG_GETLASTERROR(ERROR) << "Failed to open the thread "
-                              << process_information->dwThreadId;
+      PLOG(ERROR) << "Failed to open the thread "
+                  << process_information->dwThreadId;
       return false;
     }
   }
@@ -242,8 +240,8 @@ bool ProcessCreateProcessResponse(DWORD creation_flags,
   // Resume the thread if the caller didn't want to suspend the process.
   if ((creation_flags & CREATE_SUSPENDED) == 0) {
     if (!ResumeThread(process_information->hThread)) {
-      LOG_GETLASTERROR(ERROR) << "Failed to resume the thread "
-                              << process_information->dwThreadId;
+      PLOG(ERROR) << "Failed to resume the thread "
+                  << process_information->dwThreadId;
       return false;
     }
   }
@@ -265,7 +263,7 @@ bool ReceiveCreateProcessResponse(
   DWORD bytes;
   CreateProcessResponse response;
   if (!ReadFile(pipe, &response, sizeof(response), &bytes, NULL)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to receive CreateProcessAsUser response";
+    PLOG(ERROR) << "Failed to receive CreateProcessAsUser response";
     return false;
   }
 
@@ -359,7 +357,7 @@ bool SendCreateProcessRequest(
   // Pass the request to create a process in the target session.
   DWORD bytes;
   if (!WriteFile(pipe, buffer.get(), size, &bytes, NULL)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to send CreateProcessAsUser request";
+    PLOG(ERROR) << "Failed to send CreateProcessAsUser request";
     return false;
   }
 
@@ -425,8 +423,7 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
     return false;
   }
   if (!ImpersonateLoggedOnUser(privileged_token)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to impersonate the privileged token";
+    PLOG(ERROR) << "Failed to impersonate the privileged token";
     return false;
   }
 
@@ -436,7 +433,7 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
                            TokenSessionId,
                            &new_session_id,
                            sizeof(new_session_id))) {
-    LOG_GETLASTERROR(ERROR) << "Failed to change session ID of a token";
+    PLOG(ERROR) << "Failed to change session ID of a token";
 
     // Revert to the default token.
     CHECK(RevertToSelf());
@@ -512,8 +509,7 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
   }
 
   if (!result) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to launch a process with a user token";
+    PLOG(ERROR) << "Failed to launch a process with a user token";
     return false;
   }
 

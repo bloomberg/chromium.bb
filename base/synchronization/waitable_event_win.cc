@@ -92,7 +92,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
                              FALSE,      // don't wait for all the objects
                              INFINITE);  // no timeout
   if (result >= WAIT_OBJECT_0 + count) {
-    DLOG_GETLASTERROR(FATAL) << "WaitForMultipleObjects failed";
+    DPLOG(FATAL) << "WaitForMultipleObjects failed";
     return 0;
   }
 

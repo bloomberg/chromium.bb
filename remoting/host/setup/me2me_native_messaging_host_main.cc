@@ -134,8 +134,7 @@ int StartMe2MeNativeMessagingHost() {
         input_pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL, NULL));
     if (!read_file.IsValid()) {
-      LOG_GETLASTERROR(ERROR) <<
-          "CreateFile failed on '" << input_pipe_name << "'";
+      PLOG(ERROR) << "CreateFile failed on '" << input_pipe_name << "'";
       return kInitializationFailed;
     }
 
@@ -143,8 +142,7 @@ int StartMe2MeNativeMessagingHost() {
         output_pipe_name.c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL, NULL));
     if (!write_file.IsValid()) {
-      LOG_GETLASTERROR(ERROR) <<
-          "CreateFile failed on '" << output_pipe_name << "'";
+      PLOG(ERROR) << "CreateFile failed on '" << output_pipe_name << "'";
       return kInitializationFailed;
     }
   } else {

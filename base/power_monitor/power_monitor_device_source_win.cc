@@ -55,7 +55,7 @@ void ProcessWmPowerBroadcastMessage(WPARAM event_id) {
 bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
   SYSTEM_POWER_STATUS status;
   if (!GetSystemPowerStatus(&status)) {
-    DLOG_GETLASTERROR(ERROR) << "GetSystemPowerStatus failed";
+    DPLOG(ERROR) << "GetSystemPowerStatus failed";
     return false;
   }
   return (status.ACLineStatus == 0);

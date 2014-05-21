@@ -541,8 +541,8 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
 
   ScopedSd sd = ConvertSddlToSd(security_descriptor);
   if (!sd) {
-    LOG_GETLASTERROR(ERROR) << "Failed to create a security descriptor for the"
-                            << "Chromoting Me2Me native messaging host.";
+    PLOG(ERROR) << "Failed to create a security descriptor for the"
+                << "Chromoting Me2Me native messaging host.";
     OnError();
     return;
   }
@@ -567,8 +567,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
       &security_attributes));
 
   if (!delegate_write_handle.IsValid()) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to create named pipe '" << input_pipe_name << "'";
+    PLOG(ERROR) << "Failed to create named pipe '" << input_pipe_name << "'";
     OnError();
     return;
   }
@@ -588,8 +587,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
       &security_attributes));
 
   if (!delegate_read_handle.IsValid()) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to create named pipe '" << output_pipe_name << "'";
+    PLOG(ERROR) << "Failed to create named pipe '" << output_pipe_name << "'";
     OnError();
     return;
   }
@@ -631,7 +629,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
 
   if (!ShellExecuteEx(&info)) {
     DWORD error = ::GetLastError();
-    LOG_GETLASTERROR(ERROR) << "Unable to launch '" << binary.value() << "'";
+    PLOG(ERROR) << "Unable to launch '" << binary.value() << "'";
     if (error != ERROR_CANCELLED) {
       OnError();
     }
@@ -641,8 +639,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   if (!::ConnectNamedPipe(delegate_write_handle.Get(), NULL)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
-      LOG_GETLASTERROR(ERROR) << "Unable to connect '"
-                              << input_pipe_name << "'";
+      PLOG(ERROR) << "Unable to connect '" << input_pipe_name << "'";
       OnError();
       return;
     }
@@ -651,8 +648,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   if (!::ConnectNamedPipe(delegate_read_handle.Get(), NULL)) {
     DWORD error = ::GetLastError();
     if (error != ERROR_PIPE_CONNECTED) {
-      LOG_GETLASTERROR(ERROR) << "Unable to connect '"
-                              << output_pipe_name << "'";
+      PLOG(ERROR) << "Unable to connect '" << output_pipe_name << "'";
       OnError();
       return;
     }

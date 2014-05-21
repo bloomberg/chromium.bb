@@ -65,7 +65,7 @@ bool TooltipWin::EnsureTooltipWindow() {
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX | WS_POPUP, 0, 0, 0, 0,
       parent_hwnd_, NULL, NULL, NULL);
   if (!tooltip_hwnd_) {
-    LOG_GETLASTERROR(WARNING) << "tooltip creation failed, disabling tooltips";
+    PLOG(WARNING) << "tooltip creation failed, disabling tooltips";
     return false;
   }
 

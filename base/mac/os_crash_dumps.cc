@@ -47,9 +47,9 @@ void DisableOSCrashDumps() {
     act.sa_flags = SA_ONSTACK;
 
     if (sigemptyset(&act.sa_mask) != 0)
-      DLOG_ERRNO(FATAL) << "sigemptyset() failed";
+      DPLOG(FATAL) << "sigemptyset() failed";
     if (sigaction(signals_to_intercept[i], &act, NULL) != 0)
-      DLOG_ERRNO(FATAL) << "sigaction() failed";
+      DPLOG(FATAL) << "sigaction() failed";
   }
 }
 

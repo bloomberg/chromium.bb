@@ -224,8 +224,7 @@ int HostService::RunAsService() {
   };
 
   if (!StartServiceCtrlDispatcherW(dispatch_table)) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to connect to the service control manager";
+    PLOG(ERROR) << "Failed to connect to the service control manager";
     return kInitializationFailed;
   }
 
@@ -247,8 +246,7 @@ void HostService::RunAsServiceImpl() {
   service_status_handle_ = RegisterServiceCtrlHandlerExW(
       kWindowsServiceName, &HostService::ServiceControlHandler, this);
   if (service_status_handle_ == 0) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to register the service control handler";
+    PLOG(ERROR) << "Failed to register the service control handler";
     return;
   }
 
@@ -262,7 +260,7 @@ void HostService::RunAsServiceImpl() {
                                       SERVICE_ACCEPT_SESSIONCHANGE;
   service_status.dwWin32ExitCode = kSuccessExitCode;
   if (!SetServiceStatus(service_status_handle_, &service_status)) {
-    LOG_GETLASTERROR(ERROR)
+    PLOG(ERROR)
         << "Failed to report service status to the service control manager";
     return;
   }
@@ -290,7 +288,7 @@ void HostService::RunAsServiceImpl() {
   service_status.dwCurrentState = SERVICE_STOPPED;
   service_status.dwControlsAccepted = 0;
   if (!SetServiceStatus(service_status_handle_, &service_status)) {
-    LOG_GETLASTERROR(ERROR)
+    PLOG(ERROR)
         << "Failed to report service status to the service control manager";
     return;
   }
@@ -317,8 +315,7 @@ int HostService::RunInConsole() {
 
   // Subscribe to Ctrl-C and other console events.
   if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to set console control handler";
+    PLOG(ERROR) << "Failed to set console control handler";
     return result;
   }
 
@@ -326,8 +323,7 @@ int HostService::RunInConsole() {
   base::win::MessageWindow window;
   if (!window.Create(base::Bind(&HostService::HandleMessage,
                                 base::Unretained(this)))) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to create the session notification window";
+    PLOG(ERROR) << "Failed to create the session notification window";
     goto cleanup;
   }
 

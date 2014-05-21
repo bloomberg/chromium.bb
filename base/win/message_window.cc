@@ -52,7 +52,7 @@ MessageWindow::WindowClass::WindowClass()
   window_class.hIconSm = NULL;
   atom_ = RegisterClassEx(&window_class);
   if (atom_ == 0) {
-    LOG_GETLASTERROR(ERROR)
+    PLOG(ERROR)
         << "Failed to register the window class for a message-only window";
   }
 }
@@ -108,7 +108,7 @@ bool MessageWindow::DoCreate(const MessageCallback& message_callback,
   window_ = CreateWindow(MAKEINTATOM(window_class.atom()), window_name, 0, 0, 0,
                          0, 0, HWND_MESSAGE, 0, window_class.instance(), this);
   if (!window_) {
-    LOG_GETLASTERROR(ERROR) << "Failed to create a message-only window";
+    PLOG(ERROR) << "Failed to create a message-only window";
     return false;
   }
 

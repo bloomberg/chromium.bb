@@ -1047,7 +1047,7 @@ bool BrowserMainLoop::InitializeToolkit() {
   config.dwSize = sizeof(config);
   config.dwICC = ICC_WIN95_CLASSES;
   if (!InitCommonControlsEx(&config))
-    LOG_GETLASTERROR(FATAL);
+    PLOG(FATAL);
 #endif
 
 #if defined(USE_AURA)

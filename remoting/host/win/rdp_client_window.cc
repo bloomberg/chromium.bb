@@ -161,7 +161,7 @@ void RdpClientWindow::InjectSas() {
 
   BYTE keyboard_state[kKeyboardStateLength];
   if (!GetKeyboardState(keyboard_state)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to get the keyboard state.";
+    PLOG(ERROR) << "Failed to get the keyboard state.";
     return;
   }
 

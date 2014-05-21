@@ -613,15 +613,6 @@ enum { DEBUG_MODE = ENABLE_DLOG };
 
 #define DVPLOG(verboselevel) DVPLOG_IF(verboselevel, VLOG_IS_ON(verboselevel))
 
-// TODO(vitalybuka): following should be removed and replaced with PLOG.
-#if defined(OS_WIN)
-#define LOG_GETLASTERROR(severity) PLOG(severity)
-#define DLOG_GETLASTERROR(severity) DPLOG(severity)
-#elif defined(OS_POSIX)
-#define LOG_ERRNO(severity) PLOG(severity)
-#define DLOG_ERRNO(severity) DPLOG(severity)
-#endif
-
 // Definitions for DCHECK et al.
 
 #if DCHECK_IS_ON

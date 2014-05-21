@@ -58,7 +58,7 @@ int IrtMMap(void** addr, size_t len, int prot, int flags,
   if (host_prot & PROT_EXEC) {
     if (mprotect(result, len, host_prot) != 0) {
       // This aborts here because it cannot easily undo the mmap() call.
-      LOG_ERRNO(FATAL) << "IrtMMap: mprotect to turn on PROT_EXEC failed.";
+      PLOG(FATAL) << "IrtMMap: mprotect to turn on PROT_EXEC failed.";
     }
   }
 

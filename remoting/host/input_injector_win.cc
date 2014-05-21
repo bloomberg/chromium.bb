@@ -44,7 +44,7 @@ void SendKeyboardInput(uint32_t flags, uint16_t scancode) {
   }
 
   if (SendInput(1, &input, sizeof(INPUT)) == 0)
-    LOG_GETLASTERROR(ERROR) << "Failed to inject a key event";
+    PLOG(ERROR) << "Failed to inject a key event";
 }
 
 using protocol::ClipboardEvent;
@@ -316,7 +316,7 @@ void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {
 
   if (input.mi.dwFlags) {
     if (SendInput(1, &input, sizeof(INPUT)) == 0)
-      LOG_GETLASTERROR(ERROR) << "Failed to inject a mouse event";
+      PLOG(ERROR) << "Failed to inject a mouse event";
   }
 }
 

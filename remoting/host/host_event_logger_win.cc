@@ -65,8 +65,7 @@ HostEventLoggerWin::HostEventLoggerWin(base::WeakPtr<HostStatusMonitor> monitor,
   if (event_log_ != NULL) {
     monitor_->AddStatusObserver(this);
   } else {
-    LOG_GETLASTERROR(ERROR) << "Failed to register the event source: "
-                            << application_name;
+    PLOG(ERROR) << "Failed to register the event source: " << application_name;
   }
 }
 
@@ -135,7 +134,7 @@ void HostEventLoggerWin::Log(WORD type,
                     0,
                     &raw_strings[0],
                     NULL)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to write an event to the event log";
+    PLOG(ERROR) << "Failed to write an event to the event log";
   }
 }
 
