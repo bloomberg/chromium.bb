@@ -30,17 +30,19 @@ struct EchoArgsList {
 
 interface CppSide {
   StartTest();  // Sent for all tests to notify that the JS side is now ready.
-  TestFinished();  // Sent in echo / bit-flip tests to indicate end.
+  TestFinished();  // Indicates end for echo, bit-flip, and back-pointer tests.
   PingResponse();
   EchoResponse(EchoArgsList list);
-  BitFlipResponse(EchoArgs arg);
+  BitFlipResponse(EchoArgsList arg);
+  BackPointerResponse(EchoArgsList arg);
 };
 
 [Client=CppSide]
 interface JsSide {
   Ping();
-  Echo(int32 numIterations, EchoArgsList list);
+  Echo(int32 numIterations, EchoArgs arg);
   BitFlip(EchoArgs arg);
+  BackPointer(EchoArgs arg);
 };
 
 }

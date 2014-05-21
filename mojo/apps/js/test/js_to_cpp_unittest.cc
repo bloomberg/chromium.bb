@@ -126,12 +126,6 @@ void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
   CheckDataPipe(arg.data_handle().get().value());
 }
 
-js_to_cpp::EchoArgsList BuildSampleEchoArgsList() {
-  js_to_cpp::EchoArgsList::Builder builder;
-  builder.set_item(BuildSampleEchoArgs());
-  return builder.Finish();
-}
-
 void CheckSampleEchoArgsList(const js_to_cpp::EchoArgsList& list) {
   if (list.is_null())
     return;
@@ -152,6 +146,22 @@ void CheckCorruptedStringArray(const mojo::Array<mojo::String>& string_array) {
     return;
   for (size_t i = 0; i < string_array.size(); ++i)
     CheckCorruptedString(string_array[i]);
+}
+
+void CheckCorruptedEchoArgs(const js_to_cpp::EchoArgs& arg) {
+  if (arg.is_null())
+    return;
+  CheckCorruptedString(arg.name());
+  CheckCorruptedStringArray(arg.string_array());
+  if (arg.data_handle().is_valid())
+    CheckDataPipe(arg.data_handle().get().value());
+}
+
+void CheckCorruptedEchoArgsList(const js_to_cpp::EchoArgsList& list) {
+  if (list.is_null())
+    return;
+  CheckCorruptedEchoArgs(list.item());
+  CheckCorruptedEchoArgsList(list.next());
 }
 
 // Base Provider implementation class. It's expected that tests subclass and
@@ -186,10 +196,14 @@ class CppSideConnection : public js_to_cpp::CppSide {
     NOTREACHED();
   }
 
-  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg1) OVERRIDE {
+  virtual void BitFlipResponse(const js_to_cpp::EchoArgsList& list) OVERRIDE {
     NOTREACHED();
   }
 
+  virtual void BackPointerResponse(
+      const js_to_cpp::EchoArgsList& list) OVERRIDE {
+    NOTREACHED();
+  }
  protected:
   base::RunLoop* run_loop_;
   js_to_cpp::JsSide* js_side_;
@@ -201,7 +215,7 @@ class CppSideConnection : public js_to_cpp::CppSide {
 // Trivial test to verify a message sent from JS is received.
 class PingCppSideConnection : public CppSideConnection {
  public:
-  explicit PingCppSideConnection() : got_message_(false) {}
+  PingCppSideConnection() : got_message_(false) {}
   virtual ~PingCppSideConnection() {}
 
   // js_to_cpp::CppSide:
@@ -226,7 +240,7 @@ class PingCppSideConnection : public CppSideConnection {
 // Test that parameters are passed with correct values.
 class EchoCppSideConnection : public CppSideConnection {
  public:
-  explicit EchoCppSideConnection() :
+  EchoCppSideConnection() :
       message_count_(0),
       termination_seen_(false) {
   }
@@ -235,7 +249,7 @@ class EchoCppSideConnection : public CppSideConnection {
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
     AllocationScope scope;
-    js_side_->Echo(kExpectedMessageCount, BuildSampleEchoArgsList());
+    js_side_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
   }
 
   virtual void EchoResponse(const js_to_cpp::EchoArgsList& list) OVERRIDE {
@@ -259,7 +273,7 @@ class EchoCppSideConnection : public CppSideConnection {
   }
 
  private:
-  static const int kExpectedMessageCount = 100;
+  static const int kExpectedMessageCount = 10;
   int message_count_;
   bool termination_seen_;
   DISALLOW_COPY_AND_ASSIGN(EchoCppSideConnection);
@@ -268,7 +282,7 @@ class EchoCppSideConnection : public CppSideConnection {
 // Test that corrupted messages don't wreak havoc.
 class BitFlipCppSideConnection : public CppSideConnection {
  public:
-  explicit BitFlipCppSideConnection() : termination_seen_(false) {}
+  BitFlipCppSideConnection() : termination_seen_(false) {}
   virtual ~BitFlipCppSideConnection() {}
 
   // js_to_cpp::CppSide:
@@ -277,13 +291,8 @@ class BitFlipCppSideConnection : public CppSideConnection {
     js_side_->BitFlip(BuildSampleEchoArgs());
   }
 
-  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg) OVERRIDE {
-    if (arg.is_null())
-      return;
-    CheckCorruptedString(arg.name());
-    CheckCorruptedStringArray(arg.string_array());
-    if (arg.data_handle().is_valid())
-      CheckDataPipe(arg.data_handle().get().value());
+  virtual void BitFlipResponse(const js_to_cpp::EchoArgsList& list) OVERRIDE {
+    CheckCorruptedEchoArgsList(list);
   }
 
   virtual void TestFinished() OVERRIDE {
@@ -298,6 +307,37 @@ class BitFlipCppSideConnection : public CppSideConnection {
  private:
   bool termination_seen_;
   DISALLOW_COPY_AND_ASSIGN(BitFlipCppSideConnection);
+};
+
+// Test that severely random messages don't wreak havoc.
+class BackPointerCppSideConnection : public CppSideConnection {
+ public:
+  BackPointerCppSideConnection() : termination_seen_(false) {}
+  virtual ~BackPointerCppSideConnection() {}
+
+  // js_to_cpp::CppSide:
+  virtual void StartTest() OVERRIDE {
+    AllocationScope scope;
+    js_side_->BackPointer(BuildSampleEchoArgs());
+  }
+
+  virtual void BackPointerResponse(
+      const js_to_cpp::EchoArgsList& list) OVERRIDE {
+    CheckCorruptedEchoArgsList(list);
+  }
+
+  virtual void TestFinished() OVERRIDE {
+    termination_seen_ = true;
+    run_loop()->Quit();
+  }
+
+  bool DidSucceed() {
+    return termination_seen_;
+  }
+
+ private:
+  bool termination_seen_;
+  DISALLOW_COPY_AND_ASSIGN(BackPointerCppSideConnection);
 };
 
 }  // namespace
@@ -359,6 +399,16 @@ TEST_F(JsToCppTest, DISABLED_BitFlip) {
     return;
 
   BitFlipCppSideConnection cpp_side_connection;
+  RunTest("mojo/apps/js/test/js_to_cpp_unittest", &cpp_side_connection);
+  EXPECT_TRUE(cpp_side_connection.DidSucceed());
+}
+
+// TODO(tsepez): Disabled due to http://crbug.com/366797.
+TEST_F(JsToCppTest, DISABLED_BackPointer) {
+  if (IsRunningOnIsolatedBot())
+    return;
+
+  BackPointerCppSideConnection cpp_side_connection;
   RunTest("mojo/apps/js/test/js_to_cpp_unittest", &cpp_side_connection);
   EXPECT_TRUE(cpp_side_connection.DidSucceed());
 }
