@@ -476,6 +476,8 @@ void BluetoothSocketChromeOS::DoNewConnection(
 
   VLOG(1) << object_path_.value() << ": Validity check complete.";
   if (!fd->is_valid()) {
+    LOG(WARNING) << object_path_.value() << " :" << fd->value()
+                 << ": Invalid file descriptor received from Bluetooth Daemon.";
     ui_task_runner()->PostTask(FROM_HERE,
                                base::Bind(callback, REJECTED));;
     return;
@@ -502,6 +504,7 @@ void BluetoothSocketChromeOS::DoNewConnection(
     return;
   }
 
+  VLOG(2) << object_path_.value() << ": Taking descriptor, confirming success.";
   fd->TakeValue();
   ui_task_runner()->PostTask(FROM_HERE,
                              base::Bind(callback, SUCCESS));;
