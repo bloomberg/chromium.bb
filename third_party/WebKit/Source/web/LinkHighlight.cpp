@@ -49,7 +49,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/Vector.h"
 
 using namespace WebCore;
 
