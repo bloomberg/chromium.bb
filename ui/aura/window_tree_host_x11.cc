@@ -211,8 +211,6 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
          event->xgeneric.evtype == XI_TouchUpdate ||
          event->xgeneric.evtype == XI_TouchEnd)) {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event->xcookie.data);
-      LOG(ERROR) << "Raw " << xievent->event_x << " " << xievent->event_y
-                 << " " << xievent->root_x << " " << xievent->root_y;
       xievent->event = xievent->root;
       xievent->event_x = xievent->root_x;
       xievent->event_y = xievent->root_y;
