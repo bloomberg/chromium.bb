@@ -32,15 +32,15 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     unsigned internalformat,
     unsigned usage,
     base::ProcessHandle child_process,
-    gfx::GpuMemoryBufferHandle* handle) {
+    const AllocationCallback& callback) {
   if (GpuMemoryBufferImplShm::IsConfigurationSupported(
           size, internalformat, usage)) {
     GpuMemoryBufferImplShm::AllocateSharedMemoryForChildProcess(
-        size, internalformat, child_process, handle);
+        size, internalformat, child_process, callback);
     return;
   }
 
-  handle->type = gfx::EMPTY_BUFFER;
+  callback.Run(gfx::GpuMemoryBufferHandle());
 }
 
 // static

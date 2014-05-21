@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
@@ -14,6 +15,9 @@ namespace content {
 // Provides common implementation of a GPU memory buffer.
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
+  typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
+      AllocationCallback;
+
   virtual ~GpuMemoryBufferImpl();
 
   // Creates a GPU memory buffer instance with |size| and |internalformat| for
@@ -29,7 +33,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                                       unsigned internalformat,
                                       unsigned usage,
                                       base::ProcessHandle child_process,
-                                      gfx::GpuMemoryBufferHandle* handle);
+                                      const AllocationCallback& callback);
 
   // Creates an instance from the given |handle|. |size| and |internalformat|
   // should match what was used to allocate the |handle|.

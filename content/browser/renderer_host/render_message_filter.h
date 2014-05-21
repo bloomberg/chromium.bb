@@ -277,7 +277,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                  uint32 height,
                                  uint32 internalformat,
                                  uint32 usage,
-                                 gfx::GpuMemoryBufferHandle* handle);
+                                 IPC::Message* reply);
+  void GpuMemoryBufferAllocated(IPC::Message* reply,
+                                const gfx::GpuMemoryBufferHandle& handle);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed

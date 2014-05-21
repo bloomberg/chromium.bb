@@ -21,7 +21,7 @@ class GpuMemoryBufferImplShm : public GpuMemoryBufferImpl {
       const gfx::Size& size,
       unsigned internalformat,
       base::ProcessHandle child_process,
-      gfx::GpuMemoryBufferHandle* handle);
+      const AllocationCallback& callback);
 
   static bool IsLayoutSupported(const gfx::Size& size, unsigned internalformat);
   static bool IsUsageSupported(unsigned usage);

@@ -440,8 +440,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAllocateSharedMemory)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedBitmap,
                         OnAllocateSharedBitmap)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
-                        OnAllocateGpuMemoryBuffer)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
+        OnAllocateGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_AllocatedSharedBitmap,
                         OnAllocatedSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
@@ -1230,21 +1231,20 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 }
 #endif
 
-void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
-    uint32 width,
-    uint32 height,
-    uint32 internalformat,
-    uint32 usage,
-    gfx::GpuMemoryBufferHandle* handle) {
+void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
+                                                    uint32 height,
+                                                    uint32 internalformat,
+                                                    uint32 usage,
+                                                    IPC::Message* reply) {
   if (!GpuMemoryBufferImpl::IsFormatValid(internalformat) ||
       !GpuMemoryBufferImpl::IsUsageValid(usage)) {
-    handle->type = gfx::EMPTY_BUFFER;
+    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
     return;
   }
   base::CheckedNumeric<int> size = width;
   size *= height;
   if (!size.IsValid()) {
-    handle->type = gfx::EMPTY_BUFFER;
+    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
     return;
   }
 
@@ -1284,13 +1284,15 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
       base::ScopedCFTypeRef<CFTypeRef> io_surface(
           io_surface_support->IOSurfaceCreate(properties));
       if (io_surface) {
-        handle->type = gfx::IO_SURFACE_BUFFER;
-        handle->io_surface_id = io_surface_support->IOSurfaceGetID(io_surface);
+        gfx::GpuMemoryBufferHandle handle;
+        handle.type = gfx::IO_SURFACE_BUFFER;
+        handle.io_surface_id = io_surface_support->IOSurfaceGetID(io_surface);
 
         // TODO(reveman): This makes the assumption that the renderer will
         // grab a reference to the surface before sending another message.
         // crbug.com/325045
         last_io_surface_ = io_surface;
+        GpuMemoryBufferAllocated(reply, handle);
         return;
       }
     }
@@ -1310,16 +1312,30 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
     int surface_texture_id =
         CompositorImpl::CreateSurfaceTexture(render_process_id_);
     if (surface_texture_id != -1) {
-      handle->type = gfx::SURFACE_TEXTURE_BUFFER;
-      handle->surface_texture_id =
+      gfx::GpuMemoryBufferHandle handle;
+      handle.type = gfx::SURFACE_TEXTURE_BUFFER;
+      handle.surface_texture_id =
           gfx::SurfaceTextureId(surface_texture_id, render_process_id_);
+      GpuMemoryBufferAllocated(reply, handle);
       return;
     }
   }
 #endif
 
   GpuMemoryBufferImpl::AllocateForChildProcess(
-      gfx::Size(width, height), internalformat, usage, PeerHandle(), handle);
+      gfx::Size(width, height),
+      internalformat,
+      usage,
+      PeerHandle(),
+      base::Bind(&RenderMessageFilter::GpuMemoryBufferAllocated, this, reply));
+}
+
+void RenderMessageFilter::GpuMemoryBufferAllocated(
+    IPC::Message* reply,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer::WriteReplyParams(reply,
+                                                                    handle);
+  Send(reply);
 }
 
 }  // namespace content
