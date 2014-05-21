@@ -39,7 +39,8 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   SoftwareDevice(SynchronousCompositorOutputSurface* surface)
     : surface_(surface) {
   }
-  virtual void Resize(const gfx::Size& size) OVERRIDE {
+  virtual void Resize(const gfx::Size& pixel_size,
+                      float scale_factor) OVERRIDE {
     // Intentional no-op: canvas size is controlled by the embedder.
   }
   virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE {

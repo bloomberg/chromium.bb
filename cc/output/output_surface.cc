@@ -226,7 +226,7 @@ void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
         size.width(), size.height(), scale_factor);
   }
   if (software_device_)
-    software_device_->Resize(size);
+    software_device_->Resize(size, scale_factor);
 }
 
 gfx::Size OutputSurface::SurfaceSize() const {

@@ -47,7 +47,7 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
 
   gfx::Rect rect = damage_rect_;
-  rect.Intersect(gfx::Rect(viewport_size_));
+  rect.Intersect(gfx::Rect(viewport_pixel_size_));
   if (rect.IsEmpty())
     return;
 
@@ -65,8 +65,8 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
     SkImageInfo info;
     size_t rowBytes;
     const void* addr = canvas_->peekPixels(&info, &rowBytes);
-    image.width = viewport_size_.width();
-    image.height = viewport_size_.height();
+    image.width = viewport_pixel_size_.width();
+    image.height = viewport_pixel_size_.height();
     image.depth = 32;
     image.bits_per_pixel = 32;
     image.format = ZPixmap;
@@ -125,8 +125,8 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
                     compositor_->widget(),
                     gc_,
                     static_cast<const uint8*>(addr),
-                    viewport_size_.width(),
-                    viewport_size_.height(),
+                    viewport_pixel_size_.width(),
+                    viewport_pixel_size_.height(),
                     rect.x(),
                     rect.y(),
                     rect.x(),

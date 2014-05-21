@@ -12,17 +12,22 @@
 
 namespace cc {
 
-SoftwareOutputDevice::SoftwareOutputDevice() {}
+SoftwareOutputDevice::SoftwareOutputDevice() : scale_factor_(1.f) {
+}
 
 SoftwareOutputDevice::~SoftwareOutputDevice() {}
 
-void SoftwareOutputDevice::Resize(const gfx::Size& viewport_size) {
-  if (viewport_size_ == viewport_size)
+void SoftwareOutputDevice::Resize(const gfx::Size& viewport_pixel_size,
+                                  float scale_factor) {
+  scale_factor_ = scale_factor;
+
+  if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 
-  SkImageInfo info = SkImageInfo::MakeN32(
-      viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
-  viewport_size_ = viewport_size;
+  SkImageInfo info = SkImageInfo::MakeN32(viewport_pixel_size.width(),
+                                          viewport_pixel_size.height(),
+                                          kOpaque_SkAlphaType);
+  viewport_pixel_size_ = viewport_pixel_size;
   canvas_ = skia::AdoptRef(SkCanvas::NewRaster(info));
 }
 
@@ -35,7 +40,7 @@ SkCanvas* SoftwareOutputDevice::BeginPaint(const gfx::Rect& damage_rect) {
 void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
   DCHECK(frame_data);
   frame_data->id = 0;
-  frame_data->size = viewport_size_;
+  frame_data->size = viewport_pixel_size_;
   frame_data->damage_rect = damage_rect_;
 }
 

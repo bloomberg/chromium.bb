@@ -29,16 +29,20 @@ SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_pixel_size,
+                                     float scale_factor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (viewport_size_ == viewport_size)
+  scale_factor_ = scale_factor;
+
+  if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 
-  viewport_size_ = viewport_size;
-  contents_.reset(new gfx::Canvas(viewport_size, 1.0f, true));
+  viewport_pixel_size_ = viewport_pixel_size;
+  contents_.reset(new gfx::Canvas(viewport_pixel_size, 1.0f, true));
   memset(&bitmap_info_, 0, sizeof(bitmap_info_));
-  gfx::CreateBitmapHeader(viewport_size_.width(), viewport_size_.height(),
+  gfx::CreateBitmapHeader(viewport_pixel_size_.width(),
+                          viewport_pixel_size_.height(),
                           &bitmap_info_.bmiHeader);
 }
 
@@ -61,7 +65,7 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
 
   gfx::Rect rect = damage_rect_;
-  rect.Intersect(gfx::Rect(viewport_size_));
+  rect.Intersect(gfx::Rect(viewport_pixel_size_));
   if (rect.IsEmpty())
     return;
 

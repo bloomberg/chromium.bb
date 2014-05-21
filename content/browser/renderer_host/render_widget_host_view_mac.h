@@ -186,15 +186,16 @@ class Layer;
                              actualRange:(NSRangePointer)actualRange;
 @end
 
-@interface SoftwareLayer : CALayer {
- @private
-  content::RenderWidgetHostViewMac* renderWidgetHostView_;
-}
+@interface SoftwareLayer : CALayer
 
-- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
+- (id)init;
 
-// Invalidate the RenderWidgetHostViewMac because it may be going away. If
-// displayed again, it will draw white.
+- (void)setContentsToData:(const void *)data
+             withRowBytes:(size_t)rowBytes
+            withPixelSize:(gfx::Size)pixelSize
+          withScaleFactor:(float)scaleFactor;
+
+// Remove the layer from the layer hierarchy.
 - (void)disableRendering;
 
 @end
@@ -370,6 +371,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                              const gfx::Size& size,
                              float scale_factor,
                              const std::vector<ui::LatencyInfo>& latency_info);
+
+  void GotBrowserCompositorSoftwareFrame(cc::SoftwareFrameData* frame_data,
+                                         float scale_factor,
+                                         SkCanvas* canvas);
 
   // Draw the IOSurface by making its context current to this view.
   void DrawIOSurfaceWithoutCoreAnimation();

@@ -47,6 +47,8 @@
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/compositor/software_output_device_mac.h"
 #endif
 
 using cc::ContextProvider;
@@ -98,6 +100,9 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 #elif defined(USE_X11)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceX11(
       compositor));
+#elif defined(OS_MACOSX)
+  return scoped_ptr<cc::SoftwareOutputDevice>(
+      new SoftwareOutputDeviceMac(compositor));
 #else
   NOTREACHED();
   return scoped_ptr<cc::SoftwareOutputDevice>();

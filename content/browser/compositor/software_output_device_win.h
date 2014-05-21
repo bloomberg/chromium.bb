@@ -25,7 +25,8 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
   explicit SoftwareOutputDeviceWin(ui::Compositor* compositor);
   virtual ~SoftwareOutputDeviceWin();
 
-  virtual void Resize(const gfx::Size& viewport_size) OVERRIDE;
+  virtual void Resize(const gfx::Size& viewport_pixel_size,
+                      float scale_factor) OVERRIDE;
   virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
   virtual void CopyToPixels(const gfx::Rect& rect, void* pixels) OVERRIDE;
@@ -35,6 +36,8 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
   BITMAPINFO bitmap_info_;
   scoped_ptr<gfx::Canvas> contents_;
   bool is_hwnd_composited_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWin);
 };
 
 }  // namespace content

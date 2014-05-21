@@ -6,10 +6,12 @@
 
 namespace cc {
 
-void PixelTestSoftwareOutputDevice::Resize(const gfx::Size& size) {
-  gfx::Size expanded_size(size.width() + surface_expansion_size_.width(),
-                          size.height() + surface_expansion_size_.height());
-  SoftwareOutputDevice::Resize(expanded_size);
+void PixelTestSoftwareOutputDevice::Resize(const gfx::Size& pixel_size,
+                                           float scale_factor) {
+  gfx::Size expanded_size(
+      pixel_size.width() + surface_expansion_size_.width(),
+      pixel_size.height() + surface_expansion_size_.height());
+  SoftwareOutputDevice::Resize(expanded_size, scale_factor);
 }
 
 }  // namespace cc

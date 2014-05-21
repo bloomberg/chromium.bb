@@ -29,6 +29,8 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
   XDisplay* display_;
   GC gc_;
   XWindowAttributes attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceX11);
 };
 
 }  // namespace content

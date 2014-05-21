@@ -110,7 +110,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(
       compositor_.get()));
-  output_device_->Resize(size);
+  output_device_->Resize(size, 1.f);
 }
 
 void SoftwareOutputDeviceOzoneTest::TearDown() {
@@ -135,7 +135,7 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
   gfx::Rect damage(0, 0, 100, 100);
   gfx::Size size(200, 100);
   // Reduce size.
-  output_device_->Resize(size);
+  output_device_->Resize(size, 1.f);
 
   SkCanvas* canvas = output_device_->BeginPaint(damage);
   gfx::Size canvas_size(canvas->getDeviceSize().width(),
@@ -144,7 +144,7 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
 
   size.SetSize(1000, 500);
   // Increase size.
-  output_device_->Resize(size);
+  output_device_->Resize(size, 1.f);
 
   canvas = output_device_->BeginPaint(damage);
   canvas_size.SetSize(canvas->getDeviceSize().width(),
@@ -157,7 +157,7 @@ TEST_F(SoftwareOutputDeviceOzonePixelTest, CheckCopyToBitmap) {
   const int width = 6;
   const int height = 4;
   const gfx::Rect area(width, height);
-  output_device_->Resize(area.size());
+  output_device_->Resize(area.size(), 1.f);
   SkCanvas* canvas = output_device_->BeginPaint(area);
 
   // Clear the background to black.

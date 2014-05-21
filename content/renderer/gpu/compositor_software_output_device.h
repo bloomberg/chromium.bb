@@ -31,7 +31,7 @@ public:
   CompositorSoftwareOutputDevice();
   virtual ~CompositorSoftwareOutputDevice();
 
-  virtual void Resize(const gfx::Size& size) OVERRIDE;
+  virtual void Resize(const gfx::Size& pixel_size, float scale_factor) OVERRIDE;
 
   virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;

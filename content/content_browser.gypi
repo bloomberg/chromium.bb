@@ -378,6 +378,8 @@
     'browser/compositor/gpu_browser_compositor_output_surface.h',
     'browser/compositor/software_browser_compositor_output_surface.cc',
     'browser/compositor/software_browser_compositor_output_surface.h',
+    'browser/compositor/software_output_device_mac.mm',
+    'browser/compositor/software_output_device_mac.h',
     'browser/compositor/software_output_device_ozone.cc',
     'browser/compositor/software_output_device_ozone.h',
     'browser/compositor/software_output_device_win.cc',

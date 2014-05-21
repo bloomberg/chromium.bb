@@ -11,7 +11,7 @@ namespace cc {
 
 class PixelTestSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
-  virtual void Resize(const gfx::Size& size) OVERRIDE;
+  virtual void Resize(const gfx::Size& pixel_size, float scale_factor) OVERRIDE;
 
   void set_surface_expansion_size(const gfx::Size& surface_expansion_size) {
     surface_expansion_size_ = surface_expansion_size;

@@ -36,7 +36,7 @@ class CC_EXPORT SoftwareOutputDevice {
   // Discards any pre-existing backing buffers and allocates memory for a
   // software device of |size|. This must be called before the
   // |SoftwareOutputDevice| can be used in other ways.
-  virtual void Resize(const gfx::Size& size);
+  virtual void Resize(const gfx::Size& pixel_size, float scale_factor);
 
   // Called on BeginDrawingFrame. The compositor will draw into the returned
   // SkCanvas. The |SoftwareOutputDevice| implementation needs to provide a
@@ -74,7 +74,8 @@ class CC_EXPORT SoftwareOutputDevice {
   virtual gfx::VSyncProvider* GetVSyncProvider();
 
  protected:
-  gfx::Size viewport_size_;
+  gfx::Size viewport_pixel_size_;
+  float scale_factor_;
   gfx::Rect damage_rect_;
   skia::RefPtr<SkCanvas> canvas_;
   scoped_ptr<gfx::VSyncProvider> vsync_provider_;

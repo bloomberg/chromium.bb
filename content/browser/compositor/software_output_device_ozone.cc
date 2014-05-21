@@ -30,17 +30,20 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
 SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
 }
 
-void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_size) {
-  if (viewport_size_ == viewport_size)
+void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_pixel_size,
+                                       float scale_factor) {
+  scale_factor_ = scale_factor;
+
+  if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 
-  viewport_size_ = viewport_size;
+  viewport_pixel_size_ = viewport_pixel_size;
 
-  surface_ozone_->ResizeCanvas(viewport_size_);
+  surface_ozone_->ResizeCanvas(viewport_pixel_size_);
 }
 
 SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
-  DCHECK(gfx::Rect(viewport_size_).Contains(damage_rect));
+  DCHECK(gfx::Rect(viewport_pixel_size_).Contains(damage_rect));
 
   // Get canvas for next frame.
   canvas_ = surface_ozone_->GetCanvas();
