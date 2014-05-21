@@ -14,7 +14,7 @@ declare_args() {
 }
 
 if (visual_studio_path == "") {
-  toolchain_data = 
+  toolchain_data =
       exec_script("../../vs_toolchain.py", [ "get_toolchain_dir" ], "value")
   visual_studio_path = toolchain_data[0]
   windows_sdk_path = toolchain_data[1]
