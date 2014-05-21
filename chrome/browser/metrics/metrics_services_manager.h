@@ -45,9 +45,6 @@ class MetricsServicesManager {
  private:
   metrics::MetricsStateManager* GetMetricsStateManager();
 
-  // Returns true iff metrics reporting is enabled.
-  bool IsMetricsReportingEnabled() const;
-
   // Ensures that all functions are called from the same thread.
   base::ThreadChecker thread_checker_;
 

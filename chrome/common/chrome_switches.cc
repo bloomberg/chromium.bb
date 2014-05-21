@@ -516,6 +516,12 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
+// Enables metrics recording and reporting in the browser startup sequence, as
+// if this was an official Chrome build where the user allowed metrics
+// reporting. This is used for testing only.
+const char kEnableMetricsReportingForTesting[] =
+    "enable-metrics-reporting-for-testing";
+
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";

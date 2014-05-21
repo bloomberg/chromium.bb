@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <string>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,32 +19,18 @@ namespace metrics {
 
 class MetricsStateManagerTest : public testing::Test {
  public:
-  MetricsStateManagerTest() : is_metrics_reporting_enabled_(false) {
+  MetricsStateManagerTest() {
     MetricsStateManager::RegisterPrefs(prefs_.registry());
   }
 
   scoped_ptr<MetricsStateManager> CreateStateManager() {
-    return MetricsStateManager::Create(
-        &prefs_,
-        base::Bind(&MetricsStateManagerTest::is_metrics_reporting_enabled,
-                   base::Unretained(this))).Pass();
-  }
-
-  // Sets metrics reporting as enabled for testing.
-  void EnableMetricsReporting() {
-    is_metrics_reporting_enabled_ = true;
+    return MetricsStateManager::Create(&prefs_).Pass();
   }
 
  protected:
   TestingPrefServiceSimple prefs_;
 
  private:
-  bool is_metrics_reporting_enabled() const {
-    return is_metrics_reporting_enabled_;
-  }
-
-  bool is_metrics_reporting_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(MetricsStateManagerTest);
 };
 
@@ -74,7 +59,9 @@ TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
 }
 
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_High) {
-  EnableMetricsReporting();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableMetricsReportingForTesting);
+
   scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
   state_manager->CreateEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_HIGH,
