@@ -34,12 +34,16 @@ OAuthTokenGetter::OAuthCredentials::OAuthCredentials(
 
 OAuthTokenGetter::OAuthTokenGetter(
     scoped_ptr<OAuthCredentials> oauth_credentials,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    bool auto_refresh)
     : oauth_credentials_(oauth_credentials.Pass()),
       gaia_oauth_client_(
           new gaia::GaiaOAuthClient(url_request_context_getter)),
       url_request_context_getter_(url_request_context_getter),
       refreshing_oauth_token_(false) {
+  if (auto_refresh) {
+    refresh_timer_.reset(new base::OneShotTimer<OAuthTokenGetter>());
+  }
 }
 
 OAuthTokenGetter::~OAuthTokenGetter() {}
@@ -58,11 +62,24 @@ void OAuthTokenGetter::OnRefreshTokenResponse(
   HOST_LOG << "Received OAuth token.";
 
   oauth_access_token_ = access_token;
-  auth_token_expiry_time_ = base::Time::Now() +
+  base::TimeDelta token_expiration =
       base::TimeDelta::FromSeconds(expires_seconds) -
       base::TimeDelta::FromSeconds(kTokenUpdateTimeBeforeExpirySeconds);
+  auth_token_expiry_time_ = base::Time::Now() + token_expiration;
 
-  gaia_oauth_client_->GetUserEmail(access_token, kMaxRetries, this);
+  if (refresh_timer_) {
+    refresh_timer_->Stop();
+    refresh_timer_->Start(FROM_HERE, token_expiration, this,
+                          &OAuthTokenGetter::RefreshOAuthToken);
+  }
+
+  if (verified_email_.empty()) {
+    gaia_oauth_client_->GetUserEmail(access_token, kMaxRetries, this);
+  } else {
+    refreshing_oauth_token_ = false;
+    NotifyCallbacks(
+        OAuthTokenGetter::SUCCESS, verified_email_, oauth_access_token_);
+  }
 }
 
 void OAuthTokenGetter::OnGetUserEmailResponse(const std::string& user_email) {
@@ -77,6 +94,7 @@ void OAuthTokenGetter::OnGetUserEmailResponse(const std::string& user_email) {
     return;
   }
 
+  verified_email_ = user_email;
   refreshing_oauth_token_ = false;
 
   // Now that we've refreshed the token and verified that it's for the correct
@@ -100,6 +118,12 @@ void OAuthTokenGetter::OnOAuthError() {
   DCHECK(CalledOnValidThread());
   LOG(ERROR) << "OAuth: invalid credentials.";
   refreshing_oauth_token_ = false;
+
+  // Throw away invalid credentials and force a refresh.
+  oauth_access_token_.clear();
+  auth_token_expiry_time_ = base::Time();
+  verified_email_.clear();
+
   NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
 }
 
@@ -114,9 +138,10 @@ void OAuthTokenGetter::OnNetworkError(int response_code) {
 
 void OAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
   DCHECK(CalledOnValidThread());
-  bool need_new_auth_token = oauth_credentials_.get() &&
-      (auth_token_expiry_time_.is_null() ||
-       base::Time::Now() >= auth_token_expiry_time_);
+  bool need_new_auth_token = auth_token_expiry_time_.is_null() ||
+      base::Time::Now() >= auth_token_expiry_time_ ||
+      verified_email_.empty();
+
   if (need_new_auth_token) {
     pending_callbacks_.push(on_access_token);
     if (!refreshing_oauth_token_)

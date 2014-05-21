@@ -1144,7 +1144,8 @@ void HostProcess::StartHost() {
             use_service_account_));
 
     oauth_token_getter_.reset(new OAuthTokenGetter(
-        oauth_credentials.Pass(), context_->url_request_context_getter()));
+        oauth_credentials.Pass(), context_->url_request_context_getter(),
+        false));
 
     signaling_connector_->EnableOAuth(oauth_token_getter_.get());
   }

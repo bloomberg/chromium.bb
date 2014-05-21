@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 namespace net {
@@ -56,7 +58,8 @@ class OAuthTokenGetter :
 
   OAuthTokenGetter(
       scoped_ptr<OAuthCredentials> oauth_credentials,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      bool auto_refresh);
   virtual ~OAuthTokenGetter();
 
   // Call |on_access_token| with an access token, or the failure status.
@@ -84,8 +87,10 @@ class OAuthTokenGetter :
 
   bool refreshing_oauth_token_;
   std::string oauth_access_token_;
+  std::string verified_email_;
   base::Time auth_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
+  scoped_ptr<base::OneShotTimer<OAuthTokenGetter> > refresh_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetter);
 };
