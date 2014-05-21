@@ -24,6 +24,7 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/core.h"
@@ -117,6 +118,17 @@ const char* kJSGetAccessibilityJSONReplyType = "getAccessibilityJSONReply";
 const char* kJSAccessibilityJSON = "json";
 // Cancel the stream URL request (Plugin -> Page)
 const char* kJSCancelStreamUrlType = "cancelStreamUrl";
+// Navigate to the given URL (Plugin -> Page)
+const char* kJSNavigateType = "navigate";
+const char* kJSNavigateUrl = "url";
+const char* kJSNavigateNewTab = "newTab";
+// Open the email editor with the given parameters (Plugin -> Page)
+const char* kJSEmailType = "email";
+const char* kJSEmailTo = "to";
+const char* kJSEmailCc = "cc";
+const char* kJSEmailBcc = "bcc";
+const char* kJSEmailSubject = "subject";
+const char* kJSEmailBody = "body";
 
 const int kFindResultCooldownMs = 100;
 
@@ -191,10 +203,29 @@ void ScaleRect(float scale, pp::Rect* rect) {
   rect->SetRect(left, top, right - left, bottom - top);
 }
 
+// TODO(raymes): Remove this dependency on VarPrivate/InstancePrivate. It's
+// needed right now to do a synchronous call to JavaScript, but we could easily
+// replace this with a custom PPB_PDF function.
+pp::Var ModalDialog(const pp::Instance* instance,
+                    const std::string& type,
+                    const std::string& message,
+                    const std::string& default_answer) {
+  const PPB_Instance_Private* interface =
+      reinterpret_cast<const PPB_Instance_Private*>(
+          pp::Module::Get()->GetBrowserInterface(
+              PPB_INSTANCE_PRIVATE_INTERFACE));
+  pp::VarPrivate window(pp::PASS_REF,
+      interface->GetWindowObject(instance->pp_instance()));
+  if (default_answer.empty())
+    return window.Call(type, message);
+  else
+    return window.Call(type, message, default_answer);
+}
+
 }  // namespace
 
 OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
-    : pp::InstancePrivate(instance),
+    : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
       pp::Selection_Dev(this),
@@ -495,10 +526,6 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   }
 
   OnGeometryChanged(zoom_, old_device_scale);
-}
-
-pp::Var OutOfProcessInstance::GetInstanceObject() {
-  return pp::Var();
 }
 
 pp::Var OutOfProcessInstance::GetLinkAtPosition(
@@ -807,12 +834,11 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
       return;
     }
   }
-  if (open_in_new_tab) {
-    GetWindowObject().Call("open", url_copy);
-  } else {
-    GetWindowObject().GetProperty("top").GetProperty("location").
-        SetProperty("href", url_copy);
-  }
+  pp::VarDictionary message;
+  message.Set(kType, kJSNavigateType);
+  message.Set(kJSNavigateUrl, url_copy);
+  message.Set(kJSNavigateNewTab, open_in_new_tab);
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::UpdateCursor(PP_CursorType_Dev cursor) {
@@ -885,17 +911,17 @@ void OutOfProcessInstance::GetDocumentPassword(
 }
 
 void OutOfProcessInstance::Alert(const std::string& message) {
-  GetWindowObject().Call("alert", message);
+  ModalDialog(this, "alert", message, std::string());
 }
 
 bool OutOfProcessInstance::Confirm(const std::string& message) {
-  pp::Var result = GetWindowObject().Call("confirm", message);
+  pp::Var result = ModalDialog(this, "confirm", message, std::string());
   return result.is_bool() ? result.AsBool() : false;
 }
 
 std::string OutOfProcessInstance::Prompt(const std::string& question,
                                          const std::string& default_answer) {
-  pp::Var result = GetWindowObject().Call("prompt", question, default_answer);
+  pp::Var result = ModalDialog(this, "prompt", question, default_answer);
   return result.is_string() ? result.AsString() : std::string();
 }
 
@@ -908,15 +934,19 @@ void OutOfProcessInstance::Email(const std::string& to,
                                  const std::string& bcc,
                                  const std::string& subject,
                                  const std::string& body) {
-  std::string javascript =
-      "var href = 'mailto:" + net::EscapeUrlEncodedData(to, false) +
-      "?cc=" + net::EscapeUrlEncodedData(cc, false) +
-      "&bcc=" + net::EscapeUrlEncodedData(bcc, false) +
-      "&subject=" + net::EscapeUrlEncodedData(subject, false) +
-      "&body=" + net::EscapeUrlEncodedData(body, false) +
-      "';var temp = window.open(href, '_blank', " +
-      "'width=1,height=1');if(temp) temp.close();";
-  ExecuteScript(javascript);
+  pp::VarDictionary message;
+  message.Set(pp::Var(kType), pp::Var(kJSEmailType));
+  message.Set(pp::Var(kJSEmailTo),
+              pp::Var(net::EscapeUrlEncodedData(to, false)));
+  message.Set(pp::Var(kJSEmailCc),
+              pp::Var(net::EscapeUrlEncodedData(cc, false)));
+  message.Set(pp::Var(kJSEmailBcc),
+              pp::Var(net::EscapeUrlEncodedData(bcc, false)));
+  message.Set(pp::Var(kJSEmailSubject),
+              pp::Var(net::EscapeUrlEncodedData(subject, false)));
+  message.Set(pp::Var(kJSEmailBody),
+              pp::Var(net::EscapeUrlEncodedData(body, false)));
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::Print() {

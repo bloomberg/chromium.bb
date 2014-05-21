@@ -23,8 +23,8 @@
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
-#include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/private/var_private.h"
 #include "ppapi/cpp/url_loader.h"
@@ -36,7 +36,7 @@ class TextInput_Dev;
 
 namespace chrome_pdf {
 
-class OutOfProcessInstance : public pp::InstancePrivate,
+class OutOfProcessInstance : public pp::Instance,
                              public pp::Find_Private,
                              public pp::Printing_Dev,
                              public pp::Selection_Dev,
@@ -54,7 +54,6 @@ class OutOfProcessInstance : public pp::InstancePrivate,
   virtual void HandleMessage(const pp::Var& message) OVERRIDE;
   virtual bool HandleInputEvent(const pp::InputEvent& event) OVERRIDE;
   virtual void DidChangeView(const pp::View& view) OVERRIDE;
-  virtual pp::Var GetInstanceObject() OVERRIDE;
 
   // pp::Find_Private implementation.
   virtual bool StartFind(const std::string& text, bool case_sensitive) OVERRIDE;
