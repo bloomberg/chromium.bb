@@ -2403,3 +2403,59 @@
    fun:_ZN3gfx31NSImageToSkBitmapWithColorSpaceEP7NSImagebP12CGColorSpace
    fun:_ZNK2ui9Clipboard9ReadImageENS_13ClipboardTypeE
 }
+{
+   bug_375391_a
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:NSAllocateObject
+   fun:+[NSData(NSData) dataWithBytesNoCopy:length:]
+   fun:-[NSFileManager fileSystemRepresentationWithPath:]
+   fun:-[NSString(NSPathUtilities) fileSystemRepresentation]
+   fun:_ZN4base3mac18NSStringToFilePathEP8NSString
+   fun:_ZN4base10GetTempDirEPNS_8FilePathE
+   fun:_ZN4base22CreateNewTempDirectoryERKSsPNS_8FilePathE
+   fun:_ZN4base13ScopedTempDir19CreateUniqueTempDirEv
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
+}
+{
+   bug_375391_b
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFStringCreateImmutableFunnel3
+   fun:CFStringCreateWithBytes
+   fun:-[NSPlaceholderString initWithBytes:length:encoding:]
+   fun:-[NSString initWithUTF8String:]
+   fun:NSTemporaryDirectory
+   fun:_ZN4base10GetTempDirEPNS_8FilePathE
+   fun:_ZN4base22CreateNewTempDirectoryERKSsPNS_8FilePathE
+   fun:_ZN4base13ScopedTempDir19CreateUniqueTempDirEv
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
+}
+{
+   bug_375391_c
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:NSAllocateObject
+   fun:+[NSPathStore2 pathStoreWithCharacters:length:]
+   fun:-[NSString(NSPathUtilities) _stringByStandardizingPathUsingCache:]
+   fun:-[NSBundle _initInfoDictionary]
+   fun:+[NSBundle mainBundle]
+   fun:_ZN4base3mac11OuterBundleEv
+   fun:_ZN4base3mac12_GLOBAL__N_118UncachedAmIBundledEv
+   fun:_ZN4base3mac10AmIBundledEv
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
+}

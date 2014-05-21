@@ -7,43 +7,24 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
-#include "third_party/WebKit/public/platform/Platform.h"
+#if !defined(OS_IOS)
+#include "content/test/test_webkit_platform_support.h"
+#endif
 #include "third_party/WebKit/public/web/WebKit.h"
 
 namespace content {
-
-#if !defined(OS_IOS)
-// A stubbed out WebKit platform support impl.
-class UnitTestTestSuite::UnitTestWebKitPlatformSupport
-    : public blink::Platform {
- public:
-  UnitTestWebKitPlatformSupport() {}
-  virtual ~UnitTestWebKitPlatformSupport() {}
-  virtual void cryptographicallyRandomValues(unsigned char* buffer,
-                                             size_t length) OVERRIDE {
-    base::RandBytes(buffer, length);
-  }
-  virtual const unsigned char* getTraceCategoryEnabledFlag(
-      const char* categoryName) {
-    // Causes tracing macros to be disabled.
-    static const unsigned char kEnabled = 0;
-    return &kEnabled;
-  }
-};
-#endif  // !OS_IOS
 
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
   DCHECK(test_suite);
 #if !defined(OS_IOS)
-  webkit_platform_support_.reset(new UnitTestWebKitPlatformSupport);
-  blink::initialize(webkit_platform_support_.get());
+  platform_support_.reset(new TestWebKitPlatformSupport);
 #endif
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() {
 #if !defined(OS_IOS)
-  blink::shutdown();
+  platform_support_.reset();
 #endif
 }
 
