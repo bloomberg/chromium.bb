@@ -33,6 +33,7 @@
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_cpp_bindings',
+        'mojo_geometry_lib',
         'mojo_js',
         'mojo_js_bindings',
         'mojo_js_unittests',
@@ -452,6 +453,23 @@
         'spy/spy.h',
         'spy/websocket_server.cc',
         'spy/websocket_server.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_geometry_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_GEOMETRY_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_environment_chromium',
+        'mojo_geometry_bindings',
+        'mojo_system_impl',
+      ],
+      'sources': [
+        'geometry/geometry_type_converters.cc',
+        'geometry/geometry_type_converters.h',
       ],
     },
     {

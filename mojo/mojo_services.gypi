@@ -72,6 +72,7 @@
         'mojo_cpp_bindings',
       ],
       'dependencies': [
+        'mojo_geometry_bindings',
         'mojo_cpp_bindings',
       ],
     },
@@ -86,6 +87,8 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_common_lib',
         'mojo_environment_chromium',
+        'mojo_geometry_bindings',
+        'mojo_geometry_lib',
         'mojo_gles2_service',
         'mojo_native_viewport_bindings',
         'mojo_shell_client',
@@ -95,7 +98,6 @@
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
       ],
       'sources': [
-        'services/native_viewport/geometry_conversions.h',
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_mac.mm',
@@ -221,6 +223,8 @@
             'mojo_aura_support',
             'mojo_common_lib',
             'mojo_environment_chromium',
+            'mojo_geometry_bindings',
+            'mojo_geometry_lib',
             'mojo_gles2',
             'mojo_launcher_bindings',
             'mojo_native_viewport_bindings',

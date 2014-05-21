@@ -5,9 +5,9 @@
 #include "mojo/aura/window_tree_host_mojo.h"
 
 #include "mojo/aura/context_factory_mojo.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/services/native_viewport/geometry_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
