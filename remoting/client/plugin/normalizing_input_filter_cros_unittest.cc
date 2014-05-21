@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/normalizing_input_filter.h"
+#include "remoting/client/plugin/normalizing_input_filter_cros.h"
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,9 +22,9 @@ namespace {
 const unsigned int kUsbLeftOsKey      = 0x0700e3;
 const unsigned int kUsbRightOsKey     = 0x0700e7;
 
-const unsigned int kUsbFunctionKey    = 0x07003a; // F1
-const unsigned int kUsbExtendedKey    = 0x070049; // Insert
-const unsigned int kUsbOtherKey       = 0x07002b; // Tab
+const unsigned int kUsbFunctionKey    = 0x07003a;  // F1
+const unsigned int kUsbExtendedKey    = 0x070049;  // Insert
+const unsigned int kUsbOtherKey       = 0x07002b;  // Tab
 
 // A hardcoded value used to verify |lock_states| is preserved.
 static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_NUMLOCK;
@@ -63,8 +64,8 @@ static MouseEvent MakeMouseMoveEvent(int x, int y) {
 // Test OSKey press/release.
 TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -84,8 +85,8 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
 // Test OSKey key repeat switches it to "modifying" mode.
 TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -106,8 +107,8 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
 // just the function key events.
 TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -126,8 +127,8 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
 // just the function key events.
 TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -146,8 +147,8 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
 // results in normal-looking sequence.
 TEST(NormalizingInputFilterCrosTest, OtherKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -168,8 +169,8 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
 // results in OSKey switching to modifying mode for the normal key.
 TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;
@@ -192,8 +193,8 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
 // Test OSKey press followed by mouse event puts the OSKey into modifying mode.
 TEST(NormalizingInputFilterCrosTest, MouseEvent) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
 
   {
     InSequence s;

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(ajwong): We need to come up with a better description of the
-// responsibilities for each thread.
-
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
 #define REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
 
@@ -23,7 +20,6 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/media_source_video_renderer.h"
-#include "remoting/client/plugin/normalizing_input_filter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"

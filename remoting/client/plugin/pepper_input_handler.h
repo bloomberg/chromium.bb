@@ -27,8 +27,12 @@ class InputStub;
 class PepperInputHandler : public pp::MouseLock {
  public:
   // |instance| must outlive |this|.
-  PepperInputHandler(pp::Instance* instance, protocol::InputStub* input_stub);
+  explicit PepperInputHandler(pp::Instance* instance);
   virtual ~PepperInputHandler();
+
+  void set_input_stub(protocol::InputStub* input_stub) {
+    input_stub_ = input_stub;
+  }
 
   bool HandleInputEvent(const pp::InputEvent& event);
 

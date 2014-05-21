@@ -424,6 +424,12 @@ remoting.ClientPlugin.prototype.connect = function(
     hostJid, hostPublicKey, localJid, sharedSecret,
     authenticationMethods, authenticationTag,
     clientPairingId, clientPairedSecret) {
+  var keyFilter = '';
+  if (navigator.platform.indexOf('Mac') == -1) {
+    keyFilter = 'mac';
+  } else if (navigator.userAgent.match(/\bCrOS\b/)) {
+    keyFilter = 'cros';
+  }
   this.plugin.postMessage(JSON.stringify(
     { method: 'connect', data: {
         hostJid: hostJid,
@@ -434,7 +440,8 @@ remoting.ClientPlugin.prototype.connect = function(
         authenticationTag: authenticationTag,
         capabilities: this.capabilities_.join(" "),
         clientPairingId: clientPairingId,
-        clientPairedSecret: clientPairedSecret
+        clientPairedSecret: clientPairedSecret,
+        keyFilter: keyFilter
       }
     }));
 };

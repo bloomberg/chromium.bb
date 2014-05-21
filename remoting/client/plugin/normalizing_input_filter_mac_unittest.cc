@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/normalizing_input_filter.h"
+#include "remoting/client/plugin/normalizing_input_filter_mac.h"
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,8 +47,8 @@ KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
 // Test CapsLock press/release.
 TEST(NormalizingInputFilterMacTest, CapsLock) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;
@@ -64,8 +65,8 @@ TEST(NormalizingInputFilterMacTest, CapsLock) {
 // Test without pressing command key.
 TEST(NormalizingInputFilterMacTest, NoInjection) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;
@@ -84,8 +85,8 @@ TEST(NormalizingInputFilterMacTest, NoInjection) {
 // Test pressing command key and other normal keys.
 TEST(NormalizingInputFilterMacTest, CmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;
@@ -145,8 +146,8 @@ TEST(NormalizingInputFilterMacTest, CmdKey) {
 // Test pressing command and special keys.
 TEST(NormalizingInputFilterMacTest, SpecialKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;
@@ -188,8 +189,8 @@ TEST(NormalizingInputFilterMacTest, SpecialKeys) {
 // Test pressing multiple command keys.
 TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;
@@ -217,8 +218,8 @@ TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
 // Test press C key before command key.
 TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterMac(&stub));
 
   {
     InSequence s;

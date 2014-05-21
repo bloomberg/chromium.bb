@@ -25,13 +25,6 @@
         'client/plugin/pepper_entrypoints.cc',
         'client/plugin/pepper_entrypoints.h',
       ],
-      'conditions' : [
-        [ 'chromeos==0', {
-          'sources!': [
-            'client/plugin/normalizing_input_filter_cros.cc',
-          ],
-        }],
-      ],
     },  # end of target 'remoting_client_plugin'
 
     {

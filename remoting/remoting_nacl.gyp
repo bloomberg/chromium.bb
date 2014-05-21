@@ -123,7 +123,18 @@
       'sources!': [
         'base/url_request_context.cc',
         'jingle_glue/chromium_socket_factory.cc',
-      ]
+      ],
+
+      # Include normalizing_input_filter_mac.cc excluded by the filename
+      # exclusion rules. Must be in target_conditions to make sure it's
+      # evaluated after the filename rules.
+      'target_conditions': [
+        ['1==1', {
+          'sources/': [
+            [ 'include', 'client/plugin/normalizing_input_filter_mac.cc' ],
+          ],
+        }],
+      ],
     },  # end of target 'remoting_client_plugin_lib_nacl'
 
     {

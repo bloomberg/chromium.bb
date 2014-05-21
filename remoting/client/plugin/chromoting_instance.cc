@@ -42,6 +42,8 @@
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/media_source_video_renderer.h"
+#include "remoting/client/plugin/normalizing_input_filter_cros.h"
+#include "remoting/client/plugin/normalizing_input_filter_mac.h"
 #include "remoting/client/plugin/pepper_audio_player.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator.h"
@@ -210,8 +212,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
       key_mapper_(&input_tracker_),
-      normalizing_input_filter_(CreateNormalizingInputFilter(&key_mapper_)),
-      input_handler_(this, normalizing_input_filter_.get()),
+      input_handler_(this),
       use_async_pin_dialog_(false),
       use_media_source_rendering_(false),
       weak_factory_(this) {
@@ -642,6 +643,30 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       return;
     }
   }
+
+#if defined(OS_NACL)
+  std::string key_filter;
+  if (!data.GetString("keyFilter", &key_filter)) {
+    NOTREACHED();
+    normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
+  } else if (key_filter == "mac") {
+    normalizing_input_filter_.reset(
+        new NormalizingInputFilterMac(&key_mapper_));
+  } else if (key_filter == "cros") {
+    normalizing_input_filter_.reset(
+        new NormalizingInputFilterCros(&key_mapper_));
+  } else {
+    DCHECK(key_filter.empty());
+    normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
+  }
+#elif defined(OS_MACOSX)
+  normalizing_input_filter_.reset(new NormalizingInputFilterMac(&key_mapper_));
+#elif defined(OS_CHROMEOS)
+  normalizing_input_filter_.reset(new NormalizingInputFilterCros(&key_mapper_));
+#else
+  normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
+#endif
+  input_handler_.set_input_stub(normalizing_input_filter_.get());
 
   ConnectWithConfig(config, local_jid);
 }
