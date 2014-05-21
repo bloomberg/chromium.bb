@@ -550,10 +550,10 @@ Mutex& ThreadState::globalRootsMutex()
 }
 
 // Trigger garbage collection on a 50% increase in size, but not for
-// less than 2 pages.
+// less than 512kbytes.
 static bool increasedEnoughToGC(size_t newSize, size_t oldSize)
 {
-    if (newSize < 2 * blinkPagePayloadSize())
+    if (newSize < 1 << 19)
         return false;
     return newSize > oldSize + (oldSize >> 1);
 }
@@ -570,10 +570,10 @@ bool ThreadState::shouldGC()
 }
 
 // Trigger conservative garbage collection on a 100% increase in size,
-// but not for less than 2 pages.
+// but not for less than 4Mbytes.
 static bool increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
 {
-    if (newSize < 2 * blinkPagePayloadSize())
+    if (newSize < 1 << 22)
         return false;
     return newSize > 2 * oldSize;
 }
