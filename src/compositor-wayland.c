@@ -1997,9 +1997,9 @@ err_free:
 static void
 wayland_compositor_destroy(struct wayland_compositor *c)
 {
-	struct weston_output *output;
+	struct weston_output *output, *next;
 
-	wl_list_for_each(output, &c->base.output_list, link)
+	wl_list_for_each_safe(output, next, &c->base.output_list, link)
 		wayland_output_destroy(output);
 
 	c->base.renderer->destroy(&c->base);
