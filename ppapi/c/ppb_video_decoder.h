@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_decoder.idl modified Tue May  6 05:19:45 2014. */
+/* From ppb_video_decoder.idl modified Wed May 21 09:50:52 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_DECODER_H_
 #define PPAPI_C_PPB_VIDEO_DECODER_H_
@@ -100,9 +100,8 @@ struct PPB_VideoDecoder_0_1 { /* dev */
                         struct PP_CompletionCallback callback);
   /**
    * Decodes a bitstream buffer. Copies |size| bytes of data from the plugin's
-   * |buffer|. The plugin should maintain the buffer and not call Decode() again
-   * until the decoder signals completion by returning PP_OK or by running
-   * |callback|.
+   * |buffer|. The plugin should wait until the decoder signals completion by
+   * returning PP_OK or by running |callback| before calling Decode() again.
    *
    * In general, each bitstream buffer should contain a demuxed bitstream frame
    * for the selected video codec. For example, H264 decoders expect to receive
@@ -126,6 +125,11 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * completion.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * Returns PP_ERROR_FAILED if the decoder isn't initialized or if a Flush()
+   * or Reset() call is pending.
+   * Returns PP_ERROR_INPROGRESS if there is another Decode() call pending.
+   * Returns PP_ERROR_NOMEMORY if a bitstream buffer can't be created.
+   * Returns PP_ERROR_ABORTED when Reset() is called while Decode() is pending.
    */
   int32_t (*Decode)(PP_Resource video_decoder,
                     uint32_t decode_id,
@@ -147,7 +151,9 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * completion.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   * Returns PP_OK if a picture is available.
+   * Returns PP_ERROR_FAILED if the decoder isn't initialized or if a Reset()
+   * call is pending.
+   * Returns PP_ERROR_INPROGRESS if there is another GetPicture() call pending.
    * Returns PP_ERROR_ABORTED when Reset() is called, or if a call to Flush()
    * completes while GetPicture() is pending.
    */
@@ -167,13 +173,15 @@ struct PPB_VideoDecoder_0_1 { /* dev */
   void (*RecyclePicture)(PP_Resource video_decoder,
                          const struct PP_VideoPicture* picture);
   /**
-   * Flushes the decoder. The plugin should call this when it reaches the end of
-   * its video stream in order to stop cleanly. The decoder will run all pending
-   * calls to completion. The plugin should make no further calls to the decoder
-   * other than GetPicture() and RecyclePicture() until the decoder signals
-   * completion by running the callback. Just before completion, any pending
-   * GetPicture() call will complete by running the callback with result
-   * PP_ERROR_ABORTED to signal that no more pictures are available.
+   * Flushes the decoder. The plugin should call Flush() when it reaches the
+   * end of its video stream in order to stop cleanly. The decoder will run any
+   * pending Decode() call to completion. The plugin should make no further
+   * calls to the decoder other than GetPicture() and RecyclePicture() until
+   * the decoder signals completion by running |callback|. Just before
+   * completion, any pending GetPicture() call will complete by running its
+   * callback with result PP_ERROR_ABORTED to signal that no more pictures are
+   * available. The plugin should recycle any pictures it is using before
+   * resuming decoding.
    *
    * @param[in] video_decoder A <code>PP_Resource</code> identifying the video
    * decoder.
@@ -181,15 +189,18 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * completion.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * Returns PP_ERROR_FAILED if the decoder isn't initialized.
    */
   int32_t (*Flush)(PP_Resource video_decoder,
                    struct PP_CompletionCallback callback);
   /**
    * Resets the decoder as quickly as possible. The plugin can call Reset() to
-   * skip to another position in the video stream. Pending calls to Decode() and
-   * GetPicture()) are immediately aborted, causing their callbacks to run with
-   * PP_ERROR_ABORTED. The plugin should not make any further calls to the
-   * decoder until the decoder signals completion by running |callback|.
+   * skip to another position in the video stream. After Reset() returns, any
+   * pending calls to Decode() and GetPicture()) abort, causing their callbacks
+   * to run with PP_ERROR_ABORTED. The plugin should not make further calls to
+   * the decoder until the decoder signals completion by running |callback|.
+   * The pictures in use by the plugin remain valid until decoding is resumed,
+   * but need not be recycled.
    *
    * @param[in] video_decoder A <code>PP_Resource</code> identifying the video
    * decoder.
@@ -197,6 +208,7 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * completion.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * Returns PP_ERROR_FAILED if the decoder isn't initialized.
    */
   int32_t (*Reset)(PP_Resource video_decoder,
                    struct PP_CompletionCallback callback);
