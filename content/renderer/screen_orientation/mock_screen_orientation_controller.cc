@@ -31,7 +31,7 @@ void MockScreenOrientationController::UpdateLock(
     blink::WebScreenOrientationLockType lock) {
   DCHECK(lock != blink::WebScreenOrientationLockDefault);
   current_lock_ = lock;
-  if (IsOrientationAllowedByCurrentLock(current_orientation_))
+  if (!IsOrientationAllowedByCurrentLock(current_orientation_))
     UpdateScreenOrientation(SuitableOrientationForCurrentLock());
 }
 
