@@ -14,6 +14,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/fake_signin_manager.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,7 +34,10 @@ const char kTestAppID[] = "TestApp";
 const char kUserID[] = "user";
 
 KeyedService* BuildGCMProfileService(content::BrowserContext* context) {
-  return new GCMProfileService(Profile::FromBrowserContext(context));
+  return new GCMProfileService(
+      Profile::FromBrowserContext(context),
+      scoped_ptr<GCMClientFactory>(
+          new FakeGCMClientFactory(FakeGCMClient::NO_DELAY_START)));
 }
 
 }  // namespace
@@ -49,25 +53,38 @@ class GCMProfileServiceTest : public testing::Test {
   FakeGCMClient* GetGCMClient() const;
 
   void RegisterAndWaitForCompletion(const std::vector<std::string>& sender_ids);
+  void UnregisterAndWaitForCompletion();
   void SendAndWaitForCompletion(const GCMClient::OutgoingMessage& message);
 
   void RegisterCompleted(const base::Closure& callback,
                          const std::string& registration_id,
                          GCMClient::Result result);
+  void UnregisterCompleted(const base::Closure& callback,
+                           GCMClient::Result result);
   void SendCompleted(const base::Closure& callback,
                      const std::string& message_id,
                      GCMClient::Result result);
 
+  GCMDriver* driver() const { return gcm_profile_service_->driver(); }
+  std::string registration_id() const { return registration_id_; }
+  GCMClient::Result registration_result() const { return registration_result_; }
+  GCMClient::Result unregistration_result() const {
+    return unregistration_result_;
+  }
+  std::string send_message_id() const { return send_message_id_; }
+  GCMClient::Result send_result() const { return send_result_; }
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   GCMProfileService* gcm_profile_service_;
 
   std::string registration_id_;
   GCMClient::Result registration_result_;
+  GCMClient::Result unregistration_result_;
   std::string send_message_id_;
   GCMClient::Result send_result_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
 };
 
@@ -82,7 +99,7 @@ GCMProfileServiceTest::~GCMProfileServiceTest() {
 
 FakeGCMClient* GCMProfileServiceTest::GetGCMClient() const {
   return static_cast<FakeGCMClient*>(
-      gcm_profile_service_->GetGCMClientForTesting());
+      gcm_profile_service_->driver()->GetGCMClientForTesting());
 }
 
 void GCMProfileServiceTest::SetUp() {
@@ -95,8 +112,6 @@ void GCMProfileServiceTest::SetUp() {
       GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(),
           &BuildGCMProfileService));
-  gcm_profile_service_->Initialize(scoped_ptr<GCMClientFactory>(
-      new FakeGCMClientFactory(FakeGCMClient::NO_DELAY_START)));
 
   FakeSigninManager* signin_manager = static_cast<FakeSigninManager*>(
       SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
@@ -107,7 +122,7 @@ void GCMProfileServiceTest::SetUp() {
 void GCMProfileServiceTest::RegisterAndWaitForCompletion(
     const std::vector<std::string>& sender_ids) {
   base::RunLoop run_loop;
-  gcm_profile_service_->Register(
+  gcm_profile_service_->driver()->Register(
       kTestAppID,
       sender_ids,
       base::Bind(&GCMProfileServiceTest::RegisterCompleted,
@@ -116,15 +131,26 @@ void GCMProfileServiceTest::RegisterAndWaitForCompletion(
   run_loop.Run();
 }
 
+void GCMProfileServiceTest::UnregisterAndWaitForCompletion() {
+  base::RunLoop run_loop;
+  gcm_profile_service_->driver()->Unregister(
+      kTestAppID,
+      base::Bind(&GCMProfileServiceTest::UnregisterCompleted,
+                 base::Unretained(this),
+                 run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
 void GCMProfileServiceTest::SendAndWaitForCompletion(
     const GCMClient::OutgoingMessage& message) {
   base::RunLoop run_loop;
-  gcm_profile_service_->Send(kTestAppID,
-                             kUserID,
-                             message,
-                             base::Bind(&GCMProfileServiceTest::SendCompleted,
-                                        base::Unretained(this),
-                                        run_loop.QuitClosure()));
+  gcm_profile_service_->driver()->Send(
+      kTestAppID,
+      kUserID,
+      message,
+      base::Bind(&GCMProfileServiceTest::SendCompleted,
+                 base::Unretained(this),
+                 run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -137,6 +163,13 @@ void GCMProfileServiceTest::RegisterCompleted(
   callback.Run();
 }
 
+void GCMProfileServiceTest::UnregisterCompleted(
+    const base::Closure& callback,
+    GCMClient::Result result) {
+  unregistration_result_ = result;
+  callback.Run();
+}
+
 void GCMProfileServiceTest::SendCompleted(
     const base::Closure& callback,
     const std::string& message_id,
@@ -146,45 +179,28 @@ void GCMProfileServiceTest::SendCompleted(
   callback.Run();
 }
 
-TEST_F(GCMProfileServiceTest, RegisterUnderNeutralChannelSignal) {
-  // GCMClient should not be checked in.
-  EXPECT_FALSE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
-
-  // Invoking register will make GCMClient checked in.
+TEST_F(GCMProfileServiceTest, RegisterAndUnregister) {
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender");
   RegisterAndWaitForCompletion(sender_ids);
 
-  // GCMClient should be checked in.
-  EXPECT_TRUE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
-
-  // Registration should succeed.
   std::string expected_registration_id =
       FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
-  EXPECT_EQ(expected_registration_id, registration_id_);
-  EXPECT_EQ(GCMClient::SUCCESS, registration_result_);
+  EXPECT_EQ(expected_registration_id, registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+
+  UnregisterAndWaitForCompletion();
+  EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
 }
 
-TEST_F(GCMProfileServiceTest, SendUnderNeutralChannelSignal) {
-  // GCMClient should not be checked in.
-  EXPECT_FALSE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
-
-  // Invoking send will make GCMClient checked in.
+TEST_F(GCMProfileServiceTest, Send) {
   GCMClient::OutgoingMessage message;
   message.id = "1";
   message.data["key1"] = "value1";
   SendAndWaitForCompletion( message);
 
-  // GCMClient should be checked in.
-  EXPECT_TRUE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
-
-  // Sending should succeed.
-  EXPECT_EQ(message.id, send_message_id_);
-  EXPECT_EQ(GCMClient::SUCCESS, send_result_);
+  EXPECT_EQ(message.id, send_message_id());
+  EXPECT_EQ(GCMClient::SUCCESS, send_result());
 }
 
 }  // namespace gcm

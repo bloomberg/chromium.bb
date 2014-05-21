@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/gcm_driver/gcm_client_factory.h"
 
 namespace {
 

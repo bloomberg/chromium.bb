@@ -9,12 +9,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/gcm_driver/gcm_client_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -73,43 +75,61 @@ void GCMProfileService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-GCMProfileService::GCMProfileService(Profile* profile)
-    : GCMDriver(scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
-          SigninManagerFactory::GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-#if defined(OS_ANDROID)
-          NULL))),
-#else
-          LoginUIServiceFactory::GetForProfile(profile)))),
-#endif
-      profile_(profile) {
+GCMProfileService::GCMProfileService(
+    Profile* profile,
+    scoped_ptr<GCMClientFactory> gcm_client_factory)
+    : profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
+
+#if defined(OS_ANDROID)
+  LoginUIService* login_ui_service = NULL;
+#else
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile_);
+#endif
+  driver_.reset(new GCMDriver(
+      gcm_client_factory.Pass(),
+      scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+          SigninManagerFactory::GetForProfile(profile_),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+          login_ui_service)),
+      profile_->GetPath().Append(chrome::kGCMStoreDirname),
+      profile_->GetRequestContext()));
+}
+
+GCMProfileService::GCMProfileService() : profile_(NULL) {
 }
 
 GCMProfileService::~GCMProfileService() {
 }
 
+void GCMProfileService::AddAppHandler(const std::string& app_id,
+                                      GCMAppHandler* handler) {
+  if (driver_)
+    driver_->AddAppHandler(app_id, handler);
+}
+
+void GCMProfileService::RemoveAppHandler(const std::string& app_id) {
+  if (driver_)
+    driver_->RemoveAppHandler(app_id);
+}
+
+void GCMProfileService::Register(const std::string& app_id,
+                                 const std::vector<std::string>& sender_ids,
+                                 const GCMDriver::RegisterCallback& callback) {
+  if (driver_)
+    driver_->Register(app_id, sender_ids, callback);
+}
+
 void GCMProfileService::Shutdown() {
-  ShutdownService();
+  if (driver_) {
+    driver_->Shutdown();
+    driver_.reset();
+  }
 }
 
-std::string GCMProfileService::SignedInUserName() const {
-  if (IsStarted())
-    return identity_provider_->GetActiveUsername();
-  return std::string();
-}
-
-bool GCMProfileService::ShouldStartAutomatically() const {
-  return GetGCMEnabledState(profile_) == ALWAYS_ENABLED;
-}
-
-base::FilePath GCMProfileService::GetStorePath() const {
-  return profile_->GetPath().Append(chrome::kGCMStoreDirname);
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-GCMProfileService::GetURLRequestContextGetter() const {
-  return profile_->GetRequestContext();
+void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {
+  driver_.reset(driver);
 }
 
 }  // namespace gcm

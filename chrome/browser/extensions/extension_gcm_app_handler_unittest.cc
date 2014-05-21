@@ -23,6 +23,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/fake_signin_manager.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -167,7 +168,10 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
  public:
   static KeyedService* BuildGCMProfileService(
       content::BrowserContext* context) {
-    return new gcm::GCMProfileService(static_cast<Profile*>(context));
+    return new gcm::GCMProfileService(
+        Profile::FromBrowserContext(context),
+        scoped_ptr<gcm::GCMClientFactory>(
+            new gcm::FakeGCMClientFactory(gcm::FakeGCMClient::NO_DELAY_START)));
   }
 
   ExtensionGCMAppHandlerTest()
@@ -209,15 +213,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
 
     // Create GCMProfileService that talks with fake GCMClient.
-    gcm::GCMProfileService* gcm_profile_service =
-        static_cast<gcm::GCMProfileService*>(
-            gcm::GCMProfileServiceFactory::GetInstance()->
-                SetTestingFactoryAndUse(
-                    profile(),
-                    &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
-    scoped_ptr<gcm::GCMClientFactory> gcm_client_factory(
-        new gcm::FakeGCMClientFactory(gcm::FakeGCMClient::NO_DELAY_START));
-    gcm_profile_service->Initialize(gcm_client_factory.Pass());
+    gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), &ExtensionGCMAppHandlerTest::BuildGCMProfileService);
 
     // Create a fake version of ExtensionGCMAppHandler.
     gcm_app_handler_.reset(new FakeExtensionGCMAppHandler(profile(), &waiter_));
@@ -288,7 +285,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids) {
-    GetGCMProfileService()->Register(
+    GetGCMDriver()->Register(
         app_id,
         sender_ids,
         base::Bind(&ExtensionGCMAppHandlerTest::RegisterCompleted,
@@ -301,12 +298,12 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     waiter_.SignalCompleted();
   }
 
-  gcm::GCMProfileService* GetGCMProfileService() const {
-    return gcm::GCMProfileServiceFactory::GetForProfile(profile());
+  gcm::GCMDriver* GetGCMDriver() const {
+    return gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver();
   }
 
   bool HasAppHandlers(const std::string& app_id) const {
-    return GetGCMProfileService()->app_handlers().count(app_id);
+    return GetGCMDriver()->app_handlers().count(app_id);
   }
 
   Profile* profile() const { return profile_.get(); }

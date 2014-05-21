@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_PROFILE_SERVICE_H_
 #define CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_PROFILE_SERVICE_H_
 
+#include <list>
+#include <vector>
+
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 
 namespace content {
@@ -23,28 +27,17 @@ class FakeGCMProfileService : public GCMProfileService {
   explicit FakeGCMProfileService(Profile* profile);
   virtual ~FakeGCMProfileService();
 
-  // GCMProfileService overrides.
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback) OVERRIDE;
-  virtual void Unregister(const std::string& app_id,
-                          const UnregisterCallback& callback) OVERRIDE;
-  virtual void Send(const std::string& app_id,
-                    const std::string& receiver_id,
-                    const GCMClient::OutgoingMessage& message,
-                    const SendCallback& callback) OVERRIDE;
-
   void RegisterFinished(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        const RegisterCallback& callback);
-
+                        const GCMDriver::RegisterCallback& callback);
+  void UnregisterFinished(const std::string& app_id,
+                          const GCMDriver::UnregisterCallback& callback);
   void SendFinished(const std::string& app_id,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
-                    const SendCallback& callback);
+                    const GCMDriver::SendCallback& callback);
 
   void AddExpectedUnregisterResponse(GCMClient::Result result);
-  GCMClient::Result GetNextExpectedUnregisterResponse();
 
   const GCMClient::OutgoingMessage& last_sent_message() const {
     return last_sent_message_;
@@ -72,7 +65,7 @@ class FakeGCMProfileService : public GCMProfileService {
   bool collect_;
   std::string last_registered_app_id_;
   std::vector<std::string> last_registered_sender_ids_;
-  std::vector<GCMClient::Result> unregister_responses_;
+  std::list<GCMClient::Result> unregister_responses_;
   GCMClient::OutgoingMessage last_sent_message_;
   std::string last_receiver_id_;
 

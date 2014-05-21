@@ -13,9 +13,11 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/extensions/api/gcm.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -28,6 +30,7 @@ const char kGoogleRestrictedPrefix[] = "google";
 // Error messages.
 const char kInvalidParameter[] =
     "Function was called with invalid parameters.";
+const char kGCMDisabled[] = "GCM is currently disabled.";
 const char kNotSignedIn[] = "Profile was not signed in.";
 const char kAsyncOperationPending[] =
     "Asynchronous operation is pending.";
@@ -42,6 +45,8 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
       return "";
     case gcm::GCMClient::INVALID_PARAMETER:
       return kInvalidParameter;
+    case gcm::GCMClient::GCM_DISABLED:
+      return kGCMDisabled;
     case gcm::GCMClient::NOT_SIGNED_IN:
       return kNotSignedIn;
     case gcm::GCMClient::ASYNC_OPERATION_PENDING:
@@ -97,9 +102,9 @@ bool GcmApiFunction::IsGcmApiEnabled() const {
       gcm::GCMProfileService::ALWAYS_DISABLED;
 }
 
-gcm::GCMProfileService* GcmApiFunction::GCMProfileService() const {
+gcm::GCMDriver* GcmApiFunction::GetGCMDriver() const {
   return gcm::GCMProfileServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context()));
+      Profile::FromBrowserContext(browser_context()))->driver();
 }
 
 GcmRegisterFunction::GcmRegisterFunction() {}
@@ -111,7 +116,7 @@ bool GcmRegisterFunction::DoWork() {
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  GCMProfileService()->Register(
+  GetGCMDriver()->Register(
       GetExtension()->id(),
       params->sender_ids,
       base::Bind(&GcmRegisterFunction::CompleteFunctionWithResult, this));
@@ -134,7 +139,7 @@ GcmUnregisterFunction::~GcmUnregisterFunction() {}
 bool GcmUnregisterFunction::DoWork() {
   UMA_HISTOGRAM_BOOLEAN("GCM.APICallUnregister", true);
 
-  GCMProfileService()->Unregister(
+  GetGCMDriver()->Unregister(
       GetExtension()->id(),
       base::Bind(&GcmUnregisterFunction::CompleteFunctionWithResult, this));
 
@@ -164,7 +169,7 @@ bool GcmSendFunction::DoWork() {
   if (params->message.time_to_live.get())
     outgoing_message.time_to_live = *params->message.time_to_live;
 
-  GCMProfileService()->Send(
+  GetGCMDriver()->Send(
       GetExtension()->id(),
       params->message.destination_id,
       outgoing_message,
@@ -199,19 +204,9 @@ bool GcmSendFunction::ValidateMessageData(
 }
 
 GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {
-  EventRouter* event_router = EventRouter::Get(profile_);
-  if (!event_router)
-    return;
-
-  event_router->RegisterObserver(this, api::gcm::OnMessage::kEventName);
-  event_router->RegisterObserver(this, api::gcm::OnMessagesDeleted::kEventName);
-  event_router->RegisterObserver(this, api::gcm::OnSendError::kEventName);
 }
 
 GcmJsEventRouter::~GcmJsEventRouter() {
-  EventRouter* event_router = EventRouter::Get(profile_);
-  if (event_router)
-    event_router->UnregisterObserver(this);
 }
 
 void GcmJsEventRouter::OnMessage(
@@ -250,14 +245,6 @@ void GcmJsEventRouter::OnSendError(
       api::gcm::OnSendError::Create(error).Pass(),
       profile_));
   EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
-}
-
-void GcmJsEventRouter::OnListenerAdded(const EventListenerInfo& details) {
-  if (gcm::GCMProfileService::GetGCMEnabledState(profile_) ==
-      gcm::GCMProfileService::ALWAYS_DISABLED) {
-    return;
-  }
-  gcm::GCMProfileServiceFactory::GetForProfile(profile_)->Start();
 }
 
 }  // namespace extensions

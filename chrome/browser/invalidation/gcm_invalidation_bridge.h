@@ -37,7 +37,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
  public:
   class Core;
 
-  GCMInvalidationBridge(gcm::GCMDriver* gcm_service,
+  GCMInvalidationBridge(gcm::GCMDriver* gcm_driver,
                         IdentityProvider* identity_provider);
   virtual ~GCMInvalidationBridge();
 

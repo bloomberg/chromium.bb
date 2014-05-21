@@ -12,13 +12,15 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/default_gcm_app_handler.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gcm/gcm_client.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace extensions {
 class ExtensionGCMAppHandlerTest;
@@ -45,24 +47,25 @@ class GCMDriver : public IdentityProvider::Observer {
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       GetGCMStatisticsCallback;
 
-  explicit GCMDriver(scoped_ptr<IdentityProvider> identity_provider);
+  GCMDriver(scoped_ptr<GCMClientFactory> gcm_client_factory,
+            scoped_ptr<IdentityProvider> identity_provider,
+            const base::FilePath& store_path,
+            const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~GCMDriver();
 
-  void Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory);
-
-  void Start();
-
-  void Stop();
+  // Enables/disables GCM service.
+  void Enable();
+  void Disable();
 
   // This method must be called before destroying the GCMDriver. Once it has
   // been called, no other GCMDriver methods may be used.
-  void ShutdownService();
+  virtual void Shutdown();
 
   // Adds a handler for a given app.
-  void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
+  virtual void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
 
   // Remove the handler for a given app.
-  void RemoveAppHandler(const std::string& app_id);
+  virtual void RemoveAppHandler(const std::string& app_id);
 
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
@@ -110,6 +113,9 @@ class GCMDriver : public IdentityProvider::Observer {
   void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                        bool recording);
 
+  // Returns the user name if the profile is signed in. Empty string otherwise.
+  std::string SignedInUserName() const;
+
   // IdentityProvider::Observer:
   virtual void OnActiveAccountLogin() OVERRIDE;
   virtual void OnActiveAccountLogout() OVERRIDE;
@@ -117,31 +123,27 @@ class GCMDriver : public IdentityProvider::Observer {
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
 
  protected:
-  virtual bool ShouldStartAutomatically() const = 0;
-
-  virtual base::FilePath GetStorePath() const = 0;
-
-  virtual scoped_refptr<net::URLRequestContextGetter>
-      GetURLRequestContextGetter() const = 0;
-
-  scoped_ptr<IdentityProvider> identity_provider_;
+  // Used for constructing fake GCMDriver for testing purpose.
+  GCMDriver();
 
  private:
   class DelayedTaskController;
   class IOWorker;
 
-  // Ensures that the GCMClient is started and the GCM check-in is done if the
-  // |identity_provider_| is able to supply an account ID.
-  void EnsureStarted();
+  // Ensures that the GCM service starts when all of the following conditions
+  // satisfy:
+  // 1) GCM is enabled.
+  // 2) The identity provider is able to supply an account ID.
+  GCMClient::Result EnsureStarted();
+
+  //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
+  void Stop();
 
   // Remove cached data when GCM service is stopped.
   void RemoveCachedData();
 
   // Checks out of GCM and erases any cached and persisted data.
   void CheckOut();
-
-  // Ensures that the app is ready for GCM functions and events.
-  GCMClient::Result EnsureAppReady(const std::string& app_id);
 
   // Should be called when an app with |app_id| is trying to un/register.
   // Checks whether another un/registration is in progress.
@@ -174,12 +176,17 @@ class GCMDriver : public IdentityProvider::Observer {
 
   void GetGCMStatisticsFinished(GCMClient::GCMStatistics stats);
 
+  // Flag to indicate if GCM is enabled.
+  bool gcm_enabled_;
+
   // Flag to indicate if GCMClient is ready.
   bool gcm_client_ready_;
 
   // The account ID that this service is responsible for. Empty when the service
   // is not running.
   std::string account_id_;
+
+  scoped_ptr<IdentityProvider> identity_provider_;
 
   scoped_ptr<DelayedTaskController> delayed_task_controller_;
 

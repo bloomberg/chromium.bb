@@ -26,6 +26,7 @@ class BrowserContext;
 }
 
 namespace gcm {
+class GCMDriver;
 class GCMProfileService;
 }
 
@@ -77,7 +78,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
-  gcm::GCMProfileService* GetGCMProfileService() const;
+  gcm::GCMDriver* GetGCMDriver() const;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionGCMAppHandler"; }

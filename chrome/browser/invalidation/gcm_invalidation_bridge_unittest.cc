@@ -4,8 +4,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -18,17 +17,12 @@
 namespace invalidation {
 namespace {
 
-// Implementation of GCMProfileService::Register that always succeeds with the
-// same registrationId.
-class FakeGCMProfileService : public gcm::GCMProfileService {
+// Implementation of GCMDriver::Register that always succeeds with the same
+// registrationId.
+class FakeGCMDriver : public gcm::GCMDriver {
  public:
-  static KeyedService* Build(content::BrowserContext* context) {
-    Profile* profile = static_cast<Profile*>(context);
-    return new FakeGCMProfileService(profile);
-  }
-
-  explicit FakeGCMProfileService(Profile* profile)
-      : gcm::GCMProfileService(profile) {}
+  FakeGCMDriver() {}
+  virtual ~FakeGCMDriver() {}
 
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
@@ -40,7 +34,7 @@ class FakeGCMProfileService : public gcm::GCMProfileService {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMProfileService);
+  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 
 class GCMInvalidationBridgeTest : public ::testing::Test {
@@ -53,20 +47,16 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(gcm::GCMProfileServiceFactory::GetInstance(),
-                              &FakeGCMProfileService::Build);
     profile_ = builder.Build();
 
     FakeProfileOAuth2TokenService* token_service =
         (FakeProfileOAuth2TokenService*)
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     token_service->IssueRefreshTokenForUser("", "fake_refresh_token");
-    gcm_profile_service_ =
-        (FakeGCMProfileService*)gcm::GCMProfileServiceFactory::GetForProfile(
-            profile_.get());
+    gcm_driver_.reset(new FakeGCMDriver());
 
     identity_provider_.reset(new FakeIdentityProvider(token_service));
-    bridge_.reset(new GCMInvalidationBridge(gcm_profile_service_,
+    bridge_.reset(new GCMInvalidationBridge(gcm_driver_.get(),
                                             identity_provider_.get()));
 
     delegate_ = bridge_->CreateDelegate();
@@ -89,7 +79,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
-  FakeGCMProfileService* gcm_profile_service_;
+  scoped_ptr<gcm::GCMDriver> gcm_driver_;
   scoped_ptr<FakeIdentityProvider> identity_provider_;
 
   std::vector<std::string> issued_tokens_;

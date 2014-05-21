@@ -62,7 +62,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   TiclInvalidationService(
       scoped_ptr<IdentityProvider> identity_provider,
       scoped_ptr<TiclSettingsProvider> settings_provider,
-      gcm::GCMDriver* gcm_service,
+      gcm::GCMDriver* gcm_driver,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~TiclInvalidationService();
 

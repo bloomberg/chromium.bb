@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "content/public/browser/notification_details.h"
@@ -63,7 +64,7 @@ ExtensionGCMAppHandler::~ExtensionGCMAppHandler() {
        extension != enabled_extensions.end();
        ++extension) {
     if (IsGCMPermissionEnabled(extension->get()))
-      GetGCMProfileService()->RemoveAppHandler((*extension)->id());
+      GetGCMDriver()->RemoveAppHandler((*extension)->id());
   }
 }
 
@@ -99,7 +100,7 @@ void ExtensionGCMAppHandler::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   if (IsGCMPermissionEnabled(extension))
-    GetGCMProfileService()->AddAppHandler(extension->id(), this);
+    GetGCMDriver()->AddAppHandler(extension->id(), this);
 }
 
 void ExtensionGCMAppHandler::OnExtensionUnloaded(
@@ -107,7 +108,7 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   if (IsGCMPermissionEnabled(extension))
-    GetGCMProfileService()->RemoveAppHandler(extension->id());
+    GetGCMDriver()->RemoveAppHandler(extension->id());
 }
 
 void ExtensionGCMAppHandler::Observe(
@@ -117,17 +118,17 @@ void ExtensionGCMAppHandler::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED, type);
   const Extension* extension = content::Details<Extension>(details).ptr();
   if (IsGCMPermissionEnabled(extension)) {
-    GetGCMProfileService()->Unregister(
+    GetGCMDriver()->Unregister(
         extension->id(),
         base::Bind(&ExtensionGCMAppHandler::OnUnregisterCompleted,
                    weak_factory_.GetWeakPtr(),
                    extension->id()));
-    GetGCMProfileService()->RemoveAppHandler(extension->id());
+    GetGCMDriver()->RemoveAppHandler(extension->id());
   }
 }
 
-gcm::GCMProfileService* ExtensionGCMAppHandler::GetGCMProfileService() const {
-  return gcm::GCMProfileServiceFactory::GetForProfile(profile_);
+gcm::GCMDriver* ExtensionGCMAppHandler::GetGCMDriver() const {
+  return gcm::GCMProfileServiceFactory::GetForProfile(profile_)->driver();
 }
 
 void ExtensionGCMAppHandler::OnUnregisterCompleted(

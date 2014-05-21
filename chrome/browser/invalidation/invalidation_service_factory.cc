@@ -125,7 +125,7 @@ KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
       identity_provider.Pass(),
       scoped_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(profile)),
-      gcm::GCMProfileServiceFactory::GetForProfile(profile),
+      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
       profile->GetRequestContext());
   service->Init(scoped_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));

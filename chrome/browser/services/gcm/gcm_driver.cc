@@ -382,16 +382,15 @@ void GCMDriver::IOWorker::SetGCMRecording(bool recording) {
       base::Bind(&GCMDriver::GetGCMStatisticsFinished, service_, stats));
 }
 
-GCMDriver::GCMDriver(scoped_ptr<IdentityProvider> identity_provider)
-    : identity_provider_(identity_provider.Pass()),
+GCMDriver::GCMDriver(
+    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    scoped_ptr<IdentityProvider> identity_provider,
+    const base::FilePath& store_path,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    : gcm_enabled_(true),
       gcm_client_ready_(false),
+      identity_provider_(identity_provider.Pass()),
       weak_ptr_factory_(this) {
-}
-
-GCMDriver::~GCMDriver() {
-}
-
-void GCMDriver::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
   // Get the list of available accounts.
   std::vector<std::string> account_ids;
 #if !defined(OS_ANDROID)
@@ -400,7 +399,6 @@ void GCMDriver::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
 
   // Create and initialize the GCMClient. Note that this does not initiate the
   // GCM check-in.
-  DCHECK(!io_worker_);
   io_worker_.reset(new IOWorker());
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -408,21 +406,40 @@ void GCMDriver::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
       base::Bind(&GCMDriver::IOWorker::Initialize,
                  base::Unretained(io_worker_.get()),
                  base::Passed(&gcm_client_factory),
-                 GetStorePath(),
+                 store_path,
                  account_ids,
-                 GetURLRequestContextGetter()));
-
-  // Start the GCM service if the rollout signal indicates yes.
-  if (ShouldStartAutomatically())
-    EnsureStarted();
+                 request_context));
 
   identity_provider_->AddObserver(this);
 }
 
-void GCMDriver::Start() {
+GCMDriver::GCMDriver()
+    : gcm_enabled_(true),
+      gcm_client_ready_(false),
+      weak_ptr_factory_(this) {
+}
+
+GCMDriver::~GCMDriver() {
+}
+
+void GCMDriver::Enable() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  if (gcm_enabled_)
+    return;
+  gcm_enabled_ = true;
+
   EnsureStarted();
+}
+
+void GCMDriver::Disable() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!gcm_enabled_)
+    return;
+  gcm_enabled_ = false;
+
+  Stop();
 }
 
 void GCMDriver::Stop() {
@@ -441,7 +458,7 @@ void GCMDriver::Stop() {
                  base::Unretained(io_worker_.get())));
 }
 
-void GCMDriver::ShutdownService() {
+void GCMDriver::Shutdown() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   identity_provider_->RemoveObserver(this);
   for (GCMAppHandlerMap::const_iterator iter = app_handlers_.begin();
@@ -462,6 +479,9 @@ void GCMDriver::AddAppHandler(const std::string& app_id,
   DCHECK(app_handlers_.find(app_id) == app_handlers_.end());
 
   app_handlers_[app_id] = handler;
+
+   // Ensures that the GCM service is started when there is an interest.
+  EnsureStarted();
 }
 
 void GCMDriver::RemoveAppHandler(const std::string& app_id) {
@@ -479,7 +499,7 @@ void GCMDriver::Register(const std::string& app_id,
   DCHECK(!sender_ids.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureAppReady(app_id);
+  GCMClient::Result result = EnsureStarted();
   if (result != GCMClient::SUCCESS) {
     callback.Run(std::string(), result);
     return;
@@ -534,7 +554,7 @@ void GCMDriver::Unregister(const std::string& app_id,
   DCHECK(!app_id.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureAppReady(app_id);
+  GCMClient::Result result = EnsureStarted();
   if (result != GCMClient::SUCCESS) {
     callback.Run(result);
     return;
@@ -582,7 +602,7 @@ void GCMDriver::Send(const std::string& app_id,
   DCHECK(!receiver_id.empty());
   DCHECK(!callback.is_null());
 
-  GCMClient::Result result = EnsureAppReady(app_id);
+  GCMClient::Result result = EnsureStarted();
   if (result != GCMClient::SUCCESS) {
     callback.Run(std::string(), result);
     return;
@@ -667,25 +687,29 @@ void GCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,
 }
 
 void GCMDriver::OnActiveAccountLogin() {
-  if (ShouldStartAutomatically())
-    EnsureStarted();
+  EnsureStarted();
 }
 
 void GCMDriver::OnActiveAccountLogout() {
   CheckOut();
 }
 
-void GCMDriver::EnsureStarted() {
+GCMClient::Result GCMDriver::EnsureStarted() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!gcm_enabled_)
+    return GCMClient::GCM_DISABLED;
+
+  // Is the user signed in?
   const std::string account_id = identity_provider_->GetActiveAccountId();
   if (account_id.empty())
-    return;
+    return GCMClient::NOT_SIGNED_IN;
 
   // CheckIn could be called more than once when:
   // 1) The password changes.
   // 2) Register/send function calls it to ensure CheckIn is done.
   if (account_id_ == account_id)
-    return;
+    return GCMClient::SUCCESS;
   account_id_ = account_id;
 
   DCHECK(!delayed_task_controller_);
@@ -699,6 +723,8 @@ void GCMDriver::EnsureStarted() {
       base::Bind(&GCMDriver::IOWorker::Start,
                  base::Unretained(io_worker_.get()),
                  weak_ptr_factory_.GetWeakPtr()));
+
+  return GCMClient::SUCCESS;
 }
 
 void GCMDriver::RemoveCachedData() {
@@ -728,19 +754,6 @@ void GCMDriver::CheckOut() {
       FROM_HERE,
       base::Bind(&GCMDriver::IOWorker::CheckOut,
                  base::Unretained(io_worker_.get())));
-}
-
-GCMClient::Result GCMDriver::EnsureAppReady(const std::string& app_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // Starts the service if not yet.
-  EnsureStarted();
-
-  // If the service cannot be started, bail out.
-  if (account_id_.empty())
-    return GCMClient::NOT_SIGNED_IN;
-
-  return GCMClient::SUCCESS;
 }
 
 bool GCMDriver::IsAsyncOperationPending(const std::string& app_id) const {
@@ -857,6 +870,12 @@ void GCMDriver::GetGCMStatisticsFinished(GCMClient::GCMStatistics stats) {
     request_gcm_statistics_callback_.Run(stats);
   else
     LOG(WARNING) << "request_gcm_statistics_callback_ is NULL.";
+}
+
+std::string GCMDriver::SignedInUserName() const {
+  if (IsStarted())
+    return identity_provider_->GetActiveUsername();
+  return std::string();
 }
 
 }  // namespace gcm

@@ -50,11 +50,9 @@ GCMProfileServiceFactory::~GCMProfileServiceFactory() {
 
 KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
-  GCMProfileService* service = new GCMProfileService(profile);
-  scoped_ptr<GCMClientFactory> gcm_client_factory(new GCMClientFactory);
-  service->Initialize(gcm_client_factory.Pass());
-  return service;
+  return new GCMProfileService(
+      Profile::FromBrowserContext(context),
+      scoped_ptr<GCMClientFactory>(new GCMClientFactory));
 }
 
 content::BrowserContext* GCMProfileServiceFactory::GetBrowserContextToUse(

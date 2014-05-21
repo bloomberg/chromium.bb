@@ -30,6 +30,7 @@
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -1023,11 +1024,11 @@ void ProfileSyncService::OnExperimentsChanged(
                                           syncer::Experiments::ENABLED);
     gcm::GCMProfileService* gcm_profile_service =
         gcm::GCMProfileServiceFactory::GetForProfile(profile());
-    if (gcm_profile_service) {
+    if (gcm_profile_service && gcm_profile_service->driver()) {
       if (experiments.gcm_channel_state == syncer::Experiments::SUPPRESSED)
-        gcm_profile_service->Stop();
+        gcm_profile_service->driver()->Disable();
       else
-        gcm_profile_service->Start();
+        gcm_profile_service->driver()->Enable();
     }
   } else {
     profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 
 #include "chrome/common/extensions/api/gcm.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
 #include "google_apis/gcm/gcm_client.h"
 
 namespace gcm {
+class GCMDriver;
 class GCMProfileService;
 }  // namespace gcm
 
@@ -34,7 +34,7 @@ class GcmApiFunction : public AsyncExtensionFunction {
   // Checks that the GCM API is enabled.
   bool IsGcmApiEnabled() const;
 
-  gcm::GCMProfileService* GCMProfileService() const;
+  gcm::GCMDriver* GetGCMDriver() const;
 };
 
 class GcmRegisterFunction : public GcmApiFunction {
@@ -91,7 +91,7 @@ class GcmSendFunction : public GcmApiFunction {
   bool ValidateMessageData(const gcm::GCMClient::MessageData& data) const;
 };
 
-class GcmJsEventRouter : public EventRouter::Observer {
+class GcmJsEventRouter {
  public:
   explicit GcmJsEventRouter(Profile* profile);
 
@@ -102,9 +102,6 @@ class GcmJsEventRouter : public EventRouter::Observer {
   void OnMessagesDeleted(const std::string& app_id);
   void OnSendError(const std::string& app_id,
                    const gcm::GCMClient::SendErrorDetails& send_error_details);
-
-  // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
   // The application we route the event to is running in context of the

@@ -37,15 +37,8 @@ class FakeTiclSettingsProvider : public TiclSettingsProvider {
 
 class FakeGCMDriver : public gcm::GCMDriver {
  public:
-  explicit FakeGCMDriver(OAuth2TokenService* token_service);
+  FakeGCMDriver();
   virtual ~FakeGCMDriver();
-
- protected:
-  // gcm::GCMDriver:
-  virtual bool ShouldStartAutomatically() const OVERRIDE;
-  virtual base::FilePath GetStorePath() const OVERRIDE;
-  virtual scoped_refptr<net::URLRequestContextGetter>
-      GetURLRequestContextGetter() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
@@ -61,25 +54,10 @@ bool FakeTiclSettingsProvider::UseGCMChannel() const {
   return false;
 }
 
-FakeGCMDriver::FakeGCMDriver(OAuth2TokenService* token_service)
-    : GCMDriver(scoped_ptr<IdentityProvider>(
-          new FakeIdentityProvider(token_service))) {
+FakeGCMDriver::FakeGCMDriver() {
 }
 
 FakeGCMDriver::~FakeGCMDriver() {
-}
-
-bool FakeGCMDriver::ShouldStartAutomatically() const {
-  return false;
-}
-
-base::FilePath FakeGCMDriver::GetStorePath() const {
-  return base::FilePath();
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-FakeGCMDriver::GetURLRequestContextGetter() const {
-  return NULL;
 }
 
 }  // namespace
@@ -98,11 +76,11 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateUninitializedInvalidationService() {
-    gcm_service_.reset(new FakeGCMDriver(&token_service_));
+    gcm_driver_.reset(new FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
         scoped_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_service_.get(),
+        gcm_driver_.get(),
         NULL));
   }
 
@@ -132,7 +110,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   FakeOAuth2TokenService token_service_;
-  scoped_ptr<gcm::GCMDriver> gcm_service_;
+  scoped_ptr<gcm::GCMDriver> gcm_driver_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 
   scoped_ptr<TiclInvalidationService> invalidation_service_;

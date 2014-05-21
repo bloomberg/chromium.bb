@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -161,9 +162,9 @@ void GcmInternalsUIMessageHandler::ReturnResults(
           gcm::GCMProfileService::GetGCMEnabledState(profile)));
   if (profile_service) {
     device_info->SetString("signedInUserName",
-                           profile_service->SignedInUserName());
+                           profile_service->driver()->SignedInUserName());
     device_info->SetBoolean("gcmClientReady",
-                            profile_service->IsGCMClientReady());
+                            profile_service->driver()->IsGCMClientReady());
   }
   if (stats) {
     results.SetBoolean("isRecording", stats->is_recording);
@@ -234,10 +235,10 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
 
   if (!profile_service) {
     ReturnResults(profile, NULL, NULL);
-  } else if (profile_service->SignedInUserName().empty()) {
+  } else if (profile_service->driver()->SignedInUserName().empty()) {
     ReturnResults(profile, profile_service, NULL);
   } else {
-    profile_service->GetGCMStatistics(
+    profile_service->driver()->GetGCMStatistics(
         base::Bind(&GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
                    weak_ptr_factory_.GetWeakPtr()),
         clear_logs);
@@ -263,12 +264,12 @@ void GcmInternalsUIMessageHandler::SetRecording(const base::ListValue* args) {
     ReturnResults(profile, NULL, NULL);
     return;
   }
-  if (profile_service->SignedInUserName().empty()) {
+  if (profile_service->driver()->SignedInUserName().empty()) {
     ReturnResults(profile, profile_service, NULL);
     return;
   }
   // Get fresh stats after changing recording setting.
-  profile_service->SetGCMRecording(
+  profile_service->driver()->SetGCMRecording(
       base::Bind(
           &GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished,
           weak_ptr_factory_.GetWeakPtr()),

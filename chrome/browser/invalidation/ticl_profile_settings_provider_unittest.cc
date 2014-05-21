@@ -56,7 +56,7 @@ void TiclProfileSettingsProviderTest::SetUp() {
       scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
       scoped_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&profile_)),
-      gcm::GCMProfileServiceFactory::GetForProfile(&profile_),
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
       profile_.GetRequestContext()));
   invalidation_service_->Init(scoped_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));
