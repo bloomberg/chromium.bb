@@ -1415,45 +1415,31 @@ class BisectPerformanceMetrics(object):
       A dict in the format {depot:revision} if successful, otherwise None.
     """
     try:
-      locals = {'Var': lambda _: locals["vars"][_],
-                'From': lambda *args: None}
-      execfile(bisect_utils.FILE_DEPS_GIT, {}, locals)
-      locals = locals['deps']
-      results = {}
+      deps_data = {'Var': lambda _: deps_data["vars"][_],
+                   'From': lambda *args: None
+                  }
+      execfile(bisect_utils.FILE_DEPS_GIT, {}, deps_data)
+      deps_data = deps_data['deps']
 
       rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
+      results = {}
+      for depot_name, depot_data in DEPOT_DEPS_NAME.iteritems():
+        if (depot_data.get('platform') and
+            depot_data.get('platform') != os.name):
+          continue
 
-      for d in DEPOT_NAMES:
-        if DEPOT_DEPS_NAME[d].has_key('platform'):
-          if DEPOT_DEPS_NAME[d]['platform'] != os.name:
-            continue
-
-        if (DEPOT_DEPS_NAME[d]['recurse'] and
-            depot in DEPOT_DEPS_NAME[d]['from']):
-          if (locals.has_key(DEPOT_DEPS_NAME[d]['src']) or
-              locals.has_key(DEPOT_DEPS_NAME[d]['src_old'])):
-            if locals.has_key(DEPOT_DEPS_NAME[d]['src']):
-              re_results = rxp.search(locals[DEPOT_DEPS_NAME[d]['src']])
-              self.depot_cwd[d] = \
-                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src'][4:])
-            elif (DEPOT_DEPS_NAME[d].has_key('src_old') and
-                locals.has_key(DEPOT_DEPS_NAME[d]['src_old'])):
-              re_results = \
-                  rxp.search(locals[DEPOT_DEPS_NAME[d]['src_old']])
-              self.depot_cwd[d] = \
-                  os.path.join(self.src_cwd, DEPOT_DEPS_NAME[d]['src_old'][4:])
-
+        if (depot_data.get('recurse') and depot in depot_data.get('from')):
+          src_dir = depot_data.get('src') or depot_data.get('src_old')
+          if src_dir:
+            self.depot_cwd[depot_name] = os.path.join(self.src_cwd, src_dir[4:])
+            re_results = rxp.search(deps_data.get(src_dir, ''))
             if re_results:
-              results[d] = re_results.group('revision')
+              results[depot_name] = re_results.group('revision')
             else:
               warning_text = ('Couldn\'t parse revision for %s while bisecting '
-                  '%s' % (d, depot))
-              if not warningText in self.warnings:
-                self.warnings.append(warningText)
-          else:
-            print 'Couldn\'t find %s while parsing .DEPS.git.' % d
-            print
-            return None
+                             '%s' % (depot_name, depot))
+              if not warning_text in self.warnings:
+                self.warnings.append(warning_text)
       return results
     except ImportError:
       deps_file_contents = ReadStringFromFile(bisect_utils.FILE_DEPS_GIT)
