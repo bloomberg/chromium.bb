@@ -5,3 +5,5 @@ ExceptionHandlerTest.InstructionPointerMemoryNullPointer
 MinidumpWriterTest.MappingInfoContained
 # crbug.com/310088
 MinidumpWriterTest.MinidumpSizeLimit
+# crbug.com/375838
+ElfCoreDumpTest.ValidCoreFile
