@@ -11,7 +11,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/public/browser/url_data_source.h"
-#include "ui/base/layout.h"
 
 namespace gfx {
 class Image;
@@ -40,7 +39,7 @@ class FileIconSource : public content::URLDataSource {
   // testing.
   virtual void FetchFileIcon(
       const base::FilePath& path,
-      ui::ScaleFactor scale_factor,
+      float scale_factor,
       IconLoader::IconSize icon_size,
       const content::URLDataSource::GotDataCallback& callback);
 
@@ -54,7 +53,7 @@ class FileIconSource : public content::URLDataSource {
     content::URLDataSource::GotDataCallback callback;
 
     // The requested scale factor to respond with.
-    ui::ScaleFactor scale_factor;
+    float scale_factor;
   };
 
   // Called when favicon data is available from the history backend.

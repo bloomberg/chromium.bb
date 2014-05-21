@@ -149,10 +149,11 @@ void LocalNtpSource::StartDataRequest(
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
-  ui::ScaleFactor scale_factor;
+  float scale = 1.0f;
   std::string filename;
   webui::ParsePathAndScale(
-      GURL(GetLocalNtpPath() + stripped_path), &filename, &scale_factor);
+      GURL(GetLocalNtpPath() + stripped_path), &filename, &scale);
+  ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
   for (size_t i = 0; i < arraysize(kResources); ++i) {
     if (filename == kResources[i].filename) {
       scoped_refptr<base::RefCountedStaticMemory> response(

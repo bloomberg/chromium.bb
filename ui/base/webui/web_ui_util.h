@@ -9,7 +9,6 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "ui/base/layout.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -36,18 +35,15 @@ UI_BASE_EXPORT std::string GetBitmapDataUrlFromResource(int resource_id);
 UI_BASE_EXPORT WindowOpenDisposition
     GetDispositionFromClick(const base::ListValue* args, int start_index);
 
-// Given a scale factor such as "1x", "2x" or "1.99x", sets |scale_factor| to
-// the closest ScaleFactor enum value for this scale factor. If string can not
-// be parsed, then |scale_factor| is set to SCALE_FACTOR_100P, and false is
-// returned.
+// Pares a formatted scale factor string into float and sets to |scale_factor|.
 UI_BASE_EXPORT bool ParseScaleFactor(const base::StringPiece& identifier,
-                                     ui::ScaleFactor* scale_factor);
+                                     float* scale_factor);
 
 // Parses a URL containing some path @{scale}x. If it does not contain a scale
 // factor then the default scale factor is returned.
 UI_BASE_EXPORT void ParsePathAndScale(const GURL& url,
                                       std::string* path,
-                                      ui::ScaleFactor* scale_factor);
+                                      float* scale_factor);
 
 // Helper function to set the font family, size, and text direction into the
 // given dictionary.

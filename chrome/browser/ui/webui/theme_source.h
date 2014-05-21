@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/url_data_source.h"
-#include "ui/base/layout.h"
 
 class Profile;
 
@@ -39,10 +38,9 @@ class ThemeSource : public content::URLDataSource {
 
  private:
   // Fetch and send the theme bitmap.
-  void SendThemeBitmap(
-      const content::URLDataSource::GotDataCallback& callback,
-      int resource_id,
-      ui::ScaleFactor scale_factor);
+  void SendThemeBitmap(const content::URLDataSource::GotDataCallback& callback,
+                       int resource_id,
+                       float scale_factor);
 
   // The original profile (never an OTR profile).
   Profile* profile_;

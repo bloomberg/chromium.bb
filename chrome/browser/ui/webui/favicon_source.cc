@@ -79,6 +79,8 @@ void FaviconSource::StartDataRequest(
 
   GURL url(parsed.url);
 
+  ui::ScaleFactor scale_factor =
+      ui::GetSupportedScaleFactor(parsed.scale_factor);
   if (parsed.is_icon_url) {
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
@@ -86,11 +88,11 @@ void FaviconSource::StartDataRequest(
         url,
         favicon_base::FAVICON,
         parsed.size_in_dip,
-        parsed.scale_factor,
+        scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(
-                       callback, url, parsed.size_in_dip, parsed.scale_factor)),
+                       callback, url, parsed.size_in_dip, scale_factor)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages.
@@ -100,7 +102,7 @@ void FaviconSource::StartDataRequest(
         callback.Run(
             ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
                 history::kPrepopulatedPages[i].favicon_id,
-                parsed.scale_factor));
+                scale_factor));
         return;
       }
     }
@@ -108,13 +110,13 @@ void FaviconSource::StartDataRequest(
     favicon_service->GetRawFaviconForURL(
         FaviconService::FaviconForURLParams(url, icon_types_,
                                             parsed.size_in_dip),
-        parsed.scale_factor,
+        scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(callback,
                                url,
                                parsed.size_in_dip,
-                               parsed.scale_factor)),
+                               scale_factor)),
         &cancelable_task_tracker_);
   }
 }
@@ -192,9 +194,9 @@ void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
       default_favicons_[favicon_index].get();
 
   if (!default_favicon) {
-    ui::ScaleFactor scale_factor = icon_request.scale_factor;
     default_favicon = ResourceBundle::GetSharedInstance()
-        .LoadDataResourceBytesForScale(resource_id, scale_factor);
+        .LoadDataResourceBytesForScale(resource_id,
+                                       icon_request.scale_factor);
     default_favicons_[favicon_index] = default_favicon;
   }
 

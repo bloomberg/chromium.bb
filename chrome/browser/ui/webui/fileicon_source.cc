@@ -62,14 +62,14 @@ IconLoader::IconSize SizeStringToIconSize(const std::string& size_string) {
 
 // Simple parser for data on the query.
 void ParseQueryParams(const std::string& query,
-                      ui::ScaleFactor* scale_factor,
+                      float* scale_factor,
                       IconLoader::IconSize* icon_size) {
   typedef std::pair<std::string, std::string> KVPair;
   std::vector<KVPair> parameters;
   if (icon_size)
     *icon_size = IconLoader::NORMAL;
   if (scale_factor)
-    *scale_factor = ui::SCALE_FACTOR_100P;
+    *scale_factor = 1.0f;
   base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters);
   for (std::vector<KVPair>::const_iterator iter = parameters.begin();
        iter != parameters.end(); ++iter) {
@@ -82,7 +82,7 @@ void ParseQueryParams(const std::string& query,
 
 }  // namespace
 
-FileIconSource::IconRequestDetails::IconRequestDetails() {
+FileIconSource::IconRequestDetails::IconRequestDetails() : scale_factor(1.0f) {
 }
 
 FileIconSource::IconRequestDetails::~IconRequestDetails() {
@@ -94,7 +94,7 @@ FileIconSource::~FileIconSource() {}
 
 void FileIconSource::FetchFileIcon(
     const base::FilePath& path,
-    ui::ScaleFactor scale_factor,
+    float scale_factor,
     IconLoader::IconSize icon_size,
     const content::URLDataSource::GotDataCallback& callback) {
   IconManager* im = g_browser_process->icon_manager();
@@ -103,9 +103,9 @@ void FileIconSource::FetchFileIcon(
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        icon->ToImageSkia()->GetRepresentation(
-            ui::GetImageScale(scale_factor)).sk_bitmap(),
-        false, &icon_data->data());
+        icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
+        false,
+        &icon_data->data());
 
     callback.Run(icon_data.get());
   } else {
@@ -134,8 +134,8 @@ void FileIconSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   std::string query;
   base::FilePath file_path;
-  ui::ScaleFactor scale_factor;
   IconLoader::IconSize icon_size;
+  float scale_factor = 1.0f;
   GetFilePathAndQuery(url_path, &file_path, &query);
   ParseQueryParams(query, &scale_factor, &icon_size);
   FetchFileIcon(file_path, scale_factor, icon_size, callback);
@@ -152,7 +152,7 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
         icon->ToImageSkia()->GetRepresentation(
-            ui::GetImageScale(details.scale_factor)).sk_bitmap(),
+            details.scale_factor).sk_bitmap(),
         false,
         &icon_data->data());
 

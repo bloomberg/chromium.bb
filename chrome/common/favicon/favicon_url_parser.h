@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "ui/base/layout.h"
-
 namespace chrome {
 
 struct ParsedFaviconPath {
@@ -22,7 +20,7 @@ struct ParsedFaviconPath {
   int size_in_dip;
 
   // The scale factor of the requested favicon.
-  ui::ScaleFactor scale_factor;
+  float scale_factor;
 
   // The index of the first character (relative to the path) where the the URL
   // from which the favicon is being requested is located.

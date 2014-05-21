@@ -76,8 +76,8 @@ WindowOpenDisposition GetDispositionFromClick(const base::ListValue* args,
 }
 
 bool ParseScaleFactor(const base::StringPiece& identifier,
-                      ui::ScaleFactor* scale_factor) {
-  *scale_factor = ui::SCALE_FACTOR_100P;
+                      float* scale_factor) {
+  *scale_factor = 1.0f;
   if (identifier.empty()) {
     LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
@@ -95,25 +95,24 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
     LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
-
-  *scale_factor = ui::GetSupportedScaleFactor(static_cast<float>(scale));
+  *scale_factor = scale;
   return true;
 }
 
 void ParsePathAndScale(const GURL& url,
                        std::string* path,
-                       ui::ScaleFactor* scale_factor) {
+                       float* scale_factor) {
   *path = net::UnescapeURLComponent(url.path().substr(1),
                                     (net::UnescapeRule::URL_SPECIAL_CHARS |
                                      net::UnescapeRule::SPACES));
   if (scale_factor)
-    *scale_factor = ui::SCALE_FACTOR_100P;
+    *scale_factor = 1.0f;
 
   // Detect and parse resource string ending in @<scale>x.
   std::size_t pos = path->rfind('@');
   if (pos != std::string::npos) {
     base::StringPiece stripped_path(*path);
-    ui::ScaleFactor factor;
+    float factor;
 
     if (ParseScaleFactor(stripped_path.substr(
             pos + 1, stripped_path.length() - pos - 1), &factor)) {
