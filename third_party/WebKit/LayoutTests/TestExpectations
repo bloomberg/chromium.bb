@@ -993,3 +993,5 @@ crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
 # Temporarily disabled so crrev.com/277583002 can land
 crbug.com/370056 storage/indexeddb/createIndex-after-failure.html [ Skip ]
+
+crbug.com/376052 virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
