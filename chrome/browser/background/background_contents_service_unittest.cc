@@ -131,8 +131,6 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
     DCHECK(!run_loop_.running());
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
-    if (message_center->HasNotification(target_id_))
-      return;
 
     message_center->AddObserver(this);
     run_loop_.Run();
@@ -142,6 +140,12 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
  private:
   // message_center::MessageCenterObserver overrides:
   virtual void OnNotificationAdded(
+      const std::string& notification_id) OVERRIDE {
+    if (notification_id == target_id_)
+      run_loop_.Quit();
+  }
+
+  virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE {
     if (notification_id == target_id_)
       run_loop_.Quit();
@@ -365,5 +369,20 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonNoIcon) {
 
   const Notification* notification = CreateCrashNotification(extension);
   EXPECT_FALSE(notification->icon().IsEmpty());
+}
+
+TEST_F(BackgroundContentsServiceNotificationTest, TestShowTwoBalloons) {
+  TestingProfile profile;
+  scoped_refptr<extensions::Extension> extension =
+      extension_test_util::LoadManifest("app", "manifest.json");
+  ASSERT_TRUE(extension.get());
+  CreateCrashNotification(extension);
+  CreateCrashNotification(extension);
+
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  message_center::NotificationList::Notifications notifications =
+      message_center->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
 }
 #endif

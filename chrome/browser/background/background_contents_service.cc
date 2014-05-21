@@ -177,11 +177,11 @@ void NotificationImageReady(
   // TODO(mukai, dewittj): remove this and switch to message center
   // notifications.
   DesktopNotificationService::AddIconNotification(
-      GURL() /* empty origin */,
-      base::string16(),
+      GURL("chrome://extension-crash"),  // Origin URL.
+      base::string16(),                  // Title of notification.
       message,
       notification_icon,
-      base::string16(),
+      base::UTF8ToUTF16(delegate->id()),  // Replace ID.
       delegate.get(),
       profile);
 }
