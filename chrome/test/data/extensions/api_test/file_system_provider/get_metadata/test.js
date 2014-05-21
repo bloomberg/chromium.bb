@@ -30,6 +30,17 @@ var TESTING_FILE = Object.freeze({
 });
 
 /**
+ * @type {Object}
+ * @const
+ */
+var TESTING_WRONG_TIME_FILE = Object.freeze({
+  isDirectory: false,
+  name: 'invalid-time.txt',
+  size: 4096,
+  modificationTime: new Date('Invalid date.')
+});
+
+/**
  * Returns metadata for a requested entry.
  *
  * @param {number} inFileSystemId ID of the file system.
@@ -52,6 +63,11 @@ function onGetMetadataRequested(
 
   if (entryPath == '/' + TESTING_FILE.name) {
     onSuccess(TESTING_FILE);
+    return;
+  }
+
+  if (entryPath == '/' + TESTING_WRONG_TIME_FILE.name) {
+    onSuccess(TESTING_WRONG_TIME_FILE);
     return;
   }
 
@@ -92,7 +108,7 @@ function runTests() {
   chrome.test.runTests([
     // Read metadata of the root.
     function getFileMetadataSuccess() {
-      var onSuccess = chrome.test.callbackPass(function() {});
+      var onSuccess = chrome.test.callbackPass();
       fileSystem.root.getMetadata(
         function(metadata) {
           chrome.test.assertEq(TESTING_ROOT.size, metadata.size);
@@ -106,7 +122,7 @@ function runTests() {
     },
     // Read metadata of an existing testing file.
     function getFileMetadataSuccess() {
-      var onSuccess = chrome.test.callbackPass(function() {});
+      var onSuccess = chrome.test.callbackPass();
       fileSystem.root.getFile(
           TESTING_FILE.name,
           {create: false},
@@ -128,10 +144,32 @@ function runTests() {
             chrome.test.fail(error.name);
           });
     },
+    // Read metadata of an existing testing file, which however has an invalid
+    // modification time. It should not cause an error, but an invalid date
+    // should be passed to fileapi instead. The reason is, that there is no
+    // easy way to verify an incorrect modification time at early stage.
+    function getFileMetadataWrongTimeSuccess() {
+      var onSuccess = chrome.test.callbackPass();
+      fileSystem.root.getFile(
+          TESTING_WRONG_TIME_FILE.name,
+          {create: false},
+          function(fileEntry) {
+            chrome.test.assertEq(TESTING_WRONG_TIME_FILE.name, fileEntry.name);
+            fileEntry.getMetadata(function(metadata) {
+              chrome.test.assertTrue(
+                  Number.isNaN(metadata.modificationTime.getTime()));
+              onSuccess();
+            }, function(error) {
+              chrome.test.fail(error.name);
+            });
+          }, function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
     // Read metadata of a directory which does not exist, what should return an
     // error. DirectoryEntry.getDirectory() causes fetching metadata.
     function getFileMetadataNotFound() {
-      var onSuccess = chrome.test.callbackPass(function() {});
+      var onSuccess = chrome.test.callbackPass();
       fileSystem.root.getDirectory(
           'cranberries',
           {create: false},
@@ -147,7 +185,7 @@ function runTests() {
     // because of type mismatching. DirectoryEntry.getDirectory() causes
     // fetching metadata.
     function getFileMetadataWrongType() {
-      var onSuccess = chrome.test.callbackPass(function() {});
+      var onSuccess = chrome.test.callbackPass();
       fileSystem.root.getDirectory(
           TESTING_FILE.name,
           {create: false},
