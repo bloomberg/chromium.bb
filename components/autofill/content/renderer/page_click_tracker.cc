@@ -37,7 +37,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
   if (!node.isElementNode())
     return WebInputElement();
   const WebElement element = node.toConst<WebElement>();
-  if (!element.hasTagName("input"))
+  if (!element.hasHTMLTagName("input"))
     return WebInputElement();
   const WebInputElement* input = blink::toWebInputElement(&element);
   if (!autofill::IsTextInput(input))
@@ -48,11 +48,11 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
 // Casts |node| to a WebTextAreaElement.
 // Returns an empty (isNull()) WebTextAreaElement if |node| is not a
 // textarea field.
-const WebTextAreaElement GetTextWebTextAreaElement(const WebNode& node) {
+const WebTextAreaElement GetWebTextAreaElement(const WebNode& node) {
   if (!node.isElementNode())
     return WebTextAreaElement();
   const WebElement element = node.toConst<WebElement>();
-  if (!element.hasTagName("textarea"))
+  if (!element.hasHTMLTagName("textarea"))
     return WebTextAreaElement();
   return element.toConst<WebTextAreaElement>();
 }
@@ -65,7 +65,7 @@ bool DidSelectedTextFieldLoseFocus(const WebNode& newly_clicked_node) {
 
   if (focused_element.isNull() ||
       (GetTextWebInputElement(focused_element).isNull() &&
-       GetTextWebTextAreaElement(focused_element).isNull()))
+       GetWebTextAreaElement(focused_element).isNull()))
     return false;
 
   return focused_element != newly_clicked_node;
@@ -101,7 +101,7 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   const WebInputElement input_element =
       GetTextWebInputElement(last_node_clicked_);
   const WebTextAreaElement textarea_element =
-      GetTextWebTextAreaElement(last_node_clicked_);
+      GetWebTextAreaElement(last_node_clicked_);
   if (input_element.isNull() && textarea_element.isNull())
     return;
 
@@ -152,7 +152,7 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
 
   // We are only interested in text field clicks.
   if (GetTextWebInputElement(node).isNull() &&
-      GetTextWebTextAreaElement(node).isNull())
+      GetWebTextAreaElement(node).isNull())
     return;
 
   last_node_clicked_ = node;

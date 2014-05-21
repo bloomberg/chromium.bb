@@ -81,7 +81,7 @@ static bool FindFormInputElements(blink::WebFormElement* fe,
     // of "name" attribute) so is it considered not found.
     bool found_input = false;
     for (size_t i = 0; i < temp_elements.size(); ++i) {
-      if (temp_elements[i].to<blink::WebElement>().hasTagName("input")) {
+      if (temp_elements[i].to<blink::WebElement>().hasHTMLTagName("input")) {
         // Check for a non-unique match.
         if (found_input) {
           found_input = false;
@@ -1048,7 +1048,7 @@ bool PasswordAutofillAgent::FindLoginInfo(const blink::WebNode& node,
     return false;
 
   blink::WebElement element = node.toConst<blink::WebElement>();
-  if (!element.hasTagName("input"))
+  if (!element.hasHTMLTagName("input"))
     return false;
 
   blink::WebInputElement input = element.to<blink::WebInputElement>();
