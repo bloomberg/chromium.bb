@@ -33,7 +33,7 @@
   # This extracts BUG= lines from the log, extracts the numbers part, removes
   # whitespace and deletes empty lines. Then, split on ',', sort, uniquify and
   # rejoin. Finally, remove the trailing ',' and concat to $bugs.
-  git log \
+  git log ${curr_gitsha}.. \
     | grep BUG= \
     | sed -e 's/.*BUG=\(.*\)/\1/' -e 's/\s*//g' -e '/^$/d' \
     | tr ',' '\n' \
