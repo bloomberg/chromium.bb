@@ -196,6 +196,7 @@ struct weston_output {
 	pixman_region32_t previous_damage;
 	int repaint_needed;
 	int repaint_scheduled;
+	struct wl_event_source *repaint_timer;
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_signal frame_signal;
@@ -683,6 +684,7 @@ struct weston_compositor {
 	int32_t kb_repeat_delay;
 
 	clockid_t presentation_clock;
+	int32_t repaint_msec;
 
 	int exit_code;
 };

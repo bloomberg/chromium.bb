@@ -137,6 +137,16 @@ directory are:
 .fi
 .RE
 .TP 7
+.BI "repaint-window=" N
+Set the approximate length of the repaint window in milliseconds. The repaint
+window is used to control and reduce the output latency for clients. If the
+window is longer than the output refresh period, the repaint will be done
+immediately when the previous repaint finishes, not processing client requests
+in between. If the repaint window is too short, the compositor may miss the
+target vertical blank, increasing output latency. The default value is 7
+milliseconds. The allowed range is from -10 to 1000 milliseconds. Using a
+negative value will force the compositor to always miss the target vblank.
+.TP 7
 .BI "gbm-format="format
 sets the GBM format used for the framebuffer for the GBM backend. Can be
 .B xrgb8888,

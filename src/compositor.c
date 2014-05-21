@@ -62,6 +62,28 @@
 #include "git-version.h"
 #include "version.h"
 
+#define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
+
+#define NSEC_PER_SEC 1000000000
+
+static void
+timespec_sub(struct timespec *r,
+	     const struct timespec *a, const struct timespec *b)
+{
+	r->tv_sec = a->tv_sec - b->tv_sec;
+	r->tv_nsec = a->tv_nsec - b->tv_nsec;
+	if (r->tv_nsec < 0) {
+		r->tv_sec--;
+		r->tv_nsec += NSEC_PER_SEC;
+	}
+}
+
+static int64_t
+timespec_to_nsec(const struct timespec *a)
+{
+	return (int64_t)a->tv_sec * NSEC_PER_SEC + a->tv_nsec;
+}
+
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
 
@@ -2346,19 +2368,38 @@ weston_output_schedule_repaint_reset(struct weston_output *output)
 				     weston_compositor_read_input, compositor);
 }
 
+static int
+output_repaint_timer_handler(void *data)
+{
+	struct weston_output *output = data;
+	struct weston_compositor *compositor = output->compositor;
+
+	if (output->repaint_needed &&
+	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
+	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN &&
+	    weston_output_repaint(output) == 0)
+		return 0;
+
+	weston_output_schedule_repaint_reset(output);
+
+	return 0;
+}
+
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output,
 			   const struct timespec *stamp,
 			   uint32_t presented_flags)
 {
 	struct weston_compositor *compositor = output->compositor;
-	int r;
-	uint32_t refresh_nsec;
+	int32_t refresh_nsec;
+	struct timespec now;
+	struct timespec gone;
+	int msec;
 
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
 
-	refresh_nsec = 1000000000000UL / output->current_mode->refresh;
+	refresh_nsec = 1000000000000LL / output->current_mode->refresh;
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
 						  output->msc,
@@ -2366,15 +2407,16 @@ weston_output_finish_frame(struct weston_output *output,
 
 	output->frame_time = stamp->tv_sec * 1000 + stamp->tv_nsec / 1000000;
 
-	if (output->repaint_needed &&
-	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
-	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN) {
-		r = weston_output_repaint(output);
-		if (!r)
-			return;
-	}
+	weston_compositor_read_presentation_clock(compositor, &now);
+	timespec_sub(&gone, &now, stamp);
+	msec = (refresh_nsec - timespec_to_nsec(&gone)) / 1000000; /* floor */
+	msec -= compositor->repaint_msec;
 
-	weston_output_schedule_repaint_reset(output);
+	/* Also sanity check. */
+	if (msec < 1 || msec > 1000)
+		output_repaint_timer_handler(output);
+	else
+		wl_event_source_timer_update(output->repaint_timer, msec);
 }
 
 static void
@@ -3873,6 +3915,8 @@ weston_output_destroy(struct weston_output *output)
 
 	output->destroying = 1;
 
+	wl_event_source_remove(output->repaint_timer);
+
 	weston_presentation_feedback_discard_list(&output->feedback_list);
 
 	weston_compositor_remove_output(output->compositor, output);
@@ -4033,6 +4077,8 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 		   int x, int y, int mm_width, int mm_height, uint32_t transform,
 		   int32_t scale)
 {
+	struct wl_event_loop *loop;
+
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
@@ -4052,6 +4098,10 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
+
+	loop = wl_display_get_event_loop(c->wl_display);
+	output->repaint_timer = wl_event_loop_add_timer(loop,
+					output_repaint_timer_handler, output);
 
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
 	output->compositor->output_id_pool |= 1 << output->id;
@@ -4516,6 +4566,17 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	weston_compositor_add_debug_binding(ec, KEY_T,
 					    timeline_key_binding_handler, ec);
+
+	s = weston_config_get_section(ec->config, "core", NULL, NULL);
+	weston_config_section_get_int(s, "repaint-window", &ec->repaint_msec,
+				      DEFAULT_REPAINT_WINDOW);
+	if (ec->repaint_msec < -10 || ec->repaint_msec > 1000) {
+		weston_log("Invalid repaint_window value in config: %d\n",
+			   ec->repaint_msec);
+		ec->repaint_msec = DEFAULT_REPAINT_WINDOW;
+	}
+	weston_log("Output repaint window is %d ms maximum.\n",
+		   ec->repaint_msec);
 
 	weston_compositor_schedule_repaint(ec);
 
