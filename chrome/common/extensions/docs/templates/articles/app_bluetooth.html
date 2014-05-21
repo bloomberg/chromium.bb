@@ -1,8 +1,10 @@
 <h1>Bluetooth</h1>
 
 <p>
-  This document describes how to use the <a href="bluetooth.html">Bluetooth
-  API</a> to communicate with Bluetooth and Bluetooth Low Energy devices.
+  This document describes how to use the <a href="bluetooth.html">Bluetooth</a>,
+  <a href="bluetoothSocket.html">Bluetooth Socket</a> and
+  <a href="bluetoothLowEnergy.html">Bluetooth Low Energy</a> APIs to
+  communicate with Bluetooth and Bluetooth Low Energy devices.
 </p>
 
 <p>
@@ -31,11 +33,13 @@
   information about devices, omit the <code>uuids</code> list.
 </p>
 
-<h2 id="adapter_state">Obtaining adapter state</h2>
+<h2 id="adapter_info">Adapter information</h2>
+
+<h3 id="adapter_state">Obtaining adapter state</h3>
 
 <p>
   To obtain the state of the Bluetooth adapter, use the
-  <code>chrome.bluetooth.getAdapterState</code> method:
+  $(ref:bluetooth.getAdapterState) method:
 </p>
 
 <pre>
@@ -44,10 +48,12 @@ chrome.bluetooth.getAdapterState(function(adapter) {
 });
 </pre>
 
+<h3 id="adapter_notifications">Adapter notifications</h3>
+
 <p>
-  The <code>chrome.bluetooth.onAdapterStateChanged</code> event is sent
-  whenever this state changes. This can be used, for example, to determine when
-  the adapter radio is powered on or off.
+  The $(ref:bluetooth.onAdapterStateChanged) event is sent
+  whenever the adapter state changes. This can be used, for example, to
+  determine when the adapter radio is powered on or off.
 </p>
 
 <pre>
@@ -69,11 +75,13 @@ chrome.bluetooth.onAdapterStateChanged.addListener(
   });
 </pre>
 
-<h2 id="listing_devices">Listing known devices</h2>
+<h2 id="device_info">Device information</h2>
+
+<h3 id="listing_devices">Listing known devices</h3>
 
 <p>
   To get a list of the devices known to the Bluetooth adapter, use the
-  <code>chrome.bluetooth.getDevices</code> method:
+  $(ref:bluetooth.getDevices) method:
 </p>
 
 <pre>
@@ -90,17 +98,16 @@ chrome.bluetooth.getDevices(function(devices) {
   <a href="#discovery">Discovering nearby devices</a>).
 </p>
 
-<h2 id="device_notifications">Receiving device notifications</h2>
+<h3 id="device_notifications">Receiving device notifications</h3>
 
 <p>
-  Instead of repeatedly calling <code>chrome.bluetooth.getDevices</code>, you
-  can use the <code>chrome.bluetooth.onDeviceAdded</code>,
-  <code>chrome.bluetooth.onDeviceChanged</code> and
-  <code>chrome.bluetooth.onDeviceRemoved</code> events to receive notifications.
+  Instead of repeatedly calling $(ref:bluetooth.getDevices), you
+  can use the $(ref:bluetooth.onDeviceAdded), $(ref:bluetooth.onDeviceChanged)
+  and $(ref:bluetooth.onDeviceRemoved) events to receive notifications.
 </p>
 
 <p>
-  The <code>chrome.bluetooth.onDeviceAdded</code> event is sent whenever a
+  The $(ref:bluetooth.onDeviceAdded) event is sent whenever a
   device is discovered by the adapter or makes a connection to the adapter:
 </p>
 
@@ -117,7 +124,7 @@ chrome.bluetooth.onDeviceAdded.addListener(function(device) {
 
 <p>
   Changes to devices, including previously discovered devices becoming paired,
-  are notified by the <code>chrome.bluetooth.onDeviceChanged</code> event:
+  are notified by the $(ref:bluetooth.onDeviceChanged) event:
 </p>
 
 <pre>
@@ -127,7 +134,7 @@ chrome.bluetooth.onDeviceChanged.addListener(function(device) {
 </pre>
 
 <p>
-  Finally the <code>chrome.bluetooth.onDeviceRemoved</code> event is sent
+  Finally the $(ref:bluetooth.onDeviceRemoved) event is sent
   whenever a paired device is removed from the system, or a discovered device
   has not been seen recently:
 </p>
@@ -138,19 +145,18 @@ chrome.bluetooth.onDeviceRemoved.addListener(function(device) {
 });
 </pre>
 
-<h2 id="discovery">Discovering nearby devices</h2>
+<h3 id="discovery">Discovering nearby devices</h3>
 
 <p>
   To begin discovery of nearby devices, use the
-  <code>chrome.bluetooth.startDiscovery</code> method. Discovery can be
-  resource intensive so you should call
-  <code>chrome.bluetooth.stopDiscovery</code> when done.
+  $(ref:bluetooth.startDiscovery) method. Discovery can be resource intensive
+  so you should call $(ref:bluetooth.stopDiscovery) when done.
 </p>
 
 <p>
-  You should call <code>chrome.bletooth.startDiscovery</code> whenever your
+  You should call $(ref:bluetooth.startDiscovery) whenever your
   app needs to discover nearby devices. Do not check the
-  <code>discovering</code> property of <code>AdapterState</code>. The call
+  <code>discovering</code> property of $(ref:bluetooth.AdapterState). The call
   to start discovery will succeed even if another app is discovering nearby
   devices, and will ensure the adapter continues to perform discovery after
   that other app has stopped.
@@ -158,11 +164,12 @@ chrome.bluetooth.onDeviceRemoved.addListener(function(device) {
 
 <p>
   Information about each newly discovered device is received using the
-  <code>chrome.bluetooth.onDeviceAdded</code> event. For devices that have
+  $(ref:bluetooth.onDeviceAdded) event. For devices that have
   already been discovered recently, or have been previously paired with or
   connected to, the event will not be sent. Instead you should call
-  <code>chrome.bluetooth.getDevices</code> to obtain the current information,
-  and use the <code>chrome.bluetooth.onDeviceChanged</code> event to be notified of changes to that information as a result of discovery.
+  $(ref:bluetooth.getDevices) to obtain the current information,
+  and use the $(ref:bluetooth.onDeviceChanged) event to be notified of changes
+  to that information as a result of discovery.
 </p>
 
 <p>
@@ -206,17 +213,17 @@ chrome.bluetooth.startDiscovery(function() {
   If the user turns off the Bluetooth radio, all discovery sessions will be
   ended and not resumed automatically when the radio is switched on. If this
   matters to your app, you should watch the
-  <code>chrome.bluetooth.onAdapterStateChanged</code> event. If the
+  $(ref:bluetooth.onAdapterStateChanged) event. If the
   <code>discovering</code> property changes to <code>false</code>, then your app
-  will need to call <code>chrome.bluetooth.startDiscovery</code> again to
+  will need to call $(ref:bluetooth.startDiscovery) again to
   resume. Be cautious of the resource intensive nature of discovery.
 </p>
 
-<h2 id="identifying_devices">Identifying devices</h2>
+<h3 id="identifying_devices">Identifying devices</h3>
 
 <p>
   A number of different options are provided for identifying devices returned
-  by <code>chrome.bluetooth.getDevices</code> and the related events.
+  by $(ref:bluetooth.getDevices) and the related events.
 </p>
 
 <p>
@@ -283,3 +290,214 @@ chrome.bluetooth.getDevices(function(devices) {
 });
 </pre>
 
+<h2 id="using_rfcomm">Using RFCOMM and L2CAP</h2>
+
+<p>
+  Chrome Apps may make connections to any device that supports RFCOMM or
+  L2CAP services. This includes the majority of class Bluetooth devices on
+  the market.
+</p>
+
+<h3 id="connecting">Connecting to a socket</h3>
+
+<p>
+  In order to make a connection to a device you need three things. A socket
+  to make the connection with, created using $(ref:bluetoothSocket.create);
+  the address of the device you wish to connect to, and the UUID of the
+  service itself.
+</p>
+
+<p>
+  Before making the connection you should verify that the adapter is aware of
+  the device by using $(ref:bluetooth.getDevice) or the device
+  discovery APIs.
+</p>
+
+<p>
+  The information necessary to establish the underlying connection, including
+  whether the RFCOMM or L2CAP protocol should be used and which channel or PSM,
+  is obtained using SDP discovery on the device.
+</p>
+
+<p>
+  Example:
+</p>
+
+<pre>
+var uuid = '1105';
+var onConnectedCallback = function() {
+  if (chrome.runtime.lastError) {
+    console.log("Connection failed: " + chrome.runtime.lastError);
+  } else {
+    // Profile implementation here.
+  }
+};
+
+chrome.bluetoothSocket.create(function(createInfo) {
+  chrome.bluetoothSocket.connect(createInfo.socketId,
+    device.address, uuid, onConnectedCallback);
+});
+</pre>
+
+<p>
+  Keep a handle to the socketId so that you can later send data
+  ($(ref:bluetoothSocket.send)) to this socket.
+</p>
+
+<h3 id="receiving">Receiving from and sending to a socket</h3>
+
+<p>
+  Receiving data from and sending to a socket uses <code>ArrayBuffer</code>
+  objects. To learn about ArrayBuffers, check out the overview,
+  <a href="https://developer.mozilla.org/en-US/docs/JavaScript_typed_arrays">JavaScript typed arrays</a>,
+  and the tutorial,
+  <a href="http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String">How to convert ArrayBuffer to and from String</a>.\
+</p>
+
+<p>
+  To send data you have in <code>arrayBuffer</code> use
+  $(ref:bluetoothSocket.send):
+</p>
+
+<pre>
+chrome.bluetoothSocket.send(socketId, arrayBuffer, function(bytes_sent) {
+  if (chrome.runtime.lastError) {
+    console.log("Send failed: " + chrome.runtime.lastError);
+  } else {
+    console.log("Sent " + bytes_sent + " bytes")
+  }
+})
+</pre>
+
+<p>
+  In contrast to the method to send data, data is received in an event
+  ($(ref:bluetoothSocket.onReceive). Sockets are created unpaused (see
+  $(ref:bluetoothSocket.setPaused)) so the listener for this event is
+  typically added between $(ref:bluetoothSocket.create) and
+  $(ref:bluetoothSocket.connect).
+</p>
+
+<pre>
+chrome.bluetoothSocket.onRecieve.addListener(function(receiveInfo) {
+  if (receiveInfo.socketId != socketId)
+    return;
+  // receiveInfo.data is an ArrayBuffer.
+});
+</pre>
+
+<h3 id="errors">Receiving socket errors and disconnection</h3>
+
+<p>
+  To be notified of socket errors, including disconnection, add a listener to
+  the $(ref:bluetoothSocket.onReceiveError) event.
+</p>
+
+<pre>
+chrome.bluetoothSocket.onReceiveError.addListener(function(errorInfo) {
+  // Cause is in errorInfo.error.
+  console.log(errorInfo.errorMessage);
+});
+</pre>
+
+<h3 id="disconnection">Disconnecting from a socket</h3>
+
+<p>
+  To hang up the connection and disconnect the socket use
+  $(ref:bluetoothSocket.disconnect).
+</p>
+
+<pre>
+chrome.bluetoothSocket.disconnect(socketId);
+</pre>
+
+<h2 id="using_rfcomm">Publishing services</h2>
+
+<p>
+  In addition to making outbound connections to devices, Chrome Apps may
+  publish services that may be used by any device that supports RFCOMM or
+  L2CAP.
+</p>
+
+<h3 id="listening">Listening on a socket</h3>
+
+<p>
+  Three types of published service are supported. RFCOMM is the most commonly
+  used and covers the majority of devices and profiles:
+</p>
+
+<pre>
+var uuid = '1105';
+var channel = 0; // Automatic channel selection.
+chrome.bluetoothSocket.create(function(createInfo) {
+  chrome.bluetoothSocket.listenUsingRfcomm(createInfo.socketId,
+    uuid, channel, onListenCallback);
+});
+</pre>
+
+<p>
+  Insecure RFCOMM is an option for Bluetooth 1.0 and Bluetooth 2.0 devices that
+  do not support encryption. For all other device types this is no different
+  to using $(ref:bluetoothSocket.listenUsingRfcomm).
+</p>
+
+<pre>
+chrome.bluetoothSocket.create(function(createInfo) {
+  chrome.bluetoothSocket.listenUsingInsecureRfcomm(createInfo.socketId,
+    uuid, channel, onListenCallback);
+});
+</pre>
+
+<p>
+  Finally L2CAP covers other device types and vendor-specific uses such as
+  firmware uploading.
+</p>
+
+<pre>
+var uuid = '0b87367c-f188-47cd-bc20-a5f4f70973c6';
+var psm = 0; // Automatic PSM selection.
+chrome.bluetoothSocket.create(function(createInfo) {
+  chrome.bluetoothSocket.listenUsingL2cap(createInfo.socketId,
+    uuid, psm, onListenCallback);
+});
+</pre>
+
+<p>
+  In all three cases the callback indicates error through
+  <code>chrome.runtime.lastError</code> and success otherwise.
+  Keep a handle to the socketId so that you can later accept connections
+  ($(ref:bluetoothSocket.onAccept)) from this socket.
+</p>
+
+<h3 id="accepting">Accepting client connections</h3>
+
+<p>
+  Client connections are accepted and passed to your application through the
+  $(ref:bluetoothSocket.onAccept) event.
+</p>
+
+<pre>
+chrome.bluetoothSocket.onAccept.addListener(function(acceptInfo) {
+  if (info.socketId != serverSocketId)
+    return;
+
+  // Say hello...
+  chrome.bluetoothSocket.send(acceptInfo.clientSocketId,
+    data, onSendCallback);
+
+  // Accepted sockets are initially paused,
+  // set the onReceive listener first.
+  chrome.bluetoothSocket.onReceive.addListener(onReceive);
+  chrome.bluetoothSocket.setPaused(false);
+});
+</pre>
+
+<h3 id="stop-accepting">Stop accepting client connections</h3>
+
+<p>
+  To stop accepting client connections and unpublish the service use
+  $(ref:bluetoothSocket.disconnect).
+</p>
+
+<pre>
+chrome.bluetoothSocket.disconnect(serverSocketId);
+</pre>

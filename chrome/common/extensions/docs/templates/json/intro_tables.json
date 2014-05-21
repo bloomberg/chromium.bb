@@ -43,6 +43,22 @@
       }
     ]
   },
+  "bluetoothLowEnergy": {
+    "Learn More": [
+      {
+        "link": "app_bluetooth.html",
+        "text": "Bluetooth"
+      }
+    ]
+  },
+  "bluetoothSocket": {
+    "Learn More": [
+      {
+        "link": "app_bluetooth.html",
+        "text": "Bluetooth"
+      }
+    ]
+  },
   "cookies": {
     "Permissions": [
       {
