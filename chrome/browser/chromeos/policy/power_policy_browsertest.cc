@@ -307,7 +307,8 @@ void PowerPolicyInSessionBrowserTest::SetUpOnMainThread() {
   PowerPolicyBrowserTestBase::SetUpOnMainThread();
 
   // Tell the DeviceSettingsService that there is no local owner.
-  chromeos::DeviceSettingsService::Get()->SetUsername(std::string());
+  crypto::ScopedPK11Slot slot;
+  chromeos::DeviceSettingsService::Get()->InitOwner(std::string(), slot.Pass());
 }
 
 // Verifies that device policy is applied on the login screen.

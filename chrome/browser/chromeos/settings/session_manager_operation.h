@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
@@ -66,6 +67,9 @@ class SessionManagerOperation {
     force_key_load_ = force_key_load;
   }
 
+  void set_username(const std::string& username) { username_ = username; }
+  void set_slot(PK11SlotInfo* slot) { slot_ = slot; }
+
  protected:
   // Runs the operation. The result is reported through |callback_|.
   virtual void Run() = 0;
@@ -88,7 +92,8 @@ class SessionManagerOperation {
   // Loads the owner key from disk. Must be run on a thread that can do I/O.
   static scoped_refptr<OwnerKey> LoadOwnerKey(
       scoped_refptr<OwnerKeyUtil> util,
-      scoped_refptr<OwnerKey> current_key);
+      scoped_refptr<OwnerKey> current_key,
+      PK11SlotInfo* slot);
 
   // Stores the owner key loaded by LoadOwnerKey and calls |callback|.
   void StoreOwnerKey(const base::Closure& callback,
@@ -112,6 +117,8 @@ class SessionManagerOperation {
 
   scoped_refptr<OwnerKey> owner_key_;
   bool force_key_load_;
+  std::string username_;
+  PK11SlotInfo* slot_;
 
   bool is_loading_;
   scoped_ptr<enterprise_management::PolicyData> policy_data_;

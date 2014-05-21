@@ -70,6 +70,12 @@ crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKey(
   return crypto::RSAPrivateKey::FindFromPublicKeyInfo(key);
 }
 
+crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKeyInSlot(
+    const std::vector<uint8>& key,
+    PK11SlotInfo* slot) {
+  return crypto::RSAPrivateKey::FindFromPublicKeyInfoInSlot(key, slot);
+}
+
 bool OwnerKeyUtilImpl::IsPublicKeyPresent() {
   return base::PathExists(key_file_);
 }

@@ -164,7 +164,9 @@ TEST_F(DeviceSettingsServiceTest, SignAndStoreFailure) {
             device_settings_service_.status());
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   scoped_ptr<em::ChromeDeviceSettingsProto> new_device_settings(
@@ -190,7 +192,9 @@ TEST_F(DeviceSettingsServiceTest, SignAndStoreSuccess) {
             device_settings_service_.status());
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   device_policy_.payload().mutable_device_policy_refresh_rate()->
@@ -229,7 +233,9 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsModeTransition) {
             device_settings_service_.status());
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   // The initial management mode should be NOT_MANAGED.
@@ -343,7 +349,9 @@ TEST_F(DeviceSettingsServiceTest, SetManagementSettingsSuccess) {
             device_settings_service_.status());
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   device_settings_service_.SetManagementSettings(
@@ -470,7 +478,9 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN, ownership_status_);
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   device_settings_service_.GetOwnershipStatusAsync(
       base::Bind(&DeviceSettingsServiceTest::SetOwnershipStatus,
                  base::Unretained(this)));
@@ -554,7 +564,9 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
   EXPECT_FALSE(is_owner_set_);
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   device_settings_service_.OnTPMTokenReady();
   FlushDeviceSettings();
 
@@ -580,7 +592,9 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
 
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   ReloadDeviceSettings();
 
   device_settings_service_.OnTPMTokenReady();

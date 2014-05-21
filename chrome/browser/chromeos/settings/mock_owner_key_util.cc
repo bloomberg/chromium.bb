@@ -22,6 +22,12 @@ crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKey(
   return private_key_.get() ? private_key_->Copy() : NULL;
 }
 
+crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKeyInSlot(
+    const std::vector<uint8>& key,
+    PK11SlotInfo* slot) {
+  return private_key_.get() ? private_key_->Copy() : NULL;
+}
+
 bool MockOwnerKeyUtil::IsPublicKeyPresent() {
   return !public_key_.empty();
 }

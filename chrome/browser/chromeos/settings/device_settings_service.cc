@@ -232,8 +232,13 @@ void DeviceSettingsService::IsCurrentUserOwnerAsync(
   }
 }
 
-void DeviceSettingsService::SetUsername(const std::string& username) {
+void DeviceSettingsService::InitOwner(const std::string& username,
+                                      crypto::ScopedPK11Slot slot) {
+  if (!username_.empty())
+    return;
+
   username_ = username;
+  slot_ = slot.Pass();
 
   // The private key may have become available, so force a key reload.
   owner_key_ = NULL;
@@ -292,14 +297,19 @@ void DeviceSettingsService::EnqueueLoad(bool force_key_load) {
                      weak_factory_.GetWeakPtr(),
                      base::Closure()));
   operation->set_force_key_load(force_key_load);
+  operation->set_username(username_);
+  operation->set_slot(slot_.get());
   Enqueue(operation);
 }
 
 void DeviceSettingsService::EnsureReload(bool force_key_load) {
-  if (!pending_operations_.empty())
+  if (!pending_operations_.empty()) {
+    pending_operations_.front()->set_username(username_);
+    pending_operations_.front()->set_slot(slot_.get());
     pending_operations_.front()->RestartLoad(force_key_load);
-  else
+  } else {
     EnqueueLoad(force_key_load);
+  }
 }
 
 void DeviceSettingsService::StartNextOperation() {

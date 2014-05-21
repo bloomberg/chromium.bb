@@ -206,6 +206,16 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // created in the key database.
   static RSAPrivateKey* FindFromPublicKeyInfo(
       const std::vector<uint8>& input);
+
+  // Import an existing public key, and then search for the private
+  // half in the slot specified by |slot|. The format of the public
+  // key blob is is an X509 SubjectPublicKeyInfo block. This can return
+  // NULL if initialization fails or the private key cannot be found.
+  // The caller takes ownership of the returned object, but nothing new
+  // is created in the slot.
+  static RSAPrivateKey* FindFromPublicKeyInfoInSlot(
+      const std::vector<uint8>& input,
+      PK11SlotInfo* slot);
 #endif
 
 #if defined(USE_OPENSSL)
@@ -252,6 +262,14 @@ class CRYPTO_EXPORT RSAPrivateKey {
       const std::vector<uint8>& input,
       bool permanent,
       bool sensitive);
+#endif
+
+#if defined(USE_NSS)
+  // Import an existing public key. The format of the public key blob
+  // is an X509 SubjectPublicKeyInfo block. This can return NULL if
+  // initialization fails.  The caller takes ownership of the returned
+  // object. Note that this method doesn't initialize the |key_| member.
+  static RSAPrivateKey* InitPublicPart(const std::vector<uint8>& input);
 #endif
 
 #if defined(USE_OPENSSL)

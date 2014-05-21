@@ -19,6 +19,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "crypto/scoped_nss_types.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace crypto {
@@ -199,7 +200,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
 
   // Sets the identity of the user that's interacting with the service. This is
   // relevant only for writing settings through SignAndStore().
-  void SetUsername(const std::string& username);
+  void InitOwner(const std::string& username, crypto::ScopedPK11Slot slot);
   const std::string& GetUsername() const;
 
   // Adds an observer.
@@ -261,6 +262,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
       pending_is_current_user_owner_callbacks_;
 
   std::string username_;
+  crypto::ScopedPK11Slot slot_;
   scoped_refptr<OwnerKey> owner_key_;
   // Whether TPM token still needs to be initialized.
   bool waiting_for_tpm_token_;

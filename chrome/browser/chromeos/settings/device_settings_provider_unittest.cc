@@ -139,7 +139,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   base::FundamentalValue value(true);
@@ -167,7 +169,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  device_settings_service_.SetUsername(device_policy_.policy_data().username());
+  crypto::ScopedPK11Slot slot;
+  device_settings_service_.InitOwner(device_policy_.policy_data().username(),
+                                     slot.Pass());
   FlushDeviceSettings();
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());

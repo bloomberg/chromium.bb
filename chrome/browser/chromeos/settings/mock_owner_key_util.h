@@ -23,6 +23,9 @@ class MockOwnerKeyUtil : public OwnerKeyUtil {
   virtual bool ImportPublicKey(std::vector<uint8>* output) OVERRIDE;
   virtual crypto::RSAPrivateKey* FindPrivateKey(
       const std::vector<uint8>& key) OVERRIDE;
+  virtual crypto::RSAPrivateKey* FindPrivateKeyInSlot(
+      const std::vector<uint8>& key,
+      PK11SlotInfo* slot) OVERRIDE;
   virtual bool IsPublicKeyPresent() OVERRIDE;
 
   // Clears the public and private keys.

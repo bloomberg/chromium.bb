@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -488,9 +489,10 @@ bool ParallelAuthenticator::VerifyOwner() {
     owner_is_verified_ = true;
     return true;
   }
-  // Now we can continue reading the private key.
-  DeviceSettingsService::Get()->SetUsername(
+
+  OwnerSettingsServiceFactory::GetInstance()->SetUsername(
       current_state_->user_context.GetUserID());
+
   // This should trigger certificate loading, which is needed in order to
   // correctly determine if the current user is the owner.
   if (LoginState::IsInitialized()) {

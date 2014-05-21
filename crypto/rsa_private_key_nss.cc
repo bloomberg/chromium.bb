@@ -38,6 +38,37 @@ static bool ReadAttribute(SECKEYPrivateKey* key,
   return true;
 }
 
+#if defined(USE_NSS)
+struct PublicKeyInfoDeleter {
+  inline void operator()(CERTSubjectPublicKeyInfo* spki) {
+    SECKEY_DestroySubjectPublicKeyInfo(spki);
+  }
+};
+
+typedef scoped_ptr<CERTSubjectPublicKeyInfo, PublicKeyInfoDeleter>
+    ScopedPublicKeyInfo;
+
+// The function decodes RSA public key from the |input|.
+crypto::ScopedSECKEYPublicKey GetRSAPublicKey(const std::vector<uint8>& input) {
+  // First, decode and save the public key.
+  SECItem key_der;
+  key_der.type = siBuffer;
+  key_der.data = const_cast<unsigned char*>(&input[0]);
+  key_der.len = input.size();
+
+  ScopedPublicKeyInfo spki(SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der));
+  if (!spki)
+    return crypto::ScopedSECKEYPublicKey();
+
+  crypto::ScopedSECKEYPublicKey result(SECKEY_ExtractPublicKey(spki.get()));
+
+  // Make sure the key is an RSA key.. If not, that's an error.
+  if (!result || result->keyType != rsaKey)
+    return crypto::ScopedSECKEYPublicKey();
+  return result.Pass();
+}
+#endif  // defined(USE_NSS)
+
 }  // namespace
 
 namespace crypto {
@@ -112,35 +143,9 @@ RSAPrivateKey* RSAPrivateKey::CreateFromKey(SECKEYPrivateKey* key) {
 // static
 RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
     const std::vector<uint8>& input) {
-  EnsureNSSInit();
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  // First, decode and save the public key.
-  SECItem key_der;
-  key_der.type = siBuffer;
-  key_der.data = const_cast<unsigned char*>(&input[0]);
-  key_der.len = input.size();
-
-  CERTSubjectPublicKeyInfo* spki =
-      SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der);
-  if (!spki) {
-    NOTREACHED();
+  scoped_ptr<RSAPrivateKey> result(InitPublicPart(input));
+  if (!result)
     return NULL;
-  }
-
-  result->public_key_ = SECKEY_ExtractPublicKey(spki);
-  SECKEY_DestroySubjectPublicKeyInfo(spki);
-  if (!result->public_key_) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  // Make sure the key is an RSA key.  If not, that's an error
-  if (result->public_key_->keyType != rsaKey) {
-    NOTREACHED();
-    return NULL;
-  }
 
   ScopedSECItem ck_id(
       PK11_MakeIDFromPubKey(&(result->public_key_->u.rsa.modulus)));
@@ -165,6 +170,30 @@ RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
 
   // We didn't find the key.
   return NULL;
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfoInSlot(
+    const std::vector<uint8>& input,
+    PK11SlotInfo* slot) {
+  if (!slot)
+    return NULL;
+
+  scoped_ptr<RSAPrivateKey> result(InitPublicPart(input));
+  if (!result)
+    return NULL;
+
+  ScopedSECItem ck_id(
+      PK11_MakeIDFromPubKey(&(result->public_key_->u.rsa.modulus)));
+  if (!ck_id.get()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  result->key_ = PK11_FindKeyByKeyID(slot, ck_id.get(), NULL);
+  if (!result->key_)
+    return NULL;
+  return result.release();
 }
 #endif
 
@@ -272,5 +301,21 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
 
   return result.release();
 }
+
+#if defined(USE_NSS)
+// static
+RSAPrivateKey* RSAPrivateKey::InitPublicPart(const std::vector<uint8>& input) {
+  EnsureNSSInit();
+
+  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey());
+  result->public_key_ = GetRSAPublicKey(input).release();
+  if (!result->public_key_) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return result.release();
+}
+#endif  // defined(USE_NSS)
 
 }  // namespace crypto

@@ -11,8 +11,11 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "chrome/browser/net/nss_context.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
@@ -72,16 +75,19 @@ void SessionManagerOperation::ReportResult(
 void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
   if (force_key_load_ || !owner_key_.get() || !owner_key_->public_key()) {
     scoped_refptr<base::TaskRunner> task_runner =
-        content::BrowserThread::GetBlockingPool()->
-        GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+        content::BrowserThread::GetBlockingPool()
+            ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     base::PostTaskAndReplyWithResult(
         task_runner.get(),
         FROM_HERE,
         base::Bind(&SessionManagerOperation::LoadOwnerKey,
-                   owner_key_util_, owner_key_),
+                   owner_key_util_,
+                   owner_key_,
+                   slot_),
         base::Bind(&SessionManagerOperation::StoreOwnerKey,
-                   weak_factory_.GetWeakPtr(), callback));
+                   weak_factory_.GetWeakPtr(),
+                   callback));
   } else {
     callback.Run();
   }
@@ -90,7 +96,8 @@ void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
 // static
 scoped_refptr<OwnerKey> SessionManagerOperation::LoadOwnerKey(
     scoped_refptr<OwnerKeyUtil> util,
-    scoped_refptr<OwnerKey> current_key) {
+    scoped_refptr<OwnerKey> current_key,
+    PK11SlotInfo* slot) {
   scoped_ptr<std::vector<uint8> > public_key;
   scoped_ptr<crypto::RSAPrivateKey> private_key;
 
@@ -109,7 +116,7 @@ scoped_refptr<OwnerKey> SessionManagerOperation::LoadOwnerKey(
   }
 
   if (public_key.get() && !private_key.get()) {
-    private_key.reset(util->FindPrivateKey(*public_key));
+    private_key.reset(util->FindPrivateKeyInSlot(*public_key, slot));
     if (!private_key.get())
       VLOG(1) << "Failed to load private owner key.";
   }

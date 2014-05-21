@@ -222,7 +222,8 @@ void LoginScreenDefaultPolicyInSessionBrowsertest::SetUpOnMainThread() {
   LoginScreenDefaultPolicyBrowsertestBase::SetUpOnMainThread();
 
   // Tell the DeviceSettingsService that there is no local owner.
-  chromeos::DeviceSettingsService::Get()->SetUsername(std::string());
+  crypto::ScopedPK11Slot slot;
+  chromeos::DeviceSettingsService::Get()->InitOwner(std::string(), slot.Pass());
 }
 
 void LoginScreenDefaultPolicyInSessionBrowsertest::VerifyPrefFollowsDefault(
