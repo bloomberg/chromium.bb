@@ -23,7 +23,6 @@ import time
 import traceback
 
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_run
@@ -39,6 +38,7 @@ from chromite.buildbot.stages import build_stages
 from chromite.buildbot.stages import chrome_stages
 from chromite.buildbot.stages import completion_stages
 from chromite.buildbot.stages import generic_stages
+from chromite.buildbot.stages import release_stages
 from chromite.buildbot.stages import report_stages
 from chromite.buildbot.stages import sdk_stages
 from chromite.buildbot.stages import sync_stages
@@ -520,9 +520,9 @@ class SimpleBuilder(Builder):
                       board]]
 
     stage_list += [
-        [stages.SignerTestStage, board, archive_stage],
+        [release_stages.SignerTestStage, board, archive_stage],
         [generic_stages.RetryStage, 1,
-         stages.PaygenStage, board, archive_stage],
+         release_stages.PaygenStage, board, archive_stage],
         [test_stages.UnitTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],
@@ -575,7 +575,7 @@ class SimpleBuilder(Builder):
   def _RunPayloadsBuild(self):
     """Run the PaygenStage once for each board."""
     def _RunStageWrapper(board):
-      self._RunStage(stages.PaygenStage, board=board,
+      self._RunStage(release_stages.PaygenStage, board=board,
                      channels=self._run.options.channels, archive_stage=None)
 
     with parallel.BackgroundTaskRunner(_RunStageWrapper) as queue:
