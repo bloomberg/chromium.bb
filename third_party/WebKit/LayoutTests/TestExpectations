@@ -890,9 +890,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/com
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/inline-block-with-mixed-direction-words.html [ ImageOnlyFailure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/bidi-embedding-pop-and-push-same-2.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/justify-nbsp.html [ NeedsRebaseline ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/soft-hyphen-4.html [ NeedsRebaseline ]
 
 crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsManualRebaseline ]
 crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]

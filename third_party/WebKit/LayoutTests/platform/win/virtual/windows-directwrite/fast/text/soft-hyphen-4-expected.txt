@@ -4,12 +4,14 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock {P} at (0,0) size 784x0
-      RenderBlock {DIV} at (0,0) size 344x77 [border: (3px solid #000000)]
-        RenderText {#text} at (7,7) size 187x20
-          text run at (7,7) width 187: "12345678901 anti\x{AD}aliasing"
-        RenderBR {BR} at (193,23) size 1x0
-        RenderBR {BR} at (7,28) size 0x20
-        RenderText {#text} at (7,49) size 187x20
-          text run at (7,49) width 187: "12345678901 anti\x{AD}aliasing"
+      RenderBlock {DIV} at (0,0) size 344x104 [border: (3px solid #000000)]
+        RenderText {#text} at (7,7) size 330x36
+          text run at (7,7) width 330: "12345678901 anti\x{AD}" + hyphen string "\x{2010}"
+          text run at (7,25) width 144: "aliasing"
+        RenderBR {BR} at (151,39) size 0x0
+        RenderBR {BR} at (7,43) size 0x18
+        RenderText {#text} at (7,61) size 330x36
+          text run at (7,61) width 330: "12345678901 anti\x{AD}" + hyphen string "\x{2010}"
+          text run at (7,79) width 144: "aliasing"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,93) size 784x0
+      RenderBlock {P} at (0,120) size 784x0
