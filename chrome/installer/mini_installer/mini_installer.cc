@@ -834,29 +834,11 @@ int MainEntryPoint() {
 extern "C" {
 #pragma function(memset)
 void* memset(void* dest, int c, size_t count) {
-  // Simplistic 32-bit memset C implementation which assumes properly aligned
-  // memory; performance hit on memory that isn't properly aligned, but still
-  // better overall then a 8-bit implementation.
-  size_t adjcount = count >> 2;
-  UINT32 fill = (c << 24 | c << 16 | c << 8 | c);
-  UINT32* dest32 = reinterpret_cast<UINT32*>(dest);
-  UINT8* dest8 = reinterpret_cast<UINT8*>(dest);
-
-  // Take care of the ending 0-3 bytes (binary 11 = 3).  The lack of breaks is
-  // deliberate; it falls through for each byte. Think of it a simplified for
-  // loop.
-  switch (count - (adjcount << 2)) {
-    case 3:
-      dest8[count - 3] = c;
-    case 2:
-      dest8[count - 2] = c;
-    case 1:
-      dest8[count - 1] = c;
+  void* start = dest;
+  while (count--) {
+    *reinterpret_cast<char*>(dest) = static_cast<char>(c);
+    dest = reinterpret_cast<char*>(dest) + 1;
   }
-
-  while (adjcount-- > 0)  // Copy the rest, 4 bytes/32 bits at a time
-    *(dest32++) = fill;
-
-  return dest;
+  return start;
 }
 }  // extern "C"
