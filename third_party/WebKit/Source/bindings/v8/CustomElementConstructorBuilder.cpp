@@ -71,32 +71,49 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 {
     ASSERT(m_prototype.IsEmpty());
 
+    v8::TryCatch tryCatch;
+
     ScriptValue prototypeScriptValue;
     if (m_options->get("prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
+        ASSERT(!tryCatch.HasCaught());
         if (!prototypeScriptValue.isObject()) {
             CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, exceptionState);
+            tryCatch.ReThrow();
             return false;
         }
         m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
-    } else {
+    } else if (!tryCatch.HasCaught()) {
         m_prototype = v8::Object::New(m_scriptState->isolate());
         v8::Local<v8::Object> basePrototype = m_scriptState->perContextData()->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
         if (!basePrototype.IsEmpty())
             m_prototype->SetPrototype(basePrototype);
     }
 
+    if (tryCatch.HasCaught()) {
+        tryCatch.ReThrow();
+        return false;
+    }
+
     AtomicString extends;
     bool extendsProvidedAndNonNull = m_options->get("extends", extends);
+
+    if (tryCatch.HasCaught()) {
+        tryCatch.ReThrow();
+        return false;
+    }
 
     if (!m_scriptState->perContextData()) {
         // FIXME: This should generate an InvalidContext exception at a later point.
         CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, exceptionState);
+        tryCatch.ReThrow();
         return false;
     }
 
     AtomicString namespaceURI = HTMLNames::xhtmlNamespaceURI;
     if (hasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
         namespaceURI = SVGNames::svgNamespaceURI;
+
+    ASSERT(!tryCatch.HasCaught());
 
     AtomicString localName;
 
@@ -105,15 +122,18 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 
         if (!Document::isValidName(localName)) {
             CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, exceptionState);
+            tryCatch.ReThrow();
             return false;
         }
         if (CustomElement::isValidName(localName)) {
             CustomElementException::throwException(CustomElementException::ExtendsIsCustomElementName, type, exceptionState);
+            tryCatch.ReThrow();
             return false;
         }
     } else {
         if (namespaceURI == SVGNames::svgNamespaceURI) {
             CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, exceptionState);
+            tryCatch.ReThrow();
             return false;
         }
         localName = type;
@@ -126,6 +146,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     else
         m_wrapperType = findWrapperTypeForSVGTagName(localName);
 
+    ASSERT(!tryCatch.HasCaught());
     ASSERT(m_wrapperType);
     tagName = QualifiedName(nullAtom, localName, namespaceURI);
     return m_wrapperType;
