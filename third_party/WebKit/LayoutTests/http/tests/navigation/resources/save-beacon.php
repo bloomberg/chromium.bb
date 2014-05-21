@@ -1,9 +1,11 @@
 <?php
+require_once '../../resources/portabilityLayer.php';
+
 function prettify($name) {
    return str_replace(' ', '-', ucwords(str_replace('_', ' ', str_replace('http_', '', strtolower($name)))));
 }
 
-$beaconFilename = "beacon" . (isset($_REQUEST['name']) ? $_REQUEST['name'] : "") . ".txt";
+$beaconFilename = sys_get_temp_dir() . "/beacon" . (isset($_REQUEST['name']) ? $_REQUEST['name'] : "") . ".txt";
 $beaconFile = fopen($beaconFilename . ".tmp", 'w');
 $httpHeaders = $_SERVER;
 ksort($httpHeaders, SORT_STRING);

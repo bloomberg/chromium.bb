@@ -1,5 +1,7 @@
 <?php
-$pingFile = fopen("ping.txt.tmp", 'w');
+require_once '../../resources/portabilityLayer.php';
+
+$pingFile = fopen(sys_get_temp_dir() . "/ping.txt.tmp", 'w');
 $httpHeaders = $_SERVER;
 ksort($httpHeaders, SORT_STRING);
 foreach ($httpHeaders as $name => $value) {
@@ -7,7 +9,7 @@ foreach ($httpHeaders as $name => $value) {
         fwrite($pingFile, "$name: $value\n");
 }
 fclose($pingFile);
-rename("ping.txt.tmp", "ping.txt");
+rename(sys_get_temp_dir() . "/ping.txt.tmp", sys_get_temp_dir() . "/ping.txt");
 foreach ($_COOKIE as $name => $value)
     setcookie($name, "deleted", time() - 60, "/");
 ?>

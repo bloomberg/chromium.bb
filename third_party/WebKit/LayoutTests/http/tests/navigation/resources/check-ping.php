@@ -1,19 +1,26 @@
 <?php
-while (!file_exists("ping.txt")) {
+require_once '../../resources/portabilityLayer.php';
+
+$pingFilename = sys_get_temp_dir() . "/ping.txt";
+while (!file_exists($pingFilename)) {
     usleep(10000);
     // file_exists() caches results, we want to invalidate the cache.
     clearstatcache();
 }
 
 echo "<html><body>\n";
-echo "Ping sent successfully";
-$pingFile = fopen("ping.txt", 'r');
-while ($line = fgets($pingFile)) {
-    echo "<br>";
-    echo trim($line);
+$pingFile = fopen($pingFilename, 'r');
+if ($pingFile) {
+    echo "Ping sent successfully";
+    while ($line = fgets($pingFile)) {
+        echo "<br>";
+        echo trim($line);
+    }
+    fclose($pingFile);
+    unlink($pingFilename);
+} else {
+    echo "Ping not sent";
 }
-fclose($pingFile);
-unlink("ping.txt");
 echo "<script>";
 echo "if (window.testRunner)";
 echo "    testRunner.notifyDone();";
