@@ -39,9 +39,9 @@ function importUnextractableHmacKey()
 function importUnextractableRsaPrivateKey()
 {
     var keyData = hexStringToUint8Array(kKeyData.rsa1.pkcs8);
-    var usages = ['encrypt'];
+    var usages = ['sign'];
     var extractable = false;
-    var algorithm = {name: 'RSAES-PKCS1-v1_5'};
+    var algorithm = {name: 'RSASSA-PKCS1-v1_5', hash: {name: "sha-1"}};
 
     return crypto.subtle.importKey('pkcs8', keyData, algorithm, extractable, usages);
 }

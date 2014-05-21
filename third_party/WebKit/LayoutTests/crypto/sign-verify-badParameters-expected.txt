@@ -7,7 +7,7 @@ error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function w
 error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: TypeError: Failed to execute 'verify' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: NotSupportedError: SHA-1: Unsupported operation: sign
-error is: NotSupportedError: RSAES-PKCS1-v1_5: Unsupported operation: sign
+error is: NotSupportedError: AES-CBC: Unsupported operation: sign
 PASS successfullyParsed is true
 
 TEST COMPLETE

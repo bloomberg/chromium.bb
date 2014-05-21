@@ -51,7 +51,7 @@ importHmacKey().then(function(result) {
 
     // Operation doesn't support signing (also given an invalid key, but the
     // first failure takes priority)
-    return crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, key, data);
+    return crypto.subtle.sign({name: 'AES-CBC'}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
