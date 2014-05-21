@@ -54,13 +54,7 @@ bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   // This is a bit tricky: since the interface does not allow us to replace
   // the pointer of the old packet with a new one, we will initially copy the
   // metadata from old packet to new bigger packet.
-  dest_packet.pts = packet->pts;
-  dest_packet.dts = packet->dts;
-  dest_packet.pos = packet->pos;
-  dest_packet.duration = packet->duration;
-  dest_packet.convergence_duration = packet->convergence_duration;
-  dest_packet.flags = packet->flags;
-  dest_packet.stream_index = packet->stream_index;
+  av_packet_copy_props(&dest_packet, packet);
 
   // Proceed with the conversion of the actual in-band NAL units, leave room
   // for configuration in the beginning.

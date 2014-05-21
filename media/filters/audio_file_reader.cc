@@ -131,7 +131,9 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
     // decoded from the packet; otherwise av_free_packet() will corrupt memory.
     AVPacket packet_temp = packet;
     do {
-      avcodec_get_frame_defaults(av_frame.get());
+      // Reset frame to default values.
+      av_frame_unref(av_frame.get());
+
       int frame_decoded = 0;
       int result = avcodec_decode_audio4(
           codec_context_, av_frame.get(), &frame_decoded, &packet_temp);

@@ -233,7 +233,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
         memcpy(&packet, audio_packets_.peek(), sizeof(packet));
       }
 
-      avcodec_get_frame_defaults(audio_buffer_.get());
+      av_frame_unref(audio_buffer_.get());
       result = avcodec_decode_audio4(av_audio_context(), audio_buffer_.get(),
                                      &got_audio, &packet);
       if (!audio_packets_.empty()) {
@@ -287,7 +287,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
         memcpy(&packet, video_packets_.peek(), sizeof(packet));
       }
 
-      avcodec_get_frame_defaults(video_buffer_.get());
+      av_frame_unref(video_buffer_.get());
       av_video_context()->reordered_opaque = packet.pts;
       result = avcodec_decode_video2(av_video_context(), video_buffer_.get(),
                                      &got_picture, &packet);

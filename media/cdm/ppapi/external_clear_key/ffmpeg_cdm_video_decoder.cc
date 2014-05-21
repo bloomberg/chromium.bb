@@ -226,7 +226,7 @@ cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
   codec_context_->reordered_opaque = timestamp;
 
   // Reset frame to default values.
-  avcodec_get_frame_defaults(av_frame_.get());
+  av_frame_unref(av_frame_.get());
 
   // This is for codecs not using get_buffer to initialize
   // |av_frame_->reordered_opaque|
