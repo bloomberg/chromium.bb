@@ -301,9 +301,6 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-                 content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile->GetPrefs());
   base::Closure callback =
       base::Bind(&ExtensionService::OnExtensionInstallPrefChanged,
@@ -2168,10 +2165,6 @@ void ExtensionService::Observe(int type,
                         OnChromeUpdateAvailable());
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {
-      OnProfileDestructionStarted();
-      break;
-    }
 
     default:
       NOTREACHED() << "Unexpected notification type.";
@@ -2434,13 +2427,4 @@ void ExtensionService::UnloadAllExtensionsInternal() {
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has been disabled
   // or uninstalled.
-}
-
-void ExtensionService::OnProfileDestructionStarted() {
-  ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
-  for (ExtensionIdSet::iterator it = ids_to_unload.begin();
-       it != ids_to_unload.end();
-       ++it) {
-    UnloadExtension(*it, UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN);
-  }
 }

@@ -522,13 +522,11 @@ struct InstalledExtensionInfo {
 struct UnloadedExtensionInfo {
   // TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
   enum Reason {
-    REASON_UNDEFINED,         // Undefined state used to initialize variables.
-    REASON_DISABLE,           // Extension is being disabled.
-    REASON_UPDATE,            // Extension is being updated to a newer version.
-    REASON_UNINSTALL,         // Extension is being uninstalled.
-    REASON_TERMINATE,         // Extension has terminated.
-    REASON_BLACKLIST,         // Extension has been blacklisted.
-    REASON_PROFILE_SHUTDOWN,  // Profile is being shut down.
+    REASON_DISABLE,    // Extension is being disabled.
+    REASON_UPDATE,     // Extension is being updated to a newer version.
+    REASON_UNINSTALL,  // Extension is being uninstalled.
+    REASON_TERMINATE,  // Extension has terminated.
+    REASON_BLACKLIST,  // Extension has been blacklisted.
   };
 
   Reason reason;

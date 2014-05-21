@@ -1073,13 +1073,6 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
   Profile* profile = GetProfileByPath(profile_dir);
 
   if (profile) {
-    // TODO: Migrate additional code in this block to observe this notification
-    // instead of being implemented here.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-        content::Source<Profile>(profile),
-        content::NotificationService::NoDetails());
-
     // By this point, all in-progress downloads for the profile being deleted
     // must have been canceled (crbug.com/336725).
     DCHECK(DownloadServiceFactory::GetForBrowserContext(profile)->

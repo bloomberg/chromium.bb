@@ -165,7 +165,6 @@ using extensions::FeatureSwitch;
 using extensions::Manifest;
 using extensions::PermissionSet;
 using extensions::TestExtensionSystem;
-using extensions::UnloadedExtensionInfo;
 using extensions::URLPatternSet;
 
 namespace keys = extensions::manifest_keys;
@@ -667,12 +666,10 @@ class ExtensionServiceTest
   : public ExtensionServiceTestBase, public content::NotificationObserver {
  public:
   ExtensionServiceTest()
-      : unloaded_reason_(UnloadedExtensionInfo::REASON_UNDEFINED),
-        installed_(NULL),
+      : installed_(NULL),
         was_update_(false),
         override_external_install_prompt_(
-            FeatureSwitch::prompt_for_external_extensions(),
-            false) {
+            FeatureSwitch::prompt_for_external_extensions(), false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::NotificationService::AllSources());
@@ -697,11 +694,10 @@ class ExtensionServiceTest
       }
 
       case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-        UnloadedExtensionInfo* unloaded_info =
-            content::Details<UnloadedExtensionInfo>(details).ptr();
-        const Extension* e = unloaded_info->extension;
+        const Extension* e =
+            content::Details<extensions::UnloadedExtensionInfo>(
+                details)->extension;
         unloaded_id_ = e->id();
-        unloaded_reason_ = unloaded_info->reason;
         extensions::ExtensionList::iterator i =
             std::find(loaded_.begin(), loaded_.end(), e);
         // TODO(erikkay) fix so this can be an assert.  Right now the tests
@@ -1254,7 +1250,6 @@ class ExtensionServiceTest
  protected:
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
-  UnloadedExtensionInfo::Reason unloaded_reason_;
   const Extension* installed_;
   bool was_update_;
   std::string old_name_;
@@ -4202,7 +4197,6 @@ TEST_F(ExtensionServiceTest, UninstallExtension) {
   EXPECT_EQ(1u, registry_->enabled_extensions().size());
   UninstallExtension(good_crx, false);
   EXPECT_EQ(0u, registry_->enabled_extensions().size());
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_UNINSTALL, unloaded_reason_);
 }
 
 TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
@@ -4210,7 +4204,6 @@ TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   UninstallExtension(good_crx, false);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_TERMINATE, unloaded_reason_);
 }
 
 // Tests the uninstaller helper.
@@ -4218,7 +4211,6 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   UninstallExtension(good_crx, true);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_UNINSTALL, unloaded_reason_);
 }
 
 TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
@@ -4226,7 +4218,6 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   UninstallExtension(good_crx, true);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_TERMINATE, unloaded_reason_);
 }
 
 // An extension disabled because of unsupported requirements should re-enabled
@@ -6961,25 +6952,4 @@ TEST_F(ExtensionServiceTest, ReconcileKnownDisabledWithSideEnable) {
   EXPECT_EQ(expected_extensions, registry_->enabled_extensions().GetIDs());
   EXPECT_EQ(expected_disabled_extensions,
             registry_->disabled_extensions().GetIDs());
-}
-
-// Tests a profile being destroyed correctly disables extensions.
-TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
-  InitializeEmptyExtensionService();
-
-  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_NE(UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN, unloaded_reason_);
-  EXPECT_EQ(1u, registry_->enabled_extensions().size());
-  EXPECT_EQ(0u, registry_->disabled_extensions().size());
-  EXPECT_EQ(0u, registry_->terminated_extensions().size());
-  EXPECT_EQ(0u, registry_->blacklisted_extensions().size());
-
-  service_->Observe(chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-                    content::Source<Profile>(profile_.get()),
-                    content::NotificationService::NoDetails());
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN, unloaded_reason_);
-  EXPECT_EQ(0u, registry_->enabled_extensions().size());
-  EXPECT_EQ(0u, registry_->disabled_extensions().size());
-  EXPECT_EQ(0u, registry_->terminated_extensions().size());
-  EXPECT_EQ(0u, registry_->blacklisted_extensions().size());
 }
