@@ -248,10 +248,11 @@ class WinTool(object):
     # Processing C:\Program Files (x86)\Microsoft SDKs\...\include\objidl.idl
     # objidl.idl
     lines = out.splitlines()
-    prefix = 'Processing '
-    processing = set(os.path.basename(x) for x in lines if x.startswith(prefix))
+    prefixes = ('Processing ', '64 bit Processing ')
+    processing = set(os.path.basename(x)
+                     for x in lines if x.startswith(prefixes))
     for line in lines:
-      if not line.startswith(prefix) and line not in processing:
+      if not line.startswith(prefixes) and line not in processing:
         print line
     return popen.returncode
 
