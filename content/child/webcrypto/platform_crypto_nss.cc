@@ -1609,6 +1609,9 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   crypto::ScopedSECKEYPrivateKey private_key(
       PK11_FindKeyByKeyID(slot.get(), &object_id, NULL));
+
+  SECITEM_FreeItem(&object_id, PR_FALSE);
+
   if (!private_key)
     return Status::OperationError();
 
