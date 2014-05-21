@@ -15,12 +15,10 @@ from pylib import android_commands
 from pylib import constants
 from pylib.device import device_utils
 from pylib.utils import apk_helper
-from pylib.utils import test_options_parser
 
 
 def AddInstallAPKOption(option_parser):
   """Adds apk option used to install the APK to the OptionParser."""
-  test_options_parser.AddBuildTypeOption(option_parser)
   option_parser.add_option('--apk',
                            help=('The name of the apk containing the '
                                  ' application (with the .apk extension).'))
@@ -32,6 +30,15 @@ def AddInstallAPKOption(option_parser):
                            default=False,
                            help=('Keep the package data when installing '
                                  'the application.'))
+  option_parser.add_option('--debug', action='store_const', const='Debug',
+                           dest='build_type',
+                           default=os.environ.get('BUILDTYPE', 'Debug'),
+                           help='If set, run test suites under out/Debug. '
+                           'Default is env var BUILDTYPE or Debug')
+  option_parser.add_option('--release', action='store_const', const='Release',
+                           dest='build_type',
+                           help='If set, run test suites under out/Release. '
+                           'Default is env var BUILDTYPE or Debug.')
 
 
 def ValidateInstallAPKOption(option_parser, options):
