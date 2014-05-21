@@ -53,15 +53,9 @@ public:
     void reset();
 
 private:
-    RenderBox* firstChildBox();
-    RenderBox* nextSiblingBox();
-
-    // If |m_children| is not empty, we will use it to iterate over this fixed subset.
     const RenderBox* m_containerBox;
-    Vector<RenderBox*> m_children;
 
     RenderBox* m_currentChild;
-    size_t m_childIndex;
 
     typedef std::set<int> OrderValues;
     OrderValues m_orderValues;
@@ -79,7 +73,6 @@ public:
 
     ~OrderIteratorPopulator();
 
-    void storeChild(RenderBox*);
     void collectChild(const RenderBox*);
 
 private:

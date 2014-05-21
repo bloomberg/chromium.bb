@@ -63,9 +63,9 @@ RenderBox* OrderIterator::next()
                 m_isReset = false;
             }
 
-            m_currentChild = firstChildBox();
+            m_currentChild = m_containerBox->firstChildBox();
         } else {
-            m_currentChild = nextSiblingBox();
+            m_currentChild = m_currentChild->nextSiblingBox();
         }
     } while (!m_currentChild || m_currentChild->style()->order() != *m_orderValuesIterator);
 
@@ -79,36 +79,9 @@ void OrderIterator::reset()
     m_isReset = true;
 }
 
-RenderBox* OrderIterator::firstChildBox()
-{
-    if (m_children.isEmpty())
-        return m_containerBox->firstChildBox();
-
-    m_childIndex = 0;
-    return m_children[0];
-}
-
-RenderBox* OrderIterator::nextSiblingBox()
-{
-    if (m_children.isEmpty())
-        return m_currentChild->nextSiblingBox();
-
-    if (m_childIndex >= m_children.size() - 1)
-        return 0;
-
-    return m_children[++m_childIndex];
-}
-
 OrderIteratorPopulator::~OrderIteratorPopulator()
 {
     m_iterator.reset();
-}
-
-void OrderIteratorPopulator::storeChild(RenderBox* child)
-{
-    m_iterator.m_children.append(child);
-
-    collectChild(child);
 }
 
 void OrderIteratorPopulator::collectChild(const RenderBox* child)

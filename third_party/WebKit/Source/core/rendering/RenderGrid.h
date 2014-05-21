@@ -59,6 +59,7 @@ private:
     virtual void computePreferredLogicalWidths() OVERRIDE;
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
+    void addChildToIndexesMap(RenderBox*);
     virtual void removeChild(RenderObject*) OVERRIDE;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
@@ -144,8 +145,7 @@ private:
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
     OrderIterator m_orderIterator;
     Vector<RenderBox*> m_gridItemsOverflowingGridArea;
-
-    friend class GridCoordinateSorter;
+    HashMap<const RenderBox*, size_t> m_gridItemsIndexesMap;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());

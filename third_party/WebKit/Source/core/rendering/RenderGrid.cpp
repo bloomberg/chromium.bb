@@ -211,7 +211,29 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
             growGrid(ForColumns, columnPositions->resolvedFinalPosition.toInt());
 
         insertItemIntoGrid(newChildBox, GridCoordinate(*rowPositions, *columnPositions));
+        addChildToIndexesMap(newChildBox);
     }
+}
+
+void RenderGrid::addChildToIndexesMap(RenderBox* child)
+{
+    ASSERT(!m_gridItemsIndexesMap.contains(child));
+    RenderBox* sibling = child->nextSiblingBox();
+    bool lastSibling = !sibling;
+
+    if (lastSibling)
+        sibling = child->previousSiblingBox();
+
+    size_t index = 0;
+    if (sibling)
+        index = lastSibling ? m_gridItemsIndexesMap.get(sibling) + 1 : m_gridItemsIndexesMap.get(sibling);
+
+    if (sibling && !lastSibling) {
+        for (; sibling; sibling = sibling->nextSiblingBox())
+            m_gridItemsIndexesMap.set(sibling, m_gridItemsIndexesMap.get(sibling) + 1);
+    }
+
+    m_gridItemsIndexesMap.set(child, index);
 }
 
 void RenderGrid::removeChild(RenderObject* child)
@@ -238,6 +260,8 @@ void RenderGrid::removeChild(RenderObject* child)
             cell.remove(cell.find(childBox));
         }
     }
+
+    m_gridItemsIndexesMap.remove(childBox);
 }
 
 void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -797,8 +821,11 @@ void RenderGrid::populateExplicitGridAndOrderIterator()
     size_t maximumRowIndex = std::max<size_t>(1, GridResolvedPosition::explicitGridRowCount(*style()));
     size_t maximumColumnIndex = std::max<size_t>(1, GridResolvedPosition::explicitGridColumnCount(*style()));
 
+    ASSERT(m_gridItemsIndexesMap.isEmpty());
+    size_t childIndex = 0;
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         populator.collectChild(child);
+        m_gridItemsIndexesMap.set(child, childIndex++);
 
         // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
         OwnPtr<GridSpan> rowPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForRows);
@@ -890,6 +917,7 @@ void RenderGrid::dirtyGrid()
     m_gridItemCoordinate.clear();
     m_gridIsDirty = true;
     m_gridItemsOverflowingGridArea.resize(0);
+    m_gridItemsIndexesMap.clear();
 }
 
 void RenderGrid::layoutGridItems()
@@ -1111,7 +1139,7 @@ LayoutPoint RenderGrid::findChildLogicalPosition(const RenderBox* child) const
 static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUnit start, LayoutUnit end)
 {
     // This function does a binary search over the coordinates.
-    // FIXME: This doesn't work with grid items overflowing their grid areas and should be tested & fixed.
+    // This doesn't work with grid items overflowing their grid areas, but that is managed with m_gridItemsOverflowingGridArea.
 
     size_t startGridAreaIndex = std::upper_bound(coordinates.begin(), coordinates.end() - 1, start) - coordinates.begin();
     if (startGridAreaIndex > 0)
@@ -1124,39 +1152,16 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
     return GridSpan(startGridAreaIndex, endGridAreaIndex);
 }
 
-class GridCoordinateSorter {
+class GridItemsSorter {
 public:
-    GridCoordinateSorter(RenderGrid* renderer) : m_renderer(renderer) { }
-
-    bool operator()(const RenderBox* firstItem, const RenderBox* secondItem) const
+    bool operator()(const std::pair<RenderBox*, size_t> firstChild, const std::pair<RenderBox*, size_t> secondChild) const
     {
-        GridCoordinate first = m_renderer->cachedGridCoordinate(firstItem);
-        GridCoordinate second = m_renderer->cachedGridCoordinate(secondItem);
+        if (firstChild.first->style()->order() != secondChild.first->style()->order())
+            return firstChild.first->style()->order() < secondChild.first->style()->order();
 
-        if (first.rows.resolvedInitialPosition < second.rows.resolvedInitialPosition)
-            return true;
-        if (first.rows.resolvedInitialPosition > second.rows.resolvedInitialPosition)
-            return false;
-        return first.columns.resolvedFinalPosition < second.columns.resolvedFinalPosition;
+        return firstChild.second < secondChild.second;
     }
-private:
-    RenderGrid* m_renderer;
 };
-
-static inline bool isInSameRowBeforeDirtyArea(const GridCoordinate& coordinate, const GridResolvedPosition& row, const GridSpan& dirtiedColumns)
-{
-    return coordinate.rows.resolvedInitialPosition == row && coordinate.columns.resolvedInitialPosition < dirtiedColumns.resolvedInitialPosition;
-}
-
-static inline bool isInSameRowAfterDirtyArea(const GridCoordinate& coordinate, const GridResolvedPosition& row, const GridSpan& dirtiedColumns)
-{
-    return coordinate.rows.resolvedInitialPosition == row && coordinate.columns.resolvedInitialPosition >= dirtiedColumns.resolvedFinalPosition;
-}
-
-static inline bool rowIsBeforeDirtyArea(const GridCoordinate& coordinate, const GridSpan& dirtiedRows)
-{
-    return coordinate.rows.resolvedInitialPosition < dirtiedRows.resolvedInitialPosition;
-}
 
 void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
@@ -1168,54 +1173,36 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
     GridSpan dirtiedColumns = dirtiedGridAreas(m_columnPositions, localRepaintRect.x(), localRepaintRect.maxX());
     GridSpan dirtiedRows = dirtiedGridAreas(m_rowPositions, localRepaintRect.y(), localRepaintRect.maxY());
 
-    // Sort the overflowing grid items according to their positions in the grid. We collect items during the layout
-    // process following DOM's order but we have to paint following grid's.
-    std::stable_sort(m_gridItemsOverflowingGridArea.begin(), m_gridItemsOverflowingGridArea.end(), GridCoordinateSorter(this));
+    Vector<std::pair<RenderBox*, size_t> > gridItemsToBePainted;
 
-    OrderIterator paintIterator(this);
-    {
-        OrderIteratorPopulator populator(paintIterator);
-        Vector<RenderBox*>::const_iterator overflowIterator = m_gridItemsOverflowingGridArea.begin();
-        Vector<RenderBox*>::const_iterator end = m_gridItemsOverflowingGridArea.end();
-
-        for (; overflowIterator != end && rowIsBeforeDirtyArea(cachedGridCoordinate(*overflowIterator), dirtiedRows); ++overflowIterator) {
-            if ((*overflowIterator)->frameRect().intersects(localRepaintRect))
-                populator.storeChild(*overflowIterator);
-        }
-
-        for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
-
-            for (; overflowIterator != end && isInSameRowBeforeDirtyArea(cachedGridCoordinate(*overflowIterator), row, dirtiedColumns); ++overflowIterator) {
-                if ((*overflowIterator)->frameRect().intersects(localRepaintRect))
-                    populator.storeChild(*overflowIterator);
-            }
-
-            for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
-                const Vector<RenderBox*, 1>& children = m_grid[row.toInt()][column.toInt()];
-                // FIXME: If we start adding spanning children in all grid areas they span, this
-                // would make us paint them several times, which is wrong!
-                for (size_t j = 0; j < children.size(); ++j) {
-                    populator.storeChild(children[j]);
-                    // Do not paint overflowing grid items twice.
-                    if (overflowIterator != end && *overflowIterator == children[j])
-                        ++overflowIterator;
-                }
-            }
-
-            for (; overflowIterator != end && isInSameRowAfterDirtyArea(cachedGridCoordinate(*overflowIterator), row, dirtiedColumns); ++overflowIterator) {
-                if ((*overflowIterator)->frameRect().intersects(localRepaintRect))
-                    populator.storeChild(*overflowIterator);
-            }
-        }
-
-        for (; overflowIterator != end; ++overflowIterator) {
-            if ((*overflowIterator)->frameRect().intersects(localRepaintRect))
-                populator.storeChild(*overflowIterator);
+    for (GridSpan::iterator row = dirtiedRows.begin(); row != dirtiedRows.end(); ++row) {
+        for (GridSpan::iterator column = dirtiedColumns.begin(); column != dirtiedColumns.end(); ++column) {
+            const Vector<RenderBox*, 1>& children = m_grid[row.toInt()][column.toInt()];
+            for (size_t j = 0; j < children.size(); ++j)
+                gridItemsToBePainted.append(std::make_pair(children[j], m_gridItemsIndexesMap.get(children[j])));
         }
     }
 
-    for (RenderBox* child = paintIterator.first(); child; child = paintIterator.next())
-        paintChild(child, paintInfo, paintOffset);
+    for (Vector<RenderBox*>::const_iterator it = m_gridItemsOverflowingGridArea.begin(); it != m_gridItemsOverflowingGridArea.end(); ++it) {
+        if ((*it)->frameRect().intersects(localRepaintRect))
+            gridItemsToBePainted.append(std::make_pair(*it, m_gridItemsIndexesMap.get(*it)));
+    }
+
+    // Sort grid items following order-modified document order.
+    // See http://www.w3.org/TR/css-flexbox/#order-modified-document-order
+    std::stable_sort(gridItemsToBePainted.begin(), gridItemsToBePainted.end(), GridItemsSorter());
+
+    RenderBox* previous = 0;
+    for (Vector<std::pair<RenderBox*, size_t> >::const_iterator it = gridItemsToBePainted.begin(); it != gridItemsToBePainted.end(); ++it) {
+        // We might have duplicates because of spanning children are included in all cells they span.
+        // Skip them here to avoid painting items several times.
+        RenderBox* current = (*it).first;
+        if (current == previous)
+            continue;
+
+        paintChild(current, paintInfo, paintOffset);
+        previous = current;
+    }
 }
 
 const char* RenderGrid::renderName() const
