@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/window_reorderer.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/drag_drop_client.h"
@@ -108,6 +109,10 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetTransparent(
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
   window_->Init(params.layer_type);
+  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE)
+    SetShadowType(window_, wm::SHADOW_TYPE_NONE);
+  else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
+    SetShadowType(window_, wm::SHADOW_TYPE_RECTANGULAR);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 

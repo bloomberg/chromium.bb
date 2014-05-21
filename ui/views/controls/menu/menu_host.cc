@@ -17,7 +17,6 @@
 #include "ui/views/round_rect_painter.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/shadow_types.h"
 
 namespace views {
 
@@ -46,16 +45,14 @@ void MenuHost::InitMenuHost(Widget* parent,
   bool rounded_border = menu_controller && menu_config.corner_radius > 0;
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
-  params.has_dropshadow = !bubble_border;
+  params.shadow_type = bubble_border ? Widget::InitParams::SHADOW_TYPE_NONE
+                                     : Widget::InitParams::SHADOW_TYPE_DROP;
   params.opacity = (bubble_border || rounded_border) ?
       Widget::InitParams::TRANSLUCENT_WINDOW :
       Widget::InitParams::OPAQUE_WINDOW;
   params.parent = parent ? parent->GetNativeView() : NULL;
   params.bounds = bounds;
   Init(params);
-
-  if (bubble_border)
-    SetShadowType(GetNativeView(), wm::SHADOW_TYPE_NONE);
 
   SetContentsView(contents_view);
   if (bubble_border || rounded_border)

@@ -180,6 +180,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       WIDGET_OWNS_NATIVE_WIDGET
     };
 
+    enum ShadowType {
+      SHADOW_TYPE_DEFAULT,  // Use default shadow setting. It will be one of
+                            // the settings below depending on InitParams::type
+                            // and the native widget's type.
+      SHADOW_TYPE_NONE,     // Don't draw any shadow.
+      SHADOW_TYPE_DROP,     // Draw a drop shadow that emphasizes Z-order
+                            // relationship to other windows.
+    };
+
     InitParams();
     explicit InitParams(Type type);
     ~InitParams();
@@ -200,7 +209,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     bool visible_on_all_workspaces;
     Ownership ownership;
     bool mirror_origin_in_rtl;
-    bool has_dropshadow;
+    ShadowType shadow_type;
     // Specifies that the system default caption and icon should not be
     // rendered, and that the client area should be equivalent to the window
     // area. Only used on some platforms (Windows and Linux).

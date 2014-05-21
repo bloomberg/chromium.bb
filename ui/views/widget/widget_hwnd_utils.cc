@@ -66,7 +66,7 @@ void CalculateWindowStylesFromInitParams(
     if (ui::win::IsAeroGlassEnabled())
       *ex_style |= WS_EX_COMPOSITED;
   }
-  if (params.has_dropshadow) {
+  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP) {
     *class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
         0 : CS_DROPSHADOW;
   }

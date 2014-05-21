@@ -9,6 +9,7 @@
 #include "grit/ui_strings.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -18,7 +19,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/masked_window_targeter.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace {
@@ -75,11 +75,11 @@ views::Widget* CreateTouchSelectionPopupWidget(
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = context;
   params.delegate = widget_delegate;
   widget->Init(params);
-  SetShadowType(widget->GetNativeView(), wm::SHADOW_TYPE_NONE);
   return widget;
 }
 
