@@ -122,7 +122,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // This class handles network interception.  Use with
   // (Un)RegisterRequestInterceptor.
   class NET_EXPORT Interceptor {
-  public:
+   public:
     virtual ~Interceptor() {}
 
     // Called for every request made.  Should return a new job to handle the

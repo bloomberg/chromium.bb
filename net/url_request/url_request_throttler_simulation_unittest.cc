@@ -332,7 +332,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
 // Registry of results for a class of |Requester| objects (e.g. attackers vs.
 // regular clients).
 class RequesterResults {
-public:
+ public:
   RequesterResults()
       : num_attempts_(0), num_successful_(0), num_failed_(0), num_blocked_(0) {
   }

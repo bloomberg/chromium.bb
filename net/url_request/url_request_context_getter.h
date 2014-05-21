@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_
-#define CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_
+#ifndef NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_
+#define NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -55,4 +55,4 @@ struct URLRequestContextGetterTraits {
 
 }  // namespace net
 
-#endif  // CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_
+#endif  // NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_

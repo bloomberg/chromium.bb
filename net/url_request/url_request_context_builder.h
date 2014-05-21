@@ -145,7 +145,6 @@ class NET_EXPORT URLRequestContextBuilder {
   URLRequestContext* Build();
 
  private:
-
   struct SchemeFactory {
     SchemeFactory(const std::string& scheme,
                   net::HttpAuthHandlerFactory* factory);

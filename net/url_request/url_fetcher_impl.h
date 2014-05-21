@@ -14,6 +14,8 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_IMPL_H_
 #define NET_URL_REQUEST_URL_FETCHER_IMPL_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"

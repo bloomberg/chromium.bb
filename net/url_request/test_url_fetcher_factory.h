@@ -457,7 +457,6 @@ class URLFetcherImplFactory : public URLFetcherFactory {
       const GURL& url,
       URLFetcher::RequestType request_type,
       URLFetcherDelegate* d) OVERRIDE;
-
 };
 
 }  // namespace net

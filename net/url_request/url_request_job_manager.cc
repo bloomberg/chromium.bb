@@ -37,7 +37,6 @@ static const SchemeToFactory kBuiltinFactories[] = {
   { "ws", URLRequestHttpJob::Factory },
   { "wss", URLRequestHttpJob::Factory },
 #endif  // !defined(OS_IOS)
-
 };
 
 // static

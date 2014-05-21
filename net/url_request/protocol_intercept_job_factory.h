@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_PROTOCOL_INTERCEPT_JOB_FACTORY_H_
 #define NET_URL_REQUEST_PROTOCOL_INTERCEPT_JOB_FACTORY_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"

@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_FETCHER_RESPONSE_WRITER_H_
 #define NET_URL_REQUEST_URL_FETCHER_RESPONSE_WRITER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"

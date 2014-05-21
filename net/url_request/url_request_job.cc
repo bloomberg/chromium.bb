@@ -399,8 +399,9 @@ void URLRequestJob::NotifyReadComplete(int bytes_read) {
 
   // TODO(darin): Bug 1004233. Re-enable this test once all of the chrome
   // unit_tests have been fixed to not trip this.
-  //DCHECK(!request_->status().is_io_pending());
-
+#if 0
+  DCHECK(!request_->status().is_io_pending());
+#endif
   // The headers should be complete before reads complete
   DCHECK(has_handled_response_);
 

@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_RANGE_REQUEST_JOB_H_
 #define NET_URL_REQUEST_URL_RANGE_REQUEST_JOB_H_
 
+#include <vector>
+
 #include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
