@@ -61,6 +61,67 @@ module my_module {
         r"^my_file\.mojom: Error: Unexpected end of file$"):
       parser.Parse(source, "my_file.mojom")
 
+  def testCommentLineNumbers(self):
+    """Tests that line numbers are correctly tracked when comments are
+    present."""
+    source1 = """\
+// Isolated C++-style comments.
+
+// Foo.
+asdf1
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected 'asdf1':\nasdf1$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+// Consecutive C++-style comments.
+// Foo.
+  // Bar.
+
+struct Yada {  // Baz.
+// Quux.
+  int32 x;
+};
+
+asdf2
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:10: Error: Unexpected 'asdf2':\nasdf2$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+/* Single-line C-style comments. */
+/* Foobar. */
+
+/* Baz. */
+asdf3
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:5: Error: Unexpected 'asdf3':\nasdf3$"):
+      parser.Parse(source3, "my_file.mojom")
+
+    source4 = """\
+/* Multi-line C-style comments.
+*/
+/*
+Foo.
+Bar.
+*/
+
+/* Baz
+   Quux. */
+asdf4
+"""
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:10: Error: Unexpected 'asdf4':\nasdf4$"):
+      parser.Parse(source4, "my_file.mojom")
+
+
   def testSimpleStruct(self):
     """Tests a simple .mojom source that just defines a struct."""
     source = """\

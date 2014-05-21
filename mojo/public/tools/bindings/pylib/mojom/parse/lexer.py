@@ -279,8 +279,8 @@ class Lexer(object):
   # Ignore C and C++ style comments
   def t_COMMENT(self, t):
     r'(/\*(.|\n)*?\*/)|(//.*(\n[ \t]*//.*)*)'
-    pass
+    t.lexer.lineno += t.value.count("\n")
 
   def t_error(self, t):
-    msg = 'Illegal character %s' % repr(t.value[0])
+    msg = "Illegal character %s" % repr(t.value[0])
     self._error(msg, t)
