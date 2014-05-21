@@ -79,7 +79,7 @@ bool DecodingImageGenerator::getPixels(const SkImageInfo& info, void* pixels, si
     ASSERT(info.fAlphaType == m_imageInfo.fAlphaType);
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
     bool decoded = m_frameGenerator->decodeAndScale(m_imageInfo, m_frameIndex, pixels, rowBytes);
-    PlatformInstrumentation::didDecodeLazyPixelRef(m_generationId);
+    PlatformInstrumentation::didDecodeLazyPixelRef();
     return decoded;
 }
 

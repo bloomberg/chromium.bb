@@ -75,7 +75,7 @@ bool LazyDecodingPixelRef::onNewLockPixels(LockRec* rec)
     if (!m_lockedImageResource) {
         PlatformInstrumentation::willDecodeLazyPixelRef(getGenerationID());
         m_lockedImageResource = m_frameGenerator->decodeAndScale(size, m_frameIndex);
-        PlatformInstrumentation::didDecodeLazyPixelRef(getGenerationID());
+        PlatformInstrumentation::didDecodeLazyPixelRef();
     }
     if (!m_lockedImageResource)
         return false;

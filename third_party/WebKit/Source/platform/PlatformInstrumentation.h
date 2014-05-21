@@ -77,7 +77,7 @@ public:
     static void didResizeImage();
     static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
     static void willDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
-    static void didDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
+    static void didDecodeLazyPixelRef();
 
 private:
     static const char CategoryName[];
@@ -125,9 +125,9 @@ inline void PlatformInstrumentation::willDecodeLazyPixelRef(unsigned long long l
     TRACE_EVENT_BEGIN1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
 }
 
-inline void PlatformInstrumentation::didDecodeLazyPixelRef(unsigned long long lazyPixelRefId)
+inline void PlatformInstrumentation::didDecodeLazyPixelRef()
 {
-    TRACE_EVENT_END1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
+    TRACE_EVENT_END0(CategoryName, DecodeLazyPixelRefEvent);
 }
 
 } // namespace WebCore
