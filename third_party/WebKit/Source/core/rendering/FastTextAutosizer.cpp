@@ -35,6 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
@@ -129,15 +130,14 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
     return 0;
 }
 
-static bool isFormInput(const Element* element)
+static bool isNonTextAreaFormControl(const RenderObject* renderer)
 {
-    DEFINE_STATIC_LOCAL(Vector<QualifiedName>, formInputTags, ());
-    if (formInputTags.isEmpty()) {
-        formInputTags.append(HTMLNames::inputTag);
-        formInputTags.append(HTMLNames::buttonTag);
-        formInputTags.append(HTMLNames::selectTag);
-    }
-    return formInputTags.contains(element->tagQName());
+    const Node* node = renderer ? renderer->node() : 0;
+    if (!node || !node->isElementNode())
+        return false;
+    const Element* element = toElement(node);
+
+    return (element->isFormControlElement() && !isHTMLTextAreaElement(element));
 }
 
 static bool isPotentialClusterRoot(const RenderObject* renderer)
@@ -158,9 +158,8 @@ static bool isPotentialClusterRoot(const RenderObject* renderer)
         return false;
     if (renderer->isListItem())
         return (renderer->isFloating() || renderer->isOutOfFlowPositioned());
-    // Avoid creating containers for text within text controls, buttons, or <select> buttons.
-    Node* parentNode = renderer->parent() ? renderer->parent()->generatingNode() : 0;
-    if (parentNode && parentNode->isElementNode() && isFormInput(toElement(parentNode)))
+    // Avoid creating containers for text within form input.
+    if (isNonTextAreaFormControl(renderer->parent()))
         return false;
 
     return true;
@@ -241,17 +240,15 @@ static bool blockHeightConstrained(const RenderBlock* block)
     return false;
 }
 
-static bool blockContainsFormInput(const RenderBlock* block)
+static bool blockOrImmediateChildrenAreFormControls(const RenderBlock* block)
 {
-    const RenderObject* renderer = block;
+    if (isNonTextAreaFormControl(block))
+        return true;
+    const RenderObject* renderer = block->slowFirstChild();
     while (renderer) {
-        const Node* node = renderer->node();
-        if (node && node->isElementNode() && isFormInput(toElement(node)))
+        if (isNonTextAreaFormControl(renderer))
             return true;
-        if (renderer == block)
-            renderer = renderer->nextInPreOrder(block);
-        else
-            renderer = renderer->nextInPreOrderAfterChildren(block);
+        renderer = renderer->nextSibling();
     }
 
     return false;
@@ -260,7 +257,7 @@ static bool blockContainsFormInput(const RenderBlock* block)
 // Some blocks are not autosized even if their parent cluster wants them to.
 static bool blockSuppressesAutosizing(const RenderBlock* block)
 {
-    if (blockContainsFormInput(block))
+    if (blockOrImmediateChildrenAreFormControls(block))
         return true;
 
     if (blockIsRowOfLinks(block))
