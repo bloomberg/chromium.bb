@@ -215,6 +215,11 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="cros/network/status_wifi_enabled_hover.png" />
 
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_PROFILE" file="cros/status/status_add_profile.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_PROFILE_HOVER" file="cros/status/status_add_profile_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT" file="cros/status/status_remove_account.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT_HOVER" file="cros/status/status_remove_account_hover.png" />
+
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_H" file="common/window_control_background_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_P" file="common/window_control_background_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />

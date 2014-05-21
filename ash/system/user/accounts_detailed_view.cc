@@ -141,10 +141,10 @@ void AccountsDetailedView::AddFooter() {
     return;
   TrayPopupHeaderButton* add_user_button =
       new TrayPopupHeaderButton(this,
-                                IDR_AURA_UBER_TRAY_NETWORK_INFO,
-                                IDR_AURA_UBER_TRAY_NETWORK_INFO,
-                                IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-                                IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
+                                IDR_AURA_UBER_TRAY_ADD_PROFILE,
+                                IDR_AURA_UBER_TRAY_ADD_PROFILE,
+                                IDR_AURA_UBER_TRAY_ADD_PROFILE_HOVER,
+                                IDR_AURA_UBER_TRAY_ADD_PROFILE_HOVER,
                                 IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT);
   add_user_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
@@ -163,7 +163,7 @@ void AccountsDetailedView::UpdateAccountList() {
   views::ColumnSet* primary_account_row =
       layout->AddColumnSet(kPrimaryAccountColumnSetID);
   primary_account_row->AddColumn(views::GridLayout::LEADING,
-                                 views::GridLayout::BASELINE,
+                                 views::GridLayout::CENTER,
                                  1.0,
                                  views::GridLayout::USE_PREF,
                                  0,
@@ -171,14 +171,14 @@ void AccountsDetailedView::UpdateAccountList() {
   views::ColumnSet* secondary_account_row =
       layout->AddColumnSet(kSecondaryAccountColumnSetID);
   secondary_account_row->AddColumn(views::GridLayout::FILL,
-                                   views::GridLayout::BASELINE,
+                                   views::GridLayout::CENTER,
                                    1.0,
                                    views::GridLayout::USE_PREF,
                                    0,
                                    0);
   secondary_account_row->AddPaddingColumn(0.0, kTrayPopupPaddingBetweenItems);
   secondary_account_row->AddColumn(views::GridLayout::FILL,
-                                   views::GridLayout::BASELINE,
+                                   views::GridLayout::CENTER,
                                    0.0,
                                    views::GridLayout::USE_PREF,
                                    0,
@@ -218,12 +218,15 @@ void AccountsDetailedView::UpdateAccountList() {
 views::View* AccountsDetailedView::CreateDeleteButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* delete_button = new views::ImageButton(this);
-  delete_button->SetImage(views::Button::STATE_NORMAL,
-                          rb.GetImageNamed(IDR_CLOSE_2).ToImageSkia());
-  delete_button->SetImage(views::Button::STATE_HOVERED,
-                          rb.GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-  delete_button->SetImage(views::Button::STATE_PRESSED,
-                          rb.GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+  delete_button->SetImage(
+      views::Button::STATE_NORMAL,
+      rb.GetImageNamed(IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT).ToImageSkia());
+  delete_button->SetImage(
+      views::Button::STATE_HOVERED,
+      rb.GetImageNamed(IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT_HOVER).ToImageSkia());
+  delete_button->SetImage(
+      views::Button::STATE_PRESSED,
+      rb.GetImageNamed(IDR_AURA_UBER_TRAY_REMOVE_ACCOUNT_HOVER).ToImageSkia());
   return delete_button;
 }
 
