@@ -36,8 +36,12 @@ class SVGElementRareData : public NoBaseWillBeGarbageCollectedFinalized<SVGEleme
     WTF_MAKE_NONCOPYABLE(SVGElementRareData); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     SVGElementRareData(SVGElement* owner)
+#if ENABLE(OILPAN)
         : m_owner(owner)
         , m_cursorElement(nullptr)
+#else
+        : m_cursorElement(nullptr)
+#endif
         , m_cursorImageValue(nullptr)
         , m_correspondingElement(0)
         , m_instancesUpdatesBlocked(false)
@@ -145,7 +149,9 @@ public:
     }
 
 private:
+#if ENABLE(OILPAN)
     RawPtrWillBeWeakMember<SVGElement> m_owner;
+#endif
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
