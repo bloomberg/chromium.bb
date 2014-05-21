@@ -227,7 +227,7 @@ public:
     void increaseStyleSharingDepth() { ++m_styleSharingDepth; }
     void decreaseStyleSharingDepth() { --m_styleSharingDepth; }
 
-    PassRefPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
+    PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
 
     virtual void trace(Visitor*) OVERRIDE;
 

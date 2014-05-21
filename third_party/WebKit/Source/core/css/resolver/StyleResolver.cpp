@@ -756,7 +756,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
     return CSSAnimatableValueFactory::create(property, *style);
 }
 
-PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
+PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
     RenderObject* parentRenderer = parent.renderer();
     if (!parentRenderer)
@@ -788,7 +788,7 @@ PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& pa
     if (!pseudoElementRendererIsNeeded(style.get()))
         return nullptr;
 
-    RefPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
+    RefPtrWillBeRawPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
     if (ActiveAnimations* activeAnimations = pseudo->activeAnimations())

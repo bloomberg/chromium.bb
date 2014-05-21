@@ -35,9 +35,9 @@ namespace WebCore {
 
 class PseudoElement FINAL : public Element {
 public:
-    static PassRefPtr<PseudoElement> create(Element* parent, PseudoId pseudoId)
+    static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId pseudoId)
     {
-        return adoptRef(new PseudoElement(parent, pseudoId));
+        return adoptRefWillBeRefCountedGarbageCollected(new PseudoElement(parent, pseudoId));
     }
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
