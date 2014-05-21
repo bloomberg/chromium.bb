@@ -86,13 +86,25 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
                               pid_t current_pid,
                               SandboxBPF* sandbox,
                               int sysno) {
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(MEMORY_SANITIZER)
+  // TCGETS is required by the sanitizers on failure.
+  if (sysno == __NR_ioctl) {
+    return RestrictIoctl(sandbox);
+  }
+
+  if (sysno == __NR_sched_getaffinity) {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+
   if (sysno == __NR_sigaltstack) {
     // Required for better stack overflow detection in ASan. Disallowed in
     // non-ASan builds.
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
-#endif
+#endif  // defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||
+        // defined(MEMORY_SANITIZER)
+
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -101,14 +113,12 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictCloneToThreadsAndEPERMFork(sandbox);
   }
 
-#if defined(__x86_64__) || defined(__arm__)
-  if (sysno == __NR_socketpair) {
-    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
-    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
-                         ErrorCode(ErrorCode::ERR_ALLOWED),
-                         sandbox->Trap(CrashSIGSYS_Handler, NULL));
-  }
+  if (sysno == __NR_fcntl)
+    return RestrictFcntlCommands(sandbox);
+
+#if defined(__i386__) || defined(__arm__)
+  if (sysno == __NR_fcntl64)
+    return RestrictFcntlCommands(sandbox);
 #endif
 
   if (sysno == __NR_madvise) {
@@ -132,12 +142,14 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_mprotect)
     return RestrictMprotectFlags(sandbox);
 
-  if (sysno == __NR_fcntl)
-    return RestrictFcntlCommands(sandbox);
-
-#if defined(__i386__) || defined(__arm__)
-  if (sysno == __NR_fcntl64)
-    return RestrictFcntlCommands(sandbox);
+#if defined(__x86_64__) || defined(__arm__)
+  if (sysno == __NR_socketpair) {
+    // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
+    COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);
+    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, AF_UNIX,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         sandbox->Trap(CrashSIGSYS_Handler, NULL));
+  }
 #endif
 
   if (SyscallSets::IsKill(sysno)) {

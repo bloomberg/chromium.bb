@@ -94,10 +94,6 @@ BPF_TEST_C(BaselinePolicy, FchmodErrno, BaselinePolicy) {
   BPF_ASSERT_EQ(EPERM, errno);
 }
 
-// TODO(jln): make this work with the sanitizers.
-#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
-    !defined(MEMORY_SANITIZER)
-
 BPF_TEST_C(BaselinePolicy, ForkErrno, BaselinePolicy) {
   errno = 0;
   pid_t pid = fork();
@@ -244,9 +240,6 @@ TEST_BASELINE_SIGSYS(__NR_vserver);
 TEST_BASELINE_SIGSYS(__NR_getcpu);
 TEST_BASELINE_SIGSYS(__NR_setpgid);
 TEST_BASELINE_SIGSYS(__NR_getitimer);
-
-#endif  // !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) &&
-        // !defined(MEMORY_SANITIZER)
 
 }  // namespace
 
