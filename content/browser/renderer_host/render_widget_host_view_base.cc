@@ -398,7 +398,7 @@ gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
   gfx::NativeView view = GetNativeView();
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
-  return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(),
+  return gfx::ToCeiledSize(gfx::ScaleSize(GetRequestedRendererSize(),
                                           display.device_scale_factor()));
 }
 
@@ -413,6 +413,10 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
   selection_text_offset_ = offset;
   selection_range_.set_start(range.start());
   selection_range_.set_end(range.end());
+}
+
+gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
+  return GetViewBounds().size();
 }
 
 ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {

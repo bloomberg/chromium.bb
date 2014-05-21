@@ -778,12 +778,9 @@ void RenderWidgetHostViewAura::SetBackgroundOpaque(bool opaque) {
 }
 
 gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
-  gfx::Rect window_bounds = window_->bounds();
-  int viewport_width = std::max(
-      0, window_bounds.width() - insets_.left() - insets_.right());
-  int viewport_height = std::max(
-      0, window_bounds.height() - insets_.top() - insets_.bottom());
-  return gfx::Size(viewport_width, viewport_height);
+  gfx::Rect requested_rect(GetRequestedRendererSize());
+  requested_rect.Inset(insets_);
+  return requested_rect.size();
 }
 
 void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
@@ -893,6 +890,10 @@ void RenderWidgetHostViewAura::SelectionChanged(const base::string16& text,
       ui::CLIPBOARD_TYPE_SELECTION);
   clipboard_writer.WriteText(text.substr(pos, n));
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
+}
+
+gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
+  return delegated_frame_host_->GetRequestedRendererSize();
 }
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(

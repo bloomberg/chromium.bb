@@ -228,6 +228,13 @@ void DelegatedFrameHost::WasResized() {
   MaybeCreateResizeLock();
 }
 
+gfx::Size DelegatedFrameHost::GetRequestedRendererSize() const {
+  if (resize_lock_)
+    return resize_lock_->expected_size();
+  else
+    return client_->DesiredFrameSize();
+}
+
 void DelegatedFrameHost::CheckResizeLock() {
   if (!resize_lock_ ||
       resize_lock_->expected_size() != current_frame_size_in_dip_)

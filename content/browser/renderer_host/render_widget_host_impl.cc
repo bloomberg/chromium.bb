@@ -581,8 +581,7 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
-  gfx::Rect view_bounds = view_->GetViewBounds();
-  gfx::Size new_size(view_bounds.size());
+  gfx::Size new_size(view_->GetRequestedRendererSize());
 
   gfx::Size old_physical_backing_size = physical_backing_size_;
   physical_backing_size_ = view_->GetPhysicalBackingSize();

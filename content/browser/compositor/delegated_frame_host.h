@@ -88,6 +88,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WasHidden();
   void WasShown();
   void WasResized();
+  gfx::Size GetRequestedRendererSize() const;
   void AddedToWindow();
   void RemovingFromWindow();
   void CopyFromCompositingSurface(

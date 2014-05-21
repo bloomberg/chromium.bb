@@ -952,6 +952,92 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   view_->window_->RemoveObserver(&observer);
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, Resize) {
+  gfx::Size size1(100, 100);
+  gfx::Size size2(200, 200);
+  gfx::Size size3(300, 300);
+
+  aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), root_window, gfx::Rect(size1));
+  view_->WasShown();
+  view_->SetSize(size1);
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, size1, gfx::Rect(size1)));
+  ui::DrawWaiterForTest::WaitForCommit(
+      root_window->GetHost()->compositor());
+  ViewHostMsg_UpdateRect_Params update_params;
+  update_params.view_size = size1;
+  update_params.scale_factor = 1.f;
+  update_params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateRect(widget_host_->GetRoutingID(), update_params));
+  sink_->ClearMessages();
+  // Resize logic is idle (no pending resize, no pending commit).
+  EXPECT_EQ(size1.ToString(), view_->GetRequestedRendererSize().ToString());
+
+  // Resize renderer, should produce a Resize message
+  view_->SetSize(size2);
+  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
+  EXPECT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(size2.ToString(), params.a.new_size.ToString());
+  }
+  // Send resize ack to observe new Resize messages.
+  update_params.view_size = size2;
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateRect(widget_host_->GetRoutingID(), update_params));
+  sink_->ClearMessages();
+
+  // Resize renderer again, before receiving a frame. Should not produce a
+  // Resize message.
+  view_->SetSize(size3);
+  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // Receive a frame of the new size, should be skipped and not produce a Resize
+  // message.
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, size3, gfx::Rect(size3)));
+  // Expect the frame ack;
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_SwapCompositorFrameAck::ID, sink_->GetMessageAt(0)->type());
+  sink_->ClearMessages();
+  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
+
+  // Receive a frame of the correct size, should not be skipped and, and should
+  // produce a Resize message after the commit.
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
+  // No frame ack yet.
+  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_EQ(size2.ToString(), view_->GetRequestedRendererSize().ToString());
+
+  // Wait for commit, then we should unlock the compositor and send a Resize
+  // message (and a frame ack)
+  ui::DrawWaiterForTest::WaitForCommit(
+      root_window->GetHost()->compositor());
+  EXPECT_EQ(size3.ToString(), view_->GetRequestedRendererSize().ToString());
+  EXPECT_EQ(2u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_SwapCompositorFrameAck::ID, sink_->GetMessageAt(0)->type());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(1);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(size3.ToString(), params.a.new_size.ToString());
+  }
+  update_params.view_size = size3;
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateRect(widget_host_->GetRoutingID(), update_params));
+  sink_->ClearMessages();
+}
+
 // Skipped frames should not drop their damage.
 TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect view_rect(100, 100);

@@ -174,6 +174,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
                                 const gfx::Range& range) OVERRIDE;
+  virtual gfx::Size GetRequestedRendererSize() const OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
   virtual void ScrollOffsetChanged() OVERRIDE;
