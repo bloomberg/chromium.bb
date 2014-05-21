@@ -628,6 +628,12 @@ bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
   Widget::FrameType new_type =
       native_widget_delegate_->AsWidget()->frame_type();
+  if (new_type == Widget::FRAME_TYPE_DEFAULT) {
+    // The default is determined by Widget::InitParams::remove_standard_frame
+    // and does not change.
+    return;
+  }
+
   SetUseNativeFrame(new_type == Widget::FRAME_TYPE_FORCE_NATIVE);
   // Replace the frame and layout the contents. Even though we don't have a
   // swapable glass frame like on Windows, we still replace the frame because
