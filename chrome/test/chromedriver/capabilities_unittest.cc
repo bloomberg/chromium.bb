@@ -361,3 +361,98 @@ TEST(ParseCapabilities, UseExistingBrowser) {
   ASSERT_EQ("abc", capabilities.debugger_address.host());
   ASSERT_EQ(123, capabilities.debugger_address.port());
 }
+
+TEST(ParseCapabilities, MobileEmulationUserAgent) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetString("userAgent", "Agent Smith");
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_TRUE(status.IsOk());
+
+  ASSERT_EQ(1u, capabilities.switches.GetSize());
+  ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
+  ASSERT_EQ("Agent Smith", capabilities.switches.GetSwitchValue("user-agent"));
+}
+
+TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetInteger("deviceMetrics.width", 360);
+  mobile_emulation.SetInteger("deviceMetrics.height", 640);
+  mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_TRUE(status.IsOk());
+
+  ASSERT_EQ(360, capabilities.device_metrics->width);
+  ASSERT_EQ(640, capabilities.device_metrics->height);
+  ASSERT_EQ(3.0, capabilities.device_metrics->device_scale_factor);
+}
+
+TEST(ParseCapabilities, MobileEmulationDeviceName) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetString("deviceName", "Google Nexus 5");
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_TRUE(status.IsOk());
+
+  ASSERT_EQ(1u, capabilities.switches.GetSize());
+  ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
+  ASSERT_EQ(
+      "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) "
+      "AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 "
+      "Mobile Safari/535.19",
+      capabilities.switches.GetSwitchValue("user-agent"));
+
+  ASSERT_EQ(360, capabilities.device_metrics->width);
+  ASSERT_EQ(640, capabilities.device_metrics->height);
+  ASSERT_EQ(3.0, capabilities.device_metrics->device_scale_factor);
+}
+
+TEST(ParseCapabilities, MobileEmulationNotDict) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetString("chromeOptions.mobileEmulation", "Google Nexus 5");
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotDict) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetInteger("deviceMetrics", 360);
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, MobileEmulationDeviceMetricsNotNumbers) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetString("deviceMetrics.width", "360");
+  mobile_emulation.SetString("deviceMetrics.height", "640");
+  mobile_emulation.SetString("deviceMetrics.pixelRatio", "3.0");
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, MobileEmulationBadDict) {
+  Capabilities capabilities;
+  base::DictionaryValue mobile_emulation;
+  mobile_emulation.SetString("deviceName", "Google Nexus 5");
+  mobile_emulation.SetInteger("deviceMetrics.width", 360);
+  mobile_emulation.SetInteger("deviceMetrics.height", 640);
+  mobile_emulation.SetDouble("deviceMetrics.pixelRatio", 3.0);
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.mobileEmulation", mobile_emulation.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}

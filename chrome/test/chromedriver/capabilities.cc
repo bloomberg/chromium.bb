@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/mobile_device.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "net/base/net_util.h"
@@ -81,6 +82,70 @@ Status IgnoreCapability(const base::Value& option, Capabilities* capabilities) {
 Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
   if (!option.GetAsString(&capabilities->log_path))
     return Status(kUnknownError, "must be a string");
+  return Status(kOk);
+}
+
+Status ParseDeviceName(std::string device_name, Capabilities* capabilities) {
+  scoped_ptr<MobileDevice> device;
+  Status status = FindMobileDevice(device_name, &device);
+
+  if (status.IsError()) {
+    return Status(kUnknownError,
+                  "'" + device_name + "' must be a valid device",
+                  status);
+  }
+
+  capabilities->device_metrics.reset(device->device_metrics.release());
+  capabilities->switches.SetSwitch("user-agent", device->user_agent);
+
+  return Status(kOk);
+}
+
+Status ParseMobileEmulation(const base::Value& option,
+                            Capabilities* capabilities) {
+  const base::DictionaryValue* mobile_emulation;
+  if (!option.GetAsDictionary(&mobile_emulation))
+    return Status(kUnknownError, "'mobileEmulation' must be a dictionary");
+
+  if (mobile_emulation->HasKey("deviceName")) {
+    // Cannot use any other options with deviceName.
+    if (mobile_emulation->size() > 1)
+      return Status(kUnknownError, "'deviceName' must be used alone");
+
+    std::string device_name;
+    if (!mobile_emulation->GetString("deviceName", &device_name))
+      return Status(kUnknownError, "'deviceName' must be a string");
+
+    return ParseDeviceName(device_name, capabilities);
+  }
+
+  if (mobile_emulation->HasKey("deviceMetrics")) {
+    const base::DictionaryValue* metrics;
+    if (!mobile_emulation->GetDictionary("deviceMetrics", &metrics))
+      return Status(kUnknownError, "'deviceMetrics' must be a dictionary");
+
+    int width;
+    int height;
+    double device_scale_factor;
+    if (!metrics->GetInteger("width", &width) ||
+        !metrics->GetInteger("height", &height) ||
+        !metrics->GetDouble("pixelRatio", &device_scale_factor))
+      return Status(kUnknownError, "invalid 'deviceMetrics'");
+
+    DeviceMetrics* device_metrics =
+        new DeviceMetrics(width, height, device_scale_factor);
+    capabilities->device_metrics =
+        scoped_ptr<DeviceMetrics>(device_metrics);
+  }
+
+  if (mobile_emulation->HasKey("userAgent")) {
+    std::string user_agent;
+    if (!mobile_emulation->GetString("userAgent", &user_agent))
+      return Status(kUnknownError, "'userAgent' must be a string");
+
+    capabilities->switches.SetSwitch("user-agent", user_agent);
+  }
+
   return Status(kOk);
 }
 
@@ -272,6 +337,7 @@ Status ParseChromeOptions(
     parser_map["args"] = base::Bind(&ParseSwitches);
     parser_map["binary"] = base::Bind(&ParseFilePath, &capabilities->binary);
     parser_map["detach"] = base::Bind(&ParseBoolean, &capabilities->detach);
+    parser_map["mobileEmulation"] = base::Bind(&ParseMobileEmulation);
     parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
     parser_map["extensions"] = base::Bind(&ParseExtensions);
     parser_map["forceDevToolsScreenshot"] = base::Bind(

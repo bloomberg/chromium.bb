@@ -83,7 +83,10 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id, devtools_http_client_->browser_info(), client.Pass())));
+          view.id,
+          devtools_http_client_->browser_info(),
+          client.Pass(),
+          devtools_http_client_->device_metrics())));
     }
   }
 
@@ -123,6 +126,10 @@ Status ChromeImpl::CloseWebView(const std::string& id) {
 
 Status ChromeImpl::ActivateWebView(const std::string& id) {
   return devtools_http_client_->ActivateWebView(id);
+}
+
+bool ChromeImpl::IsMobileEmulationEnabled() const {
+  return false;
 }
 
 Status ChromeImpl::Quit() {

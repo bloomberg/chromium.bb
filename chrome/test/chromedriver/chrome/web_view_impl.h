@@ -21,10 +21,12 @@ class Value;
 
 struct BrowserInfo;
 class DebuggerTracker;
+struct DeviceMetrics;
 class DevToolsClient;
 class DomTracker;
 class FrameTracker;
 class GeolocationOverrideManager;
+class MobileEmulationOverrideManager;
 class HeapSnapshotTaker;
 struct KeyEvent;
 struct MouseEvent;
@@ -36,6 +38,10 @@ class WebViewImpl : public WebView {
   WebViewImpl(const std::string& id,
               const BrowserInfo* browser_info,
               scoped_ptr<DevToolsClient> client);
+  WebViewImpl(const std::string& id,
+              const BrowserInfo* browser_info,
+              scoped_ptr<DevToolsClient> client,
+              const DeviceMetrics* device_metrics);
   virtual ~WebViewImpl();
 
   // Overridden from WebView:
@@ -111,6 +117,7 @@ class WebViewImpl : public WebView {
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
+  scoped_ptr<MobileEmulationOverrideManager> mobile_emulation_override_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   scoped_ptr<DebuggerTracker> debugger_;

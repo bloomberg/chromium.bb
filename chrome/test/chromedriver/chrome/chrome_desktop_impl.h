@@ -49,6 +49,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   virtual std::string GetOperatingSystemName() OVERRIDE;
 
   // Overridden from ChromeImpl:
+  virtual bool IsMobileEmulationEnabled() const OVERRIDE;
   virtual Status QuitImpl() OVERRIDE;
 
   const base::CommandLine& command() const;

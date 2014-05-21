@@ -117,7 +117,8 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
   scoped_ptr<WebView> web_view_tmp(
       new WebViewImpl(id,
                       devtools_http_client_->browser_info(),
-                      devtools_http_client_->CreateClient(id)));
+                      devtools_http_client_->CreateClient(id),
+                      devtools_http_client_->device_metrics()));
   Status status = web_view_tmp->ConnectIfNecessary();
   if (status.IsError())
     return status;
@@ -153,6 +154,10 @@ ChromeDesktopImpl* ChromeDesktopImpl::GetAsDesktop() {
 
 std::string ChromeDesktopImpl::GetOperatingSystemName() {
   return base::SysInfo::OperatingSystemName();
+}
+
+bool ChromeDesktopImpl::IsMobileEmulationEnabled() const {
+  return devtools_http_client_->device_metrics() != NULL;
 }
 
 Status ChromeDesktopImpl::QuitImpl() {

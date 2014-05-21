@@ -100,6 +100,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Android doesn't support switches and extensions.
         'ChromeSwitchesCapabilityTest.*',
         'ChromeExtensionsCapabilityTest.*',
+        'MobileEmulationCapabilityTest.*',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
@@ -708,6 +709,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testDoesntHangOnDebugger(self):
     self._driver.ExecuteScript('debugger;')
 
+  def testMobileEmulationDisabledByDefault(self):
+    self.assertFalse(self._driver.capabilities['mobileEmulationEnabled'])
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
@@ -812,6 +816,56 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     driver.ExecuteScript('console.info("%s")' % self.LOG_MESSAGE)
     driver.Quit()
     self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
+
+
+class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
+  """Tests that ChromeDriver processes chromeOptions.mobileEmulation.
+
+  Makes sure the device metrics are overridden in DevTools and user agent is
+  overridden in Chrome.
+  """
+
+  @staticmethod
+  def GlobalSetUp():
+    def respondWithUserAgentString(request):
+      return request.GetHeader('User-Agent')
+
+    MobileEmulationCapabilityTest._http_server = webserver.WebServer(
+        chrome_paths.GetTestData())
+    MobileEmulationCapabilityTest._http_server.SetCallbackForPath(
+        '/userAgent', respondWithUserAgentString)
+
+  @staticmethod
+  def GlobalTearDown():
+    MobileEmulationCapabilityTest._http_server.Shutdown()
+
+  def testDeviceMetrics(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {
+            'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3}})
+    self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
+    self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
+    self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
+
+  def testUserAgent(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {'userAgent': 'Agent Smith'})
+    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    body_tag = driver.FindElement('tag name', 'body')
+    self.assertEqual("Agent Smith", body_tag.GetText())
+
+  def testDeviceName(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
+    self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
+    body_tag = driver.FindElement('tag name', 'body')
+    self.assertEqual(
+        'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleW'
+        'ebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/53'
+        '5.19',
+        body_tag.GetText())
 
 
 class ChromeDriverLogTest(unittest.TestCase):
@@ -1007,6 +1061,8 @@ if __name__ == '__main__':
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
   ChromeDriverTest.GlobalSetUp()
+  MobileEmulationCapabilityTest.GlobalSetUp()
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
   ChromeDriverTest.GlobalTearDown()
+  MobileEmulationCapabilityTest.GlobalTearDown()
   sys.exit(len(result.failures) + len(result.errors))

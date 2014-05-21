@@ -157,9 +157,14 @@ Status WaitForDevToolsAndCheckVersion(
     const NetAddress& address,
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
+    const Capabilities* capabilities,
     scoped_ptr<DevToolsHttpClient>* user_client) {
+  scoped_ptr<DeviceMetrics> device_metrics;
+  if (capabilities && capabilities->device_metrics)
+    device_metrics.reset(new DeviceMetrics(*capabilities->device_metrics));
+
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
-      address, context_getter, socket_factory));
+      address, context_getter, socket_factory, device_metrics.Pass()));
   base::TimeTicks deadline =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
   Status status = client->Init(deadline - base::TimeTicks::Now());
@@ -194,7 +199,7 @@ Status LaunchExistingChromeSession(
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
       capabilities.debugger_address, context_getter, socket_factory,
-      &devtools_client);
+      NULL, &devtools_client);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
                       capabilities.debugger_address.ToString(),
@@ -278,7 +283,8 @@ Status LaunchDesktopChrome(
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
   status = WaitForDevToolsAndCheckVersion(
-      NetAddress(port), context_getter, socket_factory, &devtools_client);
+      NetAddress(port), context_getter, socket_factory, &capabilities,
+      &devtools_client);
 
   if (status.IsError()) {
     int exit_code;
@@ -378,6 +384,7 @@ Status LaunchAndroidChrome(
   status = WaitForDevToolsAndCheckVersion(NetAddress(port),
                                           context_getter,
                                           socket_factory,
+                                          &capabilities,
                                           &devtools_client);
   if (status.IsError()) {
     device->TearDown();

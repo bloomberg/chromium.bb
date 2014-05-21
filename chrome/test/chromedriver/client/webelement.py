@@ -25,6 +25,9 @@ class WebElement(object):
     return self._Execute(
         Command.FIND_CHILD_ELEMENTS, {'using': strategy, 'value': target})
 
+  def GetText(self):
+    return self._Execute(Command.GET_ELEMENT_TEXT)
+
   def HoverOver(self):
     self._Execute(Command.HOVER_OVER_ELEMENT)
 

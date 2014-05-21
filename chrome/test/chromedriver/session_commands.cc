@@ -81,6 +81,8 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("handlesAlerts", true);
   caps->SetBoolean("databaseEnabled", false);
   caps->SetBoolean("locationContextEnabled", true);
+  caps->SetBoolean("mobileEmulationEnabled",
+                   chrome->IsMobileEmulationEnabled());
   caps->SetBoolean("applicationCacheEnabled", false);
   caps->SetBoolean("browserConnectionEnabled", false);
   caps->SetBoolean("cssSelectorsEnabled", true);
@@ -98,7 +100,6 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->Set("chrome", chrome_caps.release());
   return caps.Pass();
 }
-
 
 Status InitSessionHelper(
     const InitSessionParams& bound_params,

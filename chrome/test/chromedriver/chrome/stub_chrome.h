@@ -30,6 +30,7 @@ class StubChrome : public Chrome {
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
+  virtual bool IsMobileEmulationEnabled() const OVERRIDE;
   virtual Status Quit() OVERRIDE;
 
  private:

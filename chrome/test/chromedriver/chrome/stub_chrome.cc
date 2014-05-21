@@ -43,6 +43,10 @@ std::string StubChrome::GetOperatingSystemName() {
   return std::string();
 }
 
+bool StubChrome::IsMobileEmulationEnabled() const {
+  return false;
+}
+
 Status StubChrome::Quit() {
   return Status(kOk);
 }

@@ -17,6 +17,7 @@ namespace base {
 class TimeDelta;
 }
 
+struct DeviceMetrics;
 class DevToolsClient;
 class NetAddress;
 class Status;
@@ -64,7 +65,8 @@ class DevToolsHttpClient {
   DevToolsHttpClient(
       const NetAddress& address,
       scoped_refptr<URLRequestContextGetter> context_getter,
-      const SyncWebSocketFactory& socket_factory);
+      const SyncWebSocketFactory& socket_factory,
+      scoped_ptr<DeviceMetrics> device_metrics);
   ~DevToolsHttpClient();
 
   Status Init(const base::TimeDelta& timeout);
@@ -78,6 +80,7 @@ class DevToolsHttpClient {
   Status ActivateWebView(const std::string& id);
 
   const BrowserInfo* browser_info();
+  const DeviceMetrics* device_metrics();
 
  private:
   Status GetVersion(std::string* browser_version, std::string* blink_version);
@@ -91,6 +94,7 @@ class DevToolsHttpClient {
   std::string server_url_;
   std::string web_socket_url_prefix_;
   BrowserInfo browser_info_;
+  scoped_ptr<DeviceMetrics> device_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };

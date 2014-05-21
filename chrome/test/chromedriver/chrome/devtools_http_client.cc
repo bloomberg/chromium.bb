@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -67,12 +68,14 @@ const WebViewInfo* WebViewsInfo::GetForId(const std::string& id) const {
 DevToolsHttpClient::DevToolsHttpClient(
     const NetAddress& address,
     scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory)
+    const SyncWebSocketFactory& socket_factory,
+    scoped_ptr<DeviceMetrics> device_metrics)
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
       server_url_("http://" + address.ToString()),
       web_socket_url_prefix_(base::StringPrintf(
-          "ws://%s/devtools/page/", address.ToString().c_str())) {}
+          "ws://%s/devtools/page/", address.ToString().c_str())),
+      device_metrics_(device_metrics.Pass()) {}
 
 DevToolsHttpClient::~DevToolsHttpClient() {}
 
@@ -196,6 +199,10 @@ const BrowserInfo* DevToolsHttpClient::browser_info() {
   return &browser_info_;
 }
 
+const DeviceMetrics* DevToolsHttpClient::device_metrics() {
+  return device_metrics_.get();
+}
+
 Status DevToolsHttpClient::GetVersion(std::string* browser_version,
                                       std::string* blink_version) {
   std::string data;
@@ -248,7 +255,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         *it,
         base::Bind(&FakeCloseFrontends)));
     scoped_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, &browser_info_, client.Pass()));
+        new WebViewImpl(*it, &browser_info_, client.Pass(), NULL));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when

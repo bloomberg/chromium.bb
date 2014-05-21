@@ -37,6 +37,7 @@ class ChromeImpl : public Chrome {
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
+  virtual bool IsMobileEmulationEnabled() const OVERRIDE;
   virtual Status Quit() OVERRIDE;
 
  protected:

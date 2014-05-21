@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
+#include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -114,13 +115,16 @@ const char* GetAsString(KeyEventType type) {
 
 WebViewImpl::WebViewImpl(const std::string& id,
                          const BrowserInfo* browser_info,
-                         scoped_ptr<DevToolsClient> client)
+                         scoped_ptr<DevToolsClient> client,
+                         const DeviceMetrics* device_metrics)
     : id_(id),
       browser_info_(browser_info),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
       navigation_tracker_(new NavigationTracker(client.get(), browser_info)),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
+      mobile_emulation_override_manager_(
+          new MobileEmulationOverrideManager(client.get(), device_metrics)),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client.get())),
