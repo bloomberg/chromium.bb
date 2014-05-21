@@ -5,6 +5,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
 {
     ActivateLayerTree : "ActivateLayerTree"
     BeginFrame : "BeginFrame"
+    CallStack : "CallStack"
     CancelAnimationFrame : "CancelAnimationFrame"
     CompositeLayers : "CompositeLayers"
     ConsoleTime : "ConsoleTime"
