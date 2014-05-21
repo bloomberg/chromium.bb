@@ -569,7 +569,8 @@ cr.define('options', function() {
           uiLanguageButton.textContent =
               loadTimeData.getString('displayInThisLanguage');
 
-          if (loadTimeData.getBoolean('secondaryUser')) {
+          if (loadTimeData.valueExists('secondaryUser') &&
+              loadTimeData.getBoolean('secondaryUser')) {
             uiLanguageButton.disabled = true;
             uiLanguageIndicator.setAttribute('controlled-by', 'shared');
           } else {
