@@ -39,6 +39,8 @@ use_openmax_dl_fft = is_android && !is_android_webview_build &&
    cpu_arch == "x64" ||
    (cpu_arch == "arm" && arm_version > 7))
 
+use_webaudio_ffmpeg = !is_mac && !is_android
+
 # Set this to true to enable use of concatenated impulse responses for the HRTF
 # panner in WebAudio.
 # TODO(brettw) do we need this or can we assume its always on?

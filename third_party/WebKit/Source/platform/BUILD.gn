@@ -2,14 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../build/scripts/scripts.gni")
+import("//build/config/ui.gni")
+import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/WebKit/Source/config.gni")
 
-# TODO(brettw) uncomment when used below.
-#platform_gypi = exec_script(
-#    "//build/gypi_to_gn.py",
-#    [ rebase_path("blink_platform.gypi") ],
-#    "scope",
-#    [ "blink_platform.gypi" ])
+platform_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("blink_platform.gypi") ],
+    "scope",
+    [ "blink_platform.gypi" ])
+blink_platform_neon_files = [
+  "graphics/cpu/arm/WebGLImageConversionNEON.h",
+  "graphics/cpu/arm/filters/FEBlendNEON.h",
+  "graphics/cpu/arm/filters/FECompositeArithmeticNEON.h",
+  "graphics/cpu/arm/filters/FEGaussianBlurNEON.h",
+  "graphics/cpu/arm/filters/FELightingNEON.h",
+  "graphics/cpu/arm/filters/NEONHelpers.h",
+]
 
 component("blink_common") {
   sources = [
@@ -126,17 +135,12 @@ action("color_data") {
   ]
 }
 
-# TODO(brettw) Work in progress, finish this when more dependencies are
-# complete.
-#
 # TODO(brettw) Objective C Renaming postbuild steps on Mac.
 component("platform") {
   output_name = "blink_platform"
 
-  # TODO(brettw) enable this when the sources compile (they currently depend on
-  # some of the unconverted targets).
-  #sources = platform_gypi.platform_files
-  sources = []
+  sources = platform_gypi.platform_files
+  sources -= blink_platform_neon_files
 
   # Add in the generated files.
   sources +=
@@ -144,8 +148,8 @@ component("platform") {
     get_target_outputs(":runtime_enabled_features") +
     get_target_outputs(":color_data")
 
-
   configs += [
+    ":v8_stub_config",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -164,8 +168,10 @@ component("platform") {
     ":color_data",
     ":font_family_names",
     ":runtime_enabled_features",
+    "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
     "//third_party:jpeg",
+    "//third_party/harfbuzz-ng",
     "//third_party/iccjpeg",
     "//third_party/icu",
     "//third_party/libpng",
@@ -176,11 +182,13 @@ component("platform") {
     "//third_party/WebKit/Source/platform/heap",
     "//url",
     #'blink_heap_asm_stubs',
-    #'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
-    #'<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+    # TODO(GYP) also remove v8_stub_config when this is added, and uncomment
+    # V8 in the forward statement below.
+    #"//v8",
   ]
 
   forward_dependent_configs_from = [
+    "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
     "//third_party:jpeg",
     "//third_party/iccjpeg",
@@ -189,11 +197,34 @@ component("platform") {
     "//third_party/ots",
     "//third_party/qcms",
     "//url",
-    #'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
-    #'<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+    # TODO(GYP)
+    #"//v8",
   ]
 
   if (is_mac) {
+    sources -= [
+      "fonts/harfbuzz/FontHarfBuzz.cpp",
+      "fonts/harfbuzz/FontPlatformDataHarfBuzz.cpp",
+      "fonts/harfbuzz/HarfBuzzFaceSkia.cpp",
+      "fonts/opentype/OpenTypeTypes.h",
+      "fonts/opentype/OpenTypeVerticalData.cpp",
+      "fonts/opentype/OpenTypeVerticalData.h",
+      # The Mac currently uses FontCustomPlatformDataMac.cpp instead.
+      "fonts/skia/FontCustomPlatformDataSkia.cpp",
+      "fonts/skia/FontCacheSkia.cpp",
+      "fonts/skia/SimpleFontDataSkia.cpp",
+      # Uses LocaleMac instead.
+      "text/LocaleICU.cpp",
+      "text/LocaleICU.h",
+      # Uses KillRingMac.mm instead.
+      "KillRingNone.cpp",
+      # Mac uses only ScrollAnimatorMac.
+      "scroll/ScrollbarThemeNonMacCommon.cpp",
+      "scroll/ScrollbarThemeNonMacCommon.h",
+      "scroll/ScrollAnimatorNone.cpp",
+      "scroll/ScrollAnimatorNone.h",
+    ]
+
     # Some Mac-specific parts of WebKit won't compile without having this
     # prefix header injected.
     cflags = [
@@ -201,13 +232,116 @@ component("platform") {
       rebase_path("../core/WebCorePrefixMac.h", root_build_dir),
     ]
 
+    defines += [ "WebFontCache=ChromiumWebCoreObjCWebFontCache" ]
     configs += [ ":mac_objc_renaming" ]
-  } else if (is_win) {
+    libs = [
+      "Accelerate.framework",
+      "Carbon.framework",
+      "Foundation.framework",
+    ]
+  } else {
+    sources -= [
+      # FIXME: We will eventually compile this too, but for now it's
+      # only used on mac.
+      "fonts/FontPlatformData.cpp",
+      "fonts/harfbuzz/HarfBuzzFaceCoreText.cpp",
+      "geometry/cg/FloatPointCG.cpp",
+      "geometry/cg/FloatRectCG.cpp",
+      "geometry/cg/FloatSizeCG.cpp",
+      "geometry/cg/IntPointCG.cpp",
+      "geometry/cg/IntRectCG.cpp",
+      "geometry/cg/IntSizeCG.cpp",
+    ]
+  }
+
+  if (!(is_linux || is_android)) {
+    sources -= [
+      "fonts/linux/FontPlatformDataLinuxHarfBuzz.cpp",
+    ]
+  }
+
+  if (is_win) {
+    sources -= [
+      # Uses LocaleWin instead.
+      "text/LocaleICU.cpp",
+      "text/LocaleICU.h",
+    ]
     cflags = [
       "/wd4267",  # Conversion from 'size_t' to 'type', possible loss of data.
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       "/wd4724",  # Modulo by 0.
     ]
+  } else {
+    sources -= [
+      "clipboard/ClipboardUtilitiesWin.cpp",
+      "fonts/opentype/OpenTypeUtilities.cpp",
+      "fonts/opentype/OpenTypeUtilities.h",
+      "text/LocaleWin.cpp",
+    ]
+  }
+
+  if (is_android) {
+    # Add in some Linux files also shared with Android.
+    set_sources_assignment_filter([])
+    sources += [
+      "exported/linux/WebFontRenderStyle.cpp",
+      "fonts/linux/FontPlatformDataLinuxHarfBuzz.cpp",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  } else {
+    sources -= [
+      "scroll/ScrollbarThemeAndroid.cpp",
+    ]
+  }
+
+  if (is_linux) {
+    direct_dependent_configs = [ "//build/config/linux:fontconfig" ]
+  }
+
+  if (!use_default_render_theme) {
+    sources -= [
+      "scroll/ScrollbarThemeAura.cpp",
+      "scroll/ScrollbarThemeAura.h",
+    ]
+  }
+
+  if (cpu_arch == "arm") {
+    deps += [ ":blink_arm_neon" ]
+  }
+
+  if (use_webaudio_ffmpeg) {
+    include_dirs += [ "//third_party/ffmpeg" ]
+    # TODO(GYP)
+    #deps += [ "//third_party/ffmpeg" ]
+  }
+  if (use_openmax_dl_fft) {
+    include_dirs += [ "//third_party/openmax_dl" ]
+    # TODO(GYP)
+    # deps += [ "//third_party/openmax_dl/dl" ]
   }
 }
 
+if (cpu_arch == "arm") {
+  source_set("blink_arm_neon") {
+    sources = blink_platform_neon_files
+
+    # The *NEON.cpp files fail to compile when -mthumb is passed. Force
+    # them to build in ARM mode.
+    # See https://bugs.webkit.org/show_bug.cgi?id=62916.
+    # TODO(GYP)
+    #'cflags': ['-marm'],
+    #    'conditions': [
+    #      ['OS=="android"', {
+    #        'cflags!': ['-mthumb'],
+    #      }],
+    #    ],
+
+    deps = [ ":blink_common" ]
+  }
+}
+
+# This config is a placeholder to set up the V8 include path while the V8 GN
+# build is being worked on.
+config("v8_stub_config") {
+  include_dirs = [ "//v8/include" ]
+}

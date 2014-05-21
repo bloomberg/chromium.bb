@@ -38,11 +38,11 @@ config("features") {
     ]
   }
 
-  if (!is_mac && !is_android) {
+  if (use_webaudio_ffmpeg) {
     defines += [ "WTF_USE_WEBAUDIO_FFMPEG=1" ]
   }
 
-  if (is_android && use_openmax_dl_fft) {
+  if (use_openmax_dl_fft) {
     defines += [
       "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1",
       # Enabling the FFT is enough to enable WebAudio support to
