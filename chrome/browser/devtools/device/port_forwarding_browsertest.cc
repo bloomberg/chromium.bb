@@ -61,7 +61,7 @@ class PortForwardingTest: public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PortForwardingTest,
-                       DISABLED_LoadPageWithStyleAnsScript) {
+                       LoadPageWithStyleAnsScript) {
   Profile* profile = browser()->profile();
 
   AndroidDeviceManager::DeviceProviders device_providers;
