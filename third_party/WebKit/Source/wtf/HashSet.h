@@ -28,9 +28,6 @@ namespace WTF {
 
     struct IdentityExtractor;
 
-    template<typename T, typename U, typename V, typename W> class HashSet;
-    template<typename T, typename U, typename V, typename W>
-    void deleteAllValues(const HashSet<T, U, V, W>&);
     // Note: empty or deleted values are not allowed, using them may lead to undefined behavior.
     // For pointer valuess this means that null pointers are not allowed unless you supply custom traits.
     template<
@@ -44,6 +41,7 @@ namespace WTF {
         typedef TraitsArg ValueTraits;
         typedef typename ValueTraits::PeekInType ValuePeekInType;
         typedef typename ValueTraits::PassInType ValuePassInType;
+        typedef typename ValueTraits::PassOutType ValuePassOutType;
 
     public:
         typedef typename ValueTraits::TraitType ValueType;
@@ -106,11 +104,13 @@ namespace WTF {
 
         static bool isValidValue(ValuePeekInType);
 
+        ValuePassOutType take(iterator);
+        ValuePassOutType take(ValuePeekInType);
+        ValuePassOutType takeAny();
+
         void trace(typename Allocator::Visitor* visitor) { m_impl.trace(visitor); }
 
     private:
-        friend void deleteAllValues<>(const HashSet&);
-
         HashTableType m_impl;
     };
 
@@ -235,19 +235,28 @@ namespace WTF {
         return true;
     }
 
-    template<typename ValueType, typename HashTableType>
-    void deleteAllValues(HashTableType& collection)
-    {
-        typedef typename HashTableType::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete *it;
-    }
-    // Deprecated, HashSet<OwnPtr<>> to be used instead.
     template<typename T, typename U, typename V, typename W>
-    inline void deleteAllValues(const HashSet<T, U, V, W>& collection)
+    inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::take(iterator it)
     {
-        deleteAllValues<typename HashSet<T, U, V, W>::ValueType>(collection.m_impl);
+        if (it == end())
+            return ValueTraits::emptyValue();
+
+        ValuePassOutType result = ValueTraits::passOut(const_cast<ValueType&>(*it));
+        remove(it);
+
+        return result;
+    }
+
+    template<typename T, typename U, typename V, typename W>
+    inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::take(ValuePeekInType value)
+    {
+        return take(find(value));
+    }
+
+    template<typename T, typename U, typename V, typename W>
+    inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::takeAny()
+    {
+        return take(begin());
     }
 
     template<typename C, typename W>

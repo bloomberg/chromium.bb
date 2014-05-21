@@ -476,8 +476,8 @@ PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statemen
 
     if (parseError) {
 #if !ENABLE(OILPAN)
-        deleteAllValues(m_parseNodes);
-        m_parseNodes.clear();
+        while (!m_parseNodes.isEmpty())
+            delete m_parseNodes.takeAny();
 
         HashSet<Vector<OwnPtr<Predicate> >*>::iterator pend = m_predicateVectors.end();
         for (HashSet<Vector<OwnPtr<Predicate> >*>::iterator it = m_predicateVectors.begin(); it != pend; ++it)

@@ -140,6 +140,27 @@ TEST(HashSetTest, HashSetOwnPtr)
     }
     EXPECT_TRUE(deleted1);
     EXPECT_TRUE(deleted2);
+
+    deleted1 = false;
+    deleted2 = false;
+    OwnPtr<Dummy> ownPtr1;
+    OwnPtr<Dummy> ownPtr2;
+    ptr1 = new Dummy(deleted1);
+    ptr2 = new Dummy(deleted2);
+    {
+        OwnPtrSet set;
+        set.add(adoptPtr(ptr1));
+        set.add(adoptPtr(ptr2));
+        ownPtr1 = set.take(ptr1);
+        EXPECT_EQ(1UL, set.size());
+        ownPtr2 = set.takeAny();
+        EXPECT_TRUE(set.isEmpty());
+    }
+    EXPECT_FALSE(deleted1);
+    EXPECT_FALSE(deleted2);
+
+    EXPECT_EQ(ptr1, ownPtr1);
+    EXPECT_EQ(ptr2, ownPtr2);
 }
 
 class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
