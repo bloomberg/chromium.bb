@@ -122,13 +122,6 @@ Tile* PictureLayerTiling::CreateTile(int i,
   return tile.get();
 }
 
-Region PictureLayerTiling::OpaqueRegionInContentRect(
-    const gfx::Rect& content_rect) const {
-  Region opaque_region;
-  // TODO(enne): implement me
-  return opaque_region;
-}
-
 void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
     it->second->set_can_use_lcd_text(can_use_lcd_text);

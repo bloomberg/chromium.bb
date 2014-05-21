@@ -74,7 +74,7 @@ class CC_EXPORT PictureLayerTiling {
     bool TileNeedsRaster(Tile* tile) const {
       RasterMode mode = tile->DetermineRasterModeForTree(tree_);
       return tile->NeedsRasterForMode(mode);
-    };
+    }
 
     PictureLayerTiling* tiling_;
 
@@ -207,8 +207,6 @@ class CC_EXPORT PictureLayerTiling {
 
     friend class PictureLayerTiling;
   };
-
-  Region OpaqueRegionInContentRect(const gfx::Rect& content_rect) const;
 
   void Reset();
 
