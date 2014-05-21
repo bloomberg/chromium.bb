@@ -254,7 +254,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
 }
 {% endif %}{# has_custom_to_v8 #}
 
-{% if gc_type != 'GarbageCollectedObject' %}
 inline v8::Handle<v8::Value> toV8({{pass_cpp_type}} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
@@ -277,7 +276,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{pass_cpp_ty
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
-{% endif %}{# if gc_type != 'GarbageCollectedObject' #}
 
 {% if has_event_constructor %}
 bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = "");
