@@ -50,8 +50,10 @@ void Microtask::performCheckpoint()
 
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
-    v8::Context::Scope scope(context);
-    isolate->RunMicrotasks();
+    if (!context.IsEmpty()) {
+        v8::Context::Scope scope(context);
+        isolate->RunMicrotasks();
+    }
 
     isolateData->setPerformingMicrotaskCheckpoint(false);
 }
@@ -68,6 +70,7 @@ void Microtask::enqueueMicrotask(PassOwnPtr<blink::WebThread::Task> callback)
     V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = isolateData->ensureDomInJSContext();
+    ASSERT(!context.IsEmpty());
     v8::Context::Scope scope(context);
     v8::Local<v8::External> handler = v8::External::New(isolate, callback.leakPtr());
     isolate->EnqueueMicrotask(v8::Function::New(isolate, &microtaskFunctionCallback, handler));

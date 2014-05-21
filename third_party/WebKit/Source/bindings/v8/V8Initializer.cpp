@@ -177,6 +177,8 @@ static void initializeV8Common(v8::Isolate* isolate)
     v8::V8::SetFlagsFromString(promiseFlags, strlen(promiseFlags));
 
     v8::Debug::SetLiveEditEnabled(isolate, false);
+
+    isolate->SetAutorunMicrotasks(false);
 }
 
 void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)

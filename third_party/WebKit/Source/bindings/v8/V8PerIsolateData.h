@@ -92,6 +92,7 @@ public:
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>);
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>);
 
+    // FIXME: This method should go away, because we shouldn't need a random context to be able to run microtasks.
     v8::Local<v8::Context> ensureDomInJSContext();
 
     const char* previousSamplingState() const { return m_previousSamplingState; }

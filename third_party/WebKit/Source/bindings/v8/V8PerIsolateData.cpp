@@ -150,9 +150,12 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
 
 v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
 {
-    if (!m_blinkInJSScriptState)
-        m_blinkInJSScriptState = ScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-    return m_blinkInJSScriptState->context();
+    if (!m_blinkInJSScriptState) {
+        v8::Local<v8::Context> context(v8::Context::New(m_isolate));
+        if (!context.IsEmpty())
+            m_blinkInJSScriptState = ScriptState::create(context, DOMWrapperWorld::create());
+    }
+    return m_blinkInJSScriptState ? m_blinkInJSScriptState->context() : v8::Local<v8::Context>();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

@@ -44,8 +44,7 @@ void V8RecursionScope::didLeaveScriptContext()
     // set to true, but the flag becomes false when control returns to the event loop.
     IDBPendingTransactionMonitor::from(m_executionContext).deactivateNewTransactions();
 
-    if (m_executionContext.isDocument())
-        Microtask::performCheckpoint();
+    Microtask::performCheckpoint();
 }
 
 } // namespace WebCore
