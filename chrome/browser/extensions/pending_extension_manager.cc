@@ -8,9 +8,10 @@
 
 #include "base/logging.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -32,9 +33,8 @@ std::string GetVersionString(const Version& version) {
 namespace extensions {
 
 PendingExtensionManager::PendingExtensionManager(
-    const ExtensionServiceInterface& service,
     content::BrowserContext* context)
-    : service_(service), context_(context) {}
+    : context_(context) {}
 
 PendingExtensionManager::~PendingExtensionManager() {}
 
@@ -93,7 +93,8 @@ bool PendingExtensionManager::AddFromSync(
     bool remote_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (service_.GetInstalledExtension(id)) {
+  if (ExtensionRegistry::Get(context_)->GetExtensionById(
+          id, ExtensionRegistry::EVERYTHING)) {
     LOG(ERROR) << "Trying to add pending extension " << id
                << " which already exists";
     return false;
@@ -107,9 +108,9 @@ bool PendingExtensionManager::AddFromSync(
     return false;
   }
 
-  const bool kIsFromSync = true;
-  const Manifest::Location kSyncLocation = Manifest::INTERNAL;
-  const bool kMarkAcknowledged = false;
+  static const bool kIsFromSync = true;
+  static const Manifest::Location kSyncLocation = Manifest::INTERNAL;
+  static const bool kMarkAcknowledged = false;
 
   return AddExtensionImpl(id,
                           std::string(),
@@ -130,17 +131,18 @@ bool PendingExtensionManager::AddFromExtensionImport(
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (service_.GetInstalledExtension(id)) {
+  if (ExtensionRegistry::Get(context_)->GetExtensionById(
+          id, ExtensionRegistry::EVERYTHING)) {
     LOG(ERROR) << "Trying to add pending extension " << id
                << " which already exists";
     return false;
   }
 
-  const bool kIsFromSync = false;
-  const bool kInstallSilently = true;
-  const Manifest::Location kManifestLocation = Manifest::INTERNAL;
-  const bool kMarkAcknowledged = false;
-  const bool kRemoteInstall = false;
+  static const bool kIsFromSync = false;
+  static const bool kInstallSilently = true;
+  static const Manifest::Location kManifestLocation = Manifest::INTERNAL;
+  static const bool kMarkAcknowledged = false;
+  static const bool kRemoteInstall = false;
 
   return AddExtensionImpl(id,
                           std::string(),
@@ -164,11 +166,12 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
     bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const bool kIsFromSync = false;
-  const bool kInstallSilently = true;
-  const bool kRemoteInstall = false;
+  static const bool kIsFromSync = false;
+  static const bool kInstallSilently = true;
+  static const bool kRemoteInstall = false;
 
-  const Extension* extension = service_.GetInstalledExtension(id);
+  const Extension* extension = ExtensionRegistry::Get(context_)
+      ->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
   if (extension && location == Manifest::GetHigherPriorityLocation(
                                    location, extension->location())) {
     // If the new location has higher priority than the location of an existing
@@ -208,10 +211,10 @@ bool PendingExtensionManager::AddFromExternalFile(
   // installed, but this method assumes that the caller already
   // made sure it is not installed.  Make all AddFrom*() methods
   // consistent.
-  GURL kUpdateUrl = GURL();
-  const bool kIsFromSync = false;
-  const bool kInstallSilently = true;
-  const bool kRemoteInstall = false;
+  const GURL& kUpdateUrl = GURL::EmptyGURL();
+  static const bool kIsFromSync = false;
+  static const bool kInstallSilently = true;
+  static const bool kRemoteInstall = false;
 
   return AddExtensionImpl(id,
                           std::string(),

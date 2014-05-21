@@ -276,7 +276,7 @@ int GetAuthUserQueryValue(const GURL& url) {
 class MockService : public TestExtensionService {
  public:
   explicit MockService(TestExtensionPrefs* prefs)
-      : prefs_(prefs), pending_extension_manager_(*this, &profile_) {}
+      : prefs_(prefs), pending_extension_manager_(&profile_) {}
 
   virtual ~MockService() {}
 
