@@ -15,6 +15,8 @@
 #include "media/video/capture/linux/video_capture_device_factory_linux.h"
 #elif defined(OS_ANDROID)
 #include "media/video/capture/android/video_capture_device_factory_android.h"
+#elif defined(OS_WIN)
+#include "media/video/capture/win/video_capture_device_factory_win.h"
 #endif
 
 namespace media {
@@ -46,6 +48,9 @@ scoped_ptr<VideoCaptureDeviceFactory>
 #elif defined(OS_ANDROID)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactoryAndroid());
+#elif defined(OS_WIN)
+    return scoped_ptr<VideoCaptureDeviceFactory>(new
+        VideoCaptureDeviceFactoryWin());
 #else
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactory());

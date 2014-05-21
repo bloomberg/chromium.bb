@@ -10,14 +10,9 @@
 #include <algorithm>
 #include <list>
 
-#include "base/command_line.h"
-#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/win/metro.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
-#include "base/win/windows_version.h"
-#include "media/base/media_switches.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 
 using base::win::ScopedCoMem;
@@ -25,11 +20,12 @@ using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
 
 namespace media {
-namespace {
 
 // Finds and creates a DirectShow Video Capture filter matching the device_name.
-HRESULT GetDeviceFilter(const VideoCaptureDevice::Name& device_name,
-                        IBaseFilter** filter) {
+// static
+HRESULT VideoCaptureDeviceWin::GetDeviceFilter(
+    const VideoCaptureDevice::Name& device_name,
+    IBaseFilter** filter) {
   DCHECK(filter);
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
@@ -87,7 +83,8 @@ HRESULT GetDeviceFilter(const VideoCaptureDevice::Name& device_name,
 }
 
 // Check if a Pin matches a category.
-bool PinMatchesCategory(IPin* pin, REFGUID category) {
+// static
+bool VideoCaptureDeviceWin::PinMatchesCategory(IPin* pin, REFGUID category) {
   DCHECK(pin);
   bool found = false;
   ScopedComPtr<IKsPropertySet> ks_property;
@@ -105,8 +102,10 @@ bool PinMatchesCategory(IPin* pin, REFGUID category) {
 }
 
 // Finds a IPin on a IBaseFilter given the direction an category.
-ScopedComPtr<IPin> GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir,
-                          REFGUID category) {
+// static
+ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
+                                                 PIN_DIRECTION pin_dir,
+                                                 REFGUID category) {
   ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_emum;
   HRESULT hr = filter->EnumPins(pin_emum.Receive());
@@ -129,60 +128,9 @@ ScopedComPtr<IPin> GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir,
   return pin;
 }
 
-// Release the format block for a media type.
-// http://msdn.microsoft.com/en-us/library/dd375432(VS.85).aspx
-void FreeMediaType(AM_MEDIA_TYPE* mt) {
-  if (mt->cbFormat != 0) {
-    CoTaskMemFree(mt->pbFormat);
-    mt->cbFormat = 0;
-    mt->pbFormat = NULL;
-  }
-  if (mt->pUnk != NULL) {
-    NOTREACHED();
-    // pUnk should not be used.
-    mt->pUnk->Release();
-    mt->pUnk = NULL;
-  }
-}
-
-// Delete a media type structure that was allocated on the heap.
-// http://msdn.microsoft.com/en-us/library/dd375432(VS.85).aspx
-void DeleteMediaType(AM_MEDIA_TYPE* mt) {
-  if (mt != NULL) {
-    FreeMediaType(mt);
-    CoTaskMemFree(mt);
-  }
-}
-
-// A utility class that wraps the AM_MEDIA_TYPE type and guarantees that
-// we free the structure when exiting the scope.  DCHECKing is also done to
-// avoid memory leaks.
-class ScopedMediaType {
- public:
-  ScopedMediaType() : media_type_(NULL) {}
-  ~ScopedMediaType() { Free(); }
-
-  AM_MEDIA_TYPE* operator->() { return media_type_; }
-  AM_MEDIA_TYPE* get() { return media_type_; }
-
-  void Free() {
-    if (!media_type_)
-      return;
-
-    DeleteMediaType(media_type_);
-    media_type_= NULL;
-  }
-
-  AM_MEDIA_TYPE** Receive() {
-    DCHECK(!media_type_);
-    return &media_type_;
-  }
-
- private:
-  AM_MEDIA_TYPE* media_type_;
-};
-
-VideoPixelFormat TranslateMediaSubtypeToPixelFormat(const GUID& sub_type) {
+// static
+VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
+    const GUID& sub_type) {
   static struct {
     const GUID& sub_type;
     VideoPixelFormat format;
@@ -207,243 +155,66 @@ VideoPixelFormat TranslateMediaSubtypeToPixelFormat(const GUID& sub_type) {
   return PIXEL_FORMAT_UNKNOWN;
 }
 
-}  // namespace
+void VideoCaptureDeviceWin::ScopedMediaType::Free() {
+  if (!media_type_)
+    return;
 
+  DeleteMediaType(media_type_);
+  media_type_= NULL;
+}
+
+AM_MEDIA_TYPE** VideoCaptureDeviceWin::ScopedMediaType::Receive() {
+  DCHECK(!media_type_);
+  return &media_type_;
+}
+
+// Release the format block for a media type.
+// http://msdn.microsoft.com/en-us/library/dd375432(VS.85).aspx
+void VideoCaptureDeviceWin::ScopedMediaType::FreeMediaType(AM_MEDIA_TYPE* mt) {
+  if (mt->cbFormat != 0) {
+    CoTaskMemFree(mt->pbFormat);
+    mt->cbFormat = 0;
+    mt->pbFormat = NULL;
+  }
+  if (mt->pUnk != NULL) {
+    NOTREACHED();
+    // pUnk should not be used.
+    mt->pUnk->Release();
+    mt->pUnk = NULL;
+  }
+}
+
+// Delete a media type structure that was allocated on the heap.
+// http://msdn.microsoft.com/en-us/library/dd375432(VS.85).aspx
+void VideoCaptureDeviceWin::ScopedMediaType::DeleteMediaType(
+    AM_MEDIA_TYPE* mt) {
+  if (mt != NULL) {
+    FreeMediaType(mt);
+    CoTaskMemFree(mt);
+  }
+}
+
+// TODO(mcasas): Remove the following static methods when they are no longer
+// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
+// splitted the VideoCaptureDevice into VideoCaptureDevice and
+// VideoCaptureDeviceFactory.
 // static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  // Use Media Foundation for Metro processes (after and including Win8) and
-  // DirectShow for any other versions, unless forced via flag. Media Foundation
-  // can also be forced if appropriate flag is set and we are in Windows 7 or
-  // 8 in non-Metro mode.
-  if ((base::win::IsMetroProcess() &&
-      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
-      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture))) {
-    VideoCaptureDeviceMFWin::GetDeviceNames(device_names);
-  } else {
-    VideoCaptureDeviceWin::GetDeviceNames(device_names);
-  }
+  NOTIMPLEMENTED();
 }
 
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
     VideoCaptureFormats* formats) {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  // Use Media Foundation for Metro processes (after and including Win8) and
-  // DirectShow for any other versions, unless forced via flag. Media Foundation
-  // can also be forced if appropriate flag is set and we are in Windows 7 or
-  // 8 in non-Metro mode.
-  if ((base::win::IsMetroProcess() &&
-      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
-      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture))) {
-    VideoCaptureDeviceMFWin::GetDeviceSupportedFormats(device, formats);
-  } else {
-    VideoCaptureDeviceWin::GetDeviceSupportedFormats(device, formats);
-  }
+  NOTIMPLEMENTED();
 }
 
 // static
 VideoCaptureDevice* VideoCaptureDevice::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const Name& device_name) {
-  VideoCaptureDevice* ret = NULL;
-  if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
-    DCHECK(VideoCaptureDeviceMFWin::PlatformSupported());
-    scoped_ptr<VideoCaptureDeviceMFWin> device(
-        new VideoCaptureDeviceMFWin(device_name));
-    DVLOG(1) << " MediaFoundation Device: " << device_name.name();
-    if (device->Init())
-      ret = device.release();
-  } else if (device_name.capture_api_type() == Name::DIRECT_SHOW) {
-    scoped_ptr<VideoCaptureDeviceWin> device(
-        new VideoCaptureDeviceWin(device_name));
-    DVLOG(1) << " DirectShow Device: " << device_name.name();
-    if (device->Init())
-      ret = device.release();
-  } else{
-    NOTREACHED() << " Couldn't recognize VideoCaptureDevice type";
-  }
-
-  return ret;
-}
-
-// static
-void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
-  DCHECK(device_names);
-
-  ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr = dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL,
-                                       CLSCTX_INPROC);
-  if (FAILED(hr))
-    return;
-
-  ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.Receive(), 0);
-  // CreateClassEnumerator returns S_FALSE on some Windows OS
-  // when no camera exist. Therefore the FAILED macro can't be used.
-  if (hr != S_OK)
-    return;
-
-  device_names->clear();
-
-  // Name of a fake DirectShow filter that exist on computers with
-  // GTalk installed.
-  static const char kGoogleCameraAdapter[] = "google camera adapter";
-
-  // Enumerate all video capture devices.
-  ScopedComPtr<IMoniker> moniker;
-  int index = 0;
-  while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
-    ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
-      continue;
-    }
-
-    // Find the description or friendly name.
-    ScopedVariant name;
-    hr = prop_bag->Read(L"Description", name.Receive(), 0);
-    if (FAILED(hr))
-      hr = prop_bag->Read(L"FriendlyName", name.Receive(), 0);
-
-    if (SUCCEEDED(hr) && name.type() == VT_BSTR) {
-      // Ignore all VFW drivers and the special Google Camera Adapter.
-      // Google Camera Adapter is not a real DirectShow camera device.
-      // VFW are very old Video for Windows drivers that can not be used.
-      const wchar_t* str_ptr = V_BSTR(&name);
-      const int name_length = arraysize(kGoogleCameraAdapter) - 1;
-
-      if ((wcsstr(str_ptr, L"(VFW)") == NULL) &&
-          lstrlenW(str_ptr) < name_length ||
-          (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
-                                  kGoogleCameraAdapter)))) {
-        std::string id;
-        std::string device_name(base::SysWideToUTF8(str_ptr));
-        name.Reset();
-        hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
-        if (FAILED(hr) || name.type() != VT_BSTR) {
-          id = device_name;
-        } else {
-          DCHECK_EQ(name.type(), VT_BSTR);
-          id = base::SysWideToUTF8(V_BSTR(&name));
-        }
-
-        device_names->push_back(Name(device_name, id, Name::DIRECT_SHOW));
-      }
-    }
-    moniker.Release();
-  }
-}
-
-// static
-void VideoCaptureDeviceWin::GetDeviceSupportedFormats(const Name& device,
-    VideoCaptureFormats* formats) {
-  DVLOG(1) << "GetDeviceSupportedFormats for " << device.name();
-  ScopedComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr = dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL,
-                                       CLSCTX_INPROC);
-  if (FAILED(hr))
-    return;
-
-  ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.Receive(), 0);
-  // CreateClassEnumerator returns S_FALSE on some Windows OS when no camera
-  // exists. Therefore the FAILED macro can't be used.
-  if (hr != S_OK)
-    return;
-
-  // Walk the capture devices. No need to check for "google camera adapter",
-  // since this is already skipped in the enumeration of GetDeviceNames().
-  ScopedComPtr<IMoniker> moniker;
-  int index = 0;
-  ScopedVariant device_id;
-  while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
-    ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
-      continue;
-    }
-
-    device_id.Reset();
-    hr = prop_bag->Read(L"DevicePath", device_id.Receive(), 0);
-    if (FAILED(hr)) {
-      DVLOG(1) << "Couldn't read a device's DevicePath.";
-      return;
-    }
-    if (device.id() == base::SysWideToUTF8(V_BSTR(&device_id)))
-      break;
-    moniker.Release();
-  }
-
-  if (moniker.get()) {
-    base::win::ScopedComPtr<IBaseFilter> capture_filter;
-    hr = GetDeviceFilter(device, capture_filter.Receive());
-    if (!capture_filter) {
-      DVLOG(2) << "Failed to create capture filter.";
-      return;
-    }
-
-    base::win::ScopedComPtr<IPin> output_capture_pin(
-        GetPin(capture_filter, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE));
-    if (!output_capture_pin) {
-      DVLOG(2) << "Failed to get capture output pin";
-      return;
-    }
-
-    ScopedComPtr<IAMStreamConfig> stream_config;
-    hr = output_capture_pin.QueryInterface(stream_config.Receive());
-    if (FAILED(hr)) {
-      DVLOG(2) << "Failed to get IAMStreamConfig interface from "
-                  "capture device";
-      return;
-    }
-
-    int count = 0, size = 0;
-    hr = stream_config->GetNumberOfCapabilities(&count, &size);
-    if (FAILED(hr)) {
-      DVLOG(2) << "Failed to GetNumberOfCapabilities";
-      return;
-    }
-
-    scoped_ptr<BYTE[]> caps(new BYTE[size]);
-    for (int i = 0; i < count; ++i) {
-      ScopedMediaType media_type;
-      hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
-      // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
-      // macros here since they'll trigger incorrectly.
-      if (hr != S_OK) {
-        DVLOG(2) << "Failed to GetStreamCaps";
-        return;
-      }
-
-      if (media_type->majortype == MEDIATYPE_Video &&
-          media_type->formattype == FORMAT_VideoInfo) {
-        VideoCaptureFormat format;
-        format.pixel_format =
-            TranslateMediaSubtypeToPixelFormat(media_type->subtype);
-        if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-          continue;
-        VIDEOINFOHEADER* h =
-            reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-        format.frame_size.SetSize(h->bmiHeader.biWidth,
-                                  h->bmiHeader.biHeight);
-        // Trust the frame rate from the VIDEOINFOHEADER.
-        format.frame_rate = (h->AvgTimePerFrame > 0) ?
-            static_cast<int>(kSecondsToReferenceTime / h->AvgTimePerFrame) :
-            0;
-        formats->push_back(format);
-        DVLOG(1) << device.name() << " resolution: "
-             << format.frame_size.ToString() << ", fps: " << format.frame_rate
-             << ", pixel format: " << format.pixel_format;
-      }
-    }
-  }
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)

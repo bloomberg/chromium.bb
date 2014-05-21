@@ -505,6 +505,8 @@
         'video/capture/win/sink_filter_win.h',
         'video/capture/win/sink_input_pin_win.cc',
         'video/capture/win/sink_input_pin_win.h',
+        'video/capture/win/video_capture_device_factory_win.cc',
+        'video/capture/win/video_capture_device_factory_win.h',
         'video/capture/win/video_capture_device_mf_win.cc',
         'video/capture/win/video_capture_device_mf_win.h',
         'video/capture/win/video_capture_device_win.cc',

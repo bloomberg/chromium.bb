@@ -16,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
-#include "media/video/capture/win/video_capture_device_mf_win.h"
+#include "media/video/capture/win/video_capture_device_factory_win.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -165,7 +165,7 @@ class VideoCaptureDeviceTest : public testing::Test {
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
 #if defined(OS_WIN)
   VideoCaptureDevice::Name::CaptureApiType api_type =
-      VideoCaptureDeviceMFWin::PlatformSupported()
+      VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation()
           ? VideoCaptureDevice::Name::MEDIA_FOUNDATION
           : VideoCaptureDevice::Name::DIRECT_SHOW;
   VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
