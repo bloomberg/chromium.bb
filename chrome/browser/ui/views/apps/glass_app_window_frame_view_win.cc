@@ -116,7 +116,7 @@ gfx::Size GlassAppWindowFrameViewWin::GetMinimumSize() const {
   return min_size;
 }
 
-gfx::Size GlassAppWindowFrameViewWin::GetMaximumSize() {
+gfx::Size GlassAppWindowFrameViewWin::GetMaximumSize() const {
   gfx::Size max_size = widget_->client_view()->GetMaximumSize();
 
   // Add to the client maximum size the height of any title bar and borders.

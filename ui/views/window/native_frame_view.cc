@@ -88,7 +88,7 @@ gfx::Size NativeFrameView::GetMinimumSize() const {
   return frame_->client_view()->GetMinimumSize();
 }
 
-gfx::Size NativeFrameView::GetMaximumSize() {
+gfx::Size NativeFrameView::GetMaximumSize() const {
   return frame_->client_view()->GetMaximumSize();
 }
 

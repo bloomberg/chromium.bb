@@ -295,7 +295,7 @@ gfx::Size NativeAppWindowViews::GetMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }
 
-gfx::Size NativeAppWindowViews::GetMaximumSize() {
+gfx::Size NativeAppWindowViews::GetMaximumSize() const {
   return size_constraints_.GetMaximumSize();
 }
 

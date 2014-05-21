@@ -158,7 +158,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;

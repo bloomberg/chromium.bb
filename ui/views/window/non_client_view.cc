@@ -146,7 +146,7 @@ gfx::Size NonClientView::GetMinimumSize() const {
   return frame_view_->GetMinimumSize();
 }
 
-gfx::Size NonClientView::GetMaximumSize() {
+gfx::Size NonClientView::GetMaximumSize() const {
   return frame_view_->GetMaximumSize();
 }
 

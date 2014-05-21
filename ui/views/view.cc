@@ -444,7 +444,7 @@ gfx::Size View::GetMinimumSize() const {
   return GetPreferredSize();
 }
 
-gfx::Size View::GetMaximumSize() {
+gfx::Size View::GetMaximumSize() const {
   return gfx::Size();
 }
 

@@ -73,7 +73,7 @@ class MessageCenterWidgetDelegate : public views::WidgetDelegate,
   // View overrides:
   virtual void PreferredSizeChanged() OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual int GetHeightForWidth(int width) const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 

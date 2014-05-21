@@ -745,8 +745,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetCreated(bool desktop_widget) OVERRIDE;
   virtual void OnNativeWidgetDestroying() OVERRIDE;
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnNativeWidgetMove() OVERRIDE;
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual void OnNativeWidgetBeginUserBoundsChange() OVERRIDE;

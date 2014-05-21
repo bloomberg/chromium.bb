@@ -62,7 +62,7 @@ class MaxSizeNCFV : public views::NonClientFrameView {
  public:
   MaxSizeNCFV() {}
  private:
-  virtual gfx::Size GetMaximumSize() OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
     return gfx::Size(200, 200);
   }
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE {

@@ -485,7 +485,7 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() const {
       NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
-gfx::Size CustomFrameViewAsh::GetMaximumSize() {
+gfx::Size CustomFrameViewAsh::GetMaximumSize() const {
   gfx::Size max_client_size(frame_->client_view()->GetMaximumSize());
   int width = 0;
   int height = 0;

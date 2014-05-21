@@ -82,7 +82,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,

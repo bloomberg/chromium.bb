@@ -1096,11 +1096,11 @@ void Widget::OnNativeWidgetDestroyed() {
   native_widget_destroyed_ = true;
 }
 
-gfx::Size Widget::GetMinimumSize() {
+gfx::Size Widget::GetMinimumSize() const {
   return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
 }
 
-gfx::Size Widget::GetMaximumSize() {
+gfx::Size Widget::GetMaximumSize() const {
   return non_client_view_ ? non_client_view_->GetMaximumSize() : gfx::Size();
 }
 

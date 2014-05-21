@@ -51,7 +51,7 @@ gfx::Size ClientView::GetPreferredSize() const {
   return contents_view_ ? contents_view_->GetPreferredSize() : gfx::Size();
 }
 
-gfx::Size ClientView::GetMaximumSize() {
+gfx::Size ClientView::GetMaximumSize() const {
   // |contents_view_| is allowed to be NULL up until the point where this view
   // is attached to a Container.
   return contents_view_ ? contents_view_->GetMaximumSize() : gfx::Size();

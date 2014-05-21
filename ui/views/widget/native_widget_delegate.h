@@ -80,10 +80,10 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnNativeWidgetDestroyed() = 0;
 
   // Returns the smallest size the window can be resized to by the user.
-  virtual gfx::Size GetMinimumSize() = 0;
+  virtual gfx::Size GetMinimumSize() const = 0;
 
   // Returns the largest size the window can be resized to by the user.
-  virtual gfx::Size GetMaximumSize() = 0;
+  virtual gfx::Size GetMaximumSize() const = 0;
 
   // Called when the NativeWidget changed position.
   virtual void OnNativeWidgetMove() = 0;

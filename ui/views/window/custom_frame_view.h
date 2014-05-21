@@ -53,7 +53,7 @@ class CustomFrameView : public NonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;

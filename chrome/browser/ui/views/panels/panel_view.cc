@@ -910,7 +910,7 @@ gfx::Size PanelView::GetMinimumSize() const {
       gfx::Size(panel::kPanelMinWidth, panel::kPanelMinHeight);
 }
 
-gfx::Size PanelView::GetMaximumSize() {
+gfx::Size PanelView::GetMaximumSize() const {
   // If the user is resizing a stacked panel by its bottom edge, make sure its
   // height cannot grow more than what the panel below it could offer. This is
   // because growing a stacked panel by y amount will shrink the panel below it

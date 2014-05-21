@@ -59,7 +59,7 @@ class VIEWS_EXPORT ClientView : public View {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 

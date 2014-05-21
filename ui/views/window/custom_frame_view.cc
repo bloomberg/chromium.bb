@@ -231,7 +231,7 @@ gfx::Size CustomFrameView::GetMinimumSize() const {
       gfx::Rect(frame_->client_view()->GetMinimumSize())).size();
 }
 
-gfx::Size CustomFrameView::GetMaximumSize() {
+gfx::Size CustomFrameView::GetMaximumSize() const {
   gfx::Size max_size = frame_->client_view()->GetMaximumSize();
   gfx::Size converted_size =
       frame_->non_client_view()->GetWindowBoundsForClientBounds(

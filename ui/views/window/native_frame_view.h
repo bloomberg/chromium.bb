@@ -32,7 +32,7 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
   // View overrides:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
  private:

@@ -52,7 +52,7 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
     return minimum_size_;
   }
 
-  virtual gfx::Size GetMaximumSize() OVERRIDE {
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
     return maximum_size_;
   }
 

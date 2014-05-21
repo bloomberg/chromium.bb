@@ -84,7 +84,7 @@ class PanelView : public NativePanel,
 
   // Overridden from views::View:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
 
   // Return true if the mouse event is handled.
   // |mouse_location| is in screen coordinate system.

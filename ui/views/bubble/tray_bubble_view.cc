@@ -424,7 +424,7 @@ gfx::Size TrayBubbleView::GetPreferredSize() const {
   return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
 }
 
-gfx::Size TrayBubbleView::GetMaximumSize() {
+gfx::Size TrayBubbleView::GetMaximumSize() const {
   gfx::Size size = GetPreferredSize();
   size.set_width(params_.max_width);
   return size;

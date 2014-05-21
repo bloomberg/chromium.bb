@@ -276,7 +276,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Gets the maximum size of the view. Currently only used for sizing shell
   // windows.
-  virtual gfx::Size GetMaximumSize();
+  virtual gfx::Size GetMaximumSize() const;
 
   // Return the height necessary to display this view with the provided width.
   // View's implementation returns the value from getPreferredSize.cy.

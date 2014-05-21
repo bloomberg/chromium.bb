@@ -117,7 +117,7 @@ gfx::Size MessageCenterWidgetDelegate::GetPreferredSize() const {
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
 }
 
-gfx::Size MessageCenterWidgetDelegate::GetMaximumSize() {
+gfx::Size MessageCenterWidgetDelegate::GetMaximumSize() const {
   gfx::Size size = GetPreferredSize();
   return size;
 }

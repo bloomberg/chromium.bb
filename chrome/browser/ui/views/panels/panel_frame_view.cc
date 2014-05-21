@@ -505,7 +505,7 @@ gfx::Size PanelFrameView::GetMinimumSize() const {
   return panel_view_->GetMinimumSize();
 }
 
-gfx::Size PanelFrameView::GetMaximumSize() {
+gfx::Size PanelFrameView::GetMaximumSize() const {
   return panel_view_->GetMaximumSize();
 }
 
