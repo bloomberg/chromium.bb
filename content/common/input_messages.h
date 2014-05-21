@@ -23,7 +23,7 @@
 #include "content/common/input/touch_action.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/latency_info.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"

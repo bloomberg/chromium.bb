@@ -14,6 +14,7 @@
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/base/ui_base.gyp:ui_base',
+    '../ui/events/ipc/events_ipc.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
