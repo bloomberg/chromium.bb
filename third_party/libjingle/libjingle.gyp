@@ -41,6 +41,7 @@
     'include_dirs': [
       './overrides',
       './<(libjingle_source)',
+      '../../third_party/webrtc/overrides',
       '../..',
       '../../testing/gtest/include',
       '../../third_party',
@@ -60,6 +61,7 @@
       'include_dirs': [
         './overrides',
         './<(libjingle_source)',
+        '../../third_party/webrtc/overrides',
         '../..',
         '../../testing/gtest/include',
         '../../third_party',
