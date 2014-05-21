@@ -55,6 +55,8 @@ Editing docs
        and run compass from this (docs/) directory:
            compass compile .
        See http://compass-style.org/install to install compass.
+       See https://codereview.chromium.org/238303002/#msg6 for configuration
+       information (config.rb).
 
   2. Run 'server2/preview.py'
 
