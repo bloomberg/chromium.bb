@@ -19,10 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#endif
-
 namespace metrics {
 
 namespace {
@@ -47,8 +43,11 @@ int GenerateLowEntropySource() {
 // static
 bool MetricsStateManager::instance_exists_ = false;
 
-MetricsStateManager::MetricsStateManager(PrefService* local_state)
+MetricsStateManager::MetricsStateManager(
+    PrefService* local_state,
+    const base::Callback<bool(void)>& is_reporting_enabled_callback)
     : local_state_(local_state),
+      is_reporting_enabled_callback_(is_reporting_enabled_callback),
       low_entropy_source_(kLowEntropySourceNotSet),
       entropy_source_returned_(ENTROPY_SOURCE_NONE) {
   ResetMetricsIDsIfNecessary();
@@ -65,27 +64,7 @@ MetricsStateManager::~MetricsStateManager() {
 }
 
 bool MetricsStateManager::IsMetricsReportingEnabled() {
-  // If the user permits metrics reporting with the checkbox in the
-  // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds.  This can be forced with a flag.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableMetricsReportingForTesting))
-    return true;
-
-  // Disable metrics reporting when field trials are forced.
-  if (command_line->HasSwitch(switches::kForceFieldTrials))
-    return false;
-
-  bool enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
-#else
-  enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-#endif  // defined(GOOGLE_CHROME_BUILD)
-  return enabled;
+  return is_reporting_enabled_callback_.Run();
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
@@ -161,11 +140,14 @@ MetricsStateManager::CreateEntropyProvider() {
 
 // static
 scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
-    PrefService* local_state) {
+    PrefService* local_state,
+    const base::Callback<bool(void)>& is_reporting_enabled_callback) {
   scoped_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
-  if (!instance_exists_)
-    result.reset(new MetricsStateManager(local_state));
+  if (!instance_exists_) {
+    result.reset(
+        new MetricsStateManager(local_state, is_reporting_enabled_callback));
+  }
   return result.Pass();
 }
 

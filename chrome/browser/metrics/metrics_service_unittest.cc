@@ -6,10 +6,9 @@
 
 #include <string>
 
-#include "base/command_line.h"
+#include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -90,8 +89,12 @@ class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest()
       : testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        metrics_state_manager_(metrics::MetricsStateManager::Create(
-            GetLocalState())) {
+        is_metrics_reporting_enabled_(false),
+        metrics_state_manager_(
+            metrics::MetricsStateManager::Create(
+                GetLocalState(),
+                base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
+                           base::Unretained(this)))) {
   }
 
   virtual ~MetricsServiceTest() {
@@ -108,9 +111,7 @@ class MetricsServiceTest : public testing::Test {
 
   // Sets metrics reporting as enabled for testing.
   void EnableMetricsReporting() {
-    // TODO(asvitkine): Refactor the code to not need this flag and delete it.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableMetricsReportingForTesting);
+    is_metrics_reporting_enabled_ = true;
   }
 
   // Waits until base::TimeTicks::Now() no longer equals |value|. This should
@@ -139,8 +140,13 @@ class MetricsServiceTest : public testing::Test {
   }
 
  private:
+  bool is_metrics_reporting_enabled() const {
+    return is_metrics_reporting_enabled_;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   ScopedTestingLocalState testing_local_state_;
+  bool is_metrics_reporting_enabled_;
   scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
