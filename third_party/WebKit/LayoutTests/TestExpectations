@@ -675,8 +675,14 @@ crbug.com/322782 fast/text-autosizing/oscillation-javascript-fontsize-change.htm
 crbug.com/322782 fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
 crbug.com/322782 fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 
-crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
-crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
+crbug.com/371611 fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/css-table-single-cell-lots-of-text.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/fixed-table-single-cell-lots-of-text.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/single-cell-lots-of-text.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/single-percent-width-cell-lots-of-text.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/table-for-layout.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/wide-percentage-width.html [ NeedsRebaseline ]
+crbug.com/371611 fast/text-autosizing/tables/wide-specified-width.html [ NeedsRebaseline ]
 
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
@@ -739,6 +745,7 @@ crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html
 crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
+
 crbug.com/375454 [ Win ] fast/text/international/plane2.html [ NeedsManualRebaseline ]
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]

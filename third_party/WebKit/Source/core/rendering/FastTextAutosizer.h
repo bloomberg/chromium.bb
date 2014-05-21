@@ -70,14 +70,9 @@ public:
     public:
         explicit LayoutScope(RenderBlock*);
         ~LayoutScope();
-    protected:
+    private:
         FastTextAutosizer* m_textAutosizer;
         RenderBlock* m_block;
-    };
-
-    class TableLayoutScope : LayoutScope {
-    public:
-        explicit TableLayoutScope(RenderTable*);
     };
 
     class DeferUpdatePageInfo {
@@ -244,7 +239,7 @@ private:
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
-    void inflateAutoTable(RenderTable*);
+    void inflateTable(RenderTable*);
     void inflate(RenderBlock*);
     bool shouldHandleLayout() const;
     void setAllTextNeedsLayout();
@@ -278,6 +273,7 @@ private:
     // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
     const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
+    bool shouldDescendForTableInflation(RenderObject*);
     BlockFlags classifyBlock(const RenderObject*, BlockFlags mask = UINT_MAX);
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
     void writeClusterDebugInfo(Cluster*);

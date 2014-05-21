@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/rendering/AutoTableLayout.h"
 
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
@@ -208,8 +207,6 @@ static bool shouldScaleColumns(RenderTable* table)
 
 void AutoTableLayout::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
-    FastTextAutosizer::TableLayoutScope fastTextAutosizerTableLayoutScope(m_table);
-
     fullRecalc();
 
     int spanMaxLogicalWidth = calcEffectiveLogicalWidth();
