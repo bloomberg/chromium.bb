@@ -1,11 +1,11 @@
-layer at (0,0) size 785x910
+layer at (0,0) size 785x995
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x910
-  RenderBlock {HTML} at (0,0) size 785x910
-    RenderBody {BODY} at (8,8) size 769x894
-      RenderBlock {CENTER} at (0,0) size 769x894
-        RenderTable {TABLE} at (58,0) size 653x894 [bgcolor=#F6F6EF]
-          RenderTableSection {TBODY} at (0,0) size 653x894
+layer at (0,0) size 785x995
+  RenderBlock {HTML} at (0,0) size 785x995
+    RenderBody {BODY} at (8,8) size 769x979
+      RenderBlock {CENTER} at (0,0) size 769x979
+        RenderTable {TABLE} at (58,0) size 653x979 [bgcolor=#F6F6EF]
+          RenderTableSection {TBODY} at (0,0) size 653x979
             RenderTableRow {TR} at (0,0) size 653x20
               RenderTableCell {TD} at (0,0) size 653x20 [bgcolor=#FF6600] [r=0 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 653x20
@@ -33,8 +33,8 @@ layer at (0,0) size 785x910
                             text run at (15,0) width 32: "login"
                         RenderText {#text} at (0,0) size 0x0
             RenderTableRow {TR} at (0,20) size 653x10
-            RenderTableRow {TR} at (0,30) size 653x846
-              RenderTableCell {TD} at (0,30) size 653x846 [r=2 c=0 rs=1 cs=1]
+            RenderTableRow {TR} at (0,30) size 653x914
+              RenderTableCell {TD} at (0,30) size 653x914 [r=2 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 416x58
                   RenderTableSection {TBODY} at (0,0) size 416x58
                     RenderTableRow {TR} at (0,2) size 416x18
@@ -70,10 +70,10 @@ layer at (0,0) size 785x910
                     RenderTableRow {TR} at (0,54) size 416x2
                       RenderTableCell {TD} at (2,54) size 55x2 [r=3 c=0 rs=1 cs=1]
                       RenderTableCell {TD} at (59,54) size 355x2 [r=3 c=1 rs=1 cs=1]
-                RenderBlock (anonymous) at (0,58) size 653x32
-                  RenderBR {BR} at (0,0) size 0x16
-                  RenderBR {BR} at (0,16) size 0x16
-                RenderTable {TABLE} at (0,90) size 653x724
+                RenderBlock (anonymous) at (0,58) size 653x66
+                  RenderBR {BR} at (0,0) size 0x33
+                  RenderBR {BR} at (0,33) size 0x33
+                RenderTable {TABLE} at (0,124) size 653x724
                   RenderTableSection {TBODY} at (0,0) size 653x724
                     RenderTableRow {TR} at (0,2) size 653x345
                       RenderTableCell {TD} at (2,2) size 649x345 [r=0 c=0 rs=1 cs=1]
@@ -180,14 +180,14 @@ layer at (0,0) size 785x910
                                     RenderText {#text} at (0,0) size 59x29
                                       text run at (0,0) width 59: "reply"
                                   RenderText {#text} at (0,0) size 0x0
-                RenderBlock (anonymous) at (0,814) size 653x32
-                  RenderBR {BR} at (0,0) size 0x16
-                  RenderBR {BR} at (0,16) size 0x16
-            RenderTableRow {TR} at (0,876) size 653x18
-              RenderTableCell {TD} at (0,876) size 653x18 [r=3 c=0 rs=1 cs=1]
+                RenderBlock (anonymous) at (0,848) size 653x66
+                  RenderBR {BR} at (0,0) size 0x33
+                  RenderBR {BR} at (0,33) size 0x33
+            RenderTableRow {TR} at (0,944) size 653x35
+              RenderTableCell {TD} at (0,944) size 653x35 [r=3 c=0 rs=1 cs=1]
                 RenderTable {TABLE} at (0,0) size 653x2
                   RenderTableSection {TBODY} at (0,0) size 653x2
                     RenderTableRow {TR} at (0,0) size 653x2
                       RenderTableCell {TD} at (0,0) size 653x2 [bgcolor=#FF6600] [r=0 c=0 rs=1 cs=1]
-                RenderBlock (anonymous) at (0,2) size 653x16
-                  RenderBR {BR} at (0,0) size 0x16
+                RenderBlock (anonymous) at (0,2) size 653x33
+                  RenderBR {BR} at (0,0) size 0x33
