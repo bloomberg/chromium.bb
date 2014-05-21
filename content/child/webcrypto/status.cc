@@ -99,12 +99,6 @@ Status Status::ErrorJwkUseAndKeyopsInconsistent() {
                 "but are inconsistent with each other.");
 }
 
-Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
-                "JWK RSA key contained \"d\" property: Private key import is "
-                "not yet supported");
-}
-
 Status Status::ErrorJwkUnrecognizedKty() {
   return Status(blink::WebCryptoErrorTypeData,
                 "The JWK \"kty\" property was unrecognized");
@@ -114,6 +108,12 @@ Status Status::ErrorJwkIncorrectKeyLength() {
   return Status(blink::WebCryptoErrorTypeData,
                 "The JWK \"k\" property did not include the right length "
                 "of key data for the given algorithm.");
+}
+
+Status Status::ErrorJwkIncompleteOptionalRsaPrivateKey() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The optional JWK properties p, q, dp, dq, qi must either all "
+                "be provided, or none provided");
 }
 
 Status Status::ErrorImportEmptyKeyData() {

@@ -130,11 +130,8 @@
 //
 // kty-specific parameters
 // The value of kty determines the type and content of the keying material
-// carried in the JWK to be imported. Currently only two possibilities are
-// supported: a raw key or an RSA public key. RSA private keys are not
-// supported because typical applications seldom need to import a private key,
-// and the large number of JWK parameters required to describe one.
-// - kty == "oct" (symmetric or other raw key)
+// carried in the JWK to be imported.
+// // - kty == "oct" (symmetric or other raw key)
 //   +-------+--------------------------------------------------------------+
 //   | "k"   | Contains the value of the symmetric (or other single-valued) |
 //   |       | key.  It is represented as the base64url encoding of the     |
@@ -149,6 +146,39 @@
 //   | "e"   | Contains the exponent value for the RSA public key.  It is   |
 //   |       | represented as the base64url encoding of the value's         |
 //   |       | unsigned big endian representation as an octet sequence.     |
+//   +-------+--------------------------------------------------------------+
+// - If key == "RSA" and the "d" parameter is present then it is a private key.
+//   All the parameters above for public keys apply, as well as the following.
+//   (Note that except for "d", all of these are optional):
+//   +-------+--------------------------------------------------------------+
+//   | "d"   | Contains the private exponent value for the RSA private key. |
+//   |       | It is represented as the base64url encoding of the value's   |
+//   |       | unsigned big endian representation as an octet sequence.     |
+//   +-------+--------------------------------------------------------------+
+//   | "p"   | Contains the first prime factor value for the RSA private    |
+//   |       | key.  It is represented as the base64url encoding of the     |
+//   |       | value's                                                      |
+//   |       | unsigned big endian representation as an octet sequence.     |
+//   +-------+--------------------------------------------------------------+
+//   | "q"   | Contains the second prime factor value for the RSA private   |
+//   |       | key.  It is represented as the base64url encoding of the     |
+//   |       | value's unsigned big endian representation as an octet       |
+//   |       | sequence.                                                    |
+//   +-------+--------------------------------------------------------------+
+//   | "dp"  | Contains the first factor CRT exponent value for the RSA     |
+//   |       | private key.  It is represented as the base64url encoding of |
+//   |       | the value's unsigned big endian representation as an octet   |
+//   |       | sequence.                                                    |
+//   +-------+--------------------------------------------------------------+
+//   | "dq"  | Contains the second factor CRT exponent value for the RSA    |
+//   |       | private key.  It is represented as the base64url encoding of |
+//   |       | the value's unsigned big endian representation as an octet   |
+//   |       | sequence.                                                    |
+//   +-------+--------------------------------------------------------------+
+//   | "dq"  | Contains the first CRT coefficient value for the RSA private |
+//   |       | key.  It is represented as the base64url encoding of the     |
+//   |       | value's unsigned big endian representation as an octet       |
+//   |       | sequence.                                                    |
 //   +-------+--------------------------------------------------------------+
 //
 // Consistency and conflict resolution
@@ -430,6 +460,31 @@ Status GetJwkBytes(base::DictionaryValue* dict,
   return Status::Success();
 }
 
+// Extracts the optional string property with key |path| from |dict| and saves
+// the base64url-decoded bytes to |*result|. If the property exist and is not a
+// string, or could not be base64url-decoded, returns an error. In the case
+// where the property does not exist, |result| is guaranteed to be empty.
+Status GetOptionalJwkBytes(base::DictionaryValue* dict,
+                           const std::string& path,
+                           std::string* result,
+                           bool* property_exists) {
+  std::string base64_string;
+  Status status =
+      GetOptionalJwkString(dict, path, &base64_string, property_exists);
+  if (status.IsError())
+    return status;
+
+  if (!*property_exists) {
+    result->clear();
+    return Status::Success();
+  }
+
+  if (!Base64DecodeUrlSafe(base64_string, result))
+    return Status::ErrorJwkBase64Decode(path);
+
+  return Status::Success();
+}
+
 // Extracts the optional boolean property with key |path| from |dict| and saves
 // the result to |*result| if it was found. If the property exists and is not a
 // boolean, returns an error. Otherwise returns success, and sets
@@ -478,6 +533,53 @@ void WriteRsaPublicKey(const std::vector<uint8>& modulus,
   jwk_dict->SetString("kty", "RSA");
   jwk_dict->SetString("n", Base64EncodeUrlSafe(modulus));
   jwk_dict->SetString("e", Base64EncodeUrlSafe(public_exponent));
+}
+
+// Writes an RSA private key to a JWK dictionary
+Status ExportRsaPrivateKeyJwk(const blink::WebCryptoKey& key,
+                              base::DictionaryValue* jwk_dict) {
+  platform::PrivateKey* private_key;
+  Status status = ToPlatformPrivateKey(key, &private_key);
+  if (status.IsError())
+    return status;
+
+  // TODO(eroman): Copying the key properties to temporary vectors is
+  // inefficient. Once there aren't two implementations of platform_crypto this
+  // and other code will be easier to streamline.
+  std::vector<uint8> modulus;
+  std::vector<uint8> public_exponent;
+  std::vector<uint8> private_exponent;
+  std::vector<uint8> prime1;
+  std::vector<uint8> prime2;
+  std::vector<uint8> exponent1;
+  std::vector<uint8> exponent2;
+  std::vector<uint8> coefficient;
+
+  status = platform::ExportRsaPrivateKey(private_key,
+                                         &modulus,
+                                         &public_exponent,
+                                         &private_exponent,
+                                         &prime1,
+                                         &prime2,
+                                         &exponent1,
+                                         &exponent2,
+                                         &coefficient);
+  if (status.IsError())
+    return status;
+
+  jwk_dict->SetString("kty", "RSA");
+  jwk_dict->SetString("n", Base64EncodeUrlSafe(modulus));
+  jwk_dict->SetString("e", Base64EncodeUrlSafe(public_exponent));
+  jwk_dict->SetString("d", Base64EncodeUrlSafe(private_exponent));
+  // Although these are "optional" in the JWA, WebCrypto spec requires them to
+  // be emitted.
+  jwk_dict->SetString("p", Base64EncodeUrlSafe(prime1));
+  jwk_dict->SetString("q", Base64EncodeUrlSafe(prime2));
+  jwk_dict->SetString("dp", Base64EncodeUrlSafe(exponent1));
+  jwk_dict->SetString("dq", Base64EncodeUrlSafe(exponent2));
+  jwk_dict->SetString("qi", Base64EncodeUrlSafe(coefficient));
+
+  return Status::Success();
 }
 
 // Writes a Web Crypto usage mask to a JWK dictionary.
@@ -592,26 +694,102 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
   return Status::Success();
 }
 
-bool IsRsaPublicKey(const blink::WebCryptoKey& key) {
-  if (key.type() != blink::WebCryptoKeyTypePublic)
-    return false;
+bool IsRsaKey(const blink::WebCryptoKey& key) {
   const blink::WebCryptoAlgorithmId algorithm_id = key.algorithm().id();
   return algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
          algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
          algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep;
 }
 
-// TODO(padolph): This function is duplicated in shared_crypto.cc
-Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
-                           platform::PublicKey** out) {
-  *out = static_cast<platform::Key*>(key.handle())->AsPublicKey();
-  if (!*out)
-    return Status::ErrorUnexpectedKeyType();
-  return Status::Success();
+Status ImportRsaKey(base::DictionaryValue* dict,
+                    const blink::WebCryptoAlgorithm& algorithm,
+                    bool extractable,
+                    blink::WebCryptoKeyUsageMask usage_mask,
+                    blink::WebCryptoKey* key) {
+  // An RSA public key must have an "n" (modulus) and an "e" (exponent) entry
+  // in the JWK, while an RSA private key must have those, plus at least a "d"
+  // (private exponent) entry.
+  // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
+  // section 6.3.
+  std::string jwk_n_value;
+  Status status = GetJwkBytes(dict, "n", &jwk_n_value);
+  if (status.IsError())
+    return status;
+  std::string jwk_e_value;
+  status = GetJwkBytes(dict, "e", &jwk_e_value);
+  if (status.IsError())
+    return status;
+
+  if (!dict->HasKey("d")) {
+    return platform::ImportRsaPublicKey(algorithm,
+                                        extractable,
+                                        usage_mask,
+                                        CryptoData(jwk_n_value),
+                                        CryptoData(jwk_e_value),
+                                        key);
+  }
+
+  std::string jwk_d_value;
+  status = GetJwkBytes(dict, "d", &jwk_d_value);
+  if (status.IsError())
+    return status;
+
+  // The "p", "q", "dp", "dq", and "qi" properties are optional. Treat these
+  // properties the same if they are unspecified, as if they were specified-but
+  // empty, since ImportRsaPrivateKey() doesn't do validation checks anyway.
+
+  std::string jwk_p_value;
+  bool has_p;
+  status = GetOptionalJwkBytes(dict, "p", &jwk_p_value, &has_p);
+  if (status.IsError())
+    return status;
+
+  std::string jwk_q_value;
+  bool has_q;
+  status = GetOptionalJwkBytes(dict, "q", &jwk_q_value, &has_q);
+  if (status.IsError())
+    return status;
+
+  std::string jwk_dp_value;
+  bool has_dp;
+  status = GetOptionalJwkBytes(dict, "dp", &jwk_dp_value, &has_dp);
+  if (status.IsError())
+    return status;
+
+  std::string jwk_dq_value;
+  bool has_dq;
+  status = GetOptionalJwkBytes(dict, "dq", &jwk_dq_value, &has_dq);
+  if (status.IsError())
+    return status;
+
+  std::string jwk_qi_value;
+  bool has_qi;
+  status = GetOptionalJwkBytes(dict, "qi", &jwk_qi_value, &has_qi);
+  if (status.IsError())
+    return status;
+
+  int num_optional_properties = has_p + has_q + has_dp + has_dq + has_qi;
+  if (num_optional_properties != 0 && num_optional_properties != 5)
+    return Status::ErrorJwkIncompleteOptionalRsaPrivateKey();
+
+  return platform::ImportRsaPrivateKey(
+      algorithm,
+      extractable,
+      usage_mask,
+      CryptoData(jwk_n_value),   // modulus
+      CryptoData(jwk_e_value),   // public_exponent
+      CryptoData(jwk_d_value),   // private_exponent
+      CryptoData(jwk_p_value),   // prime1
+      CryptoData(jwk_q_value),   // prime2
+      CryptoData(jwk_dp_value),  // exponent1
+      CryptoData(jwk_dq_value),  // exponent2
+      CryptoData(jwk_qi_value),  // coefficient
+      key);
 }
 
 }  // namespace
 
+// TODO(eroman): Split this up into smaller functions.
 Status ImportKeyJwk(const CryptoData& key_data,
                     const blink::WebCryptoAlgorithm& algorithm,
                     bool extractable,
@@ -747,36 +925,9 @@ Status ImportKeyJwk(const CryptoData& key_data,
                      usage_mask,
                      key);
   }
-  if (jwk_kty_value == "RSA") {
-    // An RSA public key must have an "n" (modulus) and an "e" (exponent) entry
-    // in the JWK, while an RSA private key must have those, plus at least a "d"
-    // (private exponent) entry.
-    // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
-    // section 6.3.
 
-    // RSA private key import is not currently supported, so fail here if a "d"
-    // entry is found.
-    // TODO(padolph): Support RSA private key import.
-    if (dict_value->HasKey("d"))
-      return Status::ErrorJwkRsaPrivateKeyUnsupported();
-
-    std::string jwk_n_value;
-    status = GetJwkBytes(dict_value, "n", &jwk_n_value);
-    if (status.IsError())
-      return status;
-    std::string jwk_e_value;
-    status = GetJwkBytes(dict_value, "e", &jwk_e_value);
-    if (status.IsError())
-      return status;
-
-    return platform::ImportRsaPublicKey(algorithm,
-                                        extractable,
-                                        usage_mask,
-                                        CryptoData(jwk_n_value),
-                                        CryptoData(jwk_e_value),
-                                        key);
-
-  }
+  if (jwk_kty_value == "RSA")
+    return ImportRsaKey(dict_value, algorithm, extractable, usage_mask, key);
 
   return Status::ErrorJwkUnrecognizedKty();
 }
@@ -797,8 +948,8 @@ Status ExportKeyJwk(const blink::WebCryptoKey& key,
       break;
     }
     case blink::WebCryptoKeyTypePublic: {
-      // Currently only RSA public key export is supported.
-      if (!IsRsaPublicKey(key))
+      // TODO(eroman): Update when there are asymmetric keys other than RSA.
+      if (!IsRsaKey(key))
         return Status::ErrorUnsupported();
       platform::PublicKey* public_key;
       status = ToPlatformPublicKey(key, &public_key);
@@ -813,7 +964,17 @@ Status ExportKeyJwk(const blink::WebCryptoKey& key,
       WriteRsaPublicKey(modulus, public_exponent, &jwk_dict);
       break;
     }
-    case blink::WebCryptoKeyTypePrivate:  // TODO(padolph)
+    case blink::WebCryptoKeyTypePrivate: {
+      // TODO(eroman): Update when there are asymmetric keys other than RSA.
+      if (!IsRsaKey(key))
+        return Status::ErrorUnsupported();
+
+      status = ExportRsaPrivateKeyJwk(key, &jwk_dict);
+      if (status.IsError())
+        return status;
+      break;
+    }
+
     default:
       return Status::ErrorUnsupported();
   }

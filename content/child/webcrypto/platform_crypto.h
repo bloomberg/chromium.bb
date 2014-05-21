@@ -194,6 +194,24 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           const CryptoData& exponent_data,
                           blink::WebCryptoKey* key);
 
+// Preconditions:
+//  * algorithm.id() is for an RSA algorithm.
+//  * modulus, public_exponent, and private_exponent will be non-empty. The
+//    others will either all be specified (non-empty), or all be unspecified
+//    (empty).
+Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usage_mask,
+                           const CryptoData& modulus,
+                           const CryptoData& public_exponent,
+                           const CryptoData& private_exponent,
+                           const CryptoData& prime1,
+                           const CryptoData& prime2,
+                           const CryptoData& exponent1,
+                           const CryptoData& exponent2,
+                           const CryptoData& coefficient,
+                           blink::WebCryptoKey* key);
+
 // Note that this may be called from target Blink thread.
 Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
@@ -221,6 +239,18 @@ Status ExportKeySpki(PublicKey* key, std::vector<uint8>* buffer);
 Status ExportRsaPublicKey(PublicKey* key,
                           std::vector<uint8>* modulus,
                           std::vector<uint8>* public_exponent);
+
+// Preconditions:
+//  * |key| is non-null.
+Status ExportRsaPrivateKey(PrivateKey* key,
+                           std::vector<uint8>* modulus,
+                           std::vector<uint8>* public_exponent,
+                           std::vector<uint8>* private_exponent,
+                           std::vector<uint8>* prime1,
+                           std::vector<uint8>* prime2,
+                           std::vector<uint8>* exponent1,
+                           std::vector<uint8>* exponent2,
+                           std::vector<uint8>* coefficient);
 
 // Preconditions:
 //  * |key| is non-null.

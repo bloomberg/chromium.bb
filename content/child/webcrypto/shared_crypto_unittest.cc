@@ -143,7 +143,7 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(const std::vector<uint8>& iv) {
       new blink::WebCryptoAesCbcParams(Uint8VectorStart(iv), iv.size()));
 }
 
-// Creates and AES-GCM algorithm.
+// Creates an AES-GCM algorithm.
 blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     const std::vector<uint8>& iv,
     const std::vector<uint8>& additional_data,
@@ -1564,13 +1564,6 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkRsaFailures)) {
               ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
     RestoreJwkRsaDictionary(&dict);
   }
-
-  // Fail if "d" parameter is present, implying the JWK is a private key, which
-  // is not supported.
-  dict.SetString("d", "Qk3f0Dsyt");
-  EXPECT_EQ(Status::ErrorJwkRsaPrivateKeyUnsupported(),
-            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
-  RestoreJwkRsaDictionary(&dict);
 }
 
 TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
@@ -2040,6 +2033,149 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
                       true,
                       blink::WebCryptoKeyUsageSign,
                       &key));
+}
+
+// Tests JWK import and export by doing a roundtrip key conversion and ensuring
+// it was lossless:
+//
+//   PKCS8 --> JWK --> PKCS8
+TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkToPkcs8RoundTrip)) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatPkcs8,
+                      CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
+                      CreateRsaHashedImportAlgorithm(
+                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                          blink::WebCryptoAlgorithmIdSha1),
+                      true,
+                      blink::WebCryptoKeyUsageSign,
+                      &key));
+
+  std::vector<uint8> exported_key_jwk;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatJwk, key, &exported_key_jwk));
+
+  // All of the optional parameters (p, q, dp, dq, qi) should be present in the
+  // output.
+  const char* expected_jwk =
+      "{\"alg\":\"RS1\",\"d\":\"M6UEKpCyfU9UUcqbu9C0R3GhAa-IQ0Cu-YhfKku-"
+      "kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQ"
+      "GlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU\",\"dp\":"
+      "\"KPoTk4ZVvh-"
+      "KFZy6ylpy6hkMMAieGc0nSlVvNsT24Z9VSzTAd3kEJ7vdjdPt4kSDKPOF2Bsw6OQ7L_-"
+      "gJ4YZeQ\",\"dq\":\"Gos485j6cSBJiY1_t57gp3ZoeRKZzfoJ78DlB6yyHtdDAe9b_Ui-"
+      "RV6utuFnglWCdYCo5OjhQVHRUQqCo_LnKQ\",\"e\":\"AQAB\",\"ext\":true,\"key_"
+      "ops\":[\"sign\"],\"kty\":\"RSA\",\"n\":"
+      "\"pW5KDnAQF1iaUYfcfqhB0Vby7A42rVKkTf6x5h962ZHYxRBW_-2xYrTA8oOhKoijlN_"
+      "1JqtykcuzB86r_OCx39XNlQgJbVsri2311nHvY3fAkhyyPCcKcOJZjm_4nRnxBazC0_"
+      "DLNfKSgOE4a29kxO8i4eHyDQzoz_siSb2aITc\",\"p\":\"5-"
+      "iUJyCod1Fyc6NWBT6iobwMlKpy1VxuhilrLfyWeUjApyy8zKfqyzVwbgmh31WhU1vZs8w0Fg"
+      "s7bc0-2o5kQw\",\"q\":\"tp3KHPfU1-yB51uQ_MqHSrzeEj_"
+      "ScAGAqpBHm25I3o1n7ST58Z2FuidYdPVCzSDccj5pYzZKH5QlRSsmmmeZ_Q\",\"qi\":"
+      "\"JxVqukEm0kqB86Uoy_sn9WiG-"
+      "ECp9uhuF6RLlP6TGVhLjiL93h5aLjvYqluo2FhBlOshkKz4MrhH8To9JKefTQ\"}";
+
+  ASSERT_EQ(CryptoData(std::string(expected_jwk)),
+            CryptoData(exported_key_jwk));
+
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatJwk,
+                      CryptoData(exported_key_jwk),
+                      CreateRsaHashedImportAlgorithm(
+                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                          blink::WebCryptoAlgorithmIdSha1),
+                      true,
+                      blink::WebCryptoKeyUsageSign,
+                      &key));
+
+  std::vector<uint8> exported_key_pkcs8;
+  ASSERT_EQ(
+      Status::Success(),
+      ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &exported_key_pkcs8));
+
+  ASSERT_EQ(CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
+            CryptoData(exported_key_pkcs8));
+}
+
+// Import a JWK RSA private key with some optional parameters missing (q, dp,
+// dq, qi).
+//
+// The only optional parameter included is "p".
+//
+// This fails because JWA says that producers must include either ALL optional
+// parameters or NONE.
+TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkMissingOptionalParams)) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  base::DictionaryValue dict;
+  dict.SetString("kty", "RSA");
+  dict.SetString("alg", "RS1");
+
+  dict.SetString(
+      "n",
+      "pW5KDnAQF1iaUYfcfqhB0Vby7A42rVKkTf6x5h962ZHYxRBW_-2xYrTA8oOhKoijlN_"
+      "1JqtykcuzB86r_OCx39XNlQgJbVsri2311nHvY3fAkhyyPCcKcOJZjm_4nRnxBazC0_"
+      "DLNfKSgOE4a29kxO8i4eHyDQzoz_siSb2aITc");
+  dict.SetString("e", "AQAB");
+  dict.SetString(
+      "d",
+      "M6UEKpCyfU9UUcqbu9C0R3GhAa-IQ0Cu-YhfKku-"
+      "kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQ"
+      "GlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU");
+
+  dict.SetString("p",
+                 "5-"
+                 "iUJyCod1Fyc6NWBT6iobwMlKpy1VxuhilrLfyWeUjApyy8zKfqyzVwbgmh31W"
+                 "hU1vZs8w0Fgs7bc0-2o5kQw");
+
+  ASSERT_EQ(Status::ErrorJwkIncompleteOptionalRsaPrivateKey(),
+            ImportKeyJwkFromDict(dict,
+                                 CreateRsaHashedImportAlgorithm(
+                                     blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha1),
+                                 true,
+                                 blink::WebCryptoKeyUsageSign,
+                                 &key));
+}
+
+// Import a JWK RSA private key, without any of the optional parameters.
+//
+// This is expected to work, however based on the current NSS implementation it
+// does not.
+//
+// TODO(eroman): http://crbug/com/374927
+TEST_F(SharedCryptoTest, MAYBE(ImportRsaPrivateKeyJwkIncorrectOptionalEmpty)) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  base::DictionaryValue dict;
+  dict.SetString("kty", "RSA");
+  dict.SetString("alg", "RS1");
+
+  dict.SetString(
+      "n",
+      "pW5KDnAQF1iaUYfcfqhB0Vby7A42rVKkTf6x5h962ZHYxRBW_-2xYrTA8oOhKoijlN_"
+      "1JqtykcuzB86r_OCx39XNlQgJbVsri2311nHvY3fAkhyyPCcKcOJZjm_4nRnxBazC0_"
+      "DLNfKSgOE4a29kxO8i4eHyDQzoz_siSb2aITc");
+  dict.SetString("e", "AQAB");
+  dict.SetString(
+      "d",
+      "M6UEKpCyfU9UUcqbu9C0R3GhAa-IQ0Cu-YhfKku-"
+      "kuiUpySsPFaMj5eFOtB8AmbIxqPKCSnx6PESMYhEKfxNmuVf7olqEM5wfD7X5zTkRyejlXRQ"
+      "GlMmgxCcKrrKuig8MbS9L1PD7jfjUs7jT55QO9gMBiKtecbc7og1R8ajsyU");
+
+  // TODO(eroman): This should pass, see: http://crbug/com/374927
+  //
+  // Technically it is OK to fail since JWA says that consumer are not required
+  // to support lack of the optional parameters.
+  ASSERT_EQ(Status::OperationError(),
+            ImportKeyJwkFromDict(dict,
+                                 CreateRsaHashedImportAlgorithm(
+                                     blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha1),
+                                 true,
+                                 blink::WebCryptoKeyUsageSign,
+                                 &key));
+
 }
 
 TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {

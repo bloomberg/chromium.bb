@@ -47,30 +47,6 @@ bool IsValidAesKeyLengthBytes(unsigned int length_bytes) {
   return length_bytes == 16 || length_bytes == 24 || length_bytes == 32;
 }
 
-Status ToPlatformSymKey(const blink::WebCryptoKey& key,
-                        platform::SymKey** out) {
-  *out = static_cast<platform::Key*>(key.handle())->AsSymKey();
-  if (!*out)
-    return Status::ErrorUnexpectedKeyType();
-  return Status::Success();
-}
-
-Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
-                           platform::PublicKey** out) {
-  *out = static_cast<platform::Key*>(key.handle())->AsPublicKey();
-  if (!*out)
-    return Status::ErrorUnexpectedKeyType();
-  return Status::Success();
-}
-
-Status ToPlatformPrivateKey(const blink::WebCryptoKey& key,
-                            platform::PrivateKey** out) {
-  *out = static_cast<platform::Key*>(key.handle())->AsPrivateKey();
-  if (!*out)
-    return Status::ErrorUnexpectedKeyType();
-  return Status::Success();
-}
-
 const size_t kAesBlockSizeBytes = 16;
 
 Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
@@ -846,6 +822,30 @@ bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
   if (status.IsError())
     return false;
   return ValidateDeserializedKey(*key, algorithm, type);
+}
+
+Status ToPlatformSymKey(const blink::WebCryptoKey& key,
+                        platform::SymKey** out) {
+  *out = static_cast<platform::Key*>(key.handle())->AsSymKey();
+  if (!*out)
+    return Status::ErrorUnexpectedKeyType();
+  return Status::Success();
+}
+
+Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
+                           platform::PublicKey** out) {
+  *out = static_cast<platform::Key*>(key.handle())->AsPublicKey();
+  if (!*out)
+    return Status::ErrorUnexpectedKeyType();
+  return Status::Success();
+}
+
+Status ToPlatformPrivateKey(const blink::WebCryptoKey& key,
+                            platform::PrivateKey** out) {
+  *out = static_cast<platform::Key*>(key.handle())->AsPrivateKey();
+  if (!*out)
+    return Status::ErrorUnexpectedKeyType();
+  return Status::Success();
 }
 
 }  // namespace webcrypto

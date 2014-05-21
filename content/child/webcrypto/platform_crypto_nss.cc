@@ -596,10 +596,6 @@ void CopySECItemToVector(const SECItem& item, std::vector<uint8>* out) {
   out->assign(item.data, item.data + item.len);
 }
 
-// The system NSS library doesn't have the new PK11_ExportDERPrivateKeyInfo
-// function yet (https://bugzilla.mozilla.org/show_bug.cgi?id=519255). So we
-// provide a fallback implementation.
-#if defined(USE_NSS)
 // From PKCS#1 [http://tools.ietf.org/html/rfc3447]:
 //
 //    RSAPrivateKey ::= SEQUENCE {
@@ -629,6 +625,10 @@ struct RSAPrivateKey {
   SECItem coefficient;
 };
 
+// The system NSS library doesn't have the new PK11_ExportDERPrivateKeyInfo
+// function yet (https://bugzilla.mozilla.org/show_bug.cgi?id=519255). So we
+// provide a fallback implementation.
+#if defined(USE_NSS)
 const SEC_ASN1Template RSAPrivateKeyTemplate[] = {
     {SEC_ASN1_SEQUENCE, 0, NULL, sizeof(RSAPrivateKey)},
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, version)},
@@ -641,6 +641,7 @@ const SEC_ASN1Template RSAPrivateKeyTemplate[] = {
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, exponent2)},
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, coefficient)},
     {0}};
+#endif  // defined(USE_NSS)
 
 // On success |value| will be filled with data which must be freed by
 // SECITEM_FreeItem(value, PR_FALSE);
@@ -709,7 +710,6 @@ struct FreeRsaPrivateKey {
     SECITEM_FreeItem(&out->coefficient, PR_FALSE);
   }
 };
-#endif  // defined(USE_NSS)
 
 }  // namespace
 
@@ -965,6 +965,37 @@ Status ExportRsaPublicKey(PublicKey* key,
   CopySECItemToVector(key->key()->u.rsa.publicExponent, public_exponent);
   if (modulus->empty() || public_exponent->empty())
     return Status::ErrorUnexpected();
+  return Status::Success();
+}
+
+void AssignVectorFromSecItem(const SECItem& item, std::vector<uint8>* output) {
+  output->assign(item.data, item.data + item.len);
+}
+
+Status ExportRsaPrivateKey(PrivateKey* key,
+                           std::vector<uint8>* modulus,
+                           std::vector<uint8>* public_exponent,
+                           std::vector<uint8>* private_exponent,
+                           std::vector<uint8>* prime1,
+                           std::vector<uint8>* prime2,
+                           std::vector<uint8>* exponent1,
+                           std::vector<uint8>* exponent2,
+                           std::vector<uint8>* coefficient) {
+  RSAPrivateKey key_props = {};
+  scoped_ptr<RSAPrivateKey, FreeRsaPrivateKey> free_private_key(&key_props);
+
+  if (!InitRSAPrivateKey(key->key(), &key_props))
+    return Status::OperationError();
+
+  AssignVectorFromSecItem(key_props.modulus, modulus);
+  AssignVectorFromSecItem(key_props.public_exponent, public_exponent);
+  AssignVectorFromSecItem(key_props.private_exponent, private_exponent);
+  AssignVectorFromSecItem(key_props.prime1, prime1);
+  AssignVectorFromSecItem(key_props.prime2, prime2);
+  AssignVectorFromSecItem(key_props.exponent1, exponent1);
+  AssignVectorFromSecItem(key_props.exponent2, exponent2);
+  AssignVectorFromSecItem(key_props.coefficient, coefficient);
+
   return Status::Success();
 }
 
@@ -1488,6 +1519,111 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 
   *key = blink::WebCryptoKey::create(key_handle.release(),
                                      blink::WebCryptoKeyTypePublic,
+                                     extractable,
+                                     key_algorithm,
+                                     usage_mask);
+  return Status::Success();
+}
+
+struct DestroyGenericObject {
+  void operator()(PK11GenericObject* o) const {
+    if (o)
+      PK11_DestroyGenericObject(o);
+  }
+};
+
+typedef scoped_ptr<PK11GenericObject, DestroyGenericObject>
+    ScopedPK11GenericObject;
+
+// Helper to add an attribute to a template.
+void AddAttribute(CK_ATTRIBUTE_TYPE type,
+                  void* value,
+                  unsigned long length,
+                  std::vector<CK_ATTRIBUTE>* templ) {
+  CK_ATTRIBUTE attribute = {type, value, length};
+  templ->push_back(attribute);
+}
+
+// Helper to optionally add an attribute to a template, if the provided data is
+// non-empty.
+void AddOptionalAttribute(CK_ATTRIBUTE_TYPE type,
+                          const CryptoData& data,
+                          std::vector<CK_ATTRIBUTE>* templ) {
+  if (!data.byte_length())
+    return;
+  CK_ATTRIBUTE attribute = {type, const_cast<unsigned char*>(data.bytes()),
+                            data.byte_length()};
+  templ->push_back(attribute);
+}
+
+Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usage_mask,
+                           const CryptoData& modulus,
+                           const CryptoData& public_exponent,
+                           const CryptoData& private_exponent,
+                           const CryptoData& prime1,
+                           const CryptoData& prime2,
+                           const CryptoData& exponent1,
+                           const CryptoData& exponent2,
+                           const CryptoData& coefficient,
+                           blink::WebCryptoKey* key) {
+  CK_OBJECT_CLASS obj_class = CKO_PRIVATE_KEY;
+  CK_KEY_TYPE key_type = CKK_RSA;
+  CK_BBOOL ck_false = CK_FALSE;
+
+  std::vector<CK_ATTRIBUTE> key_template;
+
+  AddAttribute(CKA_CLASS, &obj_class, sizeof(obj_class), &key_template);
+  AddAttribute(CKA_KEY_TYPE, &key_type, sizeof(key_type), &key_template);
+  AddAttribute(CKA_TOKEN, &ck_false, sizeof(ck_false), &key_template);
+  AddAttribute(CKA_SENSITIVE, &ck_false, sizeof(ck_false), &key_template);
+  AddAttribute(CKA_PRIVATE, &ck_false, sizeof(ck_false), &key_template);
+
+  // Required properties.
+  AddOptionalAttribute(CKA_MODULUS, modulus, &key_template);
+  AddOptionalAttribute(CKA_PUBLIC_EXPONENT, public_exponent, &key_template);
+  AddOptionalAttribute(CKA_PRIVATE_EXPONENT, private_exponent, &key_template);
+
+  // Optional properties (all of these will have been specified or none).
+  AddOptionalAttribute(CKA_PRIME_1, prime1, &key_template);
+  AddOptionalAttribute(CKA_PRIME_2, prime2, &key_template);
+  AddOptionalAttribute(CKA_EXPONENT_1, exponent1, &key_template);
+  AddOptionalAttribute(CKA_EXPONENT_2, exponent2, &key_template);
+  AddOptionalAttribute(CKA_COEFFICIENT, coefficient, &key_template);
+
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
+
+  ScopedPK11GenericObject key_object(PK11_CreateGenericObject(
+      slot.get(), &key_template[0], key_template.size(), PR_FALSE));
+
+  if (!key_object)
+    return Status::OperationError();
+
+  // The ID isn't guaranteed to be set by PKCS#11. However it is by softtoken so
+  // this should work.
+  SECItem object_id = {};
+  if (PK11_ReadRawAttribute(
+          PK11_TypeGeneric, key_object.get(), CKA_ID, &object_id) != SECSuccess)
+    return Status::OperationError();
+
+  crypto::ScopedSECKEYPrivateKey private_key(
+      PK11_FindKeyByKeyID(slot.get(), &object_id, NULL));
+  if (!private_key)
+    return Status::OperationError();
+
+  blink::WebCryptoKeyAlgorithm key_algorithm;
+  if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
+    return Status::ErrorUnexpected();
+
+  scoped_ptr<PrivateKey> key_handle;
+  Status status =
+      PrivateKey::Create(private_key.Pass(), key_algorithm, &key_handle);
+  if (status.IsError())
+    return status;
+
+  *key = blink::WebCryptoKey::create(key_handle.release(),
+                                     blink::WebCryptoKeyTypePrivate,
                                      extractable,
                                      key_algorithm,
                                      usage_mask);
