@@ -60,6 +60,26 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
+    {
+      # TODO(isherman): Remove all //chrome dependencies on this target, and
+      # merge the files in this target with components_unittests.
+      'target_name': 'metrics_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'component_metrics_proto',
+        'metrics',
+      ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
+      ],
+      'sources': [
+        'metrics/test_metrics_service_client.cc',
+        'metrics/test_metrics_service_client.h',
+      ],
+    },
   ],
   'conditions': [
     ['chromeos==1', {

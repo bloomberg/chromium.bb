@@ -19,8 +19,10 @@ MetricsServicesManager::~MetricsServicesManager() {
 
 MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_service_)
-    metrics_service_.reset(new MetricsService(GetMetricsStateManager()));
+  if (!metrics_service_) {
+    metrics_service_.reset(
+      new MetricsService(GetMetricsStateManager(), &metrics_service_client_));
+  }
   return metrics_service_.get();
 }
 

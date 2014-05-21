@@ -74,6 +74,7 @@ class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
 
 namespace metrics {
+class MetricsServiceClient;
 class MetricsStateManager;
 }
 
@@ -132,10 +133,12 @@ class MetricsService
     SHUTDOWN_COMPLETE = 700,
   };
 
-  // Creates the MetricsService with the given |state_manager|. Does not take
-  // ownership of |state_manager|, instead stores a weak pointer to it. Caller
-  // should ensure that |state_manager| is valid for the lifetime of this class.
-  explicit MetricsService(metrics::MetricsStateManager* state_manager);
+  // Creates the MetricsService with the given |state_manager| and |client|.
+  // Does not take ownership of |state_manager| or |client|; instead stores a
+  // weak pointer to each. Caller should ensure that |state_manager| and
+  // |client| are valid for the lifetime of this class.
+  MetricsService(metrics::MetricsStateManager* state_manager,
+                 metrics::MetricsServiceClient* client);
   virtual ~MetricsService();
 
   // Initializes metrics recording state. Updates various bookkeeping values in
@@ -487,7 +490,11 @@ class MetricsService
 
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
-  metrics::MetricsStateManager* state_manager_;
+  metrics::MetricsStateManager* const state_manager_;
+
+  // Used to interact with the embedder. Weak pointer; must outlive |this|
+  // instance.
+  metrics::MetricsServiceClient* const client_;
 
   // Registered metrics providers.
   ScopedVector<metrics::MetricsProvider> metrics_providers_;

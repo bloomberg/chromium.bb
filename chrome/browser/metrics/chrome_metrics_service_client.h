@@ -12,7 +12,7 @@
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.
-class ChromeMetricsServiceClient : metrics::MetricsServiceClient {
+class ChromeMetricsServiceClient : public metrics::MetricsServiceClient {
  public:
   ChromeMetricsServiceClient();
   virtual ~ChromeMetricsServiceClient();

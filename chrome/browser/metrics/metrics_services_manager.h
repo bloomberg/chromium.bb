@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/metrics/chrome_metrics_service_client.h"
 
 class MetricsService;
 class PrefService;
@@ -53,6 +54,10 @@ class MetricsServicesManager {
 
   // MetricsStateManager which is passed as a parameter to service constructors.
   scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+
+  // Chrome embedder implementation of the MetricsServiceClient, which is passed
+  // as a parameter to the MetricsService.
+  ChromeMetricsServiceClient metrics_service_client_;
 
   // The MetricsService, used for UMA report uploads.
   scoped_ptr<MetricsService> metrics_service_;

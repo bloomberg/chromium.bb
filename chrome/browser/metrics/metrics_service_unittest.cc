@@ -14,6 +14,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/metrics/metrics_service_observer.h"
+#include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
@@ -31,8 +32,9 @@ using metrics::MetricsLogManager;
 
 class TestMetricsService : public MetricsService {
  public:
-  explicit TestMetricsService(metrics::MetricsStateManager* state_manager)
-      : MetricsService(state_manager) {
+  TestMetricsService(metrics::MetricsStateManager* state_manager,
+                     metrics::MetricsServiceClient* client)
+      : MetricsService(state_manager, client) {
   }
   virtual ~TestMetricsService() {}
 
@@ -177,7 +179,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
 
-  TestMetricsService service(GetMetricsStateManager());
+  metrics::TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client);
   service.InitializeMetricsRecordingState();
   // No initial stability log should be generated.
   EXPECT_FALSE(service.log_manager()->has_unsent_logs());
@@ -207,7 +210,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
-  TestMetricsService service(GetMetricsStateManager());
+  metrics::TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client);
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
@@ -235,7 +239,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 }
 
 TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
-  MetricsService service(GetMetricsStateManager());
+  metrics::TestMetricsServiceClient client;
+  MetricsService service(GetMetricsStateManager(), &client);
 
   // Add two synthetic trials and confirm that they show up in the list.
   SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
@@ -333,7 +338,8 @@ TEST_F(MetricsServiceTest, CrashReportingEnabled) {
 }
 
 TEST_F(MetricsServiceTest, MetricsServiceObserver) {
-  MetricsService service(GetMetricsStateManager());
+  metrics::TestMetricsServiceClient client;
+  MetricsService service(GetMetricsStateManager(), &client);
   TestMetricsServiceObserver observer1;
   TestMetricsServiceObserver observer2;
 

@@ -458,10 +458,12 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif  // defined(OS_ANDROID)
 }
 
-MetricsService::MetricsService(metrics::MetricsStateManager* state_manager)
+MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
+                               metrics::MetricsServiceClient* client)
     : MetricsServiceBase(g_browser_process->local_state(),
                          kUploadLogAvoidRetransmitSize),
       state_manager_(state_manager),
+      client_(client),
       recording_active_(false),
       reporting_active_(false),
       test_mode_active_(false),
@@ -476,6 +478,7 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager)
       num_async_histogram_fetches_in_progress_(0) {
   DCHECK(IsSingleThreaded());
   DCHECK(state_manager_);
+  DCHECK(client_);
 
   BrowserChildProcessObserver::Add(this);
 }

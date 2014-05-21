@@ -33,8 +33,7 @@ metrics::SystemProfileProto::Channel AsProtobufChannel(
 
 }  // namespace
 
-ChromeMetricsServiceClient::ChromeMetricsServiceClient()
-    : MetricsServiceClient() {
+ChromeMetricsServiceClient::ChromeMetricsServiceClient() {
 }
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
