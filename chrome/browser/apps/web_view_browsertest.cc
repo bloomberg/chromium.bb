@@ -130,7 +130,7 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
                             const base::Closure& hidden_callback)
       : WebContentsObserver(web_contents),
         hidden_callback_(hidden_callback),
-        hidden_observed_(true) {
+        hidden_observed_(false) {
   }
 
   // WebContentsObserver.
