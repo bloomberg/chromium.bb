@@ -84,6 +84,9 @@ define([
     foo.name = "I am a banana";
     // This is supposed to be a handle, but we fake it with an integer.
     foo.source = 23423782;
+    foo.array_of_array_of_bools = [
+      [true], [false, true]
+    ];
 
     var messageName = 31;
     var payloadSize = 304;

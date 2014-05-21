@@ -361,39 +361,33 @@ TEST(BindingsSampleTest, DefaultValues) {
   SimpleMessageReceiver receiver;
   mojo::AllocationScope scope;
 
-  Bar bar = Bar::Builder().Finish();
-  EXPECT_EQ(255, bar.alpha());
-
-  Foo foo = Foo::Builder().Finish();
-  ASSERT_FALSE(foo.name().is_null());
-  EXPECT_EQ("Fooby", foo.name().To<std::string>());
-  EXPECT_TRUE(foo.a());
-  EXPECT_EQ(3u, foo.data().size());
-  EXPECT_EQ(1, foo.data()[0]);
-  EXPECT_EQ(2, foo.data()[1]);
-  EXPECT_EQ(3, foo.data()[2]);
-
-  DefaultsTestInner inner = DefaultsTestInner::Builder().Finish();
-  EXPECT_EQ(1u, inner.names().size());
-  EXPECT_EQ("Jim", inner.names()[0].To<std::string>());
-  EXPECT_EQ(6*12, inner.height());
-
   DefaultsTest full = DefaultsTest::Builder().Finish();
-  EXPECT_EQ(1u, full.people().size());
-  EXPECT_EQ(32, full.people()[0].age());
-  EXPECT_EQ(2u, full.people()[0].names().size());
-  EXPECT_EQ("Bob", full.people()[0].names()[0].To<std::string>());
-  EXPECT_EQ("Bobby", full.people()[0].names()[1].To<std::string>());
-  EXPECT_EQ(6*12, full.people()[0].height());
-
-  EXPECT_EQ(7, full.point().x());
-  EXPECT_EQ(15, full.point().y());
-
-  EXPECT_EQ(1u, full.shape_masks().size());
-  EXPECT_EQ(1 << imported::SHAPE_RECTANGLE, full.shape_masks()[0]);
-
-  EXPECT_EQ(imported::SHAPE_CIRCLE, full.thing().shape());
-  EXPECT_EQ(imported::COLOR_BLACK, full.thing().color());
+  EXPECT_EQ(-12, full.a0());
+  EXPECT_EQ(12U, full.a1());
+  EXPECT_EQ(1234, full.a2());
+  EXPECT_EQ(34567U, full.a3());
+  EXPECT_EQ(123456, full.a4());
+  // TODO(vtl): crbug.com/375522
+  // EXPECT_EQ(3456789012U, full.a5());
+  EXPECT_EQ(111111111111LL, full.a6());
+  // TODO(vtl): crbug.com/375522
+  // EXPECT_EQ(9999999999999999999ULL, full.a7());
+  EXPECT_EQ(0x12345, full.a8());
+  EXPECT_EQ(-0x12345, full.a9());
+  // TODO(vtl): crbug.com/375829
+  // EXPECT_EQ(8, full.a10());
+  // EXPECT_EQ(-8, full.a11());
+  EXPECT_EQ(1234, full.a12());
+  EXPECT_TRUE(full.a13());
+  EXPECT_FALSE(full.a14());
+  EXPECT_FLOAT_EQ(123.25f, full.a15());
+  EXPECT_DOUBLE_EQ(1234567890.123, full.a16());
+  EXPECT_DOUBLE_EQ(1E10, full.a17());
+  EXPECT_DOUBLE_EQ(-1.2E+20, full.a18());
+  EXPECT_DOUBLE_EQ(1.23E-20, full.a19());
+  EXPECT_TRUE(full.a20().is_null());
+  EXPECT_TRUE(full.a21().is_null());
+  EXPECT_TRUE(full.a22().is_null());
 }
 
 }  // namespace

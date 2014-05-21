@@ -95,33 +95,38 @@ define([
     var foo = new sample.Foo();
     expect(foo.name).toBe("Fooby");
     expect(foo.a).toBeTruthy();
-
-    expect(foo.data.length).toBe(3);
-    expect(foo.data[0]).toBe(1);
-    expect(foo.data[1]).toBe(2);
-    expect(foo.data[2]).toBe(3);
-
-    var inner = new sample.DefaultsTestInner();
-    expect(inner.names.length).toBe(1);
-    expect(inner.names[0]).toBe("Jim");
-    expect(inner.height).toBe(6*12);
+    // TODO(vtl): crbug.com/375845
+    // expect(foo.data).toBeNull();
 
     var full = new sample.DefaultsTest();
-    expect(full.people.length).toBe(1);
-    expect(full.people[0].age).toBe(32);
-    expect(full.people[0].names.length).toBe(2);
-    expect(full.people[0].names[0]).toBe("Bob");
-    expect(full.people[0].names[1]).toBe("Bobby");
-    expect(full.people[0].height).toBe(6*12);
-
-    expect(full.point.x).toBe(7);
-    expect(full.point.y).toBe(15);
-
-    expect(full.shape_masks.length).toBe(1);
-    expect(full.shape_masks[0]).toBe(1 << imported.Shape.SHAPE_RECTANGLE);
-
-    expect(full.thing.shape).toBe(imported.Shape.SHAPE_CIRCLE);
-    expect(full.thing.color).toBe(imported2.Color.COLOR_BLACK);
+    expect(full.a0).toBe(-12);
+    expect(full.a1).toBe(12);
+    expect(full.a2).toBe(1234);
+    expect(full.a3).toBe(34567);
+    expect(full.a4).toBe(123456);
+    // TODO(vtl): crbug.com/375522
+    // expect(full.a5).toBe(3456789012);
+    expect(full.a6).toBe(111111111111);
+    // TODO(vtl): crbug.com/375522 (Also, can we get exact values for large
+    // int64/uint64's in JS?)
+    // expect(full.a7).toBe(9999999999999999999);
+    expect(full.a8).toBe(0x12345);
+    expect(full.a9).toBe(-0x12345);
+    // TODO(vtl): crbug.com/375829
+    // expect(full.a10).toBe(8);
+    // expect(full.a11).toBe(-8);
+    expect(full.a12).toBe(1234);
+    expect(full.a13).toBe(true);
+    expect(full.a14).toBe(false);
+    expect(full.a15).toBe(123.25);
+    expect(full.a16).toBe(1234567890.123);
+    expect(full.a17).toBe(1E10);
+    expect(full.a18).toBe(-1.2E+20);
+    expect(full.a19).toBe(1.23E-20);
+    expect(full.a20).toBeNull();
+    // TODO(vtl): crbug.com/375845
+    // expect(full.a21).toBeNull();
+    // expect(full.a22).toBeNull();
   }
 
   function ServiceImpl() {
