@@ -568,6 +568,7 @@ void outOfMemory ();
 void logWidecharBuf(int level, const char *msg, const widechar *wbuf, int wlen);
 /* Helper for logging a widechar buffer */
 
+void logMessage(logLevels level, const char *format, ...);
 void closeLogFile();
 /* Function for closing loggin file */
 #ifdef __cplusplus

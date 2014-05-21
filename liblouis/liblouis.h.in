@@ -116,8 +116,6 @@ mode);
 				     int *outlen, formtype *typeform,
 				     char *spacing, int *outputPos,
 				     int *inputPos, int *cursorPos, int mode);
-  void EXPORT_CALL lou_logPrint (const char *format, ...);
-/* prints error messages to a file */
 
   void EXPORT_CALL lou_logFile (const char *filename);
 /* Specifies the name of the file to be used by lou_logPrint. If it is 
@@ -170,10 +168,7 @@ typedef void (*logcallback)(int level, const char *message);
     LOG_OFF = 2147483647
   } logLevels;
   void EXPORT_CALL lou_setLogLevel(logLevels level);
-
-  void EXPORT_CALL lou_log(logLevels level, const char *format, ...);
-/* General log function for callback logging */
-
+/* Set the level for logging callback to be called at */
   void EXPORT_CALL lou_free ();
 /* This function should be called at the end of 
 * the application to free all memory allocated by liblouis. */

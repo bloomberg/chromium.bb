@@ -40,8 +40,8 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
    * Remember the null terminator (+ 1)
    */
   int logBufSize = (wlen * ((sizeof(widechar) * 2) + 3)) + 1 + strlen(msg);
-  char *logMessage  = malloc(logBufSize);
-  char *p = logMessage;
+  char *logMsg = malloc(logBufSize);
+  char *p = logMsg;
   char *formatString;
   int i = 0;
   if (sizeof(widechar) == 2)
@@ -49,21 +49,18 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
   else
     formatString = "0x%08X ";
   for (i = 0; i < strlen(msg); i++)
-    logMessage[i] = msg[i];
+    logMsg[i] = msg[i];
   p += strlen(msg);
   for (i = 0; i < wlen; i++)
     {
       p += sprintf(p, formatString, wbuf[i]);
     }
   p = '\0';
-  lou_log(level, logMessage);
-  free(logMessage);
+  logMessage(level, logMsg);
+  free(logMsg);
 }
 
-static void defaultLogCallback(int level, const char *message)
-{
-  lou_logPrint("%s", message); // lou_logPrint takes formatting, protect against % in message
-}
+static void defaultLogCallback(int level, const char *message);
 
 static logcallback logCallbackFunction = defaultLogCallback;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
@@ -80,7 +77,7 @@ void EXPORT_CALL lou_setLogLevel(logLevels level)
   logLevel = level;
 }
 
-void EXPORT_CALL lou_log(logLevels level, const char *format, ...)
+void logMessage(logLevels level, const char *format, ...)
 {
   if (format == NULL)
       return;
@@ -129,22 +126,16 @@ lou_logFile (const char *fileName)
     }
 }
 
-void EXPORT_CALL
-lou_logPrint (const char *format, ...)
+static void
+defaultLogCallback (logLevels level, const char *message)
 {
-#ifndef __SYMBIAN32__
-  va_list argp;
-  if (format == NULL)
+  if (message == NULL)
     return;
   if (logFile == NULL && initialLogFileName[0] != 0)
     logFile = fopen (initialLogFileName, "wb");
   if (logFile == NULL)
     logFile = stderr;
-  va_start (argp, format);
-  vfprintf (logFile, format, argp);
-  fprintf (logFile, "\n");
-  va_end (argp);
-#endif
+  fprintf (logFile, "%s\n", message);
 }
 
 void EXPORT_CALL
