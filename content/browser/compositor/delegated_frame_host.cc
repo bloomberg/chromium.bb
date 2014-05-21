@@ -25,7 +25,17 @@ namespace content {
 // DelegatedFrameHostClient
 
 bool DelegatedFrameHostClient::ShouldCreateResizeLock() {
+  // On Windows and Linux, holding pointer moves will not help throttling
+  // resizes.
+  // TODO(piman): on Windows we need to block (nested message loop?) the
+  // WM_SIZE event. On Linux we need to throttle at the WM level using
+  // _NET_WM_SYNC_REQUEST.
+  // TODO(ccameron): Mac browser window resizing is incompletely implemented.
+#if !defined(OS_CHROMEOS)
+  return false;
+#else
   return GetDelegatedFrameHost()->ShouldCreateResizeLock();
+#endif
 }
 
 void DelegatedFrameHostClient::RequestCopyOfOutput(
@@ -82,15 +92,6 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
-  // On Windows and Linux, holding pointer moves will not help throttling
-  // resizes.
-  // TODO(piman): on Windows we need to block (nested message loop?) the
-  // WM_SIZE event. On Linux we need to throttle at the WM level using
-  // _NET_WM_SYNC_REQUEST.
-  // TODO(ccameron): Mac browser window resizing is incompletely implemented.
-#if !defined(OS_CHROMEOS)
-  return false;
-#else
   RenderWidgetHostImpl* host = client_->GetHost();
 
   if (resize_lock_)
@@ -100,7 +101,7 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
     return false;
 
   gfx::Size desired_size = client_->DesiredFrameSize();
-  if (desired_size == current_frame_size_in_dip_)
+  if (desired_size == current_frame_size_in_dip_ || desired_size.IsEmpty())
     return false;
 
   ui::Compositor* compositor = client_->GetCompositor();
@@ -108,7 +109,6 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
     return false;
 
   return true;
-#endif
 }
 
 void DelegatedFrameHost::RequestCopyOfOutput(

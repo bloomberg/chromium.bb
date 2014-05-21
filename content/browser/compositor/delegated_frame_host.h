@@ -109,12 +109,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   cc::DelegatedFrameProvider* FrameProviderForTesting() const {
     return frame_provider_.get();
   }
-  gfx::Size CurrentFrameSizeInDIPForTesting() const {
-    return current_frame_size_in_dip_;
-  }
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
   }
+  bool ShouldCreateResizeLockForTesting() { return ShouldCreateResizeLock(); }
 
  private:
   friend class DelegatedFrameHostClient;

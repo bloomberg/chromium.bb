@@ -169,9 +169,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   virtual bool ShouldCreateResizeLock() OVERRIDE {
-    gfx::Size desired_size = window()->bounds().size();
-    return desired_size !=
-           GetDelegatedFrameHost()->CurrentFrameSizeInDIPForTesting();
+    return GetDelegatedFrameHost()->ShouldCreateResizeLockForTesting();
   }
 
   virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request)
@@ -988,7 +986,6 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   // Lock the compositor. Now we should drop frames.
   view_rect = gfx::Rect(150, 150);
   view_->SetSize(view_rect.size());
-  view_->GetDelegatedFrameHost()->MaybeCreateResizeLock();
 
   // This frame is dropped.
   gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
@@ -1024,6 +1021,21 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
+
+  // Resize to something empty.
+  view_rect = gfx::Rect(100, 0);
+  view_->SetSize(view_rect.size());
+
+  // We're never expecting empty frames, resize to something non-empty.
+  view_rect = gfx::Rect(100, 100);
+  view_->SetSize(view_rect.size());
+
+  // This frame should not be dropped.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, view_rect.size(), view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
 
   view_->window_->RemoveObserver(&observer);
 }
