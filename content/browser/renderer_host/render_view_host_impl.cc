@@ -387,8 +387,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
 
   prefs.gl_multisampling_enabled =
       !command_line.HasSwitch(switches::kDisableGLMultisampling);
-  prefs.privileged_webgl_extensions_enabled =
-      command_line.HasSwitch(switches::kEnablePrivilegedWebGLExtensions);
   prefs.site_specific_quirks_enabled =
       !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
   prefs.allow_file_access_from_file_urls =

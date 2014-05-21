@@ -476,11 +476,6 @@ const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
-// Enable privileged WebGL extensions; without this switch such extensions are
-// available only to Chrome extensions.
-const char kEnablePrivilegedWebGLExtensions[] =
-    "enable-privileged-webgl-extensions";
-
 // Enables the CSS multicol implementation that uses the regions implementation.
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";
