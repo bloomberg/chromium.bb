@@ -217,18 +217,18 @@ public:
     void removeAttribute(const AtomicString& name);
     void removeAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName);
 
-    PassRefPtr<Attr> detachAttribute(size_t index);
+    PassRefPtrWillBeRawPtr<Attr> detachAttribute(size_t index);
 
-    PassRefPtr<Attr> getAttributeNode(const AtomicString& name);
-    PassRefPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    PassRefPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
-    PassRefPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
-    PassRefPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Attr> getAttributeNode(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
+    PassRefPtrWillBeRawPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
 
-    PassRefPtr<Attr> attrIfExists(const QualifiedName&);
-    PassRefPtr<Attr> ensureAttr(const QualifiedName&);
+    PassRefPtrWillBeRawPtr<Attr> attrIfExists(const QualifiedName&);
+    PassRefPtrWillBeRawPtr<Attr> ensureAttr(const QualifiedName&);
 
-    const Vector<RefPtr<Attr> >& attrNodeList();
+    const WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrNodeList();
 
     CSSStyleDeclaration* style();
 

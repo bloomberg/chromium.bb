@@ -67,7 +67,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
             continue;
 
         if (node->hasSyntheticAttrChildNodes()) {
-            const Vector<RefPtr<Attr> >& attrs = toElement(node)->attrNodeList();
+            const WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrs = toElement(node)->attrNodeList();
             for (unsigned i = 0; i < attrs.size(); ++i)
                 moveTreeToNewScope(*attrs[i]);
         }

@@ -4498,12 +4498,12 @@ WeakPtr<Document> Document::contextDocument()
     return WeakPtr<Document>(nullptr);
 }
 
-PassRefPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
 {
     return createAttributeNS(nullAtom, name, exceptionState, true);
 }
 
-PassRefPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
+PassRefPtrWillBeRawPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
 {
     AtomicString prefix, localName;
     if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))

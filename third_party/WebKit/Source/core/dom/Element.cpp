@@ -112,8 +112,8 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace XMLNames;
 
-typedef Vector<RefPtr<Attr> > AttrNodeList;
-typedef HashMap<Element*, OwnPtr<AttrNodeList> > AttrNodeListMap;
+typedef WillBeHeapVector<RefPtrWillBeMember<Attr> > AttrNodeList;
+typedef WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<Element>, OwnPtrWillBeMember<AttrNodeList> > AttrNodeListMap;
 
 static AttrNodeListMap& attrNodeListMap()
 {
@@ -137,7 +137,7 @@ static AttrNodeList& ensureAttrNodeListForElement(Element* element)
     }
     ASSERT(!attrNodeListMap().contains(element));
     element->setHasSyntheticAttrChildNodes(true);
-    AttrNodeListMap::AddResult result = attrNodeListMap().add(element, adoptPtr(new AttrNodeList));
+    AttrNodeListMap::AddResult result = attrNodeListMap().add(element, adoptPtrWillBeNoop(new AttrNodeList));
     return *result.storedValue->value;
 }
 
@@ -176,10 +176,10 @@ Element::~Element()
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
 
+#if !ENABLE(OILPAN)
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
 
-#if !ENABLE(OILPAN)
     // With Oilpan, either the Element has been removed from the Document
     // or the Document is dead as well. If the Element has been removed from
     // the Document the element has already been removed from the pending
@@ -301,11 +301,11 @@ PassRefPtrWillBeRawPtr<Element> Element::cloneElementWithoutAttributesAndChildre
     return document().createElement(tagQName(), false);
 }
 
-PassRefPtr<Attr> Element::detachAttribute(size_t index)
+PassRefPtrWillBeRawPtr<Attr> Element::detachAttribute(size_t index)
 {
     ASSERT(elementData());
     const Attribute& attribute = elementData()->attributeItem(index);
-    RefPtr<Attr> attrNode = attrIfExists(attribute.name());
+    RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(attribute.name());
     if (attrNode)
         detachAttrNodeAtIndex(attrNode.get(), index);
     else {
@@ -962,7 +962,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
-        if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
+        if (RefPtrWillBeRawPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
             attrNode->setValue(newValue);
         else
             ensureUniqueElementData().attributeItem(index).setValue(newValue);
@@ -1859,20 +1859,20 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
 }
 #endif
 
-const Vector<RefPtr<Attr> >& Element::attrNodeList()
+const WillBeHeapVector<RefPtrWillBeMember<Attr> >& Element::attrNodeList()
 {
     ASSERT(hasSyntheticAttrChildNodes());
     return *attrNodeListForElement(this);
 }
 
-PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
     if (!attrNode) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
         return nullptr;
     }
 
-    RefPtr<Attr> oldAttrNode = attrIfExists(attrNode->qualifiedName());
+    RefPtrWillBeRawPtr<Attr> oldAttrNode = attrIfExists(attrNode->qualifiedName());
     if (oldAttrNode.get() == attrNode)
         return attrNode; // This Attr is already attached to the element.
 
@@ -1903,12 +1903,12 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     return oldAttrNode.release();
 }
 
-PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
 {
     return setAttributeNode(attr, exceptionState);
 }
 
-PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
     if (!attr) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
@@ -1929,7 +1929,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& except
         return nullptr;
     }
 
-    RefPtr<Attr> guard(attr);
+    RefPtrWillBeRawPtr<Attr> guard(attr);
     detachAttrNodeAtIndex(attr, index);
     return guard.release();
 }
@@ -1992,7 +1992,7 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
             willModifyAttribute(name, valueBeingRemoved, nullAtom);
     }
 
-    if (RefPtr<Attr> attrNode = attrIfExists(name))
+    if (RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(name))
         detachAttrNodeFromElementWithValue(attrNode.get(), elementData.attributeItem(index).value());
 
     elementData.removeAttribute(index);
@@ -2031,7 +2031,7 @@ void Element::removeAttributeNS(const AtomicString& namespaceURI, const AtomicSt
     removeAttribute(QualifiedName(nullAtom, localName, namespaceURI));
 }
 
-PassRefPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
+PassRefPtrWillBeRawPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
 {
     if (!elementData())
         return nullptr;
@@ -2042,7 +2042,7 @@ PassRefPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
     return ensureAttr(attribute->name());
 }
 
-PassRefPtr<Attr> Element::getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName)
+PassRefPtrWillBeRawPtr<Attr> Element::getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (!elementData())
         return nullptr;
@@ -2489,7 +2489,7 @@ void Element::normalizeAttributes()
     // attributeCount() cannot be cached before the loop because the attributes
     // list is altered while iterating.
     for (unsigned i = 0; i < attributeCount(); ++i) {
-        if (RefPtr<Attr> attr = attrIfExists(attributeItem(i).name()))
+        if (RefPtrWillBeRawPtr<Attr> attr = attrIfExists(attributeItem(i).name()))
             attr->normalize();
     }
 }
@@ -2948,17 +2948,17 @@ void Element::setSavedLayerScrollOffset(const IntSize& size)
     ensureElementRareData().setSavedLayerScrollOffset(size);
 }
 
-PassRefPtr<Attr> Element::attrIfExists(const QualifiedName& name)
+PassRefPtrWillBeRawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
 {
     if (AttrNodeList* attrNodeList = attrNodeListForElement(this))
         return findAttrNodeInList(*attrNodeList, name);
     return nullptr;
 }
 
-PassRefPtr<Attr> Element::ensureAttr(const QualifiedName& name)
+PassRefPtrWillBeRawPtr<Attr> Element::ensureAttr(const QualifiedName& name)
 {
     AttrNodeList& attrNodeList = ensureAttrNodeListForElement(this);
-    RefPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
+    RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
     if (!attrNode) {
         attrNode = Attr::create(*this, name);
         treeScope().adoptIfNeeded(*attrNode);
@@ -2992,7 +2992,7 @@ void Element::detachAllAttrNodesFromElement()
     unsigned attributeCount = this->attributeCount();
     for (unsigned i = 0; i < attributeCount; ++i) {
         const Attribute& attribute = attributeItem(i);
-        if (RefPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute.name()))
+        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute.name()))
             attrNode->detachFromElementWithValue(attribute.value());
     }
 

@@ -40,8 +40,8 @@ class ExceptionState;
 
 class Attr FINAL : public ContainerNode {
 public:
-    static PassRefPtr<Attr> create(Element&, const QualifiedName&);
-    static PassRefPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
+    static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);
+    static PassRefPtrWillBeRawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
     virtual ~Attr();
 
     String name() const { return qualifiedName().toString(); }

@@ -55,16 +55,16 @@ Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& st
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
+PassRefPtrWillBeRawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
 {
-    RefPtr<Attr> attr = adoptRef(new Attr(element, name));
+    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeRefCountedGarbageCollected(new Attr(element, name));
     attr->createTextChild();
     return attr.release();
 }
 
-PassRefPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
+PassRefPtrWillBeRawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
 {
-    RefPtr<Attr> attr = adoptRef(new Attr(document, name, value));
+    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeRefCountedGarbageCollected(new Attr(document, name, value));
     attr->createTextChild();
     return attr.release();
 }
