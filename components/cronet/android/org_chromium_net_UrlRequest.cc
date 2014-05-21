@@ -301,4 +301,20 @@ static jlong GetContentLength(JNIEnv* env,
   return request->content_length();
 }
 
+static jstring GetHeader(
+    JNIEnv* env, jobject object, jlong urlRequestPeer, jstring name) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  if (request == NULL) {
+    return NULL;
+  }
+
+  std::string name_string = base::android::ConvertJavaStringToUTF8(env, name);
+  std::string value = request->GetHeader(name_string);
+  if (!value.empty()) {
+    return ConvertUTF8ToJavaString(env, value.c_str()).Release();
+  } else {
+    return NULL;
+  }
+}
+
 }  // namespace cronet

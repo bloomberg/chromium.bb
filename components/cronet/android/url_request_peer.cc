@@ -70,6 +70,15 @@ void URLRequestPeer::AppendChunk(const char* bytes,
                  is_last_chunk));
 }
 
+
+std::string URLRequestPeer::GetHeader(const std::string &name) const {
+  std::string value;
+  if (url_request_ != NULL) {
+    url_request_->GetResponseHeaderByName(name, &value);
+  }
+  return value;
+}
+
 void URLRequestPeer::Start() {
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,

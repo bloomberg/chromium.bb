@@ -221,6 +221,8 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
                 return;
             }
 
+            mListener.onResponseStarted(this);
+
             mResponseStream = isError(mHttpStatusCode) ? mConnection
                     .getErrorStream()
                     : stream;
@@ -250,6 +252,14 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
         } catch (IOException e) {
             mException = e;
         } finally {
+            if (mPostDataChannel != null) {
+                try {
+                    mPostDataChannel.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+
             // Don't call onRequestComplete yet if we are reading the response
             // on a separate thread
             if (!readingResponse) {
@@ -423,6 +433,15 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
     @Override
     public String getContentType() {
         return mContentType;
+    }
+
+
+    @Override
+    public String getHeader(String name) {
+        if (mConnection == null) {
+            throw new IllegalStateException("Response headers not available");
+        }
+        return mConnection.getHeaderField(name);
     }
 
     private void validateNotStarted() {

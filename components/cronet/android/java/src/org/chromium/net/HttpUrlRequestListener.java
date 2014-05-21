@@ -9,8 +9,10 @@ package org.chromium.net;
  */
 public interface HttpUrlRequestListener {
     /**
-     * A callback invoked when the first chunk of the response has arrived.
-     * The listener can only call request getContentType and getContentLength.
+     * A callback invoked when the first chunk of the response has arrived and
+     * response headers have been read.  The listener can only call request
+     * getHeader, getContentType and getContentLength. This method will always
+     * be called before {@code onRequestComplete}.
      */
     void onResponseStarted(HttpUrlRequest request);
 

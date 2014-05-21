@@ -44,6 +44,7 @@ public class UrlRequest {
     private volatile boolean mCanceled;
     private volatile boolean mRecycled;
     private volatile boolean mFinished;
+    private boolean mHeadersAvailable;
     private String mContentType;
     private long mContentLength;
     private Semaphore mAppendChunkSemaphore;
@@ -137,36 +138,46 @@ public class UrlRequest {
     }
 
     public void start() {
-        synchronized (mLock) {
-            if (mCanceled) {
-                return;
+        try {
+            synchronized (mLock) {
+                if (mCanceled) {
+                    return;
+                }
+
+                validateNotStarted();
+                validateNotRecycled();
+
+                mStarted = true;
+
+                if (mHeaders != null && !mHeaders.isEmpty()) {
+                    for (Entry<String, String> entry : mHeaders.entrySet()) {
+                        nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                                entry.getValue());
+                    }
+                }
+
+                if (mAdditionalHeaders != null && !mAdditionalHeaders.isEmpty()) {
+                    for (Entry<String, String> entry :
+                            mAdditionalHeaders.entrySet()) {
+                        nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                                entry.getValue());
+                    }
+                }
+
+                nativeStart(mUrlRequestPeer);
             }
 
-            validateNotStarted();
-            validateNotRecycled();
-
-            mStarted = true;
-
-            if (mHeaders != null && !mHeaders.isEmpty()) {
-                for (Entry<String, String> entry : mHeaders.entrySet()) {
-                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
-                            entry.getValue());
+            if (mPostBodyChannel != null) {
+                uploadFromChannel(mPostBodyChannel);
+            }
+        } finally {
+            if (mPostBodyChannel != null) {
+                try {
+                    mPostBodyChannel.close();
+                } catch (IOException e) {
+                    // Ignore
                 }
             }
-
-            if (mAdditionalHeaders != null && !mAdditionalHeaders.isEmpty()) {
-                for (Entry<String, String> entry :
-                        mAdditionalHeaders.entrySet()) {
-                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
-                            entry.getValue());
-                }
-            }
-
-            nativeStart(mUrlRequestPeer);
-        }
-
-        if (mPostBodyChannel != null) {
-            uploadFromChannel(mPostBodyChannel);
         }
     }
 
@@ -217,12 +228,6 @@ public class UrlRequest {
         } catch (InterruptedException e) {
             mSinkException = new IOException(e);
             cancel();
-        } finally {
-            try {
-                mPostBodyChannel.close();
-            } catch (IOException ignore) {
-                ;
-            }
         }
     }
 
@@ -303,6 +308,11 @@ public class UrlRequest {
         return mContentType;
     }
 
+    public String getHeader(String name) {
+        validateHeadersAvailable();
+        return nativeGetHeader(mUrlRequestPeer, name);
+    }
+
     /**
      * A callback invoked when appending a chunk to the request has completed.
      */
@@ -318,6 +328,7 @@ public class UrlRequest {
     protected void onResponseStarted() {
         mContentType = nativeGetContentType(mUrlRequestPeer);
         mContentLength = nativeGetContentLength(mUrlRequestPeer);
+        mHeadersAvailable = true;
     }
 
     /**
@@ -390,6 +401,13 @@ public class UrlRequest {
         }
     }
 
+
+    private void validateHeadersAvailable() {
+        if (!mHeadersAvailable) {
+            throw new IllegalStateException("Response headers not available");
+        }
+    }
+
     public String getUrl() {
         return mUrl;
     }
@@ -424,4 +442,6 @@ public class UrlRequest {
     private native String nativeGetContentType(long urlRequestPeer);
 
     private native long nativeGetContentLength(long urlRequestPeer);
+
+    private native String nativeGetHeader(long urlRequestPeer, String name);
 }

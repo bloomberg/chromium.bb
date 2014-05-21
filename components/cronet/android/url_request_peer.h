@@ -84,6 +84,9 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   // Returns the value of the content-type response header.
   std::string content_type() const { return content_type_; }
 
+  // Returns the value of the specified response header.
+  std::string GetHeader(const std::string& name) const;
+
   // Returns the overall number of bytes read.
   size_t bytes_read() const { return bytes_read_; }
 
