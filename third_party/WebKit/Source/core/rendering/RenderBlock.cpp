@@ -285,12 +285,15 @@ void RenderBlock::styleWillChange(StyleDifference diff, const RenderStyle& newSt
 
     setReplaced(newStyle.isDisplayInlineType());
 
-    if (oldStyle && parent() && diff.needsFullLayout() && oldStyle->position() != newStyle.position()) {
-        if (newStyle.position() == StaticPosition)
+    if (oldStyle && parent()) {
+        bool oldStyleIsContainer = oldStyle->position() != StaticPosition || oldStyle->hasTransformRelatedProperty();
+        bool newStyleIsContainer = newStyle.position() != StaticPosition || newStyle.hasTransformRelatedProperty();
+
+        if (oldStyleIsContainer && !newStyleIsContainer) {
             // Clear our positioned objects list. Our absolutely positioned descendants will be
             // inserted into our containing block's positioned objects list during layout.
             removePositionedObjects(0, NewContainingBlock);
-        else if (oldStyle->position() == StaticPosition) {
+        } else if (!oldStyleIsContainer && newStyleIsContainer) {
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
             RenderObject* cb = parent();
