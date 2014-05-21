@@ -4,40 +4,11 @@
 
 """Classes of failure types."""
 
+import collections
 import sys
+import traceback
 
 from chromite.lib import cros_build_lib
-
-
-class SetFailureType(object):
-  """A wrapper to re-raise the exception as the pre-set type."""
-
-  def __init__(self, category_exception):
-    """Initializes the decorator.
-
-    Args:
-      category_exception: The exception type to re-raise as. The
-        constructor must accept a string as the argument.
-    """
-    self.category_exception = category_exception
-
-  def __call__(self, functor):
-    """Returns a wrapped function."""
-    def wrapped_functor(*args):
-      try:
-        functor(*args)
-      except Exception:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        if issubclass(exc_type, self.category_exception):
-          # Do not re-raise if the exception is a subclass of the set
-          # exception type because it offers more information.
-          raise
-        else:
-          # Convert exc_value to a string to initialize the new
-          # exception.
-          raise self.category_exception, (str(exc_value),), exc_traceback
-
-    return wrapped_functor
 
 
 class StepFailure(Exception):
@@ -65,6 +36,84 @@ class StepFailure(Exception):
   def __str__(self):
     """Stringify the message."""
     return self.message
+
+
+# A namedtuple to hold information of an exception.
+ExceptInfo = collections.namedtuple(
+    'ExceptInfo', ['type', 'str', 'traceback'])
+
+
+def CreateExceptInfo(exception, tb):
+  """Creates an ExceptInfo objection from |exception| and |tb|.
+
+  Args:
+    exception: The exception.
+    tb: The textual traceback.
+
+  Returns:
+    A list of ExceptInfo objects.
+  """
+  return ExceptInfo(exception.__class__, str(exception), tb)
+
+
+class CompoundFailure(StepFailure):
+  """An exception that contains a list of ExceptInfo objects."""
+
+  def __init__(self, message='', exc_infos=None, possibly_flaky=False):
+    """Initializes an CompoundFailure instance.
+
+    Args:
+      message: A string describing the failure.
+      exc_infos: A list of ExceptInfo objects.
+      possibly_flaky: Whether this failure might be flaky.
+    """
+    self.exc_infos = exc_infos if exc_infos else []
+    if not message:
+      # By default, print all stored ExceptInfo objects.
+      message = '\n'.join(['%s: %s\n%s' % e for e in self.exc_infos])
+
+    super(CompoundFailure, self).__init__(message=message,
+                                          possibly_flaky=possibly_flaky)
+
+
+class SetFailureType(object):
+  """A wrapper to re-raise the exception as the pre-set type."""
+
+  def __init__(self, category_exception):
+    """Initializes the decorator.
+
+    Args:
+      category_exception: The exception type to re-raise as. It must be
+        a subclass of CompoundFailure.
+    """
+    assert issubclass(category_exception, CompoundFailure)
+    self.category_exception = category_exception
+
+  def __call__(self, functor):
+    """Returns a wrapped function."""
+    def wrapped_functor(*args):
+      try:
+        functor(*args)
+      except Exception:
+        # Get the information about the original exception.
+        exc_type, exc_value, _ = sys.exc_info()
+        exc_traceback = traceback.format_exc()
+        if issubclass(exc_type, self.category_exception):
+          # Do not re-raise if the exception is a subclass of the set
+          # exception type because it offers more information.
+          raise
+        else:
+          exc_infos = [CreateExceptInfo(exc_value, exc_traceback)]
+          if issubclass(exc_type, CompoundFailure) and exc_value.exc_infos:
+            # If the original exception is already a CompoundFailure,
+            # and have non-empty exc_infos, make sure we preserve the
+            # list of ExceptInfo objects. Note that we do not preserve
+            # the original CompoundFailure type in this case.
+            exc_infos = exc_value.exc_infos
+
+          raise self.category_exception(exc_infos=exc_infos)
+
+    return wrapped_functor
 
 
 class RetriableStepFailure(StepFailure):
@@ -123,7 +172,7 @@ class PackageBuildFailure(BuildScriptFailure):
             % (self.shortname, ' '.join(sorted(self.failed_packages))))
 
 
-class InfrastructureFailure(StepFailure):
+class InfrastructureFailure(CompoundFailure):
   """Raised if a stage fails due to infrastructure issues."""
 
 
