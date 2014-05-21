@@ -102,7 +102,7 @@ int GenerateCrashDump(EXCEPTION_POINTERS* exinfo) {
 
 void InitializeCrashReporting() {
   wchar_t exe_path[MAX_PATH] = {};
-  if(!::GetModuleFileName(NULL, exe_path, arraysize(exe_path)))
+  if (!::GetModuleFileName(NULL, exe_path, arraysize(exe_path)))
     return;
 
   // Disable the message box for assertions.
@@ -123,13 +123,10 @@ void InitializeCrashReporting() {
       MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by
                                                 // stack.
 
-  // Convert #define to a variable so that we can use if() rather than
-  // #if below and so at least compile-test the Chrome code in
-  // Chromium builds.
-#if defined(GOOGLE_CHROME_BUILD)
-  bool is_chrome_build = true;
+#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
+  bool is_official_chrome_build = true;
 #else
-  bool is_chrome_build = false;
+  bool is_official_chrome_build = false;
 #endif
 
   base::string16 pipe_name;
@@ -139,8 +136,9 @@ void InitializeCrashReporting() {
 
   if (!use_policy && IsHeadless()) {
     pipe_name = kChromePipeName;
-  } else if (use_policy ? enabled_by_policy :
-                          (is_chrome_build && AreUsageStatsEnabled(exe_path))) {
+  } else if (use_policy ?
+                 enabled_by_policy :
+                 (is_official_chrome_build && AreUsageStatsEnabled(exe_path))) {
     // Build the pipe name. It can be one of:
     // 32-bit system: \\.\pipe\GoogleCrashServices\S-1-5-18
     // 32-bit user: \\.\pipe\GoogleCrashServices\<user SID>
