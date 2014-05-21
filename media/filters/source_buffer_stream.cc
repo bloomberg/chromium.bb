@@ -35,8 +35,8 @@ static bool AllowSameTimestamp(
 // |index| is out of range.  Otherwise returns the config ID for the fade out
 // preroll buffer at position |index|.
 static int GetConfigId(StreamParserBuffer* buffer, size_t index) {
-  return index < buffer->get_splice_buffers().size()
-             ? buffer->get_splice_buffers()[index]->GetConfigId()
+  return index < buffer->splice_buffers().size()
+             ? buffer->splice_buffers()[index]->GetConfigId()
              : buffer->GetConfigId();
 }
 
@@ -1000,7 +1000,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   DCHECK(new_buffers.front()->splice_timestamp() !=
          new_buffers.front()->timestamp());
   const bool is_exclusive =
-      new_buffers.front()->get_splice_buffers().empty() &&
+      new_buffers.front()->splice_buffers().empty() &&
       prev_timestamp == next_timestamp &&
       AllowSameTimestamp(prev_is_keyframe, next_is_keyframe, GetType());
 
@@ -1141,7 +1141,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     // Just return if GetNextBufferInternal() failed or there's no fade out
     // preroll, there's nothing else to do.
     if (status != SourceBufferStream::kSuccess ||
-        (*out_buffer)->get_splice_buffers().empty()) {
+        (*out_buffer)->splice_buffers().empty()) {
       return status;
     }
 
@@ -1151,7 +1151,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   }
 
   DCHECK(splice_buffer_);
-  const BufferQueue& splice_buffers = splice_buffer_->get_splice_buffers();
+  const BufferQueue& splice_buffers = splice_buffer_->splice_buffers();
   const size_t last_splice_buffer_index = splice_buffers.size() - 1;
 
   // Are there any splice buffers left to hand out?  The last buffer should be
@@ -1640,7 +1640,7 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
   // If any |pre_splice_buffers| are already splices, do not generate a splice.
   for (size_t i = 0; i < pre_splice_buffers.size(); ++i) {
     const BufferQueue& original_splice_buffers =
-        pre_splice_buffers[i]->get_splice_buffers();
+        pre_splice_buffers[i]->splice_buffers();
     if (!original_splice_buffers.empty()) {
       DVLOG(1) << "Can't generate splice: overlapped buffers contain a "
                   "pre-existing splice.";

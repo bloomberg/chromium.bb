@@ -141,7 +141,7 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
        ++it) {
     const scoped_refptr<StreamParserBuffer>& buffer = *it;
     DCHECK(!buffer->end_of_stream());
-    DCHECK(buffer->get_splice_buffers().empty());
+    DCHECK(buffer->splice_buffers().empty());
     splice_buffers_.push_back(CopyBuffer(*buffer));
     splice_buffers_.back()->set_splice_timestamp(splice_timestamp());
   }

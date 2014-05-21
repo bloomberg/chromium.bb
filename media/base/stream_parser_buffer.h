@@ -61,7 +61,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   // See the Audio Splice Frame Algorithm in the MSE specification for details.
   typedef StreamParser::BufferQueue BufferQueue;
   void ConvertToSpliceBuffer(const BufferQueue& pre_splice_buffers);
-  const BufferQueue& get_splice_buffers() const { return splice_buffers_; }
+  const BufferQueue& splice_buffers() const { return splice_buffers_; }
 
  private:
   StreamParserBuffer(const uint8* data, int data_size,
