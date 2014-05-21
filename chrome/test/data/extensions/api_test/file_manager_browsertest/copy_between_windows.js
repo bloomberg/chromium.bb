@@ -58,6 +58,82 @@ function copyBetweenWindows(windowId1, windowId2, file) {
 var REMOVABLE_VOLUME_QUERY = '#navigation-list > .root-item > ' +
     '.volume-icon[volume-type-icon="removable"]';
 
+testcase.copyBetweenWindowsDriveToLocal = function() {
+  var windowId1;
+  var windowId2;
+  StepsRunner.run([
+      // Make a file in a drive directory.
+      function() {
+        addEntries(['drive'], [ENTRIES.hello], this.next);
+      },
+      // Open windows.
+      function(result) {
+        chrome.test.assertTrue(result);
+        openTwoWindows(RootPath.DRIVE, RootPath.DOWNLOADS).then(this.next);
+      },
+      // Wait for a file in the Drive directory.
+      function(appIds) {
+        windowId1 = appIds[0];
+        windowId2 = appIds[1];
+        waitForFiles(windowId1,
+                     [ENTRIES.hello.getExpectedRow()]).then(this.next);
+      },
+      // Copy a file between windows.
+      function() {
+        copyBetweenWindows(windowId1,
+                           windowId2,
+                           ENTRIES.hello).then(this.next);
+      },
+      function() {
+        checkIfNoErrorsOccured(this.next);
+      }
+  ]);
+};
+
+testcase.copyBetweenWindowsDriveToUsb = function() {
+  var windowId1;
+  var windowId2;
+  StepsRunner.run([
+      // Make a file in a drive directory.
+      function() {
+        addEntries(['drive'], [ENTRIES.hello], this.next);
+      },
+      // Open windows.
+      function(result) {
+        chrome.test.assertTrue(result);
+        openTwoWindows(RootPath.DRIVE, RootPath.DRIVE).then(this.next);
+      },
+      // Wait for a file in the Drive directory.
+      function(appIds) {
+        windowId1 = appIds[0];
+        windowId2 = appIds[1];
+        waitForFiles(windowId1,
+                     [ENTRIES.hello.getExpectedRow()]).then(this.next);
+      },
+      // Mount a fake USB volume.
+      function() {
+        chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
+                                this.next);
+      },
+      // Wait for the mount.
+      function(result) {
+        waitForElement(windowId2, REMOVABLE_VOLUME_QUERY).then(this.next);
+      },
+      // Click the USB volume.
+      function() {
+        callRemoteTestUtil(
+            'fakeMouseClick', windowId2, [REMOVABLE_VOLUME_QUERY], this.next);
+      },
+      // Copy a file between windows.
+      function(appIds) {
+        copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
+      },
+      function() {
+        checkIfNoErrorsOccured(this.next);
+      }
+    ]);
+};
+
 testcase.copyBetweenWindowsLocalToDrive = function() {
   var windowId1;
   var windowId2;
@@ -157,3 +233,44 @@ testcase.copyBetweenWindowsUsbToDrive = function() {
     }
   ]);
 };
+
+testcase.copyBetweenWindowsUsbToLocal = function() {
+  var windowId1;
+  var windowId2;
+  StepsRunner.run([
+    // Open windows.
+    function() {
+      openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE).then(this.next);
+    },
+    // Mount a fake USB.
+    function(appIds) {
+      windowId1 = appIds[0];
+      windowId2 = appIds[1];
+      chrome.test.sendMessage(JSON.stringify({name: 'mountFakeUsb'}),
+                              this.next);
+    },
+    // Add a file to USB.
+    function(result) {
+      chrome.test.assertTrue(JSON.parse(result));
+      addEntries(['usb'], [ENTRIES.hello], this.next);
+    },
+    // Wait for the mount.
+    function(result) {
+      chrome.test.assertTrue(result);
+      waitForElement(windowId1, REMOVABLE_VOLUME_QUERY).then(this.next);
+    },
+    // Click the volume.
+    function() {
+      callRemoteTestUtil(
+          'fakeMouseClick', windowId1, [REMOVABLE_VOLUME_QUERY], this.next);
+    },
+    // Copy a file between windows.
+    function(appIds) {
+      copyBetweenWindows(windowId1, windowId2, ENTRIES.hello).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+

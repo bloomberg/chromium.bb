@@ -876,7 +876,10 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToUsb"),
-        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToLocal"),
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToUsb"),
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToLocal")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
