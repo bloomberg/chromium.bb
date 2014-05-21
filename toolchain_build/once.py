@@ -262,26 +262,32 @@ class Once(object):
     Ideally this would capture anything relevant about the current machine that
     would cause build output to vary (other than build recipe + inputs).
     """
-    if self._system_summary is None:
-      # Note there is no attempt to canonicalize these values.  If two
-      # machines that would in fact produce identical builds differ in
-      # these values, it just means that a superfluous build will be
-      # done once to get the mapping from new input hash to preexisting
-      # output hash into the cache.
-      assert len(sys.platform) != 0, len(platform.machine()) != 0
-      # Use environment from command so we can access MinGW on windows.
-      env = command.PlatformEnvironment([])
+    if self._system_summary is not None:
+      return self._system_summary
+
+    # Note there is no attempt to canonicalize these values.  If two
+    # machines that would in fact produce identical builds differ in
+    # these values, it just means that a superfluous build will be
+    # done once to get the mapping from new input hash to preexisting
+    # output hash into the cache.
+    assert len(sys.platform) != 0, len(platform.machine()) != 0
+    # Use environment from command so we can access MinGW on windows.
+    env = command.PlatformEnvironment([])
+    try:
       gcc = pynacl.file_tools.Which('gcc', paths=env['PATH'].split(os.pathsep))
-      p = subprocess.Popen(
-          [gcc, '-v'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+      p = subprocess.Popen([gcc, '-v'], stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, env=env)
       _, gcc_version = p.communicate()
       assert p.returncode == 0
-      items = [
-          ('platform', sys.platform),
-          ('machine', platform.machine()),
-          ('gcc-v', gcc_version),
-          ]
-      self._system_summary = str(items)
+    except pynacl.file_tools.ExecutableNotFound:
+      gcc_version = 0
+
+    items = [
+        ('platform', sys.platform),
+        ('machine', platform.machine()),
+        ('gcc-v', gcc_version),
+        ]
+    self._system_summary = str(items)
     return self._system_summary
 
   def BuildSignature(self, package, inputs, commands, hasher=None):
