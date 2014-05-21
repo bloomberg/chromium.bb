@@ -40,7 +40,7 @@ def WriteFile(filename, content):
 
 def GetArch():
   gyp_host_arch = re.search(
-      'host_arch=([^ ]*)', os.environ.get('GYP_DEFINES', ''))
+      'host_arch=(\S*)', os.environ.get('GYP_DEFINES', ''))
   if gyp_host_arch:
     arch = gyp_host_arch.group(1)
     # This matches detect_host_arch.py.
