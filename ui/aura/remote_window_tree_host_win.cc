@@ -135,13 +135,6 @@ void HandleSelectFolder(const base::string16& title,
                                                                 on_failure);
 }
 
-void HandleActivateDesktop(const base::FilePath& shortcut,
-                           bool ash_exit) {
-  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
-  aura::RemoteWindowTreeHostWin::Instance()->HandleActivateDesktop(shortcut,
-                                                                   ash_exit);
-}
-
 void HandleMetroExit() {
   DCHECK(aura::RemoteWindowTreeHostWin::Instance());
   aura::RemoteWindowTreeHostWin::Instance()->HandleMetroExit();
@@ -251,14 +244,6 @@ void RemoteWindowTreeHostWin::HandleOpenURLOnDesktop(
   if (!host_)
     return;
   host_->Send(new MetroViewerHostMsg_OpenURLOnDesktop(shortcut, url));
-}
-
-void RemoteWindowTreeHostWin::HandleActivateDesktop(
-    const base::FilePath& shortcut,
-    bool ash_exit) {
-  if (!host_)
-    return;
-  host_->Send(new MetroViewerHostMsg_ActivateDesktop(shortcut, ash_exit));
 }
 
 void RemoteWindowTreeHostWin::HandleMetroExit() {

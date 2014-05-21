@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/gfx/win/dpi.h"
+#include "ui/metro_viewer/metro_viewer_messages.h"
 #include "url/gurl.h"
 
 namespace {
@@ -66,11 +67,28 @@ void OpenURL(const GURL& url) {
 
 }  // namespace
 
+void HandleActivateDesktop(const base::FilePath& path, bool ash_exit) {
+  if (ChromeMetroViewerProcessHost::instance()) {
+    ChromeMetroViewerProcessHost::instance()->Send(
+        new MetroViewerHostMsg_ActivateDesktop(path, ash_exit));
+  }
+}
+
+// static
+ChromeMetroViewerProcessHost* ChromeMetroViewerProcessHost::instance_ = NULL;
+
 ChromeMetroViewerProcessHost::ChromeMetroViewerProcessHost()
     : MetroViewerProcessHost(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO)) {
   chrome::IncrementKeepAliveCount();
+  DCHECK(instance_ == NULL);
+  instance_ = this;
+}
+
+ChromeMetroViewerProcessHost::~ChromeMetroViewerProcessHost() {
+  DCHECK(instance_ == this);
+  instance_ = NULL;
 }
 
 void ChromeMetroViewerProcessHost::OnChannelError() {

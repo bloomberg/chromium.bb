@@ -54,10 +54,10 @@ class MetroViewerProcessHost : public IPC::Listener,
   bool LaunchViewerAndWaitForConnection(
       const base::string16& app_user_model_id);
 
- private:
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
+ private:
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE = 0;
