@@ -506,8 +506,14 @@ TEST_F('HistoryWebUITest', 'DISABLED_bulkDeletion', function() {
 
 /**
  * Test selecting multiple entries using shift click.
+ * Disabled due to time out on win: crbug/375910
  */
-TEST_F('HistoryWebUITest', 'multipleSelect', function() {
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_multipleSelect DISABLED_multipleSelect');
+GEN('#else');
+GEN('#define MAYBE_multipleSelect multipleSelect');
+GEN('#endif');
+TEST_F('HistoryWebUITest', 'MAYBE_multipleSelect', function() {
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
 
