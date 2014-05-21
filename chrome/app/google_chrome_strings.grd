@@ -143,18 +143,17 @@ Chrome supports. -->
       <message name="IDS_SHORT_PRODUCT_NAME" desc="The Chrome application short name">
         Chrome
       </message>
-      <message name="IDS_SHORT_PRODUCT_NAME_LOWER" desc="The Chrome application short name all lowercase">
-        chrome
-      </message>
-      <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome short cut name for SxS channel">
-        Google Chrome Canary
-      </message>
-      <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
-        Google Chrome is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.
-      </message>
-      <message name="IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION" desc="App Launcher description">
-        Google Chrome App Launcher is a standalone platform for Chrome apps.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome short cut name for SxS channel">
+          Google Chrome Canary
+        </message>
+        <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
+          Google Chrome is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.
+        </message>
+        <message name="IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION" desc="App Launcher description">
+          Google Chrome App Launcher is a standalone platform for Chrome apps.
+        </message>
+      </if>
       <if expr="chromeos">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Google Chrome OS
@@ -238,10 +237,10 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_ABOUT_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
         Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
       </message>
-      <message name="IDS_ABOUT_VERSION_LICENSE_EULA" desc="The label below the copyright message, containing the URLs.">
-        Chrome open source licenses
-      </message>
       <if expr="chromeos">
+        <message name="IDS_ABOUT_VERSION_LICENSE_EULA" desc="The label below the copyright message, containing the URLs.">
+          Chrome open source licenses
+        </message>
         <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
           Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
@@ -274,9 +273,11 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
         Google Chrome Toolbar
       </message>
       <!-- Hung Browser Detector -->
-      <message name="IDS_BROWSER_HUNGBROWSER_MESSAGE" desc="Content of the dialog box shown when the browser is hung">
-        Google Chrome is unresponsive. Relaunch now?
-      </message>
+      <if expr="is_win">
+        <message name="IDS_BROWSER_HUNGBROWSER_MESSAGE" desc="Content of the dialog box shown when the browser is hung">
+          Google Chrome is unresponsive. Relaunch now?
+        </message>
+      </if>
       <message name="IDS_IMPORT_FIND_YOUR_BOOKMARKS" desc="Helpful reminder for where to find imported bookmarks">
         Find your bookmarks in the Chrome menu or on the bookmarks bar.
       </message>
@@ -291,16 +292,16 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
         <message name="IDS_UNINSTALL_CLOSE_APP_IMMERSIVE" desc="Message to user when uninstall detects other app instance running, possibly in the Windows 8 immersive mode">
           Please close all Google Chrome windows (including those in Windows 8 mode) and try again.
         </message>
+        <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
+          Are you sure you want to uninstall Google Chrome?
+        </message>
+        <message name="IDS_UNINSTALL_CHROME" desc="The text of the shortcut in the Start Menu for uninstalling chrome.">
+          Uninstall Google Chrome
+        </message>
+        <message name="IDS_UNINSTALL_APP_LAUNCHER" desc="The text of the shortcut in the Start Menu for uninstalling App Launcher.">
+          Uninstall Google Chrome App Launcher
+        </message>
       </if>
-      <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
-        Are you sure you want to uninstall Google Chrome?
-      </message>
-      <message name="IDS_UNINSTALL_CHROME" desc="The text of the shortcut in the Start Menu for uninstalling chrome.">
-        Uninstall Google Chrome
-      </message>
-      <message name="IDS_UNINSTALL_APP_LAUNCHER" desc="The text of the shortcut in the Start Menu for uninstalling App Launcher.">
-        Uninstall Google Chrome App Launcher
-      </message>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
       </message>
@@ -372,9 +373,11 @@ Google Chrome cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
       </message>
-      <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging on EULA screen.">
-        Optional: Help make Chrome OS better by automatically sending usage statistics and crash reports to Google.
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging on EULA screen.">
+          Optional: Help make Chrome OS better by automatically sending usage statistics and crash reports to Google.
+        </message>
+      </if>
       <message name="IDS_PROFILE_TOO_NEW_ERROR" desc="Error displayed on startup when the profile is from a newer version of the product and can not be read">
 Your profile can not be used because it is from a newer version of Google Chrome.
 
@@ -394,9 +397,11 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_CRASH_RECOVERY_TITLE" desc="Title of dialog shown when the browser crashes.">
         Google Chrome
       </message>
-      <message name="IDS_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the browser has crashed.">
-        Whoa! Google Chrome has crashed. Relaunch now?
-      </message>
+      <if expr="is_win">
+        <message name="IDS_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the browser has crashed.">
+          Whoa! Google Chrome has crashed. Relaunch now?
+        </message>
+      </if>
       <message name="IDS_PASSWORD_GENERATION_SUGGESTION" desc="Text shown next to a generated password describing it as a suggestion.">
         Suggested by Chrome
       </message>
@@ -469,24 +474,26 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Google Chrome may use web services to improve your browsing experience.
       </message>
-      <message name="IDS_OEM_MAIN_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application for OEM pre-installations.">
-        Internet Browser
-      </message>
-      <message name="IDS_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the Google Chrome shortcuts.">
-        Access the Internet
-      </message>
-      <message name="IDS_APP_LAUNCHER_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the App Launcher shortcut.">
-        Launch Chrome apps
-      </message>
-      <message name="IDS_UNINSTALL_DELETE_PROFILE" desc="Text to show user to ask whether to delete all the profile data also during uninstallation.">
-        Also delete your browsing data?
-      </message>
-      <message name="IDS_UNINSTALL_SET_DEFAULT_BROWSER" desc="Text to ask whether to set another browser as default when Chromium is uninstalled.">
-        Change default browser to:
-      </message>
-      <message name="IDS_UNINSTALL_BUTTON_TEXT" desc="Label for uninstall button on Uninstall confirmation dialog.">
-        Uninstall
-      </message>
+      <if expr="is_win">
+        <message name="IDS_OEM_MAIN_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application for OEM pre-installations.">
+          Internet Browser
+        </message>
+        <message name="IDS_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the Google Chrome shortcuts.">
+          Access the Internet
+        </message>
+        <message name="IDS_APP_LAUNCHER_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the App Launcher shortcut.">
+          Launch Chrome apps
+        </message>
+        <message name="IDS_UNINSTALL_DELETE_PROFILE" desc="Text to show user to ask whether to delete all the profile data also during uninstallation.">
+          Also delete your browsing data?
+        </message>
+        <message name="IDS_UNINSTALL_SET_DEFAULT_BROWSER" desc="Text to ask whether to set another browser as default when Chromium is uninstalled.">
+          Change default browser to:
+        </message>
+        <message name="IDS_UNINSTALL_BUTTON_TEXT" desc="Label for uninstall button on Uninstall confirmation dialog.">
+          Uninstall
+        </message>
+      </if>
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Google Chrome isn't your default browser.
       </message>
@@ -495,33 +502,33 @@ Google Chrome is unable to recover your settings.
           Set up Sync to save your personalized browser features to the web and access them from Google Chrome on any computer.
         </message>
       </if>
-      <!-- Try Chrome Toast Dialog -->
-      <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
-        There is a new version of Google Chrome available.
-      </message>
-      <message name="IDS_TRY_TOAST_HEADING2" desc="Top line of the try-chrome-again dialog">
-        There's a new version of Google Chrome available, and it's faster than ever.
-      </message>
-      <message name="IDS_TRY_TOAST_HEADING3" desc="Top line of the try-chrome-again dialog">
-        There's a new, safer version of Google Chrome available.
-      </message>
-      <message name="IDS_TRY_TOAST_HEADING4" desc="Top line of the try-chrome-again dialog">
-        Google Chrome has been updated, but you haven't used it for at least 30 days.
-      </message>
-      <message name="IDS_TRY_TOAST_HEADING_SKYPE" desc="Top line of the try-chrome-again dialog">
-        Google Chrome lets you click a phone number on the web and call it with Skype!
-      </message>
-      <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
-        Try it out, it's already installed
-      </message>
-      <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
-        Don't bug me
-      </message>
-      <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
-        Why am I seeing this?
-      </message>
-      <!-- about:conflicts strings -->
       <if expr="is_win">
+        <!-- Try Chrome Toast Dialog -->
+        <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
+          There is a new version of Google Chrome available.
+        </message>
+        <message name="IDS_TRY_TOAST_HEADING2" desc="Top line of the try-chrome-again dialog">
+          There's a new version of Google Chrome available, and it's faster than ever.
+        </message>
+        <message name="IDS_TRY_TOAST_HEADING3" desc="Top line of the try-chrome-again dialog">
+          There's a new, safer version of Google Chrome available.
+        </message>
+        <message name="IDS_TRY_TOAST_HEADING4" desc="Top line of the try-chrome-again dialog">
+          Google Chrome has been updated, but you haven't used it for at least 30 days.
+        </message>
+        <message name="IDS_TRY_TOAST_HEADING_SKYPE" desc="Top line of the try-chrome-again dialog">
+          Google Chrome lets you click a phone number on the web and call it with Skype!
+        </message>
+        <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
+          Try it out, it's already installed
+        </message>
+        <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
+          Don't bug me
+        </message>
+        <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
+          Why am I seeing this?
+        </message>
+        <!-- about:conflicts strings -->
         <message name="IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG" desc="The long title on the compatibility page">
           Modules loaded into Google Chrome
         </message>
@@ -584,9 +591,11 @@ Google Chrome is unable to recover your settings.
       </if>
 
       <!-- Autolaunch infobar -->
-      <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
-        Google Chrome is configured to automatically launch when you start your computer.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_AUTO_LAUNCH_INFOBAR_TEXT" desc="The text to show in the infobar when Chrome was automatically launched on startup">
+          Google Chrome is configured to automatically launch when you start your computer.
+        </message>
+      </if>
 
       <!-- about:flags -->
       <if expr="not chromeos">
@@ -781,11 +790,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
         Thanks for trying out the new Chrome. Chrome needs to restart to make sure you've saved any open work before continuing.
       </message>
 
-      <!-- Sync Promo New Tab Page bubble strings -->
-      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE_NEW" desc="The body of the sync promo NTP bubble.">
-        Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.
-      </message>
-
       <!-- One click sign-in infobar -->
       <if expr="not chromeos">
         <!-- New one-click sign-in dialog contents for SAML support -->
@@ -794,9 +798,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign-in dialog.">
           You're signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Now you can access your bookmarks, history, and other settings on all your signed in devices.
-        </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_NEW" desc="The body of the sync promo NTP bubble.">
-          Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE" desc="The body of the sign-in bubble, when sync has been disabled.">
           You're now signed in to Chrome! Sync is disabled by your administrator.
@@ -961,9 +962,11 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it.">
           Chrome App Launcher
         </message>
-        <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it for the Canary channel.">
-          Chrome App Launcher Canary
-        </message>
+        <if expr="is_win or is_macosx">
+          <message name="IDS_APP_LIST_SHORTCUT_NAME_CANARY" desc="Name for the Chrome App List to appear in the taskbar and in any shortcuts to it for the Canary channel.">
+            Chrome App Launcher Canary
+          </message>
+        </if>
         <message name="IDS_APP_LIST_SIGNIN_HEADING" desc="Heading for when the launcher needs to sign in.">
           Sign in to Chrome
         </message>
@@ -1048,9 +1051,11 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </if>
 
       <!-- Toast experiment. -->
-      <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make Chrome the default browser">
-        Make Google Chrome the default browser
-      </message>
+      <if expr="is_win">
+        <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make Chrome the default browser">
+          Make Google Chrome the default browser
+        </message>
+      </if>
 
       <!-- User manager tutorial -->
       <if expr="not is_android and not is_ios and not chromeos">
