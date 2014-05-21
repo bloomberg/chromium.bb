@@ -40,7 +40,7 @@ namespace WebCore {
         static PassRefPtrWillBeRawPtr<TextEvent> create();
         static PassRefPtrWillBeRawPtr<TextEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
         static PassRefPtrWillBeRawPtr<TextEvent> createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, bool shouldSmartReplace);
-        static PassRefPtrWillBeRawPtr<TextEvent> createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
+        static PassRefPtrWillBeRawPtr<TextEvent> createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
         static PassRefPtrWillBeRawPtr<TextEvent> createForDrop(PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
         virtual ~TextEvent();
@@ -66,13 +66,13 @@ namespace WebCore {
         TextEvent();
 
         TextEvent(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
-        TextEvent(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, PassRefPtr<DocumentFragment>,
+        TextEvent(PassRefPtrWillBeRawPtr<AbstractView>, const String& data, PassRefPtrWillBeRawPtr<DocumentFragment>,
                   bool shouldSmartReplace, bool shouldMatchStyle);
 
         TextEventInputType m_inputType;
         String m_data;
 
-        RefPtr<DocumentFragment> m_pastingFragment;
+        RefPtrWillBeMember<DocumentFragment> m_pastingFragment;
         bool m_shouldSmartReplace;
         bool m_shouldMatchStyle;
     };

@@ -131,7 +131,7 @@ bool DragData::containsCompatibleContent() const
         || containsFiles();
 }
 
-PassRefPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtrWillBeRawPtr<Range>, bool, bool&) const
+PassRefPtrWillBeRawPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtrWillBeRawPtr<Range>, bool, bool&) const
 {
     /*
      * Order is richest format first. On OSX this is:
@@ -153,7 +153,7 @@ PassRefPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtrW
         KURL baseURL;
         m_platformDragData->htmlAndBaseURL(html, baseURL);
         ASSERT(frame->document());
-        if (RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(*frame->document(), html, baseURL, DisallowScriptingAndPluginContent))
+        if (RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentFromMarkup(*frame->document(), html, baseURL, DisallowScriptingAndPluginContent))
             return fragment.release();
     }
 

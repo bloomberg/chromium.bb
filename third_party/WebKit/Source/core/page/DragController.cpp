@@ -148,15 +148,14 @@ PassOwnPtr<DragController> DragController::create(Page* page, DragClient* client
     return adoptPtr(new DragController(page, client));
 }
 
-static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, RefPtrWillBeRawPtr<Range> context,
-                                          bool allowPlainText, bool& chosePlainText)
+static PassRefPtrWillBeRawPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, RefPtrWillBeRawPtr<Range> context, bool allowPlainText, bool& chosePlainText)
 {
     ASSERT(dragData);
     chosePlainText = false;
 
     Document& document = context->ownerDocument();
     if (dragData->containsCompatibleContent()) {
-        if (PassRefPtr<DocumentFragment> fragment = dragData->asFragment(frame, context, allowPlainText, chosePlainText))
+        if (PassRefPtrWillBeRawPtr<DocumentFragment> fragment = dragData->asFragment(frame, context, allowPlainText, chosePlainText))
             return fragment;
 
         if (dragData->containsURL(DragData::DoNotConvertFilenames)) {
@@ -174,7 +173,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
                 }
                 RefPtr<Node> anchorText = document.createTextNode(title);
                 anchor->appendChild(anchorText);
-                RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
+                RefPtrWillBeRawPtr<DocumentFragment> fragment = document.createDocumentFragment();
                 fragment->appendChild(anchor);
                 return fragment.release();
             }
@@ -494,7 +493,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     ResourceCacheValidationSuppressor validationSuppressor(fetcher);
     if (dragIsMove(innerFrame->selection(), dragData) || dragCaret.isContentRichlyEditable()) {
         bool chosePlainText = false;
-        RefPtr<DocumentFragment> fragment = documentFragmentFromDragData(dragData, innerFrame.get(), range, true, chosePlainText);
+        RefPtrWillBeRawPtr<DocumentFragment> fragment = documentFragmentFromDragData(dragData, innerFrame.get(), range, true, chosePlainText);
         if (!fragment)
             return false;
 

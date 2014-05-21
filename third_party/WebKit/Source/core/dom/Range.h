@@ -79,15 +79,15 @@ public:
     bool boundaryPointsValid() const;
     bool intersectsNode(Node* refNode, ExceptionState&);
     void deleteContents(ExceptionState&);
-    PassRefPtr<DocumentFragment> extractContents(ExceptionState&);
-    PassRefPtr<DocumentFragment> cloneContents(ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentFragment> extractContents(ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentFragment> cloneContents(ExceptionState&);
     void insertNode(PassRefPtr<Node>, ExceptionState&);
     String toString() const;
 
     String toHTML() const;
     String text() const;
 
-    PassRefPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);
 
     void detach();
     PassRefPtrWillBeRawPtr<Range> cloneRange() const;
@@ -159,8 +159,8 @@ private:
     void checkDeleteExtract(ExceptionState&);
 
     enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
-    PassRefPtr<DocumentFragment> processContents(ActionType, ExceptionState&);
-    static PassRefPtr<Node> processContentsBetweenOffsets(ActionType, PassRefPtr<DocumentFragment>, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentFragment> processContents(ActionType, ExceptionState&);
+    static PassRefPtr<Node> processContentsBetweenOffsets(ActionType, PassRefPtrWillBeRawPtr<DocumentFragment>, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
     static void processNodes(ActionType, Vector<RefPtr<Node> >&, PassRefPtr<Node> oldContainer, PassRefPtr<Node> newContainer, ExceptionState&);
     enum ContentsProcessDirection { ProcessContentsForward, ProcessContentsBackward };
     static PassRefPtr<Node> processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, PassRefPtr<Node> clonedContainer, Node* commonRoot, ExceptionState&);

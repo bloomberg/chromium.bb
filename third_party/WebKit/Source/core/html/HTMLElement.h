@@ -113,7 +113,7 @@ private:
 
     void mapLanguageAttributeToLocale(const AtomicString&, MutableStylePropertySet*);
 
-    PassRefPtr<DocumentFragment> textToFragment(const String&, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentFragment> textToFragment(const String&, ExceptionState&);
 
     void dirAttributeChanged(const AtomicString&);
     void adjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);

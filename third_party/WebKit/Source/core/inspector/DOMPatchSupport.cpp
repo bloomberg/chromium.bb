@@ -121,7 +121,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     }
 
     Node* previousSibling = node->previousSibling();
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
     Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : m_document.documentElement();
 
     // Use the document BODY as the context element when editing immediate shadow root children,

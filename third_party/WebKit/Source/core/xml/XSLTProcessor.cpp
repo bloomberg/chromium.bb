@@ -114,7 +114,7 @@ PassRefPtr<Document> XSLTProcessor::transformToDocument(Node* sourceNode)
     return createDocumentFromSource(resultString, resultEncoding, resultMIMEType, sourceNode, 0);
 }
 
-PassRefPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode, Document* outputDoc)
+PassRefPtrWillBeRawPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode, Document* outputDoc)
 {
     if (!sourceNode || !outputDoc)
         return nullptr;

@@ -321,7 +321,7 @@ public:
     Location* location() const;
 
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& name, ExceptionState&);
-    PassRefPtr<DocumentFragment> createDocumentFragment();
+    PassRefPtrWillBeRawPtr<DocumentFragment> createDocumentFragment();
     PassRefPtrWillBeRawPtr<Text> createTextNode(const String& data);
     PassRefPtrWillBeRawPtr<Comment> createComment(const String& data);
     PassRefPtrWillBeRawPtr<CDATASection> createCDATASection(const String& data, ExceptionState&);

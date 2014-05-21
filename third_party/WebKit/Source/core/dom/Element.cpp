@@ -2211,7 +2211,7 @@ String Element::outerHTML() const
 
 void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 {
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
+    if (RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
         ContainerNode* container = this;
         if (isHTMLTemplateElement(*this))
             container = toHTMLTemplateElement(this)->content();
@@ -2235,7 +2235,7 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", exceptionState);
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -2322,7 +2322,7 @@ void Element::insertAdjacentHTML(const String& where, const String& markup, Exce
     if (!contextElement)
         return;
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", exceptionState);
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", exceptionState);
     if (!fragment)
         return;
     insertAdjacent(where, fragment.get(), exceptionState);
