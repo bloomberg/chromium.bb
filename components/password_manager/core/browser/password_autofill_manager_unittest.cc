@@ -46,8 +46,11 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
   MOCK_METHOD1(AccountCreationFormsFound,
                void(const std::vector<autofill::FormData>&));
-  MOCK_METHOD2(AcceptPasswordAutofillSuggestion,
+  MOCK_METHOD2(FillSuggestion,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD2(PreviewSuggestion,
+               void(const base::string16&, const base::string16&));
+  MOCK_METHOD0(ClearPreviewedForm, void());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
 
@@ -126,29 +129,54 @@ class PasswordAutofillManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-TEST_F(PasswordAutofillManagerTest, AcceptSuggestion) {
+TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
   scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
   InitializePasswordAutofillManager(client.get(), NULL);
 
   EXPECT_CALL(*client->mock_driver(),
-              AcceptPasswordAutofillSuggestion(test_username_, test_password_));
-  EXPECT_TRUE(password_autofill_manager_->AcceptSuggestionForTest(
+              FillSuggestion(test_username_, test_password_));
+  EXPECT_TRUE(password_autofill_manager_->FillSuggestionForTest(
       username_field_, test_username_));
   testing::Mock::VerifyAndClearExpectations(client->mock_driver());
 
   EXPECT_CALL(*client->mock_driver(),
-              AcceptPasswordAutofillSuggestion(_, _)).Times(0);
-  EXPECT_FALSE(password_autofill_manager_->AcceptSuggestionForTest(
+              FillSuggestion(_, _)).Times(0);
+  EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       username_field_, base::ASCIIToUTF16(kInvalidUsername)));
 
   autofill::FormFieldData invalid_username_field;
   invalid_username_field.name = base::ASCIIToUTF16(kInvalidUsername);
 
-  EXPECT_FALSE(password_autofill_manager_->AcceptSuggestionForTest(
+  EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       invalid_username_field, test_username_));
 
   password_autofill_manager_->Reset();
-  EXPECT_FALSE(password_autofill_manager_->AcceptSuggestionForTest(
+  EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
+      username_field_, test_username_));
+}
+
+TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  InitializePasswordAutofillManager(client.get(), NULL);
+
+  EXPECT_CALL(*client->mock_driver(),
+              PreviewSuggestion(test_username_, test_password_));
+  EXPECT_TRUE(password_autofill_manager_->PreviewSuggestionForTest(
+      username_field_, test_username_));
+  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+
+  EXPECT_CALL(*client->mock_driver(), PreviewSuggestion(_, _)).Times(0);
+  EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
+      username_field_, base::ASCIIToUTF16(kInvalidUsername)));
+
+  autofill::FormFieldData invalid_username_field;
+  invalid_username_field.name = base::ASCIIToUTF16(kInvalidUsername);
+
+  EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
+      invalid_username_field, test_username_));
+
+  password_autofill_manager_->Reset();
+  EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
       username_field_, test_username_));
 }
 

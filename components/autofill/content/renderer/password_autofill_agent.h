@@ -40,13 +40,19 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // Fills the username and password fields of this form with the given values.
   // Returns true if the fields were filled, false otherwise.
-  bool AcceptSuggestion(const blink::WebNode& node,
-                        const blink::WebString& username,
-                        const blink::WebString& password);
+  bool FillSuggestion(const blink::WebNode& node,
+                      const blink::WebString& username,
+                      const blink::WebString& password);
 
-  // A no-op.  Password forms are not previewed, so they do not need to be
-  // cleared when the selection changes.  However, this method returns
-  // true when |node| is fillable by password Autofill.
+  // Previews the username and password fields of this form with the given
+  // values. Returns true if the fields were previewed, false otherwise.
+  bool PreviewSuggestion(const blink::WebNode& node,
+                         const blink::WebString& username,
+                         const blink::WebString& password);
+
+  // Clears the preview for the username and password fields, restoring both to
+  // their previous filled state. Return false if no login information was
+  // found for the form.
   bool DidClearAutofillSelection(const blink::WebNode& node);
   // Shows an Autofill popup with username suggestions for |element|.
   // Returns true if any suggestions were shown, false otherwise.
@@ -153,12 +159,11 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                                   blink::WebInputElement username_element,
                                   blink::WebInputElement password_element);
 
-  bool FillUserNameAndPassword(
-      blink::WebInputElement* username_element,
-      blink::WebInputElement* password_element,
-      const PasswordFormFillData& fill_data,
-      bool exact_username_match,
-      bool set_selection);
+  bool FillUserNameAndPassword(blink::WebInputElement* username_element,
+                               blink::WebInputElement* password_element,
+                               const PasswordFormFillData& fill_data,
+                               bool exact_username_match,
+                               bool set_selection);
 
   // Fills |login_input| and |password| with the most relevant suggestion from
   // |fill_data| and shows a popup with other suggestions.
@@ -175,6 +180,11 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   bool FindLoginInfo(const blink::WebNode& node,
                      blink::WebInputElement* found_input,
                      PasswordInfo* found_password);
+
+  // Clears the preview for the username and password fields, restoring both to
+  // their previous filled state.
+  void ClearPreview(blink::WebInputElement* username,
+                    blink::WebInputElement* password);
 
   // If |provisionally_saved_forms_| contains a form for |current_frame| or its
   // children, return such frame.
@@ -198,6 +208,15 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // True indicates that user debug information should be logged.
   bool logging_state_active_;
+
+  // True indicates that the username field was autofilled, false otherwise.
+  bool was_username_autofilled_;
+  // True indicates that the password field was autofilled, false otherwise.
+  bool was_password_autofilled_;
+
+  // Records original starting point of username element's selection range
+  // before preview.
+  int username_selection_start_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 

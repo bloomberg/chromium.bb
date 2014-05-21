@@ -54,14 +54,30 @@ void ContentPasswordManagerDriver::AccountCreationFormsFound(
                                                           forms));
 }
 
-void ContentPasswordManagerDriver::AcceptPasswordAutofillSuggestion(
+void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(
-      new AutofillMsg_AcceptPasswordAutofillSuggestion(host->GetRoutingID(),
-                                                       username,
-                                                       password));
+      new AutofillMsg_FillPasswordSuggestion(host->GetRoutingID(),
+                                             username,
+                                             password));
+}
+
+void ContentPasswordManagerDriver::PreviewSuggestion(
+    const base::string16& username,
+    const base::string16& password) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(
+      new AutofillMsg_PreviewPasswordSuggestion(host->GetRoutingID(),
+                                                username,
+                                                password));
+}
+
+void ContentPasswordManagerDriver::ClearPreviewedForm() {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(
+      new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {

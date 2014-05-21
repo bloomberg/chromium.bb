@@ -32,8 +32,11 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
   MOCK_METHOD1(AccountCreationFormsFound,
                void(const std::vector<autofill::FormData>&));
-  MOCK_METHOD2(AcceptPasswordAutofillSuggestion,
+  MOCK_METHOD2(FillSuggestion,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD2(PreviewSuggestion,
+               void(const base::string16&, const base::string16&));
+  MOCK_METHOD0(ClearPreviewedForm, void());
 };
 
 }  // namespace password_manager

@@ -55,9 +55,13 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Invoked to clear any page specific cached values.
   void Reset();
 
-  // A public version of AcceptSuggestion(), only for use in tests.
-  bool AcceptSuggestionForTest(const autofill::FormFieldData& field,
-                               const base::string16& username);
+  // A public version of FillSuggestion(), only for use in tests.
+  bool FillSuggestionForTest(const autofill::FormFieldData& field,
+                             const base::string16& username);
+
+  // A public version of PreviewSuggestion(), only for use in tests.
+  bool PreviewSuggestionForTest(const autofill::FormFieldData& field,
+                                const base::string16& username);
 
  private:
   typedef std::map<autofill::FormFieldData, autofill::PasswordFormFillData>
@@ -65,8 +69,13 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Attempts to fill the password associated with user name |username|, and
   // returns true if it was successful.
-  bool AcceptSuggestion(const autofill::FormFieldData& field,
-                        const base::string16& username);
+  bool FillSuggestion(const autofill::FormFieldData& field,
+                      const base::string16& username);
+
+  // Attempts to preview the password associated with user name |username|, and
+  // returns true if it was successful.
+  bool PreviewSuggestion(const autofill::FormFieldData& field,
+                         const base::string16& username);
 
   // If |current_username| matches a username for one of the login mappings in
   // |fill_data|, returns true and assigns the password to |out_password|.

@@ -60,10 +60,11 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
     found_account_creation_forms_.insert(
         found_account_creation_forms_.begin(), forms.begin(), forms.end());
   }
-  virtual void AcceptPasswordAutofillSuggestion(
-      const base::string16& username,
-      const base::string16& password) OVERRIDE {
-  }
+  virtual void FillSuggestion(const base::string16& username,
+                              const base::string16& password) OVERRIDE {}
+  virtual void PreviewSuggestion(const base::string16& username,
+                                 const base::string16& password) OVERRIDE {}
+  virtual void ClearPreviewedForm() OVERRIDE {}
 
   const std::vector<autofill::FormData>& GetFoundAccountCreationForms() {
     return found_account_creation_forms_;

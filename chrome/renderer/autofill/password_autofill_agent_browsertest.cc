@@ -1023,8 +1023,8 @@ TEST_F(PasswordAutofillAgentTest,
   EXPECT_EQ(1, password_onchange_called);
 }
 
-// Tests that |AcceptSuggestion| properly fills the username and password.
-TEST_F(PasswordAutofillAgentTest, AcceptSuggestion) {
+// Tests that |FillSuggestion| properly fills the username and password.
+TEST_F(PasswordAutofillAgentTest, FillSuggestion) {
   // Simulate the browser sending the login info, but set |wait_for_username|
   // to prevent the form from being immediately filled.
   fill_data_.wait_for_username = true;
@@ -1035,25 +1035,256 @@ TEST_F(PasswordAutofillAgentTest, AcceptSuggestion) {
 
   // If the password field is not autocompletable, it should not be affected.
   SetElementReadOnly(password_element_, true);
-  EXPECT_FALSE(password_autofill_->AcceptSuggestion(
+  EXPECT_FALSE(password_autofill_->FillSuggestion(
       username_element_, kAliceUsername, kAlicePassword));
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
   SetElementReadOnly(password_element_, false);
 
-  // After accepting the suggestion, both fields should be autocompleted.
-  EXPECT_TRUE(password_autofill_->AcceptSuggestion(
+  // After filling with the suggestion, both fields should be autocompleted.
+  EXPECT_TRUE(password_autofill_->FillSuggestion(
       username_element_, kAliceUsername, kAlicePassword));
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
   int username_length = strlen(kAliceUsername);
   CheckUsernameSelection(username_length, username_length);
 
-  // Try accepting a suggestion with a password different from the one that was
+  // Try Filling with a suggestion with password different from the one that was
   // initially sent to the renderer.
-  EXPECT_TRUE(password_autofill_->AcceptSuggestion(
+  EXPECT_TRUE(password_autofill_->FillSuggestion(
       username_element_, kBobUsername, kCarolPassword));
   CheckTextFieldsDOMState(kBobUsername, true, kCarolPassword, true);
   username_length = strlen(kBobUsername);
   CheckUsernameSelection(username_length, username_length);
+}
+
+// Tests that |PreviewSuggestion| properly previews the username and password.
+TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should have been autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // If the password field is not autocompletable, it should not be affected.
+  SetElementReadOnly(password_element_, true);
+  EXPECT_FALSE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  EXPECT_EQ(std::string(), username_element_.suggestedValue().utf8());
+  EXPECT_FALSE(username_element_.isAutofilled());
+  EXPECT_EQ(std::string(), password_element_.suggestedValue().utf8());
+  EXPECT_FALSE(password_element_.isAutofilled());
+  SetElementReadOnly(password_element_, false);
+
+  // After selecting the suggestion, both fields should be previewed
+  // with suggested values.
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  EXPECT_EQ(
+      kAliceUsername,
+      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_EQ(
+      kAlicePassword,
+      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(password_element_.isAutofilled());
+  int username_length = strlen(kAliceUsername);
+  CheckUsernameSelection(0, username_length);
+
+  // Try previewing with a password different from the one that was initially
+  // sent to the renderer.
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kBobUsername, kCarolPassword));
+  EXPECT_EQ(
+      kBobUsername,
+      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_EQ(
+      kCarolPassword,
+      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(password_element_.isAutofilled());
+  username_length = strlen(kBobUsername);
+  CheckUsernameSelection(0, username_length);
+}
+
+// Tests that |PreviewSuggestion| properly sets the username selection range.
+TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
+  username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setAutofilled(true);
+
+  CheckTextFieldsDOMState("ali", true, std::string(), false);
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+  EXPECT_EQ(
+      kAliceUsername,
+      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_EQ(
+      kAlicePassword,
+      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(password_element_.isAutofilled());
+  int username_length = strlen(kAliceUsername);
+  CheckUsernameSelection(3, username_length);
+}
+
+// Tests that |ClearPreview| properly clears previewed username and password
+// with password being previously autofilled.
+TEST_F(PasswordAutofillAgentTest, ClearPreviewWithPasswordAutofilled) {
+  password_element_.setValue(WebString::fromUTF8("sec"));
+  password_element_.setAutofilled(true);
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState(std::string(), false, "sec", true);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+
+  EXPECT_TRUE(password_autofill_->DidClearAutofillSelection(
+      username_element_));
+
+  EXPECT_TRUE(username_element_.value().isEmpty());
+  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
+  EXPECT_FALSE(username_element_.isAutofilled());
+  EXPECT_EQ(ASCIIToUTF16("sec"), password_element_.value());
+  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(password_element_.isAutofilled());
+  CheckUsernameSelection(0, 0);
+}
+
+// Tests that |ClearPreview| properly clears previewed username and password
+// with username being previously autofilled.
+TEST_F(PasswordAutofillAgentTest, ClearPreviewWithUsernameAutofilled) {
+  username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setAutofilled(true);
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState("ali", true, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+
+  EXPECT_TRUE(password_autofill_->DidClearAutofillSelection(
+      username_element_));
+
+  EXPECT_EQ(ASCIIToUTF16("ali"), username_element_.value());
+  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_TRUE(password_element_.value().isEmpty());
+  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
+  EXPECT_FALSE(password_element_.isAutofilled());
+  CheckUsernameSelection(3, 3);
+}
+
+// Tests that |ClearPreview| properly clears previewed username and password
+// with username and password being previously autofilled.
+TEST_F(PasswordAutofillAgentTest,
+       ClearPreviewWithAutofilledUsernameAndPassword) {
+  username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setAutofilled(true);
+  password_element_.setValue(WebString::fromUTF8("sec"));
+  password_element_.setAutofilled(true);
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState("ali", true, "sec", true);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+
+  EXPECT_TRUE(password_autofill_->DidClearAutofillSelection(
+      username_element_));
+
+  EXPECT_EQ(ASCIIToUTF16("ali"), username_element_.value());
+  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_EQ(ASCIIToUTF16("sec"), password_element_.value());
+  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(password_element_.isAutofilled());
+  CheckUsernameSelection(3, 3);
+}
+
+// Tests that |ClearPreview| properly clears previewed username and password
+// with neither username nor password being previously autofilled.
+TEST_F(PasswordAutofillAgentTest,
+       ClearPreviewWithNotAutofilledUsernameAndPassword) {
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, kAliceUsername, kAlicePassword));
+
+  EXPECT_TRUE(password_autofill_->DidClearAutofillSelection(
+      username_element_));
+
+  EXPECT_TRUE(username_element_.value().isEmpty());
+  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
+  EXPECT_FALSE(username_element_.isAutofilled());
+  EXPECT_TRUE(password_element_.value().isEmpty());
+  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
+  EXPECT_FALSE(password_element_.isAutofilled());
+  CheckUsernameSelection(0, 0);
+}
+
+// Tests that |ClearPreview| properly restores the original selection range of
+// username field that has initially been filled by inline autocomplete.
+TEST_F(PasswordAutofillAgentTest, ClearPreviewWithInlineAutocompletedUsername) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Clear the text fields to start fresh.
+  ClearUsernameAndPasswordFields();
+
+  // Simulate the user typing in the first letter of 'alice', a stored username.
+  SimulateUsernameChange("a", true);
+  // Both the username and password text fields should reflect selection of the
+  // stored login.
+  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
+  // The selection should have been set to 'lice', the last 4 letters.
+  CheckUsernameSelection(1, 5);
+
+  EXPECT_TRUE(password_autofill_->PreviewSuggestion(
+      username_element_, "alicia", "secret"));
+  EXPECT_EQ(
+      "alicia",
+      static_cast<std::string>(username_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_EQ(
+      "secret",
+      static_cast<std::string>(password_element_.suggestedValue().utf8()));
+  EXPECT_TRUE(password_element_.isAutofilled());
+  CheckUsernameSelection(1, 6);
+
+  EXPECT_TRUE(password_autofill_->DidClearAutofillSelection(
+      username_element_));
+
+  EXPECT_EQ(kAliceUsername, username_element_.value().utf8());
+  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(username_element_.isAutofilled());
+  EXPECT_TRUE(password_element_.value().isEmpty());
+  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
+  EXPECT_TRUE(password_element_.isAutofilled());
+  CheckUsernameSelection(1, 5);
 }
 
 // Tests that logging is off by default.

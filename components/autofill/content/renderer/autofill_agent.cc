@@ -161,8 +161,10 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnPreviewFieldWithValue)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptDataListSuggestion,
                         OnAcceptDataListSuggestion)
-    IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
-                        OnAcceptPasswordAutofillSuggestion)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FillPasswordSuggestion,
+                        OnFillPasswordSuggestion)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PreviewPasswordSuggestion,
+                        OnPreviewPasswordSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
                         OnRequestAutocompleteResult)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -494,10 +496,19 @@ void AutofillAgent::OnAcceptDataListSuggestion(const base::string16& value) {
   AcceptDataListSuggestion(value);
 }
 
-void AutofillAgent::OnAcceptPasswordAutofillSuggestion(
+void AutofillAgent::OnFillPasswordSuggestion(const base::string16& username,
+                                             const base::string16& password) {
+  bool handled = password_autofill_agent_->FillSuggestion(
+      element_,
+      username,
+      password);
+  DCHECK(handled);
+}
+
+void AutofillAgent::OnPreviewPasswordSuggestion(
     const base::string16& username,
     const base::string16& password) {
-  bool handled = password_autofill_agent_->AcceptSuggestion(
+  bool handled = password_autofill_agent_->PreviewSuggestion(
       element_,
       username,
       password);

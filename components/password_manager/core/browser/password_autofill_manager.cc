@@ -26,7 +26,7 @@ PasswordAutofillManager::PasswordAutofillManager(
 PasswordAutofillManager::~PasswordAutofillManager() {
 }
 
-bool PasswordAutofillManager::AcceptSuggestion(
+bool PasswordAutofillManager::FillSuggestion(
     const autofill::FormFieldData& field,
     const base::string16& username) {
   autofill::PasswordFormFillData fill_data;
@@ -34,7 +34,21 @@ bool PasswordAutofillManager::AcceptSuggestion(
   if (FindLoginInfo(field, &fill_data) &&
       GetPasswordForUsername(username, fill_data, &password)) {
     PasswordManagerDriver* driver = password_manager_client_->GetDriver();
-    driver->AcceptPasswordAutofillSuggestion(username, password);
+    driver->FillSuggestion(username, password);
+    return true;
+  }
+  return false;
+}
+
+bool PasswordAutofillManager::PreviewSuggestion(
+    const autofill::FormFieldData& field,
+    const base::string16& username) {
+  autofill::PasswordFormFillData fill_data;
+  base::string16 password;
+  if (FindLoginInfo(field, &fill_data) &&
+      GetPasswordForUsername(username, fill_data, &password)) {
+    PasswordManagerDriver* driver = password_manager_client_->GetDriver();
+    driver->PreviewSuggestion(username, password);
     return true;
   }
   return false;
@@ -84,10 +98,16 @@ void PasswordAutofillManager::Reset() {
   login_to_password_info_.clear();
 }
 
-bool PasswordAutofillManager::AcceptSuggestionForTest(
+bool PasswordAutofillManager::FillSuggestionForTest(
     const autofill::FormFieldData& field,
     const base::string16& username) {
-  return AcceptSuggestion(field, username);
+  return FillSuggestion(field, username);
+}
+
+bool PasswordAutofillManager::PreviewSuggestionForTest(
+    const autofill::FormFieldData& field,
+    const base::string16& username) {
+  return PreviewSuggestion(field, username);
 }
 
 void PasswordAutofillManager::OnPopupShown() {
@@ -98,15 +118,15 @@ void PasswordAutofillManager::OnPopupHidden() {
 
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
-  // This is called to preview an autofill suggestion, but we don't currently
-  // do that for password forms (crbug.com/63421). If it is ever implemented,
-  // ClearPreviewedForm() must also be implemented().
+  ClearPreviewedForm();
+  bool success = PreviewSuggestion(form_field_, value);
+  DCHECK(success);
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier) {
-  if (!AcceptSuggestion(form_field_, value))
-    NOTREACHED();
+  bool success = FillSuggestion(form_field_, value);
+  DCHECK(success);
   autofill_manager_delegate_->HideAutofillPopup();
 }
 
@@ -116,8 +136,8 @@ void PasswordAutofillManager::RemoveSuggestion(const base::string16& value,
 }
 
 void PasswordAutofillManager::ClearPreviewedForm() {
-  // There is currently no preview for password autofill (crbug.com/63421).
-  // This function needs an implemention if preview is ever implemented.
+  PasswordManagerDriver* driver = password_manager_client_->GetDriver();
+  driver->ClearPreviewedForm();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

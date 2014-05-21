@@ -42,9 +42,11 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
       OVERRIDE;
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) OVERRIDE;
-  virtual void AcceptPasswordAutofillSuggestion(
-      const base::string16& username,
-      const base::string16& password) OVERRIDE;
+  virtual void FillSuggestion(const base::string16& username,
+                              const base::string16& password) OVERRIDE;
+  virtual void PreviewSuggestion(const base::string16& username,
+                                 const base::string16& password) OVERRIDE;
+  virtual void ClearPreviewedForm() OVERRIDE;
 
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
   virtual PasswordManager* GetPasswordManager() OVERRIDE;

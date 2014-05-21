@@ -229,6 +229,9 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
       usernames_usage_(NOTHING_TO_AUTOFILL),
       web_view_(render_view->GetWebView()),
       logging_state_active_(false),
+      was_username_autofilled_(false),
+      was_password_autofilled_(false),
+      username_selection_start_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -367,7 +370,7 @@ bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
   return true;
 }
 
-bool PasswordAutofillAgent::AcceptSuggestion(
+bool PasswordAutofillAgent::FillSuggestion(
     const blink::WebNode& node,
     const blink::WebString& username,
     const blink::WebString& password) {
@@ -391,11 +394,43 @@ bool PasswordAutofillAgent::AcceptSuggestion(
   return true;
 }
 
+bool PasswordAutofillAgent::PreviewSuggestion(
+    const blink::WebNode& node,
+    const blink::WebString& username,
+    const blink::WebString& password) {
+  blink::WebInputElement username_element;
+  PasswordInfo password_info;
+
+  if (!FindLoginInfo(node, &username_element, &password_info) ||
+      !IsElementAutocompletable(username_element) ||
+      !IsElementAutocompletable(password_info.password_field)) {
+    return false;
+  }
+
+  was_username_autofilled_ = username_element.isAutofilled();
+  username_selection_start_ = username_element.selectionStart();
+  username_element.setSuggestedValue(username);
+  username_element.setAutofilled(true);
+  username_element.setSelectionRange(
+      username_selection_start_,
+      username_element.suggestedValue().length());
+
+  was_password_autofilled_ = password_info.password_field.isAutofilled();
+  password_info.password_field.setSuggestedValue(password);
+  password_info.password_field.setAutofilled(true);
+
+  return true;
+}
+
 bool PasswordAutofillAgent::DidClearAutofillSelection(
     const blink::WebNode& node) {
-  blink::WebInputElement input;
-  PasswordInfo password;
-  return FindLoginInfo(node, &input, &password);
+  blink::WebInputElement username_element;
+  PasswordInfo password_info;
+  if (!FindLoginInfo(node, &username_element, &password_info))
+    return false;
+
+  ClearPreview(&username_element, &password_info.password_field);
+  return true;
 }
 
 bool PasswordAutofillAgent::ShowSuggestions(
@@ -1024,6 +1059,21 @@ bool PasswordAutofillAgent::FindLoginInfo(const blink::WebNode& node,
   *found_input = input;
   *found_password = iter->second;
   return true;
+}
+
+void PasswordAutofillAgent::ClearPreview(
+    blink::WebInputElement* username,
+    blink::WebInputElement* password) {
+  if (!username->suggestedValue().isEmpty()) {
+    username->setSuggestedValue(blink::WebString());
+    username->setAutofilled(was_username_autofilled_);
+    username->setSelectionRange(username_selection_start_,
+                                username->value().length());
+  }
+  if (!password->suggestedValue().isEmpty()) {
+      password->setSuggestedValue(blink::WebString());
+      password->setAutofilled(was_password_autofilled_);
+  }
 }
 
 }  // namespace autofill

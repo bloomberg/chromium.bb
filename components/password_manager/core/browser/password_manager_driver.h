@@ -45,11 +45,17 @@ class PasswordManagerDriver {
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) = 0;
 
-  // Tells the driver to accept the password autofill suggestion for |username|
-  // and fill the password with |password|.
-  virtual void AcceptPasswordAutofillSuggestion(
-      const base::string16& username,
-      const base::string16& password) = 0;
+  // Tells the driver to fill the form with the |username| and |password|.
+  virtual void FillSuggestion(const base::string16& username,
+                              const base::string16& password) = 0;
+
+  // Tells the driver to preview filling form with the |username| and
+  // |password|.
+  virtual void PreviewSuggestion(const base::string16& username,
+                                 const base::string16& password) = 0;
+
+  // Tells the driver to clear previewed password and username fields.
+  virtual void ClearPreviewedForm() = 0;
 
   // Returns the PasswordGenerationManager associated with this instance.
   virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;

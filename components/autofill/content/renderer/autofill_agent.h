@@ -102,8 +102,10 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnFillFieldWithValue(const base::string16& value);
   void OnPreviewFieldWithValue(const base::string16& value);
   void OnAcceptDataListSuggestion(const base::string16& value);
-  void OnAcceptPasswordAutofillSuggestion(const base::string16& username,
-                                          const base::string16& password);
+  void OnFillPasswordSuggestion(const base::string16& username,
+                                const base::string16& password);
+  void OnPreviewPasswordSuggestion(const base::string16& username,
+                                   const base::string16& password);
 
   // Called when interactive autocomplete finishes. |message| is printed to
   // the console if non-empty.
