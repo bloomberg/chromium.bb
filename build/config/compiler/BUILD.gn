@@ -703,12 +703,6 @@ if (is_win) {
       "-Wl,--gc-sections",
     ]
   }
-
-  if (is_android || is_ios) {
-    common_optimize_on_cflags += [ "-Os" ]
-  } else {
-    common_optimize_on_cflags += [ "-O2" ]
-  }
 }
 
 # Default "optimization on" config. On Windows, this favors size over speed.
@@ -718,6 +712,14 @@ config("optimize") {
   if (is_win) {
     cflags += [
       "/Os",   # favor size over speed.
+    ]
+  } else if (is_android || is_ios) {
+    cflags += [
+      "-Os",  # Favor size over speed.
+    ]
+  } else {
+    cflags += [
+      "-O2",
     ]
   }
 }
@@ -755,6 +757,10 @@ config("optimize_max") {
     cflags += [
       "/Ot",   # Favor speed over size.
       "/GL",   # Whole program optimization.
+    ]
+  } else {
+    cflags += [
+      "-O2",
     ]
   }
 }

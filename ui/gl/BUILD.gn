@@ -10,6 +10,10 @@ config("gl_config") {
   if (use_x11) {
     defines = [ "GL_GLEXT_PROTOTYPES" ]
   }
+
+  # TODO(brettw) this should be removed and the the files using the generated
+  # GL bindings should use the path inside the gen directory.
+  include_dirs = [ gl_binding_output_dir ]
 }
 
 component("gl") {
@@ -239,6 +243,8 @@ component("gl") {
 }
 
 action("generate_gl_bindings") {
+  visibility = ":*"  # Only targets in this file can see this.
+
   script = "generate_bindings.py"
 
   # TODO(brettw) make this dynamic. The GYP version calls "generate_bindings.py

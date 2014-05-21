@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  if (is_android) {
-    gcc_version = 48
-  } else {
-    gcc_version = exec_script("../../compiler_version.py", [ "host",  "compiler" ], "value")
-  }
+if (is_android) {
+  gcc_version = 48
+} else {
+  gcc_version = exec_script("../../compiler_version.py", [ "host",  "compiler" ], "value")
 }

@@ -260,9 +260,10 @@ component("gfx") {
       sources -= [ "path.cc" ]
     }
 
-    if (!is_android_webview_build) {
-      deps += [ "//base:base_java" ]
-    }
+    # TODO(GYP) re-enable when base_java exists.
+    #if (!is_android_webview_build) {
+    #  deps += [ "//base:base_java" ]
+    #}
 
     deps += [ ":gfx_jni_headers" ]
     libs = [
