@@ -96,7 +96,7 @@ class ExtensionUninstallDialog
   // image, then we use a default icon instead.
   void SetIcon(const gfx::Image& image);
 
-  void OnImageLoaded(const gfx::Image& image);
+  void OnImageLoaded(const std::string& extension_id, const gfx::Image& image);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -100,10 +101,12 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   state_ = kImageIsLoading;
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(profile_);
-  loader->LoadImageAsync(extension_, image,
+  loader->LoadImageAsync(extension_,
+                         image,
                          gfx::Size(pixel_size, pixel_size),
                          base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
-                                    AsWeakPtr()));
+                                    AsWeakPtr(),
+                                    extension_->id()));
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
@@ -120,7 +123,16 @@ void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
   }
 }
 
-void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image) {
+void ExtensionUninstallDialog::OnImageLoaded(const std::string& extension_id,
+                                             const gfx::Image& image) {
+  const extensions::Extension* target_extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (!target_extension) {
+    delegate_->ExtensionUninstallCanceled();
+    return;
+  }
+
   SetIcon(image);
 
   // Show the dialog unless the browser has been closed while we were waiting
