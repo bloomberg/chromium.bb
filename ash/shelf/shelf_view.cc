@@ -1706,18 +1706,16 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     views::View* source,
                                     const ui::Event& event) {
-  scoped_ptr<ShelfMenuModel> menu_model;
   ShelfItemDelegate* item_delegate =
       item_manager_->GetShelfItemDelegate(item.id);
-  menu_model.reset(item_delegate->CreateApplicationMenu(event.flags()));
+  list_menu_model_.reset(item_delegate->CreateApplicationMenu(event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
-  if (!menu_model.get() || menu_model->GetItemCount() <= 5)
+  if (!list_menu_model_.get() || list_menu_model_->GetItemCount() <= 5)
     return false;
 
-  ShowMenu(scoped_ptr<views::MenuModelAdapter>(
-               new ShelfMenuModelAdapter(menu_model.get())),
+  ShowMenu(list_menu_model_.get(),
            source,
            gfx::Point(),
            false,
@@ -1734,34 +1732,31 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  scoped_ptr<ui::MenuModel> menu_model;
   ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[view_index].id);
-  menu_model.reset(item_delegate->CreateContextMenu(
+  context_menu_model_.reset(item_delegate->CreateContextMenu(
       source->GetWidget()->GetNativeView()->GetRootWindow()));
-  if (!menu_model)
+  if (!context_menu_model_)
     return;
 
   base::AutoReset<ShelfID> reseter(
       &context_menu_id_,
       view_index == -1 ? 0 : model_->items()[view_index].id);
 
-  ShowMenu(scoped_ptr<views::MenuModelAdapter>(
-               new views::MenuModelAdapter(menu_model.get())),
+  ShowMenu(context_menu_model_.get(),
            source,
            point,
            true,
            source_type);
 }
 
-void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
+void ShelfView::ShowMenu(ui::MenuModel* menu_model,
                          views::View* source,
                          const gfx::Point& click_point,
                          bool context_menu,
                          ui::MenuSourceType source_type) {
   closing_event_time_ = base::TimeDelta();
-  launcher_menu_runner_.reset(
-      new views::MenuRunner(menu_model_adapter->CreateMenu()));
+  launcher_menu_runner_.reset(new views::MenuRunner(menu_model));
 
   ScopedTargetRootWindow scoped_target(
       source->GetWidget()->GetNativeView()->GetRootWindow());

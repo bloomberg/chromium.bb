@@ -19,9 +19,12 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
 class BoundsAnimator;
-class MenuModelAdapter;
 class MenuRunner;
 class ViewModel;
 }
@@ -290,11 +293,11 @@ class ASH_EXPORT ShelfView : public views::View,
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
-  // Show either a context or normal click menu of given |menu_model_adapter|.
+  // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
   // a menu listing one or more running applications.
   // The |click_point| is only used for |context_menu|'s.
-  void ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
+  void ShowMenu(ui::MenuModel* menu_model,
                 views::View* source,
                 const gfx::Point& click_point,
                 bool context_menu,
@@ -364,6 +367,10 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfID context_menu_id_;
 
   scoped_ptr<views::FocusSearch> focus_search_;
+
+  scoped_ptr<ui::MenuModel> list_menu_model_;
+
+  scoped_ptr<ui::MenuModel> context_menu_model_;
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 
