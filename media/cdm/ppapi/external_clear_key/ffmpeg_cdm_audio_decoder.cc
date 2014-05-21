@@ -271,7 +271,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
   // skipping end of stream packets since they have a size of zero.
   do {
     // Reset frame to default values.
-    avcodec_get_frame_defaults(av_frame_.get());
+    av_frame_unref(av_frame_.get());
 
     int frame_decoded = 0;
     int result = avcodec_decode_audio4(

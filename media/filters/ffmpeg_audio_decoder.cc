@@ -378,7 +378,6 @@ bool FFmpegAudioDecoder::FFmpegDecode(
       DCHECK_GE(unread_frames, 0);
       if (unread_frames > 0)
         output->TrimEnd(unread_frames);
-
       av_frame_unref(av_frame_.get());
     }
 
