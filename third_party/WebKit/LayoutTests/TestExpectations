@@ -1526,6 +1526,4 @@ crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-width-attr.ht
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 
-crbug.com/374939 [ XP ] virtual/softwarecompositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
-
 crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
