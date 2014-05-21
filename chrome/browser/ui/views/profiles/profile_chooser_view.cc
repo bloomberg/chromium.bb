@@ -981,8 +981,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
 
   // The available links depend on the type of profile that is active.
-  layout->StartRow(1, 0);
   if (avatar_item.signed_in) {
+    layout->StartRow(1, 0);
     if (switches::IsNewProfileManagement()) {
       base::string16 link_title = l10n_util::GetStringUTF16(
           view_mode_ ==  BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
@@ -997,10 +997,16 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       layout->AddView(email_label);
     }
   } else {
-    signin_current_profile_link_ = new views::BlueButton(
-      this, l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-    layout->AddView(signin_current_profile_link_);
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(
+            browser_->profile()->GetOriginalProfile());
+    if (signin_manager->IsSigninAllowed()) {
+      signin_current_profile_link_ = new views::BlueButton(
+        this, l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      layout->StartRow(1, 0);
+      layout->AddView(signin_current_profile_link_);
+    }
   }
 
   return view;
