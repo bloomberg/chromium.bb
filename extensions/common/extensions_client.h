@@ -22,7 +22,6 @@ class FeatureProvider;
 class ManifestPermissionSet;
 class PermissionMessage;
 class PermissionMessageProvider;
-class PermissionsProvider;
 class SimpleFeature;
 class URLPatternSet;
 

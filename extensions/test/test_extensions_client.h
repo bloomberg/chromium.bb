@@ -17,7 +17,6 @@ class TestExtensionsClient : public ExtensionsClient {
 
  private:
   virtual void Initialize() OVERRIDE;
-  virtual const PermissionsProvider& GetPermissionsProvider() const OVERRIDE;
   virtual const PermissionMessageProvider& GetPermissionMessageProvider() const
       OVERRIDE;
   virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(

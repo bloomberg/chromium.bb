@@ -27,12 +27,6 @@ void TestExtensionsClient::Initialize() {
   }
 }
 
-const PermissionsProvider&
-TestExtensionsClient::GetPermissionsProvider() const {
-  static TestPermissionsProvider provider;
-  return provider;
-}
-
 const PermissionMessageProvider&
 TestExtensionsClient::GetPermissionMessageProvider() const {
   static TestPermissionMessageProvider provider;
