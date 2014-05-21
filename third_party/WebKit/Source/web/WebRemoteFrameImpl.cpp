@@ -530,6 +530,11 @@ void WebRemoteFrameImpl::extendSelectionAndDelete(int before, int after)
     ASSERT_NOT_REACHED();
 }
 
+void WebRemoteFrameImpl::addStyleSheetByURL(const WebString& url)
+{
+    ASSERT_NOT_REACHED();
+}
+
 void WebRemoteFrameImpl::setCaretVisible(bool)
 {
     ASSERT_NOT_REACHED();
