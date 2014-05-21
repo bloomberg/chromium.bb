@@ -68,6 +68,7 @@ group("root") {
     "//ui/strings",
     "//ui/surface",
     "//url",
+    "//v8:mksnapshot",
   ]
 
   if (is_linux) {
