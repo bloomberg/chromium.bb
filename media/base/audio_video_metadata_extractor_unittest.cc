@@ -137,7 +137,7 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
             extractor->stream_infos()[0].tags.find("minor_version")->second);
 
   EXPECT_EQ("h264", extractor->stream_infos()[1].type);
-  EXPECT_EQ(5u, extractor->stream_infos()[1].tags.size());
+  EXPECT_EQ(4u, extractor->stream_infos()[1].tags.size());
   EXPECT_EQ("2014-02-11 00:39:25",
             extractor->stream_infos()[1].tags.find("creation_time")->second);
   EXPECT_EQ("VideoHandle",

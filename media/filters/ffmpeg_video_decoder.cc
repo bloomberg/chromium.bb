@@ -54,25 +54,12 @@ static int GetThreadCount(AVCodecID codec_id) {
   return decode_threads;
 }
 
-static int GetVideoBufferImpl(struct AVCodecContext* s,
-                              AVFrame* frame,
-                              int flags) {
-  FFmpegVideoDecoder* decoder = static_cast<FFmpegVideoDecoder*>(s->opaque);
-  return decoder->GetVideoBuffer(s, frame, flags);
-}
-
-static void ReleaseVideoBufferImpl(void* opaque, uint8* data) {
-  scoped_refptr<VideoFrame> video_frame;
-  video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
-}
-
 FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner), state_(kUninitialized) {}
 
-int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
-                                       AVFrame* frame,
-                                       int flags) {
+int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
+                                       AVFrame* frame) {
   // Don't use |codec_context_| here! With threaded decoding,
   // it will contain unsynchronized width/height/pix_fmt values,
   // whereas |codec_context| contains the current threads's
@@ -116,26 +103,34 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
 
   for (int i = 0; i < 3; i++) {
+    frame->base[i] = video_frame->data(i);
     frame->data[i] = video_frame->data(i);
     frame->linesize[i] = video_frame->stride(i);
   }
 
+  frame->opaque = NULL;
+  video_frame.swap(reinterpret_cast<VideoFrame**>(&frame->opaque));
+  frame->type = FF_BUFFER_TYPE_USER;
   frame->width = coded_size.width();
   frame->height = coded_size.height();
   frame->format = codec_context->pix_fmt;
-  frame->reordered_opaque = codec_context->reordered_opaque;
 
-  // Now create an AVBufferRef for the data just allocated. It will own the
-  // reference to the VideoFrame object.
-  void* opaque = NULL;
-  video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
-  frame->buf[0] =
-      av_buffer_create(frame->data[0],
-                       VideoFrame::AllocationSize(format, coded_size),
-                       ReleaseVideoBufferImpl,
-                       opaque,
-                       0);
   return 0;
+}
+
+static int GetVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
+  FFmpegVideoDecoder* decoder = static_cast<FFmpegVideoDecoder*>(s->opaque);
+  return decoder->GetVideoBuffer(s, frame);
+}
+
+static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
+  scoped_refptr<VideoFrame> video_frame;
+  video_frame.swap(reinterpret_cast<VideoFrame**>(&frame->opaque));
+
+  // The FFmpeg API expects us to zero the data pointers in
+  // this callback
+  memset(frame->data, 0, sizeof(frame->data));
+  frame->opaque = NULL;
 }
 
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -277,6 +272,9 @@ bool FFmpegVideoDecoder::FFmpegDecode(
     scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(video_frame);
 
+  // Reset frame to default values.
+  avcodec_get_frame_defaults(av_frame_.get());
+
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
   AVPacket packet;
@@ -290,6 +288,10 @@ bool FFmpegVideoDecoder::FFmpegDecode(
 
     // Let FFmpeg handle presentation timestamp reordering.
     codec_context_->reordered_opaque = buffer->timestamp().InMicroseconds();
+
+    // This is for codecs not using get_buffer to initialize
+    // |av_frame_->reordered_opaque|
+    av_frame_->reordered_opaque = codec_context_->reordered_opaque;
   }
 
   int frame_decoded = 0;
@@ -303,11 +305,6 @@ bool FFmpegVideoDecoder::FFmpegDecode(
     *video_frame = NULL;
     return false;
   }
-
-  // FFmpeg says some codecs might have multiple frames per packet.  Previous
-  // discussions with rbultje@ indicate this shouldn't be true for the codecs
-  // we use.
-  DCHECK_EQ(result, packet.size);
 
   // If no frame was produced then signal that more data is required to
   // produce more frames. This can happen under two circumstances:
@@ -326,17 +323,18 @@ bool FFmpegVideoDecoder::FFmpegDecode(
       !av_frame_->data[VideoFrame::kVPlane]) {
     LOG(ERROR) << "Video frame was produced yet has invalid frame data.";
     *video_frame = NULL;
-    av_frame_unref(av_frame_.get());
     return false;
   }
 
-  *video_frame =
-      reinterpret_cast<VideoFrame*>(av_buffer_get_opaque(av_frame_->buf[0]));
+  if (!av_frame_->opaque) {
+    LOG(ERROR) << "VideoFrame object associated with frame data not set.";
+    return false;
+  }
+  *video_frame = static_cast<VideoFrame*>(av_frame_->opaque);
 
   (*video_frame)->set_timestamp(
       base::TimeDelta::FromMicroseconds(av_frame_->reordered_opaque));
 
-  av_frame_unref(av_frame_.get());
   return true;
 }
 
@@ -353,12 +351,15 @@ bool FFmpegVideoDecoder::ConfigureDecoder(bool low_delay) {
   codec_context_.reset(avcodec_alloc_context3(NULL));
   VideoDecoderConfigToAVCodecContext(config_, codec_context_.get());
 
+  // Enable motion vector search (potentially slow), strong deblocking filter
+  // for damaged macroblocks, and set our error detection sensitivity.
+  codec_context_->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
   codec_context_->thread_count = GetThreadCount(codec_context_->codec_id);
   codec_context_->thread_type = low_delay ? FF_THREAD_SLICE : FF_THREAD_FRAME;
   codec_context_->opaque = this;
   codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
-  codec_context_->get_buffer2 = GetVideoBufferImpl;
-  codec_context_->refcounted_frames = 1;
+  codec_context_->get_buffer = GetVideoBufferImpl;
+  codec_context_->release_buffer = ReleaseVideoBufferImpl;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {

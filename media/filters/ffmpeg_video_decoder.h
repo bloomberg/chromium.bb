@@ -41,11 +41,9 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   virtual void Stop() OVERRIDE;
 
   // Callback called from within FFmpeg to allocate a buffer based on
-  // the dimensions of |codec_context|. See AVCodecContext.get_buffer2
+  // the dimensions of |codec_context|. See AVCodecContext.get_buffer
   // documentation inside FFmpeg.
-  int GetVideoBuffer(struct AVCodecContext* codec_context,
-                     AVFrame* frame,
-                     int flags);
+  int GetVideoBuffer(AVCodecContext *codec_context, AVFrame* frame);
 
  private:
   enum DecoderState {

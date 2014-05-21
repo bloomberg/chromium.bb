@@ -215,8 +215,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
     const base::FilePath& file_path,
     Decryptor* decryptor) {
   FileDataSource* file_data_source = new FileDataSource();
-  CHECK(file_data_source->Initialize(file_path)) << "Is " << file_path.value()
-                                                 << " missing?";
+  CHECK(file_data_source->Initialize(file_path));
   data_source_.reset(file_data_source);
 
   Demuxer::NeedKeyCB need_key_cb = base::Bind(

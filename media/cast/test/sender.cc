@@ -140,7 +140,7 @@ VideoSenderConfig GetVideoSenderConfig() {
   return video_config;
 }
 
-void AVFreeFrame(AVFrame* frame) { av_frame_free(&frame); }
+void AVFreeFrame(AVFrame* frame) { avcodec_free_frame(&frame); }
 
 class SendProcess {
  public:
@@ -533,11 +533,11 @@ class SendProcess {
     // Audio.
     AVFrame* avframe = av_frame_alloc();
 
-    // Make a shallow copy of packet so we can slide packet.data as frames are
-    // decoded from the packet; otherwise av_free_packet() will corrupt memory.
+    // Shallow copy of the packet.
     AVPacket packet_temp = *packet.get();
 
     do {
+      avcodec_get_frame_defaults(avframe);
       int frame_decoded = 0;
       int result = avcodec_decode_audio4(
           av_audio_context(), avframe, &frame_decoded, &packet_temp);
@@ -577,9 +577,8 @@ class SendProcess {
               // Note: Not all files have correct values for pkt_pts.
               base::TimeDelta::FromMilliseconds(avframe->pkt_pts));
       audio_algo_.EnqueueBuffer(buffer);
-      av_frame_unref(avframe);
     } while (packet_temp.size > 0);
-    av_frame_free(&avframe);
+    avcodec_free_frame(&avframe);
 
     const int frames_needed_to_scale =
         playback_rate_ * av_audio_context()->sample_rate /
@@ -619,16 +618,15 @@ class SendProcess {
     // Video.
     int got_picture;
     AVFrame* avframe = av_frame_alloc();
+    avcodec_get_frame_defaults(avframe);
     // Tell the decoder to reorder for us.
     avframe->reordered_opaque =
         av_video_context()->reordered_opaque = packet->pts;
     CHECK(avcodec_decode_video2(
         av_video_context(), avframe, &got_picture, packet.get()) >= 0)
         << "Video decode error.";
-    if (!got_picture) {
-      av_frame_free(&avframe);
+    if (!got_picture)
       return;
-    }
     gfx::Size size(av_video_context()->width, av_video_context()->height);
     if (!video_first_pts_set_ ||
         avframe->reordered_opaque < video_first_pts_) {

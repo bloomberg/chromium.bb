@@ -902,7 +902,15 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     if (!packet->data) {
       ScopedAVPacket new_packet(new AVPacket());
       av_new_packet(new_packet.get(), 0);
-      av_packet_copy_props(new_packet.get(), packet.get());
+
+      new_packet->pts = packet->pts;
+      new_packet->dts = packet->dts;
+      new_packet->pos = packet->pos;
+      new_packet->duration = packet->duration;
+      new_packet->convergence_duration = packet->convergence_duration;
+      new_packet->flags = packet->flags;
+      new_packet->stream_index = packet->stream_index;
+
       packet.swap(new_packet);
     }
 
