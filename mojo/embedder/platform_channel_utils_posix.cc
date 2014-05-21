@@ -105,10 +105,10 @@ bool PlatformChannelSendHandles(PlatformHandle h,
 ssize_t PlatformChannelRecvmsg(PlatformHandle h,
                                void* buf,
                                size_t num_bytes,
-                               ScopedPlatformHandleVectorPtr* handles) {
+                               std::deque<PlatformHandle>* platform_handles) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
-  DCHECK(handles);
+  DCHECK(platform_handles);
 
   struct iovec iov = { buf, num_bytes };
   char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
@@ -137,10 +137,8 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
       size_t num_fds = payload_length / sizeof(int);
       const int* fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
       for (size_t i = 0; i < num_fds; i++) {
-        if (!*handles)
-          (*handles).reset(new PlatformHandleVector());
-        (*handles)->push_back(PlatformHandle(fds[i]));
-        DCHECK((*handles)->back().is_valid());
+        platform_handles->push_back(PlatformHandle(fds[i]));
+        DCHECK(platform_handles->back().is_valid());
       }
     }
   }

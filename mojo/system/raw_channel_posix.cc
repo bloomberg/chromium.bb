@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <deque>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -68,7 +69,7 @@ class RawChannelPosix : public RawChannel,
 
   bool pending_read_;
 
-  embedder::ScopedPlatformHandleVectorPtr read_platform_handles_;
+  std::deque<embedder::PlatformHandle> read_platform_handles_;
 
   // The following members are used on multiple threads and protected by
   // |write_lock()|:
@@ -102,6 +103,8 @@ RawChannelPosix::~RawChannelPosix() {
   // These must have been shut down/destroyed on the I/O thread.
   DCHECK(!read_watcher_.get());
   DCHECK(!write_watcher_.get());
+
+  embedder::CloseAllPlatformHandles(&read_platform_handles_);
 }
 
 size_t RawChannelPosix::GetSerializedPlatformHandleSize() const {
@@ -117,23 +120,31 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
-  size_t old_num_platform_handles =
-      read_platform_handles_ ? read_platform_handles_->size() : 0;
+  size_t old_num_platform_handles = read_platform_handles_.size();
   ssize_t read_result =
       embedder::PlatformChannelRecvmsg(fd_.get(),
                                        buffer,
                                        bytes_to_read,
                                        &read_platform_handles_);
-  if (read_platform_handles_ &&
-      read_platform_handles_->size() > old_num_platform_handles) {
+  if (read_platform_handles_.size() > old_num_platform_handles) {
+    DCHECK_LE(read_platform_handles_.size() - old_num_platform_handles,
+              embedder::kPlatformChannelMaxNumHandles);
+
     if (read_result != 1) {
       LOG(WARNING) << "Invalid control message with platform handles";
       return IO_FAILED;
     }
 
-    if (read_platform_handles_->size() > TransportData::kMaxPlatformHandles) {
+    // We should never accumulate more than |TransportData::kMaxPlatformHandles
+    // + embedder::kPlatformChannelMaxNumHandles| handles. (The latter part is
+    // possible because we could have accumulated all the handles for a message,
+    // then received the message data plus the first set of handles for the next
+    // message in the subsequent |recvmsg()|.)
+    if (read_platform_handles_.size() > (TransportData::kMaxPlatformHandles +
+            embedder::kPlatformChannelMaxNumHandles)) {
       LOG(WARNING) << "Received too many platform handles";
-      read_platform_handles_.reset();
+      embedder::CloseAllPlatformHandles(&read_platform_handles_);
+      read_platform_handles_.clear();
       return IO_FAILED;
     }
 
@@ -173,13 +184,20 @@ embedder::ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
     const void* /*platform_handle_table*/) {
   DCHECK_GT(num_platform_handles, 0u);
 
-  if (!read_platform_handles_ ||
-      read_platform_handles_->size() != num_platform_handles) {
-    read_platform_handles_.reset();
+  if (read_platform_handles_.size() < num_platform_handles) {
+    embedder::CloseAllPlatformHandles(&read_platform_handles_);
+    read_platform_handles_.clear();
     return embedder::ScopedPlatformHandleVectorPtr();
   }
 
-  return read_platform_handles_.Pass();
+  embedder::ScopedPlatformHandleVectorPtr rv(
+      new embedder::PlatformHandleVector(num_platform_handles));
+  rv->assign(read_platform_handles_.begin(),
+             read_platform_handles_.begin() + num_platform_handles);
+  read_platform_handles_.erase(
+      read_platform_handles_.begin(),
+      read_platform_handles_.begin() + num_platform_handles);
+  return rv.Pass();
 }
 
 RawChannel::IOResult RawChannelPosix::WriteNoLock(

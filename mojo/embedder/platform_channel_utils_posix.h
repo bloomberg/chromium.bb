@@ -8,11 +8,10 @@
 #include <stddef.h>
 #include <sys/types.h>  // For |ssize_t|.
 
-#include <vector>
+#include <deque>
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_handle.h"
-#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/system_impl_export.h"
 
 struct iovec;  // Declared in <sys/uio.h>.
@@ -48,14 +47,13 @@ MOJO_SYSTEM_IMPL_EXPORT bool PlatformChannelSendHandles(PlatformHandle h,
                                                         size_t num_handles);
 
 // Wrapper around |recvmsg()|, which will extract any attached file descriptors
-// (in the control message) to |PlatformHandle|s. (This also handles |EINTR|.)
-// If |*handles| is null and handles are received, a vector will be allocated;
-// otherwise, any handles received will be appended to the existing vector.
+// (in the control message) to |PlatformHandle|s (and append them to
+// |platform_handles|). (This also handles |EINTR|.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelRecvmsg(
     PlatformHandle h,
     void* buf,
     size_t num_bytes,
-    ScopedPlatformHandleVectorPtr* handles);
+    std::deque<PlatformHandle>* platform_handles);
 
 }  // namespace embedder
 }  // namespace mojo

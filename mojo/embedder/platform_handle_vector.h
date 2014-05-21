@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle_utils.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -16,14 +17,11 @@ namespace embedder {
 
 typedef std::vector<PlatformHandle> PlatformHandleVector;
 
-MOJO_SYSTEM_IMPL_EXPORT void CloseAllHandles(
-    PlatformHandleVector* platform_handles);
-
 // A deleter (for use with |scoped_ptr|) which closes all handles and then
 // |delete|s the |PlatformHandleVector|.
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandleVectorDeleter {
   void operator()(PlatformHandleVector* platform_handles) const {
-    CloseAllHandles(platform_handles);
+    CloseAllPlatformHandles(platform_handles);
     delete platform_handles;
   }
 };

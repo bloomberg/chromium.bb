@@ -13,7 +13,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include <vector>
+#include <deque>
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -22,6 +22,8 @@
 #include "base/macros.h"
 #include "mojo/common/test/test_utils.h"
 #include "mojo/embedder/platform_channel_utils_posix.h"
+#include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,12 +119,12 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    ScopedPlatformHandleVectorPtr received_handles;
+    std::deque<PlatformHandle> received_handles;
     ssize_t result = PlatformChannelRecvmsg(client_handle.get(), buf,
                                             sizeof(buf), &received_handles);
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
     EXPECT_EQ(send_string, std::string(buf, static_cast<size_t>(result)));
-    EXPECT_FALSE(received_handles);
+    EXPECT_TRUE(received_handles.empty());
   }
 }
 
@@ -152,17 +154,17 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     WaitReadable(client_handle.get());
 
     char buf[100] = { 'a' };
-    ScopedPlatformHandleVectorPtr received_handles;
+    std::deque<PlatformHandle> received_handles;
     EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
                                         &received_handles));
     EXPECT_EQ('\0', buf[0]);
-    ASSERT_TRUE(received_handles);
-    EXPECT_EQ(i, received_handles->size());
+    ASSERT_FALSE(received_handles.empty());
+    EXPECT_EQ(i, received_handles.size());
 
-    for (size_t j = 0; j < received_handles->size(); j++) {
+    for (size_t j = 0; !received_handles.empty(); j++) {
       base::ScopedFILE fp(test::FILEFromPlatformHandle(
-          ScopedPlatformHandle((*received_handles)[j]), "rb"));
-      (*received_handles)[j] = PlatformHandle();
+          ScopedPlatformHandle(received_handles.front()), "rb"));
+      received_handles.pop_front();
       ASSERT_TRUE(fp);
       rewind(fp.get());
       char read_buf[100];
@@ -198,23 +200,22 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
 
   WaitReadable(client_handle.get());
 
-  // Start with an invalid handle in the vector.
-  ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector());
-  handles->push_back(PlatformHandle());
+  // Start with an invalid handle in the deque.
+  std::deque<PlatformHandle> received_handles;
+  received_handles.push_back(PlatformHandle());
 
   char buf[100] = { 'a' };
   EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
-                                      &handles));
+                                      &received_handles));
   EXPECT_EQ('\0', buf[0]);
-  ASSERT_TRUE(handles);
-  ASSERT_EQ(2u, handles->size());
-  EXPECT_FALSE((*handles)[0].is_valid());
-  EXPECT_TRUE((*handles)[1].is_valid());
+  ASSERT_EQ(2u, received_handles.size());
+  EXPECT_FALSE(received_handles[0].is_valid());
+  EXPECT_TRUE(received_handles[1].is_valid());
 
   {
     base::ScopedFILE fp(test::FILEFromPlatformHandle(
-        ScopedPlatformHandle((*handles)[1]), "rb"));
-    (*handles)[1] = PlatformHandle();
+        ScopedPlatformHandle(received_handles[1]), "rb"));
+    received_handles[1] = PlatformHandle();
     ASSERT_TRUE(fp);
     rewind(fp.get());
     char read_buf[100];
