@@ -41,7 +41,6 @@ public:
 
 private:
     void notifyDescendantInsertedIntoDocument(ContainerNode&);
-    void notifyDescendantInsertedIntoTree(ContainerNode&);
     void notifyNodeInsertedIntoDocument(Node&);
     void notifyNodeInsertedIntoTree(ContainerNode&);
 
@@ -203,16 +202,6 @@ inline void ChildNodeInsertionNotifier::notifyNodeInsertedIntoDocument(Node& nod
         notifyDescendantInsertedIntoDocument(toContainerNode(node));
 }
 
-inline void ChildNodeInsertionNotifier::notifyNodeInsertedIntoTree(ContainerNode& node)
-{
-    NoEventDispatchAssertion assertNoEventDispatch;
-    ASSERT(!m_insertionPoint.inDocument());
-
-    if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node.insertedInto(&m_insertionPoint))
-        m_postInsertionNotificationTargets.append(&node);
-    notifyDescendantInsertedIntoTree(node);
-}
-
 inline void ChildNodeInsertionNotifier::notify(Node& node)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
@@ -222,10 +211,13 @@ inline void ChildNodeInsertionNotifier::notify(Node& node)
     RefPtr<Document> protectDocument(node.document());
     RefPtr<Node> protectNode(node);
 
-    if (m_insertionPoint.inDocument())
+    if (m_insertionPoint.inDocument()) {
         notifyNodeInsertedIntoDocument(node);
-    else if (node.isContainerNode())
+    } else if (node.isContainerNode()) {
+        NoEventDispatchAssertion assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
         notifyNodeInsertedIntoTree(toContainerNode(node));
+    }
 
     for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = m_postInsertionNotificationTargets[i].get();

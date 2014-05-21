@@ -27,6 +27,7 @@
 #include "core/dom/ContainerNodeAlgorithms.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
@@ -64,15 +65,20 @@ void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoDocument(ContainerN
     }
 }
 
-void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoTree(ContainerNode& node)
+void ChildNodeInsertionNotifier::notifyNodeInsertedIntoTree(ContainerNode& root)
 {
-    for (Node* child = node.firstChild(); child; child = child->nextSibling()) {
-        if (child->isContainerNode())
-            notifyNodeInsertedIntoTree(toContainerNode(*child));
-    }
+    ASSERT(!m_insertionPoint.inDocument());
 
-    for (ShadowRoot* root = node.youngestShadowRoot(); root; root = root->olderShadowRoot())
-        notifyNodeInsertedIntoTree(*root);
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+        // As an optimization we don't notify leaf nodes when when inserting
+        // into detached subtrees.
+        if (!node->isContainerNode())
+            continue;
+        if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node->insertedInto(&m_insertionPoint))
+            m_postInsertionNotificationTargets.append(node);
+        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+            notifyNodeInsertedIntoTree(*shadowRoot);
+    }
 }
 
 void ChildNodeRemovalNotifier::notifyDescendantRemovedFromDocument(ContainerNode& node)
