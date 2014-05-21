@@ -234,10 +234,6 @@ void ToastContentsView::WindowClosing() {
     collection_->ForgetToast(this);
 }
 
-bool ToastContentsView::CanActivate() const {
-  return false;
-}
-
 void ToastContentsView::OnDisplayChanged() {
   views::Widget* widget = GetWidget();
   if (!widget)

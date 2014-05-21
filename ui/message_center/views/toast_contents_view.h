@@ -97,7 +97,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
-  virtual bool CanActivate() const OVERRIDE;
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
 

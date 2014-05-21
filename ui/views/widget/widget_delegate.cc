@@ -17,7 +17,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegate:
 
-WidgetDelegate::WidgetDelegate() : default_contents_view_(NULL) {
+WidgetDelegate::WidgetDelegate()
+    : default_contents_view_(NULL),
+      can_activate_(true) {
 }
 
 void WidgetDelegate::OnWidgetMove() {
@@ -50,7 +52,7 @@ bool WidgetDelegate::CanMaximize() const {
 }
 
 bool WidgetDelegate::CanActivate() const {
-  return true;
+  return can_activate_;
 }
 
 ui::ModalType WidgetDelegate::GetModalType() const {

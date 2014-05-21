@@ -30,6 +30,11 @@ class VIEWS_EXPORT WidgetDelegate {
  public:
   WidgetDelegate();
 
+  // Sets the return value of CanActivate(). Default is true.
+  void set_can_activate(bool can_activate) {
+    can_activate_ = can_activate;
+  }
+
   // Called whenever the widget's position changes.
   virtual void OnWidgetMove();
 
@@ -180,6 +185,8 @@ class VIEWS_EXPORT WidgetDelegate {
 
  private:
   View* default_contents_view_;
+
+  bool can_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };
