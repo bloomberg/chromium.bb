@@ -17,30 +17,6 @@
 
 namespace sandbox {
 
-namespace internal {
-
-// Internal helper class to hold a value of type T.
-template <typename T>
-class AuxHolder {
- public:
-  AuxHolder() : val_() {}
-  T* get() { return &val_; }
-
- private:
-  T val_;
-};
-
-// Specialization of AuxHolder for void.
-// Returns a null pointer instead of allocating void.
-template <>
-class AuxHolder<void> {
- public:
-  AuxHolder() {}
-  void* get() { return NULL; }
-};
-
-}  // namespace internal
-
 // This templated class allows building a BPFTesterDelegate from a
 // deprecated-style BPF policy (that is a SyscallEvaluator function pointer,
 // instead of a SandboxBPFPolicy class), specified in |policy_function| and a
@@ -48,14 +24,14 @@ class AuxHolder<void> {
 // This allows both the policy and the test function to take a pointer to an
 // object of type "Aux" as a parameter. This is used to implement the BPF_TEST
 // macro and should generally not be used directly.
-template <class Aux = void>
+template <class Aux>
 class BPFTesterCompatibilityDelegate : public BPFTesterDelegate {
  public:
   typedef Aux AuxType;
   BPFTesterCompatibilityDelegate(
       void (*test_function)(AuxType*),
       typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function)
-      : aux_holder_(),
+      : aux_(),
         test_function_(test_function),
         policy_function_(policy_function) {}
 
@@ -67,18 +43,18 @@ class BPFTesterCompatibilityDelegate : public BPFTesterDelegate {
     // to live forever. So it's ok to pass aux_pointer_for_policy_ to
     // the policy, which could in turn pass it to the kernel via Trap().
     return scoped_ptr<SandboxBPFPolicy>(
-        new CompatibilityPolicy<AuxType>(policy_function_, aux_holder_.get()));
+        new CompatibilityPolicy<AuxType>(policy_function_, &aux_));
   }
 
   virtual void RunTestFunction() OVERRIDE {
     // Run the actual test.
     // The current object is guaranteed to live forever in the child process
     // where this will run.
-    test_function_(aux_holder_.get());
+    test_function_(&aux_);
   }
 
  private:
-  internal::AuxHolder<AuxType> aux_holder_;
+  AuxType aux_;
   void (*test_function_)(AuxType*);
   typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function_;
   DISALLOW_COPY_AND_ASSIGN(BPFTesterCompatibilityDelegate);

@@ -76,16 +76,14 @@ namespace sandbox {
 // of this object is the same as the life-time of the process running under the
 // seccomp-bpf policy.
 // The type specified in |aux| and the last parameter of the policy function
-// must be compatible. If |aux| is not specified, the policy function must
-// take a void* as its last parameter (that is, must have the EvaluateSyscall
-// type).
-#define BPF_TEST(test_case_name, test_name, policy, aux...)               \
+// must be compatible. |aux| must not be void.
+#define BPF_TEST(test_case_name, test_name, policy, aux) \
   BPF_DEATH_TEST(test_case_name, test_name, DEATH_SUCCESS(), policy, aux)
 
 // A BPF_DEATH_TEST is just the same as a BPF_TEST, but it assumes that the
 // test will fail with a particular known error condition. Use the DEATH_XXX()
 // macros from unit_tests.h to specify the expected error condition.
-#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...)       \
+#define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux)          \
   void BPF_TEST_##test_name(                                                   \
       sandbox::BPFTesterCompatibilityDelegate<aux>::AuxType* BPF_AUX);         \
   TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                           \

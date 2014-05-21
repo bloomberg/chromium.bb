@@ -22,23 +22,6 @@ namespace sandbox {
 
 namespace {
 
-ErrorCode EmptyPolicy(SandboxBPF* sandbox, int sysno, void* aux) {
-  // |aux| should always be NULL since a type was not specified as an argument
-  // to BPF_TEST.
-  BPF_ASSERT(NULL == aux);
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    return ErrorCode(ENOSYS);
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-}
-
-BPF_TEST(BPFTest, BPFAUXIsNull, EmptyPolicy) {
-  // Check that the implicit BPF_AUX argument is NULL when we
-  // don't specify a fourth parameter to BPF_TEST.
-  BPF_ASSERT(NULL == BPF_AUX);
-}
-
 class FourtyTwo {
  public:
   static const int kMagicValue = 42;
