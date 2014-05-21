@@ -175,7 +175,6 @@
               'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
             },
           },
-          'msvs_large_pdb': 1,
           'dependencies': [
             '<(DEPTH)/sandbox/sandbox.gyp:sandbox',
           ],
@@ -197,7 +196,6 @@
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
-      'msvs_large_pdb': 1,
       'sources': [
         # TODO(yoz): Refactor once we have a second test target.
         'browser/shell_browsertest.cc',

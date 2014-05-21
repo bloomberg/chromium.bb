@@ -2425,7 +2425,6 @@
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
-            'unit_tests_exe_pdb_workaround',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
@@ -2820,25 +2819,6 @@
           'sources': [
             'unit_tests.isolate',
           ],
-        },
-      ],
-    }],
-    ['OS=="win"', {
-      'targets' : [
-        {
-          # This target is only depended upon on Windows.
-          'target_name': 'unit_tests_exe_pdb_workaround',
-          'type': 'static_library',
-          'sources': [ 'empty_pdb_workaround.cc' ],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              # This *in the compile phase* must match the pdb name that's
-              # output by the final link. See empty_pdb_workaround.cc for
-              # more details.
-              'DebugInformationFormat': '3',
-              'ProgramDataBaseFileName': '<(PRODUCT_DIR)/unit_tests.exe.pdb',
-            },
-          },
         },
       ],
     }],
