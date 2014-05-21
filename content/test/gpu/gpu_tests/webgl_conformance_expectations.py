@@ -35,6 +35,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win'], bug=369349)
+    self.Fail('conformance/context/context-lost-restored.html',
+        ['win'], bug=374378)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
