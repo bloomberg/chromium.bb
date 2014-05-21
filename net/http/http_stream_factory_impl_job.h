@@ -96,6 +96,9 @@ class HttpStreamFactoryImpl::Job {
   // will be orphaned.
   void ReportJobSuccededForRequest();
 
+  // Marks that the other |job| has completed.
+  void MarkOtherJobComplete(const Job& job);
+
  private:
   enum State {
     STATE_START,
@@ -131,6 +134,13 @@ class HttpStreamFactoryImpl::Job {
     STATE_DRAIN_BODY_FOR_AUTH_RESTART_COMPLETE,
     STATE_DONE,
     STATE_NONE
+  };
+
+  enum JobStatus {
+    STATUS_RUNNING,
+    STATUS_FAILED,
+    STATUS_BROKEN,
+    STATUS_SUCCEEDED
   };
 
   void OnStreamReadyCallback();
@@ -221,6 +231,8 @@ class HttpStreamFactoryImpl::Job {
   bool ShouldForceQuic() const;
 
   bool IsRequestEligibleForPipelining();
+
+  void MaybeMarkAlternateProtocolBroken();
 
   // Record histograms of latency until Connect() completes.
   static void LogHttpConnectedMetrics(const ClientSocketHandle& handle);
@@ -330,6 +342,9 @@ class HttpStreamFactoryImpl::Job {
 
   // True if an existing pipeline can handle this job's request.
   bool existing_available_pipeline_;
+
+  JobStatus job_status_;
+  JobStatus other_job_status_;
 
   base::WeakPtrFactory<Job> ptr_factory_;
 

@@ -108,6 +108,8 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       num_streams_(0),
       spdy_session_direct_(false),
       existing_available_pipeline_(false),
+      job_status_(STATUS_RUNNING),
+      other_job_status_(STATUS_RUNNING),
       ptr_factory_(this) {
   DCHECK(stream_factory);
   DCHECK(session);
@@ -516,6 +518,8 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     }
 
     case OK:
+      job_status_ = STATUS_SUCCEEDED;
+      MaybeMarkAlternateProtocolBroken();
       next_state_ = STATE_DONE;
       if (new_spdy_session_.get()) {
         base::MessageLoop::current()->PostTask(
@@ -537,6 +541,11 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       return ERR_IO_PENDING;
 
     default:
+      if (job_status_ != STATUS_BROKEN) {
+        DCHECK_EQ(STATUS_RUNNING, job_status_);
+        job_status_ = STATUS_FAILED;
+        MaybeMarkAlternateProtocolBroken();
+      }
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&Job::OnStreamFailedCallback, ptr_factory_.GetWeakPtr(),
@@ -989,11 +998,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (!ssl_started && result < 0 && original_url_.get()) {
-    HistogramBrokenAlternateProtocolLocation(
-        BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB);
-    // Mark the alternate protocol as broken and fallback.
-    session_->http_server_properties()->SetBrokenAlternateProtocol(
-        HostPortPair::FromURL(*original_url_));
+    job_status_ = STATUS_BROKEN;
+    MaybeMarkAlternateProtocolBroken();
     return result;
   }
 
@@ -1470,6 +1476,12 @@ void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
   }
 }
 
+void HttpStreamFactoryImpl::Job::MarkOtherJobComplete(const Job& job) {
+  DCHECK_EQ(STATUS_RUNNING, other_job_status_);
+  other_job_status_ = job.job_status_;
+  MaybeMarkAlternateProtocolBroken();
+}
+
 bool HttpStreamFactoryImpl::Job::IsRequestEligibleForPipelining() {
   if (IsPreconnecting() || !request_) {
     return false;
@@ -1497,6 +1509,29 @@ bool HttpStreamFactoryImpl::Job::IsRequestEligibleForPipelining() {
   }
   return stream_factory_->http_pipelined_host_pool_.IsKeyEligibleForPipelining(
       *http_pipelining_key_.get());
+}
+
+void HttpStreamFactoryImpl::Job::MaybeMarkAlternateProtocolBroken() {
+  if (job_status_ == STATUS_RUNNING || other_job_status_ == STATUS_RUNNING)
+    return;
+
+  bool is_alternate_protocol_job = original_url_.get() != NULL;
+  if (is_alternate_protocol_job) {
+    if (job_status_ == STATUS_BROKEN && other_job_status_ == STATUS_SUCCEEDED) {
+      HistogramBrokenAlternateProtocolLocation(
+          BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
+      session_->http_server_properties()->SetBrokenAlternateProtocol(
+          HostPortPair::FromURL(*original_url_));
+    }
+    return;
+  }
+
+  if (job_status_ == STATUS_SUCCEEDED && other_job_status_ == STATUS_BROKEN) {
+      HistogramBrokenAlternateProtocolLocation(
+          BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_MAIN);
+    session_->http_server_properties()->SetBrokenAlternateProtocol(
+        HostPortPair::FromURL(request_info_.url));
+  }
 }
 
 }  // namespace net

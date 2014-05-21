@@ -798,6 +798,40 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   ExpectBrokenAlternateProtocolMapping();
 }
 
+TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
+
+  // Alternate-protocol job
+  MockRead quic_reads[] = {
+    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+  };
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
+                                     NULL, 0);
+  quic_data.set_connect_data(MockConnect(ASYNC, ERR_SOCKET_NOT_CONNECTED));
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // Main job which will succeed even though the alternate job fails.
+  MockRead http_reads[] = {
+    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  http_data.set_connect_data(MockConnect(ASYNC, ERR_SOCKET_NOT_CONNECTED));
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, callback.WaitForResult());
+  ExpectQuicAlternateProtocolMapping();
+}
+
 TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 

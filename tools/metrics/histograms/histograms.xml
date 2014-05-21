@@ -32165,6 +32165,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BrokenAlternateProtocolLocation" type="int">
   <int value="0" label="HTTP_STREAM_FACTORY_IMPL_JOB"/>
   <int value="1" label="QUIC_STREAM_FACTORY"/>
+  <int value="2" label="HTTP_STREAM_FACTORY_IMPL_JOB_ALT"/>
+  <int value="3" label="HTTP_STREAM_FACTORY_IMPL_JOB_MAIN"/>
 </enum>
 
 <enum name="CanvasContextType" type="int">

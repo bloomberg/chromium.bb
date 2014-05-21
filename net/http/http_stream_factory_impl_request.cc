@@ -146,6 +146,9 @@ void HttpStreamFactoryImpl::Request::OnStreamFailed(
     if (jobs_.size() > 1) {
       jobs_.erase(job);
       factory_->request_map_.erase(job);
+      // Notify all the other jobs that this one failed.
+      for (std::set<Job*>::iterator it = jobs_.begin(); it != jobs_.end(); ++it)
+        (*it)->MarkOtherJobComplete(*job);
       delete job;
       return;
     } else {
@@ -385,6 +388,12 @@ void HttpStreamFactoryImpl::Request::OnJobSucceeded(Job* job) {
   if (!bound_job_.get()) {
     if (jobs_.size() > 1)
       job->ReportJobSuccededForRequest();
+    // Notify all the other jobs that this one succeeded.
+    for (std::set<Job*>::iterator it = jobs_.begin(); it != jobs_.end(); ++it) {
+      if (*it != job) {
+        (*it)->MarkOtherJobComplete(*job);
+      }
+    }
     // We may have other jobs in |jobs_|. For example, if we start multiple jobs
     // for Alternate-Protocol.
     OrphanJobsExcept(job);
