@@ -58,10 +58,7 @@ public:
     void notify(Node&);
 
 private:
-    void notifyDescendantRemovedFromDocument(ContainerNode&);
-    void notifyDescendantRemovedFromTree(ContainerNode&);
-    void notifyNodeRemovedFromDocument(Node&);
-    void notifyNodeRemovedFromTree(ContainerNode&);
+    void notifyNodeRemoved(Node&);
 
     ContainerNode& m_insertionPoint;
 };
@@ -226,32 +223,11 @@ inline void ChildNodeInsertionNotifier::notify(Node& node)
     }
 }
 
-inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromDocument(Node& node)
-{
-    ScriptForbiddenScope forbidScript;
-    ASSERT(m_insertionPoint.inDocument());
-    node.removedFrom(&m_insertionPoint);
-
-    if (node.isContainerNode())
-        notifyDescendantRemovedFromDocument(toContainerNode(node));
-}
-
-inline void ChildNodeRemovalNotifier::notifyNodeRemovedFromTree(ContainerNode& node)
+inline void ChildNodeRemovalNotifier::notify(Node& node)
 {
     ScriptForbiddenScope forbidScript;
     NoEventDispatchAssertion assertNoEventDispatch;
-    ASSERT(!m_insertionPoint.inDocument());
-
-    node.removedFrom(&m_insertionPoint);
-    notifyDescendantRemovedFromTree(node);
-}
-
-inline void ChildNodeRemovalNotifier::notify(Node& node)
-{
-    if (node.inDocument())
-        notifyNodeRemovedFromDocument(node);
-    else if (node.isContainerNode())
-        notifyNodeRemovedFromTree(toContainerNode(node));
+    notifyNodeRemoved(node);
 }
 
 class ChildFrameDisconnector {

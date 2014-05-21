@@ -81,46 +81,20 @@ void ChildNodeInsertionNotifier::notifyNodeInsertedIntoTree(ContainerNode& root)
     }
 }
 
-void ChildNodeRemovalNotifier::notifyDescendantRemovedFromDocument(ContainerNode& node)
+void ChildNodeRemovalNotifier::notifyNodeRemoved(Node& root)
 {
-    ChildNodesLazySnapshot snapshot(node);
-    while (RefPtr<Node> child = snapshot.nextNode()) {
-        // If we have been added to the document during this loop, then we
-        // don't want to tell the rest of our children that they've been
-        // removed from the document because they haven't.
-        if (!node.inDocument() && child->parentNode() == node)
-            notifyNodeRemovedFromDocument(*child);
-    }
-
-    if (!node.isElementNode())
-        return;
-
-    if (node.document().cssTarget() == node)
-        node.document().setCSSTarget(0);
-
-    if (ElementShadow* shadow = toElement(node).shadow()) {
-        ShadowRootVector roots(shadow);
-        for (size_t i = 0; i < roots.size(); ++i) {
-            if (!node.inDocument() && roots[i]->host() == node)
-                notifyNodeRemovedFromDocument(*roots[i]);
+    Document& document = root.document();
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+        // As an optimization we skip notifying Text nodes and other leaf nodes
+        // of removal when they're not in the Document tree since the virtual
+        // call to removedFrom is not needed.
+        if (node->inDocument() || node->isContainerNode()) {
+            if (document.cssTarget() == node)
+                document.setCSSTarget(0);
+            node->removedFrom(&m_insertionPoint);
         }
-    }
-}
-
-void ChildNodeRemovalNotifier::notifyDescendantRemovedFromTree(ContainerNode& node)
-{
-    for (Node* child = node.firstChild(); child; child = child->nextSibling()) {
-        if (child->isContainerNode())
-            notifyNodeRemovedFromTree(toContainerNode(*child));
-    }
-
-    if (!node.isElementNode())
-        return;
-
-    if (ElementShadow* shadow = toElement(node).shadow()) {
-        ShadowRootVector roots(shadow);
-        for (size_t i = 0; i < roots.size(); ++i)
-            notifyNodeRemovedFromTree(*roots[i]);
+        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+            notifyNodeRemoved(*shadowRoot);
     }
 }
 
