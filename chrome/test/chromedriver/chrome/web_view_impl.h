@@ -89,6 +89,8 @@ class WebViewImpl : public WebView {
       const base::DictionaryValue& element,
       const std::vector<base::FilePath>& files) OVERRIDE;
   virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) OVERRIDE;
+  virtual Status StartProfile() OVERRIDE;
+  virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) OVERRIDE;
 
  private:
   Status CallAsyncFunctionInternal(const std::string& frame,
@@ -99,6 +101,10 @@ class WebViewImpl : public WebView {
                                    scoped_ptr<base::Value>* result);
   Status IsNotPendingNavigation(const std::string& frame_id,
                                 bool* is_not_pending);
+
+  Status InitProfileInternal();
+  Status StopProfileInternal();
+
   std::string id_;
   const BrowserInfo* browser_info_;
   scoped_ptr<DomTracker> dom_tracker_;

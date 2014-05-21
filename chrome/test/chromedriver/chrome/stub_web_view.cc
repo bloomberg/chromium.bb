@@ -131,3 +131,11 @@ Status StubWebView::SetFileInputFiles(
 Status StubWebView::TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) {
   return Status(kOk);
 }
+
+Status StubWebView::StartProfile() {
+  return Status(kOk);
+}
+
+Status StubWebView::EndProfile(scoped_ptr<base::Value>* profile_data) {
+  return Status(kOk);
+}

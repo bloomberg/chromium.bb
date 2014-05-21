@@ -257,6 +257,10 @@ Status ExecuteExecuteScript(
     return Status(kUnknownError, "'script' must be a string");
   if (script == ":takeHeapSnapshot") {
     return web_view->TakeHeapSnapshot(value);
+  } else if (script == ":startProfile") {
+    return web_view->StartProfile();
+  } else if (script == ":endProfile") {
+    return web_view->EndProfile(value);
   } else {
     const base::ListValue* args;
     if (!params.GetList("args", &args))

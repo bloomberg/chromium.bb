@@ -154,6 +154,14 @@ class WebView {
   //  1. A meta data element "snapshot" about how to parse data elements.
   //  2. Data elements: "nodes", "edges", "strings".
   virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) = 0;
+
+  // Start recording Javascript CPU Profile.
+  virtual Status StartProfile() = 0;
+
+  // Stop recording Javascript CPU Profile and returns a graph of
+  // CPUProfile objects. The format for the captured profile is defined
+  // (by DevTools) in protocol.json.
+  virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

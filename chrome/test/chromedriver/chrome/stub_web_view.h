@@ -68,6 +68,8 @@ class StubWebView : public WebView {
       const base::DictionaryValue& element,
       const std::vector<base::FilePath>& files) OVERRIDE;
   virtual Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) OVERRIDE;
+  virtual Status StartProfile() OVERRIDE;
+  virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) OVERRIDE;
 
  private:
   std::string id_;
