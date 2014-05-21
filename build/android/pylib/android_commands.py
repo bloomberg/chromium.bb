@@ -1086,6 +1086,9 @@ class AndroidCommands(object):
     self._pushed_files.append(device_path)
     self._potential_push_size += size
 
+    if os.path.isdir(host_path):
+      self.RunShellCommand('mkdir -p "%s"' % device_path)
+
     changed_files = self.GetFilesChanged(host_path, device_path)
     logging.info('Found %d files that need to be pushed to %s',
         len(changed_files), device_path)
