@@ -497,7 +497,6 @@ class PatchQuery(object):
   It is is intended to match a single patch. If a user specified a
   non-full change id then it might match multiple patches. If a user
   specified an invalid change id then it might not match any patches.
-  our internal PatchCache.
   """
   def __init__(self, remote, project=None, tracking_branch=None, change_id=None,
                sha1=None, gerrit_number=None):
