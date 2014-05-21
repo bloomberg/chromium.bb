@@ -207,48 +207,6 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   EXPECT_FALSE(policy->CanRequestURL(id, sensitive_file_url));
   EXPECT_FALSE(policy->CanReadFile(id, sensitive_file_path));
 }
-/* TODO(jam)
-// The test that follow trigger DCHECKS in debug build.
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-
-// Test that when we fail to de-serialize a message, RenderViewHost calls the
-// ReceivedBadMessage() handler.
-TEST_F(RenderViewHostTest, BadMessageHandlerRenderViewHost) {
-  EXPECT_EQ(0, process()->bad_msg_count());
-  // craft an incorrect ViewHostMsg_UpdateTargetURL message. The real one has
-  // two payload items but the one we construct has none.
-  IPC::Message message(0, ViewHostMsg_UpdateTargetURL::ID,
-                       IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->OnMessageReceived(message);
-  EXPECT_EQ(1, process()->bad_msg_count());
-}
-
-// Test that when we fail to de-serialize a message, RenderWidgetHost calls the
-// ReceivedBadMessage() handler.
-TEST_F(RenderViewHostTest, BadMessageHandlerRenderWidgetHost) {
-  EXPECT_EQ(0, process()->bad_msg_count());
-  // craft an incorrect ViewHostMsg_UpdateRect message. The real one has
-  // one payload item but the one we construct has none.
-  IPC::Message message(0, ViewHostMsg_UpdateRect::ID,
-                       IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->OnMessageReceived(message);
-  EXPECT_EQ(1, process()->bad_msg_count());
-}
-
-// Test that OnInputEventAck() detects bad messages.
-TEST_F(RenderViewHostTest, BadMessageHandlerInputEventAck) {
-  EXPECT_EQ(0, process()->bad_msg_count());
-  // InputHostMsg_HandleInputEvent_ACK is defined taking 0 params but
-  // the code actually expects it to have at least one int para, this this
-  // bogus message will not fail at de-serialization but should fail in
-  // OnInputEventAck() processing.
-  IPC::Message message(0, InputHostMsg_HandleInputEvent_ACK::ID,
-                       IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->OnMessageReceived(message);
-  EXPECT_EQ(1, process()->bad_msg_count());
-}
-#endif
-*/
 
 TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   base::FilePath file_path;
