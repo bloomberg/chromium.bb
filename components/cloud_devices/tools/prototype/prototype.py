@@ -439,7 +439,8 @@ class CloudDevice(object):
           'api_key': ''
       }
       credentials_f = open(_API_CLIENT_FILE + '.samlpe', 'w')
-      credentials_f.write(json.dumps(credentials))
+      credentials_f.write(json.dumps(credentials, sort_keys=True,
+                                     indent=2, separators=(',', ': ')))
       credentials_f.close()
       raise Exception('Missing ' + _API_CLIENT_FILE)
 
@@ -734,16 +735,17 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   @get_only
   def do_public_info(self, request, unused_response_func):
-    info = self.get_common_info().items() + {
-        'stype': self.session_handlers.keys()}.items()
-    self.real_send_response(request, 200, json.dumps(info))
+    info = dict(self.get_common_info().items() + {
+        'stype': self.session_handlers.keys()}.items())
+    self.real_send_response(request, 200, info)
 
   @post_provisioning
   @get_only
   def do_info(self, request, unused_response_func):
     specific_info = {'x-privet-token': 'sample'}
-    info = self.get_common_info().items() + specific_info.items()
-    self.real_send_response(request, 200, json.dumps(info))
+    info = dict(self.get_common_info().items() + specific_info.items())
+    self.real_send_response(request, 200, info)
+    return True
 
   @post_only
   @wifi_provisioning
@@ -808,7 +810,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         'step': step,
         'package': base64.b64encode(output_package)
     }
-    self.real_send_response(request, 200, json.dumps(return_obj))
+    self.real_send_response(request, 200, return_obj)
     self.post_session_cancel()
     return True
 
@@ -935,7 +937,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
 
   def handle_request(self, request):
     def response_func(code, data):
-      self.real_send_response(request, code, json.dumps(data))
+      self.real_send_response(request, code, data)
 
     handled = False
     if request.path in self.handlers:
@@ -949,6 +951,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
                             self.current_session.encrypt(data))
 
   def real_send_response(self, request, code, data):
+    data = json.dumps(data, sort_keys=True, indent=2, separators=(',', ': '))
     request.write('HTTP/1.1 %d Maybe OK\n' % code)
     request.write('Content-Type: application/json\n')
     request.write('Content-Length: %d\n' % len(data))
