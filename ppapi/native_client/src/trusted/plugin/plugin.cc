@@ -355,12 +355,6 @@ Plugin::~Plugin() {
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
 
-  for (std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
-           url_file_info_map_.begin();
-       it != url_file_info_map_.end();
-       ++it) {
-    delete it->second;
-  }
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
   // Clean up accounting for our instance inside the NaCl interface.
@@ -551,6 +545,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
 void Plugin::UrlDidOpenForStreamAsFile(
     int32_t pp_error,
     FileDownloader* url_downloader,
+    NaClFileInfo* out_file_info,
     pp::CompletionCallback callback) {
   PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%" NACL_PRId32
                  ", url_downloader=%p)\n", pp_error,
@@ -564,11 +559,7 @@ void Plugin::UrlDidOpenForStreamAsFile(
     callback.Run(pp_error);
     delete info;
   } else if (info->get_desc() > NACL_NO_FILE_DESC) {
-    std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
-        url_file_info_map_.find(url_downloader->url());
-    if (it != url_file_info_map_.end())
-      delete it->second;
-    url_file_info_map_[url_downloader->url()] = info;
+    *out_file_info = info->Release();
     callback.Run(PP_OK);
   } else {
     callback.Run(PP_ERROR_FAILED);
@@ -576,21 +567,8 @@ void Plugin::UrlDidOpenForStreamAsFile(
   }
 }
 
-struct NaClFileInfo Plugin::GetFileInfo(const nacl::string& url) {
-  struct NaClFileInfo info;
-  memset(&info, 0, sizeof(info));
-  std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
-      url_file_info_map_.find(url);
-  if (it != url_file_info_map_.end()) {
-    info = it->second->get();
-    info.desc = DUP(info.desc);
-  } else {
-    info.desc = -1;
-  }
-  return info;
-}
-
 bool Plugin::StreamAsFile(const nacl::string& url,
+                          NaClFileInfo* out_file_info,
                           const pp::CompletionCallback& callback) {
   PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
@@ -604,12 +582,12 @@ bool Plugin::StreamAsFile(const nacl::string& url,
 
   // Try the fast path first. This will only block if the file is installed.
   if (OpenURLFast(url, downloader)) {
-    UrlDidOpenForStreamAsFile(PP_OK, downloader, callback);
+    UrlDidOpenForStreamAsFile(PP_OK, downloader, out_file_info, callback);
     return true;
   }
 
   pp::CompletionCallback open_callback = callback_factory_.NewCallback(
-      &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
+      &Plugin::UrlDidOpenForStreamAsFile, downloader, out_file_info, callback);
   // If true, will always call the callback on success or failure.
   return downloader->Open(url,
                           DOWNLOAD_TO_FILE,

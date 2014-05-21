@@ -149,15 +149,10 @@ class Plugin : public pp::Instance {
   void DispatchProgressEvent(int32_t result);
 
   // Requests a URL asynchronously resulting in a call to pp_callback with
-  // a PP_Error indicating status. On success an open file descriptor
-  // corresponding to the url body is recorded for further lookup.
+  // a PP_Error indicating status.
   bool StreamAsFile(const nacl::string& url,
+                    NaClFileInfo *out_file_info,
                     const pp::CompletionCallback& callback);
-
-  // Returns rich information for a file retrieved by StreamAsFile(). This info
-  // contains a file descriptor. The caller must take ownership of this
-  // descriptor.
-  struct NaClFileInfo GetFileInfo(const nacl::string& url);
 
   // A helper function that indicates if |url| can be requested by the document
   // under the same-origin policy. Strictly speaking, it may be possible for the
@@ -255,6 +250,7 @@ class Plugin : public pp::Instance {
   // Callback used when loading a URL for SRPC-based StreamAsFile().
   void UrlDidOpenForStreamAsFile(int32_t pp_error,
                                  FileDownloader* url_downloader,
+                                 NaClFileInfo* out_file_info,
                                  pp::CompletionCallback pp_callback);
 
   // Open an app file by requesting a file descriptor from the browser. This
@@ -280,9 +276,6 @@ class Plugin : public pp::Instance {
 
   // Keep track of the FileDownloaders created to fetch urls.
   std::set<FileDownloader*> url_downloaders_;
-  // Keep track of file descriptors opened by StreamAsFile().
-  // These are owned by the browser.
-  std::map<nacl::string, NaClFileInfoAutoCloser*> url_file_info_map_;
 
   // Callback to receive .nexe and .dso download progress notifications.
   static void UpdateDownloadProgress(

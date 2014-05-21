@@ -411,7 +411,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
 
-  if (!plugin_->StreamAsFile(mapped_url, stream_cc)) {
+  if (!plugin_->StreamAsFile(mapped_url, p->file_info, stream_cc)) {
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "
             "StreamAsFile failed\n");
@@ -435,10 +435,6 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
   {
     nacl::MutexLocker take(&mu_);
     if (result == PP_OK) {
-      NaClLog(4, "StreamAsFile_MainThreadContinuation: GetFileInfo(%s)\n",
-              p->url.c_str());
-      *p->file_info = plugin_->GetFileInfo(p->url);
-
       NaClLog(4,
               "StreamAsFile_MainThreadContinuation: PP_OK, desc %d\n",
               p->file_info->desc);
