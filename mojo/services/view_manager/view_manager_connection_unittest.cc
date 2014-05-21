@@ -361,6 +361,24 @@ class ViewManagerConnectionTest : public testing::Test {
     client2_.GetAndClearChanges();
   }
 
+  void EstablishSecondConnectionWithRoot(TransportNodeId root_id) {
+    EstablishSecondConnection();
+    client2_.ClearId();
+
+    AllocationScope scope;
+    std::vector<uint32_t> roots;
+    roots.push_back(root_id);
+    ASSERT_TRUE(SetRoots(view_manager_.get(), 2, roots));
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("OnConnectionEstablished", changes[0]);
+    ASSERT_NE(0u, client2_.id());
+    const std::vector<TestNode>& nodes(client2_.initial_nodes());
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+  }
+
   void DestroySecondConnection() {
     view_manager2_.reset();
   }
@@ -1128,6 +1146,7 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   }
 }
 
+// Various assertions around SetRoots.
 TEST_F(ViewManagerConnectionTest, SetRoots) {
   // Create 1, 2, and 3 in the first connection.
   ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
@@ -1215,7 +1234,156 @@ TEST_F(ViewManagerConnectionTest, SetRoots) {
   }
 }
 
-// TODO: add tests that verify can't manipulate trees of uknown nodes.
+// Verify AddNode fails when trying to manipulate nodes in other roots.
+TEST_F(ViewManagerConnectionTest, CantMoveNodesFromOtherRoot) {
+  // Create 1 and 2 in the first connection.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+
+  // Establish the second connection and give it the root 1.
+  ASSERT_NO_FATAL_FAILURE(
+      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+
+  // Try to move 2 to be a child of 1 from connection 2. This should fail as 2
+  // should not be able to access 1.
+  ASSERT_FALSE(AddNode(view_manager2_.get(),
+                       CreateNodeId(1, 1),
+                       CreateNodeId(1, 2),
+                       1));
+
+  // Try to reparent 1 to the root. A connection is not allowed to reparent its
+  // roots.
+  ASSERT_FALSE(AddNode(view_manager2_.get(),
+                       CreateNodeId(0, 1),
+                       CreateNodeId(1, 1),
+                       1));
+}
+
+
+// Verify RemoveNodeFromParent fails for nodes that are descendants of the
+// roots.
+TEST_F(ViewManagerConnectionTest, CantRemoveNodesInOtherRoots) {
+  // Create 1 and 2 in the first connection and parent both to the root.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 1),
+                      1));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 2),
+                      2));
+
+  // Establish the second connection and give it the root 1.
+  ASSERT_NO_FATAL_FAILURE(
+      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+
+  // Connection 2 should not be able to remove node 2 or 1 from its parent.
+  ASSERT_FALSE(RemoveNodeFromParent(view_manager2_.get(),
+                                    CreateNodeId(1, 2),
+                                    3));
+  ASSERT_FALSE(RemoveNodeFromParent(view_manager2_.get(),
+                                    CreateNodeId(1, 1),
+                                    3));
+
+  // Create nodes 10 and 11 in 2.
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 10));
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 11));
+
+  // Parent 11 to 10.
+  ASSERT_TRUE(AddNode(view_manager2_.get(),
+                      CreateNodeId(client2_.id(), 10),
+                      CreateNodeId(client2_.id(), 11),
+                      3));
+  // Remove 11 from 10.
+  ASSERT_TRUE(RemoveNodeFromParent(view_manager2_.get(),
+                                   CreateNodeId(2, 11),
+                                   4));
+
+  // Verify nothing was actually removed.
+  {
+    AllocationScope scope;
+    std::vector<TestNode> nodes;
+    GetNodeTree(view_manager_.get(), CreateNodeId(0, 1), &nodes);
+    ASSERT_EQ(3u, nodes.size());
+    EXPECT_EQ("node=0,1 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[1].ToString());
+    EXPECT_EQ("node=1,2 parent=0,1 view=null", nodes[2].ToString());
+  }
+}
+
+// Verify SetView fails for nodes that are not descendants of the roots.
+TEST_F(ViewManagerConnectionTest, CantRemoveSetViewInOtherRoots) {
+  // Create 1 and 2 in the first connection and parent both to the root.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 1),
+                      1));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 2),
+                      2));
+
+  // Establish the second connection and give it the root 1.
+  ASSERT_NO_FATAL_FAILURE(
+      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+
+  // Create a view in the second connection.
+  ASSERT_TRUE(CreateView(view_manager2_.get(), 2, 51));
+
+  // Connection 2 should be able to set the view on node 1 (it's root), but not
+  // on 2.
+  ASSERT_TRUE(SetView(view_manager2_.get(),
+                      CreateNodeId(client_.id(), 1),
+                      CreateViewId(client2_.id(), 51)));
+  ASSERT_FALSE(SetView(view_manager2_.get(),
+                       CreateNodeId(client_.id(), 2),
+                       CreateViewId(client2_.id(), 51)));
+}
+
+// Verify GetNodeTree fails for nodes that are not descendants of the roots.
+TEST_F(ViewManagerConnectionTest, CantGetNodeTreeOfOtherRoots) {
+  // Create 1 and 2 in the first connection and parent both to the root.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 1),
+                      1));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 2),
+                      2));
+
+  // Establish the second connection and give it the root 1.
+  ASSERT_NO_FATAL_FAILURE(
+      EstablishSecondConnectionWithRoot(CreateNodeId(1, 1)));
+
+  AllocationScope scope;
+  std::vector<TestNode> nodes;
+
+  // Should get nothing for the root.
+  GetNodeTree(view_manager2_.get(), CreateNodeId(0, 1), &nodes);
+  ASSERT_TRUE(nodes.empty());
+
+  // Should get nothing for node 2.
+  GetNodeTree(view_manager2_.get(), CreateNodeId(1, 2), &nodes);
+  ASSERT_TRUE(nodes.empty());
+
+  // Should get node 1 if asked for.
+  GetNodeTree(view_manager2_.get(), CreateNodeId(1, 1), &nodes);
+  ASSERT_EQ(1u, nodes.size());
+  EXPECT_EQ("node=1,1 parent=null view=null", nodes[0].ToString());
+}
+
+// TODO(sky): add coverage of test that destroys connections and ensures other
+// connections get deletion notification (or advanced server id).
 
 }  // namespace service
 }  // namespace view_manager

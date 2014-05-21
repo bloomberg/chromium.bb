@@ -38,6 +38,10 @@ Node::Node(NodeDelegate* delegate, const NodeId& id)
 
 Node::~Node() {
   SetView(NULL);
+  // This is implicitly done during deletion of the window, but we do it here so
+  // that we're in a known state.
+  if (window_.parent())
+    window_.parent()->RemoveChild(&window_);
 }
 
 const Node* Node::GetParent() const {

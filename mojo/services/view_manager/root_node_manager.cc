@@ -11,15 +11,6 @@
 namespace mojo {
 namespace view_manager {
 namespace service {
-namespace {
-
-// Id for the root node.
-const TransportConnectionSpecificNodeId kRootId = 1;
-
-// Used to identify an invalid connection.
-const TransportConnectionId kNoConnection = 0;
-
-}  // namespace
 
 RootNodeManager::ScopedChange::ScopedChange(
     ViewManagerConnection* connection,
@@ -46,10 +37,10 @@ RootNodeManager::Context::~Context() {
 RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
       next_server_change_id_(1),
-      change_source_(kNoConnection),
+      change_source_(kRootConnection),
       is_processing_delete_node_(false),
       root_view_manager_(shell, this),
-      root_(this, NodeId(0, kRootId)) {
+      root_(this, RootNodeId()) {
 }
 
 RootNodeManager::~RootNodeManager() {
@@ -129,14 +120,14 @@ void RootNodeManager::ProcessViewDeleted(const ViewId& view) {
 void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
                                        bool is_delete_node) {
   // Should only ever have one change in flight.
-  DCHECK_EQ(kNoConnection, change_source_);
+  DCHECK_EQ(kRootConnection, change_source_);
   change_source_ = connection->id();
   is_processing_delete_node_ = is_delete_node;
 }
 
 void RootNodeManager::FinishChange(ChangeType change_type) {
   // PrepareForChange/FinishChange should be balanced.
-  DCHECK_NE(kNoConnection, change_source_);
+  DCHECK_NE(kRootConnection, change_source_);
   change_source_ = 0;
   is_processing_delete_node_ = false;
   if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)

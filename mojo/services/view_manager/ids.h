@@ -13,6 +13,9 @@ namespace mojo {
 namespace view_manager {
 namespace service {
 
+// Connection id reserved for the root.
+const TransportConnectionId kRootConnection = 0;
+
 // Adds a bit of type safety to node ids.
 struct MOJO_VIEW_MANAGER_EXPORT NodeId {
   NodeId(TransportConnectionId connection_id,
@@ -70,6 +73,16 @@ inline ViewId ViewIdFromTransportId(TransportViewId id) {
 
 inline TransportViewId ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
+}
+
+inline NodeId RootNodeId() {
+  return NodeId(kRootConnection, 1);
+}
+
+// Returns a NodeId that is reserved to indicate no node. That is, no node will
+// ever be created with this id.
+inline NodeId InvalidNodeId() {
+  return NodeId(kRootConnection, 0);
 }
 
 }  // namespace service

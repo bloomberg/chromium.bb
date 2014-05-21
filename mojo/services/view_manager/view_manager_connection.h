@@ -51,7 +51,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   const Node* GetNode(const NodeId& id) const;
 
   // Returns the View with the specified id.
-  View* GetView(const ViewId& id);
+  View* GetView(const ViewId& id) {
+    return const_cast<View*>(
+        const_cast<const ViewManagerConnection*>(this)->GetView(id));
+  }
+  const View* GetView(const ViewId& id) const;
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -75,11 +79,14 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   typedef std::map<TransportConnectionSpecificViewId, View*> ViewMap;
   typedef base::hash_set<TransportNodeId> NodeIdSet;
 
-  // Returns true if this connection is allowed to delete the specified node.
+  // These functions return true if the corresponding mojom function is allowed
+  // for this connection.
+  bool CanRemoveNodeFromParent(const Node* node) const;
+  bool CanAddNode(const Node* parent, const Node* child) const;
   bool CanDeleteNode(const NodeId& node_id) const;
-
-  // Returns true if this connection is allowed to delete the specified view.
   bool CanDeleteView(const ViewId& view_id) const;
+  bool CanSetView(const Node* node, const ViewId& view_id) const;
+  bool CanGetNodeTree(const Node* node) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -90,7 +97,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   bool DeleteViewImpl(ViewManagerConnection* source, const ViewId& view_id);
 
   // Sets the view associated with a node.
-  bool SetViewImpl(const NodeId& node_id, const ViewId& view_id);
+  bool SetViewImpl(Node* node, const ViewId& view_id);
 
   // If |node| is known (in |known_nodes_|) does nothing. Otherwise adds |node|
   // to |nodes|, marks |node| as known and recurses.
@@ -172,8 +179,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // The set of nodes that has been communicated to the client.
   NodeIdSet known_nodes_;
 
-  // This is the set of nodes the client can see. The client can not delete or
-  // move these.
+  // This is the set of nodes the connection can parent nodes to (in addition to
+  // any nodes created by this connection). If empty the connection can
+  // manipulate any nodes (except for deleting other connections nodes/views).
+  // The connection can not delete or move these. If this is set to a non-empty
+  // value and all the nodes are deleted (by another connection), then an
+  // invalid node is added here to ensure this connection is still constrained.
   NodeIdSet roots_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
