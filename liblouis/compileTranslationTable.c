@@ -4778,11 +4778,11 @@ compileFile (const char *fileName)
 /** 
  * Macro to free a char** array 
  */
-#define free_tablelist(list) {			\
-  char **string;				\
-  for (string = list; *string; string++)	\
-    free(*string);				\
-  free(list);					\
+#define free_tablefiles(tables) {			\
+    char **table;					\
+    for (table = tables; *table; table++)		\
+      free(*table);					\
+    free(tables);					\
   }
 
 /**
@@ -4803,18 +4803,17 @@ includeFile (FileInfo * nested, CharsString * includedFile)
   if (tableFiles == NULL)
     {
       errorCount++;
-      free(tableFiles);
       return 0;
     }
   if (tableFiles[1] != NULL)
     {
       errorCount++;
-      free(tableFiles);
+      free_tablefiles(tableFiles)
       lou_logPrint ("Table list not supported in include statement: 'include %s'", includeThis);
       return 0;
     }
   rv = compileFile (*tableFiles);
-  free_tablelist(tableFiles);
+  free_tablefiles(tableFiles);
   return rv;
 }
 
@@ -4860,7 +4859,7 @@ compileTranslationTable (const char *tableList)
   
 /* Clean up after compiling files */
 cleanup:
-  free_tablelist(tableFiles);
+  free_tablefiles(tableFiles);
   if (characterClasses)
     deallocateCharacterClasses ();
   if (ruleNames)
