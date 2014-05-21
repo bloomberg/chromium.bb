@@ -833,7 +833,7 @@ public:
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
     HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : 0; }
-    void pushCurrentScript(PassRefPtr<HTMLScriptElement>);
+    void pushCurrentScript(PassRefPtrWillBeRawPtr<HTMLScriptElement>);
     void popCurrentScript();
 
     void applyXSLTransform(ProcessingInstruction* pi);
