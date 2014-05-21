@@ -375,7 +375,7 @@ void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float
     params.deviceScaleFactor = deviceScaleFactor;
     params.viewSize = WebSize(width, height);
     params.fitToView = fitWindow;
-    params.viewInsets = WebSize(width ? 10 : 0, height ? 10 : 0);
+    params.viewInsets = WebSize(0, 0);
     m_client->enableDeviceEmulation(params);
 }
 
