@@ -106,7 +106,7 @@
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'incomplete_apk_path': '<(intermediate_dir)/<(apk_name)-incomplete.apk',
     'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
-    'device_intermediate_dir': '/data/local/tmp/chromium/<(_target_name)/<(CONFIGURATION_NAME)',
+    'device_intermediate_dir': '/data/data/org.chromium.gyp_managed_install/<(_target_name)/<(CONFIGURATION_NAME)',
     'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
     'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
     'create_standalone_apk%': 1,
