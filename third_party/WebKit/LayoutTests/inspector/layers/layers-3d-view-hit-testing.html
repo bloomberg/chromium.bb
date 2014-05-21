@@ -15,7 +15,7 @@ function test()
     {
         layerA = InspectorTest.findLayerByNodeIdAttribute("a");
         layerB = InspectorTest.findLayerByNodeIdAttribute("b");
-        contentRoot = InspectorTest.layerTreeModel.contentRoot();
+        contentRoot = InspectorTest.layerTreeModel.layerTree().contentRoot();
         layers = [{layer: layerA, name: "layer a"}, {layer: layerB, name: "layer b"}, {layer: contentRoot, name: "content root"}];
     }
 

@@ -25,7 +25,7 @@ function test()
     function step1()
     {
         // Assure layer objects are not re-created during updates.
-        InspectorTest.layerTreeModel.forEachLayer(function(layer) { layersBeforeHighlight.push(layer.id()); });
+        InspectorTest.layerTreeModel.layerTree().forEachLayer(function(layer) { layersBeforeHighlight.push(layer.id()); });
         DOMAgent.highlightRect(0, 0, 200, 200, {r:255, g:0, b:0});
         InspectorTest.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateGeometry)", step2);
     }
@@ -33,7 +33,7 @@ function test()
     function step2()
     {
         var layersAfterHighlight = [];
-        InspectorTest.layerTreeModel.forEachLayer(function(layer) { layersAfterHighlight.push(layer.id()); });
+        InspectorTest.layerTreeModel.layerTree().forEachLayer(function(layer) { layersAfterHighlight.push(layer.id()); });
         layersBeforeHighlight.sort();
         layersAfterHighlight.sort();
         InspectorTest.assertEquals(JSON.stringify(layersBeforeHighlight), JSON.stringify(layersAfterHighlight));

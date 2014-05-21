@@ -27,7 +27,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root) {
-            root = InspectorTest.layerTreeModel.contentRoot();
+            root = InspectorTest.layerTreeModel.layerTree().contentRoot();
             if (!root) {
                 InspectorTest.addResult("No layer root, perhaps not in the composited mode! ");
                 InspectorTest.completeTest();
@@ -86,7 +86,7 @@ function initialize_LayerTreeTests()
             result = layer;
             return true;
         }
-        InspectorTest.layerTreeModel.forEachLayer(testLayer);
+        InspectorTest.layerTreeModel.layerTree().forEachLayer(testLayer);
         if (!result)
             InspectorTest.addResult("ERROR: No layer for " + nodeIdAttribute);
         return result;
@@ -112,7 +112,7 @@ function initialize_LayerTreeTests()
         }
 
         InspectorTest.addResult("Model elements dump");
-        InspectorTest.layerTreeModel.forEachLayer(dumpScrollRectsForLayer.bind(this));
+        InspectorTest.layerTreeModel.layerTree().forEachLayer(dumpScrollRectsForLayer.bind(this));
     }
 
     InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)

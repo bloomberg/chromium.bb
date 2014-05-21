@@ -39,7 +39,7 @@ function test()
     function step1()
     {
         // Assure layer objects are not re-created during updates.
-        InspectorTest.layerTreeModel.forEachLayer(addDepthMarker);
+        InspectorTest.layerTreeModel.layerTree().forEachLayer(addDepthMarker);
         InspectorTest.addResult("Initial layer tree");
         InspectorTest.dumpLayerTree();
         InspectorTest.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateTree)", step2);

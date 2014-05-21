@@ -45,7 +45,7 @@ function test()
 
     function onGotLayers()
     {
-        dumpCompositingReasons(InspectorTest.layerTreeModel.contentRoot());
+        dumpCompositingReasons(InspectorTest.layerTreeModel.layerTree().contentRoot());
         for (var i = 0; i < idsToTest.length - 1; ++i)
             dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[i]));
         dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]), InspectorTest.completeTest.bind(InspectorTest));

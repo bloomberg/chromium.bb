@@ -27,13 +27,16 @@ function test()
 {
     InspectorTest.invokeWithTracing(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "doActions", onTracingComplete);
 
+    var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    var layerTree = new WebInspector.TracingLayerTree(target);
+
     function onTracingComplete()
     {
         var events = InspectorTest.tracingModel.frameLifecycleEvents();
         for (var i = events.length - 1; i >= 0; --i) {
             if (events[i].phase === WebInspector.TracingModel.Phase.SnapshotObject && events[i].name === "cc::LayerTreeHostImpl") {
                 var rootLayer = events[i].args["snapshot"]["active_tree"]["root_layer"];
-                dumpLayerTreeSnapshot(new WebInspector.TracingLayerSnapshot(rootLayer));
+                dumpLayerTreeSnapshot(rootLayer);
                 return;
             }
         }
@@ -41,15 +44,14 @@ function test()
         InspectorTest.completeTest();
     }
 
-    function dumpLayerTreeSnapshot(snapshot)
+    function dumpLayerTreeSnapshot(rootLayer)
     {
-        InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
-        InspectorTest.layerTreeModel.setTracingSnapshot(snapshot);
+        layerTree.setLayers(rootLayer, onLayersSet);
     }
 
-    function onLayerTreeChanged()
+    function onLayersSet()
     {
-        InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest.layerTreeModel.setLayerTree(layerTree);
         InspectorTest.dumpLayerTree();
         InspectorTest.completeTest();
     }

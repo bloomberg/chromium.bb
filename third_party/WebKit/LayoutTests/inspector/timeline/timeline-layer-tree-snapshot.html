@@ -42,7 +42,6 @@ function test()
 
     function onTimelineStopped()
     {
-        InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
         InspectorTest.printTimelineRecords(null, loadSnapshot);
     }
 
@@ -55,16 +54,17 @@ function test()
         if (!record.data["layerTree"])
             return;
         ++pendingEventCount;
-        InspectorTest.layerTreeModel.setSnapshot(new WebInspector.LayerTreeSnapshot(record.data["layerTree"]));
+        var layerTree = new WebInspector.AgentLayerTree(WebInspector.targetManager.activeTarget());
+        layerTree.setLayers(record.data["layerTree"], onLayersSet.bind(null, layerTree));
     }
 
-    function onLayerTreeChanged()
+    function onLayersSet(layerTree)
     {
+        InspectorTest.layerTreeModel.setLayerTree(layerTree);
         InspectorTest.addResult("Layer tree dump:");
         InspectorTest.dumpLayerTree();
         if (--pendingEventCount)
             return;
-        InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
         InspectorTest.completeTest();
     }
 }
