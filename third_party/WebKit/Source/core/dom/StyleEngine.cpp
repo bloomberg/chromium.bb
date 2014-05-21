@@ -235,7 +235,7 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
 void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
-    document().addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleDeferred);
+    document().addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
     markDocumentDirty();
 }
 
