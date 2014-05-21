@@ -185,6 +185,30 @@ void RenderView::checkLayoutState()
 }
 #endif
 
+bool RenderView::shouldDoFullRepaintForNextLayout() const
+{
+    // It's hard to predict here which of full repaint or per-descendant repaint costs less.
+    // For vertical writing mode or width change it's more likely that per-descendant repaint
+    // eventually turns out to be full repaint but with the cost to handle more layout states
+    // and discrete repaint rects, so marking full repaint here is more likely to cost less.
+    // Otherwise, per-descendant repaint is more likely to avoid unnecessary full repaints.
+
+    if (shouldUsePrintingLayout())
+        return true;
+
+    if (!style()->isHorizontalWritingMode() || width() != viewWidth())
+        return true;
+
+    if (height() != viewHeight()) {
+        if (RenderObject* backgroundRenderer = this->backgroundRenderer()) {
+            if (backgroundRenderer->style()->backgroundImageNeedsFullRepaintOnContainerHeightChange())
+                return true;
+        }
+    }
+
+    return false;
+}
+
 void RenderView::layout()
 {
     if (!document().paginated())
@@ -787,12 +811,18 @@ IntRect RenderView::unscaledDocumentRect() const
 
 bool RenderView::rootBackgroundIsEntirelyFixed() const
 {
-    RenderObject* rootObject = document().documentElement() ? document().documentElement()->renderer() : 0;
-    if (!rootObject)
-        return false;
+    if (RenderObject* backgroundRenderer = this->backgroundRenderer())
+        return backgroundRenderer->hasEntirelyFixedBackground();
+    return false;
+}
 
-    RenderObject* rootRenderer = rootObject->rendererForRootBackground();
-    return rootRenderer->hasEntirelyFixedBackground();
+RenderObject* RenderView::backgroundRenderer() const
+{
+    if (Element* documentElement = document().documentElement()) {
+        if (RenderObject* rootObject = documentElement->renderer())
+            return rootObject->rendererForRootBackground();
+    }
+    return 0;
 }
 
 LayoutRect RenderView::backgroundRect(RenderBox* backgroundRenderer) const

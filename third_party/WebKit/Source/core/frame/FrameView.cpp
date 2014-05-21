@@ -894,7 +894,6 @@ void FrameView::layout(bool allowSubtree)
         return;
     }
 
-    bool shouldDoFullLayout = false;
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
     {
@@ -920,8 +919,6 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
 
-        shouldDoFullLayout = !inSubtreeLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
-
         if (!inSubtreeLayout) {
             // Now set our scrollbar state for the layout.
             ScrollbarMode currentHMode = horizontalScrollbarMode();
@@ -930,6 +927,7 @@ void FrameView::layout(bool allowSubtree)
             if (m_firstLayout) {
                 setScrollbarsSuppressed(true);
 
+                m_doFullRepaint = true;
                 m_firstLayout = false;
                 m_firstLayoutCallbackPending = true;
                 m_lastViewportSize = layoutSize(IncludeScrollbars);
@@ -952,24 +950,21 @@ void FrameView::layout(bool allowSubtree)
 
             m_size = LayoutSize(layoutSize().width(), layoutSize().height());
 
-            if (oldSize != m_size) {
-                shouldDoFullLayout = true;
-                if (!m_firstLayout) {
-                    RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
-                    RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
-                    if (bodyRenderer && bodyRenderer->stretchesToViewport())
-                        bodyRenderer->setChildNeedsLayout();
-                    else if (rootRenderer && rootRenderer->stretchesToViewport())
-                        rootRenderer->setChildNeedsLayout();
-                }
+            if (oldSize != m_size && !m_firstLayout) {
+                RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
+                RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
+                if (bodyRenderer && bodyRenderer->stretchesToViewport())
+                    bodyRenderer->setChildNeedsLayout();
+                else if (rootRenderer && rootRenderer->stretchesToViewport())
+                    rootRenderer->setChildNeedsLayout();
             }
+
+            // We need to set m_doFullRepaint before triggering layout as RenderObject::checkForRepaint
+            // checks the boolean to disable local repaints.
+            m_doFullRepaint |= renderView()->shouldDoFullRepaintForNextLayout();
         }
 
         layer = rootForThisLayout->enclosingLayer();
-
-        // We need to set m_doFullRepaint before triggering layout as RenderObject::checkForRepaint
-        // checks the boolean to disable local repaints.
-        m_doFullRepaint |= shouldDoFullLayout;
 
         performLayout(rootForThisLayout, inSubtreeLayout);
 
@@ -1935,7 +1930,7 @@ bool FrameView::needsLayout() const
 void FrameView::setNeedsLayout()
 {
     if (RenderView* renderView = this->renderView())
-        renderView->setNeedsLayoutAndFullRepaint();
+        renderView->setNeedsLayout();
 }
 
 bool FrameView::isTransparent() const

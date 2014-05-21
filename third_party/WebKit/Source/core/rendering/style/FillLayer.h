@@ -167,6 +167,9 @@ public:
         return m_next ? m_next->hasFixedImage() : false;
     }
 
+    bool needsFullRepaintOnContainerWidthChange() const;
+    bool needsFullRepaintOnContainerHeightChange() const;
+
     bool hasOpaqueImage(const RenderObject*) const;
     bool hasRepeatXY() const;
     bool clipOccludesNextLayers(bool firstLayer) const;

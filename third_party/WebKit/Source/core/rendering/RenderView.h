@@ -123,6 +123,7 @@ public:
     }
 #endif
 
+    bool shouldDoFullRepaintForNextLayout() const;
     bool doingFullRepaint() const { return m_frameView->needsFullRepaint(); }
 
     // Subtree push
@@ -241,6 +242,8 @@ private:
     friend class RootLayoutStateScope;
 
     bool shouldUsePrintingLayout() const;
+
+    RenderObject* backgroundRenderer() const;
 
     FrameView* m_frameView;
 
