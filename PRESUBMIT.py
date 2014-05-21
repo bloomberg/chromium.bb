@@ -139,6 +139,7 @@ DEFAULT_TRYBOTS = [
     'nacl-precise_64-newlib-arm_qemu-pnacl',
     'nacl-precise_64-newlib-x86_32-pnacl',
     'nacl-precise_64-newlib-x86_64-pnacl',
+    'nacl-win7_64_newlib_opt_pnacl',
     # pnacl spec2k bots
     'nacl-arm_perf_panda',
     'nacl-precise_64-newlib-x86_32-pnacl-spec',
