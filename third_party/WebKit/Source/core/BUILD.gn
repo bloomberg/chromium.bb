@@ -1,0 +1,32 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("generated") {
+  deps = [
+    "../wtf",
+    "inspector:debugger_script_source",
+    "inspector:inspector_overlay_page",
+    "inspector:protocol_sources",
+    "inspector:injected_script_source",
+    "inspector:injected_canvas_script_source",
+    "inspector:instrumentation_sources",
+    "//skia",
+    "//third_party/iccjpeg",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/qcms",
+    "//third_party/sqlite",
+    "//url",
+    # TODO(GYP)
+    #"//v8",
+    #'webcore_prerequisites',
+    #'core_generated.gyp:make_core_generated',
+    #'../bindings/generated_bindings.gyp:generated_bindings',
+    #'../platform/platform_generated.gyp:make_platform_generated',
+    #'<(DEPTH)/gin/gin.gyp:gin',
+    #'<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
+    #'<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
+    #'<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+  ]
+}

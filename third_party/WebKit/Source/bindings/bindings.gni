@@ -1,0 +1,17 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(brettw) enable this to read the bindings sources (needs some work on the
+# .gypi reading script).
+#
+#_gypi = exec_script(
+#    "//build/gypi_to_gn.py",
+#    [ rebase_path("bindings.gypi") ],
+#    "scope",
+#    [ "bindings.gypi" ])
+#
+#bindings_v8_dir = "//" + rebase_path(_gypi.bindings_v8_dir, "//")
+
+# For now, hardcode the only value we need.
+bindings_v8_dir = "//third_party/WebKit/Source/bindings/v8"

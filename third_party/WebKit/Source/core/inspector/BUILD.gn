@@ -1,0 +1,96 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/WebKit/Source/build/convert_file_to_header_with_character_array.gni")
+import("//third_party/WebKit/Source/bindings/bindings.gni")
+
+blink_gen_dir = "$root_gen_dir/blink"
+protocol_file = "../../devtools/protocol.json"
+
+action("protocol_sources") {
+  script = "CodeGeneratorInspector.py"
+
+  source_prereqs = [
+    # The helper script imported by CodeGeneratorInspector.py.
+    "CodeGeneratorInspectorStrings.py",
+    protocol_file,
+  ]
+  outputs = [
+    "$blink_gen_dir/InspectorBackendDispatcher.cpp",
+    "$blink_gen_dir/InspectorBackendDispatcher.h",
+    "$blink_gen_dir/InspectorFrontend.cpp",
+    "$blink_gen_dir/InspectorFrontend.h",
+    "$blink_gen_dir/InspectorTypeBuilder.cpp",
+    "$blink_gen_dir/InspectorTypeBuilder.h",
+  ]
+
+  args = [
+    rebase_path(protocol_file, root_build_dir),
+    "--output_dir", rebase_path(blink_gen_dir, root_build_dir),
+  ]
+
+  deps = [
+    ":protocol_version",
+  ]
+}
+
+action("instrumentation_sources") {
+  script = "CodeGeneratorInstrumentation.py"
+
+  source_prereqs = [
+    # Input file for the script.
+    "InspectorInstrumentation.idl",
+  ]
+
+  outputs = [
+    "$blink_gen_dir/InspectorCanvasInstrumentationInl.h",
+    "$blink_gen_dir/InspectorConsoleInstrumentationInl.h",
+    "$blink_gen_dir/InspectorInstrumentationInl.h",
+    "$blink_gen_dir/InspectorOverridesInl.h",
+    "$blink_gen_dir/InstrumentingAgentsInl.h",
+    "$blink_gen_dir/InspectorInstrumentationImpl.cpp",
+  ]
+
+  args = [
+    rebase_path("InspectorInstrumentation.idl", root_build_dir),
+    "--output_dir", rebase_path(blink_gen_dir, root_build_dir),
+  ]
+}
+
+action("protocol_version") {
+  script = "generate-inspector-protocol-version"
+
+  source_prereqs = [ protocol_file ]
+  output_file = "$blink_gen_dir/InspectorProtocolVersion.h"
+  outputs = [ output_file ]
+
+  args = [
+    "-o", rebase_path(output_file, root_build_dir),
+    rebase_path(protocol_file, root_build_dir),
+  ]
+}
+
+convert_file_to_header_with_character_array("inspector_overlay_page") {
+  input_file_path = "InspectorOverlayPage.html"
+  output_file_path = "$blink_gen_dir/InspectorOverlayPage.h"
+  character_array_name = "InspectorOverlayPage_html"
+}
+
+convert_file_to_header_with_character_array("injected_canvas_script_source") {
+  input_file_path = "InjectedScriptCanvasModuleSource.js"
+  output_file_path = "$blink_gen_dir/InjectedScriptCanvasModuleSource.h"
+  character_array_name = "InjectedScriptCanvasModuleSource_js"
+}
+
+convert_file_to_header_with_character_array("injected_script_source") {
+  input_file_path = "InjectedScriptSource.js"
+  output_file_path = "$blink_gen_dir/InjectedScriptSource.h"
+  character_array_name = "InjectedScriptSource_js"
+}
+
+convert_file_to_header_with_character_array("debugger_script_source") {
+  input_file_path = "$bindings_v8_dir/DebuggerScript.js"
+  output_file_path = "$blink_gen_dir/DebuggerScriptSource.h"
+  character_array_name = "DebuggerScriptSource_js"
+}
