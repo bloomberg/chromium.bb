@@ -257,6 +257,14 @@ PDFViewer.prototype = {
         this.pageIndicator_.initialFadeIn();
         this.toolbar_.initialFadeIn();
         break;
+      case 'email':
+        var href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
+            '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
+            '&body=' + message.data.body;
+        var w = window.open(href, '_blank', 'width=1,height=1');
+        if (w)
+          w.close();
+        break;
       case 'getAccessibilityJSONReply':
         this.sendScriptingMessage_(message.data);
         break;
@@ -273,6 +281,12 @@ PDFViewer.prototype = {
         break;
       case 'loadProgress':
         this.updateProgress_(message.data.progress);
+        break;
+      case 'navigate':
+        if (message.data.newTab)
+          window.open(message.data.url);
+        else
+          window.location.href = message.data.url;
         break;
       case 'setScrollPosition':
         var position = this.viewport_.position;
