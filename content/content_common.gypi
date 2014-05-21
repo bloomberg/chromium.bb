@@ -472,11 +472,6 @@
     }],
   ],
   'conditions': [
-    ['use_aura==1', {
-      'sources!': [
-        'common/cursors/webcursor_mac.mm',
-      ],
-    }],
     ['OS=="ios"', {
       # iOS has different user-agent construction utilities, since the
       # version strings is not derived from webkit_version, and follows

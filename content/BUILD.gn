@@ -1,0 +1,53 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(brettw) remove this and add a proper dependency on blink once that
+# target has been converted to GN. This config sets up the include directories
+# so content can compile in the meantime.
+#
+# This corresponds to third_party/WebKit/public/blink_headers.gyp:blink_headers
+config("blink_headers_stub_config") {
+  include_dirs = [ "//third_party/WebKit" ]
+}
+
+# TODO(brettw) remove this and add a proper dependency on libjingle once that
+# target has been converted to GN. This config sets up the include directories
+# so content can compile in the meantime.
+config("libjingle_stub_config") {
+  include_dirs = [
+    "//third_party/libjingle/overrides",
+    "//third_party/libjingle/source",
+    "//third_party",
+    "//third_party/libyuv/include",
+    "//third_party/usrsctp",
+    "//third_party/webrtc",
+  ]
+
+  defines = [
+    "FEATURE_ENABLE_SSL",
+    "FEATURE_ENABLE_VOICEMAIL",
+    "EXPAT_RELATIVE_PATH",
+    "GTEST_RELATIVE_PATH",
+    "NO_MAIN_THREAD_WRAPPING",
+    "NO_SOUND_SYSTEM",
+  ]
+
+  if (is_mac) {
+    defines += [ "OSX" ]
+  } else if (is_linux) {
+    defines += [ "LINUX" ]
+  } else if (is_android) {
+    defines += [ "ANDROID" ]
+  } else if (is_win) {
+    libs = [ "secur32.lib", "crypt32.lib", "iphlpapi.lib" ]
+  }
+
+  if (is_posix) {
+    defines += [ "POSIX" ]
+  }
+  if (is_chromeos) {
+    defines += [ "CHROMEOS" ]
+  }
+}
+

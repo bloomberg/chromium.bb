@@ -30,6 +30,7 @@ group("root") {
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
     "//components/url_matcher",
+    "//content/public/common",
     "//crypto",
     "//device/usb",
     #"//extensions/common/api:extensions_api",
@@ -83,6 +84,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//components/os_crypt",
+      "//content/public/common",
       "//crypto",
       "//gpu/command_buffer/client",  # Needs Skia.
       "//gpu/command_buffer/service",
