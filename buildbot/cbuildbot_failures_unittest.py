@@ -48,6 +48,14 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
     f = self._GetFunction(self.TacoNotTasty, self.FooException)
     self.assertRaises(self.TacoNotTasty, f)
 
+  def testStepFailureRemainsPrintable(self):
+    """Tests that the re-raised exception remains printable."""
+    try:
+      self._GetFunction(failures_lib.StepFailure, self.FooException)()
+    except Exception as e:
+      self.assertTrue(isinstance(e, failures_lib.StepFailure))
+      self.assertTrue(isinstance(e.__str__(), str))
+
   def testReraiseOriginalException(self):
     """Tests that the original exception is re-raised."""
     f = self._GetFunction(self.TacoNotTasty, self.NoGuacamole)

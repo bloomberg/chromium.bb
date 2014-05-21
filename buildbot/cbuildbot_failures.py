@@ -16,7 +16,8 @@ class SetFailureType(object):
     """Initializes the decorator.
 
     Args:
-      category_exception: The exception type to re-raise as.
+      category_exception: The exception type to re-raise as. The
+        constructor must accept a string as the argument.
     """
     self.category_exception = category_exception
 
@@ -32,7 +33,9 @@ class SetFailureType(object):
           # exception type because it offers more information.
           raise
         else:
-          raise self.category_exception, exc_value, exc_traceback
+          # Convert exc_value to a string to initialize the new
+          # exception.
+          raise self.category_exception, (str(exc_value),), exc_traceback
 
     return wrapped_functor
 
