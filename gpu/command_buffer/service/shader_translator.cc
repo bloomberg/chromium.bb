@@ -201,9 +201,22 @@ bool ShaderTranslator::Translate(const char* shader) {
   return success;
 }
 
-std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
+std::string ShaderTranslator::GetStringForOptionsThatWouldAffectCompilation()
     const {
+#if ANGLE_SH_VERSION >= 124
+  DCHECK(compiler_ != NULL);
 
+  ANGLEGetInfoType resource_len = 0;
+  ShGetInfo(compiler_, SH_RESOURCES_STRING_LENGTH, &resource_len);
+  DCHECK(resource_len > 1);
+  scoped_ptr<char[]> resource_str(new char[resource_len]);
+
+  ShGetBuiltInResourcesString(compiler_, resource_len, resource_str.get());
+
+  return std::string(":CompileOptions:" +
+         base::IntToString(GetCompileOptions())) +
+         std::string(resource_str.get());
+#else
 #if ANGLE_SH_VERSION >= 123
   const size_t kNumIntFields = 21;
 #elif ANGLE_SH_VERSION >= 122
@@ -277,6 +290,7 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
       base::IntToString(compiler_options_.MaxProgramTexelOffset));
 #else   // ANGLE_SH_VERSION < 122
       base::IntToString(compiler_options_.EXT_frag_depth));
+#endif
 #endif
 }
 

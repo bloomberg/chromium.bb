@@ -74,7 +74,7 @@ void ProgramCache::ComputeShaderHash(
     const ShaderTranslatorInterface* translator,
     char* result) const {
   std::string s((
-      translator ? translator->GetStringForOptionsThatWouldEffectCompilation() :
+      translator ? translator->GetStringForOptionsThatWouldAffectCompilation() :
                    std::string()) + str);
   base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(s.c_str()),
                       s.length(), reinterpret_cast<unsigned char*>(result));

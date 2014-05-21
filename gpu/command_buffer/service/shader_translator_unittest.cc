@@ -245,13 +245,13 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
       SH_EMULATE_BUILT_IN_FUNCTIONS));
 
   std::string options_1(
-      translator_1->GetStringForOptionsThatWouldEffectCompilation());
+      translator_1->GetStringForOptionsThatWouldAffectCompilation());
   std::string options_2(
-      translator_1->GetStringForOptionsThatWouldEffectCompilation());
+      translator_1->GetStringForOptionsThatWouldAffectCompilation());
   std::string options_3(
-      translator_2->GetStringForOptionsThatWouldEffectCompilation());
+      translator_2->GetStringForOptionsThatWouldAffectCompilation());
   std::string options_4(
-      translator_3->GetStringForOptionsThatWouldEffectCompilation());
+      translator_3->GetStringForOptionsThatWouldAffectCompilation());
 
   EXPECT_EQ(options_1, options_2);
   EXPECT_NE(options_1, options_3);

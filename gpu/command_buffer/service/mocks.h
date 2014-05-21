@@ -93,7 +93,7 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
   MOCK_CONST_METHOD0(varying_map, const VariableMap&());
   MOCK_CONST_METHOD0(name_map, const NameMap&());
   MOCK_CONST_METHOD0(
-      GetStringForOptionsThatWouldEffectCompilation, std::string());
+      GetStringForOptionsThatWouldAffectCompilation, std::string());
 };
 
 class MockProgramCache : public ProgramCache {

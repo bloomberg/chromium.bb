@@ -89,8 +89,8 @@ class ShaderTranslatorInterface {
   virtual const NameMap& name_map() const = 0;
 
   // Return a string that is unique for a specfic set of options that would
-  // possibly effect compilation.
-  virtual std::string GetStringForOptionsThatWouldEffectCompilation() const = 0;
+  // possibly affect compilation.
+  virtual std::string GetStringForOptionsThatWouldAffectCompilation() const = 0;
 
  protected:
   virtual ~ShaderTranslatorInterface() {}
@@ -135,7 +135,7 @@ class GPU_EXPORT ShaderTranslator
   virtual const VariableMap& varying_map() const OVERRIDE;
   virtual const NameMap& name_map() const OVERRIDE;
 
-  virtual std::string GetStringForOptionsThatWouldEffectCompilation() const
+  virtual std::string GetStringForOptionsThatWouldAffectCompilation() const
       OVERRIDE;
 
   void AddDestructionObserver(DestructionObserver* observer);
