@@ -1213,6 +1213,8 @@
         'browser/metrics/metrics_services_manager.h',
         'browser/metrics/metrics_state_manager.cc',
         'browser/metrics/metrics_state_manager.h',
+        'browser/metrics/omnibox_metrics_provider.cc',
+        'browser/metrics/omnibox_metrics_provider.h',
         'browser/metrics/perf_provider_chromeos.cc',
         'browser/metrics/perf_provider_chromeos.h',
         'browser/metrics/thread_watcher.cc',

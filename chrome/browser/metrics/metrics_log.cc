@@ -25,21 +25,15 @@
 #include "base/third_party/nspr/prtime.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/autocomplete/autocomplete_input.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/extension_metrics.h"
-#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -68,7 +62,6 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using content::GpuDataManager;
 using metrics::MetricsLogBase;
-using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
@@ -86,95 +79,6 @@ std::string GetMetricsEnabledDate(PrefService* pref) {
   }
 
   return pref->GetString(prefs::kMetricsReportingEnabledTimestamp);
-}
-
-OmniboxEventProto::InputType AsOmniboxEventInputType(
-    AutocompleteInput::Type type) {
-  switch (type) {
-    case AutocompleteInput::INVALID:
-      return OmniboxEventProto::INVALID;
-    case AutocompleteInput::UNKNOWN:
-      return OmniboxEventProto::UNKNOWN;
-    case AutocompleteInput::URL:
-      return OmniboxEventProto::URL;
-    case AutocompleteInput::QUERY:
-      return OmniboxEventProto::QUERY;
-    case AutocompleteInput::FORCED_QUERY:
-      return OmniboxEventProto::FORCED_QUERY;
-    default:
-      NOTREACHED();
-      return OmniboxEventProto::INVALID;
-  }
-}
-
-OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
-    AutocompleteMatch::Type type) {
-  switch (type) {
-    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
-      return OmniboxEventProto::Suggestion::URL_WHAT_YOU_TYPED;
-    case AutocompleteMatchType::HISTORY_URL:
-      return OmniboxEventProto::Suggestion::HISTORY_URL;
-    case AutocompleteMatchType::HISTORY_TITLE:
-      return OmniboxEventProto::Suggestion::HISTORY_TITLE;
-    case AutocompleteMatchType::HISTORY_BODY:
-      return OmniboxEventProto::Suggestion::HISTORY_BODY;
-    case AutocompleteMatchType::HISTORY_KEYWORD:
-      return OmniboxEventProto::Suggestion::HISTORY_KEYWORD;
-    case AutocompleteMatchType::NAVSUGGEST:
-      return OmniboxEventProto::Suggestion::NAVSUGGEST;
-    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
-      return OmniboxEventProto::Suggestion::SEARCH_WHAT_YOU_TYPED;
-    case AutocompleteMatchType::SEARCH_HISTORY:
-      return OmniboxEventProto::Suggestion::SEARCH_HISTORY;
-    case AutocompleteMatchType::SEARCH_SUGGEST:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST;
-    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_ENTITY;
-    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_INFINITE;
-    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PERSONALIZED;
-    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PROFILE;
-    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
-      return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
-    case AutocompleteMatchType::EXTENSION_APP:
-      return OmniboxEventProto::Suggestion::EXTENSION_APP;
-    case AutocompleteMatchType::BOOKMARK_TITLE:
-      return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
-    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
-      return OmniboxEventProto::Suggestion::NAVSUGGEST_PERSONALIZED;
-    default:
-      NOTREACHED();
-      return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;
-  }
-}
-
-OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
-    AutocompleteInput::PageClassification page_classification) {
-  switch (page_classification) {
-    case AutocompleteInput::INVALID_SPEC:
-      return OmniboxEventProto::INVALID_SPEC;
-    case AutocompleteInput::NTP:
-      return OmniboxEventProto::NTP;
-    case AutocompleteInput::BLANK:
-      return OmniboxEventProto::BLANK;
-    case AutocompleteInput::HOME_PAGE:
-      return OmniboxEventProto::HOME_PAGE;
-    case AutocompleteInput::OTHER:
-      return OmniboxEventProto::OTHER;
-    case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
-      return OmniboxEventProto::
-          SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-    case AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-    case AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS;
-    case AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT:
-      return OmniboxEventProto::
-          SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
-  }
-  return OmniboxEventProto::INVALID_SPEC;
 }
 
 ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
@@ -865,71 +769,6 @@ void MetricsLog::RecordProfilerData(
   }
 
   WriteProfilerData(process_data, process_type, profile);
-}
-
-void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
-  DCHECK(!locked());
-
-  std::vector<base::string16> terms;
-  const int num_terms =
-      static_cast<int>(Tokenize(log.text, base::kWhitespaceUTF16, &terms));
-
-  OmniboxEventProto* omnibox_event = uma_proto()->add_omnibox_event();
-  omnibox_event->set_time(MetricsLogBase::GetCurrentTime());
-  if (log.tab_id != -1) {
-    // If we know what tab the autocomplete URL was opened in, log it.
-    omnibox_event->set_tab_id(log.tab_id);
-  }
-  omnibox_event->set_typed_length(log.text.length());
-  omnibox_event->set_just_deleted_text(log.just_deleted_text);
-  omnibox_event->set_num_typed_terms(num_terms);
-  omnibox_event->set_selected_index(log.selected_index);
-  if (log.completed_length != base::string16::npos)
-    omnibox_event->set_completed_length(log.completed_length);
-  const base::TimeDelta default_time_delta =
-      base::TimeDelta::FromMilliseconds(-1);
-  if (log.elapsed_time_since_user_first_modified_omnibox !=
-      default_time_delta) {
-    // Only upload the typing duration if it is set/valid.
-    omnibox_event->set_typing_duration_ms(
-        log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
-  }
-  if (log.elapsed_time_since_last_change_to_default_match !=
-      default_time_delta) {
-    omnibox_event->set_duration_since_last_default_match_update_ms(
-        log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
-  }
-  omnibox_event->set_current_page_classification(
-      AsOmniboxEventPageClassification(log.current_page_classification));
-  omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
-  // We consider a paste-and-search/paste-and-go action to have a closed popup
-  // (as explained in omnibox_event.proto) even if it was not, because such
-  // actions ignore the contents of the popup so it doesn't matter that it was
-  // open.
-  const bool consider_popup_open = log.is_popup_open && !log.is_paste_and_go;
-  omnibox_event->set_is_popup_open(consider_popup_open);
-  omnibox_event->set_is_paste_and_go(log.is_paste_and_go);
-  if (consider_popup_open) {
-    omnibox_event->set_is_top_result_hidden_in_dropdown(
-        log.result.ShouldHideTopMatch());
-  }
-
-  for (AutocompleteResult::const_iterator i(log.result.begin());
-       i != log.result.end(); ++i) {
-    OmniboxEventProto::Suggestion* suggestion = omnibox_event->add_suggestion();
-    suggestion->set_provider(i->provider->AsOmniboxEventProviderType());
-    suggestion->set_result_type(AsOmniboxEventResultType(i->type));
-    suggestion->set_relevance(i->relevance);
-    if (i->typed_count != -1)
-      suggestion->set_typed_count(i->typed_count);
-    suggestion->set_is_starred(i->starred);
-  }
-  for (ProvidersInfo::const_iterator i(log.providers_info.begin());
-       i != log.providers_info.end(); ++i) {
-    OmniboxEventProto::ProviderInfo* provider_info =
-        omnibox_event->add_provider_info();
-    provider_info->CopyFrom(*i);
-  }
 }
 
 void MetricsLog::WriteGoogleUpdateProto(

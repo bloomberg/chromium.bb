@@ -21,7 +21,6 @@
 
 class HashedExtensionMetrics;
 class MetricsNetworkObserver;
-struct OmniboxLog;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -103,10 +102,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // call from prefs and clears the pref value. Returns true on success or false
   // if there was no saved environment in prefs or it could not be decoded.
   bool LoadSavedEnvironmentFromPrefs();
-
-  // Records the input text, available choices, and selected entry when the
-  // user uses the Omnibox to open a URL.
-  void RecordOmniboxOpenedURL(const OmniboxLog& log);
 
   // Records the passed profiled data, which should be a snapshot of the
   // browser's profiled performance during startup for a single process.
