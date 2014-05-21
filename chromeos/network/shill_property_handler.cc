@@ -4,6 +4,8 @@
 
 #include "chromeos/network/shill_property_handler.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
@@ -412,9 +414,10 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
 
 void ShillPropertyHandler::UpdateAvailableTechnologies(
     const base::ListValue& technologies) {
+  std::stringstream technologies_str;
+  technologies_str << technologies;
+  NET_LOG_EVENT("AvailableTechnologies:", technologies_str.str());
   available_technologies_.clear();
-  NET_LOG_EVENT("AvailableTechnologiesChanged",
-                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -427,9 +430,10 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
 
 void ShillPropertyHandler::UpdateEnabledTechnologies(
     const base::ListValue& technologies) {
+  std::stringstream technologies_str;
+  technologies_str << technologies;
+  NET_LOG_EVENT("EnabledTechnologies:", technologies_str.str());
   enabled_technologies_.clear();
-  NET_LOG_EVENT("EnabledTechnologiesChanged",
-                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;
@@ -443,9 +447,10 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
 
 void ShillPropertyHandler::UpdateUninitializedTechnologies(
     const base::ListValue& technologies) {
+  std::stringstream technologies_str;
+  technologies_str << technologies;
+  NET_LOG_EVENT("UninitializedTechnologies:", technologies_str.str());
   uninitialized_technologies_.clear();
-  NET_LOG_EVENT("UninitializedTechnologiesChanged",
-                base::StringPrintf("Size: %" PRIuS, technologies.GetSize()));
   for (base::ListValue::const_iterator iter = technologies.begin();
        iter != technologies.end(); ++iter) {
     std::string technology;

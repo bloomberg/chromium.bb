@@ -731,6 +731,14 @@ void NetworkStateHandler::ManagedStateListChanged(
     UMA_HISTOGRAM_COUNTS_100("Networks.RememberedShared", shared);
     UMA_HISTOGRAM_COUNTS_100("Networks.RememberedUnshared", unshared);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
+    std::string devices;
+    for (ManagedStateList::const_iterator iter = device_list_.begin();
+         iter != device_list_.end(); ++iter) {
+      if (iter != device_list_.begin())
+        devices += ", ";
+      devices += (*iter)->name();
+    }
+    NET_LOG_EVENT("DeviceList:", devices);
     NotifyDeviceListChanged();
   } else {
     NOTREACHED();

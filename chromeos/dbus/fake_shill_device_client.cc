@@ -246,6 +246,9 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
   properties->SetWithoutPathExpansion(shill::kTypeProperty,
                                       base::Value::CreateStringValue(type));
   properties->SetWithoutPathExpansion(
+      shill::kNameProperty,
+      base::Value::CreateStringValue(object_path));
+  properties->SetWithoutPathExpansion(
       shill::kDBusObjectProperty, base::Value::CreateStringValue(object_path));
   properties->SetWithoutPathExpansion(
       shill::kDBusServiceProperty,
