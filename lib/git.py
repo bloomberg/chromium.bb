@@ -33,13 +33,13 @@ del _path
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
     # crbug.com/285832
-    r'! \[remote rejected\].* -> .* \(error in hook\)',
+    r'! \[remote rejected\].*\(error in hook\)',
 
     # crbug.com/289932
-    r'! \[remote rejected\].* -> .* \(failed to lock\)',
+    r'! \[remote rejected\].*\(failed to lock\)',
 
     # crbug.com/307156
-    r'! \[remote rejected\].* -> .* \(error in Gerrit backend\)',
+    r'! \[remote rejected\].*\(error in Gerrit backend\)',
 
     # crbug.com/285832
     r'remote error: Internal Server Error',
