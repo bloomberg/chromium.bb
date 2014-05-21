@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -59,9 +60,12 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
     }
   }
 
-  // fallback to defaults if nothing specified in the URL:
-  if (mime_type->empty())
+  if (mime_type->empty()) {
+    // fallback to defaults if nothing specified in the URL:
     mime_type->assign("text/plain");
+  } else if (!ParseMimeTypeWithoutParameter(*mime_type, NULL, NULL)) {
+    return false;
+  }
   if (charset->empty())
     charset->assign("US-ASCII");
 

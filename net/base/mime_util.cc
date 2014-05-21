@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "net/base/platform_mime_util.h"
+#include "net/http/http_util.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -69,7 +70,11 @@ class MimeUtil : public PlatformMimeUtil {
   bool MatchesMimeType(const std::string &mime_type_pattern,
                        const std::string &mime_type) const;
 
-  bool IsMimeType(const std::string& type_string) const;
+  bool ParseMimeTypeWithoutParameter(const std::string& type_string,
+                                     std::string* top_level_type,
+                                     std::string* subtype) const;
+
+  bool IsValidTopLevelMimeType(const std::string& type_string) const;
 
   bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs) const;
 
@@ -660,47 +665,45 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
   return MatchesMimeTypeParameters(mime_type_pattern, mime_type);
 }
 
-// See http://www.iana.org/assignments/media-types/index.html
+// See http://www.iana.org/assignments/media-types/media-types.xhtml
 static const char* legal_top_level_types[] = {
-  "application/",
-  "audio/",
-  "example/",
-  "image/",
-  "message/",
-  "model/",
-  "multipart/",
-  "text/",
-  "video/",
+  "application",
+  "audio",
+  "example",
+  "image",
+  "message",
+  "model",
+  "multipart",
+  "text",
+  "video",
 };
 
-bool MimeUtil::IsMimeType(const std::string& type_string) const {
-  // MIME types are always ASCII and case-insensitive (at least, the top-level
-  // and secondary types we care about).
-  if (!base::IsStringASCII(type_string))
+bool MimeUtil::ParseMimeTypeWithoutParameter(
+    const std::string& type_string,
+    std::string* top_level_type,
+    std::string* subtype) const {
+  std::vector<std::string> components;
+  base::SplitString(type_string, '/', &components);
+  if (components.size() != 2 ||
+      !HttpUtil::IsToken(components[0]) ||
+      !HttpUtil::IsToken(components[1]))
     return false;
 
-  if (type_string == "*/*" || type_string == "*")
-    return true;
+  if (top_level_type)
+    *top_level_type = components[0];
+  if (subtype)
+    *subtype = components[1];
+  return true;
+}
 
+bool MimeUtil::IsValidTopLevelMimeType(const std::string& type_string) const {
+  std::string lower_type = StringToLowerASCII(type_string);
   for (size_t i = 0; i < arraysize(legal_top_level_types); ++i) {
-    if (StartsWithASCII(type_string, legal_top_level_types[i], false) &&
-        type_string.length() > strlen(legal_top_level_types[i])) {
+    if (lower_type.compare(legal_top_level_types[i]) == 0)
       return true;
-    }
   }
 
-  // If there's a "/" separator character, and the token before it is
-  // "x-" + (ascii characters), it is also a MIME type.
-  size_t slash = type_string.find('/');
-  if (slash < 3 ||
-      slash == std::string::npos || slash == type_string.length() - 1) {
-    return false;
-  }
-
-  if (StartsWithASCII(type_string, "x-", false))
-    return true;
-
-  return false;
+  return type_string.size() > 2 && StartsWithASCII(type_string, "x-", false);
 }
 
 bool MimeUtil::AreSupportedMediaCodecs(
@@ -805,8 +808,15 @@ bool MatchesMimeType(const std::string& mime_type_pattern,
   return g_mime_util.Get().MatchesMimeType(mime_type_pattern, mime_type);
 }
 
-bool IsMimeType(const std::string& type_string) {
-  return g_mime_util.Get().IsMimeType(type_string);
+bool ParseMimeTypeWithoutParameter(const std::string& type_string,
+                                   std::string* top_level_type,
+                                   std::string* subtype) {
+  return g_mime_util.Get().ParseMimeTypeWithoutParameter(
+      type_string, top_level_type, subtype);
+}
+
+bool IsValidTopLevelMimeType(const std::string& type_string) {
+  return g_mime_util.Get().IsValidTopLevelMimeType(type_string);
 }
 
 bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs) {

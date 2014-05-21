@@ -55,10 +55,28 @@ NET_EXPORT bool IsSupportedMimeType(const std::string& mime_type);
 NET_EXPORT bool MatchesMimeType(const std::string& mime_type_pattern,
                                 const std::string& mime_type);
 
-// Returns true if the |type_string| is a correctly-formed mime type specifier.
-// Allows strings of the form x/y[;params], where "x" is a legal mime type name.
-// Also allows wildcard types -- "x/*", "*/*", and "*".
-NET_EXPORT bool IsMimeType(const std::string& type_string);
+// Returns true if the |type_string| is a correctly-formed mime type specifier
+// with no parameter, i.e. string that matches the following ABNF (see the
+// definition of content ABNF in RFC2045 and media-type ABNF httpbis p2
+// semantics).
+//
+//   token "/" token
+//
+// If |top_level_type| is non-NULL, sets it to parsed top-level type string.
+// If |subtype| is non-NULL, sets it to parsed subtype string.
+NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
+                                              std::string* top_level_type,
+                                              std::string* subtype);
+
+// Returns true if the |type_string| is a top-level type of any media type
+// registered with IANA media types registry at
+// http://www.iana.org/assignments/media-types/media-types.xhtml or an
+// experimental type (type with x- prefix).
+//
+// This method doesn't check that the input conforms to token ABNF, so if input
+// is experimental type strings, you need to check check that before using
+// this method.
+NET_EXPORT bool IsValidTopLevelMimeType(const std::string& type_string);
 
 // Returns true if and only if all codecs are supported, false otherwise.
 NET_EXPORT bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs);

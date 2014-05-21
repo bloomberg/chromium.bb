@@ -88,6 +88,13 @@ TEST(DataURLTest, Parse) {
       "US-ASCII",
       "<html><body><b>hello world</b></body></html>" },
 
+    // Bad mime type
+    { "data:f(oo/bar;baz=1;charset=kk,boo",
+      false,
+      "",
+      "",
+      "" },
+
     // the comma cannot be url-escaped!
     { "data:%2Cblah",
       false,

@@ -283,41 +283,77 @@ TEST(MimeUtilTest, ParseCodecString) {
   EXPECT_EQ("mp4a.40.2", codecs_out[1]);
 }
 
-TEST(MimeUtilTest, TestIsMimeType) {
+TEST(MimeUtilTest, TestParseMimeTypeWithoutParameter) {
   std::string nonAscii("application/nonutf8");
-  EXPECT_TRUE(IsMimeType(nonAscii));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter(nonAscii, NULL, NULL));
 #if defined(OS_WIN)
   nonAscii.append(base::WideToUTF8(std::wstring(L"\u2603")));
 #else
   nonAscii.append("\u2603");  // unicode snowman
 #endif
-  EXPECT_FALSE(IsMimeType(nonAscii));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter(nonAscii, NULL, NULL));
 
-  EXPECT_TRUE(IsMimeType("application/mime"));
-  EXPECT_TRUE(IsMimeType("application/json"));
-  EXPECT_TRUE(IsMimeType("application/x-suggestions+json"));
-  EXPECT_TRUE(IsMimeType("application/+json"));
-  EXPECT_TRUE(IsMimeType("audio/mime"));
-  EXPECT_TRUE(IsMimeType("example/mime"));
-  EXPECT_TRUE(IsMimeType("image/mime"));
-  EXPECT_TRUE(IsMimeType("message/mime"));
-  EXPECT_TRUE(IsMimeType("model/mime"));
-  EXPECT_TRUE(IsMimeType("multipart/mime"));
-  EXPECT_TRUE(IsMimeType("text/mime"));
-  EXPECT_TRUE(IsMimeType("TEXT/mime"));
-  EXPECT_TRUE(IsMimeType("Text/mime"));
-  EXPECT_TRUE(IsMimeType("TeXt/mime"));
-  EXPECT_TRUE(IsMimeType("video/mime"));
-  EXPECT_TRUE(IsMimeType("video/mime;parameter"));
-  EXPECT_TRUE(IsMimeType("*/*"));
-  EXPECT_TRUE(IsMimeType("*"));
+  std::string top_level_type;
+  std::string subtype;
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter(
+      "application/mime", &top_level_type, &subtype));
+  EXPECT_EQ("application", top_level_type);
+  EXPECT_EQ("mime", subtype);
 
-  EXPECT_TRUE(IsMimeType("x-video/mime"));
-  EXPECT_TRUE(IsMimeType("X-Video/mime"));
-  EXPECT_FALSE(IsMimeType("x-video/"));
-  EXPECT_FALSE(IsMimeType("x-/mime"));
-  EXPECT_FALSE(IsMimeType("mime/looking"));
-  EXPECT_FALSE(IsMimeType("text/"));
+  // Various allowed subtype forms.
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("application/json", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter(
+      "application/x-suggestions+json", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("application/+json", NULL, NULL));
+
+  // Upper case letters are allowed.
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/mime", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("TEXT/mime", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("Text/mime", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("TeXt/mime", NULL, NULL));
+
+  // Experimental types are also considered to be valid.
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("x-video/mime", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("X-Video/mime", NULL, NULL));
+
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/ ", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("te(xt/ ", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/()plain", NULL, NULL));
+
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("x-video", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("x-video/", NULL, NULL));
+
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("application/a/b/c", NULL, NULL));
+
+  //EXPECT_TRUE(ParseMimeTypeWithoutParameter("video/mime;parameter"));
+}
+
+TEST(MimeUtilTest, TestIsValidTopLevelMimeType) {
+  EXPECT_TRUE(IsValidTopLevelMimeType("application"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("audio"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("example"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("image"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("message"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("model"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("multipart"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("text"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("video"));
+
+  EXPECT_TRUE(IsValidTopLevelMimeType("TEXT"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("Text"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("TeXt"));
+
+  EXPECT_FALSE(IsValidTopLevelMimeType("mime"));
+  EXPECT_FALSE(IsValidTopLevelMimeType(""));
+  EXPECT_FALSE(IsValidTopLevelMimeType("/"));
+  EXPECT_FALSE(IsValidTopLevelMimeType(" "));
+
+  EXPECT_TRUE(IsValidTopLevelMimeType("x-video"));
+  EXPECT_TRUE(IsValidTopLevelMimeType("X-video"));
+
+  EXPECT_FALSE(IsValidTopLevelMimeType("x-"));
 }
 
 TEST(MimeUtilTest, TestToIANAMediaType) {
