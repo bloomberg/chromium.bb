@@ -58,10 +58,7 @@ def GetBaseURLs():
     external_url = 'http://src.chromium.org/svn'
     internal_url = 'svn://svn.chromium.org/chrome-internal'
 
-  # No mirror for this one at the moment.
-  pdf_url = 'svn://svn.chromium.org/pdf'
-
-  return external_url, internal_url, pdf_url
+  return external_url, internal_url
 
 
 def GetTipOfTrunkSvnRevision(svn_url):
@@ -80,21 +77,19 @@ def GetTipOfTrunkSvnRevision(svn_url):
   raise Exception('Could not find revision information from %s' % svn_url)
 
 
-def _GetGclientURLs(internal, use_pdf, rev):
+def _GetGclientURLs(internal, rev):
   """Get the URLs to use in gclient file.
 
   See WriteConfigFile below.
   """
   results = []
-  external_url, internal_url, pdf_url = GetBaseURLs()
+  external_url, internal_url = GetBaseURLs()
 
   if rev is None or isinstance(rev, (int, long)):
     rev_str = '@%s' % rev if rev else ''
     results.append(('src', '%s/trunk/src%s' % (external_url, rev_str)))
     if internal:
       results.append(('src-internal', '%s/trunk/src-internal' % internal_url))
-    if use_pdf:
-      results.append(('src-pdf', '%s/trunk/chrome' % pdf_url))
   elif internal:
     # TODO(petermayo): Fall back to the archive directory if needed.
     primary_url = '%s/trunk/tools/buildspec/releases/%s' % (internal_url, rev)
@@ -105,16 +100,13 @@ def _GetGclientURLs(internal, use_pdf, rev):
   return results
 
 
-def _GetGclientSolutions(internal, use_pdf, rev):
+def _GetGclientSolutions(internal, rev):
   """Get the solutions array to write to the gclient file.
 
   See WriteConfigFile below.
   """
-  urls = _GetGclientURLs(internal, use_pdf, rev)
+  urls = _GetGclientURLs(internal, rev)
   custom_deps, custom_vars = {}, {}
-  # This suppresses pdf from a buildspec
-  if not use_pdf:
-    custom_deps.update({'src/pdf': None, 'src-pdf': None})
   if _UseGoloMirror():
     custom_vars.update({
       'svn_url': SVN_MIRROR_URL,
@@ -131,16 +123,16 @@ def _GetGclientSolutions(internal, use_pdf, rev):
   return solutions
 
 
-def _GetGclientSpec(internal, use_pdf, rev):
+def _GetGclientSpec(internal, rev):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
   """
-  solutions = _GetGclientSolutions(internal=internal, use_pdf=use_pdf, rev=rev)
+  solutions = _GetGclientSolutions(internal=internal, rev=rev)
   return 'solutions = %s\n' % pprint.pformat(solutions)
 
 
-def WriteConfigFile(gclient, cwd, internal, use_pdf, rev):
+def WriteConfigFile(gclient, cwd, internal, rev):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -150,12 +142,11 @@ def WriteConfigFile(gclient, cwd, internal, use_pdf, rev):
     gclient: Path to gclient.
     cwd: Directory to sync.
     internal: Whether you want an internal checkout.
-    use_pdf: Whether you want the PDF source code.
     rev: Revision or tag to use. If None, use the latest from trunk. If this is
       a number, use the specified revision. If this is a string, use the
       specified tag.
   """
-  spec = _GetGclientSpec(internal=internal, use_pdf=use_pdf, rev=rev)
+  spec = _GetGclientSpec(internal=internal, rev=rev)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 

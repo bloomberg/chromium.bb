@@ -24,6 +24,7 @@ def GetParser():
 
   parser.add_argument('--internal', help='Sync internal version of Chrome',
                       action='store_true', default=False)
+  # TODO(build): Delete this once all the calls disappear.
   parser.add_argument('--pdf', help='Sync PDF source code',
                       action='store_true', default=False)
   parser.add_argument('--reset', help='Revert local changes',
@@ -49,7 +50,7 @@ def main(argv):
 
   # Sync new Chrome.
   gclient.WriteConfigFile(options.gclient, options.chrome_root,
-                          options.internal, options.pdf, options.version)
+                          options.internal, options.version)
   sync_fn = functools.partial(
       gclient.Sync, options.gclient, options.chrome_root, reset=options.reset)
 

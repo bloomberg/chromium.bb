@@ -304,12 +304,10 @@ _CHROME_INTERNAL_FLAG = 'chrome_internal'
 _CONTENT_SHELL_FLAG = 'content_shell'
 _ECS_FLAG = 'ecs'
 _HIGHDPI_FLAG = 'highdpi'
-_PDF_FLAG = 'chrome_pdf'
 STAGING_FLAGS = (
   _CHROME_INTERNAL_FLAG,
   _CONTENT_SHELL_FLAG,
   _HIGHDPI_FLAG,
-  _PDF_FLAG,
 )
 
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
@@ -323,7 +321,7 @@ _COPY_PATHS_APP_SHELL = (
   Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
   Path('libffmpegsumo.so', exe=True, optional=True),
   Path('libosmesa.so', exe=True, optional=True),
-  Path('libpdf.so', exe=True, cond=C.StagingFlagSet(_PDF_FLAG)),
+  Path('libpdf.so', exe=True),
 )
 
 _COPY_PATHS_CHROME = (
@@ -362,8 +360,7 @@ _COPY_PATHS_CHROME = (
   Path('libffmpegsumo.so',
        exe=True),
   Path('libpdf.so',
-       exe=True,
-       cond=C.StagingFlagSet(_PDF_FLAG)),
+       exe=True),
   Path('libppGoogleNaClPluginChrome.so',
        exe=True,
        cond=C.GypNotSet(_DISABLE_NACL)),

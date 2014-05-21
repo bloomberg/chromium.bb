@@ -1918,7 +1918,6 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   internal = constants.USE_CHROME_INTERNAL in useflags
   cmd = [sync_chrome, '--reset']
   cmd += ['--internal'] if internal else []
-  cmd += ['--pdf'] if constants.USE_CHROME_PDF in useflags else []
   cmd += ['--tag', tag] if tag is not None else []
   cmd += ['--revision', revision] if revision is not None else []
   cmd += [chrome_root]
