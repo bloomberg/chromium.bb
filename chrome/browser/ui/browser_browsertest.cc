@@ -29,6 +29,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/translate/translate_browser_test_utils.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
@@ -1403,6 +1404,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
+  test::ScopedCLDDynamicDataHarness dynamic_data_scope;
+  ASSERT_NO_FATAL_FAILURE(dynamic_data_scope.Init());
   ASSERT_TRUE(test_server()->Start());
 
   //std::string lang;
