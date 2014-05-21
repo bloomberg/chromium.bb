@@ -14,6 +14,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -374,6 +375,13 @@ void TrayDisplay::CreateOrUpdateNotification(
   if (message.empty())
     return;
 
+  // Don't display notifications for accelerometer triggered screen rotations.
+  // See http://crbug.com/364949
+  if (Shell::GetInstance()->maximize_mode_controller()->
+      in_set_screen_rotation()) {
+    return;
+  }
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -388,7 +396,8 @@ void TrayDisplay::CreateOrUpdateNotification(
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettings))));
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+
+    message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
