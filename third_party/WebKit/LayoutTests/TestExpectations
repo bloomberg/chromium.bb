@@ -1472,7 +1472,7 @@ crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
-crbug.com/366185 inspector/split-view.html [ Pass Timeout ]
+crbug.com/366185 inspector/split-view.html [ Pass Timeout Crash ]
 
 crbug.com/367814 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Pass Crash ]
 
@@ -1525,5 +1525,14 @@ crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-preserveAspec
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 
 crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
+
+crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
+
+crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
