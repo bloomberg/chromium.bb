@@ -2131,15 +2131,33 @@ weston_compositor_read_input(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
+static void
+weston_output_schedule_repaint_reset(struct weston_output *output)
+{
+	struct weston_compositor *compositor = output->compositor;
+	struct wl_event_loop *loop;
+	int fd;
+
+	output->repaint_scheduled = 0;
+	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
+
+	if (compositor->input_loop_source)
+		return;
+
+	loop = wl_display_get_event_loop(compositor->wl_display);
+	fd = wl_event_loop_get_fd(compositor->input_loop);
+	compositor->input_loop_source =
+		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
+				     weston_compositor_read_input, compositor);
+}
+
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output,
 			   const struct timespec *stamp,
 			   uint32_t presented_flags)
 {
 	struct weston_compositor *compositor = output->compositor;
-	struct wl_event_loop *loop =
-		wl_display_get_event_loop(compositor->wl_display);
-	int fd, r;
+	int r;
 	uint32_t refresh_nsec;
 
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
@@ -2161,16 +2179,7 @@ weston_output_finish_frame(struct weston_output *output,
 			return;
 	}
 
-	output->repaint_scheduled = 0;
-	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
-
-	if (compositor->input_loop_source)
-		return;
-
-	fd = wl_event_loop_get_fd(compositor->input_loop);
-	compositor->input_loop_source =
-		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
-				     weston_compositor_read_input, compositor);
+	weston_output_schedule_repaint_reset(output);
 }
 
 static void
