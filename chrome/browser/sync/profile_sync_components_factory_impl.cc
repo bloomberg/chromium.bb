@@ -577,7 +577,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
 
   scoped_ptr<syncer::AttachmentStore> attachment_store(
       new syncer::FakeAttachmentStore(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(
