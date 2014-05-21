@@ -186,7 +186,7 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
       if (icon_value->GetString(kIconSizes[i].size_string, &str_value) &&
           StringToSkBitmap(str_value, &bitmap)) {
         CHECK(!bitmap.isNull());
-        float scale = ui::GetImageScale(kIconSizes[i].scale);
+        float scale = ui::GetScaleForScaleFactor(kIconSizes[i].scale);
         icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
       }
     }
@@ -216,7 +216,7 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   if (!icon.isNull()) {
     base::DictionaryValue* icon_value = new base::DictionaryValue();
     for (size_t i = 0; i < arraysize(kIconSizes); i++) {
-      float scale = ui::GetImageScale(kIconSizes[i].scale);
+      float scale = ui::GetScaleForScaleFactor(kIconSizes[i].scale);
       if (icon.HasRepresentation(scale)) {
         icon_value->SetString(
             kIconSizes[i].size_string,
@@ -681,7 +681,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
         SkBitmap bitmap;
         EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&pickle, &iter, &bitmap));
         CHECK(!bitmap.isNull());
-        float scale = ui::GetImageScale(kIconSizes[i].scale);
+        float scale = ui::GetScaleForScaleFactor(kIconSizes[i].scale);
         icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
       }
     }

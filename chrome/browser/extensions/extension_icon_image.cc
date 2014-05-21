@@ -164,7 +164,7 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   if (!extension_)
     return gfx::ImageSkiaRep();
 
-  const float scale = ui::GetImageScale(scale_factor);
+  const float scale = ui::GetScaleForScaleFactor(scale_factor);
   const int resource_size_in_pixel =
       static_cast<int>(resource_size_in_dip_ * scale);
 
