@@ -4776,14 +4776,16 @@ compileFile (const char *fileName)
 }
 
 /** 
- * Macro to free a char** array 
+ * Free a char** array 
  */
-#define free_tablefiles(tables) {			\
-    char **table;					\
-    for (table = tables; *table; table++)		\
-      free(*table);					\
-    free(tables);					\
-  }
+static void 
+free_tablefiles(char **tables) {
+  char **table;
+  if (!tables) return;
+  for (table = tables; *table; table++)
+    free(*table);
+  free(tables);
+}
 
 /**
  * Implement include opcode
@@ -4808,7 +4810,7 @@ includeFile (FileInfo * nested, CharsString * includedFile)
   if (tableFiles[1] != NULL)
     {
       errorCount++;
-      free_tablefiles(tableFiles)
+      free_tablefiles(tableFiles);
       lou_logPrint ("Table list not supported in include statement: 'include %s'", includeThis);
       return 0;
     }
