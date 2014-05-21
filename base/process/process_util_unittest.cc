@@ -677,6 +677,12 @@ TEST_F(ProcessUtilTest, GetAppOutput) {
 #endif  // defined(OS_ANDROID)
 }
 
+// Flakes on Android, crbug.com/375840
+#if defined(OS_ANDROID)
+#define MAYBE_GetAppOutputRestricted DISABLED_GetAppOutputRestricted
+#else
+#define MAYBE_GetAppOutputRestricted GetAppOutputRestricted
+#endif
 TEST_F(ProcessUtilTest, GetAppOutputRestricted) {
   // Unfortunately, since we can't rely on the path, we need to know where
   // everything is. So let's use /bin/sh, which is on every POSIX system, and
