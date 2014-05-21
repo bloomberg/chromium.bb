@@ -1160,6 +1160,13 @@ void BrowserView::ShowBookmarkAppBubble(
 void BrowserView::ShowTranslateBubble(content::WebContents* web_contents,
                                       translate::TranslateStep step,
                                       TranslateErrors::Type error_type) {
+  if (contents_web_view_->HasFocus() &&
+      !GetLocationBarView()->IsMouseHovered()) {
+    content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+    if (rvh->IsFocusedElementEditable())
+      return;
+  }
+
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
   LanguageState& language_state = translate_tab_helper->GetLanguageState();

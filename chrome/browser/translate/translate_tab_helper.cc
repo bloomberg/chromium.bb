@@ -517,10 +517,6 @@ void TranslateTabHelper::ShowBubble(translate::TranslateStep step,
   if (web_contents() != browser->tab_strip_model()->GetActiveWebContents())
     return;
 
-  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  if (rvh->IsFocusedElementEditable())
-    return;
-
   // This ShowBubble function is also used for upating the existing bubble.
   // However, with the bubble shown, any browser windows are NOT activated
   // because the bubble takes the focus from the other widgets including the
