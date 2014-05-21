@@ -16,7 +16,9 @@ config("wtf_config") {
       "_SCL_SECURE_NO_DEPRECATE",
       "CRASH=__debugbreak",
     ]
-    include_dirs = [ "os-win32" ]
+    include_dirs = [
+      "os-win32",
+    ]
 
     cflags = [
       # Don't complain about calling specific versions of templatized
@@ -43,25 +45,15 @@ component("wtf") {
 
   direct_dependent_configs = [
     ":wtf_config",
-    "..:config",
-    "..:features",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:features",
   ]
 
-  # TODO(brettw) bug 366814: This should just pull dependent configs from "icu",
-  # but that currently doesn't work for groups. Instead, manually expand the
-  # "icu" group's dependents here until a GN build is pushed with the fix.
-  #deps = [
-  #  "//third_party/icu",
-  #]
-  #forward_dependent_configs_from = [ "//third_party/icu" ]
   deps = [
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
+    "//third_party/icu",
   ]
-  forward_dependent_configs_from = [
-    "//third_party/icu:icui18n",
-    "//third_party/icu:icuuc",
-  ]
+
+  forward_dependent_configs_from = [ "//third_party/icu" ]
 
   if (is_win) {
     sources -= [
@@ -70,7 +62,9 @@ component("wtf") {
       "ThreadingPthreads.cpp",
     ]
 
-    cflags = [ "/wd4068" ]  # Unknown pragma.
+    cflags = [
+      "/wd4068",  # Unknown pragma.
+    ]
   } else {
     # Non-Windows.
     sources -= [
@@ -92,4 +86,51 @@ component("wtf") {
       "text/StringCF.cpp",
     ]
   }
+}
+
+test("wtf_unittests") {
+  sources = gypi_values.wtf_unittest_files
+
+  if (is_win) {
+    cflags = [
+      "/wd4068",  # Unknown pragma.
+      "/wd4267",  # Conversion from 'size_t' to 'type',
+    ]
+  }
+
+  deps = [
+    ":run_all_tests",
+    ":unittest_helpers",
+    ":wtf",
+    "//base",
+    "//base/allocator",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("run_all_tests") {
+  sources = [
+    "testing/RunAllTests.cpp",
+  ]
+
+  configs += [
+    ":wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+component("unittest_helpers") {
+  sources = gypi_values.wtf_unittest_helper_files
+  defines = [ "WTF_UNITTEST_HELPERS_IMPLEMENTATION=1" ]
+
+  deps = [
+    ":wtf",
+  ]
 }
