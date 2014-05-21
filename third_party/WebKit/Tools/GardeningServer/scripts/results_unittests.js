@@ -246,7 +246,7 @@ test("resultNodeForTest", 4, function() {
     equals(results.resultNodeForTest(unittest.kExampleResultsJSON, "userscripts/foo/bar.html"), null);
 });
 
-asyncTest("walkHistory", 5, function() {
+asyncTest("walkHistory", 1, function() {
     var simulator = new NetworkSimulator();
 
     var keyMap = {
@@ -340,31 +340,6 @@ asyncTest("walkHistory", 5, function() {
             return Promise.reject(false, 'Unexpected URL: ' + url);
     };
 
-    simulator.xml = function(url) {
-        if (/Mock_Builder/.test(url))
-            return Promise.resolve(
-                '<ListBucketResult>' +
-                    '<Prefix>Mock_Builder/11101/</Prefix>' +
-                    '<Prefix>Mock_Builder/11102/</Prefix>' +
-                    '<Prefix>Mock_Builder/11103/</Prefix>' +
-                    '<Prefix>Mock_Builder/11104/</Prefix>' +
-                    '<Prefix>Mock_Builder/11105/</Prefix>' +
-                    '<Prefix>Mock_Builder/11106/</Prefix>' +
-                    '<Prefix>Mock_Builder/11107/</Prefix>' +
-                    '<Prefix>Mock_Builder/11108/</Prefix>' +
-                    '</ListBucketResult>');
-        else if (/Another_Builder/.test(url))
-                return Promise.resolve(
-                    '<ListBucketResult>' +
-                        '<Prefix>Another_Builder/22201/</Prefix>' +
-                        '<Prefix>Another_Builder/22202/</Prefix>' +
-                        '</ListBucketResult>');
-        else {
-            ok(false, 'Unexpected URL: ' + url);
-            return Promise.reject('Unexpected URL: ' + url);
-        }
-    };
-
     simulator.runTest(function() {
             results.regressionRangeForFailure("Mock Builder", "userscripts/another-test.html")
                 .then(function(result) {
@@ -410,10 +385,6 @@ asyncTest("walkHistory (no revision)", 3, function() {
     simulator.jsonp = function(url) {
         var result = keyMap[/[^/]+_Builder/.exec(url)][/\d+/.exec(url)];
         return Promise.resolve(result ? result : {});
-    };
-
-    simulator.xml = function(url) {
-        return Promise.resolve('<a href="11101/"></a><a href="11102/"></a><a href="11103/"></a>');
     };
 
     simulator.json = function(url) {

@@ -172,14 +172,6 @@ function resultsDirectoryURL(builderName)
     return config.layoutTestResultsURL + '/' + config.resultsDirectoryNameFromBuilderName(builderName) + '/results/layout-test-results/';
 }
 
-function resultsPrefixListingURL(builderName, marker)
-{
-    var url =  config.layoutTestResultsURL + '/?prefix=' + config.resultsDirectoryNameFromBuilderName(builderName) + '/&delimiter=/';
-    if (marker)
-        return url + '&marker=' + marker;
-    return url;
-}
-
 function resultsDirectoryURLForBuildNumber(builderName, buildNumber)
 {
     return config.layoutTestResultsURL + '/' + config.resultsDirectoryNameFromBuilderName(builderName) + '/' + buildNumber + '/' ;
@@ -312,55 +304,19 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
     return base.uniquifyArray(collectedResults);
 };
 
-// This "recursively" (using Promise chains) walks documents, using the
-// g_historicalResultsLocations cache to avoid re-fetching the
-// document out of the cache and re-parsing the xml every time.
-results.parseListingDocument = function(prefixListingDocument, builderName) {
-    var currentResults = [];
-    $(prefixListingDocument).find("Prefix").each(function() {
-        var buildString = this.textContent.replace(config.resultsDirectoryNameFromBuilderName(builderName) + '/', '');
-        if (buildString.match(/\d+\//)) {
-            var buildNumber = parseInt(buildString);
-            var resultsData = {
-                'buildNumber': buildNumber,
-                'url': resultsSummaryURLForBuildNumber(builderName, buildNumber)
-            };
-            currentResults.unshift(resultsData);
-        }
-    });
-    var nextMarker = $(prefixListingDocument).find('NextMarker').get();
-    if (nextMarker.length) {
-        var nextListingURL = resultsPrefixListingURL(builderName, nextMarker[0].textContent);
-        return g_historicalResultsLocations.get([nextListingURL, builderName].join("\n"))
-            .then(function(nextResults) {
-                return nextResults.concat(currentResults);
-            });
-    }
-
-    return currentResults;
-};
-
-// key is a compound [url, builderName] The cache for each [url,
-// builderName] contains the results of "recursively" calling
-// parseListingDocument.
-g_historicalResultsLocations = new base.AsynchronousCache(function(key) {
-    var explodedKey = key.split('\n');
-    var listingURL = explodedKey[0];
-    var builderName = explodedKey[1];
-
-    return net.xml(listingURL).then(function(doc) {
-        return results.parseListingDocument(doc, builderName);
-    });
-});
-
 // Callback data is [{ buildNumber:, url: }]
-// This function is separate from the cache key lookup because it fetches the most recent build number every time. The chain of build numbers is still ca
 function historicalResultsLocations(builderName)
 {
     return builders.mostRecentBuildForBuilder(builderName).then(function (mostRecentBuildNumber) {
-        var marker = config.resultsDirectoryNameFromBuilderName(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
-        var listingURL = resultsPrefixListingURL(builderName, marker);
-        return g_historicalResultsLocations.get([listingURL, builderName].join("\n"));
+        var resultsLocations = [];
+        // Return the builds in reverse chronological order in order to load the most recent data first.
+        for (var buildNumber = mostRecentBuildNumber; buildNumber > mostRecentBuildNumber - 100; --buildNumber) {
+            resultsLocations.push({
+                'buildNumber': buildNumber,
+                'url': resultsDirectoryURLForBuildNumber(builderName, buildNumber) + "failing_results.json"
+            });
+        }
+        return resultsLocations;
     });
 }
 
