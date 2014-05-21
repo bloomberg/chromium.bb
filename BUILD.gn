@@ -40,6 +40,7 @@ group("root") {
     #"//sdch",
     "//skia",
     "//third_party/brotli",
+    "//third_party/harfbuzz-ng",
     "//third_party/iccjpeg",
     "//third_party/icu",
     "//third_party/leveldatabase",
