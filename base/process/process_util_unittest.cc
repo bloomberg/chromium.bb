@@ -683,7 +683,7 @@ TEST_F(ProcessUtilTest, GetAppOutput) {
 #else
 #define MAYBE_GetAppOutputRestricted GetAppOutputRestricted
 #endif
-TEST_F(ProcessUtilTest, GetAppOutputRestricted) {
+TEST_F(ProcessUtilTest, MAYBE_GetAppOutputRestricted) {
   // Unfortunately, since we can't rely on the path, we need to know where
   // everything is. So let's use /bin/sh, which is on every POSIX system, and
   // its built-ins.
