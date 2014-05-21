@@ -989,6 +989,9 @@ class Licensing(object):
     # instead of reusing what we may have in memory.
     for package_name in self.packages:
       pkg = self.packages[package_name]
+      if pkg.category == "virtual":
+        continue
+
       self._LoadLicenseDump(pkg)
       logging.debug("loaded dump for %s", pkg.fullnamerev)
       if pkg.skip:
