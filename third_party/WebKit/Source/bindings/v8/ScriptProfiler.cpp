@@ -34,7 +34,7 @@
 #include "V8Node.h"
 #include "V8Window.h"
 #include "bindings/v8/RetainedDOMInfo.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
@@ -100,14 +100,14 @@ void ScriptProfiler::collectGarbage()
     v8::V8::LowMemoryNotification();
 }
 
-ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
+ScriptValue ScriptProfiler::objectByHeapObjectId(unsigned id)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value = profiler->FindObjectById(id);
     if (value.IsEmpty() || !value->IsObject())
-        return ScriptObject();
+        return ScriptValue();
 
     v8::Handle<v8::Object> object = value.As<v8::Object>();
 
@@ -116,11 +116,11 @@ ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
         // Skip wrapper boilerplates which are like regular wrappers but don't have
         // native object.
         if (!wrapper.IsEmpty() && wrapper->IsUndefined())
-            return ScriptObject();
+            return ScriptValue();
     }
 
     ScriptState* scriptState = ScriptState::from(object->CreationContext());
-    return ScriptObject(scriptState, object);
+    return ScriptValue(scriptState, object);
 }
 
 unsigned ScriptProfiler::getHeapObjectId(const ScriptValue& value)

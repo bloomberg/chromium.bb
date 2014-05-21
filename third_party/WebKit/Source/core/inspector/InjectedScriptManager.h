@@ -40,7 +40,7 @@ namespace WebCore {
 class DOMWindow;
 class InjectedScript;
 class InjectedScriptHost;
-class ScriptObject;
+class ScriptValue;
 
 class InjectedScriptManager {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager); WTF_MAKE_FAST_ALLOCATED;
@@ -70,7 +70,7 @@ private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
 
     String injectedScriptSource();
-    ScriptObject createInjectedScript(const String& source, ScriptState*, int id);
+    ScriptValue createInjectedScript(const String& source, ScriptState*, int id);
 
     static bool canAccessInspectedWindow(ScriptState*);
     static bool canAccessInspectedWorkerGlobalScope(ScriptState*);

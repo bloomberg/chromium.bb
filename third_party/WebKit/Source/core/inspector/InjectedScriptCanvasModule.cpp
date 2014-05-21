@@ -33,7 +33,7 @@
 
 #include "InjectedScriptCanvasModuleSource.h"
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;
@@ -61,17 +61,17 @@ String InjectedScriptCanvasModule::source() const
     return String(reinterpret_cast<const char*>(InjectedScriptCanvasModuleSource_js), sizeof(InjectedScriptCanvasModuleSource_js));
 }
 
-ScriptObject InjectedScriptCanvasModule::wrapCanvas2DContext(const ScriptObject& context)
+ScriptValue InjectedScriptCanvasModule::wrapCanvas2DContext(const ScriptValue& context)
 {
     return callWrapContextFunction("wrapCanvas2DContext", context);
 }
 
-ScriptObject InjectedScriptCanvasModule::wrapWebGLContext(const ScriptObject& glContext)
+ScriptValue InjectedScriptCanvasModule::wrapWebGLContext(const ScriptValue& glContext)
 {
     return callWrapContextFunction("wrapWebGLContext", glContext);
 }
 
-ScriptObject InjectedScriptCanvasModule::callWrapContextFunction(const String& functionName, const ScriptObject& context)
+ScriptValue InjectedScriptCanvasModule::callWrapContextFunction(const String& functionName, const ScriptValue& context)
 {
     ScriptFunctionCall function(injectedScriptObject(), functionName);
     function.appendArgument(context);
@@ -79,9 +79,9 @@ ScriptObject InjectedScriptCanvasModule::callWrapContextFunction(const String& f
     ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
     if (hadException || resultValue.isEmpty() || !resultValue.isObject()) {
         ASSERT_NOT_REACHED();
-        return ScriptObject();
+        return ScriptValue();
     }
-    return ScriptObject(context.scriptState(), resultValue);
+    return resultValue;
 }
 
 void InjectedScriptCanvasModule::markFrameEnd()

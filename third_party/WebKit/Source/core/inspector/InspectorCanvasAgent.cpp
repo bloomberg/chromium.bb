@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptProfiler.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/inspector/BindingVisitors.h"
 #include "core/inspector/InjectedScript.h"
@@ -187,25 +187,25 @@ void InspectorCanvasAgent::evaluateTraceLogCallArgument(ErrorString* errorString
         module.evaluateTraceLogCallArgument(errorString, traceLogId, callIndex, argumentIndex, objectGroup ? *objectGroup : String(), &result, &resourceState);
 }
 
-ScriptObject InspectorCanvasAgent::wrapCanvas2DRenderingContextForInstrumentation(const ScriptObject& context)
+ScriptValue InspectorCanvasAgent::wrapCanvas2DRenderingContextForInstrumentation(const ScriptValue& context)
 {
     ErrorString error;
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(&error, context);
     if (module.isEmpty())
-        return ScriptObject();
+        return ScriptValue();
     return notifyRenderingContextWasWrapped(module.wrapCanvas2DContext(context));
 }
 
-ScriptObject InspectorCanvasAgent::wrapWebGLRenderingContextForInstrumentation(const ScriptObject& glContext)
+ScriptValue InspectorCanvasAgent::wrapWebGLRenderingContextForInstrumentation(const ScriptValue& glContext)
 {
     ErrorString error;
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(&error, glContext);
     if (module.isEmpty())
-        return ScriptObject();
+        return ScriptValue();
     return notifyRenderingContextWasWrapped(module.wrapWebGLContext(glContext));
 }
 
-ScriptObject InspectorCanvasAgent::notifyRenderingContextWasWrapped(const ScriptObject& wrappedContext)
+ScriptValue InspectorCanvasAgent::notifyRenderingContextWasWrapped(const ScriptValue& wrappedContext)
 {
     ASSERT(m_frontend);
     ScriptState* scriptState = wrappedContext.scriptState();
@@ -233,16 +233,16 @@ InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(Erro
     return module;
 }
 
-InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(ErrorString* errorString, const ScriptObject& scriptObject)
+InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(ErrorString* errorString, const ScriptValue& scriptValue)
 {
     if (!checkIsEnabled(errorString))
         return InjectedScriptCanvasModule();
-    if (scriptObject.isEmpty()) {
+    if (scriptValue.isEmpty()) {
         ASSERT_NOT_REACHED();
-        *errorString = "Internal error: original ScriptObject has no value";
+        *errorString = "Internal error: original ScriptValue has no value";
         return InjectedScriptCanvasModule();
     }
-    return injectedScriptCanvasModule(errorString, scriptObject.scriptState());
+    return injectedScriptCanvasModule(errorString, scriptValue.scriptState());
 }
 
 InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(ErrorString* errorString, const String& objectId)

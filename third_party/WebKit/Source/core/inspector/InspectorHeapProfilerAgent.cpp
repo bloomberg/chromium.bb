@@ -280,7 +280,7 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
         *error = "Invalid heap snapshot object id";
         return;
     }
-    ScriptObject heapObject = ScriptProfiler::objectByHeapObjectId(id);
+    ScriptValue heapObject = ScriptProfiler::objectByHeapObjectId(id);
     if (heapObject.isEmpty()) {
         *error = "Object is not available";
         return;

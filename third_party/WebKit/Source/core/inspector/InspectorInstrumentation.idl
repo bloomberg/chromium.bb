@@ -497,11 +497,11 @@ interface InspectorOverrides {
 
 interface InspectorCanvasInstrumentation {
 
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 
     [Canvas]
-    ScriptObject wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptObject&);
+    ScriptValue wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptValue&);
 
     [Canvas]
-    ScriptObject wrapWebGLRenderingContextForInstrumentation(Document*, const ScriptObject&);
+    ScriptValue wrapWebGLRenderingContextForInstrumentation(Document*, const ScriptValue&);
 }

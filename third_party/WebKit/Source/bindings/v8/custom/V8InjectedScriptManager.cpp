@@ -36,7 +36,7 @@
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptDebugServer.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
@@ -73,7 +73,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
     return instanceTemplate;
 }
 
-ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
+ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
 {
     v8::Isolate* isolate = inspectedScriptState->isolate();
     v8::HandleScope handleScope(isolate);
@@ -87,7 +87,7 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     // FIXME: make it possible to use generic bindings factory for InjectedScriptHost.
     v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(m_injectedScriptHost.get(), inspectedContext->GetIsolate());
     if (scriptHostWrapper.IsEmpty())
-        return ScriptObject();
+        return ScriptValue();
 
     // Inject javascript into the context. The compiled script is supposed to evaluate into
     // a single anonymous function(it's anonymous to avoid cluttering the global object with
@@ -101,7 +101,7 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
     v8::Handle<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedContext->GetIsolate(), id) };
     v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedContext->GetIsolate());
-    return ScriptObject(inspectedScriptState, v8::Handle<v8::Object>::Cast(injectedScriptValue));
+    return ScriptValue(inspectedScriptState, injectedScriptValue);
 }
 
 bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)

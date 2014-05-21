@@ -32,7 +32,7 @@
 #include "core/inspector/InjectedScriptModule.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 
@@ -68,8 +68,7 @@ void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptM
         }
     }
 
-    ScriptObject moduleObject(scriptState, resultValue);
-    initialize(moduleObject, injectedScriptManager->inspectedStateAccessCheck());
+    initialize(resultValue, injectedScriptManager->inspectedStateAccessCheck());
 }
 
 } // namespace WebCore

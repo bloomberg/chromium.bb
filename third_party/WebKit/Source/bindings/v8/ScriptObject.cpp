@@ -39,33 +39,6 @@
 
 namespace WebCore {
 
-ScriptObject::ScriptObject(ScriptState* scriptState, v8::Handle<v8::Object> v8Object)
-    : ScriptValue(scriptState, v8Object)
-    , m_scriptState(scriptState)
-{
-}
-
-ScriptObject::ScriptObject(ScriptState* scriptState, const ScriptValue& scriptValue)
-    : ScriptValue(scriptValue)
-    , m_scriptState(scriptState)
-{
-}
-
-ScriptObject::ScriptObject()
-    : m_scriptState(nullptr)
-{
-}
-
-ScriptObject::~ScriptObject()
-{
-}
-
-v8::Handle<v8::Object> ScriptObject::v8Object() const
-{
-    ASSERT(v8Value()->IsObject());
-    return v8::Handle<v8::Object>::Cast(v8Value());
-}
-
 bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InspectorFrontendHost* value)
 {
     ScriptState::Scope scope(scriptState);
@@ -74,7 +47,7 @@ bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, Inspect
     return !tryCatch.HasCaught();
 }
 
-bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptObject& value)
+bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptValue& value)
 {
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> v8Value = scriptState->context()->Global()->Get(v8AtomicString(scriptState->isolate(), name));
@@ -84,7 +57,7 @@ bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptO
     if (!v8Value->IsObject())
         return false;
 
-    value = ScriptObject(scriptState, v8::Handle<v8::Object>::Cast(v8Value));
+    value = ScriptValue(scriptState, v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
 

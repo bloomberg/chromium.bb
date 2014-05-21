@@ -32,7 +32,7 @@
 #define InjectedScript_h
 
 #include "InspectorTypeBuilder.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/ScriptArguments.h"
@@ -103,7 +103,7 @@ public:
 private:
     friend class InjectedScriptModule;
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
-    InjectedScript(ScriptObject, InspectedStateAccessCheck);
+    InjectedScript(ScriptValue, InspectedStateAccessCheck);
 
     ScriptValue nodeAsScriptValue(Node*);
 };

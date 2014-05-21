@@ -38,7 +38,7 @@
 namespace WebCore {
 
 class InjectedScriptManager;
-class ScriptObject;
+class ScriptValue;
 
 
 class InjectedScriptCanvasModule FINAL : public InjectedScriptModule {
@@ -49,8 +49,8 @@ public:
 
     static InjectedScriptCanvasModule moduleForState(InjectedScriptManager*, ScriptState*);
 
-    ScriptObject wrapCanvas2DContext(const ScriptObject&);
-    ScriptObject wrapWebGLContext(const ScriptObject&);
+    ScriptValue wrapCanvas2DContext(const ScriptValue&);
+    ScriptValue wrapWebGLContext(const ScriptValue&);
     void markFrameEnd();
 
     void captureFrame(ErrorString*, TypeBuilder::Canvas::TraceLogId*);
@@ -63,7 +63,7 @@ public:
     void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String&, RefPtr<TypeBuilder::Runtime::RemoteObject>*, RefPtr<TypeBuilder::Canvas::ResourceState>*);
 
 private:
-    ScriptObject callWrapContextFunction(const String&, const ScriptObject&);
+    ScriptValue callWrapContextFunction(const String&, const ScriptValue&);
     void callStartCapturingFunction(const String&, ErrorString*, String*);
     void callVoidFunctionWithTraceLogIdArgument(const String&, ErrorString*, const String&);
 };

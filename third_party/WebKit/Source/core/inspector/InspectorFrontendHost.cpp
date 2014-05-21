@@ -31,6 +31,7 @@
 #include "core/inspector/InspectorFrontendHost.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -55,19 +56,19 @@ namespace WebCore {
 
 class FrontendMenuProvider FINAL : public ContextMenuProvider {
 public:
-    static PassRefPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptObject frontendApiObject, const Vector<ContextMenuItem>& items)
+    static PassRefPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
     {
         return adoptRef(new FrontendMenuProvider(frontendHost, frontendApiObject, items));
     }
 
     void disconnect()
     {
-        m_frontendApiObject = ScriptObject();
+        m_frontendApiObject = ScriptValue();
         m_frontendHost = 0;
     }
 
 private:
-    FrontendMenuProvider(InspectorFrontendHost* frontendHost, ScriptObject frontendApiObject, const Vector<ContextMenuItem>& items)
+    FrontendMenuProvider(InspectorFrontendHost* frontendHost, ScriptValue frontendApiObject, const Vector<ContextMenuItem>& items)
         : m_frontendHost(frontendHost)
         , m_frontendApiObject(frontendApiObject)
         , m_items(items)
@@ -109,7 +110,7 @@ private:
     }
 
     InspectorFrontendHost* m_frontendHost;
-    ScriptObject m_frontendApiObject;
+    ScriptValue m_frontendApiObject;
     Vector<ContextMenuItem> m_items;
 };
 
@@ -190,7 +191,7 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
 
     ASSERT(m_frontendPage);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
-    ScriptObject frontendApiObject;
+    ScriptValue frontendApiObject;
     if (!ScriptGlobalObject::get(frontendScriptState, "InspectorFrontendAPI", frontendApiObject)) {
         ASSERT_NOT_REACHED();
         return;

@@ -154,8 +154,6 @@ public:
 
 private:
     mutable v8::Isolate* m_isolate;
-    // FIXME: m_scriptState is not yet used.
-    // We will start using it once we remove ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate).
     mutable RefPtr<ScriptState> m_scriptState;
     RefPtr<SharedPersistent<v8::Value> > m_value;
 };

@@ -52,7 +52,7 @@ InjectedScript::InjectedScript()
 {
 }
 
-InjectedScript::InjectedScript(ScriptObject injectedScriptObject, InspectedStateAccessCheck accessCheck)
+InjectedScript::InjectedScript(ScriptValue injectedScriptObject, InspectedStateAccessCheck accessCheck)
     : InjectedScriptBase("InjectedScript", injectedScriptObject, accessCheck)
 {
 }

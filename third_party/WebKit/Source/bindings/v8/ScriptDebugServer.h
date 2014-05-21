@@ -48,7 +48,6 @@ namespace WebCore {
 class ScriptState;
 class ScriptController;
 class ScriptDebugListener;
-class ScriptObject;
 class ScriptSourceCode;
 class ScriptValue;
 class JavaScriptCallFrame;

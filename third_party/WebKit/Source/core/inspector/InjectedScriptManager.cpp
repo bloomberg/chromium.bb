@@ -32,7 +32,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 
 #include "InjectedScriptSource.h"
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/JSONParser.h"
@@ -173,8 +173,8 @@ InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedSc
         return InjectedScript();
 
     int id = injectedScriptIdFor(inspectedScriptState);
-    ScriptObject injectedScriptObject = createInjectedScript(injectedScriptSource(), inspectedScriptState, id);
-    InjectedScript result(injectedScriptObject, m_inspectedStateAccessCheck);
+    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), inspectedScriptState, id);
+    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck);
     m_idToInjectedScript.set(id, result);
     return result;
 }

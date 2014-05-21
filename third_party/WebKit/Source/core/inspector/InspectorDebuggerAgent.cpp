@@ -32,9 +32,9 @@
 #include "core/inspector/JavaScriptCallFrame.h"
 
 #include "bindings/v8/ScriptDebugServer.h"
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptRegexp.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/fetch/Resource.h"
 #include "core/inspector/ContentSearchUtils.h"

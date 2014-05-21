@@ -43,7 +43,6 @@ namespace WebCore {
 class ExternalStringVisitor;
 class WrappedNodeVisitor;
 class Page;
-class ScriptObject;
 class ScriptValue;
 class WorkerGlobalScope;
 
@@ -66,7 +65,7 @@ public:
     };
 
     static void collectGarbage();
-    static ScriptObject objectByHeapObjectId(unsigned id);
+    static ScriptValue objectByHeapObjectId(unsigned id);
     static unsigned getHeapObjectId(const ScriptValue&);
     static void clearHeapObjectIds();
     static void setSamplingInterval(int intervalUs);

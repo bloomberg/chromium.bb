@@ -40,23 +40,11 @@ namespace WebCore {
     class InspectorFrontendHost;
     class ScriptState;
 
-    class ScriptObject FINAL : public ScriptValue {
-    public:
-        ScriptObject(ScriptState*, v8::Handle<v8::Object>);
-        ScriptObject(ScriptState*, const ScriptValue&);
-        ScriptObject();
-        virtual ~ScriptObject();
-
-        v8::Handle<v8::Object> v8Object() const;
-        ScriptState* scriptState() const { return m_scriptState.get(); }
-    protected:
-        RefPtr<ScriptState> m_scriptState;
-    };
-
+    // FIXME: Remove this.
     class ScriptGlobalObject {
     public:
         static bool set(ScriptState*, const char* name, InspectorFrontendHost*);
-        static bool get(ScriptState*, const char* name, ScriptObject&);
+        static bool get(ScriptState*, const char* name, ScriptValue&);
     private:
         ScriptGlobalObject() { }
     };

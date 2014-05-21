@@ -31,7 +31,7 @@
 #ifndef ScriptFunctionCall_h
 #define ScriptFunctionCall_h
 
-#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptValue.h"
 
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -43,7 +43,6 @@ namespace WebCore {
     public:
         ScriptCallArgumentHandler(ScriptState* scriptState) : m_scriptState(scriptState) { }
 
-        void appendArgument(const ScriptObject&);
         void appendArgument(const ScriptValue&);
         void appendArgument(const String&);
         void appendArgument(const char*);
@@ -62,13 +61,13 @@ namespace WebCore {
 
     class ScriptFunctionCall : public ScriptCallArgumentHandler {
     public:
-        ScriptFunctionCall(const ScriptObject& thisObject, const String& name);
+        ScriptFunctionCall(const ScriptValue& thisObject, const String& name);
         ScriptValue call(bool& hadException, bool reportExceptions = true);
         ScriptValue call();
-        ScriptObject construct(bool& hadException, bool reportExceptions = true);
+        ScriptValue construct(bool& hadException, bool reportExceptions = true);
 
     protected:
-        ScriptObject m_thisObject;
+        ScriptValue m_thisObject;
         String m_name;
     };
 

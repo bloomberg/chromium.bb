@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"

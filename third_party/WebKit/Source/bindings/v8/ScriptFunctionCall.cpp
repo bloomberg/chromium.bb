@@ -42,17 +42,12 @@
 
 namespace WebCore {
 
-void ScriptCallArgumentHandler::appendArgument(const ScriptObject& argument)
+void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
 {
     if (argument.scriptState() != m_scriptState) {
         ASSERT_NOT_REACHED();
         return;
     }
-    m_arguments.append(argument);
-}
-
-void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
-{
     m_arguments.append(argument);
 }
 
@@ -121,7 +116,7 @@ void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argume
     m_arguments.append(ScriptValue(m_scriptState.get(), result));
 }
 
-ScriptFunctionCall::ScriptFunctionCall(const ScriptObject& thisObject, const String& name)
+ScriptFunctionCall::ScriptFunctionCall(const ScriptValue& thisObject, const String& name)
     : ScriptCallArgumentHandler(thisObject.scriptState())
     , m_thisObject(thisObject)
     , m_name(name)
@@ -134,7 +129,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(reportExceptions);
 
-    v8::Handle<v8::Object> thisObject = m_thisObject.v8Object();
+    v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
     if (tryCatch.HasCaught()) {
         hadException = true;
@@ -165,17 +160,17 @@ ScriptValue ScriptFunctionCall::call()
     return call(hadException);
 }
 
-ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExceptions)
+ScriptValue ScriptFunctionCall::construct(bool& hadException, bool reportExceptions)
 {
     ScriptState::Scope scope(m_scriptState.get());
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(reportExceptions);
 
-    v8::Handle<v8::Object> thisObject = m_thisObject.v8Object();
+    v8::Handle<v8::Object> thisObject = v8::Handle<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
     if (tryCatch.HasCaught()) {
         hadException = true;
-        return ScriptObject();
+        return ScriptValue();
     }
 
     ASSERT(value->IsFunction());
@@ -188,10 +183,10 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
     v8::Local<v8::Object> result = V8ObjectConstructor::newInstance(m_scriptState->isolate(), constructor, m_arguments.size(), info.get());
     if (tryCatch.HasCaught()) {
         hadException = true;
-        return ScriptObject();
+        return ScriptValue();
     }
 
-    return ScriptObject(m_scriptState.get(), result);
+    return ScriptValue(m_scriptState.get(), result);
 }
 
 } // namespace WebCore
