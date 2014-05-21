@@ -73,18 +73,17 @@ zoom_area_center_from_pointer(struct weston_output *output,
 	wl_fixed_t w = wl_fixed_from_int(output->width);
 	wl_fixed_t h = wl_fixed_from_int(output->height);
 
-	*x -= ((((*x - offset_x) / (float) w) - 0.5) * (w * (1.0 - level)));
-	*y -= ((((*y - offset_y) / (float) h) - 0.5) * (h * (1.0 - level)));
+	*x = (*x - offset_x) * level + w / 2;
+	*y = (*y - offset_y) * level + h / 2;
 }
 
 static void
 weston_output_update_zoom_transform(struct weston_output *output)
 {
 	float global_x, global_y;
-	wl_fixed_t x = output->zoom.current.x;
+	wl_fixed_t x = output->zoom.current.x; /* global pointer coords */
 	wl_fixed_t y = output->zoom.current.y;
-	float trans_min, trans_max;
-	float ratio, level;
+	float level;
 
 	level = output->zoom.spring_z.current;
 
@@ -92,32 +91,22 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	    level == 0.0f)
 		return;
 
-	ratio = 1 / level;
-
 	zoom_area_center_from_pointer(output, &x, &y);
 
 	global_x = wl_fixed_to_double(x);
 	global_y = wl_fixed_to_double(y);
 
-	output->zoom.trans_x =
-		((((global_x - output->x) / output->width) *
-		(level * 2)) - level) * ratio;
-	output->zoom.trans_y =
-		((((global_y - output->y) / output->height) *
-		(level * 2)) - level) * ratio;
+	output->zoom.trans_x = global_x - (output->x + output->width / 2);
+	output->zoom.trans_y = global_y - (output->y + output->height / 2);
 
-	trans_max = level * 2 - level;
-	trans_min = -trans_max;
-
-	/* Clip zoom area to output */
-	if (output->zoom.trans_x > trans_max)
-		output->zoom.trans_x = trans_max;
-	else if (output->zoom.trans_x < trans_min)
-		output->zoom.trans_x = trans_min;
-	if (output->zoom.trans_y > trans_max)
-		output->zoom.trans_y = trans_max;
-	else if (output->zoom.trans_y < trans_min)
-		output->zoom.trans_y = trans_min;
+	if (output->zoom.trans_x < 0)
+		output->zoom.trans_x = 0;
+	if (output->zoom.trans_y < 0)
+		output->zoom.trans_y = 0;
+	if (output->zoom.trans_x > level * output->width)
+		output->zoom.trans_x = level * output->width;
+	if (output->zoom.trans_y > level * output->height)
+		output->zoom.trans_y = level * output->height;
 }
 
 static void
