@@ -12,6 +12,7 @@ imageElement.setAttribute("x", "0");
 imageElement.setAttribute("y", "0");
 imageElement.setAttribute("width", "100");
 imageElement.setAttribute("height", "200");
+imageElement.setAttribute("onload", "runRepaintTest()");
 rootSVGElement.appendChild(imageElement);
 
 shouldBeEqualToString("imageElement.getAttribute('preserveAspectRatio')", "xMaxYMax meet");
