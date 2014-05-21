@@ -323,7 +323,8 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // Traverse the entire subtree to find the changed element.
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
-    if (util.isDescendantEntry(item.entry, changedDirectoryEntry)) {
+    if (util.isDescendantEntry(item.entry, changedDirectoryEntry) ||
+        util.isSameEntry(item.entry, changedDirectoryEntry)) {
       item.updateItemByEntry(changedDirectoryEntry);
       break;
     }
