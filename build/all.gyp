@@ -1104,7 +1104,6 @@
                 '../ipc/ipc.gyp:ipc_tests',
                 '../media/media.gyp:media_unittests',
                 '../net/net.gyp:net_unittests_run',
-                '../pdf/pdf.gyp:pdf',
                 '../printing/printing.gyp:printing_unittests',
                 '../remoting/remoting.gyp:remoting_webapp',
                 '../sql/sql.gyp:sql_unittests',
