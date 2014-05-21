@@ -83,21 +83,21 @@ class ProcMapsTest(unittest.TestCase):
 
   def test_constants(self):
     maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
-    selected = [4, 7]
+    selected = [0, 2, 4, 7]
     for index, entry in enumerate(maps.iter(ProcMaps.constants)):
       self.assertEqual(entry.as_dict(),
                        self._expected_as_dict(selected[index]))
 
   def test_executable(self):
     maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
-    selected = [3, 6]
+    selected = [1, 3, 6, 9]
     for index, entry in enumerate(maps.iter(ProcMaps.executable)):
       self.assertEqual(entry.as_dict(),
                        self._expected_as_dict(selected[index]))
 
   def test_executable_and_constants(self):
     maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
-    selected = [3, 4, 6, 7]
+    selected = [0, 1, 2, 3, 4, 6, 7, 9]
     for index, entry in enumerate(maps.iter(ProcMaps.executable_and_constants)):
       self.assertEqual(entry.as_dict(),
                        self._expected_as_dict(selected[index]))

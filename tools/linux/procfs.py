@@ -310,6 +310,9 @@ class ProcMaps(object):
       r'^([a-f0-9]+)-([a-f0-9]+)\s+(.)(.)(.)(.)\s+([a-f0-9]+)\s+(\S+):(\S+)\s+'
       r'(\d+)\s*(.*)$', re.IGNORECASE)
 
+  EXECUTABLE_PATTERN = re.compile(
+      r'\S+\.(so|dll|dylib|bundle)((\.\d+)+\w*(\.\d+){0,3})?')
+
   def __init__(self):
     self._sorted_indexes = []
     self._dictionary = {}
@@ -373,22 +376,16 @@ class ProcMaps(object):
 
   @staticmethod
   def constants(entry):
-    return (entry.writable == '-' and entry.executable == '-' and re.match(
-        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
-        entry.name))
+    return entry.writable == '-' and entry.executable == '-'
 
   @staticmethod
   def executable(entry):
-    return (entry.executable == 'x' and re.match(
-        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
-        entry.name))
+    return entry.executable == 'x'
 
   @staticmethod
   def executable_and_constants(entry):
-    return (((entry.writable == '-' and entry.executable == '-') or
-             entry.executable == 'x') and re.match(
-        '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
-        entry.name))
+    return ((entry.writable == '-' and entry.executable == '-') or
+            entry.executable == 'x')
 
   def _append_entry(self, entry):
     if self._sorted_indexes and self._sorted_indexes[-1] > entry.begin:
