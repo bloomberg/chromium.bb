@@ -288,7 +288,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
   def PerformStage(self):
     """Do the work of generating our release payloads."""
-    board = self._current_board
+    # Convert to release tools naming for boards.
+    board = self._current_board.replace('_', '-')
     version = self._run.attrs.release_tag
 
     assert version, "We can't generate payloads without a release_tag."
@@ -348,9 +349,6 @@ class PaygenStage(artifact_stages.ArchivingStage):
     # Convert to release tools naming for channels.
     if not channel.endswith('-channel'):
       channel += '-channel'
-
-    # Convert to release tools naming for boards.
-    board = board.replace('_', '-')
 
     with osutils.TempDir(sudo_rm=True) as tempdir:
       # Create the definition of the build to generate payloads for.

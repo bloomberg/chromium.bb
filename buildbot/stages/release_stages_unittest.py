@@ -308,6 +308,32 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False, True))
       queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False, True))
 
+
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
+  def testPerformStageSuccessVarientBoard(self):
+    """Test that SignerResultsStage works with varient boards.
+
+    Varient boards need some name conversion. Make sure that's okay.
+    """
+    self._current_board = 'x86-alex_he'
+
+    with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
+      queue = background().__enter__()
+
+      stage = self.ConstructStage()
+
+      with patch(stage, '_WaitForPushImage') as wait_push:
+        with patch(stage, '_WaitForSigningResults') as wait_signing:
+          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+          wait_signing.side_effect = self.generateNotifyCalls(('stable',
+                                                               'beta'))
+          stage.PerformStage()
+
+      # Verify that we queue up work
+      queue.put.assert_any_call(('stable', 'x86-alex-he', '0.0.1', False, True))
+      queue.put.assert_any_call(('beta', 'x86-alex-he', '0.0.1', False, True))
+
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testPerformStageSigningFailed(self):
@@ -390,7 +416,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # Call the method under test.
       # Use release tools channel naming, and a board name including a variant.
       stage = self.ConstructStage()
-      stage._RunPaygenInProcess('foo-channel', 'foo-board_variant',
+      stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
                                 'foo-version', True, False)
 
       # Ensure arguments are properly converted and passed along.
