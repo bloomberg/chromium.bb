@@ -5,9 +5,6 @@
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#if !defined(OS_ANDROID)
-#include "chrome/browser/network_time/navigation_time_helper.h"
-#endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -922,14 +919,6 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   bool is_managed = tab_delegate.ProfileIsManaged();
   session_tab->navigations.clear();
 
-#if !defined(OS_ANDROID)
-  // For getting navigation time in network time.
-  NavigationTimeHelper* nav_time_helper =
-      tab_delegate.HasWebContents() ?
-          NavigationTimeHelper::FromWebContents(tab_delegate.GetWebContents()) :
-          NULL;
-#endif
-
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
         tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
@@ -937,17 +926,8 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
     if (!entry->GetVirtualURL().is_valid())
       continue;
 
-    scoped_ptr<content::NavigationEntry> network_time_entry(
-        content::NavigationEntry::Create(*entry));
-#if !defined(OS_ANDROID)
-    if (nav_time_helper) {
-      network_time_entry->SetTimestamp(
-          nav_time_helper->GetNavigationTime(entry));
-    }
-#endif
-
     session_tab->navigations.push_back(
-        SerializedNavigationEntry::FromNavigationEntry(i, *network_time_entry));
+        SerializedNavigationEntry::FromNavigationEntry(i, *entry));
     if (is_managed) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);

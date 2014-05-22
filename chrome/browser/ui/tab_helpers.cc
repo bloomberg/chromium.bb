@@ -41,7 +41,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
-#include "chrome/browser/network_time/navigation_time_helper.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
@@ -155,7 +154,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  NavigationTimeHelper::CreateForWebContents(web_contents);
   PDFTabHelper::CreateForWebContents(web_contents);
   PermissionBubbleManager::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);

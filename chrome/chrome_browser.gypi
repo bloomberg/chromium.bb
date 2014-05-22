@@ -1331,8 +1331,6 @@
         'browser/net/timed_cache.h',
         'browser/net/url_info.cc',
         'browser/net/url_info.h',
-        'browser/network_time/navigation_time_helper.cc',
-        'browser/network_time/navigation_time_helper.h',
         'browser/network_time/network_time.h',
         'browser/network_time/network_time_service.cc',
         'browser/network_time/network_time_service.h',

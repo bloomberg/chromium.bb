@@ -1115,7 +1115,6 @@
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/url_info_unittest.cc',
-        'browser/network_time/navigation_time_helper_unittest.cc',
         'browser/network_time/network_time_tracker_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/extension_welcome_notification_unittest.cc',
