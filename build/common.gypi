@@ -134,6 +134,9 @@
          }, {
           'os_posix%': 1,
         }],
+        ['OS=="android"', { # Android target_arch defaults to ARM.
+          'target_arch%': 'arm',
+        }],
       ],
 
       # This variable is to allow us to build components as either static
@@ -791,7 +794,7 @@
         ['LINK.host', '$(LINK)'],
       ],
     }],
-    ['OS=="android"', {
+    ['OS=="android" and nacl_standalone==1', {
       'includes': [
         'android_settings.gypi',
       ],
