@@ -48,7 +48,7 @@ private:
     void executeApply();
 
     RefPtr<Element> m_element;
-    RefPtr<HTMLElement> m_dummySpan;
+    RefPtrWillBePersistent<HTMLElement> m_dummySpan;
 };
 
 } // namespace WebCore

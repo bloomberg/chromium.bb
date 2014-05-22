@@ -199,13 +199,13 @@ PassRefPtrWillBeRawPtr<Range> createRange(Document&, const VisiblePosition& star
 
 // Functions returning HTMLElement
 
-PassRefPtr<HTMLElement> createDefaultParagraphElement(Document&);
-PassRefPtr<HTMLElement> createBreakElement(Document&);
-PassRefPtr<HTMLElement> createOrderedListElement(Document&);
-PassRefPtr<HTMLElement> createUnorderedListElement(Document&);
-PassRefPtr<HTMLElement> createListItemElement(Document&);
-PassRefPtr<HTMLElement> createHTMLElement(Document&, const QualifiedName&);
-PassRefPtr<HTMLElement> createHTMLElement(Document&, const AtomicString&);
+PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createBreakElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createOrderedListElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createUnorderedListElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createListItemElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const QualifiedName&);
+PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const AtomicString&);
 
 HTMLElement* enclosingList(Node*);
 HTMLElement* outermostEnclosingList(Node*, Node* rootList = 0);

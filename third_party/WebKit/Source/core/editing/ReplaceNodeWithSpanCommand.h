@@ -40,7 +40,7 @@ class HTMLElement;
 // More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<ReplaceNodeWithSpanCommand> create(PassRefPtr<HTMLElement> element)
+    static PassRefPtr<ReplaceNodeWithSpanCommand> create(PassRefPtrWillBeRawPtr<HTMLElement> element)
     {
         return adoptRef(new ReplaceNodeWithSpanCommand(element));
     }
@@ -48,13 +48,13 @@ public:
     HTMLElement* spanElement() { return m_spanElement.get(); }
 
 private:
-    explicit ReplaceNodeWithSpanCommand(PassRefPtr<HTMLElement>);
+    explicit ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement>);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<HTMLElement> m_elementToReplace;
-    RefPtr<HTMLElement> m_spanElement;
+    RefPtrWillBePersistent<HTMLElement> m_elementToReplace;
+    RefPtrWillBePersistent<HTMLElement> m_spanElement;
 };
 
 } // namespace WebCore

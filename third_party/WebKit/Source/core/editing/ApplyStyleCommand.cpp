@@ -112,9 +112,9 @@ static PassRefPtr<Element> createFontElement(Document& document)
     return fontNode.release();
 }
 
-PassRefPtr<HTMLElement> createStyleSpanElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createStyleSpanElement(Document& document)
 {
-    RefPtr<HTMLElement> styleElement = createHTMLElement(document, spanTag);
+    RefPtrWillBeRawPtr<HTMLElement> styleElement = createHTMLElement(document, spanTag);
     return styleElement.release();
 }
 
@@ -379,12 +379,12 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
     }
 
     // These spans were added by us. If empty after font size changes, they can be removed.
-    Vector<RefPtr<HTMLElement> > unstyledSpans;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLElement> > unstyledSpans;
 
     Node* lastStyledNode = 0;
     for (Node* node = startNode; node != beyondEnd; node = NodeTraversal::next(*node)) {
         ASSERT(node);
-        RefPtr<HTMLElement> element;
+        RefPtrWillBeRawPtr<HTMLElement> element = nullptr;
         if (node->isHTMLElement()) {
             // Only work on fully selected nodes.
             if (!nodeFullySelected(node, start, end))
@@ -393,7 +393,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         } else if (node->isTextNode() && node->renderer() && node->parentNode() != lastStyledNode) {
             // Last styled node was not parent node of this text node, but we wish to style this
             // text node. To make this possible, add a style span to surround this text node.
-            RefPtr<HTMLElement> span = createStyleSpanElement(document());
+            RefPtrWillBeRawPtr<HTMLElement> span = createStyleSpanElement(document());
             surroundNodeRangeWithElement(node, node, span.get());
             element = span.release();
         }  else {
@@ -883,7 +883,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
     }
 }
 
-bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, PassRefPtr<HTMLElement> element, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)
+bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, PassRefPtrWillBeRawPtr<HTMLElement> element, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)
 {
     ASSERT(element);
 
@@ -1120,7 +1120,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
             next = NodeTraversal::next(*node);
         }
         if (node->isHTMLElement() && nodeFullySelected(node.get(), start, end)) {
-            RefPtr<HTMLElement> elem = toHTMLElement(node);
+            RefPtrWillBeRawPtr<HTMLElement> elem = toHTMLElement(node);
             RefPtr<Node> prev = NodeTraversal::previousPostOrder(*elem);
             RefPtr<Node> next = NodeTraversal::next(*elem);
             RefPtr<EditingStyle> styleToPushDown;

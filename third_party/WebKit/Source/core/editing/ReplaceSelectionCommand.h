@@ -74,7 +74,7 @@ private:
         RefPtr<Node> m_lastNodeInserted;
     };
 
-    Node* insertAsListItems(PassRefPtr<HTMLElement> listElement, Node* insertionNode, const Position&, InsertedNodes&);
+    Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Node* insertionNode, const Position&, InsertedNodes&);
 
     void updateNodesInserted(Node*);
     bool shouldRemoveEndBR(Node*, const VisiblePosition&);

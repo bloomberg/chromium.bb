@@ -779,7 +779,7 @@ bool isEmptyTableCell(const Node* node)
     return !childRenderer->nextSibling();
 }
 
-PassRefPtr<HTMLElement> createDefaultParagraphElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& document)
 {
     switch (document.frame()->editor().defaultParagraphSeparator()) {
     case EditorParagraphSeparatorIsDiv:
@@ -792,32 +792,32 @@ PassRefPtr<HTMLElement> createDefaultParagraphElement(Document& document)
     return nullptr;
 }
 
-PassRefPtr<HTMLElement> createBreakElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createBreakElement(Document& document)
 {
     return HTMLBRElement::create(document);
 }
 
-PassRefPtr<HTMLElement> createOrderedListElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createOrderedListElement(Document& document)
 {
     return HTMLOListElement::create(document);
 }
 
-PassRefPtr<HTMLElement> createUnorderedListElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createUnorderedListElement(Document& document)
 {
     return HTMLUListElement::create(document);
 }
 
-PassRefPtr<HTMLElement> createListItemElement(Document& document)
+PassRefPtrWillBeRawPtr<HTMLElement> createListItemElement(Document& document)
 {
     return HTMLLIElement::create(document);
 }
 
-PassRefPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
+PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
 {
     return createHTMLElement(document, name.localName());
 }
 
-PassRefPtr<HTMLElement> createHTMLElement(Document& document, const AtomicString& tagName)
+PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const AtomicString& tagName)
 {
     return HTMLElementFactory::createHTMLElement(tagName, document, 0, false);
 }

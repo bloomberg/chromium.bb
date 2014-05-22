@@ -404,7 +404,7 @@ void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Positi
         position.moveToOffset(offset);
 }
 
-HTMLElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtr<HTMLElement> node)
+HTMLElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement> node)
 {
     // It would also be possible to implement all of ReplaceNodeWithSpanCommand
     // as a series of existing smaller edit commands.  Someone who wanted to

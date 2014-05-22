@@ -78,7 +78,7 @@ private:
     bool isStyledInlineElementToRemove(Element*) const;
     bool shouldApplyInlineStyleToRun(EditingStyle*, Node* runStart, Node* pastEndNode);
     void removeConflictingInlineStyleFromRun(EditingStyle*, RefPtr<Node>& runStart, RefPtr<Node>& runEnd, PassRefPtr<Node> pastEndNode);
-    bool removeInlineStyleFromElement(EditingStyle*, PassRefPtr<HTMLElement>, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = 0);
+    bool removeInlineStyleFromElement(EditingStyle*, PassRefPtrWillBeRawPtr<HTMLElement>, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = 0);
     inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style, HTMLElement* element) {return removeInlineStyleFromElement(style, element, RemoveNone);}
     void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*);
     bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle);
@@ -135,7 +135,7 @@ enum ShouldStyleAttributeBeEmpty { AllowNonEmptyStyleAttribute, StyleAttributeSh
 bool isEmptyFontTag(const Element*, ShouldStyleAttributeBeEmpty = StyleAttributeShouldBeEmpty);
 bool isLegacyAppleStyleSpan(const Node*);
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
-PassRefPtr<HTMLElement> createStyleSpanElement(Document&);
+PassRefPtrWillBeRawPtr<HTMLElement> createStyleSpanElement(Document&);
 
 } // namespace WebCore
 

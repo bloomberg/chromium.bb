@@ -41,7 +41,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(PassRefPtr<HTMLElement> element)
+ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement> element)
     : SimpleEditCommand(element->document())
     , m_elementToReplace(element)
 {

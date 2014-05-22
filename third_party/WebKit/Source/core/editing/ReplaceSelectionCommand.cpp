@@ -1415,9 +1415,9 @@ EditAction ReplaceSelectionCommand::editingAction() const
 
 // If the user is inserting a list into an existing list, instead of nesting the list,
 // we put the list items into the existing list.
-Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtr<HTMLElement> prpListElement, Node* insertionBlock, const Position& insertPos, InsertedNodes& insertedNodes)
+Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> prpListElement, Node* insertionBlock, const Position& insertPos, InsertedNodes& insertedNodes)
 {
-    RefPtr<HTMLElement> listElement = prpListElement;
+    RefPtrWillBeRawPtr<HTMLElement> listElement = prpListElement;
 
     while (listElement->hasChildren() && isListElement(listElement->firstChild()) && listElement->hasOneChild())
         listElement = toHTMLElement(listElement->firstChild());

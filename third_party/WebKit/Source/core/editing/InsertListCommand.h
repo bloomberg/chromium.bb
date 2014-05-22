@@ -51,11 +51,11 @@ private:
 
     HTMLElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection& selection, const QualifiedName&);
-    PassRefPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtr<HTMLElement>);
+    PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
     void doApplyForSingleParagraph(bool forceCreateList, const QualifiedName&, Range& currentSelection);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
-    PassRefPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const QualifiedName& listTag);
-    RefPtr<HTMLElement> m_listElement;
+    PassRefPtrWillBeRawPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const QualifiedName& listTag);
+    RefPtrWillBePersistent<HTMLElement> m_listElement;
     Type m_type;
 };
 
