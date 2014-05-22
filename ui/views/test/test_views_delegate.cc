@@ -15,11 +15,7 @@ namespace views {
 
 TestViewsDelegate::TestViewsDelegate()
     : use_desktop_native_widgets_(false),
-      use_transparent_windows_(false)
-#if defined(USE_AURA)
-      , context_factory_(NULL)
-#endif
-      {
+      use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
 #if defined(USE_AURA)
@@ -45,11 +41,5 @@ void TestViewsDelegate::OnBeforeWidgetInit(
     params->native_widget = new DesktopNativeWidgetAura(delegate);
 #endif  // !defined(OS_CHROMEOS)
 }
-
-#if defined(USE_AURA)
-ui::ContextFactory* TestViewsDelegate::GetContextFactory() {
-  return context_factory_;
-}
-#endif
 
 }  // namespace views

@@ -52,6 +52,7 @@ class AccessibilityViewsDelegate : public views::TestViewsDelegate {
         view, event_type);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);
 };
 
@@ -110,10 +111,11 @@ class AccessibilityEventRouterViewsTest
 #if defined(USE_AURA)
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
-    ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory =
+        ui::InitializeContextFactoryForTests(enable_pixel_output);
 
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    aura_test_helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif  // USE_AURA
     EnableAccessibilityAndListenToFocusNotifications();
@@ -126,7 +128,6 @@ class AccessibilityEventRouterViewsTest
     ui::TerminateContextFactoryForTests();
 #endif
     delete views::ViewsDelegate::views_delegate;
-    views::ViewsDelegate::views_delegate = NULL;
 
     // The Widget's FocusManager is deleted using DeleteSoon - this
     // forces it to be deleted now, so we don't have any memory leaks

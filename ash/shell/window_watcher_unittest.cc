@@ -10,6 +10,7 @@
 #include "ash/shell_init_params.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace ash {
@@ -25,6 +26,7 @@ TEST_F(WindowWatcherTest, ShellDeleteInstance) {
 
   shell::ShellDelegateImpl* delegate = new ash::shell::ShellDelegateImpl;
   ash::ShellInitParams init_params;
+  init_params.context_factory = aura::Env::GetInstance()->context_factory();
   init_params.delegate = delegate;
   Shell::CreateInstance(init_params);
   Shell::GetPrimaryRootWindow()->GetHost()->Show();

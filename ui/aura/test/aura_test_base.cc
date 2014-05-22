@@ -73,10 +73,11 @@ void AuraTestBase::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory =
+      ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   helper_.reset(new AuraTestHelper(&message_loop_));
-  helper_->SetUp();
+  helper_->SetUp(context_factory);
 }
 
 void AuraTestBase::TearDown() {

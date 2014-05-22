@@ -13,6 +13,7 @@
 #include "ui/gfx/point.h"
 
 namespace ui {
+class ContextFactory;
 class PlatformEventSource;
 }
 namespace aura {
@@ -59,6 +60,11 @@ class AURA_EXPORT Env : public ui::EventTarget {
   bool is_touch_down() const { return is_touch_down_; }
   void set_touch_down(bool value) { is_touch_down_ = value; }
 
+  void set_context_factory(ui::ContextFactory* context_factory) {
+    context_factory_ = context_factory;
+  }
+  ui::ContextFactory* context_factory() { return context_factory_; }
+
  private:
   friend class test::EnvTestHelper;
   friend class Window;
@@ -94,6 +100,8 @@ class AURA_EXPORT Env : public ui::EventTarget {
 
   scoped_ptr<InputStateLookup> input_state_lookup_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
+
+  ui::ContextFactory* context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

@@ -8,11 +8,13 @@
 
 namespace ash {
 
+ShellInitParams::ShellInitParams()
+    : delegate(NULL),
+      context_factory(NULL)
 #if defined(OS_WIN)
-ShellInitParams::ShellInitParams() : delegate(NULL), remote_hwnd(NULL) {}
-#else
-ShellInitParams::ShellInitParams() : delegate(NULL) {}
+      , remote_hwnd(NULL)
 #endif
+      {}
 
 ShellInitParams::~ShellInitParams() {}
 

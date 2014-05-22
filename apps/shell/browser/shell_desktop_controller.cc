@@ -5,6 +5,7 @@
 #include "apps/shell/browser/shell_desktop_controller.h"
 
 #include "apps/shell/browser/shell_app_window.h"
+#include "content/public/browser/context_factory.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -226,7 +227,8 @@ void ShellDesktopController::CreateRootWindow() {
   gfx::Size size = GetPrimaryDisplaySize();
   if (size.IsEmpty())
     size = gfx::Size(800, 600);
-  wm_test_helper_.reset(new wm::WMTestHelper(size));
+  wm_test_helper_.reset(
+      new wm::WMTestHelper(size, content::GetContextFactory()));
 
   // Ensure new windows fill the display.
   aura::WindowTreeHost* host = wm_test_helper_->host();

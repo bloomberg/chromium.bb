@@ -19,6 +19,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/default_activation_client.h"
 #endif
@@ -68,11 +69,12 @@ void BrowserWithTestWindowTest::SetUp() {
 #elif defined(USE_AURA)
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory =
+      ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   aura_test_helper_.reset(new aura::test::AuraTestHelper(
       base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
+  aura_test_helper_->SetUp(context_factory);
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif  // USE_AURA
 #if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)

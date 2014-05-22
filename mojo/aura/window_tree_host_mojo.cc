@@ -48,6 +48,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   }
   context_factory_ = new ContextFactoryMojo(gles2_handle.Pass());
   ui::ContextFactory::SetInstance(context_factory_);
+  aura::Env::GetInstance()->set_context_factory(context_factory_);
   CHECK(context_factory_) << "No GL bindings.";
 
   native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());

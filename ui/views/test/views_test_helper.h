@@ -11,6 +11,10 @@ namespace base {
 class MessageLoopForUI;
 }
 
+namespace ui {
+class ContextFactory;
+}
+
 namespace views {
 
 // A helper class owned by tests that performs platform specific initialization
@@ -21,7 +25,8 @@ class ViewsTestHelper {
   virtual ~ViewsTestHelper();
 
   // Create a platform specific instance.
-  static ViewsTestHelper* Create(base::MessageLoopForUI* message_loop);
+  static ViewsTestHelper* Create(base::MessageLoopForUI* message_loop,
+                                 ui::ContextFactory* context_factory);
 
   // Creates objects that are needed for tests.
   virtual void SetUp();

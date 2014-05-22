@@ -24,6 +24,10 @@ class Rect;
 class Size;
 }
 
+namespace ui {
+class ContextFactory;
+}
+
 namespace wm {
 
 class CompoundEventFilter;
@@ -34,7 +38,8 @@ class InputMethodEventFilter;
 // the ash parts of the code.
 class WMTestHelper : public aura::client::WindowTreeClient {
  public:
-  explicit WMTestHelper(const gfx::Size& default_window_size);
+  WMTestHelper(const gfx::Size& default_window_size,
+               ui::ContextFactory* context_factory);
   virtual ~WMTestHelper();
 
   aura::WindowTreeHost* host() { return host_.get(); }

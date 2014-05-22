@@ -31,9 +31,10 @@ void ViewsTestBase::SetUp() {
     views_delegate_.reset(new TestViewsDelegate());
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory =
+      ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-  test_helper_.reset(ViewsTestHelper::Create(&message_loop_));
+  test_helper_.reset(ViewsTestHelper::Create(&message_loop_, context_factory));
   test_helper_->SetUp();
   ui::InitializeInputMethodForTesting();
 }

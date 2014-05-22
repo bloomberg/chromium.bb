@@ -63,9 +63,10 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
-    ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory =
+        ui::InitializeContextFactoryForTests(enable_pixel_output);
     helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    helper_->SetUp();
+    helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(helper_->root_window());
 
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura

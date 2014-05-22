@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -165,10 +166,11 @@ class KeyboardControllerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
-    ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory =
+        ui::InitializeContextFactoryForTests(enable_pixel_output);
 
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    aura_test_helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     ui::SetUpInputMethodFactoryForTesting();
     focus_controller_.reset(new TestFocusController(root_window()));

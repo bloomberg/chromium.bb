@@ -28,7 +28,8 @@ namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
-  explicit ViewsTestHelperAura(base::MessageLoopForUI* message_loop);
+  ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
+                      ui::ContextFactory* context_factory);
   virtual ~ViewsTestHelperAura();
 
   // Overridden from ViewsTestHelper:
@@ -37,6 +38,7 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   virtual gfx::NativeView GetContext() OVERRIDE;
 
  private:
+  ui::ContextFactory* context_factory_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   scoped_ptr<wm::WMState> wm_state_;
 

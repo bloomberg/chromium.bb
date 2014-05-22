@@ -109,7 +109,8 @@ void ViewEventTestBase::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory =
+      ui::InitializeContextFactoryForTests(enable_pixel_output);
 
 #if defined(OS_CHROMEOS)
   // Ash Shell can't just live on its own without a browser process, we need to
@@ -122,6 +123,7 @@ void ViewEventTestBase::SetUp() {
       new ash::test::TestShellDelegate();
   ash::ShellInitParams init_params;
   init_params.delegate = shell_delegate;
+  init_params.context_factory = context_factory;
   ash::Shell::CreateInstance(init_params);
   shell_delegate->test_session_state_delegate()
       ->SetActiveUserSessionStarted(true);
@@ -133,12 +135,13 @@ void ViewEventTestBase::SetUp() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
   aura::Env::CreateInstance(true);
+  aura::Env::GetInstance()->set_context_factory(context_factory);
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
+  aura_test_helper_->SetUp(context_factory);
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
   context = aura_test_helper_->root_window();
 #endif

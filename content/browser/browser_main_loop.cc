@@ -67,6 +67,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "content/public/browser/context_factory.h"
 #include "ui/aura/env.h"
 #endif
 
@@ -942,6 +943,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     }
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
     ImageTransportFactory::Initialize();
+#if defined(USE_AURA)
+    if (aura::Env::GetInstance()) {
+      aura::Env::GetInstance()->set_context_factory(
+          content::GetContextFactory());
+    }
+#endif
   }
 #elif defined(OS_ANDROID)
   established_gpu_channel = true;

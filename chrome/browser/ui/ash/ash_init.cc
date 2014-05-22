@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_factory.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -62,6 +63,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   ash::ShellInitParams shell_init_params;
   // Shell takes ownership of ChromeShellDelegate.
   shell_init_params.delegate = new ChromeShellDelegate;
+  shell_init_params.context_factory = content::GetContextFactory();
 #if defined(OS_WIN)
   shell_init_params.remote_hwnd = remote_window;
 #endif

@@ -99,13 +99,15 @@ SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
 }
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
-  ui::InitializeContextFactoryForTests(enable_pixel_output_);
+  ui::ContextFactory* context_factory =
+      ui::InitializeContextFactoryForTests(enable_pixel_output_);
 
   surface_factory_.reset(new MockSurfaceFactoryOzone());
 
   const gfx::Size size(500, 400);
   compositor_.reset(new ui::Compositor(
-      gfx::SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget()));
+      gfx::SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget(),
+      context_factory));
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(

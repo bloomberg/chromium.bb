@@ -12,11 +12,14 @@
 namespace views {
 
 // static
-ViewsTestHelper* ViewsTestHelper::Create(base::MessageLoopForUI* message_loop) {
-  return new ViewsTestHelperAura(message_loop);
+ViewsTestHelper* ViewsTestHelper::Create(base::MessageLoopForUI* message_loop,
+                                         ui::ContextFactory* context_factory) {
+  return new ViewsTestHelperAura(message_loop, context_factory);
 }
 
-ViewsTestHelperAura::ViewsTestHelperAura(base::MessageLoopForUI* message_loop) {
+ViewsTestHelperAura::ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
+                                         ui::ContextFactory* context_factory)
+    : context_factory_(context_factory) {
   aura_test_helper_.reset(new aura::test::AuraTestHelper(message_loop));
 }
 
@@ -24,7 +27,7 @@ ViewsTestHelperAura::~ViewsTestHelperAura() {
 }
 
 void ViewsTestHelperAura::SetUp() {
-  aura_test_helper_->SetUp();
+  aura_test_helper_->SetUp(context_factory_);
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
   wm_state_.reset(new wm::WMState);
 }

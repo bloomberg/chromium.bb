@@ -15,6 +15,7 @@ class MessageLoopForUI;
 }
 
 namespace ui {
+class ContextFactory;
 class InputMethod;
 class ScopedAnimationDurationScaleMode;
 }
@@ -37,7 +38,7 @@ class AuraTestHelper {
   ~AuraTestHelper();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  void SetUp();
+  void SetUp(ui::ContextFactory* context_factory);
 
   // Clean up objects that are created for tests. This also deletes the Env
   // object.

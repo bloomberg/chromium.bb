@@ -198,8 +198,11 @@ void WindowTreeHost::DestroyDispatcher() {
 
 void WindowTreeHost::CreateCompositor(
     gfx::AcceleratedWidget accelerated_widget) {
-  compositor_.reset(new ui::Compositor(GetAcceleratedWidget()));
-  DCHECK(compositor_.get());
+  DCHECK(Env::GetInstance());
+  ui::ContextFactory* context_factory = Env::GetInstance()->context_factory();
+  DCHECK(context_factory);
+  compositor_.reset(
+      new ui::Compositor(GetAcceleratedWidget(), context_factory));
   // TODO(beng): I think this setup should probably all move to a "accelerated
   // widget available" function.
   if (!dispatcher()) {

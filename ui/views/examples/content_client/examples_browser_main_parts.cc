@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/aura/env.h"
@@ -54,7 +55,8 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   // Set up basic pieces of views::corewm.
-  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
+  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600),
+                                             content::GetContextFactory()));
   // Ensure the X window gets mapped.
   wm_test_helper_->host()->Show();
   // Ensure Aura knows where to open new windows.

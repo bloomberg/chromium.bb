@@ -13,6 +13,10 @@
 
 #include "ash/ash_export.h"
 
+namespace ui {
+class ContextFactory;
+}
+
 namespace ash {
 
 class ShellDelegate;
@@ -22,6 +26,8 @@ struct ASH_EXPORT ShellInitParams {
   ~ShellInitParams();
 
   ShellDelegate* delegate;
+
+  ui::ContextFactory* context_factory;
 
 #if defined(OS_WIN)
   HWND remote_hwnd;

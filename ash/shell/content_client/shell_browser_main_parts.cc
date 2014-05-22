@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -124,6 +125,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::ShellInitParams init_params;
   init_params.delegate = delegate_;
+  init_params.context_factory = content::GetContextFactory();
   ash::Shell::CreateInstance(init_params);
   delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateShelf();
