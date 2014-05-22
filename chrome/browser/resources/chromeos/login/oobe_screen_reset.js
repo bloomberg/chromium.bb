@@ -68,7 +68,7 @@ login.createScreen('ResetScreen', 'reset', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      return $('reset-cancel-button');
+      return $('reset-button');
     },
 
     /**
@@ -152,6 +152,8 @@ login.createScreen('ResetScreen', 'reset', function() {
 
     updateViewOnRollbackCall: function() {
       this.classList.add('revert-promise');
+      this.announceAccessibleMessage_(
+          loadTimeData.getString('resetRevertSpinnerMessage'));
     }
   };
 });

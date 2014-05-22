@@ -1202,6 +1202,9 @@ Press any key to continue exploring.
   <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
     Factory reset
   </message>
+  <message name="IDS_RESET_SCREEN_ICON_TITLE" desc="Accessible title of the reset screen icon depicting exclamation mark.">
+    Exclamation mark icon
+  </message>
   <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
     Update
   </message>

@@ -129,6 +129,8 @@ void ResetScreenHandler::SetDelegate(Delegate* delegate) {
 void ResetScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("resetScreenTitle", IDS_RESET_SCREEN_TITLE);
+  builder->Add("resetScreenAccessibleTitle", IDS_RESET_SCREEN_TITLE);
+  builder->Add("resetScreenIconTitle",IDS_RESET_SCREEN_ICON_TITLE);
   builder->Add("cancelButton", IDS_CANCEL);
 
   builder->Add("resetWarningDataDetails",
