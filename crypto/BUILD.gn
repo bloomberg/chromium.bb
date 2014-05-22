@@ -118,6 +118,10 @@ component("crypto") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//third_party/android_tools:cpu_features" ]
+  }
+
   if (use_openssl) {
     # Remove NSS files when using OpenSSL
     sources -= [

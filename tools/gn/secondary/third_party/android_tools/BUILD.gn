@@ -6,6 +6,8 @@ config("cpu_features_include") {
   include_dirs = [ "ndk/sources/android/cpufeatures" ]
 }
 
+# This is the GN version of
+# //build/android/cpufeatures.gypi:cpufeatures
 source_set("cpu_features") {
   sources = [ "ndk/sources/android/cpufeatures/cpu-features.c" ]
   direct_dependent_configs = [ ":cpu_features_include" ]
