@@ -36,7 +36,7 @@ class GamepadCommon {
 public:
     GamepadCommon();
     ~GamepadCommon();
-    typedef Vector<float> FloatVector;
+    typedef Vector<double> DoubleVector;
 
     const String& id() const { return m_id; }
     void setId(const String& id) { m_id = id; }
@@ -53,8 +53,12 @@ public:
     const String& mapping() const { return m_mapping; }
     void setMapping(const String& val) { m_mapping = val; }
 
-    const FloatVector& axes() const { return m_axes; }
+    const DoubleVector& axes() const { return m_axes; }
+#if defined(ENABLE_NEW_GAMEPAD_API)
+    void setAxes(unsigned count, const double* data);
+#else
     void setAxes(unsigned count, const float* data);
+#endif
 
 protected:
     String m_id;
@@ -62,7 +66,7 @@ protected:
     bool m_connected;
     unsigned long long m_timestamp;
     String m_mapping;
-    FloatVector m_axes;
+    DoubleVector m_axes;
 };
 
 } // namespace WebCore
