@@ -13,6 +13,8 @@
   "permissions": [
     "bluetoothPrivate",
     "screenlockPrivate",
+    "feedbackPrivate",
+    "metricsPrivate",
     "storage",
     "identity",
     "notifications"
@@ -24,13 +26,18 @@
     }
   },
 
-  "bluetooth": { "uuids": ["0000AB34-0000-1000-8000-00805F9B34FB"] },
+  "bluetooth": {
+    "uuids": [
+      "0000AB34-0000-1000-8000-00805F9B34FB",
+      "29422880-D56D-11E3-9C1A-0800200C9A66"
+    ]
+  },
 
   "offline_enabled": true,
 
   "display_in_launcher": false,
 
-  "icons": { 
+  "icons": {
     "32": "icons/easyunlock_app_icon_32.png",
     "48": "icons/easyunlock_app_icon_48.png",
     "64": "icons/easyunlock_app_icon_64.png",
