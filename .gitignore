@@ -50,6 +50,9 @@ toolchain_build/src/
 /tools/out/
 /tools/perf_expectations/
 /tools/SRC/
+/tools/gn/bin/linux
+/tools/gn/bin/mac
+/tools/gn/bin/win
 
 # These directories only show up if you have supplement.DEPS in your .gclient
 /private_tests/
