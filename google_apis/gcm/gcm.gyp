@@ -124,6 +124,7 @@
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        'mcs_probe',
         'gcm'
       ],
       'sources': [
