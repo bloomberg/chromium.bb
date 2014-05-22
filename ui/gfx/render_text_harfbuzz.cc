@@ -8,7 +8,6 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
-#include "third_party/harfbuzz-ng/src/hb-icu.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -312,6 +311,14 @@ int ScriptInterval(const base::string16& text,
   }
 
   return length;
+}
+
+// A port of hb_icu_script_to_script because harfbuzz on CrOS is built without
+// hb-icu. See http://crbug.com/356929
+inline hb_script_t ICUScriptToHBScript(UScriptCode script) {
+  if (script == USCRIPT_INVALID_CODE)
+    return HB_SCRIPT_INVALID;
+  return hb_script_from_string(uscript_getShortName(script), -1);
 }
 
 }  // namespace
@@ -908,7 +915,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   hb_buffer_t* buffer = hb_buffer_create();
   hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16*>(text.c_str()),
                       text.length(), run->range.start(), run->range.length());
-  hb_buffer_set_script(buffer, hb_icu_script_to_script(run->script));
+  hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
   hb_buffer_set_direction(buffer,
       run->direction == UBIDI_LTR ? HB_DIRECTION_LTR : HB_DIRECTION_RTL);
   // TODO(ckocagil): Should we determine the actual language?
