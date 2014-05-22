@@ -5,13 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_MOTION_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_MOTION_MESSAGE_FILTER_H_
 
-#include "base/compiler_specific.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
-
-class DeviceMotionService;
-class RenderProcessHost;
 
 class DeviceMotionMessageFilter : public BrowserMessageFilter {
  public:

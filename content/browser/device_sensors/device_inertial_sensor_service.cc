@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "content/browser/device_sensors/data_fetcher_shared_memory.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
@@ -91,7 +90,7 @@ void DeviceInertialSensorService::Shutdown() {
   is_shutdown_ = true;
 }
 
-void DeviceInertialSensorService::SetDataFetcherForTests(
+void DeviceInertialSensorService::SetDataFetcherForTesting(
     DataFetcherSharedMemory* test_data_fetcher) {
   data_fetcher_.reset(test_data_fetcher);
 }

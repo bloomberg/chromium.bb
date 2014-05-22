@@ -17,11 +17,10 @@
 namespace content {
 
 class DataFetcherSharedMemory;
-class RenderProcessHost;
 
-// Owns the DeviceMotionProvider (the background polling thread) and keeps
-// track of the number of consumers currently using the data (and pausing
-// the provider when not in use).
+// Owns the data fetcher for Device Motion and Orientation and keeps track of
+// the number of consumers currently using the data. The data fetcher is stopped
+// when there are no consumers.
 class CONTENT_EXPORT DeviceInertialSensorService {
  public:
   // Returns the DeviceInertialSensorService singleton.
@@ -46,7 +45,7 @@ class CONTENT_EXPORT DeviceInertialSensorService {
 
   // Injects a custom data fetcher for testing purposes. This class takes
   // ownership of the injected object.
-  void SetDataFetcherForTests(DataFetcherSharedMemory* test_data_fetcher);
+  void SetDataFetcherForTesting(DataFetcherSharedMemory* test_data_fetcher);
 
  private:
   friend struct DefaultSingletonTraits<DeviceInertialSensorService>;

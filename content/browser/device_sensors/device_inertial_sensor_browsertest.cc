@@ -170,7 +170,7 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
   void SetUpOnIOThread() {
     fetcher_ = new FakeDataFetcher();
     DeviceInertialSensorService::GetInstance()->
-        SetDataFetcherForTests(fetcher_);
+        SetDataFetcherForTesting(fetcher_);
     io_loop_finished_event_.Signal();
   }
 
