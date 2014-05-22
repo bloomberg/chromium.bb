@@ -251,11 +251,6 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
   if (!SetInputMuteInternal(mute_on))
     return;
 
-  // Audio input mute state is not saved in prefs, see crbug.com/365050.
-  LOG(WARNING) << "SetInputMute set active input id="
-               << "0x" << std::hex << active_input_node_id_
-               << " mute=" << mute_on;
-
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputMuteChanged());
 }
 
@@ -296,8 +291,8 @@ void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
     SetOutputMute(mute_on);
     return;
   } else if (device_id == active_input_node_id_) {
-    LOG(WARNING) << "SetMuteForDevice sets active input device id="
-                 << "0x" << std::hex << device_id << " mute=" << mute_on;
+    VLOG(1) << "SetMuteForDevice sets active input device id="
+            << "0x" << std::hex << device_id << " mute=" << mute_on;
     SetInputMute(mute_on);
     return;
   }
@@ -426,8 +421,8 @@ void CrasAudioHandler::SetupAudioInputState() {
     return;
   }
   input_gain_ = audio_pref_handler_->GetInputGainValue(device);
-  LOG(WARNING) << "SetupAudioInputState for active device id="
-               << "0x" << std::hex << device->id << " mute=" << input_mute_on_;
+  VLOG(1) << "SetupAudioInputState for active device id="
+          << "0x" << std::hex << device->id << " mute=" << input_mute_on_;
   SetInputMuteInternal(input_mute_on_);
   // TODO(rkc,jennyz): Set input gain once we decide on how to store
   // the gain values since the range and step are both device specific.
@@ -469,13 +464,12 @@ void CrasAudioHandler::ApplyAudioPolicy() {
 
   input_mute_locked_ = false;
   if (audio_pref_handler_->GetAudioCaptureAllowedValue()) {
-    LOG(WARNING) << "Audio input allowed by policy, sets input id="
-                 << "0x" << std::hex << active_input_node_id_
-                 << " mute=false";
+    VLOG(1) << "Audio input allowed by policy, sets input id="
+            << "0x" << std::hex << active_input_node_id_ << " mute=false";
     SetInputMuteInternal(false);
   } else {
-    LOG(WARNING) << "Audio input NOT allowed by policy, sets input id="
-                 << "0x" << std::hex << active_input_node_id_ << " mute=true";
+    VLOG(0) << "Audio input NOT allowed by policy, sets input id="
+            << "0x" << std::hex << active_input_node_id_ << " mute=true";
     SetInputMuteInternal(true);
     input_mute_locked_ = true;
   }
@@ -505,9 +499,8 @@ bool CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
   if (input_mute_locked_)
     return false;
 
-  LOG(WARNING) << "SetInputMuteInternal sets active input device id="
-               << "0x" << std::hex << active_input_node_id_
-               << " mute=" << mute_on;
+  VLOG(1) << "SetInputMuteInternal sets active input device id="
+          << "0x" << std::hex << active_input_node_id_ << " mute=" << mute_on;
   input_mute_on_ = mute_on;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetInputMute(mute_on);
