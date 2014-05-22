@@ -1172,13 +1172,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kEnableSyncAppListChoices)
   },
 #endif
-  {
-    "enable-usermedia-screen-capture",
-    IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME,
-    IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableUserMediaScreenCapturing)
-  },
 #if defined(OS_MACOSX)
   {
     "enable-avfoundation",
