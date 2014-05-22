@@ -883,8 +883,6 @@
         'browser/importer/in_process_importer_bridge.h',
         'browser/importer/profile_writer.cc',
         'browser/importer/profile_writer.h',
-        'browser/infobars/confirm_infobar_delegate.cc',
-        'browser/infobars/confirm_infobar_delegate.h',
         'browser/infobars/infobar_service.cc',
         'browser/infobars/infobar_service.h',
         'browser/infobars/insecure_content_infobar_delegate.cc',

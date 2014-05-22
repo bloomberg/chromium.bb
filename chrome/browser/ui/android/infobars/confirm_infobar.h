@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 
 class ConfirmInfoBar : public InfoBarAndroid {
  public:

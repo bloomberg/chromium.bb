@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_AUTO_LOGIN_INFOBAR_DELEGATE_H_
 
 #include <string>
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "components/auto_login_parser/auto_login_parser.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 class PrefService;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 
-#include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using infobars::InfoBarDelegate;
@@ -23,7 +23,8 @@ int ConfirmInfoBarDelegate::GetButtons() const {
 
 base::string16 ConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_OK : IDS_CANCEL);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_APP_OK : IDS_APP_CANCEL);
 }
 
 bool ConfirmInfoBarDelegate::OKButtonTriggersUACPrompt() const {

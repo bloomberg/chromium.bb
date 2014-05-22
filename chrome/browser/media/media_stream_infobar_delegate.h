@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 
 
 // This class configures an infobar shown when a page requests access to a

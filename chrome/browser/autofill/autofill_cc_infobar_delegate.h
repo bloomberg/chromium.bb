@@ -10,8 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/base/window_open_disposition.h"
 
 class CreditCard;

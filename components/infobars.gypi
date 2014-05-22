@@ -14,8 +14,11 @@
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/strings/ui_strings.gyp:ui_strings',
       ],
       'sources': [
+        'infobars/core/confirm_infobar_delegate.cc',
+        'infobars/core/confirm_infobar_delegate.h',
         'infobars/core/infobar.cc',
         'infobars/core/infobar.h',
         'infobars/core/infobar_container.cc',
