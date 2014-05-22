@@ -33,10 +33,8 @@ namespace WebCore {
 
 CSSCanvasValue::~CSSCanvasValue()
 {
-#if !ENABLE(OILPAN)
     if (m_element)
-        m_element->removeObserver(m_canvasObserver.get());
-#endif
+        m_element->removeObserver(&m_canvasObserver);
 }
 
 String CSSCanvasValue::customCSSText() const
@@ -63,13 +61,11 @@ void CSSCanvasValue::canvasResized(HTMLCanvasElement*)
         const_cast<RenderObject*>(curr->key)->imageChanged(static_cast<WrappedImagePtr>(this));
 }
 
-#if !ENABLE(OILPAN)
 void CSSCanvasValue::canvasDestroyed(HTMLCanvasElement* element)
 {
     ASSERT_UNUSED(element, element == m_element);
-    m_element = nullptr;
+    m_element = 0;
 }
-#endif
 
 IntSize CSSCanvasValue::fixedSize(const RenderObject* renderer)
 {
@@ -82,7 +78,7 @@ HTMLCanvasElement* CSSCanvasValue::element(Document* document)
 {
      if (!m_element) {
         m_element = &document->getCSSCanvasElement(m_name);
-        m_element->addObserver(m_canvasObserver.get());
+        m_element->addObserver(&m_canvasObserver);
     }
     return m_element;
 }
@@ -99,13 +95,6 @@ PassRefPtr<Image> CSSCanvasValue::image(RenderObject* renderer, const IntSize& /
 bool CSSCanvasValue::equals(const CSSCanvasValue& other) const
 {
     return m_name == other.m_name;
-}
-
-void CSSCanvasValue::traceAfterDispatch(Visitor* visitor)
-{
-    visitor->trace(m_canvasObserver);
-    visitor->trace(m_element);
-    CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 
 } // namespace WebCore

@@ -54,15 +54,13 @@ class ImageBuffer;
 class ImageBufferSurface;
 class IntSize;
 
-class CanvasObserver : public WillBeGarbageCollectedMixin {
+class CanvasObserver {
 public:
+    virtual ~CanvasObserver() { }
+
     virtual void canvasChanged(HTMLCanvasElement*, const FloatRect& changedRect) = 0;
     virtual void canvasResized(HTMLCanvasElement*) = 0;
-#if !ENABLE(OILPAN)
     virtual void canvasDestroyed(HTMLCanvasElement*) = 0;
-#endif
-
-    virtual void trace(Visitor*) { }
 };
 
 class HTMLCanvasElement FINAL : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
@@ -177,7 +175,7 @@ private:
 
     String toDataURLInternal(const String& mimeType, const double* quality) const;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> > m_observers;
+    HashSet<CanvasObserver*> m_observers;
 
     IntSize m_size;
 

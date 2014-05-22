@@ -52,24 +52,23 @@ public:
 
     bool equals(const CSSCanvasValue&) const;
 
-    void traceAfterDispatch(Visitor*);
+    void traceAfterDispatch(Visitor* visitor) { CSSImageGeneratorValue::traceAfterDispatch(visitor); }
 
 private:
     explicit CSSCanvasValue(const String& name)
         : CSSImageGeneratorValue(CanvasClass)
-        , m_canvasObserver(adoptPtrWillBeNoop(new CanvasObserverProxy(this)))
+        , m_canvasObserver(this)
         , m_name(name)
-        , m_element(nullptr)
+        , m_element(0)
     {
     }
 
     // NOTE: We put the CanvasObserver in a member instead of inheriting from it
     // to avoid adding a vptr to CSSCanvasValue.
-    class CanvasObserverProxy FINAL : public NoBaseWillBeGarbageCollected<CanvasObserverProxy>, public CanvasObserver {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasObserverProxy);
+    class CanvasObserverProxy FINAL : public CanvasObserver {
     public:
-        explicit CanvasObserverProxy(CSSCanvasValue* ownerValue) : m_ownerValue(ownerValue) { }
-
+        CanvasObserverProxy(CSSCanvasValue* ownerValue) : m_ownerValue(ownerValue) { }
+        virtual ~CanvasObserverProxy() { }
         virtual void canvasChanged(HTMLCanvasElement* canvas, const FloatRect& changedRect) OVERRIDE
         {
             m_ownerValue->canvasChanged(canvas, changedRect);
@@ -78,37 +77,26 @@ private:
         {
             m_ownerValue->canvasResized(canvas);
         }
-#if !ENABLE(OILPAN)
         virtual void canvasDestroyed(HTMLCanvasElement* canvas) OVERRIDE
         {
             m_ownerValue->canvasDestroyed(canvas);
         }
-#endif
-        virtual void trace(Visitor* visitor) OVERRIDE
-        {
-            visitor->trace(m_ownerValue);
-            CanvasObserver::trace(visitor);
-        }
-
     private:
-        RawPtrWillBeMember<CSSCanvasValue> m_ownerValue;
+        CSSCanvasValue* m_ownerValue;
     };
 
     void canvasChanged(HTMLCanvasElement*, const FloatRect& changedRect);
     void canvasResized(HTMLCanvasElement*);
-
-#if !ENABLE(OILPAN)
     void canvasDestroyed(HTMLCanvasElement*);
-#endif
 
     HTMLCanvasElement* element(Document*);
 
-    OwnPtrWillBeMember<CanvasObserverProxy> m_canvasObserver;
+    CanvasObserverProxy m_canvasObserver;
 
     // The name of the canvas.
     String m_name;
     // The document supplies the element and owns it.
-    RawPtrWillBeWeakMember<HTMLCanvasElement> m_element;
+    HTMLCanvasElement* m_element;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCanvasValue, isCanvasValue());
