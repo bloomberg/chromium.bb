@@ -1056,7 +1056,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_,
                            this.directoryModel_,
-                           this.volumeManager_);
+                           this.volumeManager_,
+                           this.metadataCache_);
 
     this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
     NavigationList.decorate(this.navigationList_,
