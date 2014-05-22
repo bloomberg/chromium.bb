@@ -1382,11 +1382,15 @@ cr.define('login', function() {
     },
 
     /**
-     * Return true if user pod row has only single user pod in it.
+     * Return true if user pod row has only single user pod in it, which should
+     * always be focused.
      * @type {boolean}
      */
-    get isSinglePod() {
-      return this.children.length == 1;
+    get alwaysFocusSinglePod() {
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+
+      return isDesktopUserManager ? false : this.children.length == 1;
     },
 
     /**
@@ -1606,7 +1610,11 @@ cr.define('login', function() {
           Oobe.getInstance().toggleClass('flying-pods', true);
         }, 0);
 
-        this.focusPod(this.preselectedPod);
+        // On desktop, don't pre-select a pod if it's the only one.
+        if (isDesktopUserManager && this.pods.length == 1)
+          this.focusPod();
+        else
+          this.focusPod(this.preselectedPod);
       } else {
         this.podPlacementPostponed_ = true;
 
@@ -1873,7 +1881,7 @@ cr.define('login', function() {
       this.insideFocusPod_ = true;
 
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        if (!this.isSinglePod) {
+        if (!this.alwaysFocusSinglePod) {
           pod.isActionBoxMenuActive = false;
         }
         if (pod != podToFocus) {
@@ -2032,7 +2040,7 @@ cr.define('login', function() {
 
       // Clears focus if not clicked on a pod and if there's more than one pod.
       var pod = findAncestorByClass(e.target, 'pod');
-      if ((!pod || pod.parentNode != this) && !this.isSinglePod) {
+      if ((!pod || pod.parentNode != this) && !this.alwaysFocusSinglePod) {
         this.focusPod();
       }
 
@@ -2040,7 +2048,7 @@ cr.define('login', function() {
         pod.isActionBoxMenuHovered = true;
 
       // Return focus back to single pod.
-      if (this.isSinglePod) {
+      if (this.alwaysFocusSinglePod) {
         this.focusPod(this.focusedPod_, true /* force */);
         if (!pod)
           this.focusedPod_.isActionBoxMenuHovered = false;
@@ -2109,7 +2117,7 @@ cr.define('login', function() {
       // Do not "defocus" user pod when it is a single pod.
       // That means that 'focused' class will not be removed and
       // input field/button will always be visible.
-      if (!this.isSinglePod)
+      if (!this.alwaysFocusSinglePod)
         this.focusPod();
     },
 
@@ -2157,7 +2165,7 @@ cr.define('login', function() {
           }
           break;
         case 'U+001B':  // Esc
-          if (!this.isSinglePod)
+          if (!this.alwaysFocusSinglePod)
             this.focusPod();
           break;
       }
