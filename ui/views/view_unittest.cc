@@ -3520,6 +3520,52 @@ TEST_F(ViewLayerTest, BoundsTreePaintUpdatesCullSet) {
   EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
 }
 
+TEST_F(ViewLayerTest, BoundsTreeWithRTL) {
+  std::string locale = l10n_util::GetApplicationLocale(std::string());
+  base::i18n::SetICUDefaultLocale("ar");
+
+  BoundsTreeTestView* test_view = new BoundsTreeTestView;
+  widget()->SetContentsView(test_view);
+
+  // Add child views, which should be in RTL coordinate space of parent view.
+  View* v1 = new View;
+  v1->SetBoundsRect(gfx::Rect(10, 12, 25, 26));
+  test_view->AddChildView(v1);
+
+  View* v2 = new View;
+  v2->SetBoundsRect(gfx::Rect(5, 6, 7, 8));
+  v1->AddChildView(v2);
+
+  // Schedule a full-view paint to get everyone's rectangles updated.
+  test_view->SchedulePaintInRect(test_view->bounds());
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
+
+  // Damage to the right side of the parent view should touch both child views.
+  gfx::Rect rtl_damage(test_view->bounds().width() - 16, 18, 1, 1);
+  test_view->SchedulePaintInRect(rtl_damage);
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
+  EXPECT_EQ(4U, test_view->last_cull_set_.size());
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
+
+  // Damage to the left side of the parent view should only touch the
+  // container views.
+  gfx::Rect ltr_damage(16, 18, 1, 1);
+  test_view->SchedulePaintInRect(ltr_damage);
+  GetRootLayer()->GetCompositor()->ScheduleDraw();
+  ui::DrawWaiterForTest::Wait(GetRootLayer()->GetCompositor());
+  EXPECT_EQ(2U, test_view->last_cull_set_.size());
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
+  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
+}
+
 TEST_F(ViewLayerTest, BoundsTreeSetBoundsChangesCullSet) {
   BoundsTreeTestView* test_view = new BoundsTreeTestView;
   widget()->SetContentsView(test_view);

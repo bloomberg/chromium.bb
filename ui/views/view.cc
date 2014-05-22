@@ -2122,7 +2122,7 @@ void View::UpdateRootBounds(gfx::RTree* tree, const gfx::Vector2d& offset) {
 
   // Add our own offset to the provided offset, for our own bounds update and
   // for propagation to our children if needed.
-  gfx::Vector2d view_offset = offset + bounds_.OffsetFromOrigin();
+  gfx::Vector2d view_offset = offset + GetMirroredBounds().OffsetFromOrigin();
 
   // If our bounds have changed we must re-insert our new bounds to the tree.
   if (root_bounds_dirty_) {
