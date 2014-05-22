@@ -46,7 +46,7 @@
     // Note: The "bluetooth" manifest permission is used by the
     // chrome.bluetooth, chrome.bluetoothSocket and chrome.bluetoothLowEnergy
     // APIs. Split this property if the APIs get released at different dates.
-    "channel": "beta",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "browser_action": {
