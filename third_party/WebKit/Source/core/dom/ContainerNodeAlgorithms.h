@@ -133,9 +133,7 @@ namespace Private {
     struct NodeRemovalDispatcher<GenericNode, GenericNodeContainer, true> {
         static void dispatch(GenericNode& node, GenericNodeContainer& container)
         {
-            // Clean up any TreeScope to a removed tree.
-            if (Document* containerDocument = container.ownerDocument())
-                containerDocument->adoptIfNeeded(node);
+            container.document().adoptIfNeeded(node);
             if (node.inDocument())
                 ChildNodeRemovalNotifier(container).notify(node);
         }
