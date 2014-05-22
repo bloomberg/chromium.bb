@@ -89,6 +89,7 @@ class CC_EXPORT LayerTreeImpl {
       LayerImpl* scrolling_layer);
   void DidAnimateScrollOffset();
   bool use_gpu_rasterization() const;
+  bool create_low_res_tiling() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -296,7 +297,6 @@ class CC_EXPORT LayerTreeImpl {
   // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;
 
-  bool use_gpu_rasterization_;
   bool contents_textures_purged_;
   bool requires_high_res_to_draw_;
   bool viewport_size_invalid_;

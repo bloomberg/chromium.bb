@@ -276,6 +276,9 @@ class CC_EXPORT LayerTreeHostImpl
   TileManager* tile_manager() { return tile_manager_.get(); }
   void SetUseGpuRasterization(bool use_gpu);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+  bool create_low_res_tiling() const {
+    return settings_.create_low_res_tiling && !use_gpu_rasterization_;
+  }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   Renderer* renderer() { return renderer_.get(); }
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;

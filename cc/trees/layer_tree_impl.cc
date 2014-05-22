@@ -215,8 +215,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_background_color(background_color());
   target_tree->set_has_transparent_background(has_transparent_background());
 
-  target_tree->use_gpu_rasterization_ = use_gpu_rasterization();
-
   if (ContentsTexturesPurged())
     target_tree->SetContentsTexturesPurged();
   else
@@ -742,6 +740,10 @@ void LayerTreeImpl::DidAnimateScrollOffset() {
 
 bool LayerTreeImpl::use_gpu_rasterization() const {
   return layer_tree_host_impl_->use_gpu_rasterization();
+}
+
+bool LayerTreeImpl::create_low_res_tiling() const {
+  return layer_tree_host_impl_->create_low_res_tiling();
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {

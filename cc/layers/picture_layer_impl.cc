@@ -21,6 +21,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/tile_manager.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -61,7 +62,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
-      should_use_low_res_tiling_(tree_impl->settings().create_low_res_tiling),
       layer_needs_to_register_itself_(true) {
 }
 
@@ -1026,9 +1026,8 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen,
   // prevents wastefully creating a paired low res tiling for every new high res
   // tiling during a pinch or a CSS animation.
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
-  if (ShouldHaveLowResTiling() && !is_pinching &&
-      !animating_transform_to_screen &&
-      !low_res && low_res != high_res)
+  if (layer_tree_impl()->create_low_res_tiling() && !is_pinching &&
+      !animating_transform_to_screen && !low_res && low_res != high_res)
     low_res = AddTiling(low_res_raster_contents_scale_);
 
   // Set low-res if we have one.
@@ -1206,7 +1205,8 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       continue;
 
     // Keep low resolution tilings, if the layer should have them.
-    if (tiling->resolution() == LOW_RESOLUTION && ShouldHaveLowResTiling())
+    if (tiling->resolution() == LOW_RESOLUTION &&
+        layer_tree_impl()->create_low_res_tiling())
       continue;
 
     // Don't remove tilings that are being used (and thus would cause a flash.)
