@@ -34,15 +34,21 @@ namespace WTF {
 template<unsigned arraySize>
 class BitArray {
 public:
-    BitArray()
+    BitArray(bool value = false)
     {
-        memset(m_data, 0, sizeof(m_data));
+        memset(m_data, value ? 0xFF : 0, sizeof(m_data));
     }
 
     void set(unsigned index)
     {
         ASSERT_WITH_SECURITY_IMPLICATION(index < arraySize);
         m_data[index / 8] |= 1 << (index & 7);
+    }
+
+    void clear(unsigned index)
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(index < arraySize);
+        m_data[index / 8] &= ~(1 << (index & 7));
     }
 
     bool get(unsigned index) const
