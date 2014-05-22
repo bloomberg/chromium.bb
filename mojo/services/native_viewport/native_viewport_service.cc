@@ -192,4 +192,3 @@ MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
   app->AddService<mojo::services::NativeViewportImpl>(context);
   return app;
 }
-

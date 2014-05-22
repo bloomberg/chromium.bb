@@ -25,6 +25,7 @@ class BackgroundServiceLoader::BackgroundLoader {
   }
 
  private:
+  base::MessageLoop::Type message_loop_type_;
   ServiceLoader* loader_;  // Owned by BackgroundServiceLoader
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoader);
@@ -32,9 +33,11 @@ class BackgroundServiceLoader::BackgroundLoader {
 
 BackgroundServiceLoader::BackgroundServiceLoader(
     scoped_ptr<ServiceLoader> real_loader,
-    const char* thread_name)
+    const char* thread_name,
+    base::MessageLoop::Type message_loop_type)
     : loader_(real_loader.Pass()),
       thread_(thread_name),
+      message_loop_type_(message_loop_type),
       background_loader_(NULL) {
 }
 
@@ -52,8 +55,10 @@ void BackgroundServiceLoader::LoadService(
     ServiceManager* manager,
     const GURL& url,
     ScopedMessagePipeHandle service_handle) {
+  const int kDefaultStackSize = 0;
   if (!thread_.IsRunning())
-    thread_.Start();
+    thread_.StartWithOptions(
+        base::Thread::Options(message_loop_type_, kDefaultStackSize));
   thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundServiceLoader::LoadServiceOnBackgroundThread,

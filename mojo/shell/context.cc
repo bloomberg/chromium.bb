@@ -100,7 +100,8 @@ Context::Context()
       scoped_ptr<ServiceLoader>(
           new BackgroundServiceLoader(
               scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
-              "native_viewport")),
+              "native_viewport",
+              base::MessageLoop::TYPE_UI)),
       GURL("mojo:mojo_native_viewport_service"));
 #if defined(USE_AURA)
   // TODO(sky): need a better way to find this. It shouldn't be linked in.

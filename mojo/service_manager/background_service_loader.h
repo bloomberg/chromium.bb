@@ -6,6 +6,7 @@
 #define MOJO_SERVICE_MANAGER_BACKGROUND_SERVICE_LOADER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/service_manager/service_loader.h"
 
@@ -19,7 +20,8 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundServiceLoader
     : public ServiceLoader {
  public:
   BackgroundServiceLoader(scoped_ptr<ServiceLoader> real_loader,
-                          const char* thread_name);
+                          const char* thread_name,
+                          base::MessageLoop::Type message_loop_type);
   virtual ~BackgroundServiceLoader();
 
   // ServiceLoader overrides:
@@ -45,6 +47,7 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundServiceLoader
 
   scoped_ptr<ServiceLoader> loader_;
   base::Thread thread_;
+  base::MessageLoop::Type message_loop_type_;
 
   // Lives on |thread_|. Trivial interface that calls through to |loader_|.
   BackgroundLoader* background_loader_;
