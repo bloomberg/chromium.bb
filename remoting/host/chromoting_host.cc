@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -85,6 +86,8 @@ ChromotingHost::ChromotingHost(
       weak_factory_(this) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(signal_strategy);
+
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   // VP9 encode is not yet supported.
   protocol::CandidateSessionConfig::DisableVideoCodec(
