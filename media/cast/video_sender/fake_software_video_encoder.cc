@@ -13,10 +13,13 @@
 namespace media {
 namespace cast {
 
-FakeSoftwareVideoEncoder::FakeSoftwareVideoEncoder()
-    : next_frame_is_key_(true),
+FakeSoftwareVideoEncoder::FakeSoftwareVideoEncoder(
+    const VideoSenderConfig& video_config)
+    : video_config_(video_config),
+      next_frame_is_key_(true),
       frame_id_(0),
-      frame_id_to_reference_(0) {
+      frame_id_to_reference_(0),
+      frame_size_(0) {
 }
 
 FakeSoftwareVideoEncoder::~FakeSoftwareVideoEncoder() {}
@@ -37,17 +40,18 @@ bool FakeSoftwareVideoEncoder::Encode(
   }
 
   base::DictionaryValue values;
-  values.Set("key", base::Value::CreateBooleanValue(
-      encoded_image->dependency == transport::EncodedFrame::KEY));
-  values.Set("id", base::Value::CreateIntegerValue(encoded_image->frame_id));
-  values.Set("ref", base::Value::CreateIntegerValue(
-      encoded_image->referenced_frame_id));
+  values.SetBoolean("key",
+                    encoded_image->dependency == transport::EncodedFrame::KEY);
+  values.SetInteger("ref", encoded_image->referenced_frame_id);
+  values.SetInteger("id", encoded_image->frame_id);
+  values.SetInteger("size", frame_size_);
+  values.SetString("data", std::string(frame_size_, ' '));
   base::JSONWriter::Write(&values, &encoded_image->data);
   return true;
 }
 
 void FakeSoftwareVideoEncoder::UpdateRates(uint32 new_bitrate) {
-  // TODO(hclam): Implement bitrate control.
+  frame_size_ = new_bitrate / video_config_.max_frame_rate / 8;
 }
 
 void FakeSoftwareVideoEncoder::GenerateKeyFrame() {

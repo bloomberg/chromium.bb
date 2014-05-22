@@ -81,7 +81,7 @@ VideoEncoderImpl::VideoEncoderImpl(
                                            encoder_.get()));
 #ifndef OFFICIAL_BUILD
   } else if (video_config.codec == transport::kFakeSoftwareVideo) {
-    encoder_.reset(new FakeSoftwareVideoEncoder());
+    encoder_.reset(new FakeSoftwareVideoEncoder(video_config));
 #endif
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.

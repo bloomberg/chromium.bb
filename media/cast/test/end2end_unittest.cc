@@ -493,9 +493,9 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.use_external_encoder = false;
     video_sender_config_.width = kVideoHdWidth;
     video_sender_config_.height = kVideoHdHeight;
-    video_sender_config_.max_bitrate = 5000000;
-    video_sender_config_.min_bitrate = 1000000;
-    video_sender_config_.start_bitrate = 5000000;
+    video_sender_config_.max_bitrate = 50000;
+    video_sender_config_.min_bitrate = 10000;
+    video_sender_config_.start_bitrate = 10000;
     video_sender_config_.max_qp = 30;
     video_sender_config_.min_qp = 4;
     video_sender_config_.max_frame_rate = 30;

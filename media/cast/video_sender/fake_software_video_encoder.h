@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_VIDEO_SENDER_FAKE_SOFTWARE_VIDEO_ENCODER_H_
 #define MEDIA_CAST_VIDEO_SENDER_FAKE_SOFTWARE_VIDEO_ENCODER_H_
 
+#include "media/cast/cast_config.h"
 #include "media/cast/video_sender/software_video_encoder.h"
 
 namespace media {
@@ -12,7 +13,7 @@ namespace cast {
 
 class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
  public:
-  FakeSoftwareVideoEncoder();
+  FakeSoftwareVideoEncoder(const VideoSenderConfig& video_config);
   virtual ~FakeSoftwareVideoEncoder();
 
   // SoftwareVideoEncoder implementations.
@@ -24,9 +25,11 @@ class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
 
  private:
+  VideoSenderConfig video_config_;
   bool next_frame_is_key_;
   uint32 frame_id_;
   uint32 frame_id_to_reference_;
+  int frame_size_;
 };
 
 }  // namespace cast
