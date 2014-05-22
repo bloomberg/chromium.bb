@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -i
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -54,11 +54,11 @@ PROCESSED_FILE=0
 declare -a THROBBER_STR=('-' '\\' '|' '/')
 THROBBER_COUNT=0
 
-VERBOSE=0
+VERBOSE=false
 
 # Echo only if verbose option is set.
 function info {
-  if [ $VERBOSE -eq 1 ]; then
+  if $VERBOSE ; then
     echo $@
   fi
 }
@@ -66,7 +66,8 @@ function info {
 # Show throbber character at current cursor position.
 function throbber {
   info -ne "${THROBBER_STR[$THROBBER_COUNT]}\b"
-  let THROBBER_COUNT=($THROBBER_COUNT+1)%4
+  let THROBBER_COUNT=$THROBBER_COUNT+1
+  let THROBBER_COUNT=$THROBBER_COUNT%4
 }
 
 # Usage: pngout_loop <file> <png_out_options> ...
@@ -77,13 +78,13 @@ function pngout_loop {
   shift
   local opts=$*
   if [ $OPTIMIZE_LEVEL == 1 ]; then
-    for j in $(seq 0 5); do
+    for j in $(eval echo {0..5}); do
       throbber
       pngout -q -k1 -s1 -f$j $opts $file
     done
   else
     for i in 0 128 256 512; do
-      for j in $(seq 0 5); do
+      for j in $(eval echo {0..5}); do
         throbber
         pngout -q -k1 -s1 -b$i -f$j $opts $file
       done
@@ -106,7 +107,7 @@ function get_color_depth_list {
 #
 # TODO(oshima): Experiment with -d0 w/o -c0.
 function process_grayscale {
-  info -n "|gray"
+  info -ne "\b\b\b\b\b\b\b\bgray...."
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c0 $opt
   done
@@ -115,7 +116,7 @@ function process_grayscale {
 # Usage: process_grayscale_alpha <file>
 # Optimize grayscale images with alpha for all color bit depths.
 function process_grayscale_alpha {
-  info -n "|gray-a"
+  info -ne "\b\b\b\b\b\b\b\bgray-a.."
   pngout_loop $file -c4
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
@@ -125,7 +126,7 @@ function process_grayscale_alpha {
 # Usage: process_rgb <file>
 # Optimize rgb images with or without alpha for all color bit depths.
 function process_rgb {
-  info -n "|rgb"
+  info -ne "\b\b\b\b\b\b\b\brgb....."
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
   done
@@ -136,8 +137,8 @@ function process_rgb {
 # Usage: huffman_blocks <file>
 # Optimize the huffman blocks.
 function huffman_blocks {
+  info -ne "\b\b\b\b\b\b\b\bhuffman."
   local file=$1
-  info -n "|huffman"
   local size=$(stat -c%s $file)
   local min_block_size=$DEFAULT_MIN_BLOCK_SIZE
   local limit_blocks=$DEFAULT_LIMIT_BLOCKS
@@ -151,7 +152,7 @@ function huffman_blocks {
     max_blocks=$limit_blocks
   fi
 
-  for i in $(seq 2 $max_blocks); do
+  for i in $(eval echo {2..$max_blocks}); do
     throbber
     pngout -q -k1 -ks -s1 -n$i $file
   done
@@ -163,7 +164,7 @@ function huffman_blocks {
 # TODO(oshima): Try adjusting different parameters for large files to
 # reduce runtime.
 function random_huffman_table_trial {
-  info -n "|random"
+  info -ne "\b\b\b\b\b\b\b\brandom.."
   local file=$1
   local old_size=$(stat -c%s $file)
   local trials_count=$DEFAULT_RANDOM_TRIALS
@@ -171,7 +172,7 @@ function random_huffman_table_trial {
   if [ $old_size -gt $LARGE_FILE_THRESHOLD ]; then
     trials_count=$LARGE_RANDOM_TRIALS
   fi
-  for i in $(seq 1 $trials_count); do
+  for i in $(eval echo {1..$trials_count}); do
     throbber
     pngout -q -k1 -ks -s0 -r $file
   done
@@ -185,7 +186,7 @@ function random_huffman_table_trial {
 # Further compress using optipng and advdef.
 # TODO(oshima): Experiment with 256.
 function final_compression {
-  info -n "|final"
+  info -ne "\b\b\b\b\b\b\b\bfinal..."
   local file=$1
   if [ $OPTIMIZE_LEVEL == 2 ]; then
     for i in 32k 16k 8k 4k 2k 1k 512; do
@@ -193,21 +194,25 @@ function final_compression {
       optipng -q -nb -nc -zw$i -zc1-9 -zm1-9 -zs0-3 -f0-5 $file
     done
   fi
-  for i in $(seq 1 4); do
+  for i in $(eval echo {1..4}); do
     throbber
     advdef -q -z -$i $file
   done
-  info -ne "\r"
+
+  # Clear the current line.
+  if $VERBOSE ; then
+    printf "\033[0G\033[K"
+  fi
 }
 
 # Usage: get_color_type <file>
 # Returns the color type name of the png file. Here is the list of names
 # for each color type codes.
-# 0 : grayscale
-# 2 : RGB
-# 3 : colormap
-# 4 : gray+alpha
-# 6 : RGBA
+# 0: grayscale
+# 2: RGB
+# 3: colormap
+# 4: gray+alpha
+# 6: RGBA
 # See http://en.wikipedia.org/wiki/Portable_Network_Graphics#Color_depth
 # for details about the color type code.
 function get_color_type {
@@ -218,9 +223,17 @@ function get_color_type {
 # Usage: optimize_size <file>
 # Performs png file optimization.
 function optimize_size {
-  tput el
+  # Print filename, trimmed to ensure it + status don't take more than 1 line
+  local filename_length=${#file}
+  local -i allowed_length=$COLUMNS-11
+  local -i trimmed_length=$filename_length-$COLUMNS+14
+  if [ "$filename_length" -lt "$allowed_length" ]; then
+    info -n "$file|........"
+  else
+    info -n "...${file:$trimmed_length}|........"
+  fi
+
   local file=$1
-  info -n "$file "
 
   advdef -q -z -4 $file
 
@@ -239,7 +252,7 @@ function optimize_size {
     fi
   fi
 
-  info -n "|filter"
+  info -ne "\b\b\b\b\b\b\b\bfilter.."
   local old_color_type=$(get_color_type $file)
   optipng -q -zc9 -zm8 -zs0-3 -f0-5 $file -out $file.tmp.png
   local new_color_type=$(get_color_type $file.tmp.png)
@@ -248,9 +261,8 @@ function optimize_size {
   # the bug is fixed. See crbug.com/174505, crbug.com/174084.
   # The issue is reported in
   # https://sourceforge.net/tracker/?func=detail&aid=3603630&group_id=151404&atid=780913
-  if [[ $old_color_type == "RGBA" && $new_color_type =~ gray.* ]] ; then
+  if [[ $old_color_type == "RGBA" && $new_color_type == gray* ]] ; then
     rm $file.tmp.png
-    info -n "[skip opting]"
   else
     mv $file.tmp.png $file
   fi
@@ -259,7 +271,7 @@ function optimize_size {
   huffman_blocks $file
 
   # TODO(oshima): Experiment with strategy 1.
-  info -n "|strategy"
+  info -ne "\b\b\b\b\b\b\b\bstrategy"
   if [ $OPTIMIZE_LEVEL == 2 ]; then
     for i in 3 2 0; do
       pngout -q -k1 -ks -s$i $file
@@ -280,7 +292,7 @@ function process_file {
   local file=$1
   local name=$(basename $file)
   # -rem alla removes all ancillary chunks except for tRNS
-  pngcrush -d $TMP_DIR -brute -reduce -rem alla $file > /dev/null
+  pngcrush -d $TMP_DIR -brute -reduce -rem alla $file > /dev/null 2>&1
 
   if [ -f $TMP_DIR/$name -a $OPTIMIZE_LEVEL != 0 ]; then
     optimize_size $TMP_DIR/$name
@@ -301,26 +313,28 @@ function optimize_file {
 
   process_file $file
 
-  if [ ! -e  $tmp_file ] ; then
+  if [ ! -e $tmp_file ] ; then
     let CORRUPTED_FILE+=1
-    echo "The png file ($file) may be corrupted. skipping"
+    echo "$file may be corrupted; skipping\n"
     return
   fi
 
   local new=$(stat -c%s $tmp_file)
   let diff=$old-$new
-  let percent=($diff*100)/$old
+  let percent=$diff*100
+  let percent=$percent/$old
 
-  tput el
   if [ $new -lt $old ]; then
-    echo -ne "$file : $old => $new ($diff bytes : $percent %)\n"
-    mv "$tmp_file" "$file"
+    info "$file: $old => $new ($diff bytes: $percent%)"
+    cp "$tmp_file" "$file"
     let TOTAL_OLD_BYTES+=$old
     let TOTAL_NEW_BYTES+=$new
     let PROCESSED_FILE+=1
   else
     if [ $OPTIMIZE_LEVEL == 0 ]; then
-      info -ne "$file : skipped\r"
+      info "$file: Skipped"
+    else
+      info "$file: Unable to reduce size"
     fi
     rm $tmp_file
   fi
@@ -400,6 +414,19 @@ else
   using_cygwin=false
 fi
 
+# The -i in the shebang line should result in $COLUMNS being set on newer
+# versions of bash.  If it's not set yet, attempt to set it.
+if [ -z $COLUMNS ]; then
+  which tput > /dev/null 2>&1
+  if [ "$?" == "0" ]; then
+    COLUMNS=$(tput cols)
+  else
+    # No tput either... give up and just guess 80 columns.
+    COLUMNS=80
+  fi
+  export COLUMNS
+fi
+
 OPTIMIZE_LEVEL=1
 # Parse options
 while getopts o:r:h:v opts
@@ -413,13 +440,13 @@ do
       fi
       ;;
     o)
-      if [[ ! "$OPTARG" =~ [012] ]] ; then
+      if [[ "$OPTARG" != 0 && "$OPTARG" != 1 && "$OPTARG" != 2 ]] ; then
         show_help
       fi
       OPTIMIZE_LEVEL=$OPTARG
       ;;
     v)
-      let VERBOSE=1
+      VERBOSE=true
       ;;
     [h?])
       show_help;;
@@ -455,7 +482,7 @@ if $using_cygwin ; then
 fi
 
 # Make sure we cleanup temp dir
-trap "rm -rf $TMP_DIR" EXIT
+#trap "rm -rf $TMP_DIR" EXIT
 
 # If no directories are specified, optimize all directories.
 DIRS=$@
@@ -489,17 +516,13 @@ else
 fi
 
 # Print the results.
-if [ $PROCESSED_FILE == 0 ]; then
-  echo "Did not find any files (out of $TOTAL_FILE files)" \
-       "that could be optimized" \
-       "in $(date -u -d @$SECONDS +%T)s"
-else
+echo "Optimized $PROCESSED_FILE/$TOTAL_FILE files in" \
+     "$(date -d "0 + $SECONDS sec" +%Ts)"
+if [ $PROCESSED_FILE != 0 ]; then
   let diff=$TOTAL_OLD_BYTES-$TOTAL_NEW_BYTES
   let percent=$diff*100/$TOTAL_OLD_BYTES
-  echo "Processed $PROCESSED_FILE files (out of $TOTAL_FILE files)" \
-       "in $(date -u -d @$SECONDS +%T)s"
-  echo "Result : $TOTAL_OLD_BYTES => $TOTAL_NEW_BYTES bytes" \
-       "($diff bytes : $percent %)"
+  echo "Result: $TOTAL_OLD_BYTES => $TOTAL_NEW_BYTES bytes" \
+       "($diff bytes: $percent%)"
 fi
 if [ $CORRUPTED_FILE != 0 ]; then
   echo "Warning: corrupted files found: $CORRUPTED_FILE"
