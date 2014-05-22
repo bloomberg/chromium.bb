@@ -5,8 +5,8 @@
 #include "content/shell/renderer/test_runner/WebUserMediaClientMock.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/MockConstraints.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_constraints.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -121,12 +121,12 @@ void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamR
 
     WebMediaConstraints constraints = request.audioConstraints();
     WebString failedConstraint;
-    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints, &failedConstraint)) {
+    if (!constraints.isNull() && !MockConstraints::VerifyConstraints(constraints, &failedConstraint)) {
         m_delegate->postTask(new UserMediaRequestConstraintFailedTask(this, request, failedConstraint));
         return;
     }
     constraints = request.videoConstraints();
-    if (!constraints.isNull() && !MockConstraints::verifyConstraints(constraints, &failedConstraint)) {
+    if (!constraints.isNull() && !MockConstraints::VerifyConstraints(constraints, &failedConstraint)) {
         m_delegate->postTask(new UserMediaRequestConstraintFailedTask(this, request, failedConstraint));
         return;
     }

@@ -4,11 +4,11 @@
 
 #include "content/shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h"
 
-#include "content/shell/renderer/test_runner/MockConstraints.h"
 #include "content/shell/renderer/test_runner/MockWebRTCDTMFSenderHandler.h"
 #include "content/shell/renderer/test_runner/MockWebRTCDataChannelHandler.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_constraints.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -159,7 +159,7 @@ MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler(WebRTCPeerConne
 
 bool MockWebRTCPeerConnectionHandler::initialize(const WebRTCConfiguration&, const WebMediaConstraints& constraints)
 {
-    if (MockConstraints::verifyConstraints(constraints)) {
+    if (MockConstraints::VerifyConstraints(constraints)) {
         m_interfaces->delegate()->postTask(new RTCPeerConnectionStateTask(this, m_client, WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted, WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete));
         return true;
     }
