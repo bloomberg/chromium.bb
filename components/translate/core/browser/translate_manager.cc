@@ -73,7 +73,6 @@ TranslateManager::TranslateManager(
     : accept_languages_pref_name_(accept_languages_pref_name),
       translate_client_(translate_client),
       translate_driver_(translate_client_->GetTranslateDriver()),
-      language_state_(translate_driver_),
       weak_method_factory_(this) {}
 
 base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
@@ -83,10 +82,11 @@ base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // Short-circuit out if not in a state where initiating translation makes
   // sense (this method may be called muhtiple times for a given page).
-  if (!language_state_.page_needs_translation() ||
-      language_state_.translation_pending() ||
-      language_state_.translation_declined() ||
-      language_state_.IsPageTranslated()) {
+  LanguageState& language_state = translate_driver_->GetLanguageState();
+  if (!language_state.page_needs_translation() ||
+      language_state.translation_pending() ||
+      language_state.translation_declined() ||
+      language_state.IsPageTranslated()) {
     return;
   }
 
@@ -190,7 +190,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     }
   }
 
-  std::string auto_translate_to = language_state_.AutoTranslateTo();
+  std::string auto_translate_to = language_state.AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
     TranslateBrowserMetrics::ReportInitiationStatus(
@@ -252,8 +252,8 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 
 void TranslateManager::RevertTranslation() {
   translate_driver_->RevertTranslation();
-  language_state_.SetCurrentLanguage(
-      language_state_.original_language());
+  translate_driver_->GetLanguageState().SetCurrentLanguage(
+      translate_driver_->GetLanguageState().original_language());
 }
 
 void TranslateManager::ReportLanguageDetectionError() {
@@ -269,7 +269,7 @@ void TranslateManager::ReportLanguageDetectionError() {
   report_error_url = net::AppendQueryParameter(
       report_error_url,
       kSourceLanguageQueryName,
-      language_state_.original_language());
+      translate_driver_->GetLanguageState().original_language());
 
   report_error_url = TranslateURLUtil::AddHostLocaleToUrl(report_error_url);
   report_error_url = TranslateURLUtil::AddApiKeyToUrl(report_error_url);
@@ -280,15 +280,15 @@ void TranslateManager::ReportLanguageDetectionError() {
 void TranslateManager::DoTranslatePage(const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  language_state_.set_translation_pending(true);
+  translate_driver_->GetLanguageState().set_translation_pending(true);
   translate_driver_->TranslatePage(translate_script, source_lang, target_lang);
 }
 
 void TranslateManager::PageTranslated(const std::string& source_lang,
                                       const std::string& target_lang,
                                       TranslateErrors::Type error_type) {
-  language_state_.SetCurrentLanguage(target_lang);
-  language_state_.set_translation_pending(false);
+  translate_driver_->GetLanguageState().SetCurrentLanguage(target_lang);
+  translate_driver_->GetLanguageState().set_translation_pending(false);
 
   if ((error_type == TranslateErrors::NONE) &&
       source_lang != translate::kUnknownLanguageCode &&
@@ -384,8 +384,4 @@ std::string TranslateManager::GetAutoTargetLanguage(
       return auto_target_lang;
   }
   return std::string();
-}
-
-LanguageState& TranslateManager::GetLanguageState() {
-  return language_state_;
 }

@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/translate_errors.h"
 
 class GURL;
@@ -89,9 +88,6 @@ class TranslateManager {
   static scoped_ptr<TranslateErrorCallbackList::Subscription>
       RegisterTranslateErrorCallback(const TranslateErrorCallback& callback);
 
-  // Gets the LanguageState associated with the TranslateManager
-  LanguageState& GetLanguageState();
-
  private:
   // Sends a translation request to the TranslateDriver.
   void DoTranslatePage(const std::string& translate_script,
@@ -111,8 +107,6 @@ class TranslateManager {
 
   TranslateClient* translate_client_;  // Weak.
   TranslateDriver* translate_driver_;  // Weak.
-
-  LanguageState language_state_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 

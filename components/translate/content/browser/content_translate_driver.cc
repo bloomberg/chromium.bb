@@ -8,6 +8,7 @@
 #include "components/translate/content/common/translate_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
@@ -18,11 +19,21 @@
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller)
     : navigation_controller_(nav_controller),
+      language_state_(this),
       observer_(NULL) {
   DCHECK(navigation_controller_);
 }
 
 ContentTranslateDriver::~ContentTranslateDriver() {}
+
+void ContentTranslateDriver::DidNavigate(
+    const content::LoadCommittedDetails& details) {
+  const bool reload =
+      details.entry->GetTransitionType() == content::PAGE_TRANSITION_RELOAD ||
+      details.type == content::NAVIGATION_TYPE_SAME_PAGE;
+  language_state_.DidNavigate(
+      details.is_in_page, details.is_main_frame, reload);
+}
 
 // TranslateDriver methods
 
@@ -46,6 +57,10 @@ void ContentTranslateDriver::OnIsPageTranslatedChanged() {
         navigation_controller_->GetWebContents();
     observer_->OnIsPageTranslatedChanged(web_contents);
   }
+}
+
+LanguageState& ContentTranslateDriver::GetLanguageState() {
+  return language_state_;
 }
 
 void ContentTranslateDriver::TranslatePage(const std::string& translate_script,

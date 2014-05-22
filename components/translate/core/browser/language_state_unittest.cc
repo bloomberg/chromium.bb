@@ -41,6 +41,10 @@ class MockTranslateDriver : public TranslateDriver {
     return false;
   }
 
+  virtual LanguageState& GetLanguageState() OVERRIDE {
+    return language_state_;
+  }
+
   virtual void TranslatePage(const std::string& translate_script,
                              const std::string& source_lang,
                              const std::string& target_lang) OVERRIDE {}

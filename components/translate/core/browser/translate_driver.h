@@ -8,6 +8,7 @@
 #include <string>
 
 class GURL;
+class LanguageState;
 
 // Interface that allows Translate core code to interact with its driver (i.e.,
 // obtain information from it and give information to it). A concrete
@@ -22,6 +23,9 @@ class TranslateDriver {
 
   // Called when the page is "translated" state of the page changed.
   virtual void OnIsPageTranslatedChanged() = 0;
+
+  // Gets the LanguageState associated with the driver.
+  virtual LanguageState& GetLanguageState() = 0;
 
   // Translates the page contents from |source_lang| to |target_lang|.
   virtual void TranslatePage(const std::string& translate_script,

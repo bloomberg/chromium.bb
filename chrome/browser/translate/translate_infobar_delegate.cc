@@ -79,7 +79,8 @@ void TranslateInfoBarDelegate::Create(
   // Do not create the after translate infobar if we are auto translating.
   if (((step == translate::TRANSLATE_STEP_AFTER_TRANSLATE) ||
        (step == translate::TRANSLATE_STEP_TRANSLATING)) &&
-      translate_manager->GetLanguageState().InTranslateNavigation()) {
+      translate_manager->translate_client()->GetTranslateDriver()
+          ->GetLanguageState().InTranslateNavigation()) {
     return;
   }
 
