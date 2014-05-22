@@ -464,6 +464,8 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             LocalFrame* top = f->tree().top();
             if (!top->loader().mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
                 return false;
+            if (type == Resource::Font && MixedContentChecker::isMixedContent(top->document()->securityOrigin(), url))
+                UseCounter::count(top->document(), UseCounter::MixedContentFont);
         }
     } else {
         ASSERT(treatment == TreatAsAlwaysAllowedContent);
