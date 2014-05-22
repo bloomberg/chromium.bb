@@ -63,16 +63,16 @@ do
   shift
 done
 
-ubuntu_versions="12\.04|12\.10|13\.04|13\.10|14\.04"
-ubuntu_codenames="precise|quantal|raring|saucy|trusty"
-ubuntu_issue="Ubuntu ($ubuntu_versions|$ubuntu_codenames)"
-# GCEL is an Ubuntu-derived VM image used on Google Compute Engine; /etc/issue
-# doesn't contain a version number so just trust that the user knows what
-# they're doing.
-gcel_issue="^GCEL"
+# Check for lsb_release command in $PATH
+if ! which lsb_release > /dev/null; then
+  echo "ERROR: lsb_release not found in \$PATH" >&2
+  exit 1;
+fi
 
+lsb_release=$(lsb_release --codename --short)
+ubuntu_codenames="(precise|quantal|raring|saucy|trusty)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
-  if ! egrep -q "($ubuntu_issue|$gcel_issue)" /etc/issue; then
+  if [[ ! $lsb_release =~ $ubuntu_codenames ]]; then
     echo "ERROR: Only Ubuntu 12.04 (precise) through 14.04 (trusty) are"\
         "currently supported" >&2
     exit 1
@@ -243,8 +243,7 @@ fi
 # that are part of v8 need to be compiled with -m32 which means
 # that basic multilib support is needed.
 if file /sbin/init | grep -q 'ELF 64-bit'; then
-  # TODO(thestig): Use lsb_release rather than looking /etc/issue.
-  if ! egrep -q "trusty" /etc/issue; then
+  if [ "$lsb_release" = "trusty" ]; then
     # gcc-multilib conflicts with the arm cross compiler in trusty but
     # g++-4.8-multilib gives us the 32-bit support that we need.
     arm_list="$arm_list g++-4.8-multilib"
