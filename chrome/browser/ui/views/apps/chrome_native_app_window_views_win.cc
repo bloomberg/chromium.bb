@@ -182,7 +182,8 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
       base::Bind(&ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  EnsureCaptionStyleSet();
+  if (!create_params.transparent_background)
+    EnsureCaptionStyleSet();
   UpdateShelfMenu();
 }
 
