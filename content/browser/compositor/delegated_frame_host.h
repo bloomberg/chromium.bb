@@ -232,6 +232,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.
   bool skipped_frames_;
+  std::vector<ui::LatencyInfo> skipped_latency_info_list_;
 
   // Holds delegated resources that have been given to a DelegatedFrameProvider,
   // and gives back resources when they are no longer in use for return to the

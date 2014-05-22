@@ -216,6 +216,9 @@ void DelegatedFrameHost::EndFrameSubscription() {
 }
 
 bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
+  // Should skip a frame only when another frame from the renderer is guaranteed
+  // to replace it. Otherwise may cause hangs when the renderer is waiting for
+  // the completion of latency infos (such as when taking a Snapshot.)
   if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
       can_lock_compositor_ == NO_PENDING_COMMIT ||
       !resize_lock_.get())
@@ -289,6 +292,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     cc::CompositorFrameAck ack;
     cc::TransferableResource::ReturnResources(frame_data->resource_list,
                                               &ack.resources);
+
+    skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
+        latency_info.begin(), latency_info.end());
+
     RenderWidgetHostImpl::SendSwapCompositorFrameAck(
         host->GetRoutingID(), output_surface_id,
         host->GetProcess()->GetID(), ack);
@@ -363,8 +370,15 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   if (!compositor) {
     SendDelegatedFrameAck(output_surface_id);
   } else {
-    for (size_t i = 0; i < latency_info.size(); i++)
-      compositor->SetLatencyInfo(latency_info[i]);
+    std::vector<ui::LatencyInfo>::const_iterator it;
+    for (it = latency_info.begin(); it != latency_info.end(); ++it)
+      compositor->SetLatencyInfo(*it);
+    // If we've previously skipped any latency infos add them.
+    for (it = skipped_latency_info_list_.begin();
+        it != skipped_latency_info_list_.end();
+        ++it)
+      compositor->SetLatencyInfo(*it);
+    skipped_latency_info_list_.clear();
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
                    AsWeakPtr(),
