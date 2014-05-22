@@ -11,8 +11,8 @@
 }
 
 #kiosk-enable-controls {
-  -webkit-box-pack: center;
   bottom: 80px;
+  justify-content: center;
 }
 
 #kiosk-enable-msg {

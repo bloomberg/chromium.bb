@@ -17,6 +17,10 @@
   padding: 5px 40px 30px;
 }
 
+#wrong-hwid #wrong-hwid-icon {
+  height: 112px;
+}
+
 #wrong-hwid #wrong-hwid-message-content {
   color: #606060;
   font-size: 16px;
@@ -24,7 +28,7 @@
 }
 
 #skip-hwid-warning {
-  -webkit-box-pack: center;
+  justify-content: center;
 }
 
 #skip-hwid-warning-link {

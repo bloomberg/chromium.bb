@@ -11,8 +11,8 @@
 }
 
 #autolaunch-controls {
-  -webkit-box-pack: center;
   bottom: 80px;
+  justify-content: center;
 }
 
 #autolaunch-warning-title {

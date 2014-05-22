@@ -29,8 +29,8 @@
 }
 
 #reset #reset-controls {
-  -webkit-box-pack: center;
   bottom: 40px;
+  justify-content: center;
   margin-top: auto;
 }
 
