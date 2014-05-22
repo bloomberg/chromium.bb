@@ -624,7 +624,8 @@ void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
     }
   } else {
     // TODO(jdduke): Synthesize a TouchCancel if necessary to update Blink touch
-    // state tracking (e.g., if the touch handler was removed mid-sequence).
+    // state tracking and/or touch-action filtering (e.g., if the touch handler
+    // was removed mid-sequence), crbug.com/375940.
     touch_filtering_state_ = DROP_ALL_TOUCHES;
     pending_async_touchmove_.reset();
     if (timeout_handler_)

@@ -591,4 +591,43 @@ TEST(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
 }
 
+TEST(TouchActionFilterTest, TouchActionResetMidSequence) {
+  TouchActionFilter filter;
+
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
+  WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
+          WebInputEvent::GesturePinchBegin, WebGestureEvent::Touchscreen);
+  WebGestureEvent pinch_update =
+      SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+          1.2f, 5, 5, 0, WebGestureEvent::Touchscreen);
+  WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
+          WebInputEvent::GesturePinchEnd, WebGestureEvent::Touchscreen);
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+
+  // Even though the allowed action is auto after the reset, the remaining
+  // scroll and pinch events should be suppressed.
+  filter.ResetTouchAction();
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+
+  // A new scroll and pinch sequence should be allowed.
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+
+  // Resetting from auto to auto mid-stream should have no effect.
+  filter.ResetTouchAction();
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+}
+
 }  // namespace content

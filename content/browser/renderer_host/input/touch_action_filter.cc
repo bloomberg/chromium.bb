@@ -154,8 +154,8 @@ void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
 }
 
 void TouchActionFilter::ResetTouchAction() {
-  DCHECK(!drop_scroll_gesture_events_);
-  DCHECK(!drop_pinch_gesture_events_);
+  // Note that resetting the action mid-sequence is tolerated. Gestures that had
+  // their begin event(s) suppressed will be suppressed until the next sequence.
   allowed_touch_action_ = TOUCH_ACTION_AUTO;
 }
 
