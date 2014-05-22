@@ -420,7 +420,7 @@
       'enable_printing%': 1,
 
       # Windows prints using a PDF as the metafile from the renderer.
-      'win_pdf_metafile_for_printing%': 0,
+      'win_pdf_metafile_for_printing%': 1,
 
       # Set the version of CLD.
       #   0: Don't specify the version. This option is for the Finch testing.
@@ -2627,7 +2627,7 @@
       ['enable_printing==2', {
         'defines': ['ENABLE_PRINTING=1'],
       }],
-      ['win_pdf_metafile_for_printing==1', {
+      ['OS=="win" and win_pdf_metafile_for_printing==1', {
         'defines': ['WIN_PDF_METAFILE_FOR_PRINTING=1'],
       }],
       ['enable_spellcheck==1', {
