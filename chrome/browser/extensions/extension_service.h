@@ -549,6 +549,11 @@ class ExtensionService
   // Used only by test code.
   void UnloadAllExtensionsInternal();
 
+  // Disable apps & extensions now to stop them from running after a profile
+  // has been conceptually deleted. Don't wait for full browser shutdown and
+  // the actual profile objects to be destroyed.
+  void OnProfileDestructionStarted();
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 
