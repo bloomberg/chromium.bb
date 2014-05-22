@@ -560,7 +560,7 @@ Google Chrome is unable to recover your settings.
 
       <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS"
                desc="Message shown on the download shelf when the download is known to change settings in the browser.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> makes settings changes similar to some malware, so Chrome has blocked it.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may harm your browsing experience, so Chrome has blocked it.
       </message>
 
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
