@@ -298,6 +298,7 @@
         'linux_ui/status_icon_linux.h',
         'linux_ui/status_icon_linux.cc',
         'linux_ui/window_button_order_observer.h',
+        'linux_ui/window_button_order_provider.cc',
         'metrics.cc',
         'metrics.h',
         'metrics_aura.cc',
@@ -448,6 +449,8 @@
         'window/native_frame_view.h',
         'window/non_client_view.cc',
         'window/non_client_view.h',
+        'window/window_button_order_provider.cc',
+        'window/window_button_order_provider.h',
         'window/window_resources.h',
         'window/window_shape.cc',
         'window/window_shape.h',
@@ -475,6 +478,9 @@
         ['OS=="linux" and chromeos==0', {
           'dependencies': [
             '../shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+          ],
+          'sources!': [
+            'window/window_button_order_provider.cc',
           ],
         }, { # OS=="linux" and chromeos==0
           'sources/': [
@@ -687,6 +693,7 @@
         'widget/root_view_unittest.cc',
         'widget/widget_unittest.cc',
         'widget/window_reorderer_unittest.cc',
+        'window/custom_frame_view_unittest.cc',
         'window/dialog_client_view_unittest.cc',
         'window/dialog_delegate_unittest.cc',
       ],
