@@ -3943,7 +3943,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
         UseCounter::count(*this, UseCounter::DOMCharacterDataModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
     } else if (eventType == EventTypeNames::overflowchanged) {
-        UseCounter::count(*this, UseCounter::OverflowChangedEvent);
+        UseCounter::countDeprecation(*this, UseCounter::OverflowChangedEvent);
         addListenerType(OVERFLOWCHANGED_LISTENER);
     } else if (eventType == EventTypeNames::webkitAnimationStart || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationstart)) {
         addListenerType(ANIMATIONSTART_LISTENER);

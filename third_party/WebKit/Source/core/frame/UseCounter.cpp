@@ -728,6 +728,9 @@ String UseCounter::deprecationMessage(Feature feature)
         return "The behavior of importNode() with no boolean argument is about to change from doing a deep clone to doing a shallow clone.  "
             "Make sure to pass an explicit boolean argument to keep your current behavior.";
 
+    case OverflowChangedEvent:
+        return "The 'overflowchanged' event is deprecated and may be removed. Please do not use it.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
