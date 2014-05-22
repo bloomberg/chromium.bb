@@ -570,6 +570,10 @@ tc-tests-all() {
   scons-stage-irt "x86-32" "${scons_flags}" "${SCONS_NONSFI_TC_X8632}"
   scons-stage-irt "arm" "${scons_flags}" "${SCONS_NONSFI}"
 
+  # Test unsandboxed mode.
+  scons-stage-irt "x86-32" "${scons_flags}" "pnacl_unsandboxed=1" \
+    "run_hello_world_test_irt"
+
   # Run the GCC torture tests just for x86-32.  Testing a single
   # architecture gives good coverage without taking too long.  We
   # don't test x86-64 here because some of the torture tests fail on
@@ -620,24 +624,6 @@ mode-buildbot-tc-x8632-linux() {
   tc-build-all toolchain/linux_x86 pnacl_newlib \
       ${PNACL_TOOLCHAIN_LABEL} true false
   HOST_ARCH=x86_32 tc-tests-fast "x86-32"
-
-  echo "@@@BUILD_STEP test unsandboxed mode@@@"
-  # Test translation to an unsandboxed executable.
-  # TODO(mseaborn): Run more tests here when they pass.
-  ./scons bitcode=1 pnacl_unsandboxed=1 \
-    --mode=nacl_irt_test platform=x86-32 -j8 \
-    run_hello_world_test_irt \
-    run_irt_futex_test_irt \
-    run_thread_test_irt \
-    run_float_test_irt \
-    run_malloc_realloc_calloc_free_test_irt \
-    run_dup_test_irt \
-    run_cond_timedwait_test_irt \
-    run_syscall_test_irt \
-    run_getpid_test_irt
-
-  # Test Non-SFI Mode.
-  scons-stage-irt "x86-32" "-j8 -k" "${SCONS_NONSFI_TC_X8632}"
 }
 
 mode-buildbot-tc-x8632-mac() {
@@ -650,13 +636,6 @@ mode-buildbot-tc-x8632-mac() {
   # We can't test ARM because we do not have QEMU for Mac.
   HOST_ARCH=x86_64 tc-tests-fast "x86-32"
   HOST_ARCH=x86_64 tc-tests-fast "x86-64"
-
-  echo "@@@BUILD_STEP test unsandboxed mode@@@"
-  # Test translation to an unsandboxed executable.
-  # TODO(mseaborn): Use the same test list as on Linux when the
-  # threading tests pass for Mac.
-  ./scons bitcode=1 pnacl_unsandboxed=1 \
-    --mode=nacl_irt_test platform=x86-32 -j8 run_hello_world_test_irt
 }
 
 mode-buildbot-tc-x8664-win() {

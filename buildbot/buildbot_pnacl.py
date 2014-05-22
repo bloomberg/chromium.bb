@@ -75,11 +75,34 @@ def BuildScriptX86(status, context):
   # The only architectures that the PNaCl toolchain supports Non-SFI
   # versions of are currently x86-32 and ARM, and ARM testing is covered
   # by buildbot_pnacl.sh rather than this Python script.
+  # The x86-64 toolchain bot currently also runs these tests from
+  # buildbot_pnacl.sh
   if context.Linux() and context['default_scons_platform'] == 'x86-32':
     with Step('nonsfi_tests', status, halt_on_fail=False):
       # TODO(mseaborn): Enable more tests here when they pass.
+      tests = ['run_' + test + '_test_irt' for test in
+               ['hello_world', 'float', 'malloc_realloc_calloc_free',
+                'dup', 'syscall', 'getpid']]
+      # Extra non-IRT-using test to run for x86-32
+      tests.append('run_hello_world_test')
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['nonsfi_nacl=1', 'run_hello_world_test_irt'])
+            args=flags_run + ['nonsfi_nacl=1'] + tests)
+
+  # Test unsandboxed mode.
+  if ((context.Linux() or context.Mac()) and
+      context['default_scons_platform'] == 'x86-32'):
+    if context.Linux():
+      tests = ['run_' + test + '_test_irt' for test in
+               ['hello_world', 'irt_futex', 'thread', 'float',
+                'malloc_realloc_calloc_free', 'dup', 'cond_timedwait',
+                'syscall', 'getpid']]
+    else:
+      # TODO(mseaborn): Use the same test list as on Linux when the threading
+      # tests pass for Mac.
+      tests = ['run_hello_world_test_irt']
+    with Step('unsandboxed_tests', status, halt_on_fail=False):
+      SCons(context, parallel=True, mode=irt_mode,
+            args=flags_run + ['pnacl_unsandboxed=1'] + tests)
 
 
 def Main():
