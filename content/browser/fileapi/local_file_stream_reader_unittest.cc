@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,9 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace webkit_blob {
+using webkit_blob::LocalFileStreamReader;
+
+namespace content {
 
 namespace {
 
@@ -253,4 +255,4 @@ TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
   EnsureFileTaskFinished();
 }
 
-}  // namespace webkit_blob
+}  // namespace content

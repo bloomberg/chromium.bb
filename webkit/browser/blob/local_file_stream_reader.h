@@ -18,6 +18,10 @@ namespace base {
 class TaskRunner;
 }
 
+namespace content {
+class LocalFileStreamReaderTest;
+}
+
 namespace net {
 class FileStream;
 }
@@ -39,7 +43,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamReader
 
  private:
   friend class FileStreamReader;
-  friend class LocalFileStreamReaderTest;
+  friend class content::LocalFileStreamReaderTest;
 
   LocalFileStreamReader(base::TaskRunner* task_runner,
                         const base::FilePath& file_path,

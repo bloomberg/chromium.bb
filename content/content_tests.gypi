@@ -444,6 +444,7 @@
         'browser/fileapi/file_writer_delegate_unittest.cc',
         'browser/fileapi/fileapi_message_filter_unittest.cc',
         'browser/fileapi/isolated_context_unittest.cc',
+        'browser/fileapi/local_file_stream_reader_unittest.cc',
         'browser/fileapi/local_file_stream_writer_unittest.cc',
         'browser/fileapi/local_file_util_unittest.cc',
         'browser/fileapi/mock_file_change_observer.cc',
@@ -693,7 +694,6 @@
         'test/image_decoder_test.cc',
         'test/image_decoder_test.h',
         'test/run_all_unittests.cc',
-        '../webkit/browser/blob/local_file_stream_reader_unittest.cc',
         '../webkit/child/multipart_response_delegate_unittest.cc',
       ],
       'conditions': [
