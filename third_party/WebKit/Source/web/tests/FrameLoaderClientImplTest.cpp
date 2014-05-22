@@ -35,6 +35,7 @@
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/CString.h"
@@ -70,6 +71,9 @@ public:
     void SetUp()
     {
         m_webView = WebView::create(0);
+        // FIXME: http://crbug.com/363843. This needs to find a better way to
+        // not create graphics layers.
+        m_webView->settings()->setAcceleratedCompositingEnabled(false);
         m_mainFrame = WebLocalFrame::create(&m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
         m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client());

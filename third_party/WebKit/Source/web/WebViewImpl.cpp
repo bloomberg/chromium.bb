@@ -3818,6 +3818,9 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     if (m_isAcceleratedCompositingActive == active)
         return;
 
+    if (!m_client)
+        return;
+
     if (!active) {
         m_isAcceleratedCompositingActive = false;
         // We need to finish all GL rendering before sending didDeactivateCompositor() to prevent
