@@ -383,13 +383,7 @@ class MetricsService
   // Starts the process of uploading metrics data.
   void StartScheduledUpload();
 
-  // Starts collecting any data that should be added to a log just before it is
-  // closed.
-  void StartFinalLogInfoCollection();
-  // Callbacks for various stages of final log info collection. Do not call
-  // these directly.
-  void OnMemoryDetailCollectionDone();
-  void OnHistogramSynchronizationDone();
+  // Called by the client when final log info collection is complete.
   void OnFinalLogInfoCollectionDone();
 
   // Either closes the current log or creates and closes the initial log
@@ -554,9 +548,6 @@ class MetricsService
   // Indicates that an asynchronous reporting step is running.
   // This is used only for debugging.
   bool waiting_for_asynchronous_reporting_step_;
-
-  // Number of async histogram fetch requests in progress.
-  int num_async_histogram_fetches_in_progress_;
 
   // Stores the time of the first call to |GetUptimes()|.
   base::TimeTicks first_updated_time_;

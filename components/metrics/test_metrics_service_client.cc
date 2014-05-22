@@ -4,6 +4,8 @@
 
 #include "components/metrics/test_metrics_service_client.h"
 
+#include "base/callback.h"
+
 namespace metrics {
 
 // static
@@ -41,6 +43,11 @@ std::string TestMetricsServiceClient::GetVersionString() {
 }
 
 void TestMetricsServiceClient::OnLogUploadComplete() {
+}
+
+void TestMetricsServiceClient::CollectFinalMetrics(
+    const base::Closure& done_callback) {
+  done_callback.Run();
 }
 
 }  // namespace metrics

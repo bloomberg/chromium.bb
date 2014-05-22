@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
 #define COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
 
+#include <string>
+
 #include "components/metrics/metrics_service_client.h"
 
 namespace metrics {
@@ -26,6 +28,8 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   virtual SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
   virtual void OnLogUploadComplete() OVERRIDE;
+  virtual void CollectFinalMetrics(const base::Closure& done_callback)
+      OVERRIDE;
 
   const std::string& get_client_id() const { return client_id_; }
 

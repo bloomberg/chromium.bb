@@ -184,7 +184,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
@@ -195,7 +194,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -205,7 +203,6 @@
 #include "components/variations/entropy_provider.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -232,8 +229,6 @@
 #if defined(OS_ANDROID)
 // TODO(asvitkine): Move this out of MetricsService.
 #include "chrome/browser/metrics/android_metrics_provider.h"
-#else
-#include "chrome/browser/service_process/service_process_control.h"
 #endif
 
 using base::Time;
@@ -264,10 +259,6 @@ const int kInitializationDelaySeconds = 5;
 #else
 const int kInitializationDelaySeconds = 30;
 #endif
-
-// This specifies the amount of time to wait for all renderers to send their
-// data.
-const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 // The maximum number of events in a log uploaded to the UMA server.
 const int kEventLimit = 2400;
@@ -383,24 +374,6 @@ struct MetricsService::ChildProcessStats {
   int process_type;
 };
 
-// Handles asynchronous fetching of memory details.
-// Will run the provided task after finished.
-class MetricsMemoryDetails : public MemoryDetails {
- public:
-  explicit MetricsMemoryDetails(const base::Closure& callback)
-      : callback_(callback) {}
-
-  virtual void OnDetailsAvailable() OVERRIDE {
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback_);
-  }
-
- private:
-  virtual ~MetricsMemoryDetails() {}
-
-  base::Closure callback_;
-  DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
-};
-
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
@@ -472,8 +445,7 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       next_window_id_(0),
       self_ptr_factory_(this),
       state_saver_factory_(this),
-      waiting_for_asynchronous_reporting_step_(false),
-      num_async_histogram_fetches_in_progress_(0) {
+      waiting_for_asynchronous_reporting_step_(false) {
   DCHECK(IsSingleThreaded());
   DCHECK(state_manager_);
   DCHECK(client_);
@@ -1190,86 +1162,10 @@ void MetricsService::StartScheduledUpload() {
     log_manager_.StageNextLogForUpload();
     SendStagedLog();
   } else {
-    StartFinalLogInfoCollection();
+    client_->CollectFinalMetrics(
+        base::Bind(&MetricsService::OnFinalLogInfoCollectionDone,
+                   self_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void MetricsService::StartFinalLogInfoCollection() {
-  // Begin the multi-step process of collecting memory usage histograms:
-  // First spawn a task to collect the memory details; when that task is
-  // finished, it will call OnMemoryDetailCollectionDone. That will in turn
-  // call HistogramSynchronization to collect histograms from all renderers and
-  // then call OnHistogramSynchronizationDone to continue processing.
-  DCHECK(!waiting_for_asynchronous_reporting_step_);
-  waiting_for_asynchronous_reporting_step_ = true;
-
-  base::Closure callback =
-      base::Bind(&MetricsService::OnMemoryDetailCollectionDone,
-                 self_ptr_factory_.GetWeakPtr());
-
-  scoped_refptr<MetricsMemoryDetails> details(
-      new MetricsMemoryDetails(callback));
-  details->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
-
-  // Collect WebCore cache information to put into a histogram.
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->Send(new ChromeViewMsg_GetCacheResourceStats());
-}
-
-void MetricsService::OnMemoryDetailCollectionDone() {
-  DCHECK(IsSingleThreaded());
-  // This function should only be called as the callback from an ansynchronous
-  // step.
-  DCHECK(waiting_for_asynchronous_reporting_step_);
-
-  // Create a callback_task for OnHistogramSynchronizationDone.
-  base::Closure callback = base::Bind(
-      &MetricsService::OnHistogramSynchronizationDone,
-      self_ptr_factory_.GetWeakPtr());
-
-  base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration);
-
-  DCHECK_EQ(num_async_histogram_fetches_in_progress_, 0);
-
-#if defined(OS_ANDROID)
-  // Android has no service process.
-  num_async_histogram_fetches_in_progress_ = 1;
-#else  // OS_ANDROID
-  num_async_histogram_fetches_in_progress_ = 2;
-  // Run requests to service and content in parallel.
-  if (!ServiceProcessControl::GetInstance()->GetHistograms(callback, timeout)) {
-    // Assume |num_async_histogram_fetches_in_progress_| is not changed by
-    // |GetHistograms()|.
-    DCHECK_EQ(num_async_histogram_fetches_in_progress_, 2);
-    // Assign |num_async_histogram_fetches_in_progress_| above and decrement it
-    // here to make code work even if |GetHistograms()| fired |callback|.
-    --num_async_histogram_fetches_in_progress_;
-  }
-#endif  // OS_ANDROID
-
-  // Set up the callback to task to call after we receive histograms from all
-  // child processes. Wait time specifies how long to wait before absolutely
-  // calling us back on the task.
-  content::FetchHistogramsAsynchronously(base::MessageLoop::current(), callback,
-                                         timeout);
-}
-
-void MetricsService::OnHistogramSynchronizationDone() {
-  DCHECK(IsSingleThreaded());
-  // This function should only be called as the callback from an ansynchronous
-  // step.
-  DCHECK(waiting_for_asynchronous_reporting_step_);
-  DCHECK_GT(num_async_histogram_fetches_in_progress_, 0);
-
-  // Check if all expected requests finished.
-  if (--num_async_histogram_fetches_in_progress_ > 0)
-    return;
-
-  waiting_for_asynchronous_reporting_step_ = false;
-  OnFinalLogInfoCollectionDone();
 }
 
 void MetricsService::OnFinalLogInfoCollectionDone() {
