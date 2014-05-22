@@ -166,6 +166,7 @@ CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
 CONTENT_EXPORT extern const char kEnableVtune[];
 extern const char kEnableWebAnimationsSVG[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
+CONTENT_EXPORT extern const char kEnableWebGLImageChromium[];
 CONTENT_EXPORT extern const char kEnableWebMIDI[];
 CONTENT_EXPORT extern const char kEnableZeroCopy[];
 CONTENT_EXPORT extern const char kExtraPluginDir[];

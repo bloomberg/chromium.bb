@@ -129,6 +129,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);
 
+  if (command_line.HasSwitch(switches::kEnableWebGLImageChromium))
+    WebRuntimeFeatures::enableWebGLImageChromium(true);
+
   if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo))
     WebRuntimeFeatures::enableOverlayFullscreenVideo(true);
 

@@ -1106,6 +1106,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableVtune,
     switches::kEnableWebAnimationsSVG,
     switches::kEnableWebGLDraftExtensions,
+    switches::kEnableWebGLImageChromium,
     switches::kEnableWebMIDI,
     switches::kEnableZeroCopy,
     switches::kForceCompositingMode,
