@@ -204,6 +204,22 @@
     { "name": "dl.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "translate.googleapis.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
+    { "name": "webfilings.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "webfilings-mirror-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "webfilings-eu.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "webfilings-eu-mirror.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-demo-eu.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-demo-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-pentest.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-trial-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "xbrlsuccess.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "w-spotlight.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-training-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-bigsky-master.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-staging-hr.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-training-master.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "wf-dogfood-hrd.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+
     // chart.apis.google.com is *not* HSTS because the certificate doesn't match
     // and there are lots of links out there that still use the name. The correct
     // hostname for this is chart.googleapis.com.
@@ -571,6 +587,12 @@
     { "name": "faq.lookout.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "platform.lookout.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "email.lookout.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "app.lookout.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "api.lookout.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "keymaster.lookout.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "discovery.lookout.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "mobilethreat.net", "include_subdomains": true, "mode": "force-https" },
+    { "name": "mobilethreatnetwork.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "itriskltd.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "stocktrade.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "openshift.redhat.com", "include_subdomains": true, "mode": "force-https" },
@@ -752,6 +774,7 @@
     { "name": "www.usaa.com", "mode": "force-https" },
     { "name": "mobile.usaa.com", "mode": "force-https" },
     { "name": "subrosa.io", "include_subdomains": true, "mode": "force-https" },
+    { "name": "detectify.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
