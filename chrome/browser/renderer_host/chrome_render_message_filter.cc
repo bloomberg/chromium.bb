@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -475,5 +475,5 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
 }
 
 void ChromeRenderMessageFilter::OnIsCrashReportingEnabled(bool* enabled) {
-  *enabled = MetricsServiceHelper::IsCrashReportingEnabled();
+  *enabled = ChromeMetricsServiceAccessor::IsCrashReportingEnabled();
 }

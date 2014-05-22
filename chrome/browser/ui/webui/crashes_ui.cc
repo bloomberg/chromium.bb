@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -152,7 +152,7 @@ void CrashesDOMHandler::OnUploadListAvailable() {
 
 void CrashesDOMHandler::UpdateUI() {
   bool crash_reporting_enabled =
-      MetricsServiceHelper::IsCrashReportingEnabled();
+      ChromeMetricsServiceAccessor::IsCrashReportingEnabled();
   base::ListValue crash_list;
   bool system_crash_reporter = false;
 

@@ -35,18 +35,10 @@
 #include "content/public/browser/user_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class ChromeBrowserMetricsServiceObserver;
 class GoogleUpdateMetricsProviderWin;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
-class Profile;
-class TemplateURLService;
-
-namespace {
-class CrashesDOMHandler;
-class FlashDOMHandler;
-}
 
 namespace base {
 class DictionaryValue;
@@ -63,12 +55,6 @@ class WebContents;
 struct WebPluginInfo;
 }
 
-namespace extensions {
-class ExtensionDownloader;
-class ManifestFetchData;
-class MetricsPrivateGetIsCrashReportingEnabledFunction;
-}
-
 namespace metrics {
 class MetricsServiceClient;
 class MetricsStateManager;
@@ -76,14 +62,6 @@ class MetricsStateManager;
 
 namespace net {
 class URLFetcher;
-}
-
-namespace prerender {
-bool IsOmniboxEnabled(Profile* profile);
-}
-
-namespace system_logs {
-class ChromeInternalLogSource;
 }
 
 namespace tracked_objects {
@@ -570,7 +548,7 @@ class MetricsService
   // Confirms single-threaded access to |observers_| in debug builds.
   base::ThreadChecker thread_checker_;
 
-  friend class MetricsServiceHelper;
+  friend class ChromeMetricsServiceAccessor;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsServiceObserver);
@@ -579,42 +557,6 @@ class MetricsService
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
-};
-
-// This class limits and documents access to metrics service helper methods.
-// Since these methods are private, each user has to be explicitly declared
-// as a 'friend' below.
-class MetricsServiceHelper {
- private:
-  friend bool prerender::IsOmniboxEnabled(Profile* profile);
-  friend class ::ChromeBrowserMetricsServiceObserver;
-  friend class ChromeRenderMessageFilter;
-  friend class ::CrashesDOMHandler;
-  friend class extensions::ExtensionDownloader;
-  friend class extensions::ManifestFetchData;
-  friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
-  friend class ::FlashDOMHandler;
-  friend class system_logs::ChromeInternalLogSource;
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsReportingEnabled);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, CrashReportingEnabled);
-
-  // Returns true if prefs::kMetricsReportingEnabled is set.
-  // TODO(asvitkine): Consolidate the method in MetricsStateManager.
-  // TODO(asvitkine): This function does not report the correct value on
-  // Android and ChromeOS, see http://crbug.com/362192.
-  static bool IsMetricsReportingEnabled();
-
-  // Returns true if crash reporting is enabled.  This is set at the platform
-  // level for Android and ChromeOS, and otherwise is the same as
-  // IsMetricsReportingEnabled for desktop Chrome.
-  static bool IsCrashReportingEnabled();
-
-  // Registers/unregisters |observer| to receive MetricsLog notifications
-  // from metrics service.
-  static void AddMetricsServiceObserver(MetricsServiceObserver* observer);
-  static void RemoveMetricsServiceObserver(MetricsServiceObserver* observer);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(MetricsServiceHelper);
 };
 
 #endif  // CHROME_BROWSER_METRICS_METRICS_SERVICE_H_

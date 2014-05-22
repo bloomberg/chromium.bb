@@ -4,15 +4,15 @@
 
 #include "chrome/browser/chrome_browser_metrics_service_observer.h"
 
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "net/base/network_change_notifier.h"
 
 ChromeBrowserMetricsServiceObserver::ChromeBrowserMetricsServiceObserver() {
-  MetricsServiceHelper::AddMetricsServiceObserver(this);
+  ChromeMetricsServiceAccessor::AddMetricsServiceObserver(this);
 }
 
 ChromeBrowserMetricsServiceObserver::~ChromeBrowserMetricsServiceObserver() {
-  MetricsServiceHelper::RemoveMetricsServiceObserver(this);
+  ChromeMetricsServiceAccessor::RemoveMetricsServiceObserver(this);
 }
 
 void ChromeBrowserMetricsServiceObserver::OnDidCreateMetricsLog() {

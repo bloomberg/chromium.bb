@@ -24,7 +24,7 @@
 #include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/extensions/updater/request_queue_impl.h"
 #include "chrome/browser/extensions/updater/safe_manifest_parser.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -343,7 +343,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
   // If UMA is enabled, also add to ManifestFetchData for the
   // webstore update URL.
   if (!extension_urls::IsWebstoreUpdateUrl(update_url) &&
-      MetricsServiceHelper::IsMetricsReportingEnabled()) {
+      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled()) {
     update_urls.push_back(extension_urls::GetWebstoreUpdateUrl());
   }
 

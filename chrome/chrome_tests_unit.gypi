@@ -1078,6 +1078,7 @@
         'browser/media_galleries/media_galleries_scan_result_dialog_controller_unittest.cc',
         'browser/media_galleries/media_scan_manager_unittest.cc',
         'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
+        'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
         'browser/metrics/cloned_install_detector_unittest.cc',
         'browser/metrics/compression_utils_unittest.cc',
         'browser/metrics/extension_metrics_unittest.cc',
