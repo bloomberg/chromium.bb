@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 
+#include "base/files/file.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/hid/hid_connection_win.h"
@@ -147,14 +148,27 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
   // Try to open the device.
   base::win::ScopedHandle device_handle(
       CreateFileA(device_path.c_str(),
-                  0,
-                  FILE_SHARE_READ,
+                  GENERIC_WRITE | GENERIC_READ,
+                  FILE_SHARE_READ | FILE_SHARE_WRITE,
                   NULL,
                   OPEN_EXISTING,
                   FILE_FLAG_OVERLAPPED,
                   0));
-  if (!device_handle.IsValid())
-    return;
+
+  if (!device_handle.IsValid() &&
+      GetLastError() == base::File::FILE_ERROR_ACCESS_DENIED) {
+    base::win::ScopedHandle device_handle(
+      CreateFileA(device_path.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      NULL,
+      OPEN_EXISTING,
+      FILE_FLAG_OVERLAPPED,
+      0));
+
+    if (!device_handle.IsValid())
+      return;
+  }
 
   // Get VID/PID pair.
   HIDD_ATTRIBUTES attrib = {0};
