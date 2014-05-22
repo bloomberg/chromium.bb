@@ -165,6 +165,7 @@ public class AwContents {
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
     private final ViewGroup mContainerView;
+    private final Context mContext;
     private ContentViewCore mContentViewCore;
     private final AwContentsClient mContentsClient;
     private final AwContentViewClient mContentViewClient;
@@ -459,17 +460,18 @@ public class AwContents {
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
+     * @param context the context to use, usually containerView.getContext().
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents.
      * @param awSettings AwSettings instance used to configure the AwContents.
      *
      * This constructor uses the default view sizing policy.
      */
-    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             AwSettings awSettings) {
-        this(browserContext, containerView, internalAccessAdapter, contentsClient, awSettings,
-                new DependencyFactory());
+        this(browserContext, containerView, context, internalAccessAdapter, contentsClient,
+                awSettings, new DependencyFactory());
     }
 
     /**
@@ -479,17 +481,18 @@ public class AwContents {
      * This version of the constructor is used in test code to inject test versions of the above
      * documented classes.
      */
-    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView, Context context,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
+        mContext = context;
         mInternalAccessAdapter = internalAccessAdapter;
         mContentsClient = contentsClient;
         mContentViewClient = new AwContentViewClient(contentsClient, settings);
         mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
-        mDIPScale = DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
+        mDIPScale = DeviceDisplayInfo.create(mContext).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient, mContainerView);
@@ -515,7 +518,7 @@ public class AwContents {
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
         mSettings.setDIPScale(mDIPScale);
         mScrollOffsetManager = dependencyFactory.createScrollOffsetManager(
-                new AwScrollOffsetManagerDelegate(), new OverScroller(mContainerView.getContext()));
+                new AwScrollOffsetManagerDelegate(), new OverScroller(mContext));
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
 
         setOverScrollMode(mContainerView.getOverScrollMode());
@@ -529,11 +532,10 @@ public class AwContents {
     }
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
-            InternalAccessDelegate internalDispatcher, long nativeWebContents,
+            Context context, InternalAccessDelegate internalDispatcher, long nativeWebContents,
             GestureStateListener gestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
-        Context context = containerView.getContext();
         ContentViewCore contentViewCore = new ContentViewCore(context);
         contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
                 context instanceof Activity ?
@@ -571,7 +573,7 @@ public class AwContents {
 
         long nativeWebContents = nativeGetWebContents(mNativeAwContents);
         mContentViewCore = createAndInitializeContentViewCore(
-                mContainerView, mInternalAccessAdapter, nativeWebContents,
+                mContainerView, mContext, mInternalAccessAdapter, nativeWebContents,
                 new AwGestureStateListener(), mContentViewClient, mZoomControls);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
@@ -1001,7 +1003,7 @@ public class AwContents {
      */
     public void setOverScrollMode(int mode) {
         if (mode != View.OVER_SCROLL_NEVER) {
-            mOverScrollGlow = new OverScrollGlow(mContainerView);
+            mOverScrollGlow = new OverScrollGlow(mContext, mContainerView);
         } else {
             mOverScrollGlow = null;
         }
@@ -1338,13 +1340,13 @@ public class AwContents {
     }
 
     public String[] getHttpAuthUsernamePassword(String host, String realm) {
-        return mBrowserContext.getHttpAuthDatabase(mContentViewCore.getContext())
+        return mBrowserContext.getHttpAuthDatabase(mContext)
                 .getHttpAuthUsernamePassword(host, realm);
     }
 
     public void setHttpAuthUsernamePassword(String host, String realm, String username,
             String password) {
-        mBrowserContext.getHttpAuthDatabase(mContentViewCore.getContext())
+        mBrowserContext.getHttpAuthDatabase(mContext)
                 .setHttpAuthUsernamePassword(host, realm, username, password);
     }
 
@@ -1604,7 +1606,7 @@ public class AwContents {
 
         if (mComponentCallbacks != null) return;
         mComponentCallbacks = new AwComponentCallbacks();
-        mContainerView.getContext().registerComponentCallbacks(mComponentCallbacks);
+        mContext.registerComponentCallbacks(mComponentCallbacks);
     }
 
     /**
@@ -1626,7 +1628,7 @@ public class AwContents {
         updateHardwareAcceleratedFeaturesToggle();
 
         if (mComponentCallbacks != null) {
-            mContainerView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
+            mContext.unregisterComponentCallbacks(mComponentCallbacks);
             mComponentCallbacks = null;
         }
 

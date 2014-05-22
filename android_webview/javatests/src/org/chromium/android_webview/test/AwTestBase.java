@@ -316,8 +316,9 @@ public class AwTestBase
         AwSettings awSettings = testDependencyFactory.createAwSettings(getActivity(),
                 supportsLegacyQuirks);
         testContainerView.initialize(new AwContents(
-                mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, awSettings, testDependencyFactory));
+                mBrowserContext, testContainerView, testContainerView.getContext(),
+                testContainerView.getInternalAccessDelegate(), awContentsClient, awSettings,
+                testDependencyFactory));
         return testContainerView;
     }
 

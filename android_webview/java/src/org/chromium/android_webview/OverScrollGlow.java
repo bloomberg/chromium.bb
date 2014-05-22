@@ -23,9 +23,8 @@ class OverScrollGlow {
     private int mOverScrollDeltaX;
     private int mOverScrollDeltaY;
 
-    public OverScrollGlow(View host) {
+    public OverScrollGlow(Context context, View host) {
         mHostView = host;
-        Context context = host.getContext();
         mEdgeGlowTop = new EdgeEffect(context);
         mEdgeGlowBottom = new EdgeEffect(context);
         mEdgeGlowLeft = new EdgeEffect(context);
