@@ -61,13 +61,10 @@ public:
 
     virtual WebData readFromFile(const WebString& path) { return WebData(); }
 
-    // DEPRECATED, use the version above.
-#define HAVE_CREATELAYERTREEVIEWFORTESTING 1
+    // FIXME(danakj): Remove this.
     enum TestViewType {
         TestViewTypeUnitTest,
-        TestViewTypeLayoutTest
     };
-    virtual WebLayerTreeView* createLayerTreeViewForTesting(TestViewType) { return 0; }
 };
 
 }

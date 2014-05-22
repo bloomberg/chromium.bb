@@ -71,7 +71,7 @@ public:
         m_graphicsLayer->platformLayer()->setScrollClipLayer(
             m_clipLayer->platformLayer());
         m_platformLayer = m_graphicsLayer->platformLayer();
-        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting());
         ASSERT(m_layerTreeView);
         m_layerTreeView->setRootLayer(*m_clipLayer->platformLayer());
         m_layerTreeView->registerViewportLayers(

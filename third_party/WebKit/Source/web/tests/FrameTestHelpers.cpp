@@ -333,7 +333,7 @@ void TestWebFrameClient::didStopLoading()
 
 void TestWebViewClient::initializeLayerTreeView()
 {
-    m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+    m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting());
     ASSERT(m_layerTreeView);
 }
 
