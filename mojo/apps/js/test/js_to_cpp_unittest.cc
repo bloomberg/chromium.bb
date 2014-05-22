@@ -66,7 +66,7 @@ bool IsRunningOnIsolatedBot() {
 }
 
 void CheckDataPipe(MojoHandle data_pipe_handle) {
-  char buffer[100];
+  unsigned char buffer[100];
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   MojoResult result = MojoReadData(
       data_pipe_handle, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE);
@@ -74,6 +74,18 @@ void CheckDataPipe(MojoHandle data_pipe_handle) {
   EXPECT_EQ(64u, buffer_size);
   for (int i = 0; i < 64; ++i) {
     EXPECT_EQ(i, buffer[i]);
+  }
+}
+
+void CheckMessagePipe(MojoHandle message_pipe_handle) {
+  unsigned char buffer[100];
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  MojoResult result = MojoReadMessage(
+      message_pipe_handle, buffer, &buffer_size, 0, 0, 0);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(64u, buffer_size);
+  for (int i = 0; i < 64; ++i) {
+    EXPECT_EQ(255 - i, buffer[i]);
   }
 }
 
@@ -124,6 +136,7 @@ void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
   EXPECT_EQ(std::string("two"), arg.string_array()[1].To<std::string>());
   EXPECT_EQ(std::string("three"), arg.string_array()[2].To<std::string>());
   CheckDataPipe(arg.data_handle().get().value());
+  CheckMessagePipe(arg.message_handle().get().value());
 }
 
 void CheckSampleEchoArgsList(const js_to_cpp::EchoArgsList& list) {
@@ -155,6 +168,8 @@ void CheckCorruptedEchoArgs(const js_to_cpp::EchoArgs& arg) {
   CheckCorruptedStringArray(arg.string_array());
   if (arg.data_handle().is_valid())
     CheckDataPipe(arg.data_handle().get().value());
+  if (arg.message_handle().is_valid())
+    CheckMessagePipe(arg.message_handle().get().value());
 }
 
 void CheckCorruptedEchoArgsList(const js_to_cpp::EchoArgsList& list) {
