@@ -59,7 +59,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
-    self._wait_for_channel_signing = multiprocessing.Queue()
     self.artifacts = []
 
   def WaitForRecoveryImage(self):
@@ -74,30 +73,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     # Put the status back so other SignerTestStage instances don't starve.
     self._recovery_image_status_queue.put(status)
     return status
-
-  def AnnounceChannelSigned(self, channel):
-    """Announce that image signing has compeleted for a given channel.
-
-    Args:
-      channel: Either a channel name ('stable', 'dev', etc).
-               SignerResultsStage.FINISHED if all channels are finished.
-               None if there was an error, and no channels will be announced.
-    """
-    self._wait_for_channel_signing.put(channel)
-
-  def WaitForChannelSigning(self):
-    """Wait until ChannelSigning completes for a given channel.
-
-    This method is expected to return once for each channel, and return
-    the name of the channel that was signed. When all channels are signed,
-    it should return again with None.
-
-    Returns:
-      The name of the channel for which images have been signed.
-      None when all channels are signed, or on error.
-    """
-    cros_build_lib.Info('Waiting for channel images to be signed...')
-    return self._wait_for_channel_signing.get()
 
   @staticmethod
   def SingleMatchGlob(path_pattern):
@@ -404,7 +379,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
     self.board_runattrs.SetParallel('instruction_urls_per_channel', None)
-    self._wait_for_channel_signing.put(None)
     return super(ArchiveStage, self)._HandleStageException(exc_info)
 
 

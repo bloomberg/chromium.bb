@@ -73,7 +73,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
   If this stage is created with a 'channels' argument, it can run
   independantly. Otherwise, it's dependent on values queued up by
-  the SignerResultsStage.
+  the ArchiveStage (push_image).
   """
   option_name = 'paygen'
   config_name = 'paygen'
@@ -98,7 +98,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       board: See board on ArchivingStage.
       archive_stage: See archive_stage on ArchivingStage.
       channels: Explicit list of channels to generate payloads for.
-                If empty, will instead wait on values from SignerResultsStage.
+                If empty, will instead wait on values from push_image.
                 Channels is normally None in release builds, and normally set
                 for trybot 'payloads' builds.
     """

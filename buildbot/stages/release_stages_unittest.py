@@ -84,7 +84,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                       stage._WaitForPushImage)
 
   def testWaitForSigningResultsSuccess(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that _WaitForSigningResults works when signing works."""
     results = ['chan1_uri1.json', 'chan1_uri2.json', 'chan2_uri1.json']
 
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
@@ -103,7 +103,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
         mock_gs_ctx.Cat.assert_any_call(result)
 
   def testWaitForSigningResultsSuccessNothingSigned(self):
-    """Test that SignerResultsStage passes when there are no signed images."""
+    """Test _WaitForSigningResults when there are no signed images."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
@@ -116,7 +116,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       self.assertEqual(mock_gs_ctx.Cat.mock_calls, [])
 
   def testWaitForSigningResultsFailure(self):
-    """Test that SignerResultsStage errors when the signers report an error."""
+    """Test _WaitForSigningResults when the signers report an error."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = """
@@ -136,7 +136,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                        [mock.call('chan1_uri1.json')])
 
   def testWaitForSigningResultsMalformedJson(self):
-    """Test that SignerResultsStage errors when invalid Json is received.."""
+    """Test _WaitForSigningResults when invalid Json is received.."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = "{"
@@ -153,7 +153,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                        [mock.call('chan1_uri1.json')])
 
   def testWaitForSigningResultsTimeout(self):
-    """Test that SignerResultsStage reports timeouts correctly."""
+    """Test that _WaitForSigningResults reports timeouts correctly."""
     with patch(release_stages.timeout_util, 'WaitForSuccess') as mock_wait:
       mock_wait.side_effect = timeout_util.TimeoutError
       notifier = mock.Mock()
@@ -167,7 +167,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsSuccess(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that _CheckForResults works when signing works."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       mock_gs_ctx.Cat.return_value.output = self.SIGNER_RESULT
@@ -182,7 +182,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                        [mock.call('chan1'), mock.call('chan2')])
 
   def testCheckForResultsSuccessNoChannels(self):
-    """Test that SignerResultsStage works when there is nothing to check for."""
+    """Test that _CheckForResults works when there is nothing to check for."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
       notifier = mock.Mock()
@@ -290,7 +290,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testPerformStageSuccess(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that PaygenStage works when signing works."""
 
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
@@ -337,7 +337,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testPerformStageSigningFailed(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that PaygenStage works when signing works."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
@@ -381,7 +381,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testPerformStageUnknownBoard(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that PaygenStage exits when an unknown board is specified."""
     self._current_board = 'unknown-board-name'
     stage = self.ConstructStage()
 
@@ -391,7 +391,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testRunPaygenInProcess(self):
-    """Test that SignerResultsStage works when signing works."""
+    """Test that _RunPaygenInProcess works in the simple case."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
       stage = self.ConstructStage()
@@ -411,7 +411,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
   def testRunPaygenInProcessComplex(self):
-    """Test that SignerResultsStage with arguments that are more unusual."""
+    """Test that _RunPaygenInProcess with arguments that are more unusual."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
       # Use release tools channel naming, and a board name including a variant.
