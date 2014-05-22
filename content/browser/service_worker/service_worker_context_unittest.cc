@@ -29,7 +29,6 @@ void SaveResponseCallback(bool* called,
                           ServiceWorkerStatusCode status,
                           int64 registration_id,
                           int64 version_id) {
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
   *store_version_id = version_id;

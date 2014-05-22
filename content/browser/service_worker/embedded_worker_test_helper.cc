@@ -15,6 +15,10 @@
 
 namespace content {
 
+static bool AlwaysTrue(int process_id) {
+  return true;
+}
+
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
     : wrapper_(new ServiceWorkerContextWrapper(NULL)),
       next_thread_id_(0),
@@ -25,7 +29,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
                          NULL);
   scoped_ptr<ServiceWorkerProcessManager> process_manager(
       new ServiceWorkerProcessManager(wrapper_));
-  process_manager->SetProcessIdForTest(mock_render_process_id);
+  process_manager->SetProcessRefcountOpsForTest(base::Bind(AlwaysTrue),
+                                                base::Bind(AlwaysTrue));
   wrapper_->context()->SetProcessManagerForTest(process_manager.Pass());
   registry()->AddChildProcessSender(mock_render_process_id, this);
 }
