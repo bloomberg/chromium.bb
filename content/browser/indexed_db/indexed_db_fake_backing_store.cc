@@ -67,21 +67,32 @@ leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
     const base::string16& name,
     const IndexedDBKeyPath&,
     bool auto_increment) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
+}
+
+leveldb::Status IndexedDBFakeBackingStore::PutRecord(
+    IndexedDBBackingStore::Transaction* transaction,
+    int64 database_id,
+    int64 object_store_id,
+    const IndexedDBKey& key,
+    IndexedDBValue& value,
+    ScopedVector<webkit_blob::BlobDataHandle>* handles,
+    RecordIdentifier* record) {
+  return leveldb::Status::OK();
 }
 
 leveldb::Status IndexedDBFakeBackingStore::ClearObjectStore(
     Transaction*,
     int64 database_id,
     int64 object_store_id) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::DeleteRecord(
     Transaction*,
     int64 database_id,
     int64 object_store_id,
     const RecordIdentifier&) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::GetKeyGeneratorCurrentNumber(
     Transaction*,
@@ -117,14 +128,14 @@ leveldb::Status IndexedDBFakeBackingStore::CreateIndex(
     const IndexedDBKeyPath&,
     bool is_unique,
     bool is_multi_entry) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
 }
 
 leveldb::Status IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
                                                        int64 database_id,
                                                        int64 object_store_id,
                                                        int64 index_id) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
     Transaction*,
@@ -133,7 +144,7 @@ leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
     int64 index_id,
     const IndexedDBKey&,
     const RecordIdentifier&) {
-  return leveldb::Status::IOError("test error");
+  return leveldb::Status::OK();
 }
 
 void IndexedDBFakeBackingStore::ReportBlobUnused(int64 database_id,

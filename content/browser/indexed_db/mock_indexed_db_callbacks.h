@@ -18,6 +18,7 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   virtual void OnSuccess() OVERRIDE;
   virtual void OnSuccess(int64) OVERRIDE;
   virtual void OnSuccess(const std::vector<base::string16>&) OVERRIDE;
+  virtual void OnSuccess(const IndexedDBKey& key) OVERRIDE;
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
   IndexedDBConnection* connection() { return connection_.get(); }

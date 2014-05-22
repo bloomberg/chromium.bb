@@ -86,18 +86,6 @@ IndexedDBTransaction::~IndexedDBTransaction() {
   DCHECK(abort_task_stack_.empty());
 }
 
-void IndexedDBTransaction::ScheduleTask(Operation task, Operation abort_task) {
-  if (state_ == FINISHED)
-    return;
-
-  timeout_timer_.Stop();
-  used_ = true;
-  task_queue_.push(task);
-  ++diagnostics_.tasks_scheduled;
-  abort_task_stack_.push(abort_task);
-  RunTasksIfStarted();
-}
-
 void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
                                         Operation task) {
   if (state_ == FINISHED)
@@ -112,6 +100,12 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
     preemptive_task_queue_.push(task);
   }
   RunTasksIfStarted();
+}
+
+void IndexedDBTransaction::ScheduleAbortTask(Operation abort_task) {
+  DCHECK_NE(FINISHED, state_);
+  DCHECK(used_);
+  abort_task_stack_.push(abort_task);
 }
 
 void IndexedDBTransaction::RunTasksIfStarted() {

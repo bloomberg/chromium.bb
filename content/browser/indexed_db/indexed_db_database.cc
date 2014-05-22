@@ -277,6 +277,9 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
     return;
   }
 
+  // Store creation is done synchronously, as it may be followed by
+  // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
+  // may follow.
   IndexedDBObjectStoreMetadata object_store_metadata(
       name,
       object_store_id,
@@ -284,21 +287,6 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
       auto_increment,
       IndexedDBDatabase::kMinimumIndexId);
 
-  transaction->ScheduleTask(
-      base::Bind(&IndexedDBDatabase::CreateObjectStoreOperation,
-                 this,
-                 object_store_metadata),
-      base::Bind(&IndexedDBDatabase::CreateObjectStoreAbortOperation,
-                 this,
-                 object_store_id));
-
-  AddObjectStore(object_store_metadata, object_store_id);
-}
-
-void IndexedDBDatabase::CreateObjectStoreOperation(
-    const IndexedDBObjectStoreMetadata& object_store_metadata,
-    IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::CreateObjectStoreOperation");
   leveldb::Status s =
       backing_store_->CreateObjectStore(transaction->BackingStoreTransaction(),
                                         transaction->database()->id(),
@@ -317,6 +305,12 @@ void IndexedDBDatabase::CreateObjectStoreOperation(
                                              error);
     return;
   }
+
+  AddObjectStore(object_store_metadata, object_store_id);
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::CreateObjectStoreAbortOperation,
+                 this,
+                 object_store_id));
 }
 
 void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
@@ -330,17 +324,10 @@ void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
   if (!ValidateObjectStoreId(object_store_id))
     return;
 
-  const IndexedDBObjectStoreMetadata& object_store_metadata =
-      metadata_.object_stores[object_store_id];
-
   transaction->ScheduleTask(
       base::Bind(&IndexedDBDatabase::DeleteObjectStoreOperation,
                  this,
-                 object_store_metadata),
-      base::Bind(&IndexedDBDatabase::DeleteObjectStoreAbortOperation,
-                 this,
-                 object_store_metadata));
-  RemoveObjectStore(object_store_id);
+                 object_store_id));
 }
 
 void IndexedDBDatabase::CreateIndex(int64 transaction_id,
@@ -358,27 +345,12 @@ void IndexedDBDatabase::CreateIndex(int64 transaction_id,
 
   if (!ValidateObjectStoreIdAndNewIndexId(object_store_id, index_id))
     return;
+
+  // Index creation is done synchronously since preemptive
+  // OpenCursor/SetIndexKeys may follow.
   const IndexedDBIndexMetadata index_metadata(
       name, index_id, key_path, unique, multi_entry);
 
-  transaction->ScheduleTask(
-      base::Bind(&IndexedDBDatabase::CreateIndexOperation,
-                 this,
-                 object_store_id,
-                 index_metadata),
-      base::Bind(&IndexedDBDatabase::CreateIndexAbortOperation,
-                 this,
-                 object_store_id,
-                 index_id));
-
-  AddIndex(object_store_id, index_metadata, index_id);
-}
-
-void IndexedDBDatabase::CreateIndexOperation(
-    int64 object_store_id,
-    const IndexedDBIndexMetadata& index_metadata,
-    IndexedDBTransaction* transaction) {
-  IDB_TRACE("IndexedDBDatabase::CreateIndexOperation");
   if (!backing_store_->CreateIndex(transaction->BackingStoreTransaction(),
                                    transaction->database()->id(),
                                    object_store_id,
@@ -394,6 +366,13 @@ void IndexedDBDatabase::CreateIndexOperation(
         blink::WebIDBDatabaseExceptionUnknownError, error_string));
     return;
   }
+
+  AddIndex(object_store_id, index_metadata, index_id);
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::CreateIndexAbortOperation,
+                 this,
+                 object_store_id,
+                 index_id));
 }
 
 void IndexedDBDatabase::CreateIndexAbortOperation(
@@ -416,32 +395,28 @@ void IndexedDBDatabase::DeleteIndex(int64 transaction_id,
 
   if (!ValidateObjectStoreIdAndIndexId(object_store_id, index_id))
     return;
-  const IndexedDBIndexMetadata& index_metadata =
-      metadata_.object_stores[object_store_id].indexes[index_id];
 
   transaction->ScheduleTask(
       base::Bind(&IndexedDBDatabase::DeleteIndexOperation,
                  this,
                  object_store_id,
-                 index_metadata),
-      base::Bind(&IndexedDBDatabase::DeleteIndexAbortOperation,
-                 this,
-                 object_store_id,
-                 index_metadata));
-
-  RemoveIndex(object_store_id, index_id);
+                 index_id));
 }
 
 void IndexedDBDatabase::DeleteIndexOperation(
     int64 object_store_id,
-    const IndexedDBIndexMetadata& index_metadata,
+    int64 index_id,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::DeleteIndexOperation");
+
+  const IndexedDBIndexMetadata index_metadata =
+      metadata_.object_stores[object_store_id].indexes[index_id];
+
   leveldb::Status s =
       backing_store_->DeleteIndex(transaction->BackingStoreTransaction(),
                                   transaction->database()->id(),
                                   object_store_id,
-                                  index_metadata.id);
+                                  index_id);
   if (!s.ok()) {
     base::string16 error_string =
         ASCIIToUTF16("Internal error deleting index '") +
@@ -452,7 +427,15 @@ void IndexedDBDatabase::DeleteIndexOperation(
     if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
+    return;
   }
+
+  RemoveIndex(object_store_id, index_id);
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::DeleteIndexAbortOperation,
+                 this,
+                 object_store_id,
+                 index_metadata));
 }
 
 void IndexedDBDatabase::DeleteIndexAbortOperation(
@@ -1299,13 +1282,16 @@ void IndexedDBDatabase::ClearOperation(
 }
 
 void IndexedDBDatabase::DeleteObjectStoreOperation(
-    const IndexedDBObjectStoreMetadata& object_store_metadata,
+    int64 object_store_id,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::DeleteObjectStoreOperation");
+
+  const IndexedDBObjectStoreMetadata object_store_metadata =
+      metadata_.object_stores[object_store_id];
   leveldb::Status s =
       backing_store_->DeleteObjectStore(transaction->BackingStoreTransaction(),
                                         transaction->database()->id(),
-                                        object_store_metadata.id);
+                                        object_store_id);
   if (!s.ok()) {
     base::string16 error_string =
         ASCIIToUTF16("Internal error deleting object store '") +
@@ -1316,7 +1302,14 @@ void IndexedDBDatabase::DeleteObjectStoreOperation(
     if (s.IsCorruption())
       factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                              error);
+    return;
   }
+
+  RemoveObjectStore(object_store_id);
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::DeleteObjectStoreAbortOperation,
+                 this,
+                 object_store_metadata));
 }
 
 void IndexedDBDatabase::VersionChangeOperation(
@@ -1327,11 +1320,9 @@ void IndexedDBDatabase::VersionChangeOperation(
   IDB_TRACE("IndexedDBDatabase::VersionChangeOperation");
   int64 old_version = metadata_.int_version;
   DCHECK_GT(version, old_version);
-  metadata_.int_version = version;
+
   if (!backing_store_->UpdateIDBDatabaseIntVersion(
-          transaction->BackingStoreTransaction(),
-          id(),
-          metadata_.int_version)) {
+          transaction->BackingStoreTransaction(), id(), version)) {
     IndexedDBDatabaseError error(
         blink::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16(
@@ -1341,6 +1332,15 @@ void IndexedDBDatabase::VersionChangeOperation(
     transaction->Abort(error);
     return;
   }
+
+  transaction->ScheduleAbortTask(
+      base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
+                 this,
+                 metadata_.version,
+                 metadata_.int_version));
+  metadata_.int_version = version;
+  metadata_.version = kNoStringVersion;
+
   DCHECK(!pending_second_half_open_);
   pending_second_half_open_.reset(
       new PendingSuccessCall(callbacks, connection.get(), version));
@@ -1623,17 +1623,12 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                     object_store_ids,
                     indexed_db::TRANSACTION_VERSION_CHANGE);
 
-  transactions_[transaction_id]
-      ->ScheduleTask(base::Bind(&IndexedDBDatabase::VersionChangeOperation,
-                                this,
-                                requested_version,
-                                callbacks,
-                                base::Passed(&connection)),
-                     base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
-                                this,
-                                metadata_.version,
-                                metadata_.int_version));
-
+  transactions_[transaction_id]->ScheduleTask(
+      base::Bind(&IndexedDBDatabase::VersionChangeOperation,
+                 this,
+                 requested_version,
+                 callbacks,
+                 base::Passed(&connection)));
   DCHECK(!pending_second_half_open_);
 }
 

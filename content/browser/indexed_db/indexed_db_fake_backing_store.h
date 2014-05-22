@@ -44,6 +44,15 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                             const IndexedDBKeyPath&,
                                             bool auto_increment) OVERRIDE;
 
+  virtual leveldb::Status PutRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKey& key,
+      IndexedDBValue& value,
+      ScopedVector<webkit_blob::BlobDataHandle>* handles,
+      RecordIdentifier* record) OVERRIDE;
+
   virtual leveldb::Status ClearObjectStore(Transaction*,
                                            int64 database_id,
                                            int64 object_store_id) OVERRIDE;

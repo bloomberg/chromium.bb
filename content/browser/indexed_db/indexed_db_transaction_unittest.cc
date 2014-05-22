@@ -14,6 +14,21 @@
 
 namespace content {
 
+class AbortObserver {
+ public:
+  AbortObserver() : abort_task_called_(false) {}
+
+  void AbortTask(IndexedDBTransaction* transaction) {
+    abort_task_called_ = true;
+  }
+
+  bool abort_task_called() const { return abort_task_called_; }
+
+ private:
+  bool abort_task_called_;
+  DISALLOW_COPY_AND_ASSIGN(AbortObserver);
+};
+
 class IndexedDBTransactionTest : public testing::Test {
  public:
   IndexedDBTransactionTest() {
@@ -37,6 +52,11 @@ class IndexedDBTransactionTest : public testing::Test {
 
   void RunPostedTasks() { message_loop_.RunUntilIdle(); }
   void DummyOperation(IndexedDBTransaction* transaction) {}
+  void AbortableOperation(AbortObserver* observer,
+                          IndexedDBTransaction* transaction) {
+    transaction->ScheduleAbortTask(
+        base::Bind(&AbortObserver::AbortTask, base::Unretained(observer)));
+  }
 
  protected:
   scoped_refptr<IndexedDBFakeBackingStore> backing_store_;
@@ -131,21 +151,6 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 }
-
-class AbortObserver {
- public:
-  AbortObserver() : abort_task_called_(false) {}
-
-  void AbortTask(IndexedDBTransaction* transaction) {
-    abort_task_called_ = true;
-  }
-
-  bool abort_task_called() const { return abort_task_called_; }
-
- private:
-  bool abort_task_called_;
-  DISALLOW_COPY_AND_ASSIGN(AbortObserver);
-};
 
 TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const int64 id = 0;
@@ -285,9 +290,9 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
 
   AbortObserver observer;
   transaction->ScheduleTask(
-      base::Bind(&IndexedDBTransactionTest::DummyOperation,
-                 base::Unretained(this)),
-      base::Bind(&AbortObserver::AbortTask, base::Unretained(&observer)));
+      base::Bind(&IndexedDBTransactionTest::AbortableOperation,
+                 base::Unretained(this),
+                 base::Unretained(&observer)));
 
   // Pump the message loop so that the transaction completes all pending tasks,
   // otherwise it will defer the commit.

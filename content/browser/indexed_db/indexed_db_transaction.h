@@ -49,8 +49,8 @@ class CONTENT_EXPORT IndexedDBTransaction
   void ScheduleTask(Operation task) {
     ScheduleTask(IndexedDBDatabase::NORMAL_TASK, task);
   }
-  void ScheduleTask(Operation task, Operation abort_task);
   void ScheduleTask(IndexedDBDatabase::TaskType, Operation task);
+  void ScheduleAbortTask(Operation abort_task);
   void RegisterOpenCursor(IndexedDBCursor* cursor);
   void UnregisterOpenCursor(IndexedDBCursor* cursor);
   void AddPreemptiveEvent() { pending_preemptive_events_++; }

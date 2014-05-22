@@ -23,6 +23,8 @@ void MockIndexedDBCallbacks::OnSuccess(int64) {}
 
 void MockIndexedDBCallbacks::OnSuccess(const std::vector<base::string16>&) {}
 
+void MockIndexedDBCallbacks::OnSuccess(const IndexedDBKey& key) {}
+
 void MockIndexedDBCallbacks::OnSuccess(
     scoped_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {

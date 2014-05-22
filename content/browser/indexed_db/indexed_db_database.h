@@ -175,13 +175,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   size_t PendingDeleteCount() const;
 
   // Asynchronous tasks scheduled within transactions:
-  void CreateObjectStoreOperation(
-      const IndexedDBObjectStoreMetadata& object_store_metadata,
-      IndexedDBTransaction* transaction);
   void CreateObjectStoreAbortOperation(int64 object_store_id,
                                        IndexedDBTransaction* transaction);
   void DeleteObjectStoreOperation(
-      const IndexedDBObjectStoreMetadata& object_store_metadata,
+      int64 object_store_id,
       IndexedDBTransaction* transaction);
   void DeleteObjectStoreAbortOperation(
       const IndexedDBObjectStoreMetadata& object_store_metadata,
@@ -193,11 +190,8 @@ class CONTENT_EXPORT IndexedDBDatabase
   void VersionChangeAbortOperation(const base::string16& previous_version,
                                    int64 previous_int_version,
                                    IndexedDBTransaction* transaction);
-  void CreateIndexOperation(int64 object_store_id,
-                            const IndexedDBIndexMetadata& index_metadata,
-                            IndexedDBTransaction* transaction);
   void DeleteIndexOperation(int64 object_store_id,
-                            const IndexedDBIndexMetadata& index_metadata,
+                            int64 index_id,
                             IndexedDBTransaction* transaction);
   void CreateIndexAbortOperation(int64 object_store_id,
                                  int64 index_id,
