@@ -959,6 +959,12 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
   if (new_resource_keyword_version)
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
+
+  if (default_search_provider_) {
+    UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchProviderType",
+        TemplateURLPrepopulateData::GetEngineType(*default_search_provider_),
+        SEARCH_ENGINE_MAX);
+  }
 }
 
 base::string16 TemplateURLService::GetKeywordShortName(

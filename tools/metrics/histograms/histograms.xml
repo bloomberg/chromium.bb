@@ -23562,7 +23562,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The type of the default search engine that is loaded when a profile is
     opened or after a profile reset.  Note that at least one profile is opened
-    on startup.
+    on startup. Due to an error, there was a period from roughly May 9 2014 to
+    May 23 2014 during which this was not being logged.
   </summary>
 </histogram>
 
