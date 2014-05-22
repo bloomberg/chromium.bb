@@ -337,10 +337,6 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
     if (!shouldUpdateGraphicsLayer(updateType))
         return;
 
-    // We need to know if we draw content in order to update our bounds (this has an effect
-    // on whether or not descendands will paint into our backing). Update this value now.
-    updateDrawsContent();
-
     LayoutRect layerBounds = m_owningLayer.boundingBoxForCompositing();
 
     // FIXME: either move this hack to RenderLayer or find a way to get rid of it. Removing it from here
