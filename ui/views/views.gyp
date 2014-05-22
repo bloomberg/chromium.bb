@@ -244,6 +244,8 @@
         'controls/tree/tree_view.h',
         'controls/tree/tree_view_controller.cc',
         'controls/tree/tree_view_controller.h',
+        'corewm/cursor_height_provider_win.cc',
+        'corewm/cursor_height_provider_win.h',
         'corewm/tooltip.h',
         'corewm/tooltip_aura.cc',
         'corewm/tooltip_aura.h',

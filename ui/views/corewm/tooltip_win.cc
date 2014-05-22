@@ -13,7 +13,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/win/dpi.h"
-
+#include "ui/views/corewm/cursor_height_provider_win.h"
 
 namespace views {
 namespace corewm {
@@ -78,24 +78,19 @@ bool TooltipWin::EnsureTooltipWindow() {
 
 void TooltipWin::PositionTooltip() {
   // This code only runs for non-metro, so GetNativeScreen() is fine.
-  gfx::Display display(
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(location_));
+  gfx::Point screen_point = gfx::win::DIPToScreenPoint(location_);
+  const int cursoroffset = GetCurrentCursorVisibleHeight();
+  screen_point.Offset(0, cursoroffset);
 
   DWORD tooltip_size = SendMessage(tooltip_hwnd_, TTM_GETBUBBLESIZE, 0,
                                    reinterpret_cast<LPARAM>(&toolinfo_));
-  // 20 accounts for visible cursor size. I tried using SM_CYCURSOR but that's
-  // way too big (32 on win7 default).
-  // TODO(sky): figure out the right way to determine offset.
-  const int initial_y = location_.y();
-  gfx::Rect tooltip_bounds(location_.x(), initial_y + 20,
-                           LOWORD(tooltip_size), HIWORD(tooltip_size));
-  tooltip_bounds.AdjustToFit(display.work_area());
-  if (tooltip_bounds.y() < initial_y)
-    tooltip_bounds.set_y(initial_y - tooltip_bounds.height() - 2);
+  const gfx::Size size(LOWORD(tooltip_size), HIWORD(tooltip_size));
 
-  // Convert the tooltip bounds to pixel coordinates. SetWindowPos works in
-  // pixel coordinates.
-  tooltip_bounds = gfx::win::DIPToScreenRect(tooltip_bounds);
+  const gfx::Display display(
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(screen_point));
+
+  gfx::Rect tooltip_bounds(screen_point, size);
+  tooltip_bounds.AdjustToFit(gfx::win::DIPToScreenRect(display.work_area()));
   SetWindowPos(tooltip_hwnd_, NULL, tooltip_bounds.x(), tooltip_bounds.y(), 0,
                0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
@@ -122,8 +117,9 @@ void TooltipWin::SetText(aura::Window* window,
               reinterpret_cast<LPARAM>(&toolinfo_));
 
   // This code only runs for non-metro, so GetNativeScreen() is fine.
+  const gfx::Point screen_point = gfx::win::DIPToScreenPoint(location_);
   gfx::Display display(
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(location_));
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(screen_point));
   const gfx::Rect monitor_bounds = display.bounds();
   int max_width = (monitor_bounds.width() + 1) / 2;
   SendMessage(tooltip_hwnd_, TTM_SETMAXTIPWIDTH, 0, max_width);
