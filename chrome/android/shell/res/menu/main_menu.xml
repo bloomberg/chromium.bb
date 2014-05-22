@@ -13,15 +13,15 @@
             <menu>
                 <item
                     android:id="@+id/back_menu_id"
-                    android:icon="@drawable/back_button_selector"
+                    android:icon="@drawable/btn_back"
                     android:title="@string/accessibility_menu_back"/>
                 <item
                     android:id="@+id/forward_menu_id"
-                    android:icon="@drawable/forward_button_selector"
+                    android:icon="@drawable/btn_forward"
                     android:title="@string/accessibility_menu_forward"/>
                 <item
                     android:id="@+id/bookmark_this_page_id"
-                    android:icon="@drawable/star"
+                    android:icon="@drawable/btn_star"
                     android:title="@string/accessibility_menu_bookmark"/>
             </menu>
         </item>
