@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -569,7 +570,8 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     BrowserContext* context,
     const Extension* extension,
     const linked_ptr<Event>& event) {
-  if (extension->is_ephemeral() && !event->can_load_ephemeral_apps) {
+  if (util::IsEphemeralApp(extension->id(), context) &&
+      !event->can_load_ephemeral_apps) {
     // Most events can only be dispatched to ephemeral apps that are already
     // running.
     ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();

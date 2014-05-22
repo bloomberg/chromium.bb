@@ -22,6 +22,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/management/management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -215,12 +216,13 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
 void AddExtensionInfo(const ExtensionSet& extensions,
                             ExtensionSystem* system,
-                            ExtensionInfoList* extension_list) {
+                            ExtensionInfoList* extension_list,
+                            content::BrowserContext* context) {
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     const Extension& extension = *iter->get();
 
-    if (extension.ShouldNotBeVisible())
+    if (ui_util::ShouldNotBeVisible(&extension, context))
       continue;  // Skip built-in extensions/apps.
 
     extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
@@ -243,9 +245,12 @@ bool ManagementGetAllFunction::RunSync() {
   ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
 
-  AddExtensionInfo(registry->enabled_extensions(), system, &extensions);
-  AddExtensionInfo(registry->disabled_extensions(), system, &extensions);
-  AddExtensionInfo(registry->terminated_extensions(), system, &extensions);
+  AddExtensionInfo(registry->enabled_extensions(),
+                   system, &extensions, browser_context());
+  AddExtensionInfo(registry->disabled_extensions(),
+                   system, &extensions, browser_context());
+  AddExtensionInfo(registry->terminated_extensions(),
+                   system, &extensions, browser_context());
 
   results_ = management::GetAll::Results::Create(extensions);
   return true;
@@ -468,7 +473,7 @@ bool ManagementSetEnabledFunction::RunAsync() {
   extension_id_ = params->id;
 
   const Extension* extension = service()->GetInstalledExtension(extension_id_);
-  if (!extension || extension->ShouldNotBeVisible()) {
+  if (!extension || ui_util::ShouldNotBeVisible(extension, browser_context())) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
@@ -536,7 +541,8 @@ bool ManagementUninstallFunctionBase::Uninstall(
   extension_id_ = target_extension_id;
   const Extension* target_extension =
       service()->GetExtensionById(extension_id_, true);
-  if (!target_extension || target_extension->ShouldNotBeVisible()) {
+  if (!target_extension ||
+      ui_util::ShouldNotBeVisible(target_extension, browser_context())) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
@@ -784,7 +790,7 @@ void ManagementEventRouter::Observe(
   DCHECK(event_name);
   DCHECK(extension);
 
-  if (extension->ShouldNotBeVisible())
+  if (ui_util::ShouldNotBeVisible(extension, profile_))
     return; // Don't dispatch events for built-in extensions.
 
   scoped_ptr<base::ListValue> args(new base::ListValue());

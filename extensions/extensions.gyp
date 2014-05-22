@@ -372,6 +372,8 @@
         'browser/extension_system.h',
         'browser/extension_system_provider.cc',
         'browser/extension_system_provider.h',
+        'browser/extension_util.cc',
+        'browser/extension_util.h',
         'browser/extension_web_contents_observer.cc',
         'browser/extension_web_contents_observer.h',
         'browser/extensions_browser_client.cc',

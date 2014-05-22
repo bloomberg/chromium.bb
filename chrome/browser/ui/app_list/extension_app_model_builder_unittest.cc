@@ -12,10 +12,10 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
+#include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -27,10 +27,6 @@
 #include "ui/app_list/app_list_item.h"
 
 namespace {
-
-const char kHostedAppId[] = "dceacbkfkmllgmjmbhgkpjegnodmildf";
-const char kPackagedApp1Id[] = "emfkafnhnpcmabnnkckkchdilgeoekbo";
-const char kPackagedApp2Id[] = "jlklkagmeajbjiobondfhiekepofmljl";
 
 // Get a string of all apps in |model| joined with ','.
 std::string GetModelContent(app_list::AppListModel* model) {
@@ -103,29 +99,13 @@ const size_t kDefaultAppCount = 3u;
 
 }  // namespace
 
-class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
+class ExtensionAppModelBuilderTest : public AppListTestBase {
  public:
   ExtensionAppModelBuilderTest() {}
   virtual ~ExtensionAppModelBuilderTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ExtensionServiceTestBase::SetUp();
-
-    // Load "app_list" extensions test profile.
-    // The test profile has 4 extensions:
-    // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.
-    base::FilePath source_install_dir = data_dir_
-        .AppendASCII("app_list")
-        .AppendASCII("Extensions");
-    base::FilePath pref_path = source_install_dir
-        .DirName()
-        .Append(chrome::kPreferencesFilename);
-    InitializeInstalledExtensionService(pref_path, source_install_dir);
-    service_->Init();
-
-    // There should be 4 extensions in the test profile.
-    const extensions::ExtensionSet* extensions = service_->extensions();
-    ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
+    AppListTestBase::SetUp();
 
     CreateBuilder();
   }

@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -244,7 +245,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       } else {  // Don't install a blacklisted extension.
         install_result = kExtensionIsBlacklisted;
       }
-    } else if (!extension->is_ephemeral()) {
+    } else if (!util::IsEphemeralApp(extension->id(), profile_)) {
       // else extension is installed and enabled; no work to be done.
       CompleteInstall(install_result);
       return;

@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -231,7 +232,7 @@ void MessageCenterSettingsController::GetNotifierList(
     }
 
     // Exclude cached ephemeral apps that are not currently running.
-    if (extension->is_ephemeral() &&
+    if (extensions::util::IsEphemeralApp(extension->id(), profile) &&
         extensions::util::IsExtensionIdle(extension->id(), profile)) {
       continue;
     }

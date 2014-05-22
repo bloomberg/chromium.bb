@@ -19,6 +19,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 #include "ui/message_center/message_center.h"
@@ -92,11 +93,11 @@ class EphemeralAppBrowserTest : public PlatformAppBrowserTest {
   const Extension* InstallEphemeralApp(const char* test_path,
                                        Manifest::Location manifest_location) {
     const Extension* extension =
-        InstallExtensionWithSourceAndFlags(
+        InstallEphemeralAppWithSourceAndFlags(
             GetTestPath(test_path),
             1,
             manifest_location,
-            Extension::IS_EPHEMERAL);
+            Extension::NO_FLAGS);
     return extension;
   }
 
@@ -245,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReceiveMessagesWhenLaunched) {
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
   const Extension* app_v1 = InstallEphemeralApp(kMessagingReceiverApp);
   ASSERT_TRUE(app_v1);
-  ASSERT_TRUE(app_v1->is_ephemeral());
+  ASSERT_TRUE(extensions::util::IsEphemeralApp(app_v1->id(), profile()));
   std::string app_id = app_v1->id();
   base::Version app_original_version = *app_v1->version();
   app_v1 = NULL; // The extension object will be destroyed during update.
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
   const Extension* app_v2 = service->GetExtensionById(app_id, false);
   ASSERT_TRUE(app_v2);
   EXPECT_TRUE(app_v2->version()->CompareTo(app_original_version) > 0);
-  EXPECT_TRUE(app_v2->is_ephemeral());
+  EXPECT_TRUE(extensions::util::IsEphemeralApp(app_v2->id(), profile()));
 }
 
 // Verify that if notifications have been disabled for an ephemeral app, it will
@@ -406,6 +407,9 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, RetainData) {
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
       prefs->GetEvictedEphemeralAppsInfo());
   EXPECT_TRUE(IsAppInExtensionsInfo(*extensions_info, app_id));
+  scoped_ptr<ExtensionInfo> single_extension_info(
+    prefs->GetEvictedEphemeralAppInfo(app_id));
+  EXPECT_TRUE(single_extension_info.get());
 
   // The app should not be in the list of installed extensions.
   extensions_info = prefs->GetInstalledExtensionsInfo();
@@ -431,6 +435,34 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, RetainData) {
   EXPECT_TRUE(IsAppInExtensionsInfo(*extensions_info, app_id));
   extensions_info = prefs->GetEvictedEphemeralAppsInfo();
   EXPECT_FALSE(IsAppInExtensionsInfo(*extensions_info, app_id));
+  single_extension_info = prefs->GetEvictedEphemeralAppInfo(app_id);
+  EXPECT_FALSE(single_extension_info.get());
+}
+
+// Verify that preferences are updated correctly when an evicted ephemeral app
+// is re-installed permanently.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, InstallEvictedEphemeralApp) {
+  const Extension* app = InstallEphemeralApp(kRetainDataApp);
+  ASSERT_TRUE(app);
+
+  // Remove the app.
+  EvictApp(app->id());
+  app = NULL;
+
+  // Install the app permanently.
+  app = InstallPlatformApp(kRetainDataApp);
+  ASSERT_TRUE(app);
+
+  // Verify that preferences are correct.
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
+  ASSERT_TRUE(prefs);
+  EXPECT_FALSE(prefs->IsEphemeralApp(app->id()));
+
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
+      prefs->GetEvictedEphemeralAppsInfo());
+  EXPECT_FALSE(IsAppInExtensionsInfo(*extensions_info, app->id()));
+  extensions_info = prefs->GetInstalledExtensionsInfo();
+  EXPECT_TRUE(IsAppInExtensionsInfo(*extensions_info, app->id()));
 }
 
 // Verify that the data of regular installed apps are deleted on uninstall.

@@ -27,6 +27,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/feature_switch.h"
@@ -55,6 +56,11 @@ void OnWebApplicationInfoLoaded(
   // Use the old icons if they exist.
   synced_info.icons = loaded_info.icons;
   CreateOrUpdateBookmarkApp(extension_service.get(), synced_info);
+}
+
+bool ShouldSyncApp(const Extension* extension, Profile* profile) {
+  return extensions::sync_helper::IsSyncableApp(extension) &&
+      !extensions::util::IsEphemeralApp(extension->id(), profile);
 }
 
 }  // namespace
@@ -97,7 +103,7 @@ syncer::SyncChange ExtensionSyncService::PrepareToSyncUninstallExtension(
   // "back from the dead" style bugs, because sync will add-back the extension
   // that was uninstalled here when MergeDataAndStartSyncing is called.
   // See crbug.com/256795.
-  if (extensions::sync_helper::IsSyncableApp(extension)) {
+  if (ShouldSyncApp(extension, profile_)) {
     if (app_sync_bundle_.IsSyncing())
       return app_sync_bundle_.CreateSyncChangeToDelete(extension);
     else if (extensions_ready && !flare_.is_null())
@@ -128,7 +134,7 @@ void ExtensionSyncService::SyncEnableExtension(
     const extensions::Extension& extension) {
 
   // Syncing may not have started yet, so handle pending enables.
-  if (extensions::sync_helper::IsSyncableApp(&extension))
+  if (ShouldSyncApp(&extension, profile_))
     pending_app_enables_.OnExtensionEnabled(extension.id());
 
   if (extensions::sync_helper::IsSyncableExtension(&extension))
@@ -141,7 +147,7 @@ void ExtensionSyncService::SyncDisableExtension(
     const extensions::Extension& extension) {
 
   // Syncing may not have started yet, so handle pending enables.
-  if (extensions::sync_helper::IsSyncableApp(&extension))
+  if (ShouldSyncApp(&extension, profile_))
     pending_app_enables_.OnExtensionDisabled(extension.id());
 
   if (extensions::sync_helper::IsSyncableExtension(&extension))
@@ -532,7 +538,7 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
 
 void ExtensionSyncService::SyncExtensionChangeIfNeeded(
     const Extension& extension) {
-  if (extensions::sync_helper::IsSyncableApp(&extension)) {
+  if (ShouldSyncApp(&extension, profile_)) {
     if (app_sync_bundle_.IsSyncing())
       app_sync_bundle_.SyncChangeIfNeeded(extension);
     else if (extension_service_->is_ready() && !flare_.is_null())

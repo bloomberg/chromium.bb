@@ -21,6 +21,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,14 +72,6 @@ using extensions::ExtensionSet;
 using extensions::UnloadedExtensionInfo;
 
 namespace {
-
-bool ShouldDisplayInNewTabPage(const Extension* app, PrefService* prefs) {
-  bool blocked_by_policy =
-    (app->id() == extension_misc::kWebStoreAppId ||
-     app->id() == extension_misc::kEnterpriseWebStoreAppId) &&
-    prefs->GetBoolean(prefs::kHideWebStoreIcon);
-  return app->ShouldDisplayInNewTabPage() && !blocked_by_policy;
-}
 
 void RecordAppLauncherPromoHistogram(
       apps::AppLauncherPromoHistogramValues value) {
@@ -266,9 +259,10 @@ void AppLauncherHandler::Observe(int type,
       if (!extension->is_app())
         return;
 
-      PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-      if (!ShouldDisplayInNewTabPage(extension, prefs))
+      if (!extensions::ui_util::ShouldDisplayInNewTabPage(
+              extension, Profile::FromWebUI(web_ui()))) {
         return;
+      }
 
       scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
@@ -307,9 +301,10 @@ void AppLauncherHandler::Observe(int type,
       if (!extension->is_app())
         return;
 
-      PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-      if (!ShouldDisplayInNewTabPage(extension, prefs))
+      if (!extensions::ui_util::ShouldDisplayInNewTabPage(
+              extension, Profile::FromWebUI(web_ui()))) {
         return;
+      }
 
       scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
@@ -368,12 +363,14 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   base::ListValue* list = new base::ListValue();
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
 
   for (std::set<std::string>::iterator it = visible_apps_.begin();
        it != visible_apps_.end(); ++it) {
     const Extension* extension = extension_service_->GetInstalledExtension(*it);
-    if (extension && ShouldDisplayInNewTabPage(extension, prefs)) {
+    if (extension && extensions::ui_util::ShouldDisplayInNewTabPage(
+            extension, profile)) {
       base::DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     }

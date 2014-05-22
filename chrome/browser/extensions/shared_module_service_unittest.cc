@@ -76,6 +76,7 @@ testing::AssertionResult SharedModuleServiceUnitTest::InstallExtension(
                                  syncer::StringOrdinal(),
                                  false,  // No requirement errors.
                                  NOT_BLACKLISTED,
+                                 false,  // Not ephemeral.
                                  false);  // Don't wait for idle.
 
   // Verify that the extension is now installed.

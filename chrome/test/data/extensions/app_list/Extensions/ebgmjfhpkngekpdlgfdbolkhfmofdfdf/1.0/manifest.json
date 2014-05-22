@@ -1,0 +1,11 @@
+{
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtd5jeTaSP38on5y28W8f5MV+F4mvYMx0kOJXp8M+EteL9x5TS3et5a7W1jnduIdGtH0Xc5WKhvUnN2nUmEqjzzdRYvzjpWrTr73oFreebqNhJP47D75HdbWZqf8iCQwVJDKxbQ6OzHG8xoWd1ksNtQGUBUhMQXOt7d4/36TbansJ5neRS2akXY8GRWkGHtRJENNy85IoeV8erZc6WTeTM/M2wK/V3j9do1RmueKBU4Dz3H8Ix5/t2mJSantOPedf2We08+7CadB32+wE90OjPcuO9itaU1lhTXiUZeISLdzZv2ybyiOglkzP+wY4dWlDsF+5/3FN7mjQuWg4vg+pgwIDAQAB",
+  "version": "1.0",
+  "name": "Ephemeral App",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": [ "main.js" ]
+    }
+  }
+}

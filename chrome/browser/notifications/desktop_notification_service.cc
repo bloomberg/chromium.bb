@@ -54,6 +54,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -724,7 +725,7 @@ void DesktopNotificationService::Observe(
     return;
 
   // The settings for ephemeral apps will be persisted across cache evictions.
-  if (extension->is_ephemeral())
+  if (extensions::util::IsEphemeralApp(extension->id(), profile_))
     return;
 
   SetNotifierEnabled(notifier_id, true);

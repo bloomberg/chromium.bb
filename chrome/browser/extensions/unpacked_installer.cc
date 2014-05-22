@@ -323,6 +323,7 @@ void UnpackedInstaller::ConfirmInstall() {
       syncer::StringOrdinal(),
       false /* no requirement errors */,
       NOT_BLACKLISTED,
+      false /* not ephemeral */,
       false /* don't wait for idle */);
 }
 

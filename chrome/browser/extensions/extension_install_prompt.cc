@@ -27,6 +27,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -658,7 +659,9 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
       install_ui_->profile() &&
       extensions::ExtensionPrefs::Get(install_ui_->profile())->HasDisableReason(
           extension->id(), extensions::Extension::DISABLE_REMOTE_INSTALL);
-  if (extension->is_ephemeral())
+  bool is_ephemeral =
+      extensions::util::IsEphemeralApp(extension->id(), install_ui_->profile());
+  if (is_ephemeral)
     prompt_.set_type(LAUNCH_PROMPT);
   else if (is_remote_install)
     prompt_.set_type(REMOTE_INSTALL_PROMPT);

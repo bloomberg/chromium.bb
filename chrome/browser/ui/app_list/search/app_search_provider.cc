@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
@@ -84,7 +85,7 @@ void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions) {
        iter != extensions.end(); ++iter) {
     const extensions::Extension* app = iter->get();
 
-    if (!app->ShouldDisplayInAppLauncher())
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app, profile_))
       continue;
 
     if (profile_->IsOffTheRecord() &&

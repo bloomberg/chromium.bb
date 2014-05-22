@@ -77,6 +77,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
       extension.get(),
       extensions::Extension::ENABLED,
       false,
+      false,
       syncer::StringOrdinal::CreateInitialOrdinal(),
       std::string());
   ExtensionService* extension_service =

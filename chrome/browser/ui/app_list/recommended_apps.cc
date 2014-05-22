@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,7 +74,7 @@ void RecommendedApps::Update() {
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end();
        ++app) {
-    if (!(*app)->ShouldDisplayInAppLauncher())
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_))
       continue;
 
     sorted_apps.push_back(

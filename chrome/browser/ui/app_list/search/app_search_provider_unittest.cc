@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/chrome_constants.h"
@@ -19,33 +19,14 @@
 namespace app_list {
 namespace test {
 
-const char kHostedAppId[] = "dceacbkfkmllgmjmbhgkpjegnodmildf";
-const char kPackagedApp1Id[] = "emfkafnhnpcmabnnkckkchdilgeoekbo";
-
-class AppSearchProviderTest : public ExtensionServiceTestBase {
+class AppSearchProviderTest : public AppListTestBase {
  public:
   AppSearchProviderTest() {}
   virtual ~AppSearchProviderTest() {}
 
-  // ExtensionServiceTestBase overrides:
+  // AppListTestBase overrides:
   virtual void SetUp() OVERRIDE {
-    ExtensionServiceTestBase::SetUp();
-
-    // Load "app_list" extensions test profile.
-    // The test profile has 4 extensions:
-    // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.
-    base::FilePath source_install_dir = data_dir_
-        .AppendASCII("app_list")
-        .AppendASCII("Extensions");
-    base::FilePath pref_path = source_install_dir
-        .DirName()
-        .Append(chrome::kPreferencesFilename);
-    InitializeInstalledExtensionService(pref_path, source_install_dir);
-    service_->Init();
-
-    // There should be 4 extensions in the test profile.
-    const extensions::ExtensionSet* extensions = service_->extensions();
-    ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
+    AppListTestBase::SetUp();
 
     app_search_.reset(new AppSearchProvider(profile_.get(), NULL));
   }

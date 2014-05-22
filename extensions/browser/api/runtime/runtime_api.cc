@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -227,7 +228,7 @@ void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
 void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
   // Ephemeral apps are not considered to be installed and do not receive
   // the onInstalled() event.
-  if (extension->is_ephemeral())
+  if (util::IsEphemeralApp(extension->id(), browser_context_))
     return;
 
   Version old_version = delegate_->GetPreviousExtensionVersion(extension);
@@ -245,7 +246,7 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
 void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
   // Ephemeral apps are not considered to be installed, so the uninstall URL
   // is not invoked when they are removed.
-  if (extension->is_ephemeral())
+  if (util::IsEphemeralApp(extension->id(), browser_context_))
     return;
 
   RuntimeEventRouter::OnExtensionUninstalled(browser_context_, extension->id());

@@ -485,6 +485,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     prefs()->SetDelayedInstallInfo(extension.get(),
                                    Extension::ENABLED,
                                    false,
+                                   false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal(),
                                    std::string());
@@ -610,6 +611,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     prefs()->SetDelayedInstallInfo(new_extension.get(),
                                    Extension::ENABLED,
                                    false,
+                                   false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal(),
                                    "Param");
@@ -649,6 +651,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::DISABLED,
                                   false,
+                                  false,
                                   syncer::StringOrdinal(),
                                   "Param");
   }
@@ -671,6 +674,7 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
+                                  false,
                                   false,
                                   syncer::StringOrdinal(),
                                   std::string());

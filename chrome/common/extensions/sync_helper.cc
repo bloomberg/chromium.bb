@@ -82,8 +82,7 @@ bool IsSyncable(const Extension* extension) {
   // apps, creates a new profile (which get default apps) and then enables sync
   // for it, then their profile everywhere gets the default apps.
   bool is_syncable = (extension->location() == Manifest::INTERNAL &&
-                      !extension->was_installed_by_default() &&
-                      !extension->is_ephemeral());
+                      !extension->was_installed_by_default());
   // Sync the chrome web store to maintain its position on the new tab page.
   is_syncable |= (extension->id() == extension_misc::kWebStoreAppId);
   // Sync the chrome component app to maintain its position on the app list.

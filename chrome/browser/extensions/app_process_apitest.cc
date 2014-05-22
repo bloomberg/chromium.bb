@@ -312,6 +312,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
                                 false /* no requirement errors */,
                                 extensions::NOT_BLACKLISTED,
+                                false /* not ephemeral */,
                                 false /* don't wait for idle */);
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->from_bookmark());

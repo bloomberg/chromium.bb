@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -739,7 +740,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   const ExtensionSet& enabled_set = registry->enabled_extensions();
   for (ExtensionSet::const_iterator extension = enabled_set.begin();
        extension != enabled_set.end(); ++extension) {
-    if ((*extension)->ShouldDisplayInExtensionSettings()) {
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension, profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
           GetInspectablePagesForExtension(extension->get(), true),
@@ -749,7 +750,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   const ExtensionSet& disabled_set = registry->disabled_extensions();
   for (ExtensionSet::const_iterator extension = disabled_set.begin();
        extension != disabled_set.end(); ++extension) {
-    if ((*extension)->ShouldDisplayInExtensionSettings()) {
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension, profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
           GetInspectablePagesForExtension(extension->get(), false),
@@ -760,7 +761,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   std::vector<ExtensionPage> empty_pages;
   for (ExtensionSet::const_iterator extension = terminated_set.begin();
        extension != terminated_set.end(); ++extension) {
-    if ((*extension)->ShouldDisplayInExtensionSettings()) {
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension, profile)) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
           empty_pages,  // Terminated process has no active pages.

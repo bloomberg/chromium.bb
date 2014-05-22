@@ -569,6 +569,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
                            syncer::StringOrdinal(),
                            false /* no requirement errors */,
                            extensions::NOT_BLACKLISTED,
+                           false /* not ephemeral */,
                            false /* don't wait for idle */);
   return extension;
 }

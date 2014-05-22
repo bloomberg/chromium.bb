@@ -183,6 +183,10 @@ class CrxInstaller
     install_wait_for_idle_ = val;
   }
 
+  void set_is_ephemeral(bool val) {
+    is_ephemeral_ = val;
+  }
+
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
   Profile* profile() { return installer_.profile(); }
@@ -397,6 +401,9 @@ class CrxInstaller
   // Whether the update is initiated by the user from the extension settings
   // page.
   bool update_from_settings_page_;
+
+  // True if an ephemeral app is being installed.
+  bool is_ephemeral_;
 
   // Gives access to common methods and data of an extension installer.
   ExtensionInstaller installer_;

@@ -74,10 +74,6 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
 bool IsExtensionIdle(const std::string& extension_id,
                      content::BrowserContext* context);
 
-// Returns true if |extension_id| is installed permanently and not ephemerally.
-bool IsExtensionInstalledPermanently(const std::string& extension_id,
-                                     content::BrowserContext* context);
-
 // Returns the site of the |extension_id|, given the associated |context|.
 // Suitable for use with BrowserContext::GetStoragePartitionForSite().
 GURL GetSiteForExtensionId(const std::string& extension_id,

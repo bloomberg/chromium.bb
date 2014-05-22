@@ -281,6 +281,7 @@ class ExtensionService
       const syncer::StringOrdinal& page_ordinal,
       bool has_requirement_errors,
       extensions::BlacklistState blacklist_state,
+      bool is_ephemeral,
       bool wait_for_idle);
 
   // Checks for delayed installation for all pending installs.
@@ -492,6 +493,7 @@ class ExtensionService
   void AddNewOrUpdatedExtension(const extensions::Extension* extension,
                                 extensions::Extension::State initial_state,
                                 extensions::BlacklistState blacklist_state,
+                                bool is_ephemeral,
                                 const syncer::StringOrdinal& page_ordinal,
                                 const std::string& install_parameter);
 

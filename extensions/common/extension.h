@@ -165,8 +165,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // Unused - was part of an abandoned experiment.
     REQUIRE_PERMISSIONS_CONSENT = 1 << 8,
 
-    // |IS_EPHEMERAL| identifies ephemeral apps (experimental), which are not
-    // permanently installed.
+    // Unused - this flag has been moved to ExtensionPrefs.
     IS_EPHEMERAL = 1 << 9,
 
     // |WAS_INSTALLED_BY_OEM| installed by an OEM (e.g on Chrome OS) and should
@@ -340,7 +339,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool was_installed_by_oem() const {
     return (creation_flags_ & WAS_INSTALLED_BY_OEM) != 0;
   }
-  bool is_ephemeral() const { return (creation_flags_ & IS_EPHEMERAL) != 0; }
 
   // App-related.
   bool is_app() const;

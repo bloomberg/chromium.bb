@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -394,7 +395,7 @@ void AddExtensionDisabledError(ExtensionService* service,
                                bool is_remote_install) {
   // Do not display notifications for ephemeral apps that have been disabled.
   // Instead, a prompt will be shown the next time the app is launched.
-  if (extension->is_ephemeral())
+  if (util::IsEphemeralApp(extension->id(), service->profile()))
     return;
 
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(

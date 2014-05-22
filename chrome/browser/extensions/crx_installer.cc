@@ -132,6 +132,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
       blacklist_state_(extensions::NOT_BLACKLISTED),
       install_wait_for_idle_(true),
       update_from_settings_page_(false),
+      is_ephemeral_(false),
       installer_(service_weak->profile()) {
   installer_task_runner_ = service_weak->GetFileTaskRunner();
   if (!approval)
@@ -161,9 +162,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
   }
 
   show_dialog_callback_ = approval->show_dialog_callback;
-
-  if (approval->is_ephemeral)
-    creation_flags_ |= Extension::IS_EPHEMERAL;
+  is_ephemeral_ = approval->is_ephemeral;
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -812,6 +811,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
                                       page_ordinal_,
                                       has_requirement_errors_,
                                       blacklist_state_,
+                                      is_ephemeral_,
                                       install_wait_for_idle_);
   NotifyCrxInstallComplete(true);
 }

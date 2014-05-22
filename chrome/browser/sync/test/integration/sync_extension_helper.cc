@@ -75,6 +75,7 @@ std::string SyncExtensionHelper::InstallExtension(
                              syncer::StringOrdinal(),
                              false /* no requirement errors */,
                              extensions::NOT_BLACKLISTED,
+                             false /* not ephemeral */,
                              false /* don't wait for idle to install */);
   return extension->id();
 }

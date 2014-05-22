@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -158,7 +159,7 @@ void ExtensionAppProvider::RefreshAppList() {
   for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* app = iter->get();
-    if (!app->ShouldDisplayInAppLauncher())
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app, profile_))
       continue;
     // Note: Apps that appear in the NTP only are not added here since this
     // provider is currently only used in the app launcher.

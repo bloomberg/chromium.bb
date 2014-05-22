@@ -171,13 +171,6 @@ bool IsExtensionIdle(const std::string& extension_id,
   return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
 }
 
-bool IsExtensionInstalledPermanently(const std::string& extension_id,
-                                     content::BrowserContext* context) {
-  const Extension* extension = ExtensionRegistry::Get(context)->
-      GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-  return extension && !extension->is_ephemeral();
-}
-
 GURL GetSiteForExtensionId(const std::string& extension_id,
                            content::BrowserContext* context) {
   return content::SiteInstance::GetSiteForURL(

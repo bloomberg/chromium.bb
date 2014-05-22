@@ -6884,6 +6884,7 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
       syncer::StringOrdinal(),
       false /* has requirement errors */,
       extensions::BLACKLISTED_MALWARE,
+      false /* is ephemeral */,
       false /* wait for idle */);
   base::RunLoop().RunUntilIdle();
 

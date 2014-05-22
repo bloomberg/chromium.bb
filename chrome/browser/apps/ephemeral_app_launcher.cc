@@ -204,9 +204,7 @@ bool EphemeralAppLauncher::CheckInstallValid(
       base::FilePath(),
       extensions::Manifest::INTERNAL,
       manifest,
-      Extension::REQUIRE_KEY |
-          Extension::FROM_WEBSTORE |
-          Extension::IS_EPHEMERAL,
+      Extension::REQUIRE_KEY | Extension::FROM_WEBSTORE,
       id(),
       error);
   if (!extension_.get()) {

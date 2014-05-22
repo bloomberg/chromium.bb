@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,8 +20,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -32,20 +30,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 using extensions::Extension;
-
-namespace {
-
-bool ShouldDisplayInAppLauncher(Profile* profile,
-                                scoped_refptr<const Extension> app) {
-  // If it's the web store, check the policy.
-  bool blocked_by_policy =
-      (app->id() == extension_misc::kWebStoreAppId ||
-       app->id() == extension_misc::kEnterpriseWebStoreAppId) &&
-      profile->GetPrefs()->GetBoolean(prefs::kHideWebStoreIcon);
-  return app->ShouldDisplayInAppLauncher() && !blocked_by_policy;
-}
-
-}  // namespace
 
 ExtensionAppModelBuilder::ExtensionAppModelBuilder(
     AppListControllerDelegate* controller)
@@ -141,7 +125,7 @@ void ExtensionAppModelBuilder::OnInstallFailure(
 }
 
 void ExtensionAppModelBuilder::OnExtensionLoaded(const Extension* extension) {
-  if (!extension->ShouldDisplayInAppLauncher())
+  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile_))
     return;
 
   DVLOG(2) << service_ << ": OnExtensionLoaded: "
@@ -181,7 +165,7 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(
     const Extension* extension) {
-  if (!extension->ShouldDisplayInAppLauncher())
+  if (!extensions::ui_util::ShouldDisplayInAppLauncher(extension, profile_))
     return;
 
   ExtensionAppItem* existing_item = GetExtensionAppItem(extension->id());
@@ -234,7 +218,7 @@ void ExtensionAppModelBuilder::PopulateApps() {
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
-    if (!ShouldDisplayInAppLauncher(profile_, *app))
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_))
       continue;
     InsertApp(CreateAppItem((*app)->id(),
                             "",

@@ -768,6 +768,8 @@
         'browser/extensions/extension_toolbar_model_factory.h',
         'browser/extensions/extension_uninstall_dialog.cc',
         'browser/extensions/extension_uninstall_dialog.h',
+        'browser/extensions/extension_ui_util.cc',
+        'browser/extensions/extension_ui_util.h',
         'browser/extensions/extension_util.cc',
         'browser/extensions/extension_util.h',
         'browser/extensions/extension_view_host.cc',
