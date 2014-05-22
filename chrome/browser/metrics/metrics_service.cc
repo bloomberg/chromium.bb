@@ -167,7 +167,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -194,7 +193,6 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
@@ -880,24 +878,6 @@ void MetricsService::InitializeMetricsState() {
 
   // Bookkeeping for the uninstall metrics.
   IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
-
-  // Get stats on use of command line.
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  size_t common_commands = 0;
-  if (command_line->HasSwitch(switches::kUserDataDir)) {
-    ++common_commands;
-    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineDatDirCount", 1);
-  }
-
-  if (command_line->HasSwitch(switches::kApp)) {
-    ++common_commands;
-    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineAppModeCount", 1);
-  }
-
-  size_t switch_count = command_line->GetSwitches().size();
-  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineFlagCount", switch_count);
-  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineUncommonFlagCount",
-                           switch_count - common_commands);
 
   // Kick off the process of saving the state (so the uptime numbers keep
   // getting updated) every n minutes.

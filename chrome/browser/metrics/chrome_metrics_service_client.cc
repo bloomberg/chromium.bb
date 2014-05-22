@@ -5,7 +5,9 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_otr_state.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/render_messages.h"
@@ -76,6 +79,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient()
       num_async_histogram_fetches_in_progress_(0),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  RecordCommandLineMetrics();
   RegisterForNotifications();
 }
 
@@ -208,6 +212,28 @@ void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
 
   waiting_for_collect_final_metrics_step_ = false;
   collect_final_metrics_done_callback_.Run();
+}
+
+void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
+  // Get stats on use of command line.
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  size_t common_commands = 0;
+  if (command_line->HasSwitch(switches::kUserDataDir)) {
+    ++common_commands;
+    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineDatDirCount", 1);
+  }
+
+  if (command_line->HasSwitch(switches::kApp)) {
+    ++common_commands;
+    UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineAppModeCount", 1);
+  }
+
+  // TODO(rohitrao): Should these be logged on iOS as well?
+  // http://crbug.com/375794
+  size_t switch_count = command_line->GetSwitches().size();
+  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineFlagCount", switch_count);
+  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineUncommonFlagCount",
+                           switch_count - common_commands);
 }
 
 void ChromeMetricsServiceClient::RegisterForNotifications() {
