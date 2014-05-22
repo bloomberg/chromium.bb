@@ -352,7 +352,7 @@ private:
     RefPtr<Node> m_dragTarget;
     bool m_shouldOnlyFireDragOverEvent;
 
-    RefPtr<HTMLFrameSetElement> m_frameSetBeingResized;
+    RefPtrWillBePersistent<HTMLFrameSetElement> m_frameSetBeingResized;
 
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
 

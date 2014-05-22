@@ -66,8 +66,8 @@ public:
     virtual LayoutRect elementRect() const OVERRIDE;
 
 private:
-    RefPtr<HTMLAreaElement> m_areaElement;
-    RefPtr<HTMLMapElement> m_mapElement;
+    RefPtrWillBePersistent<HTMLAreaElement> m_areaElement;
+    RefPtrWillBePersistent<HTMLMapElement> m_mapElement;
 
     virtual void detachFromParent() OVERRIDE;
 

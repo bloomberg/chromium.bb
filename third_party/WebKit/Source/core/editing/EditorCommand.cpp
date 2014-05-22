@@ -488,7 +488,7 @@ static bool executeInsertBacktab(LocalFrame& frame, Event* event, EditorCommandS
 static bool executeInsertHorizontalRule(LocalFrame& frame, Event*, EditorCommandSource, const String& value)
 {
     ASSERT(frame.document());
-    RefPtr<HTMLHRElement> rule = HTMLHRElement::create(*frame.document());
+    RefPtrWillBeRawPtr<HTMLHRElement> rule = HTMLHRElement::create(*frame.document());
     if (!value.isEmpty())
         rule->setIdAttribute(AtomicString(value));
     return executeInsertNode(frame, rule.release());
