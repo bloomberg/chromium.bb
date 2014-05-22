@@ -69,7 +69,7 @@
 //   | "wrapKey"    | key wrap                                              |
 //   | "unwrapKey"  | key unwrap                                            |
 //   | "deriveKey"  | key derivation                                        |
-//   | "deriveBits" | key derivation TODO(padolph): not currently supported |
+//   | "deriveBits" | key derivation                                        |
 //   +-------+--------------------------------------------------------------+
 //
 // - use (Key Use)
@@ -227,11 +227,10 @@ blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
 }
 
 // Web Crypto equivalent usage mask for JWK 'use' = 'enc'.
-// TODO(padolph): Add 'deriveBits' once supported by Blink.
 const blink::WebCryptoKeyUsageMask kJwkEncUsage =
     blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
     blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey |
-    blink::WebCryptoKeyUsageDeriveKey;
+    blink::WebCryptoKeyUsageDeriveKey | blink::WebCryptoKeyUsageDeriveBits;
 // Web Crypto equivalent usage mask for JWK 'use' = 'sig'.
 const blink::WebCryptoKeyUsageMask kJwkSigUsage =
     blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;

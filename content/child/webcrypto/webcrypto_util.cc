@@ -67,7 +67,7 @@ const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
     {"encrypt", blink::WebCryptoKeyUsageEncrypt},
     {"decrypt", blink::WebCryptoKeyUsageDecrypt},
     {"deriveKey", blink::WebCryptoKeyUsageDeriveKey},
-    // TODO(padolph): Add 'deriveBits' once supported by Blink.
+    {"deriveBits", blink::WebCryptoKeyUsageDeriveBits},
     {"sign", blink::WebCryptoKeyUsageSign},
     {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey},
     {"verify", blink::WebCryptoKeyUsageVerify},
