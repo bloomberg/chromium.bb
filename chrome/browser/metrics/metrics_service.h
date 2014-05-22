@@ -211,6 +211,10 @@ class MetricsService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // This should be called when the application is not idle, i.e. the user seems
+  // to be interacting with the application.
+  void OnApplicationNotIdle();
+
   // Invoked when we get a WM_SESSIONEND. This places a value in prefs that is
   // reset when RecordCompletedSessionEnd is invoked.
   void RecordStartOfSessionEnd();

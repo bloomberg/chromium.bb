@@ -601,23 +601,11 @@ bool MetricsService::reporting_active() const {
 void MetricsService::SetUpNotifications(
     content::NotificationRegistrar* registrar,
     content::NotificationObserver* observer) {
-  registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, chrome::NOTIFICATION_TAB_PARENTED,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, chrome::NOTIFICATION_TAB_CLOSING,
-                 content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_LOAD_START,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                  content::NotificationService::AllSources());
 }
 
@@ -647,15 +635,6 @@ void MetricsService::Observe(int type,
   DCHECK(IsSingleThreaded());
 
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_OPENED:
-    case chrome::NOTIFICATION_BROWSER_CLOSED:
-    case chrome::NOTIFICATION_OMNIBOX_OPENED_URL:
-    case chrome::NOTIFICATION_TAB_PARENTED:
-    case chrome::NOTIFICATION_TAB_CLOSING:
-    case content::NOTIFICATION_LOAD_STOP:
-      // These notifications are used only to break out of idle mode.
-      break;
-
     case content::NOTIFICATION_LOAD_START: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
@@ -682,10 +661,7 @@ void MetricsService::Observe(int type,
 
     default:
       NOTREACHED();
-      break;
   }
-
-  HandleIdleSinceLastTransmission(false);
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -695,6 +671,11 @@ void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
   if (!in_idle && idle_since_last_transmission_)
     StartSchedulerIfNecessary();
   idle_since_last_transmission_ = in_idle;
+}
+
+void MetricsService::OnApplicationNotIdle() {
+  if (recording_active_)
+    HandleIdleSinceLastTransmission(false);
 }
 
 void MetricsService::RecordStartOfSessionEnd() {
@@ -1216,7 +1197,7 @@ void MetricsService::StartScheduledUpload() {
   // If recording has been turned off, the scheduler doesn't need to run.
   // If reporting is off, proceed if the initial log hasn't been created, since
   // that has to happen in order for logs to be cut and stored when persisting.
-  // TODO(stuartmorgan): Call Stop() on the schedule when reporting and/or
+  // TODO(stuartmorgan): Call Stop() on the scheduler when reporting and/or
   // recording are turned off instead of letting it fire and then aborting.
   if (idle_since_last_transmission_ ||
       !recording_active() ||
