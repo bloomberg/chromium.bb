@@ -10,7 +10,6 @@ error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a U
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: NotSupportedError: RsaHashedKeyGenParams: hash: Algorithm: Unrecognized name
-error is: DataError: The "publicExponent" is either empty, zero, or too large
 PASS successfullyParsed is true
 
 TEST COMPLETE

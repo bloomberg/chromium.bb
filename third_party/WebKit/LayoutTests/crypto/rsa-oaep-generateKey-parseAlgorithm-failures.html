@@ -43,10 +43,6 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'NOT-A-HASH'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
-
-    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
-}).then(failAndFinishJSTest, function(result) {
-    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>
