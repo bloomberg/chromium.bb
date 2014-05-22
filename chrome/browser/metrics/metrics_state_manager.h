@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -27,8 +28,6 @@ class MetricsStateManager {
   virtual ~MetricsStateManager();
 
   // Returns true if the user opted in to sending metric reports.
-  // TODO(asvitkine): This function does not report the correct value on
-  // Android, see http://crbug.com/362192.
   bool IsMetricsReportingEnabled();
 
   // Returns the client ID for this client, or the empty string if the user is
@@ -56,7 +55,9 @@ class MetricsStateManager {
 
   // Creates the MetricsStateManager, enforcing that only a single instance
   // of the class exists at a time. Returns NULL if an instance exists already.
-  static scoped_ptr<MetricsStateManager> Create(PrefService* local_state);
+  static scoped_ptr<MetricsStateManager> Create(
+      PrefService* local_state,
+      const base::Callback<bool(void)>& is_reporting_enabled_callback);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -78,10 +79,13 @@ class MetricsStateManager {
     ENTROPY_SOURCE_HIGH,
   };
 
-  // Creates the MetricsStateManager with the given |local_state|. Clients
-  // should instead use Create(), which enforces a single instance of this class
-  // is alive at any given time.
-  explicit MetricsStateManager(PrefService* local_state);
+  // Creates the MetricsStateManager with the given |local_state|. Calls
+  // |is_reporting_enabled_callback| to query whether metrics reporting is
+  // enabled. Clients should instead use Create(), which enforces a single
+  // instance of this class is alive at any given time.
+  MetricsStateManager(
+      PrefService* local_state,
+      const base::Callback<bool(void)>& is_reporting_enabled_callback);
 
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
@@ -104,7 +108,9 @@ class MetricsStateManager {
   static bool instance_exists_;
 
   // Weak pointer to the local state prefs store.
-  PrefService* local_state_;
+  PrefService* const local_state_;
+
+  const base::Callback<bool(void)> is_reporting_enabled_callback_;
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;

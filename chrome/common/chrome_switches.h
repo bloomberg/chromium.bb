@@ -151,7 +151,6 @@ extern const char kEnableFastUnload[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];
 extern const char kEnableManagedStorage[];
-extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNetworkTime[];
