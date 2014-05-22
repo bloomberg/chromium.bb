@@ -422,6 +422,16 @@ class VideoTrack : public Track {
   uint64 display_height() const { return display_height_; }
   void set_display_width(uint64 width) { display_width_ = width; }
   uint64 display_width() const { return display_width_; }
+
+  void set_crop_left(uint64 crop_left) { crop_left_ = crop_left; }
+  uint64 crop_left() const { return crop_left_; }
+  void set_crop_right(uint64 crop_right) { crop_right_ = crop_right; }
+  uint64 crop_right() const { return crop_right_; }
+  void set_crop_top(uint64 crop_top) { crop_top_ = crop_top; }
+  uint64 crop_top() const { return crop_top_; }
+  void set_crop_bottom(uint64 crop_bottom) { crop_bottom_ = crop_bottom; }
+  uint64 crop_bottom() const { return crop_bottom_; }
+
   void set_frame_rate(double frame_rate) { frame_rate_ = frame_rate; }
   double frame_rate() const { return frame_rate_; }
   void set_height(uint64 height) { height_ = height; }
@@ -438,6 +448,10 @@ class VideoTrack : public Track {
   // Video track element names.
   uint64 display_height_;
   uint64 display_width_;
+  uint64 crop_left_;
+  uint64 crop_right_;
+  uint64 crop_top_;
+  uint64 crop_bottom_;
   double frame_rate_;
   uint64 height_;
   uint64 stereo_mode_;

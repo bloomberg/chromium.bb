@@ -793,6 +793,10 @@ VideoTrack::VideoTrack(unsigned int* seed)
     : Track(seed),
       display_height_(0),
       display_width_(0),
+      crop_left_(0),
+      crop_right_(0),
+      crop_top_(0),
+      crop_bottom_(0),
       frame_rate_(0.0),
       height_(0),
       stereo_mode_(0),
@@ -846,27 +850,50 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
     return false;
   if (!WriteEbmlElement(writer, kMkvPixelHeight, height_))
     return false;
-  if (display_width_ > 0)
+  if (display_width_ > 0) {
     if (!WriteEbmlElement(writer, kMkvDisplayWidth, display_width_))
       return false;
-  if (display_height_ > 0)
+  }
+  if (display_height_ > 0) {
     if (!WriteEbmlElement(writer, kMkvDisplayHeight, display_height_))
       return false;
-  if (stereo_mode_ > kMono)
+  }
+  if (crop_left_ > 0){
+    if (!WriteEbmlElement(writer, kMkvPixelCropLeft, crop_left_))
+      return false;
+  }
+  if (crop_right_ > 0){
+    if (!WriteEbmlElement(writer, kMkvPixelCropRight, crop_right_))
+      return false;
+  }
+  if (crop_top_ > 0){
+    if (!WriteEbmlElement(writer, kMkvPixelCropTop, crop_top_))
+      return false;
+  }
+  if (crop_bottom_ > 0){
+    if (!WriteEbmlElement(writer, kMkvPixelCropBottom, crop_bottom_))
+      return false;
+  }
+  if (stereo_mode_ > kMono) {
     if (!WriteEbmlElement(writer, kMkvStereoMode, stereo_mode_))
       return false;
-  if (alpha_mode_ > kNoAlpha)
+  }
+  if (alpha_mode_ > kNoAlpha) {
     if (!WriteEbmlElement(writer, kMkvAlphaMode, alpha_mode_))
       return false;
-  if (frame_rate_ > 0.0)
+  }
+  if (frame_rate_ > 0.0) {
     if (!WriteEbmlElement(writer, kMkvFrameRate,
-                          static_cast<float>(frame_rate_)))
+                          static_cast<float>(frame_rate_))) {
       return false;
+    }
+  }
 
   const int64 stop_position = writer->Position();
   if (stop_position < 0 ||
-      stop_position - payload_position != static_cast<int64>(size))
+      stop_position - payload_position != static_cast<int64>(size)) {
     return false;
+  }
 
   return true;
 }
@@ -1145,6 +1172,8 @@ Chapter::~Chapter() {}
 
 void Chapter::Init(unsigned int* seed) {
   id_ = NULL;
+  start_timecode_ = 0;
+  end_timecode_ = 0;
   displays_ = NULL;
   displays_size_ = 0;
   displays_count_ = 0;
