@@ -82,6 +82,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     *mailbox =
         cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint);
   }
+  mailbox->set_allow_overlay(client_mailbox.allowOverlay);
 
   if (mailbox->IsValid()) {
     *release_callback = cc::SingleReleaseCallback::Create(base::Bind(
