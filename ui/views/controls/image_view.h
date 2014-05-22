@@ -87,7 +87,9 @@ class VIEWS_EXPORT ImageView : public View {
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+
+  // ui::EventTarget:
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
 
  private:
   void OnPaintImage(gfx::Canvas* canvas);
