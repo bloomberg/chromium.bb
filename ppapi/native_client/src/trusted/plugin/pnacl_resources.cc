@@ -11,8 +11,6 @@
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
-#include "third_party/jsoncpp/source/include/json/reader.h"
-#include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace plugin {
 

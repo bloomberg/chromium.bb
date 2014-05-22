@@ -72,7 +72,6 @@
         '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
         '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
-        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
       ],
       'conditions': [
         ['OS=="mac"', {
