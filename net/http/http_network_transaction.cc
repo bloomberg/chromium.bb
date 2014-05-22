@@ -195,9 +195,8 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   }
 
   // Channel ID is disabled if privacy mode is enabled for this request.
-  bool channel_id_enabled = server_ssl_config_.channel_id_enabled &&
-      (request_->privacy_mode == PRIVACY_MODE_DISABLED);
-  server_ssl_config_.channel_id_enabled = channel_id_enabled;
+  if (request_->privacy_mode == PRIVACY_MODE_ENABLED)
+    server_ssl_config_.channel_id_enabled = false;
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);
