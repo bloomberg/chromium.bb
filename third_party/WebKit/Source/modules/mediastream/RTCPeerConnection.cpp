@@ -632,6 +632,11 @@ void RTCPeerConnection::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler*
     scheduleDispatchEvent(RTCDataChannelEvent::create(EventTypeNames::datachannel, false, false, channel.release()));
 }
 
+void RTCPeerConnection::releasePeerConnectionHandler()
+{
+    stop();
+}
+
 const AtomicString& RTCPeerConnection::interfaceName() const
 {
     return EventTargetNames::RTCPeerConnection;
@@ -666,6 +671,8 @@ void RTCPeerConnection::stop()
         (*i)->stop();
 
     m_dispatchScheduledEventRunner.stop();
+
+    m_peerHandler.clear();
 }
 
 void RTCPeerConnection::changeSignalingState(SignalingState signalingState)

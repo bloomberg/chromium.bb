@@ -76,6 +76,7 @@ public:
     virtual void didAddRemoteStream(const WebMediaStream&) = 0;
     virtual void didRemoveRemoteStream(const WebMediaStream&) = 0;
     virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
+    virtual void releasePeerConnectionHandler() = 0;
 };
 
 } // namespace blink

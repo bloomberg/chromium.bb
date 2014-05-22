@@ -120,6 +120,7 @@ public:
     virtual void didAddRemoteStream(const blink::WebMediaStream&) OVERRIDE;
     virtual void didRemoveRemoteStream(const blink::WebMediaStream&) OVERRIDE;
     virtual void didAddRemoteDataChannel(blink::WebRTCDataChannelHandler*) OVERRIDE;
+    virtual void releasePeerConnectionHandler() OVERRIDE;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
