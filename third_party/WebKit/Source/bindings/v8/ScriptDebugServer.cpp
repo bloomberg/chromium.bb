@@ -577,7 +577,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
     if (script.IsEmpty())
         return;
 
-    *scriptId = String::number(script->GetId());
+    *scriptId = String::number(script->GetUnboundScript()->GetId());
     m_compiledScripts.set(*scriptId, adoptPtr(new ScopedPersistent<v8::Script>(m_isolate, script)));
 }
 
