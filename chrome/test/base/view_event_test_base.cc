@@ -111,22 +111,13 @@ void ViewEventTestBase::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-#if defined(USE_ASH)
-#if !defined(OS_CHROMEOS)
-  // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
-  // interactive_ui_tests is brought up on that platform.
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
-
-#else  // !OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   // Ash Shell can't just live on its own without a browser process, we need to
   // also create the message center.
   message_center::MessageCenter::Initialize();
-#if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::InitializeWithStub();
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
-#endif  // OS_CHROMEOS
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
   ash::ShellInitParams init_params;
@@ -136,7 +127,11 @@ void ViewEventTestBase::SetUp() {
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
   context->GetHost()->Show();
-#endif  // !OS_CHROMEOS
+#elif defined(USE_ASH)
+  // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
+  // interactive_ui_tests is brought up on that platform.
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
   aura::Env::CreateInstance(true);
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
@@ -146,7 +141,7 @@ void ViewEventTestBase::SetUp() {
   aura_test_helper_->SetUp();
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
   context = aura_test_helper_->root_window();
-#endif  // !USE_ASH && USE_AURA
+#endif
 
   window_ = views::Widget::CreateWindowWithContext(this, context);
 }
