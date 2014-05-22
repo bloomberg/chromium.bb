@@ -266,50 +266,58 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
     didReceiveResponse(resource->identifier(), response);
 }
 
+void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier, const ResourceResponse& response)
+{
+    // Notifying the inspector here is necessary because a call to preflightFailure() might synchronously
+    // cause the underlying ResourceLoader to be cancelled before it tells the inspector about the response.
+    // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
+    // will default to "other" instead of something more descriptive.
+    DocumentLoader* loader = m_document.frame()->loader().documentLoader();
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
+    InspectorInstrumentation::didReceiveResourceResponse(m_document.frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
+
+    String accessControlErrorDescription;
+
+    if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
+        preflightFailure(response.url().string(), accessControlErrorDescription);
+        return;
+    }
+
+    if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
+        preflightFailure(response.url().string(), accessControlErrorDescription);
+        return;
+    }
+
+    OwnPtr<CrossOriginPreflightResultCacheItem> preflightResult = adoptPtr(new CrossOriginPreflightResultCacheItem(m_options.allowCredentials));
+    if (!preflightResult->parse(response, accessControlErrorDescription)
+        || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
+        || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
+        preflightFailure(response.url().string(), accessControlErrorDescription);
+        return;
+    }
+
+    CrossOriginPreflightResultCache::shared().appendEntry(securityOrigin()->toString(), m_actualRequest->url(), preflightResult.release());
+}
+
 void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
     ASSERT(m_client);
 
-    String accessControlErrorDescription;
     if (m_actualRequest) {
-        // Notifying the inspector here is necessary because a call to preflightFailure() might synchronously
-        // cause the underlying ResourceLoader to be cancelled before it tells the inspector about the response.
-        // In that case, if we don't tell the inspector about the response now, the resource type in the inspector
-        // will default to "other" instead of something more descriptive.
-        DocumentLoader* loader = m_document.frame()->loader().documentLoader();
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
-        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-        InspectorInstrumentation::didReceiveResourceResponse(m_document.frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
-
-        if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-            preflightFailure(response.url().string(), accessControlErrorDescription);
-            return;
-        }
-
-        if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-            preflightFailure(response.url().string(), accessControlErrorDescription);
-            return;
-        }
-
-        OwnPtr<CrossOriginPreflightResultCacheItem> preflightResult = adoptPtr(new CrossOriginPreflightResultCacheItem(m_options.allowCredentials));
-        if (!preflightResult->parse(response, accessControlErrorDescription)
-            || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
-            || !preflightResult->allowsCrossOriginHeaders(m_actualRequest->httpHeaderFields(), accessControlErrorDescription)) {
-            preflightFailure(response.url().string(), accessControlErrorDescription);
-            return;
-        }
-
-        CrossOriginPreflightResultCache::shared().appendEntry(securityOrigin()->toString(), m_actualRequest->url(), preflightResult.release());
-    } else {
-        if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
-            if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-                m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
-                return;
-            }
-        }
-
-        m_client->didReceiveResponse(identifier, response);
+        handlePreflightResponse(identifier, response);
+        return;
     }
+
+    if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
+        String accessControlErrorDescription;
+        if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
+            m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
+            return;
+        }
+    }
+
+    m_client->didReceiveResponse(identifier, response);
 }
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)

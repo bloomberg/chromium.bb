@@ -85,6 +85,9 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         void makeCrossOriginAccessRequest(const ResourceRequest&);
         void preflightSuccess();
         void preflightFailure(const String& url, const String& errorDescription);
+        // Investigates the response for the preflight request. If successful,
+        // the actual request will be made later in didFinishLoading().
+        void handlePreflightResponse(unsigned long identifier, const ResourceResponse&);
 
         void loadRequest(const ResourceRequest&);
         bool isAllowedRedirect(const KURL&) const;
