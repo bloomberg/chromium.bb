@@ -231,6 +231,7 @@ inline void ChildNodeRemovalNotifier::notify(Node& node)
 }
 
 class ChildFrameDisconnector {
+    STACK_ALLOCATED();
 public:
     enum DisconnectPolicy {
         RootAndDescendants,
@@ -249,7 +250,7 @@ private:
     void collectFrameOwners(ElementShadow&);
     void disconnectCollectedFrameOwners();
 
-    Vector<RefPtr<HTMLFrameOwnerElement>, 10> m_frameOwners;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLFrameOwnerElement>, 10> m_frameOwners;
     Node& m_root;
 };
 
