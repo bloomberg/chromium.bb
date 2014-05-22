@@ -52,7 +52,7 @@ public abstract class ContentReadbackHandler {
      * Should be called when the ContentReadackHandler is not needed anymore.
      */
     public void destroy() {
-        nativeDestroy(mNativeContentReadbackHandler);
+        if (mNativeContentReadbackHandler != 0) nativeDestroy(mNativeContentReadbackHandler);
         mNativeContentReadbackHandler = 0;
     }
 
