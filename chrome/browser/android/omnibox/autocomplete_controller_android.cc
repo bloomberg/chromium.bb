@@ -381,6 +381,10 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ConvertUTF16ToJavaString(env, match.contents);
   ScopedJavaLocalRef<jstring> description =
       ConvertUTF16ToJavaString(env, match.description);
+  ScopedJavaLocalRef<jstring> answer_contents =
+      ConvertUTF16ToJavaString(env, match.answer_contents);
+  ScopedJavaLocalRef<jstring> answer_type =
+      ConvertUTF16ToJavaString(env, match.answer_type);
   ScopedJavaLocalRef<jstring> fill_into_edit =
       ConvertUTF16ToJavaString(env, match.fill_into_edit);
   ScopedJavaLocalRef<jstring> destination_url =
@@ -395,6 +399,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       match.transition,
       contents.obj(),
       description.obj(),
+      answer_contents.obj(),
+      answer_type.obj(),
       fill_into_edit.obj(),
       destination_url.obj(),
       formatted_url.obj(),

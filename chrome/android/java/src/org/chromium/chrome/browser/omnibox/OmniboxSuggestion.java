@@ -17,6 +17,8 @@ public class OmniboxSuggestion {
     private final Type mType;
     private final String mDisplayText;
     private final String mDescription;
+    private final String mAnswerContents;
+    private final String mAnswerType;
     private final String mFillIntoEdit;
     private final String mUrl;
     private final String mFormattedUrl;
@@ -86,18 +88,29 @@ public class OmniboxSuggestion {
     }
 
     public OmniboxSuggestion(int nativeType, int relevance, int transition,
-            String text, String description, String fillIntoEdit, String url,
+            String text, String description, String answerContents,
+            String answerType, String fillIntoEdit, String url,
             String formattedUrl, boolean isStarred, boolean isDeletable) {
         mType = Type.getTypeFromNativeType(nativeType);
         mRelevance = relevance;
         mTransition = transition;
         mDisplayText = text;
         mDescription = description;
+        mAnswerContents = answerContents;
+        mAnswerType = answerType;
         mFillIntoEdit = TextUtils.isEmpty(fillIntoEdit) ? text : fillIntoEdit;
         mUrl = url;
         mFormattedUrl = formattedUrl;
         mIsStarred = isStarred;
         mIsDeletable = isDeletable;
+    }
+
+    /* TODO(groby): Remove - see http://crbug.com/375482 */
+    public OmniboxSuggestion(int nativeType, int relevance, int transition,
+            String text, String description, String fillIntoEdit, String url,
+            String formattedUrl, boolean isStarred, boolean isDeletable) {
+        this(nativeType, relevance, transition, text, description, null, null, fillIntoEdit, url,
+            formattedUrl, isStarred, isDeletable);
     }
 
     public Type getType() {
@@ -114,6 +127,14 @@ public class OmniboxSuggestion {
 
     public String getDescription() {
         return mDescription;
+    }
+
+    public String getAnswerContents() {
+        return mAnswerContents;
+    }
+
+    public String getAnswerType() {
+        return mAnswerType;
     }
 
     public String getFillIntoEdit() {
@@ -150,8 +171,12 @@ public class OmniboxSuggestion {
 
     @Override
     public int hashCode() {
-        return 37 * mType.mNativeType + mDisplayText.hashCode() + mFillIntoEdit.hashCode() +
+        int hash = 37 * mType.mNativeType + mDisplayText.hashCode() + mFillIntoEdit.hashCode() +
                 (mIsStarred ? 1 : 0) + (mIsDeletable ? 1 : 0);
+        if (mAnswerContents != null) {
+            hash = hash + mAnswerContents.hashCode();
+        }
+        return hash;
     }
 
     @Override
@@ -161,9 +186,16 @@ public class OmniboxSuggestion {
         }
 
         OmniboxSuggestion suggestion = (OmniboxSuggestion) obj;
+
+        boolean answersAreEqual =
+                (mAnswerContents == null && suggestion.mAnswerContents == null) ||
+                (mAnswerContents != null &&
+                 suggestion.mAnswerContents != null &&
+                 mAnswerContents.equals(suggestion.mAnswerContents));
         return mType == suggestion.mType
                 && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
                 && mDisplayText.equals(suggestion.mDisplayText)
+                && answersAreEqual
                 && mIsStarred == suggestion.mIsStarred
                 && mIsDeletable == suggestion.mIsDeletable;
     }

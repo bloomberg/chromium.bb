@@ -214,10 +214,12 @@ public class AutocompleteController {
 
     @CalledByNative
     private static OmniboxSuggestion buildOmniboxSuggestion(int nativeType, int relevance,
-            int transition, String text, String description, String fillIntoEdit, String url,
-            String formattedUrl, boolean isStarred, boolean isDeletable) {
+            int transition, String text, String description, String answerContents,
+            String answerType, String fillIntoEdit, String url, String formattedUrl,
+            boolean isStarred, boolean isDeletable) {
         return new OmniboxSuggestion(nativeType, relevance, transition, text, description,
-                fillIntoEdit, url, formattedUrl, isStarred, isDeletable);
+                answerContents, answerType, fillIntoEdit, url, formattedUrl, isStarred,
+                isDeletable);
     }
 
     /**
