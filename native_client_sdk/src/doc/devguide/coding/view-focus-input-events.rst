@@ -1,5 +1,7 @@
 .. _view_focus_input_events:
 
+:template: standard_nacl_api
+
 ####################################
 View Change, Focus, and Input Events
 ####################################

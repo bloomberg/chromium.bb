@@ -80,7 +80,7 @@ rule called ``serve`` is the easiest way to invoke it:
   Client SDK </sdk/download>` for more details.
 
 If no port number is specified, the server defaults to port 5103, and can be
-accessed at http://localhost:5103.
+accessed at ``http://localhost:5103``.
 
 Any server can be used for the purpose of development. The one provided with the
 SDK is just a convenience, not a requirement.
@@ -165,7 +165,7 @@ Modules </devguide//devcycle/building>` for more details.
 
 Assuming the local server was started according to the instructions in
 :ref:`Step 2 <tutorial_step_2>`, you can now load the sample by pointing Chrome
-to http://localhost:5103/part1. Chrome should load the Native Client module
+to ``http://localhost:5103/part1``. Chrome should load the Native Client module
 successfully and the Status text should change from "LOADING..." to "SUCCESS".
 If you run into problems, check out the :ref:`Troubleshooting section
 <tutorial_troubleshooting>` below.
@@ -248,7 +248,7 @@ Step 8: Compile the Native Client module and run the application again
 
 Compile the Native Client module by running the ``make`` command again.
 
-Re-run the application by reloading http://localhost:5103/part1 in Chrome.
+Re-run the application by reloading ``http://localhost:5103/part1`` in Chrome.
 
 After Chrome loads the Native Client module, you should see an alert panel
 appear with the message sent from the module.

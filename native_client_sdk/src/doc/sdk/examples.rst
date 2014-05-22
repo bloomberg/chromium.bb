@@ -168,7 +168,7 @@ To run the SDK examples, you can use the ``make run`` command::
 
 This will launch a local HTTP server which will serve the data for the
 example. It then launches Chrome with the address of this server, usually
-http://localhost:5103. After you close Chrome, the local HTTP server is
+``http://localhost:5103``. After you close Chrome, the local HTTP server is
 automatically shutdown.
 
 This command will try to find an executable named ``google-chrome`` in your
@@ -250,7 +250,7 @@ console, type::
 
   (gdb) target remote :4014
 
-This tells GDB to connect to a TCP port on localhost:4014--the port that
+This tells GDB to connect to a TCP port on ``localhost:4014``--the port that
 Chrome is listening on. GDB will respond::
 
   Remote debugging using :4014

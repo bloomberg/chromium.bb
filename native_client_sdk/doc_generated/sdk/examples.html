@@ -163,7 +163,7 @@ $ make run
 </pre>
 <p>This will launch a local HTTP server which will serve the data for the
 example. It then launches Chrome with the address of this server, usually
-<a class="reference external" href="http://localhost:5103">http://localhost:5103</a>. After you close Chrome, the local HTTP server is
+<code>http://localhost:5103</code>. After you close Chrome, the local HTTP server is
 automatically shutdown.</p>
 <p>This command will try to find an executable named <code>google-chrome</code> in your
 <code>PATH</code> environment variable. If it can&#8217;t, you&#8217;ll get an error message like
@@ -236,7 +236,7 @@ console, type:</p>
 <pre class="prettyprint">
 (gdb) target remote :4014
 </pre>
-<p>This tells GDB to connect to a TCP port on localhost:4014&#8211;the port that
+<p>This tells GDB to connect to a TCP port on <code>localhost:4014</code>&#8211;the port that
 Chrome is listening on. GDB will respond:</p>
 <pre class="prettyprint">
 Remote debugging using :4014

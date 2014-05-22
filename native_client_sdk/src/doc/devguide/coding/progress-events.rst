@@ -1,5 +1,7 @@
 .. _devcycle-progress-events:
 
+:template: standard_nacl_api
+
 ###############
 Progress Events
 ###############

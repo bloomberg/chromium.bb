@@ -1,8 +1,11 @@
 .. _devcycle-running:
 
+:template: standard_nacl_api
+
 #######
 Running
 #######
+
 
 .. contents::
   :local:
@@ -206,7 +209,7 @@ server:
 By default, the server listens for requests on port 5103. You can use the server
 to run most applications under the ``examples`` directory where you started the
 server. For example, to run the ``flock`` example in the SDK, start the server
-and point your browser to http://localhost:5103/demo/flock/.
+and point your browser to ``http://localhost:5103/demo/flock/``.
 
 Some of the applications need special flags to Chrome, and must be run with the
 ``make run`` command. See :ref:`running_the_sdk_examples` for more details.
