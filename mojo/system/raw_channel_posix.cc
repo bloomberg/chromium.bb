@@ -33,7 +33,7 @@ namespace {
 class RawChannelPosix : public RawChannel,
                         public base::MessageLoopForIO::Watcher {
  public:
-  RawChannelPosix(embedder::ScopedPlatformHandle handle);
+  explicit RawChannelPosix(embedder::ScopedPlatformHandle handle);
   virtual ~RawChannelPosix();
 
   // |RawChannel| public methods:
@@ -159,7 +159,7 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
 
   // |read_result == 0| means "end of file".
   if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
-    PLOG_IF(ERROR, read_result != 0) << "recvmsg";
+    PLOG_IF(WARNING, read_result != 0) << "recvmsg";
 
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();

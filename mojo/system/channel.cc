@@ -293,7 +293,7 @@ void Channel::OnReadMessage(
 }
 
 void Channel::OnFatalError(FatalError fatal_error) {
-  LOG(ERROR) << "RawChannel fatal error (type " << fatal_error << ")";
+  LOG(WARNING) << "RawChannel fatal error (type " << fatal_error << ")";
   Shutdown();
 }
 
