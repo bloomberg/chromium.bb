@@ -737,8 +737,9 @@ private:
     PassRefPtr<JSONObject> objectForSkShader(const SkShader& shader)
     {
         RefPtr<JSONObject> shaderItem = JSONObject::create();
-        if (shader.hasLocalMatrix())
-            shaderItem->setArray("localMatrix", arrayForSkMatrix(shader.getLocalMatrix()));
+        const SkMatrix localMatrix = shader.getLocalMatrix();
+        if (!localMatrix.isIdentity())
+            shaderItem->setArray("localMatrix", arrayForSkMatrix(localMatrix));
         return shaderItem.release();
     }
 
