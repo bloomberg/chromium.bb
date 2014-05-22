@@ -191,9 +191,9 @@ def main():
     latest_snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
     versions = [
         ['HEAD', latest_snapshot_revision],
+        ['36', archive.CHROME_36_REVISION],
         ['35', archive.CHROME_35_REVISION],
-        ['34', archive.CHROME_34_REVISION],
-        ['33', archive.CHROME_33_REVISION]
+        ['34', archive.CHROME_34_REVISION]
     ]
     code = 0
     for version in versions:
