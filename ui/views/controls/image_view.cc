@@ -205,9 +205,10 @@ bool ImageView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-bool ImageView::CanAcceptEvent(const ui::Event& event) {
-  return interactive_ && View::CanAcceptEvent(event);
+bool ImageView::HitTestRect(const gfx::Rect& rect) const {
+  return interactive_ ? View::HitTestRect(rect) : false;
 }
+
 
 void ImageView::OnPaintImage(gfx::Canvas* canvas) {
   last_paint_scale_ = canvas->image_scale();
