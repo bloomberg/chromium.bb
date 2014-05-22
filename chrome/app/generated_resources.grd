@@ -10954,6 +10954,9 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Add account
       </message>
+      <message name="IDS_PROFILES_GAIA_REAUTH_TITLE" desc="Title of the account reauthentication view in the avatar menu bubble.">
+        Sign in again
+      </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Remove account
       </message>

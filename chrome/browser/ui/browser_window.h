@@ -367,7 +367,9 @@ class BrowserWindow : public ui::BaseWindow {
   // the given mode.
   enum AvatarBubbleMode {
     AVATAR_BUBBLE_MODE_DEFAULT,
-    AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT
+    AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
+    AVATAR_BUBBLE_MODE_SIGNIN,
+    AVATAR_BUBBLE_MODE_REAUTH
   };
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) = 0;
 

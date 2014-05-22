@@ -54,6 +54,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
     BUBBLE_VIEW_MODE_GAIA_SIGNIN,
     // Shows a web view for adding secondary accounts.
     BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
+    // Shows a web view for reauthenticating an account.
+    BUBBLE_VIEW_MODE_GAIA_REAUTH,
     // Shows a view for confirming account removal.
     BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
     // Shows a view for ending new profile management preview.
@@ -159,10 +161,11 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void CreateAccountButton(views::GridLayout* layout,
                            const std::string& account,
                            bool is_primary_account,
+                           bool reauth_required,
                            int width);
 
   // Creates a webview showing the gaia signin page.
-  views::View* CreateGaiaSigninView(bool add_secondary_account);
+  views::View* CreateGaiaSigninView();
 
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();
@@ -207,8 +210,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Other profiles used in the "fast profile switcher" view.
   ButtonIndexes open_other_profile_indexes_map_;
 
-  // Accounts associated with the current profile.
-  AccountButtonIndexes current_profile_accounts_map_;
+  // Buttons associated with the current profile.
+  AccountButtonIndexes delete_account_button_map_;
+  AccountButtonIndexes reauth_account_button_map_;
 
   // Links and buttons displayed in the tutorial card.
   views::Link* tutorial_learn_more_link_;

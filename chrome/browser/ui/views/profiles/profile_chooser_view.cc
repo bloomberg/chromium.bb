@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/chromium_strings.h"
@@ -94,6 +95,33 @@ gfx::ImageSkia CreateSquarePlaceholderImage(int size) {
   bitmap.allocPixels();
   bitmap.eraseARGB(0, 0, 0, 0);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
+
+bool HasAuthError(Profile* profile) {
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+          signin_error_controller();
+  return error && error->HasError();
+}
+
+std::string GetAuthErrorAccountId(Profile* profile) {
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+          signin_error_controller();
+  if (!error)
+    return std::string();
+
+  return error->error_account_id();
+}
+
+std::string GetAuthErrorUsername(Profile* profile) {
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+          signin_error_controller();
+  if (!error)
+    return std::string();
+
+  return error->error_username();
 }
 
 // BackgroundColorHoverButton -------------------------------------------------
@@ -467,11 +495,19 @@ void ProfileChooserView::ResetView() {
   account_removal_cancel_button_ = NULL;
   gaia_signin_cancel_button_ = NULL;
   open_other_profile_indexes_map_.clear();
-  current_profile_accounts_map_.clear();
+  delete_account_button_map_.clear();
+  reauth_account_button_map_.clear();
   tutorial_mode_ = TUTORIAL_MODE_NONE;
 }
 
 void ProfileChooserView::Init() {
+  // If view mode is PROFILE_CHOOSER but there is an auth error, force
+  // ACCOUNT_MANAGEMENT mode.
+  if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
+      HasAuthError(browser_->profile())) {
+    view_mode_ = BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
+  }
+
   ShowView(view_mode_, avatar_menu_.get());
 }
 
@@ -489,7 +525,8 @@ void ProfileChooserView::OnRefreshTokenAvailable(
   // profile.
   if (view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
       view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
+      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+      view_mode_ == BUBBLE_VIEW_MODE_GAIA_REAUTH) {
     ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
   }
 }
@@ -522,9 +559,9 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   switch (view_mode_) {
     case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
     case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+    case BUBBLE_VIEW_MODE_GAIA_REAUTH:
       layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
-      sub_view = CreateGaiaSigninView(
-          view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT);
+      sub_view = CreateGaiaSigninView();
       break;
     case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
@@ -633,10 +670,15 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     } else {
       // This was a profile accounts button.
       AccountButtonIndexes::const_iterator account_match =
-      current_profile_accounts_map_.find(sender);
-      DCHECK(account_match != current_profile_accounts_map_.end());
-      account_id_to_remove_ = account_match->second;
-      ShowView(BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL, avatar_menu_.get());
+          delete_account_button_map_.find(sender);
+      if (account_match != delete_account_button_map_.end()) {
+        account_id_to_remove_ = account_match->second;
+        ShowView(BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL, avatar_menu_.get());
+      } else {
+        account_match = reauth_account_button_map_.find(sender);
+        DCHECK(account_match != reauth_account_button_map_.end());
+        ShowView(BUBBLE_VIEW_MODE_GAIA_REAUTH, avatar_menu_.get());
+      }
     }
   }
 }
@@ -1129,13 +1171,18 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   std::vector<std::string>accounts =
       profiles::GetSecondaryAccountsForProfile(profile, primary_account);
 
+  // Get state of authentication error, if any.
+  std::string error_account_id = GetAuthErrorAccountId(profile);
+
   // The primary account should always be listed first.
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
-  CreateAccountButton(layout, primary_account, true, kFixedMenuWidth);
+  CreateAccountButton(layout, primary_account, true,
+                      error_account_id == primary_account, kFixedMenuWidth);
   for (size_t i = 0; i < accounts.size(); ++i)
-    CreateAccountButton(layout, accounts[i], false, kFixedMenuWidth);
+    CreateAccountButton(layout, accounts[i], false,
+                        error_account_id == accounts[i], kFixedMenuWidth);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   add_account_link_ = CreateLink(l10n_util::GetStringFUTF16(
@@ -1151,13 +1198,18 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
 void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
                                              const std::string& account,
                                              bool is_primary_account,
+                                             bool reauth_required,
                                              int width) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* default_image =
+  const gfx::ImageSkia* delete_default_image =
       rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia();
-  int kDeleteButtonWidth = default_image->width();
+  const int kDeleteButtonWidth = delete_default_image->width();
+  const gfx::ImageSkia* warning_default_image = reauth_required ?
+      rb->GetImageNamed(IDR_WARNING).ToImageSkia() : NULL;
+  const int kWarningButtonWidth = reauth_required ?
+      warning_default_image->width() + views::kRelatedButtonHSpacing : 0;
   int available_width = width -
-      kDeleteButtonWidth - views::kButtonHEdgeMarginNew;
+      kDeleteButtonWidth - kWarningButtonWidth - views::kButtonHEdgeMarginNew;
 
   views::LabelButton* email_button = new BackgroundColorHoverButton(
       NULL,
@@ -1174,39 +1226,74 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   delete_button->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
                                    views::ImageButton::ALIGN_MIDDLE);
   delete_button->SetImage(views::ImageButton::STATE_NORMAL,
-                          default_image);
+                          delete_default_image);
   delete_button->SetImage(views::ImageButton::STATE_HOVERED,
                           rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
   delete_button->SetImage(views::ImageButton::STATE_PRESSED,
                           rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
   delete_button->SetBounds(
-      available_width, 0, kDeleteButtonWidth, kButtonHeight);
+      available_width + kWarningButtonWidth, 0,
+      kDeleteButtonWidth, kButtonHeight);
 
   email_button->set_notify_enter_exit_on_child(true);
   email_button->AddChildView(delete_button);
 
   // Save the original email address, as the button text could be elided.
-  current_profile_accounts_map_[delete_button] = account;
+  delete_account_button_map_[delete_button] = account;
+
+  // Warning button.
+  if (reauth_required) {
+    views::ImageButton* reauth_button = new views::ImageButton(this);
+    reauth_button->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                     views::ImageButton::ALIGN_MIDDLE);
+    reauth_button->SetImage(views::ImageButton::STATE_NORMAL,
+                            warning_default_image);
+    reauth_button->SetBounds(
+        available_width, 0, kWarningButtonWidth, kButtonHeight);
+
+    email_button->AddChildView(reauth_button);
+    reauth_account_button_map_[reauth_button] = account;
+  }
 }
 
-views::View* ProfileChooserView::CreateGaiaSigninView(
-    bool add_secondary_account) {
+views::View* ProfileChooserView::CreateGaiaSigninView() {
+  GURL url;
+  int message_id;
+
+  switch (view_mode_) {
+    case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+      url = signin::GetPromoURL(signin::SOURCE_AVATAR_BUBBLE_SIGN_IN,
+                                false /* auto_close */,
+                                true /* is_constrained */);
+      message_id = IDS_PROFILES_GAIA_SIGNIN_TITLE;
+      break;
+    case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+      url = signin::GetPromoURL(signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
+                                false /* auto_close */,
+                                true /* is_constrained */);
+      message_id = IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE;
+      break;
+    case BUBBLE_VIEW_MODE_GAIA_REAUTH: {
+      DCHECK(HasAuthError(browser_->profile()));
+      url = signin::GetReauthURL(browser_->profile(),
+                                 GetAuthErrorUsername(browser_->profile()));
+      message_id = IDS_PROFILES_GAIA_REAUTH_TITLE;
+      break;
+    }
+    default:
+      NOTREACHED() << "Called with invalid mode=" << view_mode_;
+      return NULL;
+  }
+
   // Adds Gaia signin webview
   Profile* profile = browser_->profile();
   views::WebView* web_view = new views::WebView(profile);
-  signin::Source source = add_secondary_account ?
-      signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT :
-      signin::SOURCE_AVATAR_BUBBLE_SIGN_IN;
-  GURL url(signin::GetPromoURL(
-      source, false /* auto_close */, true /* is_constrained */));
   web_view->LoadInitialURL(url);
   web_view->SetPreferredSize(
       gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight));
 
-  TitleCard* title_card = new TitleCard(
-      add_secondary_account ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
-                              IDS_PROFILES_GAIA_SIGNIN_TITLE,
-      this, &gaia_signin_cancel_button_);
+  TitleCard* title_card = new TitleCard(message_id, this,
+                                        &gaia_signin_cancel_button_);
   return TitleCard::AddPaddedTitleCard(
       web_view, title_card, kFixedGaiaViewWidth);
 }

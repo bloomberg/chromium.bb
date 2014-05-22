@@ -8,7 +8,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,6 +66,7 @@ NewAvatarButton::NewAvatarButton(
     : MenuButton(listener, GetElidedText(profile_name), NULL, true),
       browser_(browser) {
   set_animate_on_state_change(false);
+  set_icon_placement(ICON_ON_RIGHT);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
@@ -99,26 +102,33 @@ NewAvatarButton::NewAvatarButton(
   }
 
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+
+  // Subscribe to authentication error changes so that the avatar button
+  // can update itself.
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
+          signin_error_controller();
+  error->AddObserver(this);
+  OnErrorChanged();
+
   SchedulePaint();
 }
 
 NewAvatarButton::~NewAvatarButton() {
   g_browser_process->profile_manager()->
       GetProfileInfoCache().RemoveObserver(this);
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
+          signin_error_controller();
+  error->RemoveObserver(this);
 }
 
-void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
-  // From TextButton::PaintButton, draw everything but the text.
-  OnPaintBackground(canvas);
-  OnPaintBorder(canvas);
-  views::Painter::PaintFocusPainter(this, canvas, focus_painter());
-
-  gfx::Rect rect;
-  // In RTL languages the marker gets drawn leftmost, so account for its offset.
-  if (base::i18n::IsRTL())
-    rect = gfx::Rect(-kInset, 0, size().width(), size().height());
-  else
-    rect = gfx::Rect(kInset, 0, size().width(), size().height());
+void NewAvatarButton::OnPaintText(gfx::Canvas* canvas, PaintButtonMode mode) {
+  // Get text bounds, and then adjust for the top and RTL languages.
+  gfx::Rect rect = GetTextBounds();
+  rect.Offset(0, -rect.y());
+  if (rect.width() > 0)
+    rect.set_x(GetMirroredXForRect(rect));
 
   canvas->DrawStringRectWithHalo(
       text(),
@@ -127,9 +137,6 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
       SK_ColorDKGRAY,
       rect,
       gfx::Canvas::NO_SUBPIXEL_RENDERING);
-
-  // From MenuButton::PaintButton, paint the marker
-  PaintMenuMarker(canvas);
 }
 
 void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
@@ -148,13 +155,30 @@ void NewAvatarButton::OnProfileNameChanged(
   UpdateAvatarButtonAndRelayoutParent();
 }
 
+void NewAvatarButton::OnErrorChanged() {
+  gfx::ImageSkia icon;
+
+  // If there is an error, show an warning icon.
+  SigninErrorController* error =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
+          signin_error_controller();
+  if (error->HasError()) {
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    icon = *rb->GetImageNamed(IDR_WARNING).ToImageSkia();
+  }
+
+  SetIcon(icon);
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
 void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
-  ClearMaxTextSize();
   SetText(GetElidedText(
       profiles::GetAvatarNameForProfile(browser_->profile())));
+  ClearMaxTextSize();
 
   // Because the width of the button might have changed, the parent browser
   // frame needs to recalculate the button bounds and redraw it.
-  parent()->Layout();
+  if (parent())
+    parent()->Layout();
 }
