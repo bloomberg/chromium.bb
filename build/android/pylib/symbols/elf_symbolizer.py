@@ -286,7 +286,8 @@ class ELFSymbolizer(object):
         if m:
           if not m.group(1).startswith('?'):
             source_path = m.group(1)
-            source_line = int(m.group(2))
+            if not m.group(2).startswith('?'):
+              source_line = int(m.group(2))
         else:
           logging.warning('Got invalid symbol path from addr2line: %s' % line2)
 
