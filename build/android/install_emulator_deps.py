@@ -36,11 +36,11 @@ SDK_ZIP = 'adt-bundle-linux-x86_64-20131030.zip'
 # These don't exist prior to Android-15.
 # As of 08 Nov 2013, Android-19 is not yet available either.
 X86_IMG_URLS = {
-  15: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-15_r01.zip',
-  16: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-16_r01.zip',
-  17: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip',
-  18: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip',
-  19: 'http://download-software.intel.com/sites/landingpage/android/sysimg_x86-19_r01.zip'}
+  15: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-15_r01.zip',
+  16: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-16_r01.zip',
+  17: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-17_r01.zip',
+  18: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-18_r01.zip',
+  19: 'https://software.intel.com/sites/landingpage/android/sysimg_x86-19_r01.zip'}
 #pylint: enable=C0301
 
 def CheckSDK():
