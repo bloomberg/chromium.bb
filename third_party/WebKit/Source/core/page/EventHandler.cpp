@@ -1137,9 +1137,9 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
         return notAllowedCursor();
     case CURSOR_DEFAULT:
         return pointerCursor();
-    case CURSOR_WEBKIT_ZOOM_IN:
+    case CURSOR_ZOOM_IN:
         return zoomInCursor();
-    case CURSOR_WEBKIT_ZOOM_OUT:
+    case CURSOR_ZOOM_OUT:
         return zoomOutCursor();
     case CURSOR_WEBKIT_GRAB:
         return grabCursor();
