@@ -312,7 +312,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         assertNull(mTestObject.waitForObjectValue());
 
         executeJavaScript("testObject.setStringValue(Number.NaN);");
-        assertEquals("NaN", mTestObject.waitForStringValue());
+        assertTrue("nan".equalsIgnoreCase(mTestObject.waitForStringValue()));
 
         executeJavaScript("testObject.setBooleanValue(Number.NaN);");
         assertFalse(mTestObject.waitForBooleanValue());
@@ -353,7 +353,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         assertNull(mTestObject.waitForObjectValue());
 
         executeJavaScript("testObject.setStringValue(Infinity);");
-        assertEquals("Inf", mTestObject.waitForStringValue());
+        assertTrue("inf".equalsIgnoreCase(mTestObject.waitForStringValue()));
 
         executeJavaScript("testObject.setBooleanValue(Infinity);");
         assertFalse(mTestObject.waitForBooleanValue());
