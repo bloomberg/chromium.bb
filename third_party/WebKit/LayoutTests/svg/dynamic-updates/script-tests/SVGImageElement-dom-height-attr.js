@@ -5,7 +5,7 @@ description("Tests dynamic updates of the 'height' attribute of the SVGImageElem
 createSVGTestCase();
 
 var imageElement = createSVGElement("image");
-imageElement.setAttributeNS(xlinkNS, "xlink:href", "../custom/resources/green-checker.png");
+imageElement.setAttributeNS(xlinkNS, "xlink:href", "../custom/resources/square-green-checker.png");
 imageElement.setAttribute("preserveAspectRatio", "none");
 imageElement.setAttribute("x", "0");
 imageElement.setAttribute("y", "0");
