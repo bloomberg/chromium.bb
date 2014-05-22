@@ -1959,9 +1959,6 @@
         '../components/webdata/common/web_database_migration_unittest.cc',
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
-        'renderer/resources/extensions/notifications_custom_bindings.js',
-        'renderer/resources/extensions/notifications_custom_bindings.gtestjs',
-        'renderer/resources/extensions/notifications_test_util.js',
 
         '../skia/ext/analysis_canvas_unittest.cc',
         '../skia/ext/bitmap_platform_device_mac_unittest.cc',

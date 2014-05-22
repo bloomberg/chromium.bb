@@ -17,7 +17,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/notifications/notification_style.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -25,7 +24,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -42,37 +40,28 @@ namespace {
 const char kMissingRequiredPropertiesForCreateNotification[] =
     "Some of the required properties are missing: type, iconUrl, title and "
     "message.";
-const char kUnableToDecodeIconError[] =
-    "Unable to successfully use the provided image.";
 const char kUnexpectedProgressValueForNonProgressType[] =
     "The progress value should not be specified for non-progress notification";
 const char kInvalidProgressValue[] =
     "The progress value should range from 0 to 100";
-const char kExtraListItemsProvided[] =
-    "List items provided for notification type != list";
-const char kExtraImageProvided[] =
-    "Image resource provided for notification type != image";
 
 // Converts an object with width, height, and data in RGBA format into an
 // gfx::Image (in ARGB format).
 bool NotificationBitmapToGfxImage(
-    float max_scale,
-    const gfx::Size& target_size_dips,
     api::notifications::NotificationBitmap* notification_bitmap,
     gfx::Image* return_image) {
   if (!notification_bitmap)
     return false;
 
-  const int max_device_pixel_width = target_size_dips.width() * max_scale;
-  const int max_device_pixel_height = target_size_dips.height() * max_scale;
-
+  // Ensure a sane set of dimensions.
+  const int max_width = message_center::kNotificationPreferredImageWidth;
+  const int max_height = message_center::kNotificationPreferredImageHeight;
   const int BYTES_PER_PIXEL = 4;
 
   const int width = notification_bitmap->width;
   const int height = notification_bitmap->height;
 
-  if (width < 0 || height < 0 || width > max_device_pixel_width ||
-      height > max_device_pixel_height)
+  if (width < 0 || height < 0 || width > max_width || height > max_height)
     return false;
 
   // Ensure we have rgba data.
@@ -111,8 +100,7 @@ bool NotificationBitmapToGfxImage(
         ((c_rgba_data[rgba_index + 2] & 0xFF) << 0));
   }
 
-  // TODO(dewittj): Handle HiDPI images with more than one scale factor
-  // representation.
+  // TODO(dewittj): Handle HiDPI images.
   gfx::ImageSkia skia(gfx::ImageSkiaRep(bitmap, 1.0f));
   *return_image = gfx::Image(skia);
   return true;
@@ -256,11 +244,6 @@ bool NotificationsApiFunction::CreateNotification(
     return false;
   }
 
-  NotificationBitmapSizes bitmap_sizes = GetNotificationBitmapSizes();
-
-  float image_scale =
-      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactors().back());
-
   // Extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
@@ -268,13 +251,8 @@ bool NotificationsApiFunction::CreateNotification(
   const base::string16 message(base::UTF8ToUTF16(*options->message));
   gfx::Image icon;
 
-  if (!NotificationBitmapToGfxImage(image_scale,
-                                    bitmap_sizes.icon_size,
-                                    options->icon_bitmap.get(),
-                                    &icon)) {
-    SetError(kUnableToDecodeIconError);
-    return false;
-  }
+  // TODO(dewittj): Return error if this fails.
+  NotificationBitmapToGfxImage(options->icon_bitmap.get(), &icon);
 
   // Then, handle any optional data that's been provided.
   message_center::RichNotificationData optional_fields;
@@ -292,10 +270,8 @@ bool NotificationsApiFunction::CreateNotification(
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo info(
           base::UTF8ToUTF16((*options->buttons)[i]->title));
-      NotificationBitmapToGfxImage(image_scale,
-                                   bitmap_sizes.button_icon_size,
-                                   (*options->buttons)[i]->icon_bitmap.get(),
-                                   &info.icon);
+      NotificationBitmapToGfxImage((*options->buttons)[i]->icon_bitmap.get(),
+                                    &info.icon);
       optional_fields.buttons.push_back(info);
     }
   }
@@ -305,22 +281,16 @@ bool NotificationsApiFunction::CreateNotification(
         base::UTF8ToUTF16(*options->context_message);
   }
 
-  bool has_image = NotificationBitmapToGfxImage(image_scale,
-                                                bitmap_sizes.image_size,
-                                                options->image_bitmap.get(),
+  bool has_image = NotificationBitmapToGfxImage(options->image_bitmap.get(),
                                                 &optional_fields.image);
   // We should have an image if and only if the type is an image type.
-  if (has_image != (type == message_center::NOTIFICATION_TYPE_IMAGE)) {
-    SetError(kExtraImageProvided);
+  if (has_image != (type == message_center::NOTIFICATION_TYPE_IMAGE))
     return false;
-  }
 
   // We should have list items if and only if the type is a multiple type.
   bool has_list_items = options->items.get() && options->items->size() > 0;
-  if (has_list_items != (type == message_center::NOTIFICATION_TYPE_MULTIPLE)) {
-    SetError(kExtraListItemsProvided);
+  if (has_list_items != (type == message_center::NOTIFICATION_TYPE_MULTIPLE))
     return false;
-  }
 
   if (options->progress.get() != NULL) {
     // We should have progress if and only if the type is a progress type.
@@ -375,10 +345,6 @@ bool NotificationsApiFunction::UpdateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options,
     Notification* notification) {
-  NotificationBitmapSizes bitmap_sizes = GetNotificationBitmapSizes();
-  float image_scale =
-      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactors().back());
-
   // Update optional fields if provided.
   if (options->type != api::notifications::TEMPLATE_TYPE_NONE)
     notification->set_type(MapApiTemplateTypeToType(options->type));
@@ -390,8 +356,7 @@ bool NotificationsApiFunction::UpdateNotification(
   // TODO(dewittj): Return error if this fails.
   if (options->icon_bitmap) {
     gfx::Image icon;
-    NotificationBitmapToGfxImage(
-        image_scale, bitmap_sizes.icon_size, options->icon_bitmap.get(), &icon);
+    NotificationBitmapToGfxImage(options->icon_bitmap.get(), &icon);
     notification->set_icon(icon);
   }
 
@@ -410,10 +375,8 @@ bool NotificationsApiFunction::UpdateNotification(
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo button(
           base::UTF8ToUTF16((*options->buttons)[i]->title));
-      NotificationBitmapToGfxImage(image_scale,
-                                   bitmap_sizes.button_icon_size,
-                                   (*options->buttons)[i]->icon_bitmap.get(),
-                                   &button.icon);
+      NotificationBitmapToGfxImage((*options->buttons)[i]->icon_bitmap.get(),
+                                    &button.icon);
       buttons.push_back(button);
     }
     notification->set_buttons(buttons);
@@ -425,16 +388,10 @@ bool NotificationsApiFunction::UpdateNotification(
   }
 
   gfx::Image image;
-  bool has_image = NotificationBitmapToGfxImage(image_scale,
-                                                bitmap_sizes.image_size,
-                                                options->image_bitmap.get(),
-                                                &image);
-  if (has_image) {
+  if (NotificationBitmapToGfxImage(options->image_bitmap.get(), &image)) {
     // We should have an image if and only if the type is an image type.
-    if (notification->type() != message_center::NOTIFICATION_TYPE_IMAGE) {
-      SetError(kExtraImageProvided);
+    if (notification->type() != message_center::NOTIFICATION_TYPE_IMAGE)
       return false;
-    }
     notification->set_image(image);
   }
 
@@ -455,10 +412,8 @@ bool NotificationsApiFunction::UpdateNotification(
 
   if (options->items.get() && options->items->size() > 0) {
     // We should have list items if and only if the type is a multiple type.
-    if (notification->type() != message_center::NOTIFICATION_TYPE_MULTIPLE) {
-      SetError(kExtraListItemsProvided);
+    if (notification->type() != message_center::NOTIFICATION_TYPE_MULTIPLE)
       return false;
-    }
 
     std::vector<message_center::NotificationItem> items;
     using api::notifications::NotificationItem;
