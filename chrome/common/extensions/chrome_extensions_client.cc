@@ -19,6 +19,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/permission_feature.h"
@@ -99,26 +100,43 @@ ChromeExtensionsClient::GetPermissionMessageProvider() const {
 
 scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  JSONFeatureProviderSource source(name);
+  scoped_ptr<FeatureProvider> provider;
+  scoped_ptr<JSONFeatureProviderSource> source(
+      CreateFeatureProviderSource(name));
   if (name == "api") {
-    source.LoadJSON(IDR_EXTENSION_API_FEATURES);
-    source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<APIFeature>));
+    provider.reset(new BaseFeatureProvider(source->dictionary(),
+                                           CreateFeature<APIFeature>));
   } else if (name == "manifest") {
-    source.LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
-    source.LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<ManifestFeature>));
+    provider.reset(new BaseFeatureProvider(source->dictionary(),
+                                           CreateFeature<ManifestFeature>));
   } else if (name == "permission") {
-    source.LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
-    source.LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<PermissionFeature>));
+    provider.reset(new BaseFeatureProvider(source->dictionary(),
+                                           CreateFeature<PermissionFeature>));
   } else {
     NOTREACHED();
   }
-  return scoped_ptr<FeatureProvider>();
+  return provider.Pass();
+}
+
+scoped_ptr<JSONFeatureProviderSource>
+ChromeExtensionsClient::CreateFeatureProviderSource(
+    const std::string& name) const {
+  scoped_ptr<JSONFeatureProviderSource> source(
+      new JSONFeatureProviderSource(name));
+  if (name == "api") {
+    source->LoadJSON(IDR_EXTENSION_API_FEATURES);
+    source->LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
+  } else if (name == "manifest") {
+    source->LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
+    source->LoadJSON(IDR_CHROME_EXTENSION_MANIFEST_FEATURES);
+  } else if (name == "permission") {
+    source->LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
+    source->LoadJSON(IDR_CHROME_EXTENSION_PERMISSION_FEATURES);
+  } else {
+    NOTREACHED();
+    source.reset();
+  }
+  return source.Pass();
 }
 
 void ChromeExtensionsClient::FilterHostPermissions(

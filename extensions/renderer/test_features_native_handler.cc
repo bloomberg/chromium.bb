@@ -6,10 +6,9 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/renderer/script_context.h"
-#include "grit/common_resources.h"
-#include "grit/extensions_resources.h"
 
 namespace extensions {
 
@@ -22,15 +21,12 @@ TestFeaturesNativeHandler::TestFeaturesNativeHandler(ScriptContext* context)
 
 void TestFeaturesNativeHandler::GetAPIFeatures(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  JSONFeatureProviderSource source("api");
-  // TODO(rockot): Only inlcude extensions features here. Chrome should add
-  // its own native handler for Chrome features.
-  source.LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
-  source.LoadJSON(IDR_EXTENSION_API_FEATURES);
+  scoped_ptr<JSONFeatureProviderSource> source(
+      ExtensionsClient::Get()->CreateFeatureProviderSource("api"));
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   args.GetReturnValue().Set(
-      converter->ToV8Value(&source.dictionary(), context()->v8_context()));
+      converter->ToV8Value(&source->dictionary(), context()->v8_context()));
 }
 
 }  // namespace extensions

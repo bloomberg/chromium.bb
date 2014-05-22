@@ -23,7 +23,7 @@ ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
 void ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::vector<std::string> apis;
-  FeatureProvider* feature_provider = FeatureProvider::GetAPIFeatures();
+  const FeatureProvider* feature_provider = FeatureProvider::GetAPIFeatures();
   const std::vector<std::string>& feature_names =
       feature_provider->GetAllFeatureNames();
   for (std::vector<std::string>::const_iterator i = feature_names.begin();

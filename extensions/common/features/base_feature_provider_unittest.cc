@@ -27,7 +27,7 @@ SimpleFeature* CreateFeature() {
 }  // namespace
 
 TEST(BaseFeatureProviderTest, ManifestFeatures) {
-  FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
+  const FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("description"));
   ASSERT_TRUE(feature);
@@ -70,7 +70,8 @@ TEST(BaseFeatureProviderTest, ManifestFeatures) {
 }
 
 TEST(BaseFeatureProviderTest, PermissionFeatures) {
-  FeatureProvider* provider = BaseFeatureProvider::GetByName("permission");
+  const FeatureProvider* provider =
+      BaseFeatureProvider::GetByName("permission");
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("contextMenus"));
   ASSERT_TRUE(feature);

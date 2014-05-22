@@ -29,7 +29,7 @@ std::string GetEnhancedBookmarksExtensionIdFromFinch() {
 // Returns true if enhanced bookmarks experiment is enabled from Finch.
 bool IsEnhancedBookmarksExperimentEnabledFromFinch() {
   std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
-  extensions::FeatureProvider* feature_provider =
+  const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
   return feature && feature->IsIdInWhitelist(ext_id);

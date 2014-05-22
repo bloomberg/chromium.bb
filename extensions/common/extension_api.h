@@ -63,7 +63,7 @@ class ExtensionAPI {
   void RegisterSchemaResource(const std::string& api_name, int resource_id);
 
   void RegisterDependencyProvider(const std::string& name,
-                                  FeatureProvider* provider);
+                                  const FeatureProvider* provider);
 
   // Returns true if the API feature |api| and all of its dependencies are
   // available in |context|.
@@ -139,7 +139,7 @@ class ExtensionAPI {
   SchemaMap schemas_;
 
   // FeatureProviders used for resolving dependencies.
-  typedef std::map<std::string, FeatureProvider*> FeatureProviderMap;
+  typedef std::map<std::string, const FeatureProvider*> FeatureProviderMap;
   FeatureProviderMap dependency_providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);

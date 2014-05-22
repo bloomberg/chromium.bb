@@ -22,7 +22,6 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/common_resources.h"
 #include "grit/extensions_api_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -266,7 +265,7 @@ void ExtensionAPI::RegisterSchemaResource(const std::string& name,
 }
 
 void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
-                                              FeatureProvider* provider) {
+                                              const FeatureProvider* provider) {
   dependency_providers_[name] = provider;
 }
 

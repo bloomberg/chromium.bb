@@ -31,12 +31,12 @@ class FeatureProvider {
   virtual const std::vector<std::string>& GetAllFeatureNames() const = 0;
 
   // Gets a feature provider for a specific feature type, like "permission".
-  static FeatureProvider* GetByName(const std::string& name);
+  static const FeatureProvider* GetByName(const std::string& name);
 
   // Directly access the common feature types.
-  static FeatureProvider* GetAPIFeatures();
-  static FeatureProvider* GetManifestFeatures();
-  static FeatureProvider* GetPermissionFeatures();
+  static const FeatureProvider* GetAPIFeatures();
+  static const FeatureProvider* GetManifestFeatures();
+  static const FeatureProvider* GetPermissionFeatures();
 };
 
 }  // namespace extensions

@@ -47,22 +47,22 @@ base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static
-FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
+const FeatureProvider* FeatureProvider::GetByName(const std::string& name) {
   return g_static.Get().GetFeatures(name);
 }
 
 // static
-FeatureProvider* FeatureProvider::GetAPIFeatures() {
+const FeatureProvider* FeatureProvider::GetAPIFeatures() {
   return GetByName("api");
 }
 
 // static
-FeatureProvider* FeatureProvider::GetManifestFeatures() {
+const FeatureProvider* FeatureProvider::GetManifestFeatures() {
   return GetByName("manifest");
 }
 
 // static
-FeatureProvider* FeatureProvider::GetPermissionFeatures() {
+const FeatureProvider* FeatureProvider::GetPermissionFeatures() {
   return GetByName("permission");
 }
 

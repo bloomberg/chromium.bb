@@ -119,7 +119,7 @@ bool ParseHelper(Extension* extension,
 
   // Verify feature availability of permissions.
   std::vector<APIPermission::ID> to_remove;
-  FeatureProvider* permission_features =
+  const FeatureProvider* permission_features =
       FeatureProvider::GetPermissionFeatures();
   for (APIPermissionSet::const_iterator iter = api_permissions->begin();
        iter != api_permissions->end(); ++iter) {

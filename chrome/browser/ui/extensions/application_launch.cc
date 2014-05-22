@@ -470,7 +470,7 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
 }
 
 bool CanLaunchViaEvent(const extensions::Extension* extension) {
-  extensions::FeatureProvider* feature_provider =
+  const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetAPIFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("app.runtime");
   return feature->IsAvailableToExtension(extension).is_available();

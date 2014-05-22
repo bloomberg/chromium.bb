@@ -21,6 +21,8 @@ class TestExtensionsClient : public ExtensionsClient {
       OVERRIDE;
   virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const OVERRIDE;
+  virtual scoped_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
+      const std::string& name) const OVERRIDE;
   virtual void FilterHostPermissions(
       const URLPatternSet& hosts,
       URLPatternSet* new_hosts,

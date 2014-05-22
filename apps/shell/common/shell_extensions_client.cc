@@ -29,6 +29,7 @@ using extensions::APIPermissionSet;
 using extensions::BaseFeatureProvider;
 using extensions::Extension;
 using extensions::FeatureProvider;
+using extensions::JSONFeatureProviderSource;
 using extensions::Manifest;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
@@ -119,24 +120,41 @@ ShellExtensionsClient::GetPermissionMessageProvider() const {
 
 scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  extensions::JSONFeatureProviderSource source(name);
+  scoped_ptr<FeatureProvider> provider;
+  scoped_ptr<JSONFeatureProviderSource> source(
+      CreateFeatureProviderSource(name));
   if (name == "api") {
-    source.LoadJSON(IDR_EXTENSION_API_FEATURES);
-    source.LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<extensions::APIFeature>));
+    provider.reset(new BaseFeatureProvider(
+        source->dictionary(), CreateFeature<extensions::APIFeature>));
   } else if (name == "manifest") {
-    source.LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<extensions::ManifestFeature>));
+    provider.reset(new BaseFeatureProvider(
+        source->dictionary(), CreateFeature<extensions::ManifestFeature>));
   } else if (name == "permission") {
-    source.LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
-    return scoped_ptr<FeatureProvider>(new BaseFeatureProvider(
-        source.dictionary(), CreateFeature<extensions::PermissionFeature>));
+    provider.reset(new BaseFeatureProvider(
+        source->dictionary(), CreateFeature<extensions::PermissionFeature>));
   } else {
     NOTREACHED();
   }
-  return scoped_ptr<FeatureProvider>();
+  return provider.Pass();
+}
+
+scoped_ptr<JSONFeatureProviderSource>
+ShellExtensionsClient::CreateFeatureProviderSource(
+    const std::string& name) const {
+  scoped_ptr<JSONFeatureProviderSource> source(
+      new JSONFeatureProviderSource(name));
+  if (name == "api") {
+    source->LoadJSON(IDR_EXTENSION_API_FEATURES);
+    source->LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
+  } else if (name == "manifest") {
+    source->LoadJSON(IDR_EXTENSION_MANIFEST_FEATURES);
+  } else if (name == "permission") {
+    source->LoadJSON(IDR_EXTENSION_PERMISSION_FEATURES);
+  } else {
+    NOTREACHED();
+    source.reset();
+  }
+  return source.Pass();
 }
 
 void ShellExtensionsClient::FilterHostPermissions(

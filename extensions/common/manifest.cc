@@ -146,7 +146,7 @@ bool Manifest::ValidateManifest(
   // TODO(aa): Consider having an error here in the case of strict error
   // checking to let developers know when they screw up.
 
-  FeatureProvider* manifest_feature_provider =
+  const FeatureProvider* manifest_feature_provider =
       FeatureProvider::GetManifestFeatures();
   const std::vector<std::string>& feature_names =
       manifest_feature_provider->GetAllFeatureNames();
