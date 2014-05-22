@@ -488,6 +488,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       PSLMatchingHelper::GetRegistryControlledDomain(signon_realm);
   PSLMatchingHelper::PSLDomainMatchMetric psl_domain_match_metric =
       PSLMatchingHelper::PSL_DOMAIN_MATCH_NONE;
+  // PSL matching only applies to HTML forms.
   if (form.scheme == PasswordForm::SCHEME_HTML &&
       psl_helper_.ShouldPSLDomainMatchingApply(registered_domain)) {
     // We are extending the original SQL query with one that includes more
@@ -533,13 +534,16 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       continue;
     DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
     if (psl_helper_.IsMatchingEnabled()) {
-      if (new_form->scheme != PasswordForm::SCHEME_HTML ||
-          !PSLMatchingHelper::IsPublicSuffixDomainMatch(new_form->signon_realm,
+      if (!PSLMatchingHelper::IsPublicSuffixDomainMatch(new_form->signon_realm,
                                                         form.signon_realm)) {
         // The database returned results that should not match. Skipping result.
         continue;
       }
       if (form.signon_realm != new_form->signon_realm) {
+        // Ignore non-HTML matches.
+        if (new_form->scheme != PasswordForm::SCHEME_HTML)
+          continue;
+
         psl_domain_match_metric = PSLMatchingHelper::PSL_DOMAIN_MATCH_FOUND;
         // This is not a perfect match, so we need to create a new valid result.
         // We do this by copying over origin, signon realm and action from the

@@ -624,6 +624,9 @@ class NativeBackendGnomeTest : public testing::Test {
     // Don't match two different non-HTML auth forms with different origin.
     EXPECT_FALSE(CheckCredentialAvailability(
         other_auth_, GURL("http://first.example.com"), scheme, NULL));
+    // Do match non-HTML forms from the same origin.
+    EXPECT_TRUE(CheckCredentialAvailability(
+        other_auth_, GURL("http://www.example.com/"), scheme, NULL));
   }
 
   base::MessageLoopForUI message_loop_;

@@ -78,7 +78,7 @@ class LoginDatabaseTest : public testing::Test {
     html_form.scheme = PasswordForm::SCHEME_HTML;
     html_form.date_created = now;
 
-    // Add them and make sure it is there.
+    // Add them and make sure they are there.
     EXPECT_EQ(AddChangeForForm(non_html_auth), db_.AddLogin(non_html_auth));
     EXPECT_EQ(AddChangeForForm(html_form), db_.AddLogin(html_form));
     EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
@@ -92,6 +92,11 @@ class LoginDatabaseTest : public testing::Test {
     // This shouldn't match anything.
     EXPECT_TRUE(db_.GetLogins(second_non_html_auth, &result.get()));
     EXPECT_EQ(0U, result.size());
+
+    // non-html auth still matches again itself.
+    EXPECT_TRUE(db_.GetLogins(non_html_auth, &result.get()));
+    ASSERT_EQ(1U, result.size());
+    EXPECT_EQ(result[0]->signon_realm, "http://example.com/Realm");
 
     // Clear state.
     db_.RemoveLoginsCreatedBetween(now, base::Time());
