@@ -67,7 +67,14 @@ def main(argv):
   successes_cache_file = open(successes_cache_filename, 'ab') \
       if successes_cache_filename else None
   for gtest in gtest_list:
-    if successes_cache_file:
+    if gtest[0] == '*':
+      gtest = gtest[1:]
+      _logging.debug("%s is marked as non-cacheable" % gtest)
+      cacheable = False
+    else:
+      cacheable = True
+
+    if successes_cache_file and cacheable:
       _logging.debug("Getting transitive hash for %s ... " % gtest)
       try:
         gtest_hash = transitive_hash(gtest)
@@ -80,17 +87,17 @@ def main(argv):
         print "Skipping %s (previously succeeded)" % gtest
         continue
 
-    print "Running %s ..." % gtest
+    print "Running %s...." % gtest,
     try:
       subprocess.check_output(["./" + gtest], stderr=subprocess.STDOUT)
-      print "  Succeeded"
+      print "Succeeded"
       # Record success.
-      if successes_cache_filename:
+      if successes_cache_filename and cacheable:
         successes.add(gtest_hash)
         successes_cache_file.write(gtest_hash + '\n')
         successes_cache_file.flush()
     except subprocess.CalledProcessError as e:
-      print "  Failed with exit code %d and output:" % e.returncode
+      print "Failed with exit code %d and output:" % e.returncode
       print 72 * '-'
       print e.output
       print 72 * '-'
