@@ -50,4 +50,10 @@ WebContents* BrowserPluginGuestDelegate::OpenURLFromTab(
   return NULL;
 }
 
+bool BrowserPluginGuestDelegate::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  return false;
+}
+
 }  // namespace content

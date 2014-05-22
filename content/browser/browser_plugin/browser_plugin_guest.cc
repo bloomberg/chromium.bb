@@ -1097,9 +1097,10 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
 
 bool BrowserPluginGuest::PreHandleGestureEvent(
     WebContents* source, const blink::WebGestureEvent& event) {
-  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-      event.type == blink::WebGestureEvent::GesturePinchEnd;
+  if (!delegate_)
+    return false;
+
+  return delegate_->PreHandleGestureEvent(source, event);
 }
 
 void BrowserPluginGuest::OnUpdateRect(

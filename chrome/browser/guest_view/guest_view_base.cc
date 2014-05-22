@@ -16,6 +16,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
 
@@ -187,6 +188,13 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+bool GuestViewBase::PreHandleGestureEvent(content::WebContents* source,
+                                         const blink::WebGestureEvent& event) {
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 GuestViewBase::~GuestViewBase() {

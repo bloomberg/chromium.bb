@@ -127,6 +127,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
   virtual void Destroy() OVERRIDE;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
  protected:
   GuestViewBase(int guest_instance_id,

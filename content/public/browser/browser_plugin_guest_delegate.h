@@ -17,6 +17,10 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
+namespace blink {
+class WebGestureEvent;
+}  // namespace blink
+
 namespace content {
 
 class ColorChooser;
@@ -205,6 +209,16 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   typedef base::Callback<void(WebContents*)> DestructionCallback;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) {}
+
+  // Allows delegates to handle gesture events before sending to the renderer.
+  // Returns true if the |event| was handled and thus shouldn't be processed
+  // by the renderer's event handler. Note that the touch events that create
+  // the gesture are always passed to the renderer since the gesture is created
+  // and dispatched after the touches return without being "preventDefault()"ed.
+  // TODO(fsamuel): Delete this once BrowserPluginGuest is no longer a
+  // WebContentsDelegate.
+  virtual bool PreHandleGestureEvent(WebContents* source,
+                                     const blink::WebGestureEvent& event);
 };
 
 }  // namespace content
