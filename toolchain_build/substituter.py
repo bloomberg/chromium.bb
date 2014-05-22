@@ -76,10 +76,6 @@ class Substituter(object):
       self._variables['abs_' + key] = FixPath(os.path.abspath(value))
       self._variables[key] = FixPath(os.path.relpath(value, self._cwd))
 
-    self._variables['top_srcdir'] = FixPath(os.path.relpath(NACL_DIR,
-                                                            self._cwd))
-    self._variables['abs_top_srcdir'] = FixPath(os.path.abspath(NACL_DIR))
-
   def Substitute(self, template):
     """ Substitute the %-variables in 'template' """
     return template % self._variables

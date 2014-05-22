@@ -53,7 +53,7 @@ class Once(object):
   """Class to memoize slow operations."""
 
   def __init__(self, storage, use_cached_results=True, cache_results=True,
-               print_url=None, system_summary=None):
+               print_url=None, system_summary=None, extra_paths={}):
     """Constructor.
 
     Args:
@@ -64,6 +64,7 @@ class Once(object):
                      written to the cache.
       print_url: Function that accepts an URL for printing the build result,
                  or None.
+      extra_paths: Extra substitution paths that can be used by commands.
     """
     self._storage = storage
     self._directory_storage = pynacl.directory_storage.DirectoryStorageAdapter(
@@ -75,6 +76,7 @@ class Once(object):
     self._print_url = print_url
     self._system_summary = system_summary
     self._path_hash_cache = {}
+    self._extra_paths = extra_paths
 
   def KeyForOutput(self, package, output_hash):
     """Compute the key to store a give output in the data-store.
@@ -248,6 +250,7 @@ class Once(object):
 
       for command in commands:
         paths = inputs.copy()
+        paths.update(self._extra_paths)
         paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)

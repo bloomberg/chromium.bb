@@ -130,7 +130,8 @@ class PackageBuilder(object):
         use_cached_results=self._options.use_cached_results,
         cache_results=self._options.cache_results,
         print_url=PrintAnnotatorURL,
-        storage=self.CreateStorage())
+        storage=self.CreateStorage(),
+        extra_paths=self.ExtraSubstitutionPaths())
     self._signature_file = None
     if self._options.emit_signatures is not None:
       if self._options.emit_signatures == '-':
@@ -458,3 +459,9 @@ class PackageBuilder(object):
           storage=pynacl.gsd_storage.GSDStorage(
               write_bucket=None,
               read_buckets=read_buckets))
+
+  def ExtraSubstitutionPaths(self):
+    """Returns a dictionary of extra substitution paths allowed for commands."""
+    return {
+        'top_srcdir': NACL_DIR,
+        }
