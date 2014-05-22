@@ -34,7 +34,6 @@
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "core/html/VoidCallback.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -57,7 +56,6 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
-#include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -71,25 +69,6 @@
 #include "platform/PlatformMouseEvent.h"
 
 namespace WebCore {
-
-class InspectorController::InspectorResourceContentLoaderCallback FINAL : public VoidCallback {
-public:
-    InspectorResourceContentLoaderCallback(InspectorController*);
-    virtual void handleEvent() OVERRIDE;
-
-private:
-    InspectorController* m_inspectorController;
-};
-
-InspectorController::InspectorResourceContentLoaderCallback::InspectorResourceContentLoaderCallback(InspectorController* inspectorController)
-    : m_inspectorController(inspectorController)
-{
-}
-
-void InspectorController::InspectorResourceContentLoaderCallback::handleEvent()
-{
-    m_inspectorController->resourcesContentLoaded();
-}
 
 InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
     : m_instrumentingAgents(InstrumentingAgents::create())
@@ -170,15 +149,17 @@ void InspectorController::initializeDeferredAgents()
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
     InspectorOverlay* overlay = m_overlay.get();
 
-    m_agents.append(InspectorCSSAgent::create(m_domAgent, m_pageAgent));
+    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
+    InspectorResourceAgent* resourceAgent = resourceAgentPtr.get();
+    m_agents.append(resourceAgentPtr.release());
+
+    m_agents.append(InspectorCSSAgent::create(m_domAgent, m_pageAgent, resourceAgent));
 
     m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
 
     m_agents.append(InspectorMemoryAgent::create());
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
-
-    m_agents.append(InspectorResourceAgent::create(m_pageAgent));
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
@@ -228,11 +209,6 @@ void InspectorController::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void InspectorController::connectFrontend(InspectorFrontendChannel* frontendChannel)
 {
-    internalConnectFrontend(frontendChannel, false);
-}
-
-void InspectorController::internalConnectFrontend(InspectorFrontendChannel* frontendChannel, bool isReusing)
-{
     ASSERT(frontendChannel);
 
     initializeDeferredAgents();
@@ -250,24 +226,12 @@ void InspectorController::internalConnectFrontend(InspectorFrontendChannel* fron
     m_inspectorBackendDispatcher = InspectorBackendDispatcher::create(frontendChannel);
 
     m_agents.registerInDispatcher(m_inspectorBackendDispatcher.get());
-
-    if (!isReusing)
-        m_inspectorResourceContentLoader = adoptPtr(new InspectorResourceContentLoader(m_page, adoptPtr(new InspectorResourceContentLoaderCallback(this))));
-}
-
-void InspectorController::resourcesContentLoaded()
-{
-    Vector<String> pendingMessagesFromFrontend;
-    pendingMessagesFromFrontend.swap(m_pendingMessagesFromFrontend);
-    for (Vector<String>::const_iterator it = pendingMessagesFromFrontend.begin(); it != pendingMessagesFromFrontend.end(); ++it)
-        dispatchMessageFromFrontend(*it);
 }
 
 void InspectorController::disconnectFrontend()
 {
     if (!m_inspectorFrontend)
         return;
-    m_inspectorResourceContentLoader.clear();
     m_inspectorBackendDispatcher->clearFrontend();
     m_inspectorBackendDispatcher.clear();
 
@@ -291,13 +255,13 @@ void InspectorController::reconnectFrontend()
         return;
     InspectorFrontendChannel* frontendChannel = m_inspectorFrontend->channel();
     disconnectFrontend();
-    internalConnectFrontend(frontendChannel, false);
+    connectFrontend(frontendChannel);
 }
 
 void InspectorController::reuseFrontend(InspectorFrontendChannel* frontendChannel, const String& inspectorStateCookie)
 {
     ASSERT(!m_inspectorFrontend);
-    internalConnectFrontend(frontendChannel, true);
+    connectFrontend(frontendChannel);
     m_state->loadFromCookie(inspectorStateCookie);
     m_agents.restore();
 }
@@ -364,11 +328,6 @@ void InspectorController::setInjectedScriptForOrigin(const String& origin, const
 
 void InspectorController::dispatchMessageFromFrontend(const String& message)
 {
-    if (m_inspectorResourceContentLoader && !m_inspectorResourceContentLoader->hasFinished()) {
-        m_pendingMessagesFromFrontend.append(message);
-        return;
-    }
-
     if (m_inspectorBackendDispatcher)
         m_inspectorBackendDispatcher->dispatch(message);
 }
@@ -466,7 +425,6 @@ void InspectorController::flushPendingFrontendMessages()
 
 void InspectorController::didCommitLoadForMainFrame()
 {
-    m_inspectorResourceContentLoader.clear();
     Vector<InspectorAgent*> agents = m_moduleAgents;
     for (size_t i = 0; i < agents.size(); i++)
         agents[i]->didCommitLoadForMainFrame();

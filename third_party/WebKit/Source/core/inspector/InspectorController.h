@@ -67,7 +67,6 @@ class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 class Node;
-class InspectorResourceContentLoader;
 
 class InspectorController {
     WTF_MAKE_NONCOPYABLE(InspectorController);
@@ -134,16 +133,11 @@ public:
     void didRemovePageOverlay(const GraphicsLayer*);
 
 private:
-    class InspectorResourceContentLoaderCallback;
-
     InspectorController(Page*, InspectorClient*);
 
     void initializeDeferredAgents();
-    void internalConnectFrontend(InspectorFrontendChannel*, bool isReusing);
 
     friend InstrumentingAgents* instrumentationForPage(Page*);
-
-    void resourcesContentLoaded();
 
     RefPtr<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
@@ -165,8 +159,6 @@ private:
     Vector<InspectorAgent*> m_moduleAgents;
     bool m_isUnderTest;
     bool m_deferredAgentsInitialized;
-    OwnPtr<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
-    Vector<String> m_pendingMessagesFromFrontend;
 };
 
 }

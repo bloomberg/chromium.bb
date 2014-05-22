@@ -190,8 +190,6 @@ public:
 
     void restoreScrollPositionAndViewState();
 
-    bool requestFromHistoryForInspector(ResourceRequestCachePolicy, ResourceRequest*);
-
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 

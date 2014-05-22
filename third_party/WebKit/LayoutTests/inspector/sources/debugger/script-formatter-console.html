@@ -11,15 +11,6 @@ function f1()
     console.error("Test message.");
 }
 
-function onload()
-{
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.showWebInspector();
-    }
-    runTest();
-}
-
 var test = function()
 {
     var panel = WebInspector.inspectorView.showPanel("sources");
@@ -76,7 +67,7 @@ var test = function()
 
 </head>
 
-<body onload="onload()">
+<body onload="runTest()">
 <p>Tests that the script formatting changes console line numbers.
 </p>
 

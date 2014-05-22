@@ -253,26 +253,13 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, LocalFrame* f
     DocumentLoader* loader = assertDocumentLoader(errorString, frame);
     if (!loader)
         return;
-
     if (!cachedResourceContent(cachedResource(frame, url), result, base64Encoded))
         *errorString = "No resource with given URL found";
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
 {
-    Document* document = frame->document();
-    if (!document)
-        return 0;
-    Resource* cachedResource = document->fetcher()->cachedResource(url);
-    if (!cachedResource) {
-        Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
-        for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
-            Document* import = *it;
-            cachedResource = import->fetcher()->cachedResource(url);
-            if (cachedResource)
-                break;
-        }
-    }
+    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
     if (!cachedResource)
         cachedResource = memoryCache()->resourceForURL(url);
     return cachedResource;
@@ -557,8 +544,7 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
     }
 }
 
-// static
-Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
+static Vector<Document*> importsForFrame(LocalFrame* frame)
 {
     Vector<Document*> result;
     Document* rootDocument = frame->document();
@@ -577,7 +563,7 @@ static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
 {
     Vector<Resource*> result;
     Document* rootDocument = frame->document();
-    Vector<Document*> loaders = InspectorPageAgent::importsForFrame(frame);
+    Vector<Document*> loaders = importsForFrame(frame);
 
     cachedResourcesForDocument(rootDocument, result);
     for (size_t i = 0; i < loaders.size(); ++i)
@@ -1123,7 +1109,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         subresources->addItem(resourceObject);
     }
 
-    Vector<Document*> allImports = InspectorPageAgent::importsForFrame(frame);
+    Vector<Document*> allImports = importsForFrame(frame);
     for (Vector<Document*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
         Document* import = *it;
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()

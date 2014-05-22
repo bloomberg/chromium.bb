@@ -141,6 +141,9 @@ public:
 
     virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>) OVERRIDE;
 
+    // Called from other agents.
+    bool fetchResourceContent(LocalFrame*, const KURL&, String* content, bool* base64Encoded);
+
 private:
     InspectorResourceAgent(InspectorPageAgent*);
 
