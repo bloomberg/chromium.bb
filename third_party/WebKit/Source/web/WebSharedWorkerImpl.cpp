@@ -191,9 +191,6 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     ASSERT(!m_webView);
     m_webView = WebView::create(0);
     m_webView->settings()->setOfflineWebApplicationCacheEnabled(RuntimeEnabledFeatures::applicationCacheEnabled());
-    // FIXME: http://crbug.com/363843. This needs to find a better way to
-    // not create graphics layers.
-    m_webView->settings()->setAcceleratedCompositingEnabled(false);
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
     m_mainFrame = WebLocalFrame::create(this);

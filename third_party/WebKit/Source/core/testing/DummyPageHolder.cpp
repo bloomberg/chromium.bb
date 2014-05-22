@@ -34,7 +34,6 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -54,10 +53,6 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize)
     m_pageClients.backForwardClient = &m_backForwardClient;
 
     m_page = adoptPtrWillBeNoop(new Page(m_pageClients));
-    Settings& settings = m_page->settings();
-    // FIXME: http://crbug.com/363843. This needs to find a better way to
-    // not create graphics layers.
-    settings.setAcceleratedCompositingEnabled(false);
 
     m_frame = LocalFrame::create(&m_frameLoaderClient, &m_page->frameHost(), 0);
     m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
