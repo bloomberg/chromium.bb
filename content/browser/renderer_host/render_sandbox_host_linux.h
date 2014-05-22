@@ -39,6 +39,8 @@ class CONTENT_EXPORT RenderSandboxHostLinux {
   RenderSandboxHostLinux();
   ~RenderSandboxHostLinux();
 
+  bool ShutdownIPCChannel();
+
   // Whether Init() has been called yet.
   bool initialized_;
 

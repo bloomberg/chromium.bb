@@ -169,15 +169,18 @@ void SandboxIPCProcess::Run() {
 
     failed_polls = 0;
 
+    // The browser process will close the other end of this pipe on shutdown,
+    // so we should exit.
     if (pfds[0].revents) {
-      // our parent died so we should too.
-      _exit(0);
+      break;
     }
 
     if (pfds[1].revents) {
       HandleRequestFromRenderer(browser_socket_);
     }
   }
+
+  VLOG(1) << "SandboxIPCProcess stopping.";
 }
 
 void SandboxIPCProcess::HandleRequestFromRenderer(int fd) {

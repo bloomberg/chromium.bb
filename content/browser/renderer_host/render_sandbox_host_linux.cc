@@ -70,11 +70,15 @@ void RenderSandboxHostLinux::Init() {
   }
 }
 
+bool RenderSandboxHostLinux::ShutdownIPCChannel() {
+  return IGNORE_EINTR(close(childs_lifeline_fd_)) == 0;
+}
+
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
   if (initialized_) {
+    if (!ShutdownIPCChannel())
+      LOG(ERROR) << "ShutdownIPCChannel failed";
     if (IGNORE_EINTR(close(renderer_socket_)) < 0)
-      PLOG(ERROR) << "close";
-    if (IGNORE_EINTR(close(childs_lifeline_fd_)) < 0)
       PLOG(ERROR) << "close";
   }
 }
