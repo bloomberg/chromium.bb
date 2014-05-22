@@ -110,6 +110,26 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
                              std::vector<uint8>* buffer);
 
 // Preconditions:
+//  * |key| is non-null
+//  * |hash| is a digest algorithm
+//  * |label| MAY be empty (e.g. 0 bytes long).
+Status EncryptRsaOaep(PublicKey* key,
+                      const blink::WebCryptoAlgorithm& hash,
+                      const CryptoData& label,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer);
+
+// Preconditions:
+//   * |key| is non-null
+//   * |hash| is a digest algorithm
+//   * |label| MAY be empty (e.g. 0 bytes long).
+Status DecryptRsaOaep(PrivateKey* key,
+                      const blink::WebCryptoAlgorithm& hash,
+                      const CryptoData& label,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer);
+
+// Preconditions:
 //  * |key| is a non-null HMAC key.
 //  * |hash| is a digest algorithm.
 Status SignHmac(SymKey* key,

@@ -314,6 +314,15 @@ class JwkAlgorithmRegistry {
     alg_to_info_["RSA-OAEP"] =
         JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepImportAlgorithm,
                                           blink::WebCryptoAlgorithmIdSha1>);
+    alg_to_info_["RSA-OAEP-256"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepImportAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha256>);
+    alg_to_info_["RSA-OAEP-384"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepImportAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha384>);
+    alg_to_info_["RSA-OAEP-512"] =
+        JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepImportAlgorithm,
+                                          blink::WebCryptoAlgorithmIdSha512>);
     alg_to_info_["A128KW"] = JwkAlgorithmInfo(
         &BindAlgorithmId<CreateAlgorithm, blink::WebCryptoAlgorithmIdAesKw>,
         128);
@@ -667,22 +676,47 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
       }
       break;
     case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
-      switch (algorithm.rsaHashedParams()->hash().id()) {
-        case blink::WebCryptoAlgorithmIdRsaOaep:
-          jwk_dict->SetString("alg", "RSA-OAEP");
+      switch (algorithm.id()) {
+        case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+          switch (algorithm.rsaHashedParams()->hash().id()) {
+            case blink::WebCryptoAlgorithmIdSha1:
+              jwk_dict->SetString("alg", "RS1");
+              break;
+            case blink::WebCryptoAlgorithmIdSha256:
+              jwk_dict->SetString("alg", "RS256");
+              break;
+            case blink::WebCryptoAlgorithmIdSha384:
+              jwk_dict->SetString("alg", "RS384");
+              break;
+            case blink::WebCryptoAlgorithmIdSha512:
+              jwk_dict->SetString("alg", "RS512");
+              break;
+            default:
+              NOTREACHED();
+              return Status::ErrorUnexpected();
+          }
           break;
-        case blink::WebCryptoAlgorithmIdSha1:
-          jwk_dict->SetString("alg", "RS1");
+        }
+        case blink::WebCryptoAlgorithmIdRsaOaep: {
+          switch (algorithm.rsaHashedParams()->hash().id()) {
+            case blink::WebCryptoAlgorithmIdSha1:
+              jwk_dict->SetString("alg", "RSA-OAEP");
+              break;
+            case blink::WebCryptoAlgorithmIdSha256:
+              jwk_dict->SetString("alg", "RSA-OAEP-256");
+              break;
+            case blink::WebCryptoAlgorithmIdSha384:
+              jwk_dict->SetString("alg", "RSA-OAEP-384");
+              break;
+            case blink::WebCryptoAlgorithmIdSha512:
+              jwk_dict->SetString("alg", "RSA-OAEP-512");
+              break;
+            default:
+              NOTREACHED();
+              return Status::ErrorUnexpected();
+          }
           break;
-        case blink::WebCryptoAlgorithmIdSha256:
-          jwk_dict->SetString("alg", "RS256");
-          break;
-        case blink::WebCryptoAlgorithmIdSha384:
-          jwk_dict->SetString("alg", "RS384");
-          break;
-        case blink::WebCryptoAlgorithmIdSha512:
-          jwk_dict->SetString("alg", "RS512");
-          break;
+        }
         default:
           NOTREACHED();
           return Status::ErrorUnexpected();

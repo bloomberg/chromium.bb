@@ -423,6 +423,24 @@ Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
   return Status::ErrorUnsupported();
 }
 
+Status EncryptRsaOaep(PublicKey* key,
+                      const blink::WebCryptoAlgorithm& hash,
+                      const CryptoData& label,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
+Status DecryptRsaOaep(PrivateKey* key,
+                      const blink::WebCryptoAlgorithm& hash,
+                      const CryptoData& label,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
 Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
                            const blink::WebCryptoAlgorithm& hash,
                            const CryptoData& data,

@@ -135,6 +135,46 @@ Status DecryptRsaEsPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
   return platform::DecryptRsaEsPkcs1v1_5(private_key, data, buffer);
 }
 
+Status EncryptRsaOaep(const blink::WebCryptoAlgorithm& algorithm,
+                      const blink::WebCryptoKey& key,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer) {
+  platform::PublicKey* public_key;
+  Status status = ToPlatformPublicKey(key, &public_key);
+  if (status.IsError())
+    return status;
+
+  const blink::WebCryptoRsaOaepParams* params = algorithm.rsaOaepParams();
+  if (!params)
+    return Status::ErrorUnexpected();
+
+  return platform::EncryptRsaOaep(public_key,
+                                  key.algorithm().rsaHashedParams()->hash(),
+                                  CryptoData(params->optionalLabel()),
+                                  data,
+                                  buffer);
+}
+
+Status DecryptRsaOaep(const blink::WebCryptoAlgorithm& algorithm,
+                      const blink::WebCryptoKey& key,
+                      const CryptoData& data,
+                      std::vector<uint8>* buffer) {
+  platform::PrivateKey* private_key;
+  Status status = ToPlatformPrivateKey(key, &private_key);
+  if (status.IsError())
+    return status;
+
+  const blink::WebCryptoRsaOaepParams* params = algorithm.rsaOaepParams();
+  if (!params)
+    return Status::ErrorUnexpected();
+
+  return platform::DecryptRsaOaep(private_key,
+                                  key.algorithm().rsaHashedParams()->hash(),
+                                  CryptoData(params->optionalLabel()),
+                                  data,
+                                  buffer);
+}
+
 Status SignHmac(const blink::WebCryptoAlgorithm& algorithm,
                 const blink::WebCryptoKey& key,
                 const CryptoData& data,
@@ -411,6 +451,8 @@ Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
       return EncryptDecryptAesGcm(DECRYPT, algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
       return DecryptRsaEsPkcs1v1_5(algorithm, key, data, buffer);
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+      return DecryptRsaOaep(algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdAesKw:
       return DecryptAesKw(algorithm, key, data, buffer);
     default:
@@ -431,6 +473,8 @@ Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
       return EncryptDecryptAesGcm(ENCRYPT, algorithm, key, data, buffer);
     case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
       return EncryptRsaEsPkcs1v1_5(algorithm, key, data, buffer);
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+      return EncryptRsaOaep(algorithm, key, data, buffer);
     default:
       return Status::ErrorUnsupported();
   }
@@ -738,7 +782,16 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
 
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      return WrapKeyRaw(key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
+      if (wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw ||
+          wrapping_algorithm.id() ==
+              blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
+        // AES-KW is a special case, due to NSS's implementation only
+        // supporting C_Wrap/C_Unwrap with AES-KW
+        return WrapKeyRaw(
+            key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
+      }
+      return WrapKeyExportAndEncrypt(
+          format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
     case blink::WebCryptoKeyFormatJwk:
       return WrapKeyExportAndEncrypt(
           format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
@@ -766,13 +819,27 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
 
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      return UnwrapKeyRaw(wrapped_key_data,
-                          wrapping_key,
-                          wrapping_algorithm,
-                          algorithm,
-                          extractable,
-                          usage_mask,
-                          key);
+      if (wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw ||
+          wrapping_algorithm.id() ==
+              blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
+        // AES-KW is a special case, due to NSS's implementation only
+        // supporting C_Wrap/C_Unwrap with AES-KW
+        return UnwrapKeyRaw(wrapped_key_data,
+                            wrapping_key,
+                            wrapping_algorithm,
+                            algorithm,
+                            extractable,
+                            usage_mask,
+                            key);
+      }
+      return UnwrapKeyDecryptAndImport(format,
+                                       wrapped_key_data,
+                                       wrapping_key,
+                                       wrapping_algorithm,
+                                       algorithm,
+                                       extractable,
+                                       usage_mask,
+                                       key);
     case blink::WebCryptoKeyFormatJwk:
       return UnwrapKeyDecryptAndImport(format,
                                        wrapped_key_data,
