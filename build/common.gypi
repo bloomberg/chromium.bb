@@ -468,6 +468,10 @@
       # Enables autofill dialog and associated features; disabled by default.
       'enable_autofill_dialog%' : 0,
 
+      # Defaults Wallet integration in Autofill dialog to use production
+      # servers. Unofficial builds won't have the proper API keys.
+      'enable_prod_wallet_service%': 0,
+
       # Enables support for background apps.
       'enable_background%': 1,
 
@@ -697,7 +701,13 @@
 
         # Enable autofill dialog for Android, Mac and Views-enabled platforms.
         ['toolkit_views==1 or (OS=="android" and android_webview_build==0) or OS=="mac"', {
-          'enable_autofill_dialog%': 1
+          'enable_autofill_dialog%': 1,
+
+          'conditions': [
+            ['buildtype=="Official"', {
+              'enable_prod_wallet_service%': 1,
+            }],
+          ]
         }],
 
         ['OS=="android"', {
@@ -1039,6 +1049,7 @@
     'enable_session_service%': '<(enable_session_service)',
     'enable_themes%': '<(enable_themes)',
     'enable_autofill_dialog%': '<(enable_autofill_dialog)',
+    'enable_prod_wallet_service%': '<(enable_prod_wallet_service)',
     'enable_background%': '<(enable_background)',
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
@@ -2605,6 +2616,9 @@
       }],
       ['enable_autofill_dialog==1', {
         'defines': ['ENABLE_AUTOFILL_DIALOG=1'],
+      }],
+      ['enable_prod_wallet_service==1', {
+        'defines': ['ENABLE_PROD_WALLET_SERVICE=1'],
       }],
       ['enable_background==1', {
         'defines': ['ENABLE_BACKGROUND=1'],

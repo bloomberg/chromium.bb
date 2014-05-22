@@ -44,14 +44,9 @@ bool IsWalletProductionEnabled() {
   if (command_line->HasSwitch(::switches::kReduceSecurityForTesting))
     return false;
 
-  // TODO(estade): add a build-time flag for Chromium distros to enable this
-  // rather than checking for an official build. http://crbug.com/334088
-#if defined(GOOGLE_CHROME_BUILD)
-  // Default to prod for official builds.
+#if defined(ENABLE_PROD_WALLET_SERVICE)
   return true;
 #else
-  // Unofficial builds don't have the proper API keys for production Wallet
-  // servers.
   return false;
 #endif
 }
