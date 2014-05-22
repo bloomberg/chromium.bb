@@ -73,7 +73,8 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   return executable + executable_args + sync_flag + extra_flags
 
 
-# Sync the git repos used by build.sh
+# Sync the git repos used by build.sh. This is only needed for the sandboxed
+# translator now.
 with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
   buildbot_lib.Command(
     context, ToolchainBuildCmd(extra_flags=['--legacy-repo-sync']))
@@ -178,7 +179,8 @@ if host_os == 'win' or host_os == 'mac':
 if host_os != 'win':
   # TODO(dschuff): Fix windows regression test runner (upstream in the LLVM
   # codebase or locally in the way we build LLVM) ASAP
-  with buildbot_lib.Step('LLVM Regression (toolchain_build)', status):
+  with buildbot_lib.Step('LLVM Regression', status,
+                         halt_on_fail=False):
     llvm_test = [sys.executable,
                  os.path.join(NACL_DIR, 'pnacl', 'scripts', 'llvm-test.py'),
                  '--llvm-regression',
@@ -186,52 +188,39 @@ if host_os != 'win':
     buildbot_lib.Command(context, llvm_test)
 
 
+# On Linux we build all toolchain components (driven from this script), and then
+# call buildbot_pnacl.sh which builds the sandboxed translator and runs tests
+# for all the components.
+# For now, we only build the host toolchain components (binutils, llvm, driver)
+# but no target ibraries on targets other than Linux, so we can't run the SCons
+# tests (other than the gold_plugin_test) on those platforms yet.
+# For now full test coverage is only achieved on the main waterfall bots.
+# TODO(dschuff): enable building (but not uploading) or downloading of the
+# target libraries on non-linux so we can run more tests on the toolchain
+# buildbots.
+if host_os != 'linux':
+  sys.exit(0)
+
 # Now we run the PNaCl buildbot script. It in turn runs the PNaCl build.sh
-# script and runs scons tests.
+# script (currently only for the sandboxed translator) and runs scons tests.
 # TODO(dschuff): re-implement the test-running portion of buildbot_pnacl.sh
 # using buildbot_lib, and use them here and in the non-toolchain builder.
 buildbot_shell = os.path.join(NACL_DIR, 'buildbot', 'buildbot_pnacl.sh')
 
-# Because patching mangles the shell script on the trybots, fix it up here
-# so we can have working windows trybots.
-def FixCRLF(f):
-  with open(f, 'rb') as script:
-    data = script.read().replace('\r\n', '\n')
-  with open(f, 'wb') as script:
-    script.write(data)
-
-if host_os == 'win':
-  FixCRLF(buildbot_shell)
-  FixCRLF(os.path.join(NACL_DIR, 'pnacl', 'build.sh'))
-  FixCRLF(os.path.join(NACL_DIR, 'pnacl', 'scripts', 'common-tools.sh'))
-
 # Generate flags for buildbot_pnacl.sh
-if host_os == 'linux':
-  arg_os = 'linux'
-  # TODO(dschuff): Figure out if it makes sense to import the utilities from
-  # build/ into scripts from buildbot/ or only use things from buildbot_lib,
-  # or unify them in some way.
-  arch = 'x8664' if platform.machine() == 'x86_64' else 'x8632'
-elif host_os == 'mac':
-  arg_os = 'mac'
-  arch = 'x8632'
-elif host_os == 'win':
-  arg_os = 'win'
-  arch = 'x8664'
-else:
-  print 'Unrecognized platform: ', host_os
-  sys.exit(1)
+
+# TODO(dschuff): Figure out if it makes sense to import the utilities from
+# build/ into scripts from buildbot/ or only use things from buildbot_lib,
+# or unify them in some way.
+arch = 'x8664' if platform.machine() == 'x86_64' else 'x8632'
 
 if args.buildbot:
   trybot_mode = 'false'
-elif args.trybot:
+else:
   trybot_mode = 'true'
 
-platform_arg = 'mode-buildbot-tc-' + arch + '-' + arg_os
+platform_arg = 'mode-buildbot-tc-' + arch + '-linux'
 
-command = [bash,
-           buildbot_shell,
-           platform_arg,
-           trybot_mode]
+command = [bash, buildbot_shell, platform_arg,  trybot_mode]
 logging.info('Running: ' + ' '.join(command))
 subprocess.check_call(command)

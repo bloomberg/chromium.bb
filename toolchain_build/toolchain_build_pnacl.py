@@ -638,9 +638,8 @@ if __name__ == '__main__':
     # aren't right.
     # On linux use the 32-bit compiler to build the target libs since that's
     # what most developers will be using. (hosts[0] is i686-linux on linux64)
-    # For now, don't build anything more than once.
     # TODO(dschuff): Figure out a better way to test things on toolchain bots.
-    if pynacl.platform.IsLinux64():
+    if pynacl.platform.IsLinux():
       packages.update(pnacl_targetlibs.TargetLibsSrc(
         GetGitSyncCmdsCallback(rev)))
       for bias in BITCODE_BIASES:

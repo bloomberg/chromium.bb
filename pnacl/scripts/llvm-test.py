@@ -277,7 +277,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
   with remember_cwd():
     if IsEmptyOrNonexistent(testdir):
       print 'Working directory %s is empty. Not running tests' % testdir
-      if env['PNACL_BUILDBOT'] != 'false':
+      if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
         print '@@@STEP_TEXT (skipped)@@@'
       return 0
     os.chdir(testdir)
@@ -480,7 +480,7 @@ def RunTestsuiteSteps(env, config, options):
   if IsEmptyOrNonexistent(env['TC_BUILD_LLVM']):
     print ('LLVM build directory %s is empty. Skipping testsuite' %
            env['TC_BUILD_LLVM'])
-    if env['PNACL_BUILDBOT'] != 'false':
+    if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
       print '@@@STEP_TEXT (skipped)@@@'
     return result
   if options.testsuite_all or options.testsuite_prereq:
