@@ -97,6 +97,10 @@ void ActiveScriptController::RequestScriptInjection(
 
 void ActiveScriptController::OnAdInjectionDetected(
     const std::vector<std::string> ad_injectors) {
+  // We're only interested in data if there are ad injectors detected.
+  if (ad_injectors.empty())
+    return;
+
   size_t num_preventable_ad_injectors =
       base::STLSetIntersection<std::set<std::string> >(
           ad_injectors, permitted_extensions_).size();

@@ -5990,7 +5990,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The number of extensions per page that injected an ad and could have been
     stopped if the user had declined script injection. This is related to the
     ActivityLog metrics, ExtensionActivity.Ad*. Recorded upon page close or
-    navigation.
+    navigation. Only recorded if there was at least one ad injection detected.
   </summary>
 </histogram>
 
@@ -6012,7 +6012,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The number of extensions per page that injected an ad and that could not
     have been stopped through script injection permission. This is related to
     the ActivityLog metrics, ExtensionActivity.Ad*. Recorded upon page close or
-    navigation.
+    navigation. Only recorded if there was at least one ad injection detected.
   </summary>
 </histogram>
 
