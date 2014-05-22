@@ -35,6 +35,7 @@ class MockWebRTCPeerConnectionHandlerClient
                void(const blink::WebMediaStream& stream_descriptor));
   MOCK_METHOD1(didAddRemoteDataChannel,
                void(blink::WebRTCDataChannelHandler*));
+  MOCK_METHOD0(releasePeerConnectionHandler, void());
 
   void didGenerateICECandidateWorker(
       const blink::WebRTCICECandidate& candidate);
