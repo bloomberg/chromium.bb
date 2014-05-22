@@ -34,6 +34,7 @@ const char kUnencryptedConfiguration[] = "UnencryptedConfiguration";
 // Network Configuration
 namespace network_config {
 const char kCellular[] = "Cellular";
+const char kDevice[] = "Device";
 const char kEthernet[] = "Ethernet";
 const char kGUID[] = "GUID";
 const char kIPConfigs[] = "IPConfigs";
@@ -100,7 +101,9 @@ const char kProviderRequiresRoaming[] = "ProviderRequiresRoaming";
 const char kRoamingState[] = "RoamingState";
 const char kSelectedNetwork[] = "SelectedNetwork";
 const char kServingOperator[] = "ServingOperator";
+const char kSIMLockEnabled[] = "SIMLockEnabled";
 const char kSIMLockStatus[] = "SIMLockStatus";
+const char kSIMLockType[] = "SIMLockType";
 const char kSIMPresent[] = "SIMPresent";
 const char kSupportedCarriers[] = "SupportedCarriers";
 const char kSupportNetworkScan[] = "SupportNetworkScan";

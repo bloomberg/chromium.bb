@@ -188,7 +188,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     managed_network_configuration_handler_->Init(
         NULL /* no NetworkStateHandler */,
         network_profile_handler_.get(),
-        network_configuration_handler_.get());
+        network_configuration_handler_.get(),
+        NULL /* no DeviceHandler */);
 
     message_loop_.RunUntilIdle();
   }

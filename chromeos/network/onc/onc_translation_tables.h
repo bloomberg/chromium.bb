@@ -32,6 +32,11 @@ extern const StringTranslationEntry kEAPOuterTable[];
 extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
 extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
 
+// A separate translation table for cellular properties that are stored in a
+// Shill Device instead of a Service. The |shill_property_name| entries
+// reference Device properties, not Service properties.
+extern const FieldTranslationEntry kCellularDeviceTable[];
+
 const FieldTranslationEntry* GetFieldTranslationTable(
     const OncValueSignature& onc_signature);
 

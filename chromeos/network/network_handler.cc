@@ -59,7 +59,8 @@ void NetworkHandler::Init() {
   managed_network_configuration_handler_->Init(
       network_state_handler_.get(),
       network_profile_handler_.get(),
-      network_configuration_handler_.get());
+      network_configuration_handler_.get(),
+      network_device_handler_.get());
   network_connection_handler_->Init(
       network_state_handler_.get(),
       network_configuration_handler_.get(),

@@ -108,23 +108,32 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
   struct Policies;
   typedef std::map<std::string, linked_ptr<Policies> > UserToPoliciesMap;
+  typedef base::Callback<void(const std::string& service_path,
+                              scoped_ptr<base::DictionaryValue> properties)>
+      GetDevicePropertiesCallback;
 
   ManagedNetworkConfigurationHandlerImpl();
 
+  // Handlers may be NULL in tests so long as they do not execute any paths
+  // that require the handlers.
   void Init(NetworkStateHandler* network_state_handler,
             NetworkProfileHandler* network_profile_handler,
-            NetworkConfigurationHandler* network_configuration_handler);
+            NetworkConfigurationHandler* network_configuration_handler,
+            NetworkDeviceHandler* network_device_handler);
 
-  void GetManagedPropertiesCallback(
+  // Sends the response to the caller of GetManagedProperties.
+  void SendManagedProperties(
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
+      scoped_ptr<base::DictionaryValue> shill_properties);
 
-  void GetPropertiesCallback(
+  // Sends the response to the caller of GetProperties.
+  void SendProperties(
       const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
+      scoped_ptr<base::DictionaryValue> shill_properties);
 
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
@@ -132,8 +141,32 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   void OnPolicyAppliedToNetwork(const std::string& service_path);
 
   // Helper method to append associated Device properties to |properties|.
-  void GetDeviceProperties(const std::string& service_path,
-                           base::DictionaryValue* properties);
+  void GetDeviceStateProperties(const std::string& service_path,
+                                base::DictionaryValue* properties);
+
+  // Callback for NetworkConfigurationHandler::GetProperties requests from
+  // Get{Managed}Properties. This callback fills in properties from
+  // DeviceState and may request additional Device properties.
+  // Note: Requesting Device properties requires an additional fetch and
+  // additional copying of data, so we only do it for Cellular networks which
+  // contain a lot of necessary state in the associated Device object.
+  void GetPropertiesCallback(
+      GetDevicePropertiesCallback send_callback,
+      const std::string& service_path,
+      const base::DictionaryValue& shill_properties);
+
+  void GetDevicePropertiesSuccess(
+      const std::string& service_path,
+      scoped_ptr<base::DictionaryValue> network_properties,
+      GetDevicePropertiesCallback send_callback,
+      const std::string& device_path,
+      const base::DictionaryValue& device_properties);
+  void GetDevicePropertiesFailure(
+      const std::string& service_path,
+      scoped_ptr<base::DictionaryValue> network_properties,
+      GetDevicePropertiesCallback send_callback,
+      const std::string& error_name,
+      scoped_ptr<base::DictionaryValue> error_data);
 
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;
@@ -142,6 +175,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   NetworkStateHandler* network_state_handler_;
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
+  NetworkDeviceHandler* network_device_handler_;
 
   ObserverList<NetworkPolicyObserver> observers_;
 

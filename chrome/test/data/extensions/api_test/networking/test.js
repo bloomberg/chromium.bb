@@ -288,6 +288,28 @@ var availableTests = [
                  }, result);
       }));
   },
+  function getPropertiesCellular() {
+    chrome.networkingPrivate.getProperties(
+      "stub_cellular1",
+      callbackPass(function(result) {
+        assertEq({ "Cellular": {
+                     "ActivationState": "not-activated",
+                     "AllowRoaming": false,
+                     "Carrier": "Cellular1_Carrier",
+                     "HomeProvider": {
+                       "country": "us",
+                       "name": "Cellular1_Provider"
+                     },
+                     "NetworkTechnology": "GSM",
+                     "RoamingState": "home"
+                   },
+                   "ConnectionState": "NotConnected",
+                   "GUID": "stub_cellular1",
+                   "Name": "cellular1",
+                   "Type": "Cellular"
+                 }, result);
+      }));
+  },
   function getManagedProperties() {
     chrome.networkingPrivate.getManagedProperties(
       "stub_wifi2",

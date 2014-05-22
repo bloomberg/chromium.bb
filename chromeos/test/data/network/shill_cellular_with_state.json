@@ -34,5 +34,14 @@
       "username": "test-username3",
       "password": "test-password3"
     }
-  ]
+  ],
+  "Device": {
+    // This dictionary contains Device properties and not Service properties as
+    // above.
+    "Cellular.AllowRoaming": true,
+    "Cellular.HomeProvider": {
+      "country": "us",
+      "name": "cellular_provider"
+    }
+  }
 }

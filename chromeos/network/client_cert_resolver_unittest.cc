@@ -145,7 +145,8 @@ class ClientCertResolverTest : public testing::Test {
     network_config_handler_->Init(network_state_handler_.get());
     managed_config_handler_->Init(network_state_handler_.get(),
                                   network_profile_handler_.get(),
-                                  network_config_handler_.get());
+                                  network_config_handler_.get(),
+                                  NULL /* network_device_handler */);
     client_cert_resolver_->Init(network_state_handler_.get(),
                                 managed_config_handler_.get());
     client_cert_resolver_->SetSlowTaskRunnerForTest(

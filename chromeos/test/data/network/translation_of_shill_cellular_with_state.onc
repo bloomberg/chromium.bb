@@ -4,6 +4,11 @@
   "Cellular": {
     "ActivateOverNonCellularNetwork": false,
     "ActivationState": "activated",
+    "AllowRoaming": true,
+    "HomeProvider": {
+      "country": "us",
+      "name": "cellular_provider"
+    },
     "ServingOperator": {
       "Code": "test-code",
       "Country": "test-country",

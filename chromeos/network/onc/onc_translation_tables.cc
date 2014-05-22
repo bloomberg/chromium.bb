@@ -130,35 +130,14 @@ const FieldTranslationEntry cellular_provider_fields[] = {
     { ::onc::cellular_provider::kName, shill::kOperatorNameKey},
     {NULL}};
 
+// This must only contain Service properties and not Device properties.
+// For Device properties see kCellularDeviceTable.
 const FieldTranslationEntry cellular_fields[] = {
     { ::onc::cellular::kActivateOverNonCellularNetwork,
       shill::kActivateOverNonCellularNetworkProperty},
     { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
-    { ::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
-    { ::onc::cellular::kCarrier, shill::kCarrierProperty},
-    { ::onc::cellular::kESN, shill::kEsnProperty},
-    { ::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
-    { ::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},
-    { ::onc::cellular::kFoundNetworks, shill::kFoundNetworksProperty},
-    { ::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
-    { ::onc::cellular::kICCID, shill::kIccidProperty},
-    { ::onc::cellular::kIMEI, shill::kImeiProperty},
-    { ::onc::cellular::kIMSI, shill::kImsiProperty},
-    { ::onc::cellular::kManufacturer, shill::kManufacturerProperty},
-    { ::onc::cellular::kMDN, shill::kMdnProperty},
-    { ::onc::cellular::kMEID, shill::kMeidProperty},
-    { ::onc::cellular::kMIN, shill::kMinProperty},
-    { ::onc::cellular::kModelID, shill::kModelIDProperty},
     { ::onc::cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty},
-    { ::onc::cellular::kPRLVersion, shill::kPRLVersionProperty},
-    { ::onc::cellular::kProviderRequiresRoaming,
-      shill::kProviderRequiresRoamingProperty},
     { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
-    { ::onc::cellular::kSelectedNetwork, shill::kSelectedNetworkProperty},
-    { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
-    { ::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},
-    { ::onc::cellular::kSupportedCarriers, shill::kSupportedCarriersProperty},
-    { ::onc::cellular::kSupportNetworkScan, shill::kSupportNetworkScanProperty},
     {NULL}};
 
 const FieldTranslationEntry network_fields[] = {
@@ -273,6 +252,37 @@ const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
     { ::onc::eap::kMD5, shill::kEapPhase2AuthTTLSMD5},
     { ::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthTTLSMSCHAPV2},
     { ::onc::eap::kPAP, shill::kEapPhase2AuthTTLSPAP},
+    {NULL}};
+
+// This must contain only Shill Device properties and no Service properties.
+// For Service properties see cellular_fields.
+const FieldTranslationEntry kCellularDeviceTable[] = {
+    { ::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
+    { ::onc::cellular::kCarrier, shill::kCarrierProperty},
+    { ::onc::cellular::kESN, shill::kEsnProperty},
+    { ::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
+    { ::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},
+    { ::onc::cellular::kFoundNetworks, shill::kFoundNetworksProperty},
+    { ::onc::cellular::kHardwareRevision, shill::kHardwareRevisionProperty},
+    { ::onc::cellular::kHomeProvider, shill::kHomeProviderProperty},
+    { ::onc::cellular::kICCID, shill::kIccidProperty},
+    { ::onc::cellular::kIMEI, shill::kImeiProperty},
+    { ::onc::cellular::kIMSI, shill::kImsiProperty},
+    { ::onc::cellular::kManufacturer, shill::kManufacturerProperty},
+    { ::onc::cellular::kMDN, shill::kMdnProperty},
+    { ::onc::cellular::kMEID, shill::kMeidProperty},
+    { ::onc::cellular::kMIN, shill::kMinProperty},
+    { ::onc::cellular::kModelID, shill::kModelIDProperty},
+    { ::onc::cellular::kPRLVersion, shill::kPRLVersionProperty},
+    { ::onc::cellular::kProviderRequiresRoaming,
+      shill::kProviderRequiresRoamingProperty},
+    { ::onc::cellular::kSelectedNetwork, shill::kSelectedNetworkProperty},
+    { ::onc::cellular::kSIMLockEnabled, shill::kSIMLockEnabledProperty},
+    { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},
+    { ::onc::cellular::kSIMLockType, shill::kSIMLockTypeProperty},
+    { ::onc::cellular::kSIMPresent, shill::kSIMPresentProperty},
+    { ::onc::cellular::kSupportedCarriers, shill::kSupportedCarriersProperty},
+    { ::onc::cellular::kSupportNetworkScan, shill::kSupportNetworkScanProperty},
     {NULL}};
 
 const FieldTranslationEntry* GetFieldTranslationTable(

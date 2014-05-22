@@ -263,6 +263,32 @@ void ShillToONCTranslator::TranslateCellularWithState() {
           shill::kCellularApnListProperty, &shill_apns)) {
     TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *shill_apns);
   }
+
+  const base::DictionaryValue* device_dictionary = NULL;
+  if (!shill_dictionary_->GetDictionaryWithoutPathExpansion(
+          shill::kDeviceProperty, &device_dictionary)) {
+    return;
+  }
+
+  // Iterate through all fields of the CellularWithState signature and copy
+  // values from the device properties according to the separate
+  // CellularDeviceTable.
+  for (const OncFieldSignature* field_signature = onc_signature_->fields;
+       field_signature->onc_field_name != NULL; ++field_signature) {
+    const std::string& onc_field_name = field_signature->onc_field_name;
+
+    std::string shill_property_name;
+    const base::Value* shill_value = NULL;
+    if (!GetShillPropertyName(field_signature->onc_field_name,
+                              kCellularDeviceTable,
+                              &shill_property_name) ||
+        !device_dictionary->GetWithoutPathExpansion(shill_property_name,
+                                                    &shill_value)) {
+      continue;
+    }
+    onc_object_->SetWithoutPathExpansion(onc_field_name,
+                                         shill_value->DeepCopy());
+  }
 }
 
 void ShillToONCTranslator::TranslateNetworkWithState() {
@@ -277,6 +303,7 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     TranslateStringToONC(
         kNetworkTypeTable, shill_network_type, &onc_network_type);
   }
+  // Translate nested Cellular, WiFi, etc. properties.
   if (!onc_network_type.empty()) {
     onc_object_->SetStringWithoutPathExpansion(::onc::network_config::kType,
                                                onc_network_type);

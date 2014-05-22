@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -45,28 +46,8 @@ bool DeviceState::PropertyChanged(const std::string& key,
   } else if (key == shill::kProviderRequiresRoamingProperty) {
     return GetBooleanValue(key, value, &provider_requires_roaming_);
   } else if (key == shill::kHomeProviderProperty) {
-    const base::DictionaryValue* dict = NULL;
-    if (!value.GetAsDictionary(&dict))
-      return false;
-    std::string home_provider_country;
-    std::string home_provider_name;
-    dict->GetStringWithoutPathExpansion(shill::kOperatorCountryKey,
-                                        &home_provider_country);
-    dict->GetStringWithoutPathExpansion(shill::kOperatorNameKey,
-                                        &home_provider_name);
-    // Set home_provider_id_
-    if (!home_provider_name.empty() && !home_provider_country.empty()) {
-      home_provider_id_ = base::StringPrintf(
-          "%s (%s)",
-          home_provider_name.c_str(),
-          home_provider_country.c_str());
-    } else {
-      dict->GetStringWithoutPathExpansion(shill::kOperatorCodeKey,
-                                          &home_provider_id_);
-      LOG(WARNING) << "Carrier ID not defined, using code instead: "
-                   << home_provider_id_;
-    }
-    return true;
+    return shill_property_util::GetHomeProviderFromProperty(
+        value, &home_provider_id_);
   } else if (key == shill::kTechnologyFamilyProperty) {
     return GetStringValue(key, value, &technology_family_);
   } else if (key == shill::kCarrierProperty) {

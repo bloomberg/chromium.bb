@@ -138,7 +138,8 @@ class ExtensionNetworkingPrivateApiTest
 #if defined(OS_CHROMEOS)
       : detector_(NULL),
         service_test_(NULL),
-        manager_test_(NULL)
+        manager_test_(NULL),
+        device_test_(NULL)
 #endif
   {
   }
@@ -196,6 +197,39 @@ class ExtensionNetworkingPrivateApiTest
     CHECK(!userhash_.empty());
   }
 
+  void SetupCellular() {
+    // Add a Cellular Device and set a couple of properties.
+    device_test_->AddDevice(
+        kCellularDevicePath, shill::kTypeCellular, "stub_cellular_device1");
+    device_test_->SetDeviceProperty(kCellularDevicePath,
+                                    shill::kCarrierProperty,
+                                    base::StringValue("Cellular1_Carrier"));
+    base::DictionaryValue home_provider;
+    home_provider.SetString("name", "Cellular1_Provider");
+    home_provider.SetString("country", "us");
+    device_test_->SetDeviceProperty(kCellularDevicePath,
+                                    shill::kHomeProviderProperty,
+                                    home_provider);
+    AddService("stub_cellular1", "cellular1",
+               shill::kTypeCellular, shill::kStateIdle);
+    // Note: These properties will show up in a "Cellular" object in ONC.
+    service_test_->SetServiceProperty(
+        "stub_cellular1",
+        shill::kNetworkTechnologyProperty,
+        base::StringValue(shill::kNetworkTechnologyGsm));
+    service_test_->SetServiceProperty(
+        "stub_cellular1",
+        shill::kActivationStateProperty,
+        base::StringValue(shill::kActivationStateNotActivated));
+    service_test_->SetServiceProperty(
+        "stub_cellular1",
+        shill::kRoamingStateProperty,
+        base::StringValue(shill::kRoamingStateHome));
+    DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+        SortManagerServices();
+    content::RunAllPendingInMessageLoop();
+  }
+
   void AddService(const std::string& service_path,
                   const std::string& name,
                   const std::string& type,
@@ -221,15 +255,14 @@ class ExtensionNetworkingPrivateApiTest
     DBusThreadManager* dbus_manager = DBusThreadManager::Get();
     manager_test_ = dbus_manager->GetShillManagerClient()->GetTestInterface();
     service_test_ = dbus_manager->GetShillServiceClient()->GetTestInterface();
+    device_test_ = dbus_manager->GetShillDeviceClient()->GetTestInterface();
 
     ShillIPConfigClient::TestInterface* ip_config_test =
         dbus_manager->GetShillIPConfigClient()->GetTestInterface();
-    ShillDeviceClient::TestInterface* device_test =
-        dbus_manager->GetShillDeviceClient()->GetTestInterface();
     ShillProfileClient::TestInterface* profile_test =
         dbus_manager->GetShillProfileClient()->GetTestInterface();
 
-    device_test->ClearDevices();
+    device_test_->ClearDevices();
     service_test_->ClearServices();
 
     // Sends a notification about the added profile.
@@ -245,17 +278,15 @@ class ExtensionNetworkingPrivateApiTest
     ip_config_test->AddIPConfig(kIPConfigPath, ipconfig);
 
     // Add Devices
-    device_test->AddDevice(
+    device_test_->AddDevice(
         kWifiDevicePath, shill::kTypeWifi, "stub_wifi_device1");
     base::ListValue wifi_ip_configs;
     wifi_ip_configs.AppendString(kIPConfigPath);
-    device_test->SetDeviceProperty(
+    device_test_->SetDeviceProperty(
         kWifiDevicePath, shill::kIPConfigsProperty, wifi_ip_configs);
-    device_test->SetDeviceProperty(kWifiDevicePath,
-                                   shill::kAddressProperty,
-                                   base::StringValue("001122aabbcc"));
-    device_test->AddDevice(
-        kCellularDevicePath, shill::kTypeCellular, "stub_cellular_device1");
+    device_test_->SetDeviceProperty(kWifiDevicePath,
+                                    shill::kAddressProperty,
+                                    base::StringValue("001122aabbcc"));
 
     // Add Services
     AddService("stub_ethernet", "eth0",
@@ -359,6 +390,7 @@ class ExtensionNetworkingPrivateApiTest
   NetworkPortalDetectorTestImpl* detector_;
   ShillServiceClient::TestInterface* service_test_;
   ShillManagerClient::TestInterface* manager_test_;
+  ShillDeviceClient::TestInterface* device_test_;
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
 #endif
@@ -425,6 +457,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, RequestNetworkScan) {
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       GetCellularProperties) {
+  SetupCellular();
+  EXPECT_TRUE(RunNetworkingSubtest("getPropertiesCellular")) << message_;
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
   EXPECT_TRUE(RunNetworkingSubtest("getState")) << message_;
@@ -549,23 +589,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        GetCaptivePortalStatus) {
-  AddService("stub_cellular1", "cellular1",
-             shill::kTypeCellular, shill::kStateIdle);
-  service_test_->SetServiceProperty(
-      "stub_cellular1",
-      shill::kNetworkTechnologyProperty,
-      base::StringValue(shill::kNetworkTechnologyGsm));
-  service_test_->SetServiceProperty(
-      "stub_cellular1",
-      shill::kActivationStateProperty,
-      base::StringValue(shill::kActivationStateNotActivated));
-  service_test_->SetServiceProperty(
-      "stub_cellular1",
-      shill::kRoamingStateProperty,
-      base::StringValue(shill::kRoamingStateHome));
-  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-      SortManagerServices();
-  content::RunAllPendingInMessageLoop();
+  SetupCellular();
 
   NetworkPortalDetector::CaptivePortalState state;
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;

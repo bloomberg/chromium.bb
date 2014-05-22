@@ -318,6 +318,33 @@ bool IsPassphraseKey(const std::string& key) {
       key == shill::kApnPasswordProperty;
 }
 
+bool GetHomeProviderFromProperty(const base::Value& value,
+                                 std::string* home_provider_id) {
+  const base::DictionaryValue* dict = NULL;
+  if (!value.GetAsDictionary(&dict))
+    return false;
+  std::string home_provider_country;
+  std::string home_provider_name;
+  dict->GetStringWithoutPathExpansion(shill::kOperatorCountryKey,
+                                      &home_provider_country);
+  dict->GetStringWithoutPathExpansion(shill::kOperatorNameKey,
+                                      &home_provider_name);
+  // Set home_provider_id
+  if (!home_provider_name.empty() && !home_provider_country.empty()) {
+    *home_provider_id = base::StringPrintf(
+        "%s (%s)", home_provider_name.c_str(), home_provider_country.c_str());
+  } else {
+    if (!dict->GetStringWithoutPathExpansion(shill::kOperatorCodeKey,
+                                             home_provider_id)) {
+      return false;
+    }
+    LOG(WARNING)
+        << "Provider name and country not defined, using code instead: "
+        << *home_provider_id;
+  }
+  return true;
+}
+
 }  // namespace shill_property_util
 
 namespace {

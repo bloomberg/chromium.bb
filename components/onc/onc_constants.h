@@ -58,6 +58,7 @@ ONC_EXPORT extern const char kUnencryptedConfiguration[];
 // NetworkConfiguration.
 namespace network_config {
 ONC_EXPORT extern const char kCellular[];
+ONC_EXPORT extern const char kDevice[];
 ONC_EXPORT extern const char kEthernet[];
 ONC_EXPORT extern const char kGUID[];
 ONC_EXPORT extern const char kIPConfigs[];
@@ -117,7 +118,9 @@ ONC_EXPORT extern const char kProviderRequiresRoaming[];
 ONC_EXPORT extern const char kRoamingState[];
 ONC_EXPORT extern const char kSelectedNetwork[];
 ONC_EXPORT extern const char kServingOperator[];
+ONC_EXPORT extern const char kSIMLockEnabled[];
 ONC_EXPORT extern const char kSIMLockStatus[];
+ONC_EXPORT extern const char kSIMLockType[];
 ONC_EXPORT extern const char kSIMPresent[];
 ONC_EXPORT extern const char kSupportedCarriers[];
 ONC_EXPORT extern const char kSupportNetworkScan[];

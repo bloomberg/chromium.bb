@@ -106,7 +106,8 @@ class NetworkConnectionHandlerTest : public testing::Test {
     managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
     managed_config_handler_->Init(network_state_handler_.get(),
                                   network_profile_handler_.get(),
-                                  network_config_handler_.get());
+                                  network_config_handler_.get(),
+                                  NULL /* network_device_handler */);
 
     network_connection_handler_.reset(new NetworkConnectionHandler);
     network_connection_handler_->Init(network_state_handler_.get(),
