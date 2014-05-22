@@ -57,10 +57,6 @@ using content::BrowserThread;
 
 namespace {
 
-typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
-base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
-    LAZY_INSTANCE_INITIALIZER;
-
 static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
@@ -270,7 +266,12 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 
 void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(
     content::RenderViewHost* render_view_host) {
-  content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetActiveEntry();
+  if (devtools_bindings_->url_ == entry->GetURL())
+    content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
+  else
+    delete devtools_bindings_;
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -279,18 +280,6 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
 }
 
 // DevToolsUIBindings ---------------------------------------------------------
-
-// static
-DevToolsUIBindings* DevToolsUIBindings::GetOrCreateFor(
-    content::WebContents* web_contents) {
-  DevToolsUIBindingsList* instances = g_instances.Pointer();
-  for (DevToolsUIBindingsList::iterator it(instances->begin());
-       it != instances->end(); ++it) {
-    if ((*it)->web_contents() == web_contents)
-      return *it;
-  }
-  return new DevToolsUIBindings(web_contents);
-}
 
 // static
 GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
@@ -312,13 +301,14 @@ GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
   return GURL(url_string);
 }
 
-DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
+DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents,
+                                       const GURL& url)
     : profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       web_contents_(web_contents),
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       device_listener_enabled_(false),
+      url_(url),
       weak_factory_(this) {
-  g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
 
@@ -328,6 +318,10 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
   file_system_indexer_ = new DevToolsFileSystemIndexer();
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_);
+
+  web_contents_->GetController().LoadURL(
+      url, content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   // Wipe out page icon so that the default application icon is used.
   content::NavigationEntry* entry =
@@ -357,13 +351,6 @@ DevToolsUIBindings::~DevToolsUIBindings() {
 
   while (!subscribers_.empty())
     Unsubscribe(*subscribers_.begin());
-
-  // Remove self from global list.
-  DevToolsUIBindingsList* instances = g_instances.Pointer();
-  DevToolsUIBindingsList::iterator it(
-      std::find(instances->begin(), instances->end(), this));
-  DCHECK(it != instances->end());
-  instances->erase(it);
 }
 
 void DevToolsUIBindings::InspectedContentsClosing() {

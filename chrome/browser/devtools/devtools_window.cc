@@ -603,12 +603,9 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |load_state_ == kLoadCompleted|.
   web_contents_->SetDelegate(this);
-  web_contents_->GetController().LoadURL(
-      DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-
-  // Lookup bindings and pass ownership over self into them.
-  bindings_ = DevToolsUIBindings::GetOrCreateFor(web_contents_);
+  bindings_ = new DevToolsUIBindings(
+      web_contents_,
+      DevToolsUIBindings::ApplyThemeToURL(profile, url));
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
 

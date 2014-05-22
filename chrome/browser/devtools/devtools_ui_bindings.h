@@ -38,8 +38,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener {
  public:
-  static DevToolsUIBindings* GetOrCreateFor(
-      content::WebContents* web_contents);
   static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
   class Delegate {
@@ -62,7 +60,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
     virtual void RenderProcessGone() = 0;
   };
 
-  explicit DevToolsUIBindings(content::WebContents* web_contents);
+  DevToolsUIBindings(content::WebContents* web_contents, const GURL& url);
   virtual ~DevToolsUIBindings();
 
   content::WebContents* web_contents() { return web_contents_; }
@@ -181,6 +179,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   Subscribers subscribers_;
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
+  GURL url_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);

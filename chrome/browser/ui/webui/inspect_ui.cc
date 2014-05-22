@@ -40,6 +40,7 @@ const char kCloseCommand[]  = "close";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
 const char kInspectBrowser[] = "inspect-browser";
+const char kLocalHost[] = "localhost";
 
 const char kDiscoverUsbDevicesEnabledCommand[] =
     "set-discover-usb-devices-enabled";
@@ -262,6 +263,12 @@ void InspectUI::InspectBrowserWithCustomFrontend(
     const std::string& source_id,
     const std::string& browser_id,
     const GURL& frontend_url) {
+  if (!frontend_url.SchemeIs(content::kChromeUIScheme) &&
+      !frontend_url.SchemeIs(content::kChromeDevToolsScheme) &&
+      frontend_url.host() != kLocalHost) {
+    return;
+  }
+
   DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
   if (!handler)
     return;
@@ -283,13 +290,8 @@ void InspectUI::InspectBrowserWithCustomFrontend(
                     false));
 
   // Install devtools bindings.
-  DevToolsUIBindings* bindings = DevToolsUIBindings::GetOrCreateFor(front_end);
-
-  // Navigate to a page.
-  front_end->GetController().LoadURL(
-      frontend_url, content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-
+  DevToolsUIBindings* bindings = new DevToolsUIBindings(front_end,
+                                                        frontend_url);
 
   // Engage remote debugging between front-end and agent host.
   content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
