@@ -23,6 +23,7 @@
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/geolocation_permission_context.h"
@@ -45,6 +46,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -67,6 +69,7 @@
 #endif
 
 using base::UserMetricsAction;
+using content::RenderFrameHost;
 using content::WebContents;
 
 namespace {
@@ -310,6 +313,15 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
 
 void WebViewGuest::Attach(WebContents* embedder_web_contents,
                           const base::DictionaryValue& args) {
+  std::string name;
+  args.GetString(webview::kName, &name);
+  // If the guest window's name is empty, then the WebView tag's name is
+  // assigned. Otherwise, the guest window's name takes precedence over the
+  // WebView tag's name.
+  if (name_.empty())
+    name_ = name;
+  ReportFrameNameChange(name_);
+
   std::string user_agent_override;
   if (args.GetString(webview::kParameterUserAgentOverride,
                      &user_agent_override)) {
@@ -465,6 +477,17 @@ void WebViewGuest::LoadAbort(bool is_top_level,
   args->SetString(guestview::kReason, error_type);
   DispatchEvent(
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
+}
+
+void WebViewGuest::OnUpdateFrameName(bool is_top_level,
+                                     const std::string& name) {
+  if (!is_top_level)
+    return;
+
+  if (name_ == name)
+    return;
+
+  ReportFrameNameChange(name);
 }
 
 WebViewGuest* WebViewGuest::CreateNewGuestWindow(
@@ -839,6 +862,16 @@ void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
   DispatchEvent(new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
+bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
+                                     RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(WebViewGuest, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdateFrameName, OnUpdateFrameName)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void WebViewGuest::WebContentsDestroyed() {
   // Clean up custom context menu items for this guest.
   extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
@@ -863,6 +896,18 @@ void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
     return;
   }
   guest_web_contents()->GetController().Reload(false);
+}
+
+void WebViewGuest::RenderViewReady() {
+  Send(new ChromeViewMsg_SetName(guest_web_contents()->GetRoutingID(), name_));
+}
+
+void WebViewGuest::ReportFrameNameChange(const std::string& name) {
+  name_ = name;
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetString(webview::kName, name);
+  DispatchEvent(
+      new GuestViewBase::Event(webview::kEventFrameNameChanged, args.Pass()));
 }
 
 void WebViewGuest::LoadHandlerCalled() {
@@ -1205,6 +1250,14 @@ void WebViewGuest::ShowContextMenu(int request_id,
   menu_delegate->ShowMenu(pending_menu_.Pass());
 }
 
+void WebViewGuest::SetName(const std::string& name) {
+  if (name_ == name)
+    return;
+  name_ = name;
+
+  Send(new ChromeViewMsg_SetName(routing_id(), name_));
+}
+
 void WebViewGuest::Destroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
@@ -1263,6 +1316,7 @@ void WebViewGuest::WebContentsCreated(WebContents* source_contents,
   CHECK(guest);
   guest->SetOpener(this);
   std::string guest_name = base::UTF16ToUTF8(frame_name);
+  guest->name_ = guest_name;
   pending_new_windows_.insert(
       std::make_pair(guest, NewWindowInfo(target_url, guest_name)));
 }

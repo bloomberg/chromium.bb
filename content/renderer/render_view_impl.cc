@@ -1073,7 +1073,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
@@ -1273,13 +1272,6 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
 void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   edit_commands_ = edit_commands;
-}
-
-void RenderViewImpl::OnSetName(const std::string& name) {
-  if (!webview())
-    return;
-
-  webview()->mainFrame()->setName(WebString::fromUTF8(name));
 }
 
 void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,

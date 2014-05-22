@@ -349,10 +349,25 @@ void WebviewCaptureVisibleRegionFunction::OnCaptureFailure(
   SendResponse(false);
 }
 
+WebviewSetNameFunction::WebviewSetNameFunction() {
+}
+
+WebviewSetNameFunction::~WebviewSetNameFunction() {
+}
+
 WebviewSetZoomFunction::WebviewSetZoomFunction() {
 }
 
 WebviewSetZoomFunction::~WebviewSetZoomFunction() {
+}
+
+bool WebviewSetNameFunction::RunAsyncSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::SetName::Params> params(
+      webview::SetName::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  guest->SetName(params->frame_name);
+  SendResponse(true);
+  return true;
 }
 
 bool WebviewSetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {

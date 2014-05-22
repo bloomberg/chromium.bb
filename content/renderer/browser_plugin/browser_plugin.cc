@@ -117,7 +117,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdatedName, OnUpdatedName)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -163,10 +162,6 @@ bool BrowserPlugin::HasDOMAttribute(const std::string& attribute_name) const {
 
   return container()->element().hasAttribute(
       blink::WebString::fromUTF8(attribute_name));
-}
-
-std::string BrowserPlugin::GetNameAttribute() const {
-  return GetDOMAttributeValue(browser_plugin::kAttributeName);
 }
 
 bool BrowserPlugin::GetAllowTransparencyAttribute() const {
@@ -239,15 +234,6 @@ int BrowserPlugin::GetAdjustedMinWidth() const {
 
 std::string BrowserPlugin::GetPartitionAttribute() const {
   return GetDOMAttributeValue(browser_plugin::kAttributePartition);
-}
-
-void BrowserPlugin::ParseNameAttribute() {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_SetName(render_view_routing_id_,
-                                       guest_instance_id_,
-                                       GetNameAttribute()));
 }
 
 void BrowserPlugin::ParseAllowTransparencyAttribute() {
@@ -380,7 +366,6 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
-  attach_params.name = GetNameAttribute();
   attach_params.storage_partition_id = storage_partition_id_;
   attach_params.persist_storage = persist_storage_;
   attach_params.src = GetSrcAttribute();
@@ -408,9 +393,6 @@ void BrowserPlugin::OnAdvanceFocus(int guest_instance_id, bool reverse) {
 void BrowserPlugin::OnAttachACK(
     int guest_instance_id,
     const BrowserPluginMsg_Attach_ACK_Params& params) {
-  // Update BrowserPlugin attributes to match the state of the guest.
-  if (!params.name.empty())
-    OnUpdatedName(guest_instance_id, params.name);
   if (!params.storage_partition_id.empty()) {
     std::string partition_name =
         (params.persist_storage ? browser_plugin::kPersistPrefix : "") +
@@ -514,11 +496,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
         blink::WebPluginContainer::TouchEventRequestTypeRaw :
         blink::WebPluginContainer::TouchEventRequestTypeNone);
   }
-}
-
-void BrowserPlugin::OnUpdatedName(int guest_instance_id,
-                                  const std::string& name) {
-  UpdateDOMAttribute(browser_plugin::kAttributeName, name);
 }
 
 void BrowserPlugin::OnUpdateRect(
@@ -869,7 +846,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
-    case BrowserPluginMsg_UpdatedName::ID:
     case BrowserPluginMsg_UpdateRect::ID:
       return true;
     default:

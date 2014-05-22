@@ -833,6 +833,7 @@ enum HistogramValue {
   FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDSUCCESS,
   FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR,
   NETWORKINGPRIVATE_GETNETWORKS,
+  WEBVIEW_SETNAME,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

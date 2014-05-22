@@ -235,6 +235,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
                         OnSetVisuallyDeemphasized)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetFPS, OnGetFPS)
@@ -356,6 +357,13 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
           render_view(), NULL) :
       NULL;
 #endif
+}
+
+void ChromeRenderViewObserver::OnSetName(const std::string& name) {
+  if (!render_view()->GetWebView())
+    return;
+
+  render_view()->GetWebView()->mainFrame()->setName(WebString::fromUTF8(name));
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {

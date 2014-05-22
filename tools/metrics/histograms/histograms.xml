@@ -34781,6 +34781,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="772" label="FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDSUCCESS"/>
   <int value="773" label="FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR"/>
   <int value="774" label="NETWORKINGPRIVATE_GETNETWORKS"/>
+  <int value="775" label="WEBVIEW_SETNAME"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

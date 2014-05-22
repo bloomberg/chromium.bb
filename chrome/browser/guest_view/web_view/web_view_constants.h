@@ -17,6 +17,7 @@ extern const char kEventContextMenu[];
 extern const char kEventDialog[];
 extern const char kEventExit[];
 extern const char kEventFindReply[];
+extern const char kEventFrameNameChanged[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];
 extern const char kEventLoadProgress[];

@@ -611,6 +611,20 @@
         ]
       },
       {
+        "name": "setName",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "frameName"
+          }
+        ]
+      },
+      {
         "name": "setPermission",
         "type": "function",
         "parameters": [

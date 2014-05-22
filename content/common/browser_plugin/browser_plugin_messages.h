@@ -61,7 +61,6 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
   IPC_STRUCT_MEMBER(bool, opaque)
-  IPC_STRUCT_MEMBER(std::string, name)
   IPC_STRUCT_MEMBER(std::string, src)
   IPC_STRUCT_MEMBER(GURL, embedder_frame_url)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
@@ -72,7 +71,6 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(BrowserPluginMsg_Attach_ACK_Params)
   IPC_STRUCT_MEMBER(std::string, storage_partition_id)
   IPC_STRUCT_MEMBER(bool, persist_storage)
-  IPC_STRUCT_MEMBER(std::string, name)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
@@ -209,11 +207,6 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     blink::WebDragOperationsMask /* operation_mask */,
                     gfx::Point /* plugin_location */)
 
-// Sets the name of the guest window to the provided |name|.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
-                    int /* instance_id */,
-                    std::string /* name */)
-
 // Sends a PointerLock Lock ACK to the BrowserPluginGuest.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
                     int /* instance_id */,
@@ -293,11 +286,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
                      int /* request_id */,
                      gfx::Rect  /* source_rect */,
                      gfx::Size  /* dest_size */)
-
-// Informs BrowserPlugin of a new name set for the top-level guest frame.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdatedName,
-                     int /* instance_id */,
-                     std::string /* name */)
 
 // Guest renders into an FBO with textures provided by the embedder.
 // BrowserPlugin shares mostly the same logic as out-of-process RenderFrames but

@@ -327,9 +327,6 @@ class CONTENT_EXPORT BrowserPluginGuest
       int instance_id, const BrowserPluginHostMsg_ResizeGuest_Params& params);
   // Overridden in tests.
   virtual void OnSetFocus(int instance_id, bool focused);
-  // Sets the name of the guest so that other guests in the same partition can
-  // access it.
-  void OnSetName(int instance_id, const std::string& name);
   // Updates the size state of the guest.
   void OnSetSize(
       int instance_id,
@@ -397,9 +394,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   // Overridden in tests.
   virtual void OnTakeFocus(bool reverse);
-  void OnUpdateFrameName(int frame_id,
-                         bool is_top_level,
-                         const std::string& name);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.

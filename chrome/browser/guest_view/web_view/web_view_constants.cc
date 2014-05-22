@@ -14,6 +14,7 @@ const char kEventContextMenu[] = "webview.contextmenu";
 const char kEventDialog[] = "webview.onDialog";
 const char kEventExit[] = "webview.onExit";
 const char kEventFindReply[] = "webview.onFindReply";
+const char kEventFrameNameChanged[] = "webview.onFrameNameChanged";
 const char kEventLoadAbort[] = "webview.onLoadAbort";
 const char kEventLoadCommit[] = "webview.onLoadCommit";
 const char kEventLoadProgress[] = "webview.onLoadProgress";

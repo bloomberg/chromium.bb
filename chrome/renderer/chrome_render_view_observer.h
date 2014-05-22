@@ -60,6 +60,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
 
   void OnWebUIJavaScript(const base::string16& javascript);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
+  void OnSetName(const std::string& name);
   void OnSetVisuallyDeemphasized(bool deemphasized);
   void OnGetFPS();
 #if defined(OS_ANDROID)

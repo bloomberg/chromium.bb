@@ -63,6 +63,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // |items| == NULL means no filtering will be applied.
   void ShowContextMenu(int request_id, const MenuItemVector* items);
 
+  // Sets the frame name of the guest.
+  void SetName(const std::string& name);
+
   // GuestViewBase implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const base::DictionaryValue& args) OVERRIDE;
@@ -291,8 +294,15 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual bool OnMessageReceived(
+      const IPC::Message& message,
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
   virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
+  virtual void RenderViewReady() OVERRIDE;
+
+  // Informs the embedder of a frame name change.
+  void ReportFrameNameChange(const std::string& name);
 
   // Called after the load handler is called in the guest's main frame.
   void LoadHandlerCalled();
@@ -343,6 +353,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                  const GURL& url,
                  const std::string& error_type);
 
+  void OnUpdateFrameName(bool is_top_level, const std::string& name);
 
   // Creates a new guest window owned by this WebViewGuest.
   WebViewGuest* CreateNewGuestWindow(const content::OpenURLParams& params);
@@ -381,6 +392,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // Stores the current zoom factor.
   double current_zoom_factor_;
+
+  // Stores the window name of the main frame of the guest.
+  std::string name_;
 
   // Handles find requests and replies for the webview find API.
   WebviewFindHelper find_helper_;

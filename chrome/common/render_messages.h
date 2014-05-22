@@ -234,6 +234,10 @@ IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
                      bool /* on_navigation */)
 
+// Set the top-level frame to the provided name.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetName,
+                    std::string /* frame_name */)
+
 // For WebUI testing, this message requests JavaScript to be executed at a time
 // which is late enough to not be thrown out, and early enough to be before
 // onload events are fired.
@@ -465,6 +469,11 @@ IPC_SYNC_MESSAGE_CONTROL1_3(
     bool /* registered */,
     std::vector<base::string16> /* additional_param_names */,
     std::vector<base::string16> /* additional_param_values */)
+
+// Informs the browser of updated frame names.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_UpdateFrameName,
+                    bool /* is_top_level */,
+                    std::string /* name */)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Tells the browser to search for a plug-in that can handle the given MIME

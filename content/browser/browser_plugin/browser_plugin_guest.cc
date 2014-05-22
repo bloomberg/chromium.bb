@@ -187,7 +187,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetContentsOpaque,
                         OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
@@ -206,8 +205,6 @@ void BrowserPluginGuest::Initialize(
   guest_opaque_ = params.opaque;
   guest_window_rect_ = params.resize_guest_params.view_rect;
 
-  if (!params.name.empty())
-    name_ = params.name;
   auto_size_enabled_ = params.auto_size_params.enable;
   max_auto_size_ = params.auto_size_params.max_size;
   min_auto_size_ = params.auto_size_params.min_size;
@@ -281,7 +278,6 @@ void BrowserPluginGuest::Initialize(
   ack_params.storage_partition_id = site_url.query();
   ack_params.persist_storage =
       site_url.path().find("persist") != std::string::npos;
-  ack_params.name = name_;
   SendMessageToEmbedder(
       new BrowserPluginMsg_Attach_ACK(instance_id_, ack_params));
 
@@ -486,12 +482,6 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
                                             const base::string16& frame_name,
                                             const GURL& target_url,
                                             WebContents* new_contents) {
-  WebContentsImpl* new_contents_impl =
-      static_cast<WebContentsImpl*>(new_contents);
-  BrowserPluginGuest* guest = new_contents_impl->GetBrowserPluginGuest();
-  std::string guest_name = base::UTF16ToUTF8(frame_name);
-  guest->name_ = guest_name;
-
   if (!delegate_)
     return;
 
@@ -624,7 +614,6 @@ void BrowserPluginGuest::RenderViewReady() {
   else
     rvh->DisableAutoResize(full_size_);
 
-  Send(new ViewMsg_SetName(routing_id(), name_));
   OnSetContentsOpaque(instance_id_, guest_opaque_);
 
   RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay_ms(
@@ -671,7 +660,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_SetAutoSize::ID:
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
-    case BrowserPluginHostMsg_SetName::ID:
     case BrowserPluginHostMsg_SetContentsOpaque::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
@@ -706,7 +694,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
                         OnImeCompositionRangeChanged)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameName, OnUpdateFrameName)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -735,12 +722,6 @@ void BrowserPluginGuest::Attach(
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
   }
-
-  // The guest's frame name takes precedence over the BrowserPlugin's name.
-  // The guest's frame name is assigned in
-  // BrowserPluginGuest::WebContentsCreated.
-  if (!name_.empty())
-    params.name.clear();
 
   Initialize(params, embedder_web_contents);
 
@@ -975,13 +956,6 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   }
 }
 
-void BrowserPluginGuest::OnSetName(int instance_id, const std::string& name) {
-  if (name == name_)
-    return;
-  name_ = name;
-  Send(new ViewMsg_SetName(routing_id(), name));
-}
-
 void BrowserPluginGuest::OnSetSize(
     int instance_id,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
@@ -1105,16 +1079,6 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
-}
-
-void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
-                                           bool is_top_level,
-                                           const std::string& name) {
-  if (!is_top_level)
-    return;
-
-  name_ = name;
-  SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(instance_id_, name));
 }
 
 void BrowserPluginGuest::RequestMediaAccessPermission(

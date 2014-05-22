@@ -1566,11 +1566,7 @@ void RenderFrameImpl::didChangeName(blink::WebLocalFrame* frame,
   if (!render_view_->renderer_preferences_.report_frame_name_changes)
     return;
 
-  render_view_->Send(
-      new ViewHostMsg_UpdateFrameName(render_view_->GetRoutingID(),
-                                      routing_id_,
-                                      !frame->parent(),
-                                      base::UTF16ToUTF8(name)));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeName(name));
 }
 
 void RenderFrameImpl::didMatchCSS(

@@ -529,10 +529,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
 
-// Set the top-level frame to the provided name.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetName,
-                    std::string /* frame_name */)
-
 // Sent to the RenderView when a new tab is swapped into an existing
 // tab and the histories need to be merged. The existing tab has a history of
 // |merged_history_length| which precedes the history of the new tab. All
@@ -1467,13 +1463,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
 // terminated.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
-
-// Informs the browser of updated frame names.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateFrameName,
-                    int /* frame_id */,
-                    bool /* is_top_level */,
-                    std::string /* name */)
-
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CompositorSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)

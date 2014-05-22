@@ -48,6 +48,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                         int world_id) {}
   virtual void DidClearWindowObject() {}
+  virtual void DidChangeName(const base::string16& name) {}
 
   // Called when we receive a console message from Blink for which we requested
   // extra details (like the stack trace). |message| is the error message,
