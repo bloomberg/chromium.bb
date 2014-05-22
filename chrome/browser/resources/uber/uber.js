@@ -224,11 +224,12 @@ cr.define('uber', function() {
 
   /**
    * Changes the path past the page title (i.e. chrome://chrome/settings/(.*)).
+   * @param {string} pageId Should match an id of one of the iframe containers.
    * @param {Object} state The page's state object for the navigation.
    * @param {string} path The new /path/ to be set after the page name.
    * @param {number} historyOption The type of history modification to make.
    */
-  function changePathTo(state, path, historyOption) {
+  function changePathTo(pageId, state, path, historyOption) {
     assert(!path || path.substr(-1) != '/', 'invalid path given');
 
     var histFunc;
@@ -239,7 +240,6 @@ cr.define('uber', function() {
 
     assert(histFunc, 'invalid historyOption given ' + historyOption);
 
-    var pageId = getSelectedIframe().id;
     var args = [{pageId: pageId, pageState: state},
                 '',
                 '/' + pageId + '/' + (path || '')];
@@ -259,8 +259,9 @@ cr.define('uber', function() {
     var historyOption =
         replace ? HISTORY_STATE_OPTION.REPLACE : HISTORY_STATE_OPTION.PUSH;
     // Only update the currently displayed path if this is the visible frame.
-    if (getIframeFromOrigin(origin).parentNode == getSelectedIframe())
-      changePathTo(state, path, historyOption);
+    var container = getIframeFromOrigin(origin).parentNode;
+    if (container == getSelectedIframe())
+      changePathTo(container.id, state, path, historyOption);
   }
 
   /**
@@ -340,10 +341,12 @@ cr.define('uber', function() {
       frame.dataset.ready = false;
     }
 
-    selectPage(pageId);
-
+    // This must be called before selectPage so that the title change applies to
+    // the new history entry.
     if (historyOption != HISTORY_STATE_OPTION.NONE)
-      changePathTo({}, path, historyOption);
+      changePathTo(pageId, {}, path, historyOption);
+
+    selectPage(pageId);
   }
 
   /**
