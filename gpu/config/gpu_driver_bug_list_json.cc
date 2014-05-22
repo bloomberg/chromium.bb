@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "5.4",
+  "version": "5.5",
   "entries": [
     {
       "id": 1,
@@ -963,6 +963,28 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "disable_d3d11"
+      ]
+    },
+)  // LONG_STRING_CONST macro
+// Avoid C2026 (string too big) error on VisualStudio.
+LONG_STRING_CONST(
+    {
+      "id": 74,
+      "cr_bugs": [278606],
+      "description": "Testing EGL sync fences is broken on Qualcomm before Android 4.4",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "4.4"
+        }
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_egl_khr_fence_sync"
       ]
     }
   ]

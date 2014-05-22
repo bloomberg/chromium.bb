@@ -795,9 +795,16 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_shader_texture_lod = true;
   }
 
+  bool egl_khr_fence_sync = false;
+#if !defined(OS_MACOSX)
+  if (workarounds_.disable_egl_khr_fence_sync) {
+    gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync = false;
+  }
+  egl_khr_fence_sync = gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync;
+#endif
   bool ui_gl_fence_works = is_es3 || extensions.Contains("GL_NV_fence") ||
                            extensions.Contains("GL_ARB_sync") ||
-                           extensions.Contains("EGL_KHR_fence_sync");
+                           egl_khr_fence_sync;
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
