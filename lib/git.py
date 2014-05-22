@@ -773,7 +773,7 @@ def _GitRepoIsContentMerging(git_repo, remote):
   """
   # Need to use the manifest to get upstream gerrit; also, if upstream
   # doesn't provide a refs/meta/config for the repo, this will fail.
-  RunGit(git_repo, ['fetch', remote, 'refs/meta/config:refs/meta/config'])
+  RunGit(git_repo, ['fetch', '-f', remote, 'refs/meta/config:refs/meta/config'])
 
   content = RunGit(git_repo, ['show', 'refs/meta/config:project.config'],
                    error_code_ok=True)

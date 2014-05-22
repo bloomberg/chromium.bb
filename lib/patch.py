@@ -709,7 +709,7 @@ class GitRepoPatch(PatchQuery):
       sha1, subject, msg = _PullData(self.sha1)
 
     if sha1 is None:
-      git.RunGit(git_repo, ['fetch', self.project_url, self.ref])
+      git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref])
       sha1, subject, msg = _PullData(self.sha1 or 'FETCH_HEAD')
 
     sha1 = ParseSHA1(sha1, error_ok=False)
