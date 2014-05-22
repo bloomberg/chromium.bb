@@ -19,9 +19,11 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
@@ -127,6 +129,11 @@ aura::WindowTreeHost* AshWindowTreeHostX11::AsWindowTreeHost() { return this; }
 void AshWindowTreeHostX11::UpdateDisplayID(int64 id1, int64 id2) {
   display_ids_.first = id1;
   display_ids_.second = id2;
+}
+
+void AshWindowTreeHostX11::PrepareForShutdown() {
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
 void AshWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {

@@ -235,12 +235,11 @@ gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
   if (!root_window)
     return GetPrimaryDisplay();
   const RootWindowSettings* rws = GetRootWindowSettings(root_window);
-  if (rws->shutdown)
-    return GetPrimaryDisplay();
-
   int64 id = rws->display_id;
   // if id is |kInvaildDisplayID|, it's being deleted.
   DCHECK(id != gfx::Display::kInvalidDisplayID);
+  if (id == gfx::Display::kInvalidDisplayID)
+    return GetPrimaryDisplay();
 
   DisplayManager* display_manager = GetDisplayManager();
   // RootWindow needs Display to determine its device scale factor

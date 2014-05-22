@@ -53,7 +53,10 @@ class ASH_EXPORT AshWindowTreeHost {
   // mode dual monitors case). If the root window is only associated with one
   // display id, then the other id should be set to
   // gfx::Display::kInvalidDisplayID.
-  virtual void UpdateDisplayID(int64 id1, int64 id2) {};
+  virtual void UpdateDisplayID(int64 id1, int64 id2) {}
+
+  // Stop listening for events in preparation for shutdown.
+  virtual void PrepareForShutdown() {}
 };
 
 }  // namespace ash

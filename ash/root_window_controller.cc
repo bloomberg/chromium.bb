@@ -423,7 +423,7 @@ void RootWindowController::Shutdown() {
   // ends up with invalid display.
   GetRootWindowSettings(root_window)->display_id =
       gfx::Display::kInvalidDisplayID;
-  GetRootWindowSettings(root_window)->shutdown = true;
+  ash_host_->PrepareForShutdown();
 
   system_background_.reset();
   aura::client::SetScreenPositionClient(root_window, NULL);

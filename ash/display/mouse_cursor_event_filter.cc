@@ -210,13 +210,6 @@ void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  RootWindowController* rwc = GetRootWindowController(target->GetRootWindow());
-  // The root window controller is removed during the shutting down
-  // RootWindow, so don't process events futher.
-  if (!rwc) {
-    event->StopPropagation();
-    return;
-  }
 
   if (event->type() == ui::ET_MOUSE_PRESSED) {
     scale_when_drag_started_ = ui::GetDeviceScaleFactor(target->layer());

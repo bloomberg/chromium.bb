@@ -33,6 +33,7 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   virtual gfx::Insets GetHostInsets() const OVERRIDE;
   virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
   virtual void UpdateDisplayID(int64 id1, int64 id2) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
 
   // aura::WindowTreehost:
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
