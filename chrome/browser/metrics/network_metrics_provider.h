@@ -1,55 +1,46 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_METRICS_NETWORK_OBSERVER_H_
-#define CHROME_BROWSER_METRICS_METRICS_NETWORK_OBSERVER_H_
+#ifndef CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_
+#define CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 
-using metrics::SystemProfileProto;
-
 // Registers as observer with net::NetworkChangeNotifier and keeps track of
 // the network environment.
-class MetricsNetworkObserver
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+class NetworkMetricsProvider
+    : public metrics::MetricsProvider,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-  MetricsNetworkObserver();
-  virtual ~MetricsNetworkObserver();
+  NetworkMetricsProvider();
+  virtual ~NetworkMetricsProvider();
 
-  // Resets the "ambiguous" flags. Call when the environment is recorded.
-  void Reset();
+  // metrics::MetricsProvider:
+  virtual void ProvideSystemProfileMetrics(
+      metrics::SystemProfileProto* system_profile) OVERRIDE;
 
   // ConnectionTypeObserver:
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  bool connection_type_is_ambiguous() const {
-    return connection_type_is_ambiguous_;
-  }
-
-  SystemProfileProto::Network::ConnectionType connection_type() const;
-
-  bool wifi_phy_layer_protocol_is_ambiguous() const {
-    return wifi_phy_layer_protocol_is_ambiguous_;
-  }
-
-  SystemProfileProto::Network::WifiPHYLayerProtocol
-  wifi_phy_layer_protocol() const;
-
  private:
+  metrics::SystemProfileProto::Network::ConnectionType
+  GetConnectionType() const;
+  metrics::SystemProfileProto::Network::WifiPHYLayerProtocol
+  GetWifiPHYLayerProtocol() const;
+
   // Posts a call to net::GetWifiPHYLayerProtocol on the blocking pool.
   void ProbeWifiPHYLayerProtocol();
   // Callback from the blocking pool with the result of
   // net::GetWifiPHYLayerProtocol.
   void OnWifiPHYLayerProtocolResult(net::WifiPHYLayerProtocol mode);
-
-  base::WeakPtrFactory<MetricsNetworkObserver> weak_ptr_factory_;
 
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;
@@ -62,7 +53,9 @@ class MetricsNetworkObserver
   // net::GetWifiPHYLayerProtocol.
   net::WifiPHYLayerProtocol wifi_phy_layer_protocol_;
 
-  DISALLOW_COPY_AND_ASSIGN(MetricsNetworkObserver);
+  base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_METRICS_NETWORK_OBSERVER_H_
+#endif  // CHROME_BROWSER_METRICS_NETWORK_METRICS_PROVIDER_H_

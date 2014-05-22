@@ -189,6 +189,7 @@
 #include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
+#include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -466,7 +467,9 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
           g_browser_process->local_state())));
 #endif  // defined(OS_ANDROID)
 
-  // TODO(asvitkine): Move this out of MetricsService.
+  // TODO(asvitkine): Move these out of MetricsService.
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider));
   RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
 

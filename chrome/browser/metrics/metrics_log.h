@@ -13,14 +13,12 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/metrics/extension_metrics.h"
-#include "chrome/browser/metrics/metrics_network_observer.h"
 #include "chrome/common/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_log_base.h"
 #include "ui/gfx/size.h"
 
 class HashedExtensionMetrics;
-class MetricsNetworkObserver;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -167,9 +165,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
   metrics::MetricsServiceClient* const client_;
-
-  // Observes network state to provide values for SystemProfile::Network.
-  MetricsNetworkObserver network_observer_;
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;

@@ -1,36 +1,47 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_network_observer.h"
+#include "chrome/browser/metrics/network_metrics_provider.h"
 
 #include "base/compiler_specific.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
+using metrics::SystemProfileProto;
 
-MetricsNetworkObserver::MetricsNetworkObserver()
-    : weak_ptr_factory_(this),
-      connection_type_is_ambiguous_(false),
+NetworkMetricsProvider::NetworkMetricsProvider()
+    : connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
-      wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN) {
+      wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
+      weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
   ProbeWifiPHYLayerProtocol();
 }
 
-MetricsNetworkObserver::~MetricsNetworkObserver() {
+NetworkMetricsProvider::~NetworkMetricsProvider() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-void MetricsNetworkObserver::Reset() {
+void NetworkMetricsProvider::ProvideSystemProfileMetrics(
+    SystemProfileProto* system_profile) {
+  SystemProfileProto::Network* network = system_profile->mutable_network();
+  network->set_connection_type_is_ambiguous(connection_type_is_ambiguous_);
+  network->set_connection_type(GetConnectionType());
+  network->set_wifi_phy_layer_protocol_is_ambiguous(
+      wifi_phy_layer_protocol_is_ambiguous_);
+  network->set_wifi_phy_layer_protocol(GetWifiPHYLayerProtocol());
+
+  // Resets the "ambiguous" flags, since a new metrics log session has started.
   connection_type_is_ambiguous_ = false;
+  // TODO(isherman): This line seems unnecessary.
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
   wifi_phy_layer_protocol_is_ambiguous_ = false;
 }
 
-void MetricsNetworkObserver::OnConnectionTypeChanged(
+void NetworkMetricsProvider::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
@@ -44,7 +55,7 @@ void MetricsNetworkObserver::OnConnectionTypeChanged(
 }
 
 SystemProfileProto::Network::ConnectionType
-MetricsNetworkObserver::connection_type() const {
+NetworkMetricsProvider::GetConnectionType() const {
   switch (connection_type_) {
     case net::NetworkChangeNotifier::CONNECTION_NONE:
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
@@ -65,7 +76,7 @@ MetricsNetworkObserver::connection_type() const {
 }
 
 SystemProfileProto::Network::WifiPHYLayerProtocol
-MetricsNetworkObserver::wifi_phy_layer_protocol() const {
+NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
   switch (wifi_phy_layer_protocol_) {
     case net::WIFI_PHY_LAYER_PROTOCOL_NONE:
       return SystemProfileProto::Network::WIFI_PHY_LAYER_PROTOCOL_NONE;
@@ -86,16 +97,16 @@ MetricsNetworkObserver::wifi_phy_layer_protocol() const {
   return SystemProfileProto::Network::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
 }
 
-void MetricsNetworkObserver::ProbeWifiPHYLayerProtocol() {
+void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
   PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
       base::Bind(&net::GetWifiPHYLayerProtocol),
-      base::Bind(&MetricsNetworkObserver::OnWifiPHYLayerProtocolResult,
+      base::Bind(&NetworkMetricsProvider::OnWifiPHYLayerProtocolResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MetricsNetworkObserver::OnWifiPHYLayerProtocolResult(
+void NetworkMetricsProvider::OnWifiPHYLayerProtocolResult(
     net::WifiPHYLayerProtocol mode) {
   if (wifi_phy_layer_protocol_ != net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN &&
       mode != wifi_phy_layer_protocol_) {
@@ -103,4 +114,3 @@ void MetricsNetworkObserver::OnWifiPHYLayerProtocolResult(
   }
   wifi_phy_layer_protocol_ = mode;
 }
-

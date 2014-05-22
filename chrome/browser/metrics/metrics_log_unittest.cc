@@ -336,7 +336,7 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   std::string serialied_system_profile;
   EXPECT_TRUE(base::Base64Decode(base64_system_profile,
                                  &serialied_system_profile));
-  SystemProfileProto decoded_system_profile;
+  metrics::SystemProfileProto decoded_system_profile;
   EXPECT_TRUE(decoded_system_profile.ParseFromString(serialied_system_profile));
   CheckSystemProfile(decoded_system_profile);
 }

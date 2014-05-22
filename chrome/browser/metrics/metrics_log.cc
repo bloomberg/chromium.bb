@@ -570,16 +570,6 @@ void MetricsLog::RecordEnvironment(
   hardware->set_dll_base(reinterpret_cast<uint64>(&__ImageBase));
 #endif
 
-  SystemProfileProto::Network* network = system_profile->mutable_network();
-  network->set_connection_type_is_ambiguous(
-      network_observer_.connection_type_is_ambiguous());
-  network->set_connection_type(network_observer_.connection_type());
-  network->set_wifi_phy_layer_protocol_is_ambiguous(
-      network_observer_.wifi_phy_layer_protocol_is_ambiguous());
-  network->set_wifi_phy_layer_protocol(
-      network_observer_.wifi_phy_layer_protocol());
-  network_observer_.Reset();
-
   SystemProfileProto::OS* os = system_profile->mutable_os();
   std::string os_name = base::SysInfo::OperatingSystemName();
 #if defined(OS_WIN)
