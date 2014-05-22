@@ -376,7 +376,7 @@ void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
 
     image_skia.AddRepresentation(gfx::ImageSkiaRep(
         bitmap,
-        ui::GetImageScale(image_rep.scale_factor)));
+        ui::GetScaleForScaleFactor(image_rep.scale_factor)));
   }
 
   gfx::Image image;
@@ -406,7 +406,8 @@ void ImageLoader::ReplyBackWithImageFamily(
     // Create a new ImageSkia for this width/height, or add a representation to
     // an existing ImageSkia with the same width/height.
     image_skia_map[key].AddRepresentation(
-        gfx::ImageSkiaRep(bitmap, ui::GetImageScale(image_rep.scale_factor)));
+        gfx::ImageSkiaRep(bitmap,
+                          ui::GetScaleForScaleFactor(image_rep.scale_factor)));
   }
 
   for (std::map<std::pair<int, int>, gfx::ImageSkia>::iterator it =
