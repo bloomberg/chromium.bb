@@ -24,6 +24,10 @@ from pylib import device_settings
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_utils
 
+sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
+                             'third_party', 'android_testrunner'))
+import errors
+
 def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout = subprocess.PIPE)
   stdout, _ = ps.communicate()
@@ -172,7 +176,11 @@ def main(argv):
     for device_serial in devices:
       device = device_utils.DeviceUtils(device_serial)
       WipeDeviceData(device)
-    device_utils.RebootDevices()
+    try:
+      (device_utils.DeviceUtils.parallel(devices)
+          .old_interface.Reboot(True).pFinish(None))
+    except errors.DeviceUnresponsiveError:
+      pass
   else:
     ProvisionDevices(options)
 

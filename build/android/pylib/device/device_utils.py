@@ -9,50 +9,14 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=W0613
 
-import multiprocessing
-import os
-import sys
-
 import pylib.android_commands
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
-
-CHROME_SRC_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
-sys.path.append(os.path.join(
-    CHROME_SRC_DIR, 'third_party', 'android_testrunner'))
-import errors
+from pylib.utils import parallelizer
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3
-
-
-# multiprocessing map_async requires a top-level function for pickle library.
-def RebootDeviceSafe(device):
-  """Reboot a device, wait for it to start, and squelch timeout exceptions."""
-  try:
-    DeviceUtils(device).old_interface.Reboot(True)
-  except errors.DeviceUnresponsiveError as e:
-    return e
-
-
-def RebootDevices():
-  """Reboot all attached and online devices."""
-  devices = pylib.android_commands.GetAttachedDevices()
-  print 'Rebooting: %s' % devices
-  if devices:
-    pool = multiprocessing.Pool(len(devices))
-    results = pool.map_async(RebootDeviceSafe, devices).get(99999)
-
-    for device, result in zip(devices, results):
-      if result:
-        print '%s failed to startup.' % device
-
-    if any(results):
-      print 'RebootDevices() Warning: %s' % results
-    else:
-      print 'Reboots complete.'
 
 
 @decorators.WithExplicitTimeoutAndRetries(
@@ -149,4 +113,27 @@ class DeviceUtils(object):
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
           'adb root', 'Could not enable root.')
+
+  def __str__(self):
+    """Returns the device serial."""
+    return self.old_interface.GetDevice()
+
+  @staticmethod
+  def parallel(devices):
+    """ Creates a Parallelizer to operate over the provided list of devices.
+
+    If |devices| is either |None| or an empty list, the Parallelizer will
+    operate over all attached devices.
+
+    Args:
+      devices: A list of either DeviceUtils instances or objects from
+               from which DeviceUtils instances can be constructed.
+    Returns:
+      A Parallelizer operating over |devices|.
+    """
+    if not devices or len(devices) == 0:
+      devices = pylib.android_commands.AndroidCommands.GetAttachedDevices()
+    return parallelizer.Parallelizer([
+        d if isinstance(d, DeviceUtils) else DeviceUtils(d)
+        for d in devices])
 

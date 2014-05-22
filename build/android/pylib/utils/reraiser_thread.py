@@ -56,6 +56,7 @@ class ReraiserThread(threading.Thread):
     self._func = func
     self._args = args
     self._kwargs = kwargs
+    self._ret = None
     self._exc_info = None
 
   def ReraiseIfException(self):
@@ -63,11 +64,16 @@ class ReraiserThread(threading.Thread):
     if self._exc_info:
       raise self._exc_info[0], self._exc_info[1], self._exc_info[2]
 
+  def GetReturnValue(self):
+    """Reraise exception if present, otherwise get the return value."""
+    self.ReraiseIfException()
+    return self._ret
+
   #override
   def run(self):
     """Overrides Thread.run() to add support for reraising exceptions."""
     try:
-      self._func(*self._args, **self._kwargs)
+      self._ret = self._func(*self._args, **self._kwargs)
     except:
       self._exc_info = sys.exc_info()
       raise
@@ -138,3 +144,14 @@ class ReraiserThreadGroup(object):
       for thread in (t for t in self._threads if t.isAlive()):
         LogThreadStack(thread)
       raise
+
+  def GetAllReturnValues(self, watcher=watchdog_timer.WatchdogTimer(None)):
+    """Get all return values, joining all threads if necessary.
+
+    Args:
+      watcher: same as in |JoinAll|. Only used if threads are alive.
+    """
+    if any([t.isAlive() for t in self._threads]):
+      self.JoinAll(watcher)
+    return [t.GetReturnValue() for t in self._threads]
+

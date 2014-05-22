@@ -6,7 +6,6 @@
 
 """Utility script to install APKs from the command line quickly."""
 
-import multiprocessing
 import optparse
 import os
 import sys
@@ -50,13 +49,6 @@ def ValidateInstallAPKOption(option_parser, options):
                                options.apk)
 
 
-def _InstallApk(args):
-  apk_path, apk_package, keep_data, device = args
-  device_utils.DeviceUtils(device=device).old_interface.ManagedInstall(
-      apk_path, keep_data, apk_package)
-  print '-----  Installed on %s  -----' % device
-
-
 def main(argv):
   parser = optparse.OptionParser()
   AddInstallAPKOption(parser)
@@ -73,13 +65,10 @@ def main(argv):
   if not options.apk_package:
     options.apk_package = apk_helper.GetPackageName(options.apk)
 
-  pool = multiprocessing.Pool(len(devices))
-  # Send a tuple (apk_path, apk_package, device) per device.
-  pool.map(_InstallApk, zip([options.apk] * len(devices),
-                            [options.apk_package] * len(devices),
-                            [options.keep_data] * len(devices),
-                            devices))
+  device_utils.DeviceUtils.parallel(devices).old_interface.ManagedInstall(
+      options.apk, options.keep_data, options.apk_package).pFinish(None)
 
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
+
