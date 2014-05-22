@@ -275,10 +275,6 @@ SourceFile Setup::GetBuildArgFile() const {
 }
 
 bool Setup::FillArguments(const CommandLine& cmdline) {
-  // Add a dependency on the build arguments file. If this changes, we want
-  // to re-generated the build.
-  g_scheduler->AddGenDependency(build_settings_.GetFullPath(GetBuildArgFile()));
-
   // Use the args on the command line if specified, and save them. Do this even
   // if the list is empty (this means clear any defaults).
   if (cmdline.HasSwitch(kSwitchArgs)) {
@@ -309,6 +305,11 @@ bool Setup::FillArgsFromFile() {
   std::string contents;
   if (!base::ReadFileToString(build_arg_file, &contents))
     return true;  // File doesn't exist, continue with default args.
+
+  // Add a dependency on the build arguments file. If this changes, we want
+  // to re-generate the build.
+  g_scheduler->AddGenDependency(build_arg_file);
+
   if (contents.empty())
     return true;  // Empty file, do nothing.
 
@@ -383,6 +384,10 @@ bool Setup::SaveArgsToFile() {
         "\"").PrintToStdout();
     return false;
   }
+
+  // Add a dependency on the build arguments file. If this changes, we want
+  // to re-generate the build.
+  g_scheduler->AddGenDependency(build_arg_file);
 
   return true;
 }
