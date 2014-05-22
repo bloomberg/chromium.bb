@@ -16,13 +16,14 @@ SyncCore::~SyncCore() {}
 
 void SyncCore::ConnectSyncTypeToCore(
     ModelType type,
+    const DataTypeState& data_type_state,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::WeakPtr<NonBlockingTypeProcessor> processor) {
-
   // Initialize the processor's sync-thread sibling and the
   // processor <-> processor_core (ie. model thread <-> sync thread)
   // communication channel.
-  model_type_registry_->InitializeNonBlockingType(type, task_runner, processor);
+  model_type_registry_->InitializeNonBlockingType(
+      type, data_type_state, task_runner, processor);
 }
 
 void SyncCore::Disconnect(ModelType type) {

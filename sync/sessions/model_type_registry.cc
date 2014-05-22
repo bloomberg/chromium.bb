@@ -9,11 +9,48 @@
 #include "base/observer_list.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
+#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/engine/non_blocking_type_processor.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
+#include "sync/engine/non_blocking_type_processor_core_interface.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 
 namespace syncer {
+
+namespace {
+
+class NonBlockingTypeProcessorCoreWrapper
+    : public NonBlockingTypeProcessorCoreInterface {
+ public:
+  NonBlockingTypeProcessorCoreWrapper(
+      base::WeakPtr<NonBlockingTypeProcessorCore> core,
+      scoped_refptr<base::SequencedTaskRunner> sync_thread);
+  virtual ~NonBlockingTypeProcessorCoreWrapper();
+
+  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+
+ private:
+  base::WeakPtr<NonBlockingTypeProcessorCore> core_;
+  scoped_refptr<base::SequencedTaskRunner> sync_thread_;
+};
+
+NonBlockingTypeProcessorCoreWrapper::NonBlockingTypeProcessorCoreWrapper(
+    base::WeakPtr<NonBlockingTypeProcessorCore> core,
+    scoped_refptr<base::SequencedTaskRunner> sync_thread)
+    : core_(core), sync_thread_(sync_thread) {
+}
+
+NonBlockingTypeProcessorCoreWrapper::~NonBlockingTypeProcessorCoreWrapper() {
+}
+
+void NonBlockingTypeProcessorCoreWrapper::RequestCommits(
+    const CommitRequestDataList& list) {
+  sync_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingTypeProcessorCore::RequestCommits, core_, list));
+}
+
+}  // namespace
 
 ModelTypeRegistry::ModelTypeRegistry() : directory_(NULL) {}
 
@@ -96,6 +133,7 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 
 void ModelTypeRegistry::InitializeNonBlockingType(
     ModelType type,
+    const DataTypeState& data_type_state,
     scoped_refptr<base::SequencedTaskRunner> type_task_runner,
     base::WeakPtr<NonBlockingTypeProcessor> processor) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -104,14 +142,18 @@ void ModelTypeRegistry::InitializeNonBlockingType(
   scoped_ptr<NonBlockingTypeProcessorCore> core(
       new NonBlockingTypeProcessorCore(type, type_task_runner, processor));
 
+  // TODO(rlarocque): DataTypeState should be forwarded to core here.
+
   // Initialize Processor -> CoreProcessor communication channel.
-  type_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&NonBlockingTypeProcessor::OnConnect,
-                 processor,
-                 core->AsWeakPtr(),
-                 scoped_refptr<base::SequencedTaskRunner>(
-                     base::MessageLoopProxy::current())));
+  scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface(
+      new NonBlockingTypeProcessorCoreWrapper(
+          core->AsWeakPtr(),
+          scoped_refptr<base::SequencedTaskRunner>(
+              base::MessageLoopProxy::current())));
+  type_task_runner->PostTask(FROM_HERE,
+                             base::Bind(&NonBlockingTypeProcessor::OnConnect,
+                                        processor,
+                                        base::Passed(&core_interface)));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());

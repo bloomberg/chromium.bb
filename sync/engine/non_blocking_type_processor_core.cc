@@ -63,6 +63,11 @@ void NonBlockingTypeProcessorCore::ApplyUpdates(
   DVLOG(1) << "Applying updates for: " << ModelTypeToString(type_);
 }
 
+void NonBlockingTypeProcessorCore::RequestCommits(
+    const CommitRequestDataList& request_list) {
+  // TODO(rlarocque): Implement this.  crbug.com/351005.
+}
+
 void NonBlockingTypeProcessorCore::PassiveApplyUpdates(
     sessions::StatusController* status) {
   NOTREACHED()

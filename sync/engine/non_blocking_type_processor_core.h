@@ -9,6 +9,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
+#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -66,6 +67,9 @@ class SYNC_EXPORT NonBlockingTypeProcessorCore
       sessions::StatusController* status) OVERRIDE;
   virtual void ApplyUpdates(sessions::StatusController* status) OVERRIDE;
   virtual void PassiveApplyUpdates(sessions::StatusController* status) OVERRIDE;
+
+  // Entry point for NonBlockingTypeProcessor to send commit requests.
+  void RequestCommits(const CommitRequestDataList& request_list);
 
   // CommitContributor implementation.
   virtual scoped_ptr<CommitContribution> GetContribution(

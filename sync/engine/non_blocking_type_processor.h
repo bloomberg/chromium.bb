@@ -6,16 +6,18 @@
 #define SYNC_ENGINE_NON_BLOCKING_TYPE_PROCESSOR_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 class SyncCoreProxy;
-class NonBlockingTypeProcessorCore;
+class ModelThreadSyncEntity;
+class NonBlockingTypeProcessorCoreInterface;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
@@ -54,16 +56,38 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   void Disconnect();
 
   // Callback used to process the handshake response.
-  void OnConnect(base::WeakPtr<NonBlockingTypeProcessorCore> core,
-                 scoped_refptr<base::SequencedTaskRunner> sync_thread);
+  void OnConnect(
+      scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface);
+
+  // Requests that an item be stored in sync.
+  void Put(const std::string& client_tag,
+           const sync_pb::EntitySpecifics& specifics);
+
+  // Deletes an item from sync.
+  void Delete(const std::string& client_tag);
+
+  // Informs this object that some of its commit requests have been
+  // successfully serviced.
+  void OnCommitCompletion(const DataTypeState& type_state,
+                          const CommitResponseDataList& response_list);
+
+  // Informs this object that there are some incoming updates is should
+  // handle.
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list);
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
   base::WeakPtr<NonBlockingTypeProcessor> AsWeakPtrForUI();
 
  private:
+  typedef std::map<std::string, ModelThreadSyncEntity*> EntityMap;
+
+  // Sends all commit requests that are due to be sent to the sync thread.
+  void FlushPendingCommitRequests();
+
   ModelType type_;
-  sync_pb::DataTypeProgressMarker progress_marker_;
+  DataTypeState data_type_state_;
 
   // Whether or not sync is preferred for this type.  This is a cached copy of
   // the canonical copy information on the UI thread.
@@ -75,10 +99,21 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
 
   // Our link to data type management on the sync thread.
   // Used for enabling and disabling sync for this type.
+  //
+  // Beware of NULL pointers: This object is uninitialized when we are not
+  // connected to sync.
   scoped_ptr<SyncCoreProxy> sync_core_proxy_;
 
-  base::WeakPtr<NonBlockingTypeProcessorCore> core_;
-  scoped_refptr<base::SequencedTaskRunner> sync_thread_;
+  // Reference to the NonBlockingTypeProcessorCore.
+  //
+  // The interface hides the posting of tasks across threads as well as the
+  // NonBlockingTypeProcessorCore's implementation.  Both of these features are
+  // useful in tests.
+  scoped_ptr<NonBlockingTypeProcessorCoreInterface> core_interface_;
+
+  // The set of sync entities known to this object.
+  EntityMap entities_;
+  STLValueDeleter<EntityMap> entities_deleter_;
 
   // We use two different WeakPtrFactories because we want the pointers they
   // issue to have different lifetimes.  When asked to disconnect from the sync

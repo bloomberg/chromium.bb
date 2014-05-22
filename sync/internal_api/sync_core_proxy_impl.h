@@ -16,6 +16,7 @@ namespace syncer {
 
 class SyncCore;
 class NonBlockingTypeProcessor;
+struct DataTypeState;
 
 // Encapsulates a reference to the sync core and the thread it's running on.
 // Used by sync's data types to connect with the sync core.
@@ -38,6 +39,7 @@ class SYNC_EXPORT_PRIVATE SyncCoreProxyImpl : public SyncCoreProxy {
   // Must be called from the thread where the data type lives.
   virtual void ConnectTypeToCore(
       syncer::ModelType type,
+      const DataTypeState& data_type_state,
       base::WeakPtr<NonBlockingTypeProcessor> type_processor) OVERRIDE;
 
   // Disables syncing for the given type on the sync thread.

@@ -15,6 +15,7 @@ namespace syncer {
 
 class ModelTypeRegistry;
 class NonBlockingTypeProcessor;
+struct DataTypeState;
 
 // An interface of the core parts of sync.
 //
@@ -32,9 +33,10 @@ class SYNC_EXPORT_PRIVATE SyncCore {
   // Initializes the connection between the sync core and its delegate on the
   // sync client's thread.
   void ConnectSyncTypeToCore(
-    syncer::ModelType type,
-    scoped_refptr<base::SequencedTaskRunner> datatype_task_runner,
-    base::WeakPtr<NonBlockingTypeProcessor> sync_client);
+      syncer::ModelType type,
+      const DataTypeState& data_type_state,
+      scoped_refptr<base::SequencedTaskRunner> datatype_task_runner,
+      base::WeakPtr<NonBlockingTypeProcessor> sync_client);
 
   // Disconnects the syncer from the model and stops syncing the type.
   //

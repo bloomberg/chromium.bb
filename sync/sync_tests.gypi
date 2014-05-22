@@ -299,6 +299,8 @@
           'engine/directory_commit_contribution_unittest.cc',
           'engine/directory_update_handler_unittest.cc',
           'engine/get_updates_processor_unittest.cc',
+          'engine/model_thread_sync_entity_unittest.cc',
+          'engine/non_blocking_type_processor_unittest.cc',
           'engine/sync_scheduler_unittest.cc',
           'engine/syncer_proto_util_unittest.cc',
           'engine/syncer_unittest.cc',

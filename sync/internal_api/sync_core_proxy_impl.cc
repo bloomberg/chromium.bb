@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "sync/engine/non_blocking_sync_common.h"
 #include "sync/internal_api/sync_core.h"
 
 namespace syncer {
@@ -21,15 +22,16 @@ SyncCoreProxyImpl::~SyncCoreProxyImpl() {}
 
 void SyncCoreProxyImpl::ConnectTypeToCore(
     ModelType type,
+    const DataTypeState& data_type_state,
     base::WeakPtr<NonBlockingTypeProcessor> type_processor) {
   VLOG(1) << "ConnectTypeToCore: " << ModelTypeToString(type);
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncCore::ConnectSyncTypeToCore,
-                 sync_core_,
-                 type,
-                 base::MessageLoopProxy::current(),
-                 type_processor));
+  sync_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&SyncCore::ConnectSyncTypeToCore,
+                                         sync_core_,
+                                         type,
+                                         data_type_state,
+                                         base::MessageLoopProxy::current(),
+                                         type_processor));
 }
 
 void SyncCoreProxyImpl::Disconnect(ModelType type) {

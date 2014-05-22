@@ -12,11 +12,37 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/non_blocking_type_processor.h"
+#include "sync/engine/non_blocking_type_processor_core_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_core_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
+
+class NonBlockingTypeProcessorCore;
+
 namespace {
+
+// A useless instance of NonBlockingTypeProcessorCore.
+class NullNonBlockingTypeProcessorCore
+    : public NonBlockingTypeProcessorCoreInterface {
+ public:
+  NullNonBlockingTypeProcessorCore();
+  virtual ~NullNonBlockingTypeProcessorCore();
+
+  virtual void RequestCommits(const CommitRequestDataList& list) OVERRIDE;
+};
+
+NullNonBlockingTypeProcessorCore::NullNonBlockingTypeProcessorCore() {
+}
+
+NullNonBlockingTypeProcessorCore::~NullNonBlockingTypeProcessorCore() {
+}
+
+void NullNonBlockingTypeProcessorCore::RequestCommits(
+    const CommitRequestDataList& list) {
+  NOTREACHED() << "Not implemented.";
+}
 
 // A class that pretends to be the sync backend.
 class MockSyncCore {
@@ -28,10 +54,11 @@ class MockSyncCore {
     enabled_types_.Put(type);
     model_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&syncer::NonBlockingTypeProcessor::OnConnect,
-                   type_processor,
-                   base::WeakPtr<syncer::NonBlockingTypeProcessorCore>(),
-                   scoped_refptr<base::SequencedTaskRunner>()));
+        base::Bind(
+            &syncer::NonBlockingTypeProcessor::OnConnect,
+            type_processor,
+            base::Passed(scoped_ptr<NonBlockingTypeProcessorCoreInterface>(
+                             new NullNonBlockingTypeProcessorCore()).Pass())));
   }
 
   void Disconnect(syncer::ModelType type) {
@@ -58,6 +85,7 @@ class MockSyncCoreProxy : public syncer::SyncCoreProxy {
 
   virtual void ConnectTypeToCore(
       syncer::ModelType type,
+      const DataTypeState& data_type_state,
       base::WeakPtr<syncer::NonBlockingTypeProcessor> type_processor) OVERRIDE {
     // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument
     // to Connect().  That won't work here in this test, so we use the
@@ -87,6 +115,8 @@ class MockSyncCoreProxy : public syncer::SyncCoreProxy {
   scoped_refptr<base::TestSimpleTaskRunner> model_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_task_runner_;
 };
+
+}  // namespace
 
 class NonBlockingDataTypeControllerTest : public testing::Test {
  public:
@@ -406,4 +436,4 @@ TEST_F(NonBlockingDataTypeControllerTest, EnableDisableEnableRace) {
   EXPECT_TRUE(processor_.IsConnected());
 }
 
-}  // namespace
+}  // namespace syncer

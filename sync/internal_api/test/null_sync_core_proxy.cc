@@ -12,7 +12,8 @@ NullSyncCoreProxy::~NullSyncCoreProxy() {}
 
 void NullSyncCoreProxy::ConnectTypeToCore(
     syncer::ModelType type,
-      base::WeakPtr<NonBlockingTypeProcessor> processor) {
+    const DataTypeState& data_type_state,
+    base::WeakPtr<NonBlockingTypeProcessor> processor) {
   NOTREACHED() << "NullSyncCoreProxy is not meant to be used";
 }
 
