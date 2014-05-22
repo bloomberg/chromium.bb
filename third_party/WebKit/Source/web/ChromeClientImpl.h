@@ -165,9 +165,6 @@ public:
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;
     virtual void resetPagePopupDriver() OVERRIDE;
 
-    virtual bool isPasswordGenerationEnabled() const OVERRIDE;
-    virtual void openPasswordGenerator(WebCore::HTMLInputElement*) OVERRIDE;
-
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::Document::PageDismissalType) const OVERRIDE;
 
     virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const OVERRIDE;

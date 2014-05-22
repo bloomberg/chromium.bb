@@ -147,7 +147,6 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) OVERRIDE;
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*) OVERRIDE;
-    virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) OVERRIDE;
     virtual WebSettings* settings() OVERRIDE;
     virtual WebString pageEncoding() const OVERRIDE;
     virtual void setPageEncoding(const WebString&) OVERRIDE;
@@ -302,11 +301,6 @@ public:
     WebSpellCheckClient* spellCheckClient()
     {
         return m_spellCheckClient;
-    }
-
-    WebPasswordGeneratorClient* passwordGeneratorClient() const
-    {
-        return m_passwordGeneratorClient;
     }
 
     // Returns the page object associated with this view. This may be null when
@@ -575,7 +569,6 @@ private:
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
     WebSpellCheckClient* m_spellCheckClient;
-    WebPasswordGeneratorClient* m_passwordGeneratorClient;
 
     ChromeClientImpl m_chromeClientImpl;
     ContextMenuClientImpl m_contextMenuClientImpl;

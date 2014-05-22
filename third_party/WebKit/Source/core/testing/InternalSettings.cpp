@@ -73,7 +73,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_imagesEnabled(settings->imagesEnabled())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
-    , m_originalPasswordGenerationDecorationEnabled(settings->passwordGenerationDecorationEnabled())
 {
 }
 
@@ -94,7 +93,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
-    settings->setPasswordGenerationDecorationEnabled(m_originalPasswordGenerationDecorationEnabled);
     settings->genericFontFamilySettings().reset();
 }
 
@@ -335,12 +333,6 @@ void InternalSettings::setDefaultVideoPosterURL(const String& url, ExceptionStat
 {
     InternalSettingsGuardForSettings();
     settings()->setDefaultVideoPosterURL(url);
-}
-
-void InternalSettings::setPasswordGenerationDecorationEnabled(bool enabled, ExceptionState& exceptionState)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setPasswordGenerationDecorationEnabled(enabled);
 }
 
 void InternalSettings::trace(Visitor* visitor)

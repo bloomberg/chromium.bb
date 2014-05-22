@@ -83,9 +83,6 @@ namespace blink {
         // Exposes the default value of the maxLength attribute.
         BLINK_EXPORT static int defaultMaxLength();
 
-        BLINK_EXPORT WebElement decorationElementFor(void*);
-        BLINK_EXPORT WebElement passwordGeneratorButtonElement() const;
-
         // If true, forces the text of the element to be visible.
         BLINK_EXPORT void setShouldRevealPassword(bool value);
 

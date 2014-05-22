@@ -229,10 +229,6 @@ pinchOverlayScrollbarThickness type=int, initial=0
 
 mainFrameClipsContent initial=true
 
-# Enable decoration shadow nodes to test password genration feature
-# crbug.com/114092. This flag should not be enabled for production.
-passwordGenerationDecorationEnabled initial=false
-
 
 # Presumably used by LayoutTests?  Unclear.
 useWideViewport initial=true, invalidate=ViewportDescription

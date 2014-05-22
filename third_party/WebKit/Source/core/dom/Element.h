@@ -444,7 +444,6 @@ public:
     virtual bool isValidFormControlElement() { return false; }
     virtual bool isInRange() const { return false; }
     virtual bool isOutOfRange() const { return false; }
-    virtual bool isPasswordGeneratorButtonElement() const { return false; }
     virtual bool isClearButtonElement() const { return false; }
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return true; }

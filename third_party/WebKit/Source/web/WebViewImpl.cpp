@@ -344,16 +344,10 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
     m_spellCheckClient = spellCheckClient;
 }
 
-void WebViewImpl::setPasswordGeneratorClient(WebPasswordGeneratorClient* client)
-{
-    m_passwordGeneratorClient = client;
-}
-
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
     , m_autofillClient(0)
     , m_spellCheckClient(0)
-    , m_passwordGeneratorClient(0)
     , m_chromeClientImpl(this)
     , m_contextMenuClientImpl(this)
     , m_dragClientImpl(this)

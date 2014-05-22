@@ -113,8 +113,6 @@ public:
     bool isTimeField() const;
     bool isWeekField() const;
 
-    HTMLElement* passwordGeneratorButtonElement() const;
-
     bool checked() const { return m_isChecked; }
     void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);
 

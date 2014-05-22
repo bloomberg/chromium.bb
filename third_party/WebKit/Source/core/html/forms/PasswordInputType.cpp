@@ -32,18 +32,11 @@
 #include "config.h"
 #include "core/html/forms/PasswordInputType.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "InputTypeNames.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/frame/FrameHost.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "wtf/Assertions.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -57,38 +50,6 @@ void PasswordInputType::countUsage()
     countUsageIfVisible(UseCounter::InputTypePassword);
     if (element().fastHasAttribute(HTMLNames::maxlengthAttr))
         countUsageIfVisible(UseCounter::InputTypePasswordMaxLength);
-}
-
-bool PasswordInputType::isPasswordGenerationEnabled() const
-{
-    if (isPasswordGenerationDecorationEnabled())
-        return true;
-    if (FrameHost* host = element().document().frameHost())
-        return host->chrome().client().isPasswordGenerationEnabled();
-    return false;
-}
-
-bool PasswordInputType::isPasswordGenerationDecorationEnabled() const
-{
-    if (Settings* settings = element().document().settings())
-        return settings->passwordGenerationDecorationEnabled();
-    return false;
-}
-
-bool PasswordInputType::needsContainer() const
-{
-    return BaseTextInputType::needsContainer() || isPasswordGenerationEnabled();
-}
-
-void PasswordInputType::createShadowSubtree()
-{
-    BaseTextInputType::createShadowSubtree();
-    if (!isPasswordGenerationEnabled())
-        return;
-    RefPtrWillBeRawPtr<PasswordGeneratorButtonElement> generatorButton = PasswordGeneratorButtonElement::create(element().document());
-    if (!isPasswordGenerationDecorationEnabled())
-        generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    containerElement()->appendChild(generatorButton.release());
 }
 
 const AtomicString& PasswordInputType::formControlType() const

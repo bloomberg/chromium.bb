@@ -32,7 +32,6 @@
 #define PasswordInputType_h
 
 #include "core/html/forms/BaseTextInputType.h"
-#include "core/html/shadow/PasswordGeneratorButtonElement.h"
 
 namespace WebCore {
 
@@ -42,8 +41,6 @@ public:
 
 private:
     PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual bool needsContainer() const OVERRIDE;
-    virtual void createShadowSubtree() OVERRIDE;
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
@@ -55,10 +52,6 @@ private:
     virtual bool isPasswordField() const OVERRIDE;
     virtual void enableSecureTextInput() OVERRIDE;
     virtual void disableSecureTextInput() OVERRIDE;
-
-    bool isPasswordGenerationEnabled() const;
-    // For testing.
-    bool isPasswordGenerationDecorationEnabled() const;
 };
 
 } // namespace WebCore

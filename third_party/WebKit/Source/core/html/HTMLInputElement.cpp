@@ -189,11 +189,6 @@ Vector<FileChooserFileInfo> HTMLInputElement::filesFromFileInputFormControlState
     return FileInputType::filesFromFormControlState(state);
 }
 
-HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
-{
-    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::passwordGenerator()));
-}
-
 bool HTMLInputElement::shouldAutocomplete() const
 {
     if (m_autocomplete != Uninitialized)

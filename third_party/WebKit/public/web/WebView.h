@@ -58,7 +58,6 @@ class WebRange;
 class WebSettings;
 class WebSpellCheckClient;
 class WebString;
-class WebPasswordGeneratorClient;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
 struct WebMediaPlayerAction;
@@ -99,7 +98,6 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
-    virtual void setPasswordGeneratorClient(WebPasswordGeneratorClient*) = 0;
 
     // Options -------------------------------------------------------------
 

@@ -2763,8 +2763,6 @@
             'html/shadow/MediaControls.h',
             'html/shadow/MeterShadowElement.cpp',
             'html/shadow/MeterShadowElement.h',
-            'html/shadow/PasswordGeneratorButtonElement.cpp',
-            'html/shadow/PasswordGeneratorButtonElement.h',
             'html/shadow/PickerIndicatorElement.cpp',
             'html/shadow/PickerIndicatorElement.h',
             'html/shadow/ProgressShadowElement.cpp',

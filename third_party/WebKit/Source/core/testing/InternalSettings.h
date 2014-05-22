@@ -70,7 +70,6 @@ public:
         bool m_imagesEnabled;
         String m_defaultVideoPosterURL;
         bool m_originalLayerSquashingEnabled;
-        bool m_originalPasswordGenerationDecorationEnabled;
     };
 
     static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
@@ -99,7 +98,6 @@ public:
     void setImagesEnabled(bool, ExceptionState&);
     void setMediaTypeOverride(const String& mediaType, ExceptionState&);
     void setMockScrollbarsEnabled(bool, ExceptionState&);
-    void setPasswordGenerationDecorationEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);
     void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);

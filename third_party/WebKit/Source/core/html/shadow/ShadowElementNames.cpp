@@ -77,12 +77,6 @@ const AtomicString& innerEditor()
     return name;
 }
 
-const AtomicString& passwordGenerator()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, name, ("password-generator", AtomicString::ConstructFromLiteral));
-    return name;
-}
-
 const AtomicString& pickerIndicator()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("picker", AtomicString::ConstructFromLiteral));

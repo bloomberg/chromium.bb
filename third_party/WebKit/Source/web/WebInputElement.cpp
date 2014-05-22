@@ -134,17 +134,6 @@ int WebInputElement::defaultMaxLength()
     return HTMLInputElement::maximumLength;
 }
 
-// FIXME: Remove this once password_generation_manager.h stops using it.
-WebElement WebInputElement::decorationElementFor(void*)
-{
-    return passwordGeneratorButtonElement();
-}
-
-WebElement WebInputElement::passwordGeneratorButtonElement() const
-{
-    return WebElement(constUnwrap<HTMLInputElement>()->passwordGeneratorButtonElement());
-}
-
 void WebInputElement::setShouldRevealPassword(bool value)
 {
     unwrap<HTMLInputElement>()->setShouldRevealPassword(value);

@@ -80,7 +80,6 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
-#include "public/web/WebPasswordGeneratorClient.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebSettings.h"
@@ -757,18 +756,6 @@ void ChromeClientImpl::setPagePopupDriver(PagePopupDriver* driver)
 void ChromeClientImpl::resetPagePopupDriver()
 {
     m_pagePopupDriver = m_webView;
-}
-
-bool ChromeClientImpl::isPasswordGenerationEnabled() const
-{
-    return m_webView->passwordGeneratorClient();
-}
-
-void ChromeClientImpl::openPasswordGenerator(HTMLInputElement* input)
-{
-    ASSERT(isPasswordGenerationEnabled());
-    WebInputElement webInput(input);
-    m_webView->passwordGeneratorClient()->openPasswordGenerator(webInput);
 }
 
 bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
