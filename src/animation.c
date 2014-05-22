@@ -458,8 +458,10 @@ weston_move_scale_run(struct weston_view *view, int dx, int dy,
 	if (animation == NULL)
 		return NULL;
 
-	weston_spring_init(&animation->spring, 400.0, start, end);
+	weston_spring_init(&animation->spring, 400.0, 0.0, 1.0);
 	animation->spring.friction = 1150;
+
+	weston_view_animation_run(animation);
 
 	return animation;
 }
