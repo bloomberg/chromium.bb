@@ -6,20 +6,29 @@ storage = new (function() {
 
 this.table_ = null;
 this.tableData_ = null;
+this.profileMenu_ = null;
 
 this.onDomReady_ = function() {
+  // Create the menus for mmap and nheap profiling.
+  this.profileMenu_ = $('#storage-profile-menu');
+  this.profileMenu_
+      .mouseleave(this.profileMenu_.hide.bind(
+          this.profileMenu_, {duration: 0}))
+      .hide();
+
   // Initialize the toolbar.
-  $('#storage-profile-mmaps').button({icons:{primary: 'ui-icon-image'}})
-      .click(this.profileMmapForSelectedSnapshots.bind(this));
+  $('#storage-profile').button({icons:{primary: 'ui-icon-image'}})
+      .click(this.profileMmapForSelectedSnapshots.bind(this, null))
+      .mouseenter(this.showProfileMenu_.bind(this));
+
   $('#storage-dump-mmaps').button({icons:{primary: 'ui-icon-calculator'}})
       .click(this.dumpMmapForSelectedSnapshot_.bind(this));
-  $('#storage-profile-native').button({icons:{primary: 'ui-icon-image'}})
-      .click(this.profileNativeForSelectedSnapshots.bind(this));
   $('#storage-dump-nheap').button({icons:{primary: 'ui-icon-calculator'}})
       .click(this.dumpNheapForSelectedSnapshot_.bind(this));
 
   // Create the table.
   this.table_ = new google.visualization.Table($('#storage-table')[0]);
+  $('#storage-table').on('contextmenu', this.showProfileMenu_.bind(this));
 };
 
 this.reload = function() {
@@ -31,25 +40,27 @@ this.onListAjaxResponse_ = function(data) {
   this.redraw();
 };
 
-this.profileMmapForSelectedSnapshots = function() {
+this.profileMmapForSelectedSnapshots = function(ruleset) {
   // Generates a mmap profile for the selected snapshots.
   var sel = this.table_.getSelection();
-  if (!sel.length || !this.tableData_)
+  if (!sel.length || !this.tableData_) {
+    alert('No snapshots selected!');
     return;
+  }
   var archiveName = null;
   var snapshots = [];
 
   for (var i = 0; i < sel.length; ++i) {
     var row = sel[i].row;
     var curArchive = this.tableData_.getValue(row, 0);
-    if (archiveName && curArchive != archiveName){
+    if (archiveName && curArchive != archiveName) {
       alert('All the selected snapshots must belong to the same archive!');
       return;
     }
     archiveName = curArchive;
     snapshots.push(this.tableData_.getValue(row, 1));
   }
-  profiler.profileArchivedMmaps(archiveName, snapshots);
+  profiler.profileArchivedMmaps(archiveName, snapshots, ruleset);
   rootUi.showTab('prof');
 };
 
@@ -81,11 +92,13 @@ this.dumpNheapForSelectedSnapshot_ = function() {
   rootUi.showTab('nheap');
 };
 
-this.profileNativeForSelectedSnapshots = function() {
+this.profileNativeForSelectedSnapshots = function(ruleset) {
   // Generates a native heap profile for the selected snapshots.
   var sel = this.table_.getSelection();
-  if (!sel.length || !this.tableData_)
+  if (!sel.length || !this.tableData_) {
+    alert('No snapshots selected!');
     return;
+  }
   var archiveName = null;
   var snapshots = [];
 
@@ -101,7 +114,7 @@ this.profileNativeForSelectedSnapshots = function() {
     archiveName = curArchive;
     snapshots.push(this.tableData_.getValue(row, 1));
   }
-  profiler.profileArchivedNHeaps(archiveName, snapshots);
+  profiler.profileArchivedNHeaps(archiveName, snapshots, ruleset);
   rootUi.showTab('prof');
 };
 
@@ -113,7 +126,41 @@ this.checkHasNativeHapDump_ = function(row) {
   return true;
 }
 
+this.rebuildMenu_ = function() {
+  this.profileMenu_.empty();
+
+  this.profileMenu_.append(
+      $('<li/>').addClass('header').text('Memory map rules'));
+  profiler.rulesets['mmap'].forEach(function(rule) {
+    this.profileMenu_.append(
+        $('<li/>').text(rule).click(
+            this.profileMmapForSelectedSnapshots.bind(this, rule)));
+  }, this);
+
+  this.profileMenu_.append(
+      $('<li/>').addClass('header').text('Native heap rules'));
+  profiler.rulesets['nheap'].forEach(function(rule) {
+    this.profileMenu_.append(
+        $('<li/>').text(rule).click(
+            this.profileNativeForSelectedSnapshots.bind(this, rule)));
+  }, this);
+
+  this.profileMenu_.menu();
+};
+
+this.showProfileMenu_ = function(evt) {
+  console.log(evt);
+  var pos;
+  if (evt.type == 'contextmenu')
+    pos = {my: "left top", at: "left bottom", of: evt};
+  else
+    pos = {my: "left top", at: "left bottom", of: evt.target};
+  this.profileMenu_.show({duration: 0}).position(pos);
+  evt.preventDefault();
+}
+
 this.redraw = function() {
+  this.rebuildMenu_();
   if (!this.tableData_)
     return;
   this.table_.draw(this.tableData_);

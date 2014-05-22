@@ -81,14 +81,14 @@ class AndroidBackend(backends.Backend):
 
     Args:
       native_heaps: a collection of native_heap.NativeHeap instances.
-      sym_paths: either a list of or a string of comma-separated symbol paths.
+      sym_paths: either a list of or a string of semicolon-sep. symbol paths.
     """
     assert(all(isinstance(x, native_heap.NativeHeap) for x in native_heaps))
     symbols = symbol.Symbols()
 
     # Find addr2line in toolchain_path.
     if isinstance(sym_paths, basestring):
-      sym_paths = sym_paths.split(',')
+      sym_paths = sym_paths.split(';')
     matches = glob.glob(os.path.join(self.settings['toolchain_path'],
                                      '*addr2line'))
     if not matches:
@@ -158,7 +158,7 @@ class AndroidDevice(backends.Device):
   """Android-specific implementation of the core |Device| interface."""
 
   _SETTINGS_KEYS = {
-      'native_symbol_paths': 'Comma-separated list of native libs search path'}
+      'native_symbol_paths': 'Semicolon-sep. list of native libs search path'}
 
   def __init__(self, backend, underlying_device):
     super(AndroidDevice, self).__init__(

@@ -16,6 +16,7 @@
   <link href="/css/profiler.css" rel="stylesheet" type="text/css">
   <link href="/css/rootUi.css" rel="stylesheet" type="text/css">
   <link href="/css/settings.css" rel="stylesheet" type="text/css">
+  <link href="/css/storage.css" rel="stylesheet" type="text/css">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
   <script src="//www.google.com/jsapi"></script>
@@ -102,10 +103,6 @@
       <div id="tabs-prof">
         <header id="prof-options">
           <span>
-            Rules:
-            <select id="prof-ruleset"></select>
-          </span>
-          <span>
             Metric:
             <select id="prof-metric"></select>
           </span>
@@ -113,6 +110,10 @@
             Snapshot:
             <div id="prof-time"></div>
             T = <span id="prof-time_label">0</span> s.
+          </span>
+          <span>
+            Rules:
+            <label id="prof-ruleset"></label>
           </span>
         </header>
         <div id="prof-tree_chart"></div>
@@ -181,8 +182,8 @@
       <div id="tabs-storage">
         <div id="storage-toolbar" class="ui-widget-header ui-corner-all">
           <label>Group:</label>
-          <button id="storage-profile-mmaps">Profile memory maps</button>
-          <button id="storage-profile-native">Profile native allocations</button>
+          <button id="storage-profile">Profile</button>
+          <ul id="storage-profile-menu"></ul>
           <label>Single snapshot:</label>
           <button id="storage-dump-mmaps">Show memory maps</button>
           <button id="storage-dump-nheap">Show native heap</button>

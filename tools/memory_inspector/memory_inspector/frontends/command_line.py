@@ -10,6 +10,7 @@ import optparse
 import os
 import time
 
+from memory_inspector import constants
 from memory_inspector.classification import mmap_classifier
 from memory_inspector.core import backends
 from memory_inspector.data import serialization
@@ -29,8 +30,8 @@ def main():
                     'name to match', type='string')
   parser.add_option('-r', '--mmap_rule',
                     help='mmap rule', type='string',
-                    default=
-                    'classification_rules/default/mmap-android.py')
+                    default=os.path.join(constants.CLASSIFICATION_RULES_PATH,
+                        'default', 'mmap-android.py'))
   (options, args) = parser.parse_args()
 
   memory_inspector.RegisterAllBackends()

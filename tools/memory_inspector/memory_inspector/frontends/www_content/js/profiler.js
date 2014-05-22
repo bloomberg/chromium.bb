@@ -22,6 +22,7 @@
 
 profiler = new (function() {
 
+this.rulesets = {'nheap': [], 'mmap': []};
 this.treeData_ = null;
 this.treeChart_ = null;
 this.timeSeriesData_ = null;
@@ -39,57 +40,66 @@ this.onDomReady_ = function() {
   this.timeSeriesChart_ = new google.visualization.SteppedAreaChart(
       $('#prof-time_chart')[0]);
 
-  // TODO(primiano): De-hardcodify the ruleset and list/load from the server.
-  $('#prof-ruleset').append(
-      $('<option>').val('default/mmap-android.py').text('mmap-Android'));
-
   // Setup the UI event listeners to trigger the onUiParamsChange_ event.
   google.visualization.events.addListener(this.treeChart_, 'select',
                                           this.onUiParamsChange_.bind(this));
   $('#prof-metric').on('change', this.onUiParamsChange_.bind(this));
   $('#prof-time').slider({range: 'max', min: 0, max: 0, value: 0,
                           change: this.onUiParamsChange_.bind(this)});
+
+  // Load the available profiler rules.
+  webservice.ajaxRequest('/profile/rules',
+                         this.OnRulesAjaxResponse_.bind(this));
 };
 
-this.profileCachedMmapDump = function(mmapDumpId) {
+this.profileCachedMmapDump = function(mmapDumpId, ruleset) {
   // Creates a profile using the data grabbed during a recent mmap dump.
   // This is used to get a quick overview (only one snapshot), of the memory
   // without doing a full periodic trace first.
+  ruleset = ruleset || this.rulesets['mmap'][0];
   webservice.ajaxRequest('/profile/create',  // This is a POST request.
-                         this.onProfileAjaxResponse_.bind(this),
+                         this.onProfileAjaxResponse_.bind(this, ruleset),
                          null,  // use the default error handler.
                          {type: 'mmap',
                           source: 'cache',
                           id: mmapDumpId,
-                          ruleset: $('#prof-ruleset').val()});
+                          ruleset: ruleset});
 };
 
-this.profileArchivedMmaps = function(archiveName, snapshots) {
+this.profileArchivedMmaps = function(archiveName, snapshots, ruleset) {
+  ruleset = ruleset || this.rulesets['mmap'][0];
   // Creates a mmap profile using the data from the storage.
   webservice.ajaxRequest('/profile/create',  // This is a POST request.
-                         this.onProfileAjaxResponse_.bind(this),
+                         this.onProfileAjaxResponse_.bind(this, ruleset),
                          null,  // use the default error handler.
                          {type: 'mmap',
                           source: 'archive',
                           archive: archiveName,
                           snapshots: snapshots,
-                          ruleset: $('#prof-ruleset').val()});
+                          ruleset: ruleset});
 };
 
-this.profileArchivedNHeaps = function(archiveName, snapshots) {
+this.profileArchivedNHeaps = function(archiveName, snapshots, ruleset) {
   // Creates a native-heap profile using the data from the storage.
+  ruleset = ruleset || this.rulesets['nheap'][0];
   webservice.ajaxRequest('/profile/create',  // This is a POST request.
-                         this.onProfileAjaxResponse_.bind(this),
+                         this.onProfileAjaxResponse_.bind(this, ruleset),
                          null,  // use the default error handler.
                          {type: 'nheap',
                           source: 'archive',
                           archive: archiveName,
                           snapshots: snapshots,
-                          ruleset: 'heuristic'});
-  // TODO(primiano): Next CLs: support custom rules, not just the heuristic one.
+                          ruleset: ruleset});
 };
 
-this.onProfileAjaxResponse_ = function(data) {
+this.OnRulesAjaxResponse_ = function(data) {
+  // This AJAX response contains essentially the directory listing of the
+  // memory_inspector/classification_rules/ folder.
+  console.assert('nheap' in data && 'mmap' in data);
+  this.rulesets = data;
+};
+
+this.onProfileAjaxResponse_ = function(ruleset, data) {
   // This AJAX response contains a summary of the profile requested via the
   // /profile endpoint, which consists of:
   // - The number of snapshots (and their corresponding time) in an array.
@@ -105,6 +115,9 @@ this.onProfileAjaxResponse_ = function(data) {
   this.curBucket_ = data.rootBucket;  // URI of the bucket, e.g., Total/Libs/.
   this.curTime_ = data.times[0];
   this.curMetric_ = 0;
+
+  // Populate the rules label with the ruleset used for generating this profile.
+  $('#prof-ruleset').text(ruleset);
 
   // Populate the "metrics" select box.
   $('#prof-metric').empty();

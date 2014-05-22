@@ -6,3 +6,4 @@ import os
 
 
 PROJECT_SRC = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
+CLASSIFICATION_RULES_PATH = os.path.join(PROJECT_SRC, 'classification_rules')

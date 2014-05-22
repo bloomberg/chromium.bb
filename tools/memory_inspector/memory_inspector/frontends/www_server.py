@@ -22,6 +22,7 @@ import cgi
 import collections
 import datetime
 import dateutil.parser
+import glob
 import os
 import memory_inspector
 import mimetypes
@@ -31,6 +32,7 @@ import urlparse
 import uuid
 import wsgiref.simple_server
 
+from memory_inspector import constants
 from memory_inspector.core import backends
 from memory_inspector.core import memory_map
 from memory_inspector.classification import mmap_classifier
@@ -220,8 +222,8 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
         'heuristic rules are supported only for nheap')
     rules = native_heap_classifier.InferHeuristicRulesFromHeap(dumps[0])
   else:
-    rules_path = os.path.join(
-        memory_inspector.ROOT_DIR, 'classification_rules', req_vars['ruleset'])
+    rules_path = os.path.join(constants.CLASSIFICATION_RULES_PATH,
+                              req_vars['ruleset'])
     if not os.path.isfile(rules_path):
       return _HTTP_GONE, [], 'Cannot find the rule-set %s' % rules_path
     with open(rules_path) as f:
@@ -339,6 +341,18 @@ def _GetTimeSerieForSnapshot(args, req_vars):  # pylint: disable=W0613
       row += [{'v': child_bucket.values[metric_index] / 1024, 'f': None}]
     resp['rows'] += [{'c': row}]
 
+  return _HTTP_OK, [], resp
+
+@AjaxHandler(r'/ajax/profile/rules')
+def _ListProfilingRules(args, req_vars):  # pylint: disable=W0613
+  """Lists the classification rule files available for profiling."""
+  rules = glob.glob(constants.CLASSIFICATION_RULES_PATH +
+                    os.sep + '*' + os.sep + '*.py')
+  rules = [x.replace(constants.CLASSIFICATION_RULES_PATH, '')[1:]  # Strip /.
+           for x in rules]
+  resp = {'mmap': filter(lambda x: 'mmap-' in x, rules),
+          'nheap': filter(lambda x: 'nheap-' in x, rules)}
+  resp['nheap'].insert(0, 'heuristic')
   return _HTTP_OK, [], resp
 
 
@@ -731,6 +745,7 @@ def _HttpRequestHandler(environ, start_response):
 def Start(http_port):
   # Load the saved backends' settings (some of them might be needed to bootstrap
   # as, for instance, the adb path for the Android backend).
+  memory_inspector.RegisterAllBackends()
   for backend in backends.ListBackends():
     for k, v in _persistent_storage.LoadSettings(backend.name).iteritems():
       backend.settings[k] = v
