@@ -41,6 +41,7 @@ _DEVICE_STATE_FILE = 'device_state.json'
 _DEVICE_SETUP_SSID = "GCDPrototype.camera.privet"
 _DEVICE_NAME = "GCD Prototype"
 _DEVICE_TYPE = "camera"
+_DEVICE_PORT = 8080
 
 DEVICE_DRAFT = {
     'systemName': 'LEDFlasher',
@@ -389,7 +390,7 @@ class MDnsWrapper(object):
     cmd = [
         'avahi-publish',
         '-s', '--subtype=_%s._sub._privet._tcp' % _DEVICE_TYPE,
-        _DEVICE_NAME, '_privet._tcp', '8080',
+        _DEVICE_NAME, '_privet._tcp', '%s' % _DEVICE_PORT,
         'txtvers=2',
         'type=%s' % _DEVICE_TYPE,
         'ty=%s' % _DEVICE_NAME,
@@ -1008,7 +1009,7 @@ def main():
     handler.stop()
   atexit.register(logic_stop)
   server = HTTPServer(handler.handle_request)
-  server.listen(8080)
+  server.listen(_DEVICE_PORT)
 
   ioloop.start()
 
