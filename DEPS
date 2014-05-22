@@ -77,7 +77,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFIum
   # and whatever else without interference from each other.
-  "pdfium_revision": "f05b6115f6b5b7a47f2c8834779987cdd3e8d52e",
+  "pdfium_revision": "951f241bcf22f0095abe2f109adfdd9c19e76d70",
 }
 
 deps = {
