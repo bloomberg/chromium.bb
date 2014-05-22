@@ -85,30 +85,30 @@
     <div id="arial_box_one" class="arial box one"></div>
     <div id="arial_box_alphalen" class="arial box alphalen"><span class="pass">abcdefghijklmnopqrstuvwxyz</span></div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("arial_box_one").clientWidth * 26', 'document.getElementById("arial_box_alphalen").clientWidth');
+        shouldEvaluateTo('document.getElementById("arial_box_one").clientWidth * 26', 'document.getElementById("arial_box_alphalen").clientWidth', 0.5);
     </script>
 
     <div id="helvetica_box_one" class="helvetica box one"></div>
     <div id="helvetica_box_alphalen" class="helvetica box alphalen"><span class="pass">abcdefghijklmnopqrstuvwxyz</span></div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("helvetica_box_one").clientWidth * 26', 'document.getElementById("helvetica_box_alphalen").clientWidth');
+        shouldEvaluateTo('document.getElementById("helvetica_box_one").clientWidth * 26', 'document.getElementById("helvetica_box_alphalen").clientWidth', 0.5);
     </script>
 
     Four zeroes should be visible, nothing else:
     <div id="times_box_one" class="times box one"></div>
     <div id="box_times_four" class="box times four"><span class="pass">0000</span><span class="fail">FAIL</span></div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("times_box_one").clientWidth * 4', 'document.getElementById("box_times_four").clientWidth');
+        shouldEvaluateTo('document.getElementById("times_box_one").clientWidth * 4', 'document.getElementById("box_times_four").clientWidth', 0.5);
     </script>
 
     <div id="box_arial_four" class="box arial four"><span class="pass">0000</span><span class="fail">FAIL</span></div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("arial_box_one").clientWidth * 4', 'document.getElementById("box_arial_four").clientWidth');
+        shouldEvaluateTo('document.getElementById("arial_box_one").clientWidth * 4', 'document.getElementById("box_arial_four").clientWidth', 0.5);
     </script>
 
     <div id="box_helvetica_four" class="box helvetica four"><span class="pass">0000</span><span class="fail">FAIL</span></div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("helvetica_box_one").clientWidth * 4', 'document.getElementById("box_helvetica_four").clientWidth');
+        shouldEvaluateTo('document.getElementById("helvetica_box_one").clientWidth * 4', 'document.getElementById("box_helvetica_four").clientWidth', 0.5);
     </script>
 
     There should be more than one green '|' visible (non-monospaced fonts):
@@ -166,7 +166,7 @@
     <div id="box_mono_one" class="box mono one"></div>
     <div id="box_mono" class="box mono" style="display:inline-block">0</div>
     <script type="text/javascript">
-        shouldEvaluateTo('document.getElementById("box_mono_one").clientWidth', 'document.getElementById("box_mono").clientWidth');
+        shouldEvaluateTo('document.getElementById("box_mono_one").clientWidth', 'document.getElementById("box_mono").clientWidth', 0.5);
     </script>
     <script>
         // Text with '<span class="fail">' must not appear in DumpRenderTree's output, only when opening this file in a web browser.

@@ -208,7 +208,7 @@ function evalAndLog(_a, _quiet)
   return _av;
 }
 
-function shouldBe(_a, _b, quiet)
+function shouldBe(_a, _b, quiet, opt_tolerance)
 {
   if (typeof _a != "string" || typeof _b != "string")
     debug("WARN: shouldBe() expects string arguments");
@@ -223,7 +223,7 @@ function shouldBe(_a, _b, quiet)
 
   if (_exception)
     testFailed(_a + " should be " + _bv + ". Threw exception " + _exception);
-  else if (isResultCorrect(_av, _bv)) {
+  else if (isResultCorrect(_av, _bv) || (typeof opt_tolerance == 'number' && typeof _av == 'number' && Math.abs(_av - _bv) <= opt_tolerance)) {
     if (!quiet) {
         testPassed(_a + " is " + _b);
     }
@@ -425,7 +425,7 @@ function shouldBeEqualToNumber(a, b)
 
 function shouldBeEmptyString(a) { shouldBeEqualToString(a, ""); }
 
-function shouldEvaluateTo(actual, expected) {
+function shouldEvaluateTo(actual, expected, opt_tolerance) {
   // A general-purpose comparator.  'actual' should be a string to be
   // evaluated, as for shouldBe(). 'expected' may be any type and will be
   // used without being eval'ed.
@@ -447,7 +447,7 @@ function shouldEvaluateTo(actual, expected) {
   } else if (typeof expected == "object") {
     shouldBeTrue(actual + " == '" + expected + "'");
   } else if (typeof expected == "string") {
-    shouldBe(actual, expected);
+    shouldBe(actual, expected, undefined, opt_tolerance);
   } else if (typeof expected == "boolean") {
     shouldBe("typeof " + actual, "'boolean'");
     if (expected)
@@ -455,7 +455,10 @@ function shouldEvaluateTo(actual, expected) {
     else
       shouldBeFalse(actual);
   } else if (typeof expected == "number") {
-    shouldBe(actual, stringify(expected));
+    if (opt_tolerance)
+        shouldBeCloseTo(actual, expected, opt_tolerance);
+    else
+        shouldBe(actual, stringify(expected));
   } else {
     debug(expected + " is unknown type " + typeof expected);
     shouldBeTrue(actual, "'"  +expected.toString() + "'");
