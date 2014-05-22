@@ -89,6 +89,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
+  message_center_->SetNotifierSettingsProvider(NULL);
   message_center_->RemoveObserver(this);
 }
 

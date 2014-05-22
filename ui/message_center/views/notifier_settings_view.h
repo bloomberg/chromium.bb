@@ -43,6 +43,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   virtual void UpdateIconImage(const NotifierId& notifier_id,
                                const gfx::Image& icon) OVERRIDE;
   virtual void NotifierGroupChanged() OVERRIDE;
+  virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
+                                      bool enabled) OVERRIDE;
 
   void set_provider(NotifierSettingsProvider* new_provider) {
     provider_ = new_provider;

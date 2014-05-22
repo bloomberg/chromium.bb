@@ -30,6 +30,8 @@ class NotifierSettingsObserverMac : public NotifierSettingsObserver {
   virtual void UpdateIconImage(const NotifierId& notifier_id,
                                const gfx::Image& icon) OVERRIDE;
   virtual void NotifierGroupChanged() OVERRIDE;
+  virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
+                                      bool enabled) OVERRIDE;
 
  private:
   MCSettingsController* settings_controller_;  // weak, owns this

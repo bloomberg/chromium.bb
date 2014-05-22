@@ -17,6 +17,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
 class NotificationDelegate;
@@ -137,7 +138,8 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
 
 // The default implementation of MessageCenter.
 class MessageCenterImpl : public MessageCenter,
-                          public NotificationBlocker::Observer {
+                          public NotificationBlocker::Observer,
+                          public message_center::NotifierSettingsObserver {
  public:
   MessageCenterImpl();
   virtual ~MessageCenterImpl();
@@ -194,6 +196,13 @@ class MessageCenterImpl : public MessageCenter,
   // NotificationBlocker::Observer overrides:
   virtual void OnBlockingStateChanged(NotificationBlocker* blocker) OVERRIDE;
 
+  // message_center::NotifierSettingsObserver overrides:
+  virtual void UpdateIconImage(const NotifierId& notifier_id,
+                               const gfx::Image& icon) OVERRIDE;
+  virtual void NotifierGroupChanged() OVERRIDE;
+  virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
+                                      bool enabled) OVERRIDE;
+
  protected:
   virtual void DisableTimersForTest() OVERRIDE;
 
@@ -209,6 +218,7 @@ class MessageCenterImpl : public MessageCenter,
   };
 
   void RemoveNotifications(bool by_user, const NotificationBlockers& blockers);
+  void RemoveNotificationsForNotifierId(const NotifierId& notifier_id);
 
   scoped_ptr<NotificationList> notification_list_;
   NotificationCache notification_cache_;

@@ -139,6 +139,10 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsObserver {
 
   // Called when any change happens to the set of notifier groups.
   virtual void NotifierGroupChanged() = 0;
+
+  // Called when a notifier is enabled or disabled.
+  virtual void NotifierEnabledChanged(const NotifierId& notifier_id,
+                                      bool enabled) = 0;
 };
 
 // A class used by NotifierSettingsView to integrate with a setting system

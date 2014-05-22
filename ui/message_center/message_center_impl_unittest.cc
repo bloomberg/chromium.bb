@@ -15,6 +15,7 @@
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/notifier_settings.h"
 
 using base::UTF8ToUTF16;
 
@@ -42,16 +43,41 @@ class MessageCenterImplTest : public testing::Test,
   }
 
   MessageCenter* message_center() const { return message_center_; }
+  NotifierSettingsObserver* notifier_settings_observer() const {
+    return static_cast<NotifierSettingsObserver*>(message_center_impl());
+  }
+  MessageCenterImpl* message_center_impl() const {
+    return reinterpret_cast<MessageCenterImpl*>(message_center_);
+  }
+
   base::RunLoop* run_loop() const { return run_loop_.get(); }
   base::Closure closure() const { return closure_; }
 
  protected:
   Notification* CreateSimpleNotification(const std::string& id) {
-    return CreateNotification(id, NOTIFICATION_TYPE_SIMPLE);
+    return CreateNotificationWithNotifierId(
+        id,
+        "app1",
+        NOTIFICATION_TYPE_SIMPLE);
+  }
+
+  Notification* CreateSimpleNotificationWithNotifierId(
+    const std::string& id, const std::string& notifier_id) {
+    return CreateNotificationWithNotifierId(
+        id,
+        notifier_id,
+        NOTIFICATION_TYPE_SIMPLE);
   }
 
   Notification* CreateNotification(const std::string& id,
                                    message_center::NotificationType type) {
+    return CreateNotificationWithNotifierId(id, "app1", type);
+  }
+
+  Notification* CreateNotificationWithNotifierId(
+      const std::string& id,
+      const std::string& notifier_id,
+      message_center::NotificationType type) {
     RichNotificationData optional_fields;
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
@@ -61,10 +87,11 @@ class MessageCenterImplTest : public testing::Test,
                             UTF8ToUTF16(id),
                             gfx::Image() /* icon */,
                             base::string16() /* display_source */,
-                            NotifierId(NotifierId::APPLICATION, "app1"),
+                            NotifierId(NotifierId::APPLICATION, notifier_id),
                             optional_fields,
                             NULL);
   }
+
 
  private:
   MessageCenter* message_center_;
@@ -759,6 +786,85 @@ TEST_F(MessageCenterImplTest, CachedUnreadCount) {
   // Opening the message center will reset the unread count.
   message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
   EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
+}
+
+TEST_F(MessageCenterImplTest, DisableNotificationsByNotifier) {
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
+  ASSERT_EQ(5u, message_center()->NotificationCount());
+
+  // Removing all of app1's notifications should only leave app2's.
+  message_center()->DisableNotificationsByNotifier(
+      NotifierId(NotifierId::APPLICATION, "app1"));
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Now we remove the remaining notifications.
+  message_center()->DisableNotificationsByNotifier(
+      NotifierId(NotifierId::APPLICATION, "app2"));
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+}
+
+TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
+  ASSERT_EQ(0u, message_center()->NotificationCount());
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id1-3", "app1")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-4", "app2")));
+  message_center()->AddNotification(
+      scoped_ptr<Notification>(
+          CreateSimpleNotificationWithNotifierId("id2-5", "app2")));
+  ASSERT_EQ(8u, message_center()->NotificationCount());
+
+  // Enabling an extension should have no effect on the count.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app1"), true);
+  ASSERT_EQ(8u, message_center()->NotificationCount());
+
+  // Removing all of app2's notifications should only leave app1's.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app2"), false);
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Removal operations should be idempotent.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app2"), false);
+  ASSERT_EQ(3u, message_center()->NotificationCount());
+
+  // Now we remove the remaining notifications.
+  notifier_settings_observer()->NotifierEnabledChanged(
+      NotifierId(NotifierId::APPLICATION, "app1"), false);
+  ASSERT_EQ(0u, message_center()->NotificationCount());
 }
 
 }  // namespace internal

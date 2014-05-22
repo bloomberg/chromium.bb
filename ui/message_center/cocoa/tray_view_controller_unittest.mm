@@ -248,6 +248,9 @@ TEST_F(TrayViewControllerTest, Settings) {
 
   // The tray should be back at its previous height now.
   EXPECT_EQ(trayHeight, NSHeight([[tray_ view] frame]));
+
+  // Clean up since this frame owns FakeNotifierSettingsProvider.
+  center_->SetNotifierSettingsProvider(NULL);
 }
 
 TEST_F(TrayViewControllerTest, EmptyCenter) {

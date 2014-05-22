@@ -371,6 +371,9 @@ void MessageCenterSettingsController::SetNotifierEnabled(
           notifier.notifier_id.id, enabled);
     }
   }
+  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
+                    observers_,
+                    NotifierEnabledChanged(notifier.notifier_id, enabled));
 }
 
 void MessageCenterSettingsController::OnNotifierSettingsClosing() {

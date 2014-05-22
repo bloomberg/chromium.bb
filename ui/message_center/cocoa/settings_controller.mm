@@ -82,6 +82,9 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   [settings_controller_ updateView];
 }
 
+void NotifierSettingsObserverMac::NotifierEnabledChanged(
+    const NotifierId& notifier_id, bool enabled) {}
+
 }  // namespace message_center
 
 @implementation MCSettingsController

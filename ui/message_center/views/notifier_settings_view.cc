@@ -540,6 +540,9 @@ void NotifierSettingsView::NotifierGroupChanged() {
   UpdateContentsView(notifiers);
 }
 
+void NotifierSettingsView::NotifierEnabledChanged(const NotifierId& notifier_id,
+                                                  bool enabled) {}
+
 void NotifierSettingsView::UpdateContentsView(
     const std::vector<Notifier*>& notifiers) {
   buttons_.clear();
