@@ -292,6 +292,7 @@
       'tests/URLTestHelpers.cpp',
       'tests/URLTestHelpers.h',
       'tests/ViewportTest.cpp',
+      'tests/WebDocumentTest.cpp',
       'tests/WebFrameTest.cpp',
       'tests/WebHelperPluginTest.cpp',
       'tests/WebImageTest.cpp',
