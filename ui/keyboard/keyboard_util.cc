@@ -28,9 +28,8 @@ const char kKeyUp[] = "keyup";
 
 void SendProcessKeyEvent(ui::EventType type,
                          aura::WindowTreeHost* host) {
-  ui::TranslatedKeyEvent event(type == ui::ET_KEY_PRESSED,
-                               ui::VKEY_PROCESSKEY,
-                               ui::EF_NONE);
+  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::EF_NONE, false);
+  event.SetTranslated(true);
   ui::EventDispatchDetails details =
       host->event_processor()->OnEventFromSource(&event);
   CHECK(!details.dispatcher_destroyed);

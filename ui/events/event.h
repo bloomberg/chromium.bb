@@ -556,6 +556,12 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // in http://crbug.com/127142#c8, the normalization is necessary.
   void NormalizeFlags();
 
+  // Returns true if the key event has already been processed by an input method
+  // and there is no need to pass the key event to the input method again.
+  bool IsTranslated() const;
+  // Marks this key event as translated or not translated.
+  void SetTranslated(bool translated);
+
  protected:
   // This allows a subclass TranslatedKeyEvent to be a non character event.
   void set_is_char(bool is_char) { is_char_ = is_char; }
@@ -575,29 +581,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool is_char_;
 
   uint16 character_;
-};
-
-// A key event which is translated by an input method (IME).
-// For example, if an IME receives a KeyEvent(VKEY_SPACE), and it does not
-// consume the key, the IME usually generates and dispatches a
-// TranslatedKeyEvent(VKEY_SPACE) event. If the IME receives a KeyEvent and
-// it does consume the event, it might dispatch a
-// TranslatedKeyEvent(VKEY_PROCESSKEY) event as defined in the DOM spec.
-class EVENTS_EXPORT TranslatedKeyEvent : public KeyEvent {
- public:
-  TranslatedKeyEvent(const base::NativeEvent& native_event, bool is_char);
-
-  // Used for synthetic events such as a VKEY_PROCESSKEY key event.
-  TranslatedKeyEvent(bool is_press, KeyboardCode key_code, int flags);
-
-  explicit TranslatedKeyEvent(const KeyEvent& key_event);
-
-  // Changes the type() of the object from ET_TRANSLATED_KEY_* to ET_KEY_* so
-  // that RenderWidgetHostViewAura and NativeWidgetAura could handle the event.
-  void ConvertToKeyEvent();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TranslatedKeyEvent);
 };
 
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {

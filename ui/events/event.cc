@@ -586,35 +586,33 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() & ~mask);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TranslatedKeyEvent
-
-TranslatedKeyEvent::TranslatedKeyEvent(const base::NativeEvent& native_event,
-                                       bool is_char)
-    : KeyEvent(native_event, is_char) {
-  SetType(type() == ET_KEY_PRESSED ?
-          ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE);
+bool KeyEvent::IsTranslated() const {
+  switch (type()) {
+    case ET_KEY_PRESSED:
+    case ET_KEY_RELEASED:
+      return false;
+    case ET_TRANSLATED_KEY_PRESS:
+    case ET_TRANSLATED_KEY_RELEASE:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
-TranslatedKeyEvent::TranslatedKeyEvent(bool is_press,
-                                       KeyboardCode key_code,
-                                       int flags)
-    : KeyEvent((is_press ? ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE),
-               key_code,
-               flags,
-               false) {
-}
-
-TranslatedKeyEvent::TranslatedKeyEvent(const KeyEvent& key_event)
-    : KeyEvent(key_event) {
-  SetType(type() == ET_KEY_PRESSED ?
-          ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE);
-  set_is_char(false);
-}
-
-void TranslatedKeyEvent::ConvertToKeyEvent() {
-  SetType(type() == ET_TRANSLATED_KEY_PRESS ?
-          ET_KEY_PRESSED : ET_KEY_RELEASED);
+void KeyEvent::SetTranslated(bool translated) {
+  switch (type()) {
+    case ET_KEY_PRESSED:
+    case ET_TRANSLATED_KEY_PRESS:
+      SetType(translated ? ET_TRANSLATED_KEY_PRESS : ET_KEY_PRESSED);
+      break;
+    case ET_KEY_RELEASED:
+    case ET_TRANSLATED_KEY_RELEASE:
+      SetType(translated ? ET_TRANSLATED_KEY_RELEASE : ET_KEY_RELEASED);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

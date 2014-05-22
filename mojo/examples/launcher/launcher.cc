@@ -82,12 +82,9 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
  private:
   // ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    const ui::EventType type = event->type();
-    if (type == ui::ET_TRANSLATED_KEY_PRESS ||
-        type == ui::ET_TRANSLATED_KEY_RELEASE) {
-      // The |event| is already handled by this object, change the type of the
-      // event to ui::ET_KEY_* and pass it to the next filter.
-      static_cast<ui::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
+    // See the comment in InputMethodEventFilter::OnKeyEvent() for details.
+    if (event->IsTranslated()) {
+      event->SetTranslated(false);
     } else {
       if (input_method_->DispatchKeyEvent(*event))
         event->StopPropagation();
@@ -96,7 +93,10 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 
   // ui::internal::InputMethodDelegate:
   virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
-    ui::TranslatedKeyEvent aura_event(event);
+    // See the comment in InputMethodEventFilter::DispatchKeyEventPostIME() for
+    // details.
+    ui::KeyEvent aura_event(event);
+    aura_event.SetTranslated(true);
     ui::EventDispatchDetails details =
         root_->GetHost()->dispatcher()->OnEventFromSource(&aura_event);
     return aura_event.handled() || details.dispatcher_destroyed;

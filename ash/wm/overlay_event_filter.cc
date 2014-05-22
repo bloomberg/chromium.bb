@@ -28,10 +28,8 @@ void OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // ui::VKEY_PROCESSKEY) since the key event is generated in response to a key
   // press or release before showing the ovelay. This is important not to
   // confuse key event handling JavaScript code in a page.
-  if (event->type() == ui::ET_TRANSLATED_KEY_PRESS ||
-      event->type() == ui::ET_TRANSLATED_KEY_RELEASE) {
+  if (event->IsTranslated())
     return;
-  }
 
   if (delegate_ && delegate_->IsCancelingKeyEvent(event))
     Cancel();

@@ -37,12 +37,31 @@ void InputMethodEventFilter::SetInputMethodPropertyInRootWindow(
 // InputMethodEventFilter, EventFilter implementation:
 
 void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  const ui::EventType type = event->type();
-  if (type == ui::ET_TRANSLATED_KEY_PRESS ||
-      type == ui::ET_TRANSLATED_KEY_RELEASE) {
-    // The |event| is already handled by this object, change the type of the
-    // event to ui::ET_KEY_* and pass it to the next filter.
-    static_cast<ui::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
+  // We're processing key events as follows (details are simplified).
+  //
+  // At the beginning, key events have a ET_KEY_{PRESSED,RELEASED} event type,
+  // and they're passed from step 1 through step 3.
+  //   1. EventProcessor::OnEventFromSource()
+  //   2. InputMethodEventFilter::OnKeyEvent()
+  //   3. InputMethod::DispatchKeyEvent()
+  // where InputMethod may call DispatchKeyEventPostIME() if IME didn't consume
+  // the key event.  Otherwise, step 4 through step 6 are skipped and we fall
+  // down to step 7 directly.
+  //   4. InputMethodEventFilter::DispatchKeyEventPostIME()
+  // where the key event is marked as TRANSLATED and the event type becomes
+  // ET_TRANSLATED_KEY_{PRESS,RELEASE}.  Then, we dispatch the event again from
+  // the beginning.
+  //   5. EventProcessor::OnEventFromSource()     [second time]
+  //   6. InputMethodEventFilter::OnKeyEvent()    [second time]
+  // where we know that the event was already processed once by IME and
+  // re-dispatched, we don't pass the event to IME again.  Instead we unmark the
+  // event as not translated (as same as the original state), and let the event
+  // dispatcher continue to dispatch the event to the rest event handlers.
+  //   7. EventHandler::OnKeyEvent()
+  if (event->IsTranslated()) {
+    // The |event| was already processed by IME, so we don't pass the event to
+    // IME again.  Just let the event dispatcher continue to dispatch the event.
+    event->SetTranslated(false);
   } else {
     // If the focused window is changed, all requests to IME will be
     // discarded so it's safe to update the target_dispatcher_ here.
@@ -62,7 +81,13 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
 #if defined(OS_WIN)
   DCHECK(!event.HasNativeEvent() || event.native_event().message != WM_CHAR);
 #endif
-  ui::TranslatedKeyEvent aura_event(event);
+  // Since the underlying IME didn't consume the key event, we're going to
+  // dispatch the event again from the beginning of the tree of event targets.
+  // This time we have to skip dispatching the event to the IME, we mark the
+  // event as TRANSLATED so we can distinguish this event as a second time
+  // dispatched event.
+  ui::KeyEvent aura_event(event);
+  aura_event.SetTranslated(true);
   ui::EventDispatchDetails details =
       target_dispatcher_->OnEventFromSource(&aura_event);
   CHECK(!details.dispatcher_destroyed);
