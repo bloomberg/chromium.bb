@@ -5,12 +5,15 @@
 #ifndef DOMWindowDeviceLight_h
 #define DOMWindowDeviceLight_h
 
-#include "core/events/EventTarget.h"
+#include "modules/EventTargetModules.h"
 
 namespace WebCore {
+
 class DOMWindowDeviceLight {
 public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicelight);
 };
+
 } // namespace WebCore
+
 #endif // DOMWindowDeviceLight_h
