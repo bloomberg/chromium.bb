@@ -136,7 +136,7 @@ public:
         : m_storage(storage)
         , m_gcInfo(gcInfo)
         , m_threadState(state)
-        , m_padding(0)
+        , m_lastGCMarkedConservatively(0)
     {
         ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
     }
@@ -161,16 +161,19 @@ public:
     const GCInfo* gcInfo() { return m_gcInfo; }
     virtual bool isLargeObject() { return false; }
 
-private:
-    // Accessor to silence unused warnings.
-    void* padding() const { return m_padding; }
+    bool lastGCMarkedConservatively() const { return m_lastGCMarkedConservatively == 1; }
+    void setLastGCMarkedConservatively(bool value) { m_lastGCMarkedConservatively = value ? 1 : 0; }
 
+private:
     PageMemory* m_storage;
     const GCInfo* m_gcInfo;
     ThreadState* m_threadState;
-    // Free word only needed to ensure proper alignment of the
-    // HeapPage header.
-    void* m_padding;
+    // Pointer sized integer to ensure proper alignment of the
+    // HeapPage header. This could be turned into a bit field
+    // if we need more bits in the header. For now we only use it
+    // to indicate whether the last GC marked objects in this page
+    // conservatively.
+    intptr_t m_lastGCMarkedConservatively;
 };
 
 // Large allocations are allocated as separate objects and linked in a

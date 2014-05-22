@@ -816,9 +816,13 @@ void ThreadHeap<Header>::assertEmpty()
         for (headerAddress = page->payload(); headerAddress < end; ) {
             BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
-            // Live object is potentially a dangling pointer from some root.
-            // Treat it as critical bug both in release and debug mode.
-            RELEASE_ASSERT(basicHeader->isFree());
+            // A live object is potentially a dangling pointer from some root.
+            // Treat that as a critical bug both in release and debug mode.
+            // Unfortunately, we can only check the heap pages where nothing
+            // has been marked conservatively from the stack. Something could
+            // be conservatively kept alive because a non-pointer on another
+            // thread's stack is treated as a pointer into this heap page.
+            RELEASE_ASSERT(page->lastGCMarkedConservatively() || basicHeader->isFree());
             headerAddress += basicHeader->size();
         }
         ASSERT(headerAddress == end);
@@ -953,6 +957,10 @@ bool HeapPage<Header>::isEmpty()
 template<typename Header>
 void HeapPage<Header>::sweep()
 {
+    // The object start bit map is only computed for this page if we find
+    // pointers on a stack that could point into this page. We use that as
+    // the indication that something in this page was marked conservatively.
+    setLastGCMarkedConservatively(isObjectStartBitMapComputed());
     clearObjectStartBitMap();
     heap()->stats().increaseAllocatedSpace(blinkPageSize);
     Address startOfGap = payload();
