@@ -54,9 +54,9 @@ MetricsLogManager::MetricsLogManager(PrefService* local_state,
 
 MetricsLogManager::~MetricsLogManager() {}
 
-void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log) {
-  DCHECK(!current_log_.get());
-  current_log_.reset(log);
+void MetricsLogManager::BeginLoggingWithLog(scoped_ptr<MetricsLogBase> log) {
+  DCHECK(!current_log_);
+  current_log_ = log.Pass();
 }
 
 void MetricsLogManager::FinishCurrentLog() {

@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
@@ -33,8 +34,7 @@ class TestMetricsService : public MetricsService {
  public:
   TestMetricsService(metrics::MetricsStateManager* state_manager,
                      metrics::MetricsServiceClient* client)
-      : MetricsService(state_manager, client) {
-  }
+      : MetricsService(state_manager, client) {}
   virtual ~TestMetricsService() {}
 
   MetricsLogManager* log_manager() {
@@ -62,8 +62,10 @@ class TestMetricsLogChromeOS : public MetricsLogChromeOS {
 
 class TestMetricsLog : public MetricsLog {
  public:
-  TestMetricsLog(const std::string& client_id, int session_id)
-      : MetricsLog(client_id, session_id, MetricsLog::ONGOING_LOG) {
+  TestMetricsLog(const std::string& client_id,
+                 int session_id,
+                 metrics::MetricsServiceClient* client)
+      : MetricsLog(client_id, session_id, MetricsLog::ONGOING_LOG, client) {
 #if defined(OS_CHROMEOS)
     metrics_log_chromeos_.reset(new TestMetricsLogChromeOS(
         MetricsLog::uma_proto()));
@@ -201,7 +203,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
-  TestMetricsLog log("client", 1);
+  metrics::TestMetricsServiceClient client;
+  TestMetricsLog log("client", 1, &client);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
                         std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
@@ -211,11 +214,10 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   GetLocalState()->SetInt64(prefs::kStabilityStatsBuildTime,
                             MetricsLog::GetBuildTime());
   GetLocalState()->SetString(prefs::kStabilityStatsVersion,
-                             MetricsLog::GetVersionString());
+                             client.GetVersionString());
 
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
-  metrics::TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client);
   service.InitializeMetricsRecordingState();
 
@@ -259,7 +261,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(base::TimeTicks::Now());
 
   service.log_manager_.BeginLoggingWithLog(
-      new MetricsLog("clientID", 1, MetricsLog::INITIAL_STABILITY_LOG));
+      scoped_ptr<metrics::MetricsLogBase>(new MetricsLog(
+          "clientID", 1, MetricsLog::INITIAL_STABILITY_LOG, &client)));
   // Save the time when the log was started (it's okay for this to be greater
   // than the time recorded by the above call since it's used to ensure the
   // value changes).
@@ -295,8 +298,8 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
 
   // Start a new log and ensure all three trials appear in it.
   service.log_manager_.FinishCurrentLog();
-  service.log_manager_.BeginLoggingWithLog(
-      new MetricsLog("clientID", 1, MetricsLog::ONGOING_LOG));
+  service.log_manager_.BeginLoggingWithLog(scoped_ptr<metrics::MetricsLogBase>(
+      new MetricsLog("clientID", 1, MetricsLog::ONGOING_LOG, &client)));
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(3U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));

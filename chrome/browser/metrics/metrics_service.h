@@ -467,6 +467,9 @@ class MetricsService
   void GetCurrentSyntheticFieldTrials(
       std::vector<variations::ActiveGroupId>* synthetic_trials);
 
+  // Creates a new MetricsLog instance with the given |log_type|.
+  scoped_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
+
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
   metrics::MetricsStateManager* const state_manager_;

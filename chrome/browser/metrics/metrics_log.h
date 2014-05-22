@@ -38,6 +38,7 @@ struct WebPluginInfo;
 
 namespace metrics {
 class MetricsProvider;
+class MetricsServiceClient;
 }
 
 namespace tracked_objects {
@@ -51,20 +52,19 @@ struct ActiveGroupId;
 class MetricsLog : public metrics::MetricsLogBase {
  public:
   // Creates a new metrics log of the specified type.
-  // client_id is the identifier for this profile on this installation
-  // session_id is an integer that's incremented on each application launch
-  MetricsLog(const std::string& client_id, int session_id, LogType log_type);
+  // |client_id| is the identifier for this profile on this installation
+  // |session_id| is an integer that's incremented on each application launch
+  // |client| is used to interact with the embedder.
+  // Note: |this| instance does not take ownership of the |client|, but rather
+  // stores a weak pointer to it. The caller should ensure that the |client| is
+  // valid for the lifetime of this class.
+  MetricsLog(const std::string& client_id,
+             int session_id,
+             LogType log_type,
+             metrics::MetricsServiceClient* client);
   virtual ~MetricsLog();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Get the current version of the application as a string.
-  static std::string GetVersionString();
-
-  // Use |extension| in all uploaded appversions in addition to the standard
-  // version string.
-  static void set_version_extension(const std::string& extension);
-  static const std::string& version_extension();
 
   // Records the current operating environment, including metrics provided by
   // the specified set of |metrics_providers|.  Takes the list of installed
@@ -163,6 +163,10 @@ class MetricsLog : public metrics::MetricsLogBase {
 
   // Writes the list of installed plugins.
   void WritePluginList(const std::vector<content::WebPluginInfo>& plugin_list);
+
+  // Used to interact with the embedder. Weak pointer; must outlive |this|
+  // instance.
+  metrics::MetricsServiceClient* const client_;
 
   // Observes network state to provide values for SystemProfile::Network.
   MetricsNetworkObserver network_observer_;

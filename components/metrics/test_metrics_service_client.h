@@ -13,6 +13,8 @@ namespace metrics {
 // use in tests.
 class TestMetricsServiceClient : public MetricsServiceClient {
  public:
+  static const char kBrandForTesting[];
+
   TestMetricsServiceClient();
   virtual ~TestMetricsServiceClient();
 

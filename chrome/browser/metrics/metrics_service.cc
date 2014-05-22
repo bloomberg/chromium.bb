@@ -197,6 +197,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/variations/variations_util.h"
+#include "components/metrics/metrics_log_base.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
@@ -816,8 +817,7 @@ void MetricsService::InitializeMetricsState() {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
 
-  pref->SetString(prefs::kStabilityStatsVersion,
-                  MetricsLog::GetVersionString());
+  pref->SetString(prefs::kStabilityStatsVersion, client_->GetVersionString());
   pref->SetInt64(prefs::kStabilityStatsBuildTime, MetricsLog::GetBuildTime());
 
   session_id_ = pref->GetInteger(prefs::kMetricsSessionID);
@@ -971,9 +971,7 @@ void MetricsService::ReceivedProfilerData(
   // Upon the first callback, create the initial log so that we can immediately
   // save the profiler data.
   if (!initial_metrics_log_.get()) {
-    initial_metrics_log_.reset(
-        new MetricsLog(state_manager_->client_id(), session_id_,
-                       MetricsLog::ONGOING_LOG));
+    initial_metrics_log_ = CreateLog(MetricsLog::ONGOING_LOG);
     NotifyOnDidCreateMetricsLog();
   }
 
@@ -1057,8 +1055,7 @@ void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
 
   log_manager_.BeginLoggingWithLog(
-      new MetricsLog(state_manager_->client_id(), session_id_,
-                     MetricsLog::ONGOING_LOG));
+      CreateLog(MetricsLog::ONGOING_LOG).PassAs<metrics::MetricsLogBase>());
   NotifyOnDidCreateMetricsLog();
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
@@ -1357,8 +1354,7 @@ void MetricsService::PrepareInitialStabilityLog() {
   DCHECK_NE(0, pref->GetInteger(prefs::kStabilityCrashCount));
 
   scoped_ptr<MetricsLog> initial_stability_log(
-      new MetricsLog(state_manager_->client_id(), session_id_,
-                     MetricsLog::INITIAL_STABILITY_LOG));
+      CreateLog(MetricsLog::INITIAL_STABILITY_LOG));
 
   // Do not call NotifyOnDidCreateMetricsLog here because the stability
   // log describes stats from the _previous_ session.
@@ -1369,7 +1365,8 @@ void MetricsService::PrepareInitialStabilityLog() {
   log_manager_.LoadPersistedUnsentLogs();
 
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_stability_log.release());
+  log_manager_.BeginLoggingWithLog(
+      initial_stability_log.PassAs<metrics::MetricsLogBase>());
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
@@ -1408,7 +1405,8 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_metrics_log_.release());
+  log_manager_.BeginLoggingWithLog(
+      initial_metrics_log_.PassAs<metrics::MetricsLogBase>());
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
@@ -1685,6 +1683,11 @@ void MetricsService::GetCurrentSyntheticFieldTrials(
     if (synthetic_trial_groups_[i].start_time <= current_log->creation_time())
       synthetic_trials->push_back(synthetic_trial_groups_[i].id);
   }
+}
+
+scoped_ptr<MetricsLog> MetricsService::CreateLog(MetricsLog::LogType log_type) {
+  return make_scoped_ptr(new MetricsLog(
+      state_manager_->client_id(), session_id_, log_type, client_));
 }
 
 void MetricsService::LogCleanShutdown() {

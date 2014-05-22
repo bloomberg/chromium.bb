@@ -50,7 +50,7 @@ TEST(MetricsLogManagerTest, StandardFlow) {
   // Check that the normal flow works.
   MetricsLogBase* initial_log =
       new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-  log_manager.BeginLoggingWithLog(initial_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(initial_log));
   EXPECT_EQ(initial_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
 
@@ -61,7 +61,7 @@ TEST(MetricsLogManagerTest, StandardFlow) {
 
   MetricsLogBase* second_log =
       new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-  log_manager.BeginLoggingWithLog(second_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(second_log));
   EXPECT_EQ(second_log, log_manager.current_log());
 
   log_manager.StageNextLogForUpload();
@@ -82,7 +82,7 @@ TEST(MetricsLogManagerTest, AbandonedLog) {
 
   MetricsLogBase* dummy_log =
       new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-  log_manager.BeginLoggingWithLog(dummy_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(dummy_log));
   EXPECT_EQ(dummy_log, log_manager.current_log());
 
   log_manager.DiscardCurrentLog();
@@ -99,13 +99,13 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
   MetricsLogBase* temp_log =
       new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
 
-  log_manager.BeginLoggingWithLog(ongoing_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(ongoing_log));
   EXPECT_EQ(ongoing_log, log_manager.current_log());
 
   log_manager.PauseCurrentLog();
   EXPECT_EQ(NULL, log_manager.current_log());
 
-  log_manager.BeginLoggingWithLog(temp_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(temp_log));
   EXPECT_EQ(temp_log, log_manager.current_log());
   log_manager.FinishCurrentLog();
   EXPECT_EQ(NULL, log_manager.current_log());
@@ -124,14 +124,11 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
   MetricsLogManager log_manager(&pref_service, 0);
   log_manager.LoadPersistedUnsentLogs();
 
-  MetricsLogBase* ongoing_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v");
-  MetricsLogBase* temp_log =
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-
-  log_manager.BeginLoggingWithLog(ongoing_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(
+      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
   log_manager.PauseCurrentLog();
-  log_manager.BeginLoggingWithLog(temp_log);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(
+      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
   log_manager.FinishCurrentLog();
   log_manager.ResumePausedLog();
   log_manager.StageNextLogForUpload();
@@ -166,13 +163,11 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     log_manager.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
-    MetricsLogBase* log1 =
-        new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-    MetricsLogBase* log2 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v");
-    log_manager.BeginLoggingWithLog(log1);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
+        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(log2);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
     log_manager.FinishCurrentLog();
@@ -232,9 +227,8 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    MetricsLogBase* log =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-    log_manager.BeginLoggingWithLog(log);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
@@ -250,9 +244,8 @@ TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    MetricsLogBase* log =
-        new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-    log_manager.BeginLoggingWithLog(log);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
+        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
@@ -270,13 +263,11 @@ TEST(MetricsLogManagerTest, LargeLogDiscarding) {
   MetricsLogManager log_manager(&pref_service, 1);
   log_manager.LoadPersistedUnsentLogs();
 
-  MetricsLogBase* log1 =
-      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-  MetricsLogBase* log2 =
-      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v");
-  log_manager.BeginLoggingWithLog(log1);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(
+      new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
   log_manager.FinishCurrentLog();
-  log_manager.BeginLoggingWithLog(log2);
+  log_manager.BeginLoggingWithLog(make_scoped_ptr(
+      new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
   log_manager.FinishCurrentLog();
 
   // Only the ongoing log should be written out, due to the threshold.
@@ -292,13 +283,11 @@ TEST(MetricsLogManagerTest, ProvisionalStoreStandardFlow) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    MetricsLogBase* log1 =
-        new MetricsLogBase("id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v");
-    MetricsLogBase* log2 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v");
-    log_manager.BeginLoggingWithLog(log1);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(new MetricsLogBase(
+        "id", 0, MetricsLogBase::INITIAL_STABILITY_LOG, "v")));
     log_manager.FinishCurrentLog();
-    log_manager.BeginLoggingWithLog(log2);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "v")));
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(
         metrics::PersistedLogs::PROVISIONAL_STORE);
@@ -320,18 +309,16 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    MetricsLogBase* log1 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-    MetricsLogBase* log2 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-    log_manager.BeginLoggingWithLog(log1);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(
         metrics::PersistedLogs::PROVISIONAL_STORE);
     log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
-    log_manager.BeginLoggingWithLog(log2);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
@@ -347,15 +334,13 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     MetricsLogManager log_manager(&pref_service, 0);
     log_manager.LoadPersistedUnsentLogs();
 
-    MetricsLogBase* log1 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-    MetricsLogBase* log2 =
-        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version");
-    log_manager.BeginLoggingWithLog(log1);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(metrics::PersistedLogs::NORMAL_STORE);
-    log_manager.BeginLoggingWithLog(log2);
+    log_manager.BeginLoggingWithLog(make_scoped_ptr(
+        new MetricsLogBase("id", 0, MetricsLogBase::ONGOING_LOG, "version")));
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(

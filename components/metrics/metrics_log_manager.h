@@ -28,9 +28,9 @@ class MetricsLogManager {
   MetricsLogManager(PrefService* local_state, size_t max_ongoing_log_size);
   ~MetricsLogManager();
 
-  // Takes ownership of |log| and makes it the current_log. This should only be
-  // called if there is not a current log.
-  void BeginLoggingWithLog(MetricsLogBase* log);
+  // Makes |log| the current_log. This should only be called if there is not a
+  // current log.
+  void BeginLoggingWithLog(scoped_ptr<MetricsLogBase> log);
 
   // Returns the in-progress log.
   MetricsLogBase* current_log() { return current_log_.get(); }

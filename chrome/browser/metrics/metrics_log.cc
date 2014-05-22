@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cpu.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -26,13 +25,12 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/metrics_service_client.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -109,25 +107,6 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
     default:
       NOTREACHED();
       return ProfilerEventProto::TrackedObject::UNKNOWN;
-  }
-}
-
-SystemProfileProto::Channel AsProtobufChannel(
-    chrome::VersionInfo::Channel channel) {
-  switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return SystemProfileProto::CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return SystemProfileProto::CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return SystemProfileProto::CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return SystemProfileProto::CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return SystemProfileProto::CHANNEL_STABLE;
-    default:
-      NOTREACHED();
-      return SystemProfileProto::CHANNEL_UNKNOWN;
   }
 }
 
@@ -281,18 +260,18 @@ int64 RoundSecondsToHour(int64 time_in_seconds) {
 
 }  // namespace
 
-static base::LazyInstance<std::string>::Leaky
-    g_version_extension = LAZY_INSTANCE_INITIALIZER;
-
 MetricsLog::MetricsLog(const std::string& client_id,
                        int session_id,
-                       LogType log_type)
-    : MetricsLogBase(client_id, session_id, log_type,
-                     MetricsLog::GetVersionString()),
+                       LogType log_type,
+                       metrics::MetricsServiceClient* client)
+    : MetricsLogBase(client_id,
+                     session_id,
+                     log_type,
+                     client->GetVersionString()),
+      client_(client),
       creation_time_(base::TimeTicks::Now()),
       extension_metrics_(uma_proto()->client_id()) {
-  uma_proto()->mutable_system_profile()->set_channel(
-      AsProtobufChannel(chrome::VersionInfo::GetChannel()));
+  uma_proto()->mutable_system_profile()->set_channel(client_->GetChannel());
 
 #if defined(OS_CHROMEOS)
   metrics_log_chromeos_.reset(new MetricsLogChromeOS(uma_proto()));
@@ -304,32 +283,6 @@ MetricsLog::~MetricsLog() {}
 // static
 void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kStabilityPluginStats);
-}
-
-// static
-std::string MetricsLog::GetVersionString() {
-  chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << "Unable to retrieve version info.";
-    return std::string();
-  }
-
-  std::string version = version_info.Version();
-  if (!version_extension().empty())
-    version += version_extension();
-  if (!version_info.IsOfficialBuild())
-    version.append("-devel");
-  return version;
-}
-
-// static
-void MetricsLog::set_version_extension(const std::string& extension) {
-  g_version_extension.Get() = extension;
-}
-
-// static
-const std::string& MetricsLog::version_extension() {
-  return g_version_extension.Get();
 }
 
 void MetricsLog::RecordStabilityMetrics(
@@ -592,7 +545,7 @@ void MetricsLog::RecordEnvironment(
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
 
   std::string brand_code;
-  if (google_util::GetBrand(&brand_code))
+  if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
 
   int enabled_date;
@@ -608,8 +561,7 @@ void MetricsLog::RecordEnvironment(
   // Reduce granularity of the install_date field to nearest hour.
   system_profile->set_install_date(RoundSecondsToHour(install_date));
 
-  system_profile->set_application_locale(
-      g_browser_process->GetApplicationLocale());
+  system_profile->set_application_locale(client_->GetApplicationLocale());
 
   SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());

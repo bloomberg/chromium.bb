@@ -6,6 +6,9 @@
 
 namespace metrics {
 
+// static
+const char TestMetricsServiceClient::kBrandForTesting[] = "brand_for_testing";
+
 TestMetricsServiceClient::TestMetricsServiceClient() {
 }
 
@@ -25,7 +28,7 @@ std::string TestMetricsServiceClient::GetApplicationLocale() {
 }
 
 bool TestMetricsServiceClient::GetBrand(std::string* brand_code) {
-  *brand_code = "BRAND_CODE";
+  *brand_code = kBrandForTesting;
   return true;
 }
 

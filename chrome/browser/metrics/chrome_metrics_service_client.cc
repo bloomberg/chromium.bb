@@ -64,8 +64,19 @@ metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {
 }
 
 std::string ChromeMetricsServiceClient::GetVersionString() {
-  // TODO(asvitkine): Move over from metrics_log.cc
-  return std::string();
+  chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  std::string version = version_info.Version();
+#if defined(ARCH_CPU_64_BITS)
+  version += "-64";
+#endif  // defined(ARCH_CPU_64_BITS)
+  if (!version_info.IsOfficialBuild())
+    version.append("-devel");
+  return version;
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {
