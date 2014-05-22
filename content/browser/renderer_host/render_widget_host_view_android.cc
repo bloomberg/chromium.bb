@@ -1417,7 +1417,8 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                  base::Passed(&release_callback),
                  base::Passed(&bitmap),
                  start_time,
-                 base::Passed(&bitmap_pixels_lock)));
+                 base::Passed(&bitmap_pixels_lock)),
+      GLHelper::SCALER_QUALITY_GOOD);
 }
 
 bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(

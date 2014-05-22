@@ -43,6 +43,8 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
@@ -204,13 +206,16 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
   double scale = 1;
   ParseCaptureParameters(screencast_command_.get(), &format, &quality, &scale);
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host->GetView());
+  const gfx::Display& display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  float device_scale_factor = display.device_scale_factor();
 
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  gfx::Size snapshot_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(view_bounds.size(), scale));
+  gfx::Size snapshot_size(gfx::ToCeiledSize(
+      gfx::ScaleSize(view_bounds.size(), scale / device_scale_factor)));
 
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      host->GetView());
   view->CopyFromCompositingSurface(
       view_bounds, snapshot_size,
       base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,

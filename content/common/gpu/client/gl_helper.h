@@ -173,7 +173,8 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Size& dst_size,
       unsigned char* out,
       const SkBitmap::Config config,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<void(bool)>& callback,
+      GLHelper::ScalerQuality quality);
 
   // Copies the block of pixels specified with |src_subrect| from |src_mailbox|,
   // scales it to |dst_size|, and writes it into |out|.
@@ -192,7 +193,8 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Size& dst_size,
       unsigned char* out,
       const SkBitmap::Config config,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<void(bool)>& callback,
+      GLHelper::ScalerQuality quality);
 
   // Copies the texture data out of |texture| into |out|.  |size| is the
   // size of the texture.  No post processing is applied to the pixels.  The

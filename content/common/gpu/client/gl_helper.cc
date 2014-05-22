@@ -683,7 +683,8 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
     const gfx::Size& dst_size,
     unsigned char* out,
     const SkBitmap::Config config,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool)>& callback,
+    GLHelper::ScalerQuality quality) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(
       src_texture,
@@ -693,7 +694,7 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
       out,
       config,
       callback,
-      GLHelper::SCALER_QUALITY_FAST);
+      quality);
 }
 
 void GLHelper::CropScaleReadbackAndCleanMailbox(
@@ -704,12 +705,14 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
     const gfx::Size& dst_size,
     unsigned char* out,
     const SkBitmap::Config bitmap_config,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool)>& callback,
+    GLHelper::ScalerQuality quality) {
   GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_point);
   CropScaleReadbackAndCleanTexture(
       mailbox_texture, src_size, src_subrect, dst_size, out,
       bitmap_config,
-      callback);
+      callback,
+      quality);
   gl_->DeleteTextures(1, &mailbox_texture);
 }
 
