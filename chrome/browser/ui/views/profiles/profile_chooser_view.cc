@@ -972,8 +972,10 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   layout->AddView(current_profile_photo_);
 
   // Profile name, centered.
+  bool editing_allowed = !is_guest && !browser_->profile()->IsManaged();
   current_profile_name_ = new EditableProfileName(
-      this, profiles::GetAvatarNameForProfile(browser_->profile()), !is_guest);
+      this, profiles::GetAvatarNameForProfile(browser_->profile()),
+                                              editing_allowed);
   layout->StartRow(1, 0);
   layout->AddView(current_profile_name_);
 
