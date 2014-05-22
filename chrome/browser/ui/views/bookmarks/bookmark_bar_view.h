@@ -166,7 +166,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // View methods:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
@@ -183,6 +182,9 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+
+  // ui::EventTarget:
+  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
 
   // AccessiblePaneView:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;

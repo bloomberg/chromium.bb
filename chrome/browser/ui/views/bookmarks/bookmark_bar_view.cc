@@ -679,19 +679,6 @@ gfx::Size BookmarkBarView::GetPreferredSize() const {
   return prefsize;
 }
 
-bool BookmarkBarView::HitTestRect(const gfx::Rect& rect) const {
-  // If bookmark bar is attached and omnibox popup is open (on top of the bar),
-  // force hit-testing to fail.  This prevents hovers/clicks just above the
-  // omnibox popup from activating the top few pixels of items on the bookmark
-  // bar.
-  if (!IsDetached() && browser_view_ &&
-      browser_view_->GetLocationBar()->GetOmniboxView()->model()->
-          popup_model()->IsOpen()) {
-    return false;
-  }
-  return DetachableToolbarView::HitTestRect(rect);
-}
-
 gfx::Size BookmarkBarView::GetMinimumSize() const {
   // The minimum width of the bookmark bar should at least contain the overflow
   // button, by which one can access all the Bookmark Bar items, and the "Other
@@ -928,6 +915,20 @@ void BookmarkBarView::OnThemeChanged() {
 
 const char* BookmarkBarView::GetClassName() const {
   return kViewClassName;
+}
+
+bool BookmarkBarView::CanAcceptEvent(const ui::Event& event) {
+  // If bookmark bar is attached and omnibox popup is open (on top of the bar),
+  // do not allow the bookmark bar to accept events. This prevents, for example,
+  // hovers/clicks just above the omnibox popup from activating the top few
+  // pixels of items on the bookmark bar.
+  if (!IsDetached() && browser_view_ &&
+      browser_view_->GetLocationBar()->GetOmniboxView()->model()->
+          popup_model()->IsOpen()) {
+    return false;
+  }
+
+  return View::CanAcceptEvent(event);
 }
 
 void BookmarkBarView::GetAccessibleState(ui::AXViewState* state) {
