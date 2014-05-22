@@ -60,8 +60,6 @@ public class ContentViewRenderView extends FrameLayout {
 
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                setSurfaceViewBackgroundColor(Color.WHITE);
-
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceCreated(mNativeContentViewRenderView);
 
@@ -75,6 +73,7 @@ public class ContentViewRenderView extends FrameLayout {
             }
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
+        setSurfaceViewBackgroundColor(Color.WHITE);
 
         addView(mSurfaceView,
                 new FrameLayout.LayoutParams(
