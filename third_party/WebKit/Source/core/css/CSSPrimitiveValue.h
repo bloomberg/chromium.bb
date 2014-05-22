@@ -372,11 +372,6 @@ private:
     // int vs. unsigned is too subtle to distinguish types, so require a UnitType.
     CSSPrimitiveValue(int parserOperator, UnitTypes);
     CSSPrimitiveValue(unsigned color, UnitTypes); // RGB value
-    CSSPrimitiveValue(const Length& length)
-        : CSSValue(PrimitiveClass)
-    {
-        init(length);
-    }
     CSSPrimitiveValue(const Length&, float zoom);
     CSSPrimitiveValue(const LengthSize&, const RenderStyle&);
     CSSPrimitiveValue(const String&, UnitTypes);

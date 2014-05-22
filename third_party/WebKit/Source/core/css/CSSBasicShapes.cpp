@@ -93,16 +93,16 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> buildSerializablePositionOffset
 
     if (side == CSSValueCenter) {
         side = defaultSide;
-        amount = cssValuePool().createValue(Length(50, Percent));
+        amount = cssValuePool().createValue(50, CSSPrimitiveValue::CSS_PERCENTAGE);
     } else if ((side == CSSValueRight || side == CSSValueBottom)
         && amount->isPercentage()) {
         side = defaultSide;
-        amount = cssValuePool().createValue(Length(100 - amount->getFloatValue(), Percent));
+        amount = cssValuePool().createValue(100 - amount->getFloatValue(), CSSPrimitiveValue::CSS_PERCENTAGE);
     } else if (amount->isLength() && !amount->getFloatValue()) {
         if (side == CSSValueRight || side == CSSValueBottom)
-            amount = cssValuePool().createValue(Length(100, Percent));
+            amount = cssValuePool().createValue(100, CSSPrimitiveValue::CSS_PERCENTAGE);
         else
-            amount = cssValuePool().createValue(Length(0, Percent));
+            amount = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PERCENTAGE);
         side = defaultSide;
     }
 

@@ -314,15 +314,41 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
 {
     switch (length.type()) {
     case Auto:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueAuto;
+        break;
     case Intrinsic:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueIntrinsic;
+        break;
     case MinIntrinsic:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueMinIntrinsic;
+        break;
     case MinContent:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueMinContent;
+        break;
     case MaxContent:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueMaxContent;
+        break;
     case FillAvailable:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueWebkitFillAvailable;
+        break;
     case FitContent:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueWebkitFitContent;
+        break;
     case ExtendToZoom:
+        m_primitiveUnitType = CSS_VALUE_ID;
+        m_value.valueID = CSSValueInternalExtendToZoom;
+        break;
     case Percent:
-        init(length);
+        m_primitiveUnitType = CSS_PERCENTAGE;
+        ASSERT(std::isfinite(length.percent()));
+        m_value.num = length.percent();
         break;
     case Fixed:
         m_primitiveUnitType = CSS_PX;
@@ -352,59 +378,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     case Undefined:
         ASSERT_NOT_REACHED();
         break;
-    }
-}
-
-void CSSPrimitiveValue::init(const Length& length)
-{
-    switch (length.type()) {
-        case Auto:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueAuto;
-            break;
-        case Fixed:
-            m_primitiveUnitType = CSS_PX;
-            m_value.num = length.value();
-            break;
-        case Intrinsic:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueIntrinsic;
-            break;
-        case MinIntrinsic:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueMinIntrinsic;
-            break;
-        case MinContent:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueMinContent;
-            break;
-        case MaxContent:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueMaxContent;
-            break;
-        case FillAvailable:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueWebkitFillAvailable;
-            break;
-        case FitContent:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueWebkitFitContent;
-            break;
-        case ExtendToZoom:
-            m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueInternalExtendToZoom;
-            break;
-        case Percent:
-            m_primitiveUnitType = CSS_PERCENTAGE;
-            ASSERT(std::isfinite(length.percent()));
-            m_value.num = length.percent();
-            break;
-        case DeviceWidth:
-        case DeviceHeight:
-        case Calculated:
-        case Undefined:
-            ASSERT_NOT_REACHED();
-            break;
     }
 }
 

@@ -76,7 +76,7 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& le
     case MaxContent:
     case FillAvailable:
     case FitContent:
-        return AnimatableUnknown::create(CSSPrimitiveValue::create(length));
+        return AnimatableUnknown::create(CSSPrimitiveValue::create(length, 1));
     case Undefined:
         return AnimatableUnknown::create(CSSValueNone);
     case ExtendToZoom: // Does not apply to elements.

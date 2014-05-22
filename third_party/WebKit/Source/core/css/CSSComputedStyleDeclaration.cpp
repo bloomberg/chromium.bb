@@ -631,7 +631,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(RenderStyle& styl
         // FIXME: It's not enough to simply return "auto" values for one offset if the other side is defined.
         // In other words if left is auto and right is not auto, then left's computed value is negative right().
         // So we should get the opposite length unit and see if it is auto.
-        return cssValuePool().createValue(l);
+        return cssValuePool().createIdentifierValue(CSSValueAuto);
     }
 
     return zoomAdjustedPixelValueForLength(l, style);
@@ -1732,11 +1732,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitMaskPositionX: {
             const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPositionX ? style->maskLayers() : style->backgroundLayers();
             if (!layers->next())
-                return cssValuePool().createValue(layers->xPosition());
+                return zoomAdjustedPixelValueForLength(layers->xPosition(), *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
-                list->append(cssValuePool().createValue(currLayer->xPosition()));
+                list->append(zoomAdjustedPixelValueForLength(currLayer->xPosition(), *style));
 
             return list.release();
         }
@@ -1744,11 +1744,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitMaskPositionY: {
             const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPositionY ? style->maskLayers() : style->backgroundLayers();
             if (!layers->next())
-                return cssValuePool().createValue(layers->yPosition());
+                return zoomAdjustedPixelValueForLength(layers->yPosition(), *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
-                list->append(cssValuePool().createValue(currLayer->yPosition()));
+                list->append(zoomAdjustedPixelValueForLength(currLayer->yPosition(), *style));
 
             return list.release();
         }
@@ -1901,7 +1901,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyFlex:
             return valuesForShorthandProperty(flexShorthand());
         case CSSPropertyFlexBasis:
-            return cssValuePool().createValue(style->flexBasis());
+            return zoomAdjustedPixelValueForLength(style->flexBasis(), *style);
         case CSSPropertyFlexDirection:
             return cssValuePool().createValue(style->flexDirection());
         case CSSPropertyFlexFlow:
@@ -2295,7 +2295,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                 case BASELINE_MIDDLE:
                     return cssValuePool().createIdentifierValue(CSSValueWebkitBaselineMiddle);
                 case LENGTH:
-                    return cssValuePool().createValue(style->verticalAlignLength());
+                    return zoomAdjustedPixelValueForLength(style->verticalAlignLength(), *style);
             }
             ASSERT_NOT_REACHED();
             return nullptr;
