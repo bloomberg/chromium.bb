@@ -533,19 +533,6 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     if (!frame)
         return v8Undefined();
 
-    // Special case: Because of executeScriptInIsolatedWorld() one DOMWindow can have
-    // multiple contexts and multiple global objects associated with it. When
-    // code running in one of those contexts accesses the window object, we
-    // want to return the global object associated with that context, not
-    // necessarily the first global object associated with that DOMWindow.
-    v8::Handle<v8::Object> currentGlobal = isolate->GetCurrentContext()->Global();
-    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(currentGlobal, isolate);
-    if (!windowWrapper.IsEmpty()) {
-        if (V8Window::toNative(windowWrapper) == window)
-            return currentGlobal;
-    }
-
-    // Otherwise, return the global object associated with this frame.
     v8::Handle<v8::Context> context = toV8Context(isolate, frame, DOMWrapperWorld::current(isolate));
     if (context.IsEmpty())
         return v8Undefined();
