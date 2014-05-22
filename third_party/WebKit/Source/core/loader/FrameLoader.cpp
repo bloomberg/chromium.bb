@@ -1041,6 +1041,14 @@ void FrameLoader::restoreScrollPositionAndViewState()
     }
 }
 
+bool FrameLoader::requestFromHistoryForInspector(ResourceRequestCachePolicy cachePolicy, ResourceRequest* request)
+{
+    if (!m_currentItem)
+        return false;
+    *request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
+    return true;
+}
+
 void FrameLoader::detachChildren()
 {
     typedef Vector<RefPtr<LocalFrame> > FrameVector;

@@ -82,8 +82,10 @@ public:
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
 
+    static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
+    static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
 
     static PassRefPtr<SharedBuffer> resourceData(LocalFrame*, const KURL&, String* textEncodingName);
     static Resource* cachedResource(LocalFrame*, const KURL&);
@@ -164,8 +166,6 @@ public:
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
 
 private:
-    static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
-
     InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
     bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
     void updateViewMetricsFromState();

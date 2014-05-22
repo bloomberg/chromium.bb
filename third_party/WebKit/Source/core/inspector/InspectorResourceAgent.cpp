@@ -788,27 +788,6 @@ void InspectorResourceAgent::frameClearedScheduledNavigation(LocalFrame* frame)
     m_frameNavigationInitiatorMap.remove(m_pageAgent->frameId(frame));
 }
 
-bool InspectorResourceAgent::fetchResourceContent(LocalFrame* frame, const KURL& url, String* content, bool* base64Encoded)
-{
-    // First try to fetch content from the cached resource.
-    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
-    if (!cachedResource)
-        cachedResource = memoryCache()->resourceForURL(url);
-    if (cachedResource && InspectorPageAgent::cachedResourceContent(cachedResource, content, base64Encoded))
-        return true;
-
-    // Then fall back to resource data.
-    Vector<NetworkResourcesData::ResourceData*> resources = m_resourcesData->resources();
-    for (Vector<NetworkResourcesData::ResourceData*>::iterator it = resources.begin(); it != resources.end(); ++it) {
-        if ((*it)->url() == url) {
-            *content = (*it)->content();
-            *base64Encoded = (*it)->base64Encoded();
-            return true;
-        }
-    }
-    return false;
-}
-
 InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorResourceAgent>("Network")
     , m_pageAgent(pageAgent)
