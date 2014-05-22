@@ -16,21 +16,11 @@
 #include "ppapi/native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
 
-
-//////////////////////////////////////////////////////////////////////
-//  Temporary file access.
-//////////////////////////////////////////////////////////////////////
-
 namespace plugin {
-
-uint32_t TempFile::next_identifier = 0;
 
 TempFile::TempFile(Plugin* plugin) : plugin_(plugin),
                                      existing_handle_(PP_kInvalidFileHandle) {
   PLUGIN_PRINTF(("TempFile::TempFile\n"));
-  ++next_identifier;
-  SNPRINTF(reinterpret_cast<char *>(identifier_), sizeof identifier_,
-           "%" NACL_PRIu32, next_identifier);
 }
 
 TempFile::~TempFile() {
@@ -77,10 +67,7 @@ void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
     return;
   }
 
-  // dup the fd to make allow making a non-Quota-based wrapper.
-  // sel_ldr currently does not allow loading from Quota-backed descs,
-  // only plain host descs.  It's probably good hygiene to separate the
-  // read wrapper from the write wrapper anyway.
+  // dup the fd to make allow making separate read and write wrappers.
   int32_t read_fd = DUP(fd);
   if (read_fd == NACL_NO_FILE_DESC) {
     PLUGIN_PRINTF(("TempFile::Open DUP failed\n"));
@@ -88,11 +75,11 @@ void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
     return;
   }
 
-  // The descriptor for a writeable file needs to have quota management.
   if (writeable) {
     write_wrapper_.reset(
-        plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
+        plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDWR));
   }
+
   read_wrapper_.reset(
       plugin_->wrapper_factory()->MakeFileDesc(read_fd, O_RDONLY));
   core->CallOnMainThread(0, cb, PP_OK);
@@ -104,7 +91,7 @@ bool TempFile::Reset() {
   // backed by the same file, so it should also reset.
   CHECK(read_wrapper_.get() != NULL);
   nacl_off64_t newpos = read_wrapper_->Seek(0, SEEK_SET);
-  return newpos >= 0;
+  return newpos == 0;
 }
 
 }  // namespace plugin

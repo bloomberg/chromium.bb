@@ -186,12 +186,6 @@ void PnaclTranslateThread::DoTranslate() {
                                "NaCl.Perf.PNaClLoadTime.LoadCompiler",
                                NaClGetTimeOfDayMicroseconds() - llc_start_time),
                            PP_OK);
-    // Run LLC.
-    PluginReverseInterface* llc_reverse =
-        llc_subprocess_->service_runtime()->rev_interface();
-    for (size_t i = 0; i < obj_files_->size(); i++) {
-      llc_reverse->AddTempQuotaManagedFile((*obj_files_)[i]->identifier());
-    }
   }
 
   int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
@@ -362,9 +356,6 @@ bool PnaclTranslateThread::RunLdSubprocess() {
                                "NaCl.Perf.PNaClLoadTime.LoadLinker",
                                NaClGetTimeOfDayMicroseconds() - ld_start_time),
                            PP_OK);
-    PluginReverseInterface* ld_reverse =
-        ld_subprocess_->service_runtime()->rev_interface();
-    ld_reverse->AddTempQuotaManagedFile(nexe_file_->identifier());
   }
 
   int64_t link_start_time = NaClGetTimeOfDayMicroseconds();

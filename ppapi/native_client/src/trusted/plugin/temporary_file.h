@@ -6,7 +6,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_TEMPORARY_FILE_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 #include "ppapi/c/private/pp_file_handle.h"
@@ -58,11 +57,6 @@ class TempFile {
 
   PP_FileHandle* existing_handle() { return &existing_handle_; }
 
-  // For quota management.
-  const nacl::string identifier() const {
-    return nacl::string(reinterpret_cast<const char*>(identifier_));
-  }
-
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);
 
@@ -70,14 +64,6 @@ class TempFile {
   nacl::scoped_ptr<nacl::DescWrapper> read_wrapper_;
   nacl::scoped_ptr<nacl::DescWrapper> write_wrapper_;
   PP_FileHandle existing_handle_;
-
-  // An identifier string used for quota request processing.  The quota
-  // interface needs a string that is unique per sel_ldr instance only, so
-  // the identifiers can be reused between runs of the translator, start-ups of
-  // the browser, etc.
-  uint8_t identifier_[16];
-  // A counter to dole out unique identifiers.
-  static uint32_t next_identifier;
 };
 
 }  // namespace plugin

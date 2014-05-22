@@ -88,12 +88,6 @@ class OpenManifestEntryAsyncCallback {
 
 namespace {
 
-// For doing crude quota enforcement on writes to temp files.
-// We do not allow a temp file bigger than 128 MB for now.
-// There is currently a limit of 32M for nexe text size, so 128M
-// should be plenty for static data
-const int64_t kMaxTempQuota = 0x8000000;
-
 class ManifestService {
  public:
   ManifestService(nacl::WeakRefAnchor* anchor,
@@ -475,34 +469,7 @@ void PluginReverseInterface::ReportExitStatus(int exit_status) {
 
 int64_t PluginReverseInterface::RequestQuotaForWrite(
     nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
-  NaClLog(4,
-          "PluginReverseInterface::RequestQuotaForWrite:"
-          " (file_id='%s', offset=%" NACL_PRId64 ", bytes_to_write=%"
-          NACL_PRId64 ")\n", file_id.c_str(), offset, bytes_to_write);
-  uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
-  nacl::MutexLocker take(&mu_);
-  if (quota_files_.count(file_key) == 0) {
-    // Look up failed to find the requested quota managed resource.
-    NaClLog(4, "PluginReverseInterface::RequestQuotaForWrite: failed...\n");
-    return 0;
-  }
-
-  // Because we now only support this interface for tempfiles which are not
-  // pepper objects, we can just do some crude quota enforcement here rather
-  // than calling out to pepper from the main thread.
-  if (offset + bytes_to_write >= kMaxTempQuota)
-    return 0;
-
   return bytes_to_write;
-}
-
-void PluginReverseInterface::AddTempQuotaManagedFile(
-    const nacl::string& file_id) {
-  NaClLog(4, "PluginReverseInterface::AddTempQuotaManagedFile: "
-          "(file_id='%s')\n", file_id.c_str());
-  uint64_t file_key = STRTOULL(file_id.c_str(), NULL, 10);
-  nacl::MutexLocker take(&mu_);
-  quota_files_.insert(file_key);
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,

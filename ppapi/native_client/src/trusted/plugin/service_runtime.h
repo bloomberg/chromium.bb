@@ -32,10 +32,6 @@ namespace nacl {
 class DescWrapper;
 }  // namespace
 
-namespace pp {
-class FileIO;
-}  // namespace
-
 namespace plugin {
 
 class OpenManifestEntryAsyncCallback;
@@ -125,13 +121,11 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   virtual void ReportExitStatus(int exit_status);
 
+  // TODO(teravest): Remove this method once it's gone from
+  // nacl::ReverseInterface.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
                                        int64_t offset,
                                        int64_t bytes_to_write);
-
-  void AddQuotaManagedFile(const nacl::string& file_id,
-                           const pp::FileIO& file_io);
-  void AddTempQuotaManagedFile(const nacl::string& file_id);
 
   // This is a sibling of OpenManifestEntry. While OpenManifestEntry is
   // a sync function and must be called on a non-main thread,
@@ -159,7 +153,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
-  std::set<int64_t> quota_files_;
   bool shutting_down_;
 
   pp::CompletionCallback init_done_cb_;
@@ -217,10 +210,6 @@ class ServiceRuntime {
   void set_exit_status(int exit_status);
 
   nacl::string GetCrashLogOutput();
-
-  // To establish quota callbacks the pnacl coordinator needs to communicate
-  // with the reverse interface.
-  PluginReverseInterface* rev_interface() const { return rev_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
