@@ -348,8 +348,6 @@ void AutofillDialogControllerAndroid::Show() {
         g_browser_process->GetApplicationLocale());
   }
 
-  const bool incognito_mode = profile_->IsOffTheRecord();
-
   bool last_used_choice_is_autofill = false;
   base::string16 last_used_account_name;
   std::string last_used_billing;
@@ -370,7 +368,8 @@ void AutofillDialogControllerAndroid::Show() {
     }
   }
 
-  if (contents_->GetBrowserContext()->IsOffTheRecord())
+  const bool incognito_mode = profile_->IsOffTheRecord();
+  if (incognito_mode)
     last_used_choice_is_autofill = true;
 
   ScopedJavaLocalRef<jstring> jlast_used_account_name =
@@ -388,13 +387,20 @@ void AutofillDialogControllerAndroid::Show() {
   ScopedJavaLocalRef<jstring> jmerchant_domain =
       base::android::ConvertUTF8ToJavaString(
           env, source_url_.GetOrigin().spec());
-  const std::set<base::string16> availableShippingCountriesSet =
+  const std::set<base::string16> available_shipping_countries =
       form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY);
   ScopedJavaLocalRef<jobjectArray> jshipping_countries =
       base::android::ToJavaArrayOfStrings(
           env,
-          std::vector<base::string16>(availableShippingCountriesSet.begin(),
-                                      availableShippingCountriesSet.end()));
+          std::vector<base::string16>(available_shipping_countries.begin(),
+                                      available_shipping_countries.end()));
+  const std::set<base::string16> available_credit_card_types =
+      form_structure_.PossibleValues(CREDIT_CARD_TYPE);
+  ScopedJavaLocalRef<jobjectArray> jcredit_card_types =
+      base::android::ToJavaArrayOfStrings(
+          env,
+          std::vector<base::string16>(available_credit_card_types.begin(),
+                                      available_credit_card_types.end()));
 
   java_object_.Reset(Java_AutofillDialogControllerAndroid_create(
       env,
@@ -407,7 +413,8 @@ void AutofillDialogControllerAndroid::Show() {
       jlast_used_billing.obj(), jlast_used_shipping.obj(),
       jlast_used_card.obj(),
       jmerchant_domain.obj(),
-      jshipping_countries.obj()));
+      jshipping_countries.obj(),
+      jcredit_card_types.obj()));
 }
 
 void AutofillDialogControllerAndroid::Hide() {

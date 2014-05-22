@@ -54,7 +54,8 @@ public class MockAutofillDialogController implements AutofillDialog {
                     final String initialShippingGuid,
                     final String initialCardGuid,
                     final String merchantDomain,
-                    final String[] shippingCountries) {
+                    final String[] shippingCountries,
+                    final String[] creditCardTypes) {
                 Assert.assertEquals("Full billing details flag doesn't match",
                         shouldRequestFullBilling, requestFullBillingAddress);
                 Assert.assertEquals("Shipping details flag doesn't match",
@@ -77,7 +78,8 @@ public class MockAutofillDialogController implements AutofillDialog {
                         initialChoiceIsAutofill, initialWalletAccountName,
                         initialBillingGuid, initialShippingGuid, initialCardGuid,
                         merchantDomain,
-                        shippingCountries);
+                        shippingCountries,
+                        creditCardTypes);
             }
         });
     }
@@ -99,7 +101,8 @@ public class MockAutofillDialogController implements AutofillDialog {
             final String initialBillingGuid, final String initialShippingGuid,
             final String initialCardGuid,
             final String merchantDomain,
-            final String[] shippingCountries) {
+            final String[] shippingCountries,
+            final String[] creditCardTypes) {
         mDelegate = delegate;
         mResult = result;
         mLastUsedChoiceIsAutofill = lastUsedChoiceIsAutofill;
