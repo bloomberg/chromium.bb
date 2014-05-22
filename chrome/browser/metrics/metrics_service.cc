@@ -236,7 +236,10 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+// TODO(asvitkine): Move this out of MetricsService.
+#include "chrome/browser/metrics/android_metrics_provider.h"
+#else
 #include "chrome/browser/service_process/service_process_control.h"
 #endif
 
@@ -455,7 +458,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 
 #if defined(OS_ANDROID)
-  RegisterPrefsAndroid(registry);
+  // TODO(asvitkine): Move this out of here.
+  AndroidMetricsProvider::RegisterPrefs(registry);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -480,6 +484,13 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   DCHECK(IsSingleThreaded());
   DCHECK(state_manager_);
   DCHECK(client_);
+
+#if defined(OS_ANDROID)
+  // TODO(asvitkine): Move this out of MetricsService.
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new AndroidMetricsProvider(
+          g_browser_process->local_state())));
+#endif  // defined(OS_ANDROID)
 
   // TODO(asvitkine): Move this out of MetricsService.
   RegisterMetricsProvider(
@@ -827,10 +838,6 @@ void MetricsService::InitializeMetricsState() {
   pref->SetInt64(prefs::kStabilityStatsBuildTime, MetricsLog::GetBuildTime());
 
   session_id_ = pref->GetInteger(prefs::kMetricsSessionID);
-
-#if defined(OS_ANDROID)
-  LogAndroidStabilityToPrefs(pref);
-#endif  // defined(OS_ANDROID)
 
   if (!pref->GetBoolean(prefs::kStabilityExitedCleanly)) {
     IncrementPrefValue(prefs::kStabilityCrashCount);
@@ -1387,11 +1394,7 @@ void MetricsService::PrepareInitialStabilityLog() {
       static_cast<MetricsLog*>(log_manager_.current_log());
   current_log->RecordStabilityMetrics(metrics_providers_.get(),
                                       base::TimeDelta(), base::TimeDelta());
-
-#if defined(OS_ANDROID)
-  ConvertAndroidStabilityPrefsToHistograms(pref);
   RecordCurrentStabilityHistograms();
-#endif  // defined(OS_ANDROID)
 
   // Note: RecordGeneralMetrics() intentionally not called since this log is for
   //       stability stats from a previous session only.
@@ -1430,10 +1433,6 @@ void MetricsService::PrepareInitialMetricsLog() {
       static_cast<MetricsLog*>(log_manager_.current_log());
   current_log->RecordStabilityMetrics(metrics_providers_.get(),
                                       base::TimeDelta(), base::TimeDelta());
-
-#if defined(OS_ANDROID)
-  ConvertAndroidStabilityPrefsToHistograms(pref);
-#endif  // defined(OS_ANDROID)
   RecordCurrentHistograms();
 
   current_log->RecordGeneralMetrics(metrics_providers_.get());

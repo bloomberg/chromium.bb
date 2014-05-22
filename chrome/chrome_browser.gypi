@@ -1207,7 +1207,6 @@
         'browser/metrics/metrics_log_chromeos.h',
         'browser/metrics/metrics_network_observer.cc',
         'browser/metrics/metrics_network_observer.h',
-        'browser/metrics/metrics_service_android.cc',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
         'browser/metrics/metrics_services_manager.cc',
@@ -3165,6 +3164,8 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources': [
+            'browser/metrics/android_metrics_provider.cc',
+            'browser/metrics/android_metrics_provider.h',
             'browser/sessions/in_memory_tab_restore_service.cc',
             'browser/sessions/in_memory_tab_restore_service.h',
             'browser/signin/android_profile_oauth2_token_service.cc',
