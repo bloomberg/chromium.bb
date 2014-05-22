@@ -64,10 +64,7 @@ def set_up_landmines(target, new_landmines):
     if e.errno == errno.EEXIST:
       pass
 
-  if not os.path.exists(landmines_path):
-    with open(landmines_path, 'w') as f:
-      f.writelines(new_landmines)
-  else:
+  if os.path.exists(landmines_path):
     triggered = os.path.join(out_dir, '.landmines_triggered')
     with open(landmines_path, 'r') as f:
       old_landmines = f.readlines()
@@ -82,6 +79,8 @@ def set_up_landmines(target, new_landmines):
     elif os.path.exists(triggered):
       # Remove false triggered landmines.
       os.remove(triggered)
+  with open(landmines_path, 'w') as f:
+    f.writelines(new_landmines)
 
 
 def process_options():
