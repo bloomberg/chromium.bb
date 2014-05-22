@@ -14,6 +14,8 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
+#include "ash/wm/maximize_mode/internal_input_device_list.h"
+#include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/vector3d_f.h"
@@ -57,6 +59,21 @@ EventCounter::~EventCounter() {
 void EventCounter::OnEvent(ui::Event* event) {
   event_count_++;
 }
+
+// A test internal input device list which pretends that all events are from
+// internal devices to allow verifying that the event blocking works.
+class TestInternalInputDeviceList : public InternalInputDeviceList {
+ public:
+  TestInternalInputDeviceList() {}
+  virtual ~TestInternalInputDeviceList() {}
+
+  virtual bool IsEventFromInternalDevice(const ui::Event* event) OVERRIDE {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestInternalInputDeviceList);
+};
 
 }  // namespace
 
@@ -107,6 +124,13 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   bool IsMaximizeModeStarted() const {
     return Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+  }
+
+  // Overrides the internal input device list for the current event targeters
+  // with one which always returns true.
+  void InstallTestInternalDeviceList() {
+    maximize_mode_controller()->event_blocker_->internal_devices_.reset(
+        new TestInternalInputDeviceList);
   }
 
   gfx::Display::Rotation GetInternalDisplayRotation() const {
@@ -326,6 +350,7 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboardAndMouse) {
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
                              gfx::Vector3dF(1.0f, 0.0f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
+  InstallTestInternalDeviceList();
 
   event_generator.PressKey(ui::VKEY_ESCAPE, 0);
   event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);

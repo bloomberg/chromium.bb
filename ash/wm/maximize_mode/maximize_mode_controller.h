@@ -17,6 +17,7 @@ class EventHandler;
 
 namespace ash {
 
+class MaximizeModeControllerTest;
 class MaximizeModeEventBlocker;
 
 // MaximizeModeController listens to accelerometer events and automatically
@@ -53,6 +54,8 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
                                       const gfx::Vector3dF& lid) OVERRIDE;
 
  private:
+  friend class MaximizeModeControllerTest;
+
   // Detect hinge rotation from |base| and |lid| accelerometers and
   // automatically start / stop maximize mode.
   void HandleHingeRotation(const gfx::Vector3dF& base,
