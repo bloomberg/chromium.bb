@@ -142,7 +142,7 @@ struct NaClThreadContext *NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
                                                          NACL_SYSARGS_FIX);
 
   if (NACL_UNLIKELY(sysnum >= NACL_MAX_SYSCALLS)) {
-    NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
+    NaClLog(2, "INVALID system call %"NACL_PRIuS"\n", sysnum);
     sysret = -NACL_ABI_EINVAL;
     NaClCopyDropLock(nap);
   } else {
@@ -150,7 +150,7 @@ struct NaClThreadContext *NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
     /* Implicitly drops lock */
   }
   NaClLog(4,
-          ("Returning from syscall %"NACL_PRIdS": return value %"NACL_PRId32
+          ("Returning from syscall %"NACL_PRIuS": return value %"NACL_PRId32
            " (0x%"NACL_PRIx32")\n"),
           sysnum, sysret, sysret);
   natp->user.sysret = sysret;

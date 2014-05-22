@@ -364,13 +364,15 @@ class Builder(object):
                            define.startswith('NACL_WINDOWS=') or
                            define.startswith('NACL_OSX=') or
                            define.startswith('NACL_LINUX=') or
+                           define.startswith('NACL_ANDROID=') or
                            define == 'COMPONENT_BUILD' or
                            'WIN32' in define or
                            'WINDOWS' in define or
                            'WINVER' in define)]
     define_list.extend(['NACL_WINDOWS=0',
                         'NACL_OSX=0',
-                        'NACL_LINUX=0'])
+                        'NACL_LINUX=0',
+                        'NACL_ANDROID=0'])
     options += ['-D' + define for define in define_list]
     self.compile_options = options + ['-I' + name for name in self.inc_paths]
 

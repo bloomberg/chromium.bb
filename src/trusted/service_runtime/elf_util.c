@@ -250,7 +250,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
       return LOAD_BAD_SEGMENT;
     }
 
-    NaClLog(2, "Matched nacl_phdr_check_data[%"NACL_PRIdS"]\n", j);
+    NaClLog(2, "Matched nacl_phdr_check_data[%"NACL_PRIuS"]\n", j);
     if (seen_seg[j]) {
       NaClLog(2, "Segment %d is a type that has been seen\n", segnum);
       return LOAD_DUP_SEGMENT;
@@ -748,7 +748,7 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
             " reading.\n");
   } else {
     NaClLog(4,
-            "NaClElfFileMapSegment: mapping %"NACL_PRIdS" (0x%"
+            "NaClElfFileMapSegment: mapping %"NACL_PRIuS" (0x%"
             NACL_PRIxS") bytes to"
             " address 0x%"NACL_PRIxPTR", position %"
             NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off")\n",

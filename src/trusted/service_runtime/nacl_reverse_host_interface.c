@@ -129,7 +129,7 @@ ssize_t NaClReverseHostInterfacePostMessage(
 
   NaClLog(3,
           ("NaClReverseHostInterfacePostMessage(0x%08"NACL_PRIxPTR", %s"
-           ", %08"NACL_PRIdS")\n"),
+           ", %08"NACL_PRIuS")\n"),
           (uintptr_t) self, message, message_bytes);
 
   NaClXMutexLock(&self->server->mu);

@@ -6,6 +6,9 @@
 
 #include "native_client/src/shared/platform/aligned_malloc.h"
 
+#if NACL_ANDROID
+#include <malloc.h>
+#endif
 #include <stdlib.h>
 
 

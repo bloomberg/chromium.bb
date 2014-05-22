@@ -434,7 +434,7 @@ static void NaClFaultInjectionParseHelperAddFaultExpr(
   }
   NaClLog(6,
           "NaClFaultInject: adding %c(%"NACL_PRIdPTR
-          ",%"NACL_PRIuPTR") at %"NACL_PRIdS"\n",
+          ",%"NACL_PRIuPTR") at %"NACL_PRIuS"\n",
           expr->pass ? 'P' : 'F', expr->fault_value, expr->count,
           out_info->num_expr);
   out_info->expr[out_info->num_expr++] = *expr;

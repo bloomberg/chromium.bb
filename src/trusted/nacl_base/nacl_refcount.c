@@ -21,7 +21,7 @@ int NaClRefCountCtor(struct NaClRefCount *self) {
 }
 
 static void NaClRefCountDtor(struct NaClRefCount  *self) {
-  NaClLog(4, "NaClRefCountDtor(0x%08"NACL_PRIxPTR"), refcount %"NACL_PRIdS
+  NaClLog(4, "NaClRefCountDtor(0x%08"NACL_PRIxPTR"), refcount %"NACL_PRIuS
           ", destroying.\n",
           (uintptr_t) self,
           self->ref_count);
@@ -50,7 +50,7 @@ static void NaClRefCountDtor(struct NaClRefCount  *self) {
       NaClLog(LOG_FATAL,
               ("NaClRefCountDtor invoked on a generic refcounted"
                " object at 0x%08"NACL_PRIxPTR" with non-zero"
-               " reference count (%"NACL_PRIdS")\n"),
+               " reference count (%"NACL_PRIuS")\n"),
               (uintptr_t) self,
               self->ref_count);
   }

@@ -364,7 +364,7 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
                                        (uintptr_t) kern_naiov[i].base,
                                        kern_naiov[i].length);
       if (kNaClBadAddress == sysaddr) {
-        NaClLog(4, "iov number %"NACL_PRIdS" not entirely in user space\n", i);
+        NaClLog(4, "iov number %"NACL_PRIuS" not entirely in user space\n", i);
         retval = -NACL_ABI_EFAULT;
         goto cleanup_leave;
       }

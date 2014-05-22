@@ -132,7 +132,7 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
   NaClLog(3,
           ("Entered NaClSysGetdents(0x%08"NACL_PRIxPTR", "
            "%d, 0x%08"NACL_PRIxPTR", "
-           "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n"),
+           "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n"),
           (uintptr_t) natp, d, (uintptr_t) dirp, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
@@ -176,7 +176,7 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
       || INT32_MAX < getdents_ret) {
     /* This should never happen, because we already clamped the input count */
     NaClLog(LOG_FATAL, "Overflow in Getdents: return value is %"NACL_PRIxS,
-            getdents_ret);
+            (size_t) getdents_ret);
   } else {
     retval = (int32_t) getdents_ret;
   }
@@ -209,7 +209,7 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
   NaClLog(3,
           ("Entered NaClSysRead(0x%08"NACL_PRIxPTR", "
            "%d, 0x%08"NACL_PRIxPTR", "
-           "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n"),
+           "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n"),
           (uintptr_t) natp, d, (uintptr_t) buf, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
@@ -283,7 +283,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
   NaClLog(3,
           "Entered NaClSysWrite(0x%08"NACL_PRIxPTR", "
           "%d, 0x%08"NACL_PRIxPTR", "
-          "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n",
+          "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n",
           (uintptr_t) natp, d, (uintptr_t) buf, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
@@ -311,7 +311,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
       ellipsis = "...";
     }
   }
-  NaClLog(8, "In NaClSysWrite(%d, %.*s%s, %"NACL_PRIdS")\n",
+  NaClLog(8, "In NaClSysWrite(%d, %.*s%s, %"NACL_PRIuS")\n",
           d, (int) log_bytes, (char *) sysaddr, ellipsis, count);
 
   /*
@@ -405,7 +405,7 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
           d, (uintptr_t) nasp);
 
   NaClLog(4,
-          " sizeof(struct nacl_abi_stat) = %"NACL_PRIdS" (0x%"NACL_PRIxS")\n",
+          " sizeof(struct nacl_abi_stat) = %"NACL_PRIuS" (0x%"NACL_PRIxS")\n",
           sizeof *nasp, sizeof *nasp);
 
   ndp = NaClAppGetDesc(nap, d);

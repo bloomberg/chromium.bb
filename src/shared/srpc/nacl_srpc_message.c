@@ -265,12 +265,12 @@ static ssize_t MessageChannelBufferRead(struct NaClSrpcMessageChannel* channel,
   }
   header->flags = 0;
   NaClSrpcLog(3,
-              "MessageChannelBufferRead: channel->byte_count=%"NACL_PRIdS".\n",
+              "MessageChannelBufferRead: channel->byte_count=%"NACL_PRIuS".\n",
               channel->byte_count);
   for (i = 0; i < header->iov_length; ++i) {
     NaClSrpcLog(3,
-                "MessageChannelBufferRead: bytes %"NACL_PRIdS" chan %"
-                NACL_PRIdS".\n",
+                "MessageChannelBufferRead: bytes %"NACL_PRIuS" chan %"
+                NACL_PRIuS".\n",
                 byte_count,
                 channel->byte_count);
     if (channel->byte_count < byte_count) {
@@ -525,7 +525,7 @@ static int32_t FragmentLengthIsSane(LengthHeader* fragment_size,
                 " bytes %"NACL_PRIuNACL_SIZE" < %"NACL_PRIuS
                 " or descs %"NACL_PRIuNACL_SIZE" < %"NACL_PRIuS".\n",
                 fragment_size->byte_count,
-                (bytes_received - FRAGMENT_OVERHEAD),
+                (size_t) (bytes_received - FRAGMENT_OVERHEAD),
                 fragment_size->desc_count,
                 descs_received);
     return 0;
@@ -635,7 +635,7 @@ ssize_t NaClSrpcMessageChannelPeek(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelPeek: read message bytes %"
-              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              NACL_PRIuS", descs %"NACL_PRIuS".\n",
               channel->byte_count,
               channel->desc_count);
   imc_ret = MessageChannelBufferRead(channel, &header_copy, 1);
@@ -824,7 +824,7 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelReceive:"
-              " succeeded, read %"NACL_PRIdS" bytes and %"
+              " succeeded, read %"NACL_PRIuS" bytes and %"
               NACL_PRIdNACL_SIZE" descs.\n",
               bytes_received,
               processed_size.desc_count);
@@ -918,7 +918,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   if (expected_bytes_sent > NaClSrpcMaxImcSendmsgSize) {
     NaClSrpcLog(NACL_SRPC_LOG_FATAL,
                 "NaClSrpcMessageChannelSend: expected bytes %"
-                NACL_PRIdS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
+                NACL_PRIuS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
                 expected_bytes_sent, NaClSrpcMaxImcSendmsgSize);
   }
   if (!BuildFragmentHeader(&remaining, &fragment_size, 2, &frag_hdr)) {
@@ -937,7 +937,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   if ((size_t) imc_ret != expected_bytes_sent) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "NaClSrpcMessageChannelSend: first send failed, %"
-                NACL_PRIdS" != %"NACL_PRIdS".\n",
+                NACL_PRIuS" != %"NACL_PRIdS".\n",
                 expected_bytes_sent,
                 imc_ret);
     retval = ErrnoFromImcRet(imc_ret);
@@ -1006,7 +1006,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
     if (expected_bytes_sent > NaClSrpcMaxImcSendmsgSize) {
       NaClSrpcLog(NACL_SRPC_LOG_FATAL,
                   "NaClSrpcMessageChannelSend: expected bytes %"
-                  NACL_PRIdS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
+                  NACL_PRIuS" exceed maximum allowed %"NACL_PRIdNACL_SIZE"\n",
                   expected_bytes_sent, NaClSrpcMaxImcSendmsgSize);
     }
     imc_ret = ImcSendmsg(channel->desc.raw_desc, &frag_hdr, 0);

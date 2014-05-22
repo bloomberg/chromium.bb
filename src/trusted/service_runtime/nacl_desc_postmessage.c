@@ -73,7 +73,7 @@ static ssize_t NaClDescPostMessageWrite(struct NaClDesc *vself,
   num_written = (*NACL_VTBL(NaClRuntimeHostInterface, self->runtime_host)->
                  PostMessage)(self->runtime_host, buf, len);
   NaClLog(4, "Leaving NaClDescPostMessageWrite:"
-          " num_written %"NACL_PRIuS"\n", num_written);
+          " num_written %"NACL_PRIuS"\n", (size_t) num_written);
   return num_written;
 }
 

@@ -661,7 +661,7 @@ void NaClReverseInterfaceDoPostMessage(
     size_t                        message_bytes) {
   NaClLog(3,
           ("NaClReverseInterfaceDoPostMessage(0x%08"NACL_PRIxPTR", %s"
-           ", %08"NACL_PRIdS")\n"),
+           ", %08"NACL_PRIuS")\n"),
           (uintptr_t) self, message, message_bytes);
 }
 

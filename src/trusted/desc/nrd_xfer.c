@@ -87,7 +87,7 @@ int NaClDescInternalizeFromXferBuffer(
     return 0;
   }
   if (type_tag >= NACL_DESC_TYPE_MAX) {
-    NaClLog(4, ("illegal type tag %"NACL_PRIdS" (0x%"NACL_PRIxS")\n"),
+    NaClLog(4, ("illegal type tag %"NACL_PRIuS" (0x%"NACL_PRIxS")\n"),
             type_tag, type_tag);
     return -NACL_ABI_EIO;
   }
@@ -95,7 +95,7 @@ int NaClDescInternalizeFromXferBuffer(
                struct NaClDescQuotaInterface *)) NULL ==
       NaClDescInternalize[type_tag]) {
     NaClLog(LOG_FATAL,
-            "No internalization function for type %"NACL_PRIdS"\n",
+            "No internalization function for type %"NACL_PRIuS"\n",
             type_tag);
     /* fatal, but in case we change it later */
     return -NACL_ABI_EIO;
@@ -106,7 +106,7 @@ int NaClDescInternalizeFromXferBuffer(
 
   if (xfer_status != 0) {
     NaClLog(0,
-            "non-zero xfer_status %d, desc type tag %s (%"NACL_PRIdS")\n",
+            "non-zero xfer_status %d, desc type tag %s (%"NACL_PRIuS")\n",
             xfer_status,
             NaClDescTypeString(type_tag),
             type_tag);
@@ -276,7 +276,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     }
     if (sys_handles > NACL_ABI_IMC_DESC_MAX) {
       NaClLog(LOG_FATAL, ("User had %"NACL_PRIdNACL_SIZE" descriptors,"
-                          " which expanded into %"NACL_PRIdS
+                          " which expanded into %"NACL_PRIuS
                           "handles, more than"
                           " the max of %d.\n"),
               nitmhp->ndesc_length, sys_handles,
@@ -292,7 +292,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
      */
     if (sys_bytes > NACL_ABI_SIZE_T_MAX - sizeof *hdr) {
       NaClLog(LOG_FATAL, "NaClImcSendTypedMessage: "
-              "Buffer size overflow (%"NACL_PRIdS" bytes)",
+              "Buffer size overflow (%"NACL_PRIuS" bytes)",
               sys_bytes);
       retval = -NACL_ABI_EOVERFLOW;
       goto cleanup;
@@ -341,7 +341,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
       if (0 != retval) {
         NaClLog(4,
                 ("NaClImcSendTypedMessage: Externalize for"
-                 " descriptor %"NACL_PRIdS" returned %"NACL_PRIdS"\n"),
+                 " descriptor %"NACL_PRIuS" returned %"NACL_PRIdS"\n"),
                 i, retval);
         goto cleanup;
       }
@@ -546,9 +546,9 @@ ssize_t NaClImcRecvTypedMessage(
    */
   if ((size_t) total_recv_bytes < sizeof intern_hdr) {
     NaClLog(4, ("only received %"NACL_PRIdS" (0x%"NACL_PRIxS") bytes,"
-                " but internal header is %"NACL_PRIdS" (0x%"NACL_PRIxS
+                " but internal header is %"NACL_PRIuS" (0x%"NACL_PRIxS
                 ") bytes\n"),
-            total_recv_bytes, total_recv_bytes,
+            total_recv_bytes, (size_t) total_recv_bytes,
             sizeof intern_hdr, sizeof intern_hdr);
     retval = -NACL_ABI_EIO;
     goto cleanup;
@@ -571,14 +571,14 @@ ssize_t NaClImcRecvTypedMessage(
   }
   if ((size_t) total_recv_bytes < (intern_hdr.h.descriptor_data_bytes
                                    + sizeof intern_hdr)) {
-    NaClLog(4, ("internal header (size %"NACL_PRIdS" (0x%"NACL_PRIxS")) "
+    NaClLog(4, ("internal header (size %"NACL_PRIuS" (0x%"NACL_PRIxS")) "
                 "says there are "
                 "%d (0x%x) NRD xfer descriptor bytes, "
                 "but we received %"NACL_PRIdS" (0x%"NACL_PRIxS") bytes\n"),
             sizeof intern_hdr, sizeof intern_hdr,
             intern_hdr.h.descriptor_data_bytes,
             intern_hdr.h.descriptor_data_bytes,
-            total_recv_bytes, total_recv_bytes);
+            total_recv_bytes, (size_t) total_recv_bytes);
     retval = -NACL_ABI_EIO;
     goto cleanup;
   }

@@ -440,7 +440,7 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "RecvRequest:"
                 "NaClSrpcMessageChannelPeek incomplete: expected %"
-                NACL_PRIdS", got %"NACL_PRIdS"\n",
+                NACL_PRIuS", got %"NACL_PRIdS"\n",
                 expected_bytes,
                 retval);
     retval = ErrnoFromImcRet(retval);
@@ -482,7 +482,7 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "RecvRequest:"
                 " NaClSrpcMessageChannelReceive incomplete: expected %"
-                NACL_PRIdS", got %"NACL_PRIdS"\n",
+                NACL_PRIuS", got %"NACL_PRIdS"\n",
                 expected_bytes,
                 retval);
     retval = ErrnoFromImcRet(retval);
@@ -635,7 +635,7 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   if (retval < (ssize_t) expected_bytes) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "RecvResponse: NaClSrpcMessageChannelPeek incomplete: "
-                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                "expected %"NACL_PRIuS", got %"NACL_PRIdS"\n",
                 expected_bytes,
                 retval);
     retval = ErrnoFromImcRet(retval);
@@ -679,7 +679,7 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   if (retval < (ssize_t) expected_bytes) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "RecvResponse: NaClSrpcMessageChannelReceive incomplete: "
-                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                "expected %"NACL_PRIuS", got %"NACL_PRIdS"\n",
                 expected_bytes,
                 retval);
     retval = ErrnoFromImcRet(retval);
@@ -839,7 +839,7 @@ static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
   if (retval >= 0  && retval < (ssize_t) expected_bytes) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "SrpcSendMessage: NaClSrpcMessageChannelSend incomplete: "
-                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                "expected %"NACL_PRIuS", got %"NACL_PRIdS"\n",
                 expected_bytes,
                 retval);
     return -NACL_ABI_EIO;

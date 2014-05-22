@@ -16,11 +16,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
 
-static void handle_warning_en(const int en, const char *s) {
-  char errs[256];
-  NaClLog(LOG_WARNING, "%s: %s\n", s, strerror_r(en, errs, sizeof(errs)));
-}
-
 void NaClThreadNiceInit(void) {
 }
 
@@ -51,13 +46,11 @@ int nacl_thread_nice(int nacl_nice) {
       if (0 == setpriority(PRIO_PROCESS, 0, kNormalPriority)) {
         return 0;  /* success */
       }
-      handle_warning_en(errno, "setpriority\n");
       break;
     case NICE_BACKGROUND:
       if (0 == setpriority(PRIO_PROCESS, 0, kBackgroundPriority)) {
         return 0;  /* success */
       }
-      handle_warning_en(errno, "setpriority\n");
       break;
     default:
       NaClLog(LOG_WARNING, "nacl_thread_nice failed (bad nice value)\n");

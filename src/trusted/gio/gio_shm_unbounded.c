@@ -58,7 +58,7 @@ static ssize_t NaClGioShmUnboundedRead(struct Gio  *vself,
   got = (*self->ngsp->base.vtbl->Read)(&self->ngsp->base, buf, count);
   NaClLog(4,
           ("NaClGioShmUnboundedRead: got 0x%"NACL_PRIxS" bytes\n"),
-          got);
+          (size_t) got);
   if (-1 != got) {
     self->io_offset += (size_t) got;
   }
