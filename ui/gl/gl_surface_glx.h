@@ -76,6 +76,9 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   // Window passed in at creation. Always valid.
   gfx::AcceleratedWidget parent_window_;
 
+  // Child window, used to control resizes so that they're in-order with GL.
+  gfx::AcceleratedWidget window_;
+
   void* config_;
   gfx::Size size_;
 

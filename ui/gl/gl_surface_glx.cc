@@ -391,11 +391,12 @@ GLSurfaceGLX::~GLSurfaceGLX() {}
 
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
   : parent_window_(window),
+    window_(0),
     config_(NULL) {
 }
 
 gfx::AcceleratedWidget NativeViewGLSurfaceGLX::GetDrawableHandle() const {
-  return parent_window_;
+  return window_;
 }
 
 bool NativeViewGLSurfaceGLX::Initialize() {
@@ -406,8 +407,25 @@ bool NativeViewGLSurfaceGLX::Initialize() {
     return false;
   }
   size_ = gfx::Size(attributes.width, attributes.height);
+  // Create a child window, with a CopyFromParent visual (to avoid inducing
+  // extra blits in the driver), that we can resize exactly in Resize(),
+  // correctly ordered with GL, so that we don't have invalid transient states.
+  // See https://crbug.com/326995.
+  window_ = XCreateWindow(g_display,
+                          parent_window_,
+                          0,
+                          0,
+                          size_.width(),
+                          size_.height(),
+                          0,
+                          CopyFromParent,
+                          InputOutput,
+                          CopyFromParent,
+                          0,
+                          NULL);
+  XMapWindow(g_display, window_);
 
-  gfx::AcceleratedWidget window_for_vsync = parent_window_;
+  gfx::AcceleratedWidget window_for_vsync = window_;
 
   if (g_glx_oml_sync_control_supported)
     vsync_provider_.reset(new OMLSyncControlVSyncProvider(window_for_vsync));
@@ -418,10 +436,17 @@ bool NativeViewGLSurfaceGLX::Initialize() {
 }
 
 void NativeViewGLSurfaceGLX::Destroy() {
+  if (window_) {
+    XDestroyWindow(g_display, window_);
+    XFlush(g_display);
+  }
 }
 
 bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
   size_ = size;
+  glXWaitGL();
+  XResizeWindow(g_display, window_, size.width(), size.height());
+  glXWaitX();
   return true;
 }
 
@@ -467,10 +492,10 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
     XWindowAttributes attributes;
     if (!XGetWindowAttributes(
         g_display,
-        parent_window_,
+        window_,
         &attributes)) {
       LOG(ERROR) << "XGetWindowAttributes failed for window " <<
-          parent_window_ << ".";
+          window_ << ".";
       return NULL;
     }
 
@@ -524,6 +549,7 @@ VSyncProvider* NativeViewGLSurfaceGLX::GetVSyncProvider() {
 
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX()
   : parent_window_(0),
+    window_(0),
     config_(NULL) {
 }
 
