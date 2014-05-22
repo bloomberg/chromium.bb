@@ -51,7 +51,7 @@ TEST(ContentDescriptionTest, ParseUnknown) {
       ContentDescription::ParseXml(xml.get()));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->event_configs().size());
-  EXPECT_TRUE(parsed->config()->event_configs()[0] ==
+  EXPECT_TRUE(parsed->config()->event_configs().front() ==
               ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                             kDefaultStreamVersion,
                             ChannelConfig::CODEC_UNDEFINED));
@@ -74,7 +74,7 @@ TEST(ContentDescriptionTest, NoneTransport) {
       ContentDescription::ParseXml(xml.get()));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->audio_configs().size());
-  EXPECT_TRUE(parsed->config()->audio_configs()[0] == ChannelConfig());
+  EXPECT_TRUE(parsed->config()->audio_configs().front() == ChannelConfig());
 }
 
 // Verify that we can parse configs with none transport with version and
@@ -94,7 +94,7 @@ TEST(ContentDescriptionTest, NoneTransportWithCodec) {
       ContentDescription::ParseXml(xml.get()));
   ASSERT_TRUE(parsed.get());
   EXPECT_EQ(1U, parsed->config()->audio_configs().size());
-  EXPECT_TRUE(parsed->config()->audio_configs()[0] == ChannelConfig());
+  EXPECT_TRUE(parsed->config()->audio_configs().front() == ChannelConfig());
 }
 
 }  // namespace protocol

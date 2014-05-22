@@ -55,7 +55,7 @@ class ContentDescription : public cricket::ContentDescription {
                                   const char tag_name[],
                                   bool codec_required,
                                   bool optional,
-                                  std::vector<ChannelConfig>* const configs);
+                                  std::list<ChannelConfig>* const configs);
 };
 
 }  // namespace protocol

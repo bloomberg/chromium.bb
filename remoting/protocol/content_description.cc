@@ -145,7 +145,7 @@ XmlElement* ContentDescription::ToXml() const {
   XmlElement* root = new XmlElement(
       QName(kChromotingXmlNamespace, kDescriptionTag), true);
 
-  std::vector<ChannelConfig>::const_iterator it;
+  std::list<ChannelConfig>::const_iterator it;
 
   for (it = config()->control_configs().begin();
        it != config()->control_configs().end(); ++it) {
@@ -191,7 +191,7 @@ bool ContentDescription::ParseChannelConfigs(
     const char tag_name[],
     bool codec_required,
     bool optional,
-    std::vector<ChannelConfig>* const configs) {
+    std::list<ChannelConfig>* const configs) {
 
   QName tag(kChromotingXmlNamespace, tag_name);
   const XmlElement* child = element->FirstNamed(tag);

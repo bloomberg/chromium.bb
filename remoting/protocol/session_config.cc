@@ -129,12 +129,12 @@ bool CandidateSessionConfig::GetFinalConfig(SessionConfig* result) const {
 
 // static
 bool CandidateSessionConfig::SelectCommonChannelConfig(
-    const std::vector<ChannelConfig>& host_configs,
-    const std::vector<ChannelConfig>& client_configs,
+    const std::list<ChannelConfig>& host_configs,
+    const std::list<ChannelConfig>& client_configs,
     ChannelConfig* config) {
   // Usually each of these vectors will contain just several elements,
   // so iterating over all of them is not a problem.
-  std::vector<ChannelConfig>::const_iterator it;
+  std::list<ChannelConfig>::const_iterator it;
   for (it = client_configs.begin(); it != client_configs.end(); ++it) {
     if (IsChannelConfigSupported(host_configs, *it)) {
       *config = *it;
@@ -146,7 +146,7 @@ bool CandidateSessionConfig::SelectCommonChannelConfig(
 
 // static
 bool CandidateSessionConfig::IsChannelConfigSupported(
-    const std::vector<ChannelConfig>& vector,
+    const std::list<ChannelConfig>& vector,
     const ChannelConfig& value) {
   return std::find(vector.begin(), vector.end(), value) != vector.end();
 }
@@ -195,10 +195,6 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   result->mutable_video_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VP9));
-  result->mutable_video_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                    kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
 
   // Audio channel.
@@ -211,26 +207,16 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   return result.Pass();
 }
 
-// static
-void CandidateSessionConfig::DisableAudioChannel(
-    CandidateSessionConfig* config) {
-  config->mutable_audio_configs()->clear();
-  config->mutable_audio_configs()->push_back(ChannelConfig());
+void CandidateSessionConfig::DisableAudioChannel() {
+  mutable_audio_configs()->clear();
+  mutable_audio_configs()->push_back(ChannelConfig());
 }
 
-// static
-void CandidateSessionConfig::DisableVideoCodec(
-    CandidateSessionConfig* config,
-    ChannelConfig::Codec codec) {
-  std ::vector<ChannelConfig>::iterator i;
-  for (i = config->mutable_video_configs()->begin();
-       i != config->mutable_video_configs()->end();) {
-    if (i->codec == codec) {
-      i = config->mutable_video_configs()->erase(i);
-    } else {
-      ++i;
-    }
-  }
+void CandidateSessionConfig::EnableVideoCodec(ChannelConfig::Codec codec) {
+  mutable_video_configs()->push_front(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    codec));
 }
 
 }  // namespace protocol

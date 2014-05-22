@@ -92,15 +92,13 @@ ChromotingHost::ChromotingHost(
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
-  // Disable VP9 unless it is explicitly enabled via the command-line.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
-    protocol::CandidateSessionConfig::DisableVideoCodec(
-        protocol_config_.get(), protocol::ChannelConfig::CODEC_VP9);
+  // Enable VP9 if specified on the command-line.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
+    protocol_config_->EnableVideoCodec(protocol::ChannelConfig::CODEC_VP9);
   }
 
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
-    protocol::CandidateSessionConfig::DisableAudioChannel(
-        protocol_config_.get());
+    protocol_config_->DisableAudioChannel();
   }
 }
 

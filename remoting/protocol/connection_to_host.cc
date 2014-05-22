@@ -142,8 +142,9 @@ void ConnectionToHost::OnSessionManagerReady() {
   // After SessionManager is initialized we can try to connect to the host.
   scoped_ptr<CandidateSessionConfig> candidate_config =
       CandidateSessionConfig::CreateDefault();
-  if (!audio_stub_)
-    CandidateSessionConfig::DisableAudioChannel(candidate_config.get());
+  if (!audio_stub_) {
+    candidate_config->DisableAudioChannel();
+  }
 
   session_ = session_manager_->Connect(
       host_jid_, authenticator_.Pass(), candidate_config.Pass());

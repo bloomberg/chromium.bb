@@ -212,7 +212,7 @@ void It2MeHost::FinishConnect() {
   // TODO(sergeyu): Add UI to enable it.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
-  protocol::CandidateSessionConfig::DisableAudioChannel(protocol_config.get());
+  protocol_config->DisableAudioChannel();
 
   host_->set_protocol_config(protocol_config.Pass());
 
