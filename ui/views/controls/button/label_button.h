@@ -97,7 +97,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Creates the default border for this button. This can be overridden by
   // subclasses or by LinuxUI.
-  virtual scoped_ptr<Border> CreateDefaultBorder() const;
+  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const;
 
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();

@@ -266,8 +266,8 @@ const char* LabelButton::GetClassName() const {
   return kViewClassName;
 }
 
-scoped_ptr<Border> LabelButton::CreateDefaultBorder() const {
-  return scoped_ptr<Border>(new LabelButtonBorder(style_));
+scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
+  return scoped_ptr<LabelButtonBorder>(new LabelButtonBorder(style_));
 }
 
 void LabelButton::SetBorder(scoped_ptr<Border> border) {
@@ -360,16 +360,17 @@ void LabelButton::UpdateThemedBorder() {
   if (!border_is_themed_border_)
     return;
 
-  scoped_ptr<Border> label_button_border = CreateDefaultBorder();
+  scoped_ptr<LabelButtonBorder> label_button_border = CreateDefaultBorder();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    SetBorder(linux_ui->CreateNativeBorder(this, label_button_border.Pass()));
+    SetBorder(linux_ui->CreateNativeBorder(
+        this, label_button_border.PassAs<Border>()));
   } else
 #endif
   {
-    SetBorder(label_button_border.Pass());
+    SetBorder(label_button_border.PassAs<Border>());
   }
 
   border_is_themed_border_ = true;

@@ -72,9 +72,11 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
 }  // namespace
 
 Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
-                       views::LabelButton* owning_button)
+                       views::LabelButton* owning_button,
+                       scoped_ptr<views::Border> border)
     : gtk2_ui_(gtk2_ui),
       owning_button_(owning_button),
+      border_(border.Pass()),
       observer_manager_(this) {
   observer_manager_.Add(NativeThemeGtk2::instance());
 }
@@ -113,14 +115,11 @@ void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets Gtk2Border::GetInsets() const {
-  // On STYLE_TEXTUBTTON, we want the smaller insets so we can fit the GTK icon
-  // in the toolbar without cutting off the edges of the GTK image.
-  return gtk2_ui_->GetButtonInsets();
+  return border_->GetInsets();
 }
 
 gfx::Size Gtk2Border::GetMinimumSize() const {
-  gfx::Insets insets = GetInsets();
-  return gfx::Size(insets.width(), insets.height());
+  return border_->GetMinimumSize();
 }
 
 void Gtk2Border::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {

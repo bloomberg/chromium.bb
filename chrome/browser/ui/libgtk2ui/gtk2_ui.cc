@@ -559,7 +559,8 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
     return border.Pass();
 
-  return scoped_ptr<views::Border>(new Gtk2Border(this, owning_button));
+  return scoped_ptr<views::Border>(
+      new Gtk2Border(this, owning_button, border.Pass()));
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(
@@ -940,9 +941,6 @@ void Gtk2UI::LoadGtkValues() {
       GdkColorToSkColor(entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
       GdkColorToSkColor(entry_style->text[GTK_STATE_ACTIVE]);
-
-  // Update the insets that we hand to Gtk2Border.
-  UpdateButtonInsets();
 }
 
 GdkColor Gtk2UI::BuildFrameColors(GtkStyle* frame_style) {
@@ -1357,34 +1355,6 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
   gtk_widget_destroy(window);
 
   return border;
-}
-
-gfx::Insets Gtk2UI::GetButtonInsets() const {
-  return button_insets_;
-}
-
-void Gtk2UI::UpdateButtonInsets() {
-  GtkWidget* window = gtk_offscreen_window_new();
-  GtkWidget* button = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(window), button);
-
-  GtkBorder* border = NULL;
-  gtk_widget_style_get(GTK_WIDGET(button),
-                       "default-border",
-                       &border,
-                       NULL);
-
-  gfx::Insets insets;
-  if (border) {
-    button_insets_ = gfx::Insets(border->top, border->left,
-                                 border->bottom, border->right);
-    gtk_border_free(border);
-  } else {
-    // Defined in gtkbutton.c:
-    button_insets_ = gfx::Insets(1, 1, 1, 1);
-  }
-
-  gtk_widget_destroy(window);
 }
 
 void Gtk2UI::ClearAllThemeData() {

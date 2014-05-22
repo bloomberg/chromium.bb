@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
@@ -59,9 +58,6 @@ class Gtk2UI : public views::LinuxUI {
                                bool focused,
                                int width,
                                int height) const;
-
-  // Returns the current insets for a button.
-  gfx::Insets GetButtonInsets() const;
 
   // ui::LinuxInputMethodContextFactory:
   virtual scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
@@ -190,10 +186,6 @@ class Gtk2UI : public views::LinuxUI {
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
-  // Create a GTK window and button and queries what "default-border" is, which
-  // corresponds with our insets.
-  void UpdateButtonInsets();
-
   // Frees all calculated images and color data.
   void ClearAllThemeData();
 
@@ -228,8 +220,6 @@ class Gtk2UI : public views::LinuxUI {
   SkColor active_selection_fg_color_;
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
-
-  gfx::Insets button_insets_;
 
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will

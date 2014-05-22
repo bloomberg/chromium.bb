@@ -45,7 +45,7 @@ const char* BlueButton::GetClassName() const {
   return BlueButton::kViewClassName;
 }
 
-scoped_ptr<Border> BlueButton::CreateDefaultBorder() const {
+scoped_ptr<LabelButtonBorder> BlueButton::CreateDefaultBorder() const {
   // Insets for splitting the images.
   const gfx::Insets insets(5, 5, 5, 5);
   scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder(style()));
@@ -66,7 +66,7 @@ scoped_ptr<Border> BlueButton::CreateDefaultBorder() const {
       *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
   button_border->SetPainter(true, STATE_DISABLED, Painter::CreateImagePainter(
       *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
-  return button_border.PassAs<Border>();
+  return button_border.Pass();
 }
 
 }  // namespace views
