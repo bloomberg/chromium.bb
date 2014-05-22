@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/content/common/translate_messages.h"
+#include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -80,7 +81,7 @@ TranslateTabHelper::~TranslateTabHelper() {
 }
 
 LanguageState& TranslateTabHelper::GetLanguageState() {
-  return translate_driver_.GetLanguageState();
+  return translate_manager_->GetLanguageState();
 }
 
 // static
@@ -267,7 +268,7 @@ void TranslateTabHelper::NavigationEntryCommitted(
   }
 
   if (!load_details.is_main_frame &&
-      translate_driver_.GetLanguageState().translation_declined()) {
+      GetLanguageState().translation_declined()) {
     // Some sites (such as Google map) may trigger sub-frame navigations
     // when the user interacts with the page.  We don't want to show a new
     // infobar if the user already dismissed one in that case.
@@ -280,7 +281,7 @@ void TranslateTabHelper::NavigationEntryCommitted(
     return;
   }
 
-  if (!translate_driver_.GetLanguageState().page_needs_translation())
+  if (!GetLanguageState().page_needs_translation())
     return;
 
   // Note that we delay it as the ordering of the processing of this callback
@@ -291,7 +292,7 @@ void TranslateTabHelper::NavigationEntryCommitted(
       FROM_HERE,
       base::Bind(&TranslateTabHelper::InitiateTranslation,
                  weak_pointer_factory_.GetWeakPtr(),
-                 translate_driver_.GetLanguageState().original_language(),
+                 GetLanguageState().original_language(),
                  0));
 }
 
@@ -299,7 +300,11 @@ void TranslateTabHelper::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Let the LanguageState clear its state.
-  translate_driver_.DidNavigate(details);
+    const bool reload =
+        details.entry->GetTransitionType() == content::PAGE_TRANSITION_RELOAD ||
+        details.type == content::NAVIGATION_TYPE_SAME_PAGE;
+    GetLanguageState().DidNavigate(
+        details.is_in_page, details.is_main_frame, reload);
 }
 
 void TranslateTabHelper::WebContentsDestroyed() {
@@ -445,7 +450,7 @@ void TranslateTabHelper::HandleCLDDataRequest() {
 
 void TranslateTabHelper::InitiateTranslation(const std::string& page_lang,
                                              int attempt) {
-  if (translate_driver_.GetLanguageState().translation_pending())
+  if (GetLanguageState().translation_pending())
     return;
 
   // During a reload we need web content to be available before the
@@ -471,7 +476,7 @@ void TranslateTabHelper::InitiateTranslation(const std::string& page_lang,
 void TranslateTabHelper::OnLanguageDetermined(
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
-  translate_driver_.GetLanguageState().LanguageDetermined(
+  GetLanguageState().LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
   if (web_contents())

@@ -103,7 +103,7 @@ void TranslateUIDelegate::OnErrorShown(TranslateErrors::Type error_type) {
 }
 
 const LanguageState& TranslateUIDelegate::GetLanguageState() {
-  return translate_driver_->GetLanguageState();
+  return translate_manager_->GetLanguageState();
 }
 
 size_t TranslateUIDelegate::GetNumberOfLanguages() const {
@@ -185,7 +185,7 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   // translations when getting a LANGUAGE_DETERMINED from the page, which
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
-  translate_driver_->GetLanguageState().set_translation_declined(true);
+  translate_manager_->GetLanguageState().set_translation_declined(true);
 
   UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
 
@@ -200,7 +200,7 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
+    translate_manager_->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
   }
@@ -220,7 +220,7 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 
   if (value) {
     prefs_->BlacklistSite(host);
-    translate_driver_->GetLanguageState().SetTranslateEnabled(false);
+    translate_manager_->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->RemoveSiteFromBlacklist(host);
   }

@@ -38,6 +38,7 @@ class ScopedCLDDynamicDataHarness;
 }  // namespace test
 
 struct LanguageDetectionDetails;
+class LanguageState;
 class PrefService;
 class TranslateAcceptLanguages;
 class TranslatePrefs;
