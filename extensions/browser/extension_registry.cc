@@ -53,6 +53,18 @@ void ExtensionRegistry::TriggerOnUnloaded(
                     OnExtensionUnloaded(browser_context_, extension, reason));
 }
 
+void ExtensionRegistry::TriggerOnWillBeInstalled(const Extension* extension,
+                                                 bool is_update,
+                                                 const std::string& old_name) {
+  DCHECK(is_update ==
+         GenerateInstalledExtensionsSet()->Contains(extension->id()));
+  DCHECK(is_update == !old_name.empty());
+  FOR_EACH_OBSERVER(ExtensionRegistryObserver,
+                    observers_,
+                    OnExtensionWillBeInstalled(
+                        browser_context_, extension, is_update, old_name));
+}
+
 const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
                                                      int include_mask) const {
   std::string lowercase_id = StringToLowerASCII(id);

@@ -21,8 +21,6 @@ InstallTracker::InstallTracker(Profile* profile,
     : extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-      content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile));
   registrar_.Add(this,
@@ -95,31 +93,10 @@ void InstallTracker::Shutdown() {
   FOR_EACH_OBSERVER(InstallObserver, observers_, OnShutdown());
 }
 
-void InstallTracker::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                       const Extension* extension) {
-  FOR_EACH_OBSERVER(InstallObserver, observers_, OnExtensionLoaded(extension));
-}
-
-void InstallTracker::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
-  FOR_EACH_OBSERVER(
-      InstallObserver, observers_, OnExtensionUnloaded(extension));
-}
-
 void InstallTracker::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details).ptr()->
-              extension;
-      FOR_EACH_OBSERVER(InstallObserver, observers_,
-                        OnExtensionInstalled(extension));
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
@@ -149,6 +126,28 @@ void InstallTracker::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void InstallTracker::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
+  FOR_EACH_OBSERVER(InstallObserver, observers_, OnExtensionLoaded(extension));
+}
+
+void InstallTracker::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnExtensionUnloaded(extension));
+}
+
+void InstallTracker::OnExtensionWillBeInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update,
+    const std::string& old_name) {
+  FOR_EACH_OBSERVER(
+      InstallObserver, observers_, OnExtensionInstalled(extension));
 }
 
 void InstallTracker::OnAppsReordered() {

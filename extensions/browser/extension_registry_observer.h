@@ -33,6 +33,21 @@ class ExtensionRegistryObserver {
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionInfo::Reason reason) {}
+
+  // Called when |extension| is about to be installed. |is_update| is true if
+  // the installation is the result of it updating, in which case |old_name| is
+  // the name of the extension's previous version.
+  // The ExtensionRegistry will not be tracking |extension| at the time this
+  // event is fired, but will be immediately afterwards (note: not necessarily
+  // enabled; it might be installed in the disabled or even blacklisted sets,
+  // for example).
+  // Note that it's much more common to care about extensions being loaded
+  // (OnExtensionLoaded).
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      const std::string& old_name) {}
 };
 
 }  // namespace extensions

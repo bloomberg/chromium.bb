@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_util.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/test_util.h"
@@ -37,10 +38,12 @@ class TestObserver : public ExtensionRegistryObserver {
   void Reset() {
     loaded_.clear();
     unloaded_.clear();
+    installed_.clear();
   }
 
   const ExtensionList& loaded() { return loaded_; }
   const ExtensionList& unloaded() { return unloaded_; }
+  const ExtensionList& installed() { return installed_; }
 
  private:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -55,8 +58,17 @@ class TestObserver : public ExtensionRegistryObserver {
     unloaded_.push_back(extension);
   }
 
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      const std::string& old_name) OVERRIDE {
+    installed_.push_back(extension);
+  }
+
   ExtensionList loaded_;
   ExtensionList unloaded_;
+  ExtensionList installed_;
 };
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
@@ -215,12 +227,18 @@ TEST_F(ExtensionRegistryTest, Observer) {
 
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(observer.unloaded().empty());
+  EXPECT_TRUE(observer.installed().empty());
 
   scoped_refptr<const Extension> extension =
       test_util::CreateExtensionWithID("id");
 
+  registry.TriggerOnWillBeInstalled(extension, false, base::EmptyString());
+  EXPECT_TRUE(HasSingleExtension(observer.installed(), extension.get()));
+
   registry.AddEnabled(extension);
   registry.TriggerOnLoaded(extension);
+
+  registry.TriggerOnWillBeInstalled(extension, true, "foo");
 
   EXPECT_TRUE(HasSingleExtension(observer.loaded(), extension.get()));
   EXPECT_TRUE(observer.unloaded().empty());

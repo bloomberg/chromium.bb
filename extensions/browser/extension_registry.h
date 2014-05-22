@@ -74,6 +74,14 @@ class ExtensionRegistry : public KeyedService {
   void TriggerOnUnloaded(const Extension* extension,
                          UnloadedExtensionInfo::Reason reason);
 
+  // If this is a fresh install then |is_update| is false and there must not be
+  // any installed extension with |extension|'s ID. If this is an update then
+  // |is_update| is true and must be an installed extension with |extension|'s
+  // ID, and |old_name| must be non-empty.
+  void TriggerOnWillBeInstalled(const Extension* extension,
+                                bool is_update,
+                                const std::string& old_name);
+
   // Find an extension by ID using |include_mask| to pick the sets to search:
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
   //  * disabled_extensions()    --> ExtensionRegistry::DISABLED

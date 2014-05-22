@@ -53,7 +53,7 @@ class InstallTracker : public KeyedService,
  private:
   void OnAppsReordered();
 
-  // content::NotificationObserver.
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -65,12 +65,16 @@ class InstallTracker : public KeyedService,
       content::BrowserContext* browser_context,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      bool is_update,
+      const std::string& old_name) OVERRIDE;
 
   ObserverList<InstallObserver> observers_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 

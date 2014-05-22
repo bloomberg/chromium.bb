@@ -1935,6 +1935,9 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 
+  ExtensionRegistry::Get(profile_)
+      ->TriggerOnWillBeInstalled(extension, is_update, old_name);
+
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 
   // Unpacked extensions default to allowing file access, but if that has been
