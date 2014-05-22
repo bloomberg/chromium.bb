@@ -105,10 +105,14 @@ IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
                     int /* New start offset */,
                     int /* New end offset */)
 
+// Determine the accessibility object under a given point and reply with
+// a AccessibilityHostMsg_HitTestResult with the same id.
+IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,
+                    gfx::Point /* location to test */);
+
 // Tells the render view that a AccessibilityHostMsg_Events
 // message was processed and it can send addition events.
 IPC_MESSAGE_ROUTED0(AccessibilityMsg_Events_ACK)
-
 
 // Kill the renderer because we got a fatal error in the accessibility tree.
 IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)

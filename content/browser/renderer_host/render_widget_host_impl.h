@@ -190,6 +190,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual gfx::Rect AccessibilityGetViewBounds() const OVERRIDE;
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds)
       const OVERRIDE;
+  virtual void AccessibilityHitTest(const gfx::Point& point) OVERRIDE;
   virtual void AccessibilityFatalError() OVERRIDE;
 
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;

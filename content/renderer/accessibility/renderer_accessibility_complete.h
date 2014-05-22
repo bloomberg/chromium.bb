@@ -70,6 +70,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
   void OnSetFocus(int acc_obj_id);
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
+  void OnHitTest(gfx::Point point);
   void OnFatalError();
 
   // So we can queue up tasks to be executed later.

@@ -86,6 +86,7 @@ class TestBrowserAccessibilityDelegate
       const gfx::Rect& bounds) const OVERRIDE {
     return gfx::Point();
   }
+  virtual void AccessibilityHitTest(const gfx::Point& point) OVERRIDE {}
   virtual void AccessibilityFatalError() OVERRIDE {
     got_fatal_error_ = true;
   }

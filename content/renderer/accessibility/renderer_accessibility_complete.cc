@@ -73,6 +73,7 @@ bool RendererAccessibilityComplete::OnMessageReceived(
                         OnScrollToPoint)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection,
                         OnSetTextSelection)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -341,6 +342,19 @@ void RendererAccessibilityComplete::OnSetTextSelection(
     if (input_element && input_element->isTextField())
       input_element->setSelectionRange(start_offset, end_offset);
   }
+}
+
+void RendererAccessibilityComplete::OnHitTest(gfx::Point point) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+  WebAXObject root_obj = document.accessibilityObject();
+  if (!root_obj.updateBackingStoreAndCheckValidity())
+    return;
+
+  WebAXObject obj = root_obj.hitTest(point);
+  if (!obj.isDetached())
+    HandleAXEvent(obj, ui::AX_EVENT_HOVER);
 }
 
 void RendererAccessibilityComplete::OnEventsAck() {

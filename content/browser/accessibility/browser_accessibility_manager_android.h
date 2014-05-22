@@ -43,7 +43,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // Tree methods.
   jint GetRootId(JNIEnv* env, jobject obj);
   jboolean IsNodeValid(JNIEnv* env, jobject obj, jint id);
-  jint HitTest(JNIEnv* env, jobject obj, jint x, jint y);
+  void HitTest(JNIEnv* env, jobject obj, jint x, jint y);
 
   // Populate Java accessibility data structures with info about a node.
   jboolean PopulateAccessibilityNodeInfo(
@@ -83,18 +83,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // ContentViewCore.
   JavaObjectWeakGlobalRef java_ref_;
 
-  // Searches through the children of start_node to find the nearest
-  // accessibility focus candidate for a touch which has not landed directly on
-  // an accessibility focus candidate.
-  BrowserAccessibility* FuzzyHitTest(
-      int x, int y, BrowserAccessibility* start_node);
-
-  static void FuzzyHitTestImpl(int x, int y, BrowserAccessibility* start_node,
-      BrowserAccessibility** nearest_candidate, int* min_distance);
-
-  // Calculates the distance from the point (x, y) to the nearest point on the
-  // edge of |node|.
-  static int CalculateDistanceSquared(int x, int y, BrowserAccessibility* node);
+  // Handle a hover event from the renderer process.
+  void HandleHoverEvent(BrowserAccessibility* node);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerAndroid);
 };

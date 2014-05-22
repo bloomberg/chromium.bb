@@ -40,9 +40,13 @@ class AccessibilityNotificationWaiter {
   // the tree of accessibility nodes received from the renderer process.
   const ui::AXTree& GetAXTree() const;
 
+  // After WaitForNotification returns, use this to retrieve the id of the
+  // node that was the target of the event.
+  int event_target_id() { return event_target_id_; }
+
  private:
   // Callback from RenderViewHostImpl.
-  void OnAccessibilityEvent(ui::AXEvent event);
+  void OnAccessibilityEvent(ui::AXEvent event, int event_target_id);
 
   // Helper function to determine if the accessibility tree in
   // GetAXTree() is about the page with the url "about:blank".
@@ -53,6 +57,7 @@ class AccessibilityNotificationWaiter {
   ui::AXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
+  int event_target_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNotificationWaiter);
 };

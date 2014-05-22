@@ -248,18 +248,12 @@ public class BrowserAccessibilityManager {
         float y = event.getY();
 
         // Convert to CSS coordinates.
-        int cssX = (int) (mRenderCoordinates.fromPixToLocalCss(x) +
-                          mRenderCoordinates.getScrollX());
-        int cssY = (int) (mRenderCoordinates.fromPixToLocalCss(y) +
-                          mRenderCoordinates.getScrollY());
-        int id = nativeHitTest(mNativeObj, cssX, cssY);
-        if (mLastHoverId != id) {
-            // Always send the ENTER and then the EXIT event, to match a standard Android View.
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-            sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
-            mLastHoverId = id;
-        }
+        int cssX = (int) (mRenderCoordinates.fromPixToLocalCss(x));
+        int cssY = (int) (mRenderCoordinates.fromPixToLocalCss(y));
 
+        // This sends an IPC to the render process to do the hit testing.
+        // The response is handled by handleHover.
+        nativeHitTest(mNativeObj, cssX, cssY);
         return true;
     }
 
@@ -438,6 +432,16 @@ public class BrowserAccessibilityManager {
 
         mAccessibilityFocusId = id;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+    }
+
+    @CalledByNative
+    private void handleHover(int id) {
+        if (mLastHoverId == id) return;
+
+        // Always send the ENTER and then the EXIT event, to match a standard Android View.
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+        sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+        mLastHoverId = id;
     }
 
     @CalledByNative
@@ -682,7 +686,7 @@ public class BrowserAccessibilityManager {
 
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
     private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);
-    private native int nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
+    private native void nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
         long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
     private native boolean nativePopulateAccessibilityEvent(

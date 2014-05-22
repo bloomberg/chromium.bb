@@ -2021,6 +2021,10 @@ gfx::Point RenderWidgetHostImpl::AccessibilityOriginInScreen(
   return view_->AccessibilityOriginInScreen(bounds);
 }
 
+void RenderWidgetHostImpl::AccessibilityHitTest(const gfx::Point& point) {
+  Send(new AccessibilityMsg_HitTest(GetRoutingID(), point));
+}
+
 void RenderWidgetHostImpl::AccessibilityFatalError() {
   Send(new AccessibilityMsg_FatalError(GetRoutingID()));
   view_->SetBrowserAccessibilityManager(NULL);

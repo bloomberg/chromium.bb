@@ -15,6 +15,7 @@
     children_changed,
     focus,
     hide,
+    hover,
     invalid_status_changed,
     layout_complete,
     live_region_changed,

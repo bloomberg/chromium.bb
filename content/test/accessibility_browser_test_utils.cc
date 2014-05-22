@@ -23,7 +23,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(Shell* shell)
     : shell_(shell),
       event_to_wait_for_(ui::AX_EVENT_NONE),
       loop_runner_(new MessageLoopRunner()),
-      weak_factory_(this) {
+      weak_factory_(this),
+      event_target_id_(0) {
   WebContents* web_contents = shell_->web_contents();
   view_host_ = static_cast<RenderViewHostImpl*>(
       web_contents->GetRenderViewHost());
@@ -39,7 +40,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : shell_(shell),
       event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
-      weak_factory_(this) {
+      weak_factory_(this),
+      event_target_id_(0) {
   WebContents* web_contents = shell_->web_contents();
   view_host_ = static_cast<RenderViewHostImpl*>(
       web_contents->GetRenderViewHost());
@@ -61,9 +63,10 @@ const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(
-    ui::AXEvent event_type) {
+    ui::AXEvent event_type, int event_target_id) {
   if (!IsAboutBlank() && (event_to_wait_for_ == ui::AX_EVENT_NONE ||
                           event_to_wait_for_ == event_type)) {
+    event_target_id_ = event_target_id;
     loop_runner_->Quit();
   }
 }

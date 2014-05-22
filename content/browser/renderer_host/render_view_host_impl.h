@@ -412,7 +412,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using accessibility_tree_for_testing().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(ui::AXEvent)>& callback);
+      const base::Callback<void(ui::AXEvent, int)>& callback);
 
   // Only valid if SetAccessibilityCallbackForTesting was called and
   // the callback was run at least once. Returns a snapshot of the
@@ -610,7 +610,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool unload_ack_is_for_cross_site_transition_;
 
   // Accessibility callback for testing.
-  base::Callback<void(ui::AXEvent)> accessibility_testing_callback_;
+  base::Callback<void(ui::AXEvent, int)> accessibility_testing_callback_;
 
   // The most recently received accessibility tree - for testing only.
   scoped_ptr<ui::AXTree> ax_tree_;

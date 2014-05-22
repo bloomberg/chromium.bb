@@ -33,11 +33,6 @@ enum AndroidHtmlElementType {
   HTML_ELEMENT_TYPE_ANY
 };
 
-// Restricts |val| to the range [min, max].
-int Clamp(int val, int min, int max) {
-  return std::min(std::max(val, min), max);
-}
-
 // These are special unofficial strings sent from TalkBack/BrailleBack
 // to jump to certain categories of web elements.
 AndroidHtmlElementType HtmlElementTypeFromString(base::string16 element_type) {
@@ -127,6 +122,11 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (event_type == ui::AX_EVENT_HIDE)
     return;
 
+  if (event_type == ui::AX_EVENT_HOVER) {
+    HandleHoverEvent(node);
+    return;
+  }
+
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
@@ -196,25 +196,10 @@ jboolean BrowserAccessibilityManagerAndroid::IsNodeValid(
   return GetFromID(id) != NULL;
 }
 
-jint BrowserAccessibilityManagerAndroid::HitTest(
+void BrowserAccessibilityManagerAndroid::HitTest(
     JNIEnv* env, jobject obj, jint x, jint y) {
-  BrowserAccessibilityAndroid* result =
-      static_cast<BrowserAccessibilityAndroid*>(
-          GetRoot()->BrowserAccessibilityForPoint(gfx::Point(x, y)));
-
-  if (!result)
-    return GetRoot()->GetId();
-
-  if (result->IsFocusable())
-    return result->GetId();
-
-  // Examine the children of |result| to find the nearest accessibility focus
-  // candidate
-  BrowserAccessibility* nearest_node = FuzzyHitTest(x, y, result);
-  if (nearest_node)
-    return nearest_node->GetId();
-
-  return GetRoot()->GetId();
+  if (delegate())
+    delegate()->AccessibilityHitTest(gfx::Point(x, y));
 }
 
 jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
@@ -416,55 +401,27 @@ void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
     ScrollToMakeVisible(*node, gfx::Rect(node->GetLocation().size()));
 }
 
-BrowserAccessibility* BrowserAccessibilityManagerAndroid::FuzzyHitTest(
-    int x, int y, BrowserAccessibility* start_node) {
-  BrowserAccessibility* nearest_node = NULL;
-  int min_distance = INT_MAX;
-  FuzzyHitTestImpl(x, y, start_node, &nearest_node, &min_distance);
-  return nearest_node;
-}
-
-// static
-void BrowserAccessibilityManagerAndroid::FuzzyHitTestImpl(
-    int x, int y, BrowserAccessibility* start_node,
-    BrowserAccessibility** nearest_candidate, int* nearest_distance) {
-  BrowserAccessibilityAndroid* node =
-      static_cast<BrowserAccessibilityAndroid*>(start_node);
-  int distance = CalculateDistanceSquared(x, y, node);
-
-  if (node->IsFocusable()) {
-    if (distance < *nearest_distance) {
-      *nearest_candidate = node;
-      *nearest_distance = distance;
-    }
-    // Don't examine any more children of focusable node
-    // TODO(aboxhall): what about focusable children?
+void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
+    BrowserAccessibility* node) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
     return;
-  }
 
-  if (!node->GetText().empty()) {
-    if (distance < *nearest_distance) {
-      *nearest_candidate = node;
-      *nearest_distance = distance;
+  BrowserAccessibilityAndroid* ancestor =
+      static_cast<BrowserAccessibilityAndroid*>(node->GetParent());
+  while (ancestor) {
+    if (ancestor->PlatformIsLeaf() ||
+        (ancestor->IsFocusable() && !ancestor->HasFocusableChild())) {
+      node = ancestor;
+      // Don't break - we want the highest ancestor that's focusable or a
+      // leaf node.
     }
-    return;
+    ancestor = static_cast<BrowserAccessibilityAndroid*>(ancestor->GetParent());
   }
 
-  for (uint32 i = 0; i < node->PlatformChildCount(); i++) {
-    BrowserAccessibility* child = node->PlatformGetChild(i);
-    FuzzyHitTestImpl(x, y, child, nearest_candidate, nearest_distance);
-  }
-}
-
-// static
-int BrowserAccessibilityManagerAndroid::CalculateDistanceSquared(
-    int x, int y, BrowserAccessibility* node) {
-  gfx::Rect node_bounds = node->GetLocalBoundsRect();
-  int nearest_x = Clamp(x, node_bounds.x(), node_bounds.right());
-  int nearest_y = Clamp(y, node_bounds.y(), node_bounds.bottom());
-  int dx = std::abs(x - nearest_x);
-  int dy = std::abs(y - nearest_y);
-  return dx * dx + dy * dy;
+  Java_BrowserAccessibilityManager_handleHover(
+      env, obj.obj(), node->GetId());
 }
 
 jint BrowserAccessibilityManagerAndroid::FindElementType(

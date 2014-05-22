@@ -40,6 +40,8 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   bool CanOpenPopup() const;
 
+  bool HasFocusableChild() const;
+
   const char* GetClassName() const;
   base::string16 GetText() const;
 
@@ -82,7 +84,6 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   BrowserAccessibilityAndroid();
 
-  bool HasFocusableChild() const;
   bool HasOnlyStaticTextChildren() const;
   bool IsIframe() const;
 

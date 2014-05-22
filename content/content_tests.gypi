@@ -1078,6 +1078,7 @@
             'app/mojo/mojo_browsertest.cc',
             'browser/accessibility/accessibility_mode_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
+            'browser/accessibility/android_hit_testing_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
             'browser/compositor/image_transport_factory_browsertest.cc',
@@ -1218,6 +1219,11 @@
               'sources!': [
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
               ],
+            }],
+            ['OS!="android"', {
+              'sources!': [
+                'browser/accessibility/android_hit_testing_browsertest.cc',
+              ]
             }],
             ['OS=="android"', {
               'sources': [

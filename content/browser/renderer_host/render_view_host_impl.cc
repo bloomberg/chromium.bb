@@ -1464,7 +1464,7 @@ void RenderViewHostImpl::DisownOpener() {
 }
 
 void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(ui::AXEvent)>& callback) {
+    const base::Callback<void(ui::AXEvent, int)>& callback) {
   accessibility_testing_callback_ = callback;
 }
 
@@ -1575,7 +1575,7 @@ void RenderViewHostImpl::OnAccessibilityEvents(
       ax_tree_.reset(new ui::AXTree(param.update));
     else
       CHECK(ax_tree_->Unserialize(param.update)) << ax_tree_->error();
-    accessibility_testing_callback_.Run(param.event_type);
+    accessibility_testing_callback_.Run(param.event_type, param.id);
   }
 }
 
