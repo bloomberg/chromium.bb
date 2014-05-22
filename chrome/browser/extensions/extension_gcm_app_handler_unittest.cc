@@ -170,8 +170,12 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
       content::BrowserContext* context) {
     return new gcm::GCMProfileService(
         Profile::FromBrowserContext(context),
-        scoped_ptr<gcm::GCMClientFactory>(
-            new gcm::FakeGCMClientFactory(gcm::FakeGCMClient::NO_DELAY_START)));
+        scoped_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
+            gcm::FakeGCMClient::NO_DELAY_START,
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::UI),
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::IO))));
   }
 
   ExtensionGCMAppHandlerTest()

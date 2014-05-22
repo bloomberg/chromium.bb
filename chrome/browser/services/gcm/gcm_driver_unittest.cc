@@ -9,14 +9,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -41,15 +43,6 @@ void PumpCurrentLoop() {
 
 void PumpUILoop() {
   PumpCurrentLoop();
-}
-
-void PumpIOLoop() {
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                           FROM_HERE,
-                                           base::Bind(&PumpCurrentLoop),
-                                           run_loop.QuitClosure());
-  run_loop.Run();
 }
 
 std::vector<std::string> ToSenderList(const std::string& sender_ids) {
@@ -178,6 +171,8 @@ class GCMDriverTest : public testing::Test {
     return unregistration_result_;
   }
 
+  void PumpIOLoop();
+
   void ClearResults();
 
   bool HasAppHandlers() const;
@@ -205,11 +200,13 @@ class GCMDriverTest : public testing::Test {
   void SendCompleted(const std::string& message_id, GCMClient::Result result);
   void UnregisterCompleted(GCMClient::Result result);
 
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   base::ScopedTempDir temp_dir_;
   FakeOAuth2TokenService token_service_;
   scoped_ptr<FakeIdentityProvider> identity_provider_owner_;
   FakeIdentityProvider* identity_provider_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::MessageLoopForUI message_loop_;
+  base::Thread io_thread_;
   scoped_ptr<GCMDriver> driver_;
   scoped_ptr<FakeGCMAppHandler> gcm_app_handler_;
 
@@ -226,6 +223,8 @@ class GCMDriverTest : public testing::Test {
 
 GCMDriverTest::GCMDriverTest()
     : identity_provider_(NULL),
+      task_runner_(new base::TestSimpleTaskRunner()),
+      io_thread_("IOThread"),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR),
       unregistration_result_(GCMClient::UNKNOWN_ERROR) {
@@ -237,8 +236,7 @@ GCMDriverTest::~GCMDriverTest() {
 }
 
 void GCMDriverTest::SetUp() {
-  thread_bundle_.reset(new content::TestBrowserThreadBundle(
-      content::TestBrowserThreadBundle::REAL_IO_THREAD));
+  io_thread_.Start();
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 
@@ -249,6 +247,17 @@ void GCMDriverTest::TearDown() {
   driver_->Shutdown();
   driver_.reset();
   PumpIOLoop();
+
+  io_thread_.Stop();
+}
+
+void GCMDriverTest::PumpIOLoop() {
+  base::RunLoop run_loop;
+  io_thread_.message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&PumpCurrentLoop),
+      run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void GCMDriverTest::ClearResults() {
@@ -272,15 +281,18 @@ FakeGCMClient* GCMDriverTest::GetGCMClient() {
 void GCMDriverTest::CreateDriver(
     FakeGCMClient::StartMode gcm_client_start_mode) {
   scoped_refptr<net::URLRequestContextGetter> request_context =
-      new net::TestURLRequestContextGetter(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO));
+      new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
   driver_.reset(new GCMDriver(
       scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
-          gcm_client_start_mode)).Pass(),
+          gcm_client_start_mode,
+          base::MessageLoopProxy::current(),
+          io_thread_.message_loop_proxy())).Pass(),
       identity_provider_owner_.PassAs<IdentityProvider>(),
       temp_dir_.path(),
-      request_context));
+      request_context,
+      base::MessageLoopProxy::current(),
+      io_thread_.message_loop_proxy(),
+      task_runner_));
 
   gcm_app_handler_.reset(new FakeGCMAppHandler);
   driver_->AddAppHandler(kTestAppID1, gcm_app_handler_.get());

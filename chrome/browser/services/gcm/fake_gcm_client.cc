@@ -7,17 +7,22 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gcm/base/encryptor.h"
 
 namespace gcm {
 
-FakeGCMClient::FakeGCMClient(StartMode start_mode)
+FakeGCMClient::FakeGCMClient(
+    StartMode start_mode,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& io_thread)
     : delegate_(NULL),
       status_(UNINITIALIZED),
       start_mode_(start_mode),
+      ui_thread_(ui_thread),
+      io_thread_(io_thread),
       weak_ptr_factory_(this) {
 }
 
@@ -37,7 +42,7 @@ void FakeGCMClient::Initialize(
 }
 
 void FakeGCMClient::Start() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
   DCHECK_NE(STARTED, status_);
 
   if (start_mode_ == DELAY_START)
@@ -54,18 +59,18 @@ void FakeGCMClient::DoLoading() {
 }
 
 void FakeGCMClient::Stop() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
   status_ = STOPPED;
 }
 
 void FakeGCMClient::CheckOut() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
   status_ = CHECKED_OUT;
 }
 
 void FakeGCMClient::Register(const std::string& app_id,
                              const std::vector<std::string>& sender_ids) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   std::string registration_id = GetRegistrationIdFromSenderIds(sender_ids);
   base::MessageLoop::current()->PostTask(
@@ -77,7 +82,7 @@ void FakeGCMClient::Register(const std::string& app_id,
 }
 
 void FakeGCMClient::Unregister(const std::string& app_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -89,7 +94,7 @@ void FakeGCMClient::Unregister(const std::string& app_id) {
 void FakeGCMClient::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -110,20 +115,18 @@ GCMClient::GCMStatistics FakeGCMClient::GetStatistics() const {
 }
 
 void FakeGCMClient::PerformDelayedLoading() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
+  io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::DoLoading, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeGCMClient::ReceiveMessage(const std::string& app_id,
                                    const IncomingMessage& message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
+  io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::MessageReceived,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -132,10 +135,9 @@ void FakeGCMClient::ReceiveMessage(const std::string& app_id,
 }
 
 void FakeGCMClient::DeleteMessages(const std::string& app_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
+  io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::MessagesDeleted,
                  weak_ptr_factory_.GetWeakPtr(),

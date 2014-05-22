@@ -19,6 +19,7 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -81,6 +82,13 @@ GCMProfileService::GCMProfileService(
     : profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
 #if defined(OS_ANDROID)
   LoginUIService* login_ui_service = NULL;
 #else
@@ -94,7 +102,12 @@ GCMProfileService::GCMProfileService(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
           login_ui_service)),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
-      profile_->GetRequestContext()));
+      profile_->GetRequestContext(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO),
+      blocking_task_runner));
 }
 
 GCMProfileService::GCMProfileService() : profile_(NULL) {

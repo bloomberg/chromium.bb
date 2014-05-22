@@ -21,6 +21,7 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,8 +37,12 @@ const char kUserID[] = "user";
 KeyedService* BuildGCMProfileService(content::BrowserContext* context) {
   return new GCMProfileService(
       Profile::FromBrowserContext(context),
-      scoped_ptr<GCMClientFactory>(
-          new FakeGCMClientFactory(FakeGCMClient::NO_DELAY_START)));
+      scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
+          FakeGCMClient::NO_DELAY_START,
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::UI),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO))));
 }
 
 }  // namespace

@@ -9,6 +9,10 @@
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/gcm_client.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace gcm {
 
 class FakeGCMClient : public GCMClient {
@@ -25,7 +29,9 @@ class FakeGCMClient : public GCMClient {
     DELAY_START,
   };
 
-  explicit FakeGCMClient(StartMode start_mode);
+  FakeGCMClient(StartMode start_mode,
+                const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+                const scoped_refptr<base::SequencedTaskRunner>& io_thread);
   virtual ~FakeGCMClient();
 
   // Overridden from GCMClient:
@@ -84,6 +90,8 @@ class FakeGCMClient : public GCMClient {
   Delegate* delegate_;
   Status status_;
   StartMode start_mode_;
+  scoped_refptr<base::SequencedTaskRunner> ui_thread_;
+  scoped_refptr<base::SequencedTaskRunner> io_thread_;
   base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClient);

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/default_gcm_app_handler.h"
@@ -20,6 +21,7 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace extensions {
@@ -47,10 +49,14 @@ class GCMDriver : public IdentityProvider::Observer {
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       GetGCMStatisticsCallback;
 
-  GCMDriver(scoped_ptr<GCMClientFactory> gcm_client_factory,
-            scoped_ptr<IdentityProvider> identity_provider,
-            const base::FilePath& store_path,
-            const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  GCMDriver(
+      scoped_ptr<GCMClientFactory> gcm_client_factory,
+      scoped_ptr<IdentityProvider> identity_provider,
+      const base::FilePath& store_path,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& io_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   virtual ~GCMDriver();
 
   // Enables/disables GCM service.
@@ -187,6 +193,8 @@ class GCMDriver : public IdentityProvider::Observer {
   std::string account_id_;
 
   scoped_ptr<IdentityProvider> identity_provider_;
+  scoped_refptr<base::SequencedTaskRunner> ui_thread_;
+  scoped_refptr<base::SequencedTaskRunner> io_thread_;
 
   scoped_ptr<DelayedTaskController> delayed_task_controller_;
 

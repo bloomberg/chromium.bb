@@ -10,13 +10,20 @@
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace gcm {
 
 class GCMClient;
 
 class FakeGCMClientFactory : public GCMClientFactory {
  public:
-  explicit FakeGCMClientFactory(FakeGCMClient::StartMode gcm_client_start_mode);
+  FakeGCMClientFactory(
+      FakeGCMClient::StartMode gcm_client_start_mode,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& io_thread);
   virtual ~FakeGCMClientFactory();
 
   // GCMClientFactory:
@@ -24,6 +31,8 @@ class FakeGCMClientFactory : public GCMClientFactory {
 
  private:
   FakeGCMClient::StartMode gcm_client_start_mode_;
+  scoped_refptr<base::SequencedTaskRunner> ui_thread_;
+  scoped_refptr<base::SequencedTaskRunner> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClientFactory);
 };
