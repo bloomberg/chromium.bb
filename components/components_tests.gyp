@@ -104,6 +104,7 @@
             'keyed_service/content/browser_context_dependency_manager_unittest.cc',
             'keyed_service/core/dependency_graph_unittest.cc',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
+            'metrics/machine_id_provider_win_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
             'metrics/metrics_log_base_unittest.cc',
             'metrics/metrics_log_manager_unittest.cc',

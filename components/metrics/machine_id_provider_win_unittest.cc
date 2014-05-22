@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/machine_id_provider.h"
+#include "components/metrics/machine_id_provider.h"
 
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"

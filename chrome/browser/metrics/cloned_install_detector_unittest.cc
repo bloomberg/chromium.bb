@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/cloned_install_detector.h"
+#include "components/metrics/cloned_install_detector.h"
 
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/metrics/machine_id_provider.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
-#include "chrome/common/pref_names.h"
+#include "components/metrics/machine_id_provider.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {

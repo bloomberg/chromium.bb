@@ -12,6 +12,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 #include "components/variations/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,7 +156,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
   }
 
   // Set the reset pref to cause the IDs to be reset.
-  prefs_.SetBoolean(::prefs::kMetricsResetIds, true);
+  prefs_.SetBoolean(prefs::kMetricsResetIds, true);
 
   // Cause the actual reset to happen.
   {
@@ -165,7 +166,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
 
     state_manager->GetLowEntropySource();
 
-    EXPECT_FALSE(prefs_.GetBoolean(::prefs::kMetricsResetIds));
+    EXPECT_FALSE(prefs_.GetBoolean(prefs::kMetricsResetIds));
   }
 
   EXPECT_NE(kInitialClientId, prefs_.GetString(::prefs::kMetricsClientID));

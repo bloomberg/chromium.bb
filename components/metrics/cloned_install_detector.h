@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_CLONED_INSTALL_DETECTOR_H_
-#define CHROME_BROWSER_METRICS_CLONED_INSTALL_DETECTOR_H_
+#ifndef COMPONENTS_METRICS_CLONED_INSTALL_DETECTOR_H_
+#define COMPONENTS_METRICS_CLONED_INSTALL_DETECTOR_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -56,4 +56,4 @@ class ClonedInstallDetector {
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_CLONED_INSTALL_DETECTOR_H_
+#endif  // COMPONENTS_METRICS_CLONED_INSTALL_DETECTOR_H_

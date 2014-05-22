@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/machine_id_provider.h"
+#include "components/metrics/machine_id_provider.h"
 
 namespace metrics {
 
-MachineIdProvider::MachineIdProvider() {}
-MachineIdProvider::~MachineIdProvider() {}
+MachineIdProvider::MachineIdProvider() {
+}
+
+MachineIdProvider::~MachineIdProvider() {
+}
 
 // static
 MachineIdProvider* MachineIdProvider::CreateInstance() {
@@ -18,4 +21,4 @@ std::string MachineIdProvider::GetMachineId() {
   return std::string();
 }
 
-} //  namespace metrics
+}  //  namespace metrics

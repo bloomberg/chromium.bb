@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/machine_id_provider.h"
+#include "components/metrics/machine_id_provider.h"
 
 #include <windows.h>
 #include <winioctl.h>
@@ -15,8 +15,11 @@
 
 namespace metrics {
 
-MachineIdProvider::MachineIdProvider() {}
-MachineIdProvider::~MachineIdProvider() {}
+MachineIdProvider::MachineIdProvider() {
+}
+
+MachineIdProvider::~MachineIdProvider() {
+}
 
 // On windows, the machine id is based on the serial number of the drive Chrome
 // is running from.
@@ -41,14 +44,14 @@ std::string MachineIdProvider::GetMachineId() {
   }
   base::FilePath::StringType drive_name = L"\\\\.\\" + path_components[0];
 
-  base::win::ScopedHandle drive_handle(CreateFile(
-      drive_name.c_str(),
-      0,
-      FILE_SHARE_READ | FILE_SHARE_WRITE,
-      NULL,
-      OPEN_EXISTING,
-      0,
-      NULL));
+  base::win::ScopedHandle drive_handle(
+      CreateFile(drive_name.c_str(),
+                 0,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE,
+                 NULL,
+                 OPEN_EXISTING,
+                 0,
+                 NULL));
 
   STORAGE_PROPERTY_QUERY query = {};
   query.PropertyId = StorageDeviceProperty;
@@ -57,20 +60,28 @@ std::string MachineIdProvider::GetMachineId() {
   // Perform an initial query to get the number of bytes being returned.
   DWORD bytes_returned;
   STORAGE_DESCRIPTOR_HEADER header = {};
-  BOOL status = DeviceIoControl(drive_handle, IOCTL_STORAGE_QUERY_PROPERTY,
-                                &query, sizeof(STORAGE_PROPERTY_QUERY),
-                                &header, sizeof(STORAGE_DESCRIPTOR_HEADER),
-                                &bytes_returned, NULL);
+  BOOL status = DeviceIoControl(drive_handle,
+                                IOCTL_STORAGE_QUERY_PROPERTY,
+                                &query,
+                                sizeof(STORAGE_PROPERTY_QUERY),
+                                &header,
+                                sizeof(STORAGE_DESCRIPTOR_HEADER),
+                                &bytes_returned,
+                                NULL);
 
   if (!status)
     return std::string();
 
   // Query for the actual serial number.
   std::vector<int8> output_buf(header.Size);
-  status = DeviceIoControl(drive_handle, IOCTL_STORAGE_QUERY_PROPERTY,
-                           &query, sizeof(STORAGE_PROPERTY_QUERY),
-                           &output_buf[0], output_buf.size(),
-                           &bytes_returned, NULL);
+  status = DeviceIoControl(drive_handle,
+                           IOCTL_STORAGE_QUERY_PROPERTY,
+                           &query,
+                           sizeof(STORAGE_PROPERTY_QUERY),
+                           &output_buf[0],
+                           output_buf.size(),
+                           &bytes_returned,
+                           NULL);
 
   if (!status)
     return std::string();
@@ -103,4 +114,4 @@ MachineIdProvider* MachineIdProvider::CreateInstance() {
   return new MachineIdProvider();
 }
 
-} //  namespace metrics
+}  //  namespace metrics

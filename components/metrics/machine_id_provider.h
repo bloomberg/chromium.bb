@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_MACHINE_ID_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_MACHINE_ID_PROVIDER_H_
+#ifndef COMPONENTS_METRICS_MACHINE_ID_PROVIDER_H_
+#define COMPONENTS_METRICS_MACHINE_ID_PROVIDER_H_
 
 #include <string>
 
@@ -21,7 +21,6 @@ namespace metrics {
 // RefCountedThreadSafe (crbug.com/354882).
 class MachineIdProvider : public base::RefCountedThreadSafe<MachineIdProvider> {
  public:
-
   // Get a string containing machine characteristics, to be used as a machine
   // id. The implementation is platform specific, with a default implementation
   // returning an empty string.
@@ -42,6 +41,6 @@ class MachineIdProvider : public base::RefCountedThreadSafe<MachineIdProvider> {
   DISALLOW_COPY_AND_ASSIGN(MachineIdProvider);
 };
 
-} //  namespace metrics
+}  //  namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_MACHINE_ID_PROVIDER_H_
+#endif  // COMPONENTS_METRICS_MACHINE_ID_PROVIDER_H_

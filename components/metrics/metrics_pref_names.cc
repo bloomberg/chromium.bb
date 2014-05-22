@@ -13,12 +13,20 @@ namespace prefs {
 const char kMetricsInitialLogs[] =
     "user_experience_metrics.initial_logs_as_protobufs";
 
+// A machine ID used to detect when underlying hardware changes. It is only
+// stored locally and never transmitted in metrics reports.
+const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
+
 // Array of strings that are each UMA logs that were not sent because the
 // browser terminated before these accumulated metrics could be sent.  These
 // logs typically include histograms and memory reports, as well as ongoing
 // user activities.
 const char kMetricsOngoingLogs[] =
     "user_experience_metrics.ongoing_logs_as_protobufs";
+
+// Boolean that indicates a cloned install has been detected and the metrics
+// client id and low entropy source should be reset.
+const char kMetricsResetIds[] = "user_experience_metrics.reset_metrics_ids";
 
 }  // namespace prefs
 }  // namespace metrics

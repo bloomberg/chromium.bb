@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/cloned_install_detector.h"
+#include "components/metrics/cloned_install_detector.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -11,10 +11,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/metrics/cloned_install_detector.h"
-#include "chrome/browser/metrics/machine_id_provider.h"
-#include "chrome/common/pref_names.h"
+#include "components/metrics/cloned_install_detector.h"
+#include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_hashes.h"
+#include "components/metrics/metrics_pref_names.h"
 
 namespace metrics {
 
@@ -45,10 +45,11 @@ void LogMachineIdState(MachineIdState state) {
 }  // namespace
 
 ClonedInstallDetector::ClonedInstallDetector(MachineIdProvider* raw_id_provider)
-    : raw_id_provider_(raw_id_provider),
-      weak_ptr_factory_(this) {}
+    : raw_id_provider_(raw_id_provider), weak_ptr_factory_(this) {
+}
 
-ClonedInstallDetector::~ClonedInstallDetector() {}
+ClonedInstallDetector::~ClonedInstallDetector() {
+}
 
 void ClonedInstallDetector::CheckForClonedInstall(
     PrefService* local_state,
@@ -62,9 +63,8 @@ void ClonedInstallDetector::CheckForClonedInstall(
                  local_state));
 }
 
-void ClonedInstallDetector::SaveMachineId(
-    PrefService* local_state,
-    std::string raw_id) {
+void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
+                                          std::string raw_id) {
   if (raw_id.empty()) {
     LogMachineIdState(ID_GENERATION_FAILED);
     local_state->ClearPref(prefs::kMetricsMachineId);

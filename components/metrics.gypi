@@ -16,6 +16,11 @@
       ],
       'sources': [
         'metrics/metrics_provider.h',
+        'metrics/cloned_install_detector.cc',
+        'metrics/cloned_install_detector.h',
+        'metrics/machine_id_provider.h',
+        'metrics/machine_id_provider_stub.cc',
+        'metrics/machine_id_provider_win.cc',
         'metrics/metrics_hashes.cc',
         'metrics/metrics_hashes.h',
         'metrics/metrics_log_base.cc',
@@ -36,6 +41,11 @@
         ['chromeos==1', {
           'dependencies': [
             'metrics_chromeos',
+          ],
+        }],
+        ['OS=="win"', {
+          'sources!': [
+            'metrics/machine_id_provider_stub.cc',
           ],
         }],
       ],

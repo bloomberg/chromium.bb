@@ -1081,7 +1081,6 @@
         'browser/metrics/cloned_install_detector_unittest.cc',
         'browser/metrics/compression_utils_unittest.cc',
         'browser/metrics/extension_metrics_unittest.cc',
-        'browser/metrics/machine_id_provider_win_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/metrics_state_manager_unittest.cc',

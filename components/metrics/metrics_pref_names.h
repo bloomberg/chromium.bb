@@ -11,7 +11,9 @@ namespace prefs {
 // Alphabetical list of preference names specific to the metrics
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kMetricsInitialLogs[];
+extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
+extern const char kMetricsResetIds[];
 
 }  // namespace prefs
 }  // namespace metrics
