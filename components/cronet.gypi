@@ -4,9 +4,8 @@
 
 {
   'conditions': [
-    ['OS=="android"', {
-      # TODO(mef): Consider moving all Cronet Android targets into separate
-      # file. Also figure out what needs to be done for gn script.
+    ['OS=="android" and use_icu_alternatives_on_android==1', {
+      # TODO(mef): Figure out what needs to be done for gn script.
       'targets': [
         {
           'target_name': 'cronet_jni_headers',
@@ -139,14 +138,28 @@
                 '<@(_outputs)',
               ],
             },
+            {
+              'action_name': 'generate licenses',
+              'inputs':  ['cronet/tools/cronet_licenses.py'] ,
+              'outputs': ['<(package_dir)/LICENSE'],
+              'action': [
+                'python',
+                '<@(_inputs)',
+                'license',
+                '<@(_outputs)',
+              ],
+            },
           ],
           'copies': [
             {
-              'destination': '<(package_dir)/libs',
+              'destination': '<(package_dir)',
               'files': [
+                '../AUTHORS',
+                '../chrome/VERSION',
                 '<(PRODUCT_DIR)/lib.java/<(java_lib)',
                 '<(PRODUCT_DIR)/lib.java/base_java.jar',
                 '<(PRODUCT_DIR)/lib.java/net_java.jar',
+                '<(PRODUCT_DIR)/lib.java/url_java.jar',
               ],
             },
           ],
