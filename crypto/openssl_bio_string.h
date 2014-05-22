@@ -21,7 +21,7 @@ namespace crypto {
 // within OpenSSL.
 //
 // Note: |out| must remain valid for the duration of the BIO.
-BIO* CRYPTO_EXPORT BIO_new_string(std::string* out);
+CRYPTO_EXPORT BIO* BIO_new_string(std::string* out);
 
 }  // namespace crypto
 
