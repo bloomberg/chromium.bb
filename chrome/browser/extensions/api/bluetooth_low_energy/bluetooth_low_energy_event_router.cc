@@ -320,6 +320,7 @@ bool BluetoothLowEnergyEventRouter::GetCharacteristic(
     const std::string& instance_id,
     apibtle::Characteristic* out_characteristic) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(out_characteristic);
   if (!adapter_) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return false;
@@ -369,6 +370,26 @@ bool BluetoothLowEnergyEventRouter::GetDescriptors(
     out_descriptors->push_back(api_descriptor);
   }
 
+  return true;
+}
+
+bool BluetoothLowEnergyEventRouter::GetDescriptor(
+    const std::string& instance_id,
+    api::bluetooth_low_energy::Descriptor* out_descriptor) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(out_descriptor);
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    return false;
+  }
+
+  BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
+  if (!descriptor) {
+    VLOG(1) << "Descriptor not found: " << instance_id;
+    return false;
+  }
+
+  PopulateDescriptor(descriptor, out_descriptor);
   return true;
 }
 
@@ -742,6 +763,32 @@ BluetoothLowEnergyEventRouter::FindCharacteristicById(
   }
 
   return characteristic;
+}
+
+BluetoothGattDescriptor* BluetoothLowEnergyEventRouter::FindDescriptorById(
+    const std::string& instance_id) const {
+  InstanceIdMap::const_iterator iter = desc_id_to_chrc_id_.find(instance_id);
+  if (iter == desc_id_to_chrc_id_.end()) {
+    VLOG(1) << "GATT descriptor identifier unknown: " << instance_id;
+    return NULL;
+  }
+
+  const std::string& chrc_id = iter->second;
+  BluetoothGattCharacteristic* chrc = FindCharacteristicById(chrc_id);
+  if (!chrc) {
+    VLOG(1) << "Failed to obtain characteristic for descriptor: "
+            << instance_id;
+    return NULL;
+  }
+
+  BluetoothGattDescriptor* descriptor = chrc->GetDescriptor(instance_id);
+  if (!descriptor) {
+    VLOG(1) << "GATT descriptor with ID \"" << instance_id
+            << "\" not found on characteristic \"" << chrc_id << "\"";
+    return NULL;
+  }
+
+  return descriptor;
 }
 
 void BluetoothLowEnergyEventRouter::ValueCallback(

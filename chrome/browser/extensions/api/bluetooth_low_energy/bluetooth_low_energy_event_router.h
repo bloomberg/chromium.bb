@@ -115,6 +115,14 @@ class BluetoothLowEnergyEventRouter
   bool GetDescriptors(const std::string& instance_id,
                       DescriptorList* out_descriptors) const;
 
+  // Populates |out_descriptor| based on GATT characteristic descriptor with
+  // instance ID |instance_id|. Returns true, on success. Returns false, if no
+  // GATT descriptor with the given ID is known. |out_descriptor| must not be
+  // NULL.
+  bool GetDescriptor(
+      const std::string& instance_id,
+      api::bluetooth_low_energy::Descriptor* out_descriptor) const;
+
   // Sends a request to read the value of the characteristic with intance ID
   // |instance_id|. Returns false, if no such characteristic is known.
   // Otherwise, returns true and invokes |callback| on success and
@@ -189,6 +197,11 @@ class BluetoothLowEnergyEventRouter
   // Returns a BluetoothGattCharacteristic by its instance ID |instance_id|.
   // Returns NULL, if the characteristic cannot be found.
   device::BluetoothGattCharacteristic* FindCharacteristicById(
+      const std::string& instance_id) const;
+
+  // Returns a BluetoothGattDescriptor by its instance ID |instance_id|.
+  // Returns NULL, if the descriptor cannot be found.
+  device::BluetoothGattDescriptor* FindDescriptorById(
       const std::string& instance_id) const;
 
   // Called by BluetoothGattCharacteristic in response to
