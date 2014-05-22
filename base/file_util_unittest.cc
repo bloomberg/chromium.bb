@@ -632,6 +632,17 @@ TEST_F(FileUtilTest, DeleteNonExistent) {
   ASSERT_FALSE(PathExists(non_existent));
 }
 
+TEST_F(FileUtilTest, DeleteNonExistentWithNonExistentParent) {
+  FilePath non_existent = temp_dir_.path().AppendASCII("bogus_topdir");
+  non_existent = non_existent.AppendASCII("bogus_subdir");
+  ASSERT_FALSE(PathExists(non_existent));
+
+  EXPECT_TRUE(DeleteFile(non_existent, false));
+  ASSERT_FALSE(PathExists(non_existent));
+  EXPECT_TRUE(DeleteFile(non_existent, true));
+  ASSERT_FALSE(PathExists(non_existent));
+}
+
 TEST_F(FileUtilTest, DeleteFile) {
   // Create a file
   FilePath file_name = temp_dir_.path().Append(FPL("Test DeleteFile 1.txt"));

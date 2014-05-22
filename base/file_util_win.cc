@@ -94,8 +94,10 @@ bool DeleteFile(const FilePath& path, bool recursive) {
 
   // Some versions of Windows return ERROR_FILE_NOT_FOUND (0x2) when deleting
   // an empty directory and some return 0x402 when they should be returning
-  // ERROR_FILE_NOT_FOUND. MSDN says Vista and up won't return 0x402.
-  return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402);
+  // ERROR_FILE_NOT_FOUND. MSDN says Vista and up won't return 0x402.  Windows 7
+  // can return DE_INVALIDFILES (0x7C) for nonexistent directories.
+  return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402 ||
+          err == 0x7C);
 }
 
 bool DeleteFileAfterReboot(const FilePath& path) {
