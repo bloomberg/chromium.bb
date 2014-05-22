@@ -18,7 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLDocument : Document {
+[
+    // FIXME: Oilpan: remove this once Node specifies WillBeGarbageCollected.
+    WillBeGarbageCollected
+] interface HTMLDocument : Document {
     [Custom, CustomElementCallbacks] void open();
     [RaisesException] void close();
 
