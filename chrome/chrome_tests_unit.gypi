@@ -782,6 +782,7 @@
         'browser/chromeos/settings/session_manager_operation_unittest.cc',
         'browser/chromeos/settings/stub_cros_settings_provider_unittest.cc',
         'browser/chromeos/system/automatic_reboot_manager_unittest.cc',
+        'browser/chromeos/timezone/timezone_unittest.cc',
         'browser/chromeos/ui/idle_app_name_notification_view_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/command_updater_unittest.cc',

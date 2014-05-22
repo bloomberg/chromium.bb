@@ -40,6 +40,8 @@ class TimeZoneProvider {
                        TimeZoneRequest::TimeZoneResponseCallback callback);
 
  private:
+  friend class TestTimeZoneAPIURLFetcherCallback;
+
   // Deletes request from requests_.
   void OnTimezoneResponse(TimeZoneRequest* request,
                           TimeZoneRequest::TimeZoneResponseCallback callback,

@@ -83,6 +83,16 @@ class TimeZoneRequest : private net::URLFetcherDelegate {
   // request will be silently cancelled.
   void MakeRequest(TimeZoneResponseCallback callback);
 
+  void set_retry_sleep_on_server_error_for_testing(
+      const base::TimeDelta value) {
+    retry_sleep_on_server_error_ = value;
+  }
+
+  void set_retry_sleep_on_bad_response_for_testing(
+      const base::TimeDelta value) {
+    retry_sleep_on_bad_response_ = value;
+  }
+
  private:
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -111,6 +121,10 @@ class TimeZoneRequest : private net::URLFetcherDelegate {
 
   // Pending retry.
   base::OneShotTimer<TimeZoneRequest> timezone_request_scheduled_;
+
+  base::TimeDelta retry_sleep_on_server_error_;
+
+  base::TimeDelta retry_sleep_on_bad_response_;
 
   // Number of retry attempts.
   unsigned retries_;

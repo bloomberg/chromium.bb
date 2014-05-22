@@ -312,6 +312,10 @@ TimeZoneRequest::TimeZoneRequest(
       geoposition_(geoposition),
       sensor_(sensor),
       retry_timeout_abs_(base::Time::Now() + retry_timeout),
+      retry_sleep_on_server_error_(base::TimeDelta::FromSeconds(
+          kResolveTimeZoneRetrySleepOnServerErrorSeconds)),
+      retry_sleep_on_bad_response_(base::TimeDelta::FromSeconds(
+          kResolveTimeZoneRetrySleepBadResponseSeconds)),
       retries_(0) {
 }
 
@@ -350,9 +354,8 @@ void TimeZoneRequest::MakeRequest(TimeZoneResponseCallback callback) {
 }
 
 void TimeZoneRequest::Retry(bool server_error) {
-  const base::TimeDelta delay = base::TimeDelta::FromSeconds(
-      server_error ? kResolveTimeZoneRetrySleepOnServerErrorSeconds
-                   : kResolveTimeZoneRetrySleepBadResponseSeconds);
+  const base::TimeDelta delay(server_error ? retry_sleep_on_server_error_
+                                           : retry_sleep_on_bad_response_);
   timezone_request_scheduled_.Start(
       FROM_HERE, delay, this, &TimeZoneRequest::StartRequest);
 }
@@ -423,6 +426,6 @@ std::string TimeZoneResponseData::ToStringForDebug() const {
       error_message.c_str(),
       (unsigned)status,
       (status < arraysize(status2string) ? status2string[status] : "unknown"));
-};
+}
 
 }  // namespace chromeos
