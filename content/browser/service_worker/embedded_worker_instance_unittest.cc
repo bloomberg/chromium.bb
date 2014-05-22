@@ -10,8 +10,14 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -129,38 +135,74 @@ TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
       ipc_sink()->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID));
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
-  scoped_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker();
-  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+static scoped_ptr<WebContents> CreateNavigatedWebContents(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  scoped_ptr<WebContents> result(WebContentsTester::CreateTestWebContents(
+      browser_context, SiteInstance::Create(browser_context)));
+  WebContentsTester::For(result.get())->NavigateAndCommit(url);
+  return result.Pass();
+}
 
-  // Simulate adding processes to the worker.
-  // Process 1 has 1 ref, 2 has 2 refs and 3 has 3 refs.
-  const int embedded_worker_id = worker->embedded_worker_id();
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 1);
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 2);
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 2);
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
-  helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
+TEST(EmbeddedWorkerInstanceTestWithMockProcesses, ChooseProcess) {
+  TestBrowserThreadBundle thread_bundle(TestBrowserThreadBundle::IO_MAINLOOP);
+  IPC::TestSink test_sink;
+  TestBrowserContext browser_context;
+  RenderViewHostTestEnabler rvh_test_enabler;
 
-  // Process 3 has the biggest # of references and it should be chosen.
-  ServiceWorkerStatusCode status;
-  base::RunLoop run_loop;
-  worker->Start(
-      1L,
-      GURL("http://example.com/*"),
-      GURL("http://example.com/worker.js"),
-      std::vector<int>(),
-      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
-  EXPECT_EQ(3, worker->process_id());
+  {
+    scoped_ptr<WebContents> web_contents1(CreateNavigatedWebContents(
+        &browser_context, GURL("https://example1.com/")));
+    scoped_ptr<WebContents> web_contents2(CreateNavigatedWebContents(
+        &browser_context, GURL("https://example2.com/")));
+    scoped_ptr<WebContents> web_contents3(CreateNavigatedWebContents(
+        &browser_context, GURL("https://example3.com/")));
+    const int pid1 = web_contents1->GetRenderProcessHost()->GetID();
+    const int pid2 = web_contents2->GetRenderProcessHost()->GetID();
+    const int pid3 = web_contents3->GetRenderProcessHost()->GetID();
+    ASSERT_NE(pid1, pid2);
+    ASSERT_NE(pid1, pid3);
+    ASSERT_NE(pid2, pid3);
 
-  // Wait until started message is sent back.
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper =
+        static_cast<ServiceWorkerContextWrapper*>(
+            BrowserContext::GetStoragePartition(
+                &browser_context, web_contents1->GetSiteInstance())
+                ->GetServiceWorkerContext());
+
+    scoped_ptr<EmbeddedWorkerInstance> worker = sw_context_wrapper->context()
+                                                    ->embedded_worker_registry()
+                                                    ->CreateWorker();
+    EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+
+    // Simulate adding processes to the worker.
+    // Process 1 has 1 ref, 2 has 2 refs and 3 has 3 refs.
+    worker->AddProcessReference(pid1);
+    worker->AddProcessReference(pid2);
+    worker->AddProcessReference(pid2);
+    worker->AddProcessReference(pid3);
+    worker->AddProcessReference(pid3);
+    worker->AddProcessReference(pid3);
+    sw_context_wrapper->context()
+        ->embedded_worker_registry()
+        ->AddChildProcessSender(pid3, &test_sink);
+
+    // Process 3 has the biggest # of references and it should be chosen.
+    ServiceWorkerStatusCode status;
+    base::RunLoop run_loop;
+    worker->Start(
+        1L,
+        GURL("http://example.com/*"),
+        GURL("http://example.com/worker.js"),
+        std::vector<int>(),
+        base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+    EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
+    EXPECT_EQ(pid3, worker->process_id());
+  }
+
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
 }
 
 }  // namespace content

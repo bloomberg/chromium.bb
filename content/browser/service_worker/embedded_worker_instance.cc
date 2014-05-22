@@ -93,7 +93,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   if (worker_devtools_agent_route_id_ != MSG_ROUTING_NONE)
     NotifyWorkerDestroyed(process_id_, worker_devtools_agent_route_id_);
   if (context_ && process_id_ != -1)
-    context_->process_manager()->ReleaseWorkerProcess(process_id_);
+    context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
@@ -117,6 +117,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->pause_on_start = false;
   context_->process_manager()->AllocateWorkerProcess(
+      embedded_worker_id_,
       SortProcesses(possible_process_ids),
       script_url,
       base::Bind(&EmbeddedWorkerInstance::RunProcessAllocated,
@@ -186,7 +187,11 @@ void EmbeddedWorkerInstance::RunProcessAllocated(
     return;
   }
   if (!instance) {
-    context->process_manager()->ReleaseWorkerProcess(process_id);
+    if (status == SERVICE_WORKER_OK) {
+      // We only have a process allocated if the status is OK.
+      context->process_manager()->ReleaseWorkerProcess(
+          params->embedded_worker_id);
+    }
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
@@ -249,7 +254,7 @@ void EmbeddedWorkerInstance::OnStopped() {
   if (worker_devtools_agent_route_id_ != MSG_ROUTING_NONE)
     NotifyWorkerDestroyed(process_id_, worker_devtools_agent_route_id_);
   if (context_)
-    context_->process_manager()->ReleaseWorkerProcess(process_id_);
+    context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   status_ = STOPPED;
   process_id_ = -1;
   thread_id_ = -1;
