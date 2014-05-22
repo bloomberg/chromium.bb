@@ -638,6 +638,24 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
     const std::vector<uint8>& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(2) << "GATT descriptor value changed: " << descriptor->GetIdentifier();
+
+  DCHECK(desc_id_to_chrc_id_.find(descriptor->GetIdentifier()) !=
+         desc_id_to_chrc_id_.end());
+  DCHECK(characteristic->GetIdentifier() ==
+         desc_id_to_chrc_id_[descriptor->GetIdentifier()]);
+
+  // Signal API event.
+  apibtle::Descriptor api_descriptor;
+  PopulateDescriptor(descriptor, &api_descriptor);
+
+  // Manually construct the arguments, instead of using
+  // apibtle::OnDescriptorValueChanged::Create, as it doesn't convert lists of
+  // enums correctly.
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(apibtle::DescriptorToValue(&api_descriptor).release());
+  scoped_ptr<Event> event(
+      new Event(apibtle::OnDescriptorValueChanged::kEventName, args.Pass()));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(
