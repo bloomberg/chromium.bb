@@ -64,7 +64,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     if (shadow.IsEmpty())
         return v8::Local<v8::Object>();
     shadow->SetPrototype(wrapper);
-    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::wrapperTypeInfo, impl);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(wrapper, &V8HTMLDocument::wrapperTypeInfo, impl);
     return shadow;
 }
 
