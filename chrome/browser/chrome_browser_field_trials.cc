@@ -14,8 +14,8 @@
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/variations/uniformity_field_trials.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/variations/uniformity_field_trials.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"

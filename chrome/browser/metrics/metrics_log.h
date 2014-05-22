@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/browser/metrics/metrics_network_observer.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "chrome/common/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_log_base.h"
 #include "ui/gfx/size.h"

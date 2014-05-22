@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/uniformity_field_trials.h"
+#include "chrome/common/variations/uniformity_field_trials.h"
 
 #include <string>
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/common/metrics/variations/variation_ids.h"
+#include "chrome/common/variations/variation_ids.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {

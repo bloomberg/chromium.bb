@@ -1,8 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/experiment_labels.h"
+#include "chrome/common/variations/experiment_labels.h"
+
+#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

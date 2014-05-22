@@ -1,8 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "chrome/common/variations/variations_util.h"
+
+#include <string>
+#include <vector>
 
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/crash_keys.h"

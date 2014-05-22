@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_VARIATIONS_VARIATION_IDS_H_
-#define CHROME_COMMON_METRICS_VARIATIONS_VARIATION_IDS_H_
+#ifndef CHROME_COMMON_VARIATIONS_VARIATION_IDS_H_
+#define CHROME_COMMON_VARIATIONS_VARIATION_IDS_H_
 
 namespace chrome_variations {
 
@@ -340,4 +340,4 @@ enum ReservedVariationID {
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_COMMON_METRICS_VARIATIONS_VARIATION_IDS_H_
+#endif  // CHROME_COMMON_VARIATIONS_VARIATION_IDS_H_
