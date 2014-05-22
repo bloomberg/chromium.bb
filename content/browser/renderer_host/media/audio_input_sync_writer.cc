@@ -9,8 +9,6 @@
 #include "base/memory/shared_memory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 
-static const uint32 kLogDelayThreadholdMs = 500;
-
 namespace content {
 
 AudioInputSyncWriter::AudioInputSyncWriter(
@@ -37,23 +35,29 @@ uint32 AudioInputSyncWriter::Write(const void* data,
                                    uint32 size,
                                    double volume,
                                    bool key_pressed) {
+#if !defined(OS_ANDROID)
+  static const base::TimeDelta kLogDelayThreadhold =
+      base::TimeDelta::FromMilliseconds(500);
+
   std::ostringstream oss;
   if (last_write_time_.is_null()) {
     // This is the first time Write is called.
     base::TimeDelta interval = base::Time::Now() - creation_time_;
     oss << "Audio input data received for the first time: delay = "
         << interval.InMilliseconds() << "ms.";
+
   } else {
     base::TimeDelta interval = base::Time::Now() - last_write_time_;
-    if (interval.InMilliseconds() > kLogDelayThreadholdMs) {
+    if (interval > kLogDelayThreadhold) {
       oss << "Audio input data delay unexpectedly long: delay = "
-         << interval.InMilliseconds() << "ms.";
+          << interval.InMilliseconds() << "ms.";
     }
   }
   if (!oss.str().empty())
     MediaStreamManager::SendMessageToNativeLog(oss.str());
 
   last_write_time_ = base::Time::Now();
+#endif
 
   uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
   ptr += current_segment_id_ * shared_memory_segment_size_;
