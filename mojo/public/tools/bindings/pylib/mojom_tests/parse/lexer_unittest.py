@@ -115,8 +115,6 @@ class LexerTest(unittest.TestCase):
                       _MakeLexToken("ORDINAL", "@123"))
     self.assertEquals(self._SingleTokenForInput("456"),
                       _MakeLexToken("INT_CONST_DEC", "456"))
-    self.assertEquals(self._SingleTokenForInput("0765"),
-                      _MakeLexToken("INT_CONST_OCT", "0765"))
     self.assertEquals(self._SingleTokenForInput("0x01aB2eF3"),
                       _MakeLexToken("INT_CONST_HEX", "0x01aB2eF3"))
     self.assertEquals(self._SingleTokenForInput("123.456"),

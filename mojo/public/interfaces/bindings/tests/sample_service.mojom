@@ -59,23 +59,20 @@ struct DefaultsTest {
   uint64 a7@7 /* = 9999999999999999999 */;
   int32 a8@8 = 0x12345;
   int32 a9@9 = -0x12345;
-  // TODO(vtl): crbug.com/375829
-  int32 a10@10 /* = 010 */;  // Octal.
-  int32 a11@11 /* = -010 */;  // Negative octal.
-  int32 a12@12 = +1234;
-  bool a13@13 = true;
-  bool a14@14 = false;
-  float a15@15 = 123.25;
-  double a16@16 = 1234567890.123;
-  double a17@17 = 1E10;
-  double a18@18 = -1.2E+20;
-  double a19@19 = +1.23E-20;
+  int32 a10@10 = +1234;
+  bool a11@11 = true;
+  bool a12@12 = false;
+  float a13@13 = 123.25;
+  double a14@14 = 1234567890.123;
+  double a15@15 = 1E10;
+  double a16@16 = -1.2E+20;
+  double a17@17 = +1.23E-20;
 
   // TODO(vtl): Add tests for default vs null when those are implemented (for
   // structs, arrays, and strings).
-  sample.DefaultsTestInner a20@20;
-  uint8[] a21@21;
-  string a22@22;
+  sample.DefaultsTestInner a18@18;
+  uint8[] a19@19;
+  string a20@20;
 };
 
 struct StructWithHoleV1 {

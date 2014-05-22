@@ -112,18 +112,15 @@ define([
     // expect(full.a7).toBe(9999999999999999999);
     expect(full.a8).toBe(0x12345);
     expect(full.a9).toBe(-0x12345);
-    // TODO(vtl): crbug.com/375829
-    // expect(full.a10).toBe(8);
-    // expect(full.a11).toBe(-8);
-    expect(full.a12).toBe(1234);
-    expect(full.a13).toBe(true);
-    expect(full.a14).toBe(false);
-    expect(full.a15).toBe(123.25);
-    expect(full.a16).toBe(1234567890.123);
-    expect(full.a17).toBe(1E10);
-    expect(full.a18).toBe(-1.2E+20);
-    expect(full.a19).toBe(1.23E-20);
-    expect(full.a20).toBeNull();
+    expect(full.a10).toBe(1234);
+    expect(full.a11).toBe(true);
+    expect(full.a12).toBe(false);
+    expect(full.a13).toBe(123.25);
+    expect(full.a14).toBe(1234567890.123);
+    expect(full.a15).toBe(1E10);
+    expect(full.a16).toBe(-1.2E+20);
+    expect(full.a17).toBe(1.23E-20);
+    expect(full.a18).toBeNull();
     // TODO(vtl): crbug.com/375845
     // expect(full.a21).toBeNull();
     // expect(full.a22).toBeNull();

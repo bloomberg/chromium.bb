@@ -307,7 +307,6 @@ class Parser(object):
 
   def p_constant(self, p):
     """constant : INT_CONST_DEC
-                | INT_CONST_OCT
                 | INT_CONST_HEX
                 | FLOAT_CONST
                 | CHAR_CONST

@@ -433,6 +433,75 @@ struct MyStruct {
             r"  handle<wtf_is_this> foo;$"):
       parser.Parse(source, "my_file.mojom")
 
+  def testValidDefaultValues(self):
+    """Tests default values that are valid (to the parser)."""
+    source = """\
+struct MyStruct {
+  int16 a0 = 0;
+  uint16 a1 = 0x0;
+  uint16 a2 = 0x00;
+  uint16 a3 = 0x01;
+  uint16 a4 = 0xcd;
+  int32 a5 = 12345;
+  int64 a6 = -12345;
+  int64 a7 = +12345;
+  uint32 a8 = 0x12cd3;
+  uint32 a9 = -0x12cD3;
+  uint32 a10 = +0x12CD3;
+  bool a11 = true;
+  bool a12 = false;
+  float a13 = 1.2345;
+  float a14 = -1.2345;
+  float a15 = +1.2345;
+  float a16 = 123.;
+  float a17 = .123;
+  double a18 = 1.23E10;
+  double a19 = 1.E-10;
+  double a20 = .5E+10;
+  double a21 = -1.23E10;
+  double a22 = +.123E10;
+};
+"""
+    expected = \
+[('MODULE',
+  '',
+  None,
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int16', 'a0', ast.Ordinal(None), ('EXPRESSION', ['0'])),
+     ('FIELD', 'uint16', 'a1', ast.Ordinal(None), ('EXPRESSION', ['0x0'])),
+     ('FIELD', 'uint16', 'a2', ast.Ordinal(None), ('EXPRESSION', ['0x00'])),
+     ('FIELD', 'uint16', 'a3', ast.Ordinal(None), ('EXPRESSION', ['0x01'])),
+     ('FIELD', 'uint16', 'a4', ast.Ordinal(None), ('EXPRESSION', ['0xcd'])),
+     ('FIELD', 'int32', 'a5', ast.Ordinal(None), ('EXPRESSION', ['12345'])),
+     ('FIELD', 'int64', 'a6', ast.Ordinal(None),
+      ('EXPRESSION', ['-', ('EXPRESSION', ['12345'])])),
+     ('FIELD', 'int64', 'a7', ast.Ordinal(None),
+      ('EXPRESSION', ['+', ('EXPRESSION', ['12345'])])),
+     ('FIELD', 'uint32', 'a8', ast.Ordinal(None), ('EXPRESSION', ['0x12cd3'])),
+     ('FIELD', 'uint32', 'a9', ast.Ordinal(None),
+      ('EXPRESSION', ['-', ('EXPRESSION', ['0x12cD3'])])),
+     ('FIELD', 'uint32', 'a10', ast.Ordinal(None),
+      ('EXPRESSION', ['+', ('EXPRESSION', ['0x12CD3'])])),
+     ('FIELD', 'bool', 'a11', ast.Ordinal(None), ('EXPRESSION', ['true'])),
+     ('FIELD', 'bool', 'a12', ast.Ordinal(None), ('EXPRESSION', ['false'])),
+     ('FIELD', 'float', 'a13', ast.Ordinal(None), ('EXPRESSION', ['1.2345'])),
+     ('FIELD', 'float', 'a14', ast.Ordinal(None),
+      ('EXPRESSION', ['-', ('EXPRESSION', ['1.2345'])])),
+     ('FIELD', 'float', 'a15', ast.Ordinal(None),
+      ('EXPRESSION', ['+', ('EXPRESSION', ['1.2345'])])),
+     ('FIELD', 'float', 'a16', ast.Ordinal(None), ('EXPRESSION', ['123.'])),
+     ('FIELD', 'float', 'a17', ast.Ordinal(None), ('EXPRESSION', ['.123'])),
+     ('FIELD', 'double', 'a18', ast.Ordinal(None), ('EXPRESSION', ['1.23E10'])),
+     ('FIELD', 'double', 'a19', ast.Ordinal(None), ('EXPRESSION', ['1.E-10'])),
+     ('FIELD', 'double', 'a20', ast.Ordinal(None), ('EXPRESSION', ['.5E+10'])),
+     ('FIELD', 'double', 'a21', ast.Ordinal(None),
+      ('EXPRESSION', ['-', ('EXPRESSION', ['1.23E10'])])),
+     ('FIELD', 'double', 'a22', ast.Ordinal(None),
+      ('EXPRESSION', ['+', ('EXPRESSION', ['.123E10'])]))])])]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
 
 if __name__ == "__main__":
   unittest.main()

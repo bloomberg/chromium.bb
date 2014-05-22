@@ -374,20 +374,17 @@ TEST(BindingsSampleTest, DefaultValues) {
   // EXPECT_EQ(9999999999999999999ULL, full.a7());
   EXPECT_EQ(0x12345, full.a8());
   EXPECT_EQ(-0x12345, full.a9());
-  // TODO(vtl): crbug.com/375829
-  // EXPECT_EQ(8, full.a10());
-  // EXPECT_EQ(-8, full.a11());
-  EXPECT_EQ(1234, full.a12());
-  EXPECT_TRUE(full.a13());
-  EXPECT_FALSE(full.a14());
-  EXPECT_FLOAT_EQ(123.25f, full.a15());
-  EXPECT_DOUBLE_EQ(1234567890.123, full.a16());
-  EXPECT_DOUBLE_EQ(1E10, full.a17());
-  EXPECT_DOUBLE_EQ(-1.2E+20, full.a18());
-  EXPECT_DOUBLE_EQ(1.23E-20, full.a19());
+  EXPECT_EQ(1234, full.a10());
+  EXPECT_TRUE(full.a11());
+  EXPECT_FALSE(full.a12());
+  EXPECT_FLOAT_EQ(123.25f, full.a13());
+  EXPECT_DOUBLE_EQ(1234567890.123, full.a14());
+  EXPECT_DOUBLE_EQ(1E10, full.a15());
+  EXPECT_DOUBLE_EQ(-1.2E+20, full.a16());
+  EXPECT_DOUBLE_EQ(1.23E-20, full.a17());
+  EXPECT_TRUE(full.a18().is_null());
+  EXPECT_TRUE(full.a19().is_null());
   EXPECT_TRUE(full.a20().is_null());
-  EXPECT_TRUE(full.a21().is_null());
-  EXPECT_TRUE(full.a22().is_null());
 }
 
 }  // namespace
