@@ -36,6 +36,10 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  JNIEnv* env = AttachCurrentThread();
+  if (java_object_.is_null())
+    return;
+  Java_Shell_enableUiControl(env, java_object_.obj(), control, is_enabled);
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {

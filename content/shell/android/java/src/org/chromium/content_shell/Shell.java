@@ -268,6 +268,18 @@ public class Shell extends LinearLayout {
     }
 
     /**
+     * Enable/Disable navigation(Prev/Next) button if navigation is allowed/disallowed
+     * in respective direction.
+     * @param controlId Id of button to update
+     * @param enabled enable/disable value
+     */
+    @CalledByNative
+    private void enableUiControl(int controlId, boolean enabled) {
+        if (controlId == 0) mPrevButton.setEnabled(enabled);
+        else if (controlId == 1) mNextButton.setEnabled(enabled);
+    }
+
+    /**
      * @return The {@link ViewGroup} currently shown by this Shell.
      */
     public ViewGroup getContentView() {
