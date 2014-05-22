@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -171,8 +172,35 @@ MediaMenuParts::~MediaMenuParts() {}
 
 }  // namespace content_setting_bubble
 
+class ContentSettingBubbleWebContentsObserverBridge
+    : public content::WebContentsObserver {
+ public:
+  ContentSettingBubbleWebContentsObserverBridge(
+      content::WebContents* web_contents,
+      ContentSettingBubbleController* controller)
+      : content::WebContentsObserver(web_contents),
+        controller_(controller) {
+  }
+
+ protected:
+  // WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE {
+    // Content settings are based on the main frame, so if it switches then
+    // close up shop.
+    [controller_ closeBubble:nil];
+  }
+
+ private:
+  ContentSettingBubbleController* controller_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleWebContentsObserverBridge);
+};
+
 @interface ContentSettingBubbleController(Private)
 - (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
+        webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
          anchoredAt:(NSPoint)anchoredAt;
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
@@ -198,21 +226,26 @@ MediaMenuParts::~MediaMenuParts() {}
 
 + (ContentSettingBubbleController*)
     showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+     webContents:(content::WebContents*)webContents
     parentWindow:(NSWindow*)parentWindow
       anchoredAt:(NSPoint)anchor {
   // Autoreleases itself on bubble close.
   return [[ContentSettingBubbleController alloc]
              initWithModel:contentSettingBubbleModel
+               webContents:webContents
               parentWindow:parentWindow
                 anchoredAt:anchor];
 }
 
 - (id)initWithModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+        webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
          anchoredAt:(NSPoint)anchoredAt {
   // This method takes ownership of |contentSettingBubbleModel| in all cases.
   scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
   DCHECK(model.get());
+  observerBridge_.reset(
+    new ContentSettingBubbleWebContentsObserverBridge(webContents, self));
 
   ContentSettingsType settingsType = model->content_type();
   NSString* nibPath = @"";

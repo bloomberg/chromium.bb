@@ -90,6 +90,7 @@ ContentSettingBubbleControllerTest::CreateBubbleController(
       showForModel:new DummyContentSettingBubbleModel(web_contents(),
                                                       profile(),
                                                       settingsType)
+       webContents:web_contents()
       parentWindow:parent_
         anchoredAt:NSMakePoint(50, 20)];
 

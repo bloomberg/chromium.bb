@@ -139,9 +139,11 @@ ContentSettingBubbleContents::MediaMenuParts::~MediaMenuParts() {}
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
+    content::WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow)
-    : BubbleDelegateView(anchor_view, arrow),
+    : content::WebContentsObserver(web_contents),
+      BubbleDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
       custom_link_(NULL),
       manage_link_(NULL),
@@ -399,6 +401,15 @@ void ContentSettingBubbleContents::Init() {
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
     close_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(close_button_);
+}
+
+void ContentSettingBubbleContents::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // Content settings are based on the main frame, so if it switches then
+  // close up shop.
+  content_setting_bubble_model_->OnDoneClicked();
+  GetWidget()->Close();
 }
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,

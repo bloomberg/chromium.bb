@@ -245,7 +245,7 @@ void ContentSettingImageView::OnClick() {
                 parent_->delegate()->GetContentSettingBubbleModelDelegate(),
                 web_contents, parent_->profile(),
                 content_setting_image_model_->get_content_settings_type()),
-            this, views::BubbleBorder::TOP_RIGHT));
+            web_contents, this, views::BubbleBorder::TOP_RIGHT));
     bubble_widget_->AddObserver(this);
     bubble_widget_->Show();
   }

@@ -38,10 +38,11 @@ namespace {
 HungRendererController* g_instance = NULL;
 }  // namespace
 
-class WebContentsObserverBridge : public content::WebContentsObserver {
+class HungRendererWebContentsObserverBridge
+    : public content::WebContentsObserver {
  public:
-  WebContentsObserverBridge(WebContents* web_contents,
-                            HungRendererController* controller)
+  HungRendererWebContentsObserverBridge(WebContents* web_contents,
+                                        HungRendererController* controller)
     : content::WebContentsObserver(web_contents),
       controller_(controller) {
   }
@@ -58,7 +59,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
  private:
   HungRendererController* controller_;  // weak
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsObserverBridge);
+  DISALLOW_COPY_AND_ASSIGN(HungRendererWebContentsObserverBridge);
 };
 
 @implementation HungRendererController
@@ -174,7 +175,8 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 - (void)showForWebContents:(WebContents*)contents {
   DCHECK(contents);
   hungContents_ = contents;
-  hungContentsObserver_.reset(new WebContentsObserverBridge(contents, self));
+  hungContentsObserver_.reset(
+      new HungRendererWebContentsObserverBridge(contents, self));
   base::scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   base::scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); it.Next()) {

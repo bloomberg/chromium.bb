@@ -11,8 +11,13 @@
 #include "content/public/common/media_stream_request.h"
 
 class ContentSettingBubbleModel;
+class ContentSettingBubbleWebContentsObserverBridge;
 class ContentSettingMediaMenuModel;
 @class InfoBubbleView;
+
+namespace content {
+class WebContents;
+}
 
 namespace content_setting_bubble {
 // For every "show popup" button, remember the index of the popup tab contents
@@ -51,6 +56,7 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
   IBOutlet NSTextField* blockedResourcesField_;
 
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
+  scoped_ptr<ContentSettingBubbleWebContentsObserverBridge> observerBridge_;
   content_setting_bubble::PopupLinks popupLinks_;
   content_setting_bubble::MediaMenuPartsMap mediaMenus_;
 }
@@ -59,6 +65,7 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
 // |contentSettingBubbleModel| but not of the other objects.
 + (ContentSettingBubbleController*)
     showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+     webContents:(content::WebContents*)webContents
     parentWindow:(NSWindow*)parentWindow
       anchoredAt:(NSPoint)anchoredAt;
 
