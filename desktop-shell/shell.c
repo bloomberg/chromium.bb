@@ -873,21 +873,21 @@ animate_focus_change(struct desktop_shell *shell, struct workspace *ws,
 	if (focus_surface_created) {
 		ws->focus_animation = weston_fade_run(
 			ws->fsurf_front->view,
-			ws->fsurf_front->view->alpha, 0.6, 300,
+			ws->fsurf_front->view->alpha, 0.4, 300,
 			focus_animation_done, ws);
 	} else if (from) {
 		wl_list_insert(&from->layer_link,
 			       &ws->fsurf_back->view->layer_link);
 		ws->focus_animation = weston_stable_fade_run(
 			ws->fsurf_front->view, 0.0,
-			ws->fsurf_back->view, 0.6,
+			ws->fsurf_back->view, 0.4,
 			focus_animation_done, ws);
 	} else if (to) {
 		wl_list_insert(&ws->layer.view_list,
 			       &ws->fsurf_back->view->layer_link);
 		ws->focus_animation = weston_stable_fade_run(
 			ws->fsurf_front->view, 0.0,
-			ws->fsurf_back->view, 0.6,
+			ws->fsurf_back->view, 0.4,
 			focus_animation_done, ws);
 	}
 }
