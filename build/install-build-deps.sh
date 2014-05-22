@@ -63,8 +63,8 @@ do
   shift
 done
 
-ubuntu_versions="12\.04|12\.10|13\.04|13\.10"
-ubuntu_codenames="precise|quantal|raring|saucy"
+ubuntu_versions="12\.04|12\.10|13\.04|13\.10|14\.04"
+ubuntu_codenames="precise|quantal|raring|saucy|trusty"
 ubuntu_issue="Ubuntu ($ubuntu_versions|$ubuntu_codenames)"
 # GCEL is an Ubuntu-derived VM image used on Google Compute Engine; /etc/issue
 # doesn't contain a version number so just trust that the user knows what
@@ -73,7 +73,7 @@ gcel_issue="^GCEL"
 
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if ! egrep -q "($ubuntu_issue|$gcel_issue)" /etc/issue; then
-    echo "ERROR: Only Ubuntu 12.04 (precise) through 13.10 (saucy) are"\
+    echo "ERROR: Only Ubuntu 12.04 (precise) through 14.04 (trusty) are"\
         "currently supported" >&2
     exit 1
   fi
@@ -138,23 +138,9 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
           libstdc++6-4.6-dbg"
 
 # arm cross toolchain packages needed to build chrome on armhf
-arm_list="libc6-armhf-cross libc6-dev-armhf-cross libgcc1-armhf-cross
-          libgomp1-armhf-cross linux-libc-dev-armhf-cross
-          libgcc1-dbg-armhf-cross libgomp1-dbg-armhf-cross
-          binutils-arm-linux-gnueabihf cpp-arm-linux-gnueabihf
-          gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-          libmudflap0-dbg-armhf-cross"
-
-# Old armel cross toolchain packages
-armel_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
-            libgomp1-armel-cross linux-libc-dev-armel-cross
-            libgcc1-dbg-armel-cross libgomp1-dbg-armel-cross
-            binutils-arm-linux-gnueabi cpp-arm-linux-gnueabi
-            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-            libmudflap0-dbg-armel-cross"
-
-# TODO(sbc): remove armel once the armhf transition is complete
-arm_list="$arm_list $armel_list"
+arm_list="libc6-dev-armhf-cross
+          linux-libc-dev-armhf-cross
+          g++-arm-linux-gnueabihf"
 
 # Packages to build standalone NaCl and all its toolchains.
 nacl_list="g++-mingw-w64-i686 libtinfo-dev:i386"
@@ -257,7 +243,14 @@ fi
 # that are part of v8 need to be compiled with -m32 which means
 # that basic multilib support is needed.
 if file /sbin/init | grep -q 'ELF 64-bit'; then
-  arm_list="$arm_list g++-multilib"
+  # TODO(thestig): Use lsb_release rather than looking /etc/issue.
+  if ! egrep -q "trusty" /etc/issue; then
+    # gcc-multilib conflicts with the arm cross compiler in trusty but
+    # g++-4.8-multilib gives us the 32-bit support that we need.
+    arm_list="$arm_list g++-4.8-multilib"
+  else
+    arm_list="$arm_list g++-multilib"
+  fi
 fi
 
 if test "$do_inst_arm" = "1" ; then
