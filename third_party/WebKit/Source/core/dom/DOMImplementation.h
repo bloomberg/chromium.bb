@@ -61,7 +61,7 @@ public:
     PassRefPtr<XMLDocument> createDocument(const AtomicString& namespaceURI, const AtomicString& qualifiedName, DocumentType*, ExceptionState&);
 
     // From the HTMLDOMImplementation interface
-    PassRefPtr<HTMLDocument> createHTMLDocument(const String& title);
+    PassRefPtrWillBeRawPtr<HTMLDocument> createHTMLDocument(const String& title);
 
     // Other methods (not part of DOM)
     static PassRefPtr<Document> createDocument(const String& mimeType, LocalFrame*, const KURL&, bool inViewSourceMode);

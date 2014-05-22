@@ -318,11 +318,11 @@ bool DOMImplementation::isTextMIMEType(const String& mimeType)
     return MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || isJSONMIMEType(mimeType) || isTextPlainType(mimeType);
 }
 
-PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
+PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
 {
     DocumentInit init = DocumentInit::fromContext(document().contextDocument())
         .withRegistrationContext(document().registrationContext());
-    RefPtr<HTMLDocument> d = HTMLDocument::create(init);
+    RefPtrWillBeRawPtr<HTMLDocument> d = HTMLDocument::create(init);
     d->open();
     d->write("<!doctype html><html><body></body></html>");
     if (!title.isNull())

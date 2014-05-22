@@ -29,7 +29,7 @@ protected:
     HTMLDocument& document() const;
 
 private:
-    RefPtr<HTMLDocument> m_document;
+    RefPtrWillBePersistent<HTMLDocument> m_document;
 };
 
 void RangeTest::SetUp()

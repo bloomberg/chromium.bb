@@ -174,7 +174,7 @@ private:
 
     RefPtr<DocumentLoader> m_documentLoader;
 
-    RefPtr<HTMLDocument> m_document;
+    RefPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<ResourceFetcher> m_fetcher;
 };
 
