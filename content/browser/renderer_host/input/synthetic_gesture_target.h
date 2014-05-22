@@ -42,7 +42,11 @@ class CONTENT_EXPORT SyntheticGestureTarget {
 
   // Returns the maximum number of DIPs a touch pointer can move without being
   // considered moving by the platform.
-  virtual int GetTouchSlopInDips() const = 0;
+  virtual float GetTouchSlopInDips() const = 0;
+
+  // Returns the minimum number of DIPs two touch pointers have to be apart
+  // to perform a pinch-zoom.
+  virtual float GetMinScalingSpanInDips() const = 0;
 };
 
 }  // namespace content

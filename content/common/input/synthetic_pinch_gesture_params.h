@@ -21,8 +21,7 @@ struct CONTENT_EXPORT SyntheticPinchGestureParams
 
   virtual GestureType GetGestureType() const OVERRIDE;
 
-  bool zoom_in;
-  int total_num_pixels_covered;
+  float scale_factor;
   gfx::Point anchor;
   int relative_pointer_speed_in_pixels_s;
 

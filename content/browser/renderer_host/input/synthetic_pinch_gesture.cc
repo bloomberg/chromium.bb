@@ -16,9 +16,10 @@ SyntheticPinchGesture::SyntheticPinchGesture(
     : params_(params),
       start_y_0_(0.0f),
       start_y_1_(0.0f),
+      max_pointer_delta_0_(0.0f),
       gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
       state_(SETUP) {
-  DCHECK_GE(params_.total_num_pixels_covered, 0);
+    DCHECK_GT(params_.scale_factor, 0.0f);
 }
 
 SyntheticPinchGesture::~SyntheticPinchGesture() {}
@@ -49,7 +50,7 @@ void SyntheticPinchGesture::ForwardTouchInputEvents(
   switch (state_) {
     case STARTED:
       // Check for an early finish.
-      if (params_.total_num_pixels_covered == 0) {
+      if (params_.scale_factor == 1.0f) {
         state_ = DONE;
         break;
       }
@@ -87,13 +88,8 @@ void SyntheticPinchGesture::MoveTouchPoints(SyntheticGestureTarget* target,
   float current_y_0 = start_y_0_ + delta;
   float current_y_1 = start_y_1_ - delta;
 
-  // The current pointer positions are stored as float but the pointer
-  // coordinates of the input event are integers. Floor both positions so that
-  // in case of an odd distance one of the pointers (the one whose position goes
-  // down) moves one pixel further than the other. The explicit flooring is only
-  // needed for negative values.
-  touch_event_.MovePoint(0, params_.anchor.x(), floor(current_y_0));
-  touch_event_.MovePoint(1, params_.anchor.x(), floor(current_y_1));
+  touch_event_.MovePoint(0, params_.anchor.x(), current_y_0);
+  touch_event_.MovePoint(1, params_.anchor.x(), current_y_1);
   ForwardTouchEvent(target, timestamp);
 }
 
@@ -112,24 +108,30 @@ void SyntheticPinchGesture::ForwardTouchEvent(
 
 void SyntheticPinchGesture::SetupCoordinatesAndStopTime(
     SyntheticGestureTarget* target) {
-  const int kTouchSlopInDips = target->GetTouchSlopInDips();
-  params_.total_num_pixels_covered += 2 * kTouchSlopInDips;
-  float inner_distance_to_anchor = 2 * kTouchSlopInDips;
-  float outer_distance_to_anchor =
-      inner_distance_to_anchor + params_.total_num_pixels_covered / 2.0f;
-
-  // Move pointers away from each other to zoom in
-  // or towards each other to zoom out.
-  if (params_.zoom_in) {
-    start_y_0_ = params_.anchor.y() - inner_distance_to_anchor;
-    start_y_1_ = params_.anchor.y() + inner_distance_to_anchor;
-  } else {
-    start_y_0_ = params_.anchor.y() - outer_distance_to_anchor;
-    start_y_1_ = params_.anchor.y() + outer_distance_to_anchor;
+  // To achieve the specified scaling factor, the ratio of the final to the
+  // initial span (distance between the pointers) has to be equal to the scaling
+  // factor. Since we're moving both pointers at the same speed, each pointer's
+  // distance to the anchor is half the span.
+  float initial_distance_to_anchor, final_distance_to_anchor;
+  if (params_.scale_factor > 1.0f) {  // zooming in
+    initial_distance_to_anchor = target->GetMinScalingSpanInDips() / 2.0f;
+    final_distance_to_anchor =
+        (initial_distance_to_anchor + target->GetTouchSlopInDips()) *
+        params_.scale_factor;
+  } else { // zooming out
+    final_distance_to_anchor = target->GetMinScalingSpanInDips() / 2.0f;
+    initial_distance_to_anchor =
+        (final_distance_to_anchor / params_.scale_factor) +
+        target->GetTouchSlopInDips();
   }
 
+  start_y_0_ = params_.anchor.y() - initial_distance_to_anchor;
+  start_y_1_ = params_.anchor.y() + initial_distance_to_anchor;
+
+  max_pointer_delta_0_ = initial_distance_to_anchor - final_distance_to_anchor;
+
   int64 total_duration_in_us = static_cast<int64>(
-      1e6 * (static_cast<double>(params_.total_num_pixels_covered) /
+      1e6 * (static_cast<double>(std::abs(2 * max_pointer_delta_0_)) /
              params_.relative_pointer_speed_in_pixels_s));
   DCHECK_GT(total_duration_in_us, 0);
   stop_time_ =
@@ -138,18 +140,16 @@ void SyntheticPinchGesture::SetupCoordinatesAndStopTime(
 
 float SyntheticPinchGesture::GetDeltaForPointer0AtTime(
     const base::TimeTicks& timestamp) const {
-  float total_abs_delta;
-
   // Make sure the final delta is correct. Using the computation below can lead
   // to issues with floating point precision.
   if (HasReachedTarget(timestamp))
-    total_abs_delta = params_.total_num_pixels_covered;
-  else
-    total_abs_delta = params_.relative_pointer_speed_in_pixels_s *
-                      (timestamp - start_time_).InSecondsF();
+    return max_pointer_delta_0_;
 
+  float total_abs_delta = params_.relative_pointer_speed_in_pixels_s *
+                          (timestamp - start_time_).InSecondsF();
   float abs_delta_pointer_0 = total_abs_delta / 2.0f;
-  return params_.zoom_in ? -abs_delta_pointer_0 : abs_delta_pointer_0;
+  return (params_.scale_factor > 1.0f) ? -abs_delta_pointer_0
+                                       : abs_delta_pointer_0;
 }
 
 base::TimeTicks SyntheticPinchGesture::ClampTimestamp(

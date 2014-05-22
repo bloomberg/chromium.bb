@@ -53,6 +53,7 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
   SyntheticPinchGestureParams params_;
   float start_y_0_;
   float start_y_1_;
+  float max_pointer_delta_0_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;
   SyntheticWebTouchEvent touch_event_;

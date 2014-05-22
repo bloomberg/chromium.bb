@@ -28,7 +28,7 @@ const int kPointerAssumedStoppedTimeMs = 100;
 // SyntheticGestureTargetBase passes input events straight on to the renderer
 // without going through a gesture recognition framework. There is thus no touch
 // slop.
-const int kTouchSlopInDips = 0;
+const float kTouchSlopInDips = 0.0f;
 
 }  // namespace
 
@@ -117,8 +117,15 @@ base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
   return base::TimeDelta::FromMilliseconds(kPointerAssumedStoppedTimeMs);
 }
 
-int SyntheticGestureTargetBase::GetTouchSlopInDips() const {
+float SyntheticGestureTargetBase::GetTouchSlopInDips() const {
   return kTouchSlopInDips;
+}
+
+float SyntheticGestureTargetBase::GetMinScalingSpanInDips() const {
+  // The minimum scaling distance is only relevant for touch gestures and the
+  // base target doesn't support touch.
+  NOTREACHED();
+  return 0.0f;
 }
 
 bool SyntheticGestureTargetBase::PointIsWithinContents(int x, int y) const {

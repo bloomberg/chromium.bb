@@ -286,15 +286,17 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "                           speed_in_pixels_s,"
           "                           opt_start_x, opt_start_y);"
           "};"
+          // TODO(dominikg): Remove once JS interface changes have rolled into
+          //                 stable.
+          "chrome.gpuBenchmarking.newPinchInterface = true;"
           "chrome.gpuBenchmarking.pinchBy = "
-          "    function(zoom_in, pixels_to_cover, anchor_x, anchor_y,"
+          "    function(scale_factor, anchor_x, anchor_y,"
           "             opt_callback, opt_relative_pointer_speed_in_pixels_s) {"
           "  callback = opt_callback || function() { };"
           "  relative_pointer_speed_in_pixels_s ="
           "      opt_relative_pointer_speed_in_pixels_s || 800;"
           "  native function BeginPinch();"
-          "  return BeginPinch(zoom_in, pixels_to_cover,"
-          "                    anchor_x, anchor_y, callback,"
+          "  return BeginPinch(scale_factor, anchor_x, anchor_y, callback,"
           "                    relative_pointer_speed_in_pixels_s);"
           "};"
           "chrome.gpuBenchmarking.tap = "
@@ -640,13 +642,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return;
 
     int arglen = args.Length();
-    if (arglen < 6 ||
-        !args[0]->IsBoolean() ||
+    if (arglen < 5 ||
+        !args[0]->IsNumber() ||
         !args[1]->IsNumber() ||
         !args[2]->IsNumber() ||
-        !args[3]->IsNumber() ||
-        !args[4]->IsFunction() ||
-        !args[5]->IsNumber()) {
+        !args[3]->IsFunction() ||
+        !args[4]->IsNumber()) {
       args.GetReturnValue().Set(false);
       return;
     }
@@ -657,17 +658,15 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // Convert coordinates from CSS pixels to density independent pixels (DIPs).
     float page_scale_factor = context.web_view()->pageScaleFactor();
 
-    gesture_params->zoom_in = args[0]->BooleanValue();
-    gesture_params->total_num_pixels_covered =
-        args[1]->IntegerValue() * page_scale_factor;
+    gesture_params->scale_factor = args[0]->NumberValue();
     gesture_params->anchor.SetPoint(
-        args[2]->IntegerValue() * page_scale_factor,
-        args[3]->IntegerValue() * page_scale_factor);
+        args[1]->IntegerValue() * page_scale_factor,
+        args[2]->IntegerValue() * page_scale_factor);
     gesture_params->relative_pointer_speed_in_pixels_s =
-        args[5]->IntegerValue();
+        args[4]->IntegerValue();
 
     v8::Local<v8::Function> callback_local =
-        v8::Local<v8::Function>::Cast(args[4]);
+        v8::Local<v8::Function>::Cast(args[3]);
 
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),

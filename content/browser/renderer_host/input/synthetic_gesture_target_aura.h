@@ -40,7 +40,9 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const OVERRIDE;
 
-  virtual int GetTouchSlopInDips() const OVERRIDE;
+  virtual float GetTouchSlopInDips() const OVERRIDE;
+
+  virtual float GetMinScalingSpanInDips() const OVERRIDE;
 
  private:
   aura::Window* GetWindow() const;

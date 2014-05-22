@@ -36,7 +36,8 @@ namespace {
 
 const int kFlushInputRateInMs = 16;
 const int kPointerAssumedStoppedTimeMs = 43;
-const int kTouchSlopInDips = 7;
+const float kTouchSlopInDips = 7.0f;
+const float kMinScalingSpanInDips = 27.5f;
 
 class MockSyntheticGesture : public SyntheticGesture {
  public:
@@ -97,8 +98,12 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
     pointer_assumed_stopped_time_ms_ = time_ms;
   }
 
-  virtual int GetTouchSlopInDips() const OVERRIDE {
+  virtual float GetTouchSlopInDips() const OVERRIDE {
     return kTouchSlopInDips;
+  }
+
+  virtual float GetMinScalingSpanInDips() const OVERRIDE {
+    return kMinScalingSpanInDips;
   }
 
   bool flush_requested() const { return flush_requested_; }
@@ -191,7 +196,7 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
   };
 
   MockSyntheticPinchTouchTarget()
-      : total_num_pixels_covered_(0),
+      : initial_pointer_distance_(0),
         last_pointer_distance_(0),
         zoom_direction_(ZOOM_DIRECTION_UNKNOWN),
         started_(false) {}
@@ -209,6 +214,8 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
       start_0_ = gfx::PointF(touch_event.touches[0].position);
       start_1_ = gfx::PointF(touch_event.touches[1].position);
       last_pointer_distance_ = (start_0_ - start_1_).Length();
+      initial_pointer_distance_ = last_pointer_distance_;
+      EXPECT_GE(initial_pointer_distance_, GetMinScalingSpanInDips());
 
       started_ = true;
     } else {
@@ -218,8 +225,6 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
       gfx::PointF current_0 = gfx::PointF(touch_event.touches[0].position);
       gfx::PointF current_1 = gfx::PointF(touch_event.touches[1].position);
 
-      total_num_pixels_covered_ =
-          (current_0 - start_0_).Length() + (current_1 - start_1_).Length();
       float pointer_distance = (current_0 - current_1).Length();
 
       if (last_pointer_distance_ != pointer_distance) {
@@ -236,8 +241,23 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     }
   }
 
-  float total_num_pixels_covered() const { return total_num_pixels_covered_; }
   ZoomDirection zoom_direction() const { return zoom_direction_; }
+
+  float ComputeScaleFactor() const {
+    switch (zoom_direction_) {
+      case ZOOM_IN:
+        return last_pointer_distance_ /
+               (initial_pointer_distance_ + 2 * GetTouchSlopInDips());
+      case ZOOM_OUT:
+        return last_pointer_distance_ /
+               (initial_pointer_distance_ - 2 * GetTouchSlopInDips());
+      case ZOOM_DIRECTION_UNKNOWN:
+        return 1.0f;
+      default:
+        NOTREACHED();
+        return 0.0f;
+    }
+  }
 
  private:
   ZoomDirection ComputeZoomDirection(float last_pointer_distance,
@@ -247,7 +267,7 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
                                                             : ZOOM_OUT;
   }
 
-  float total_num_pixels_covered_;
+  float initial_pointer_distance_;
   float last_pointer_distance_;
   ZoomDirection zoom_direction_;
   gfx::PointF start_0_;
@@ -883,8 +903,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
 
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.zoom_in = true;
-  params.total_num_pixels_covered = 345;
+  params.scale_factor = 2.3f;
   params.anchor.SetPoint(54, 89);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
@@ -897,8 +916,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pinch_target->zoom_direction(),
             MockSyntheticPinchTouchTarget::ZOOM_IN);
-  EXPECT_EQ(params.total_num_pixels_covered + 2 * target_->GetTouchSlopInDips(),
-            pinch_target->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
 }
 
 TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
@@ -906,8 +924,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
 
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.zoom_in = false;
-  params.total_num_pixels_covered = 456;
+  params.scale_factor = 0.4f;
   params.anchor.SetPoint(-12, 93);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
@@ -920,17 +937,15 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pinch_target->zoom_direction(),
             MockSyntheticPinchTouchTarget::ZOOM_OUT);
-  EXPECT_EQ(params.total_num_pixels_covered + 2 * target_->GetTouchSlopInDips(),
-            pinch_target->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZeroPixelsCovered) {
+TEST_F(SyntheticGestureControllerTest, PinchGestureTouchNoScaling) {
   CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.zoom_in = true;
-  params.total_num_pixels_covered = 0;
+  params.scale_factor = 1.0f;
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
   QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
@@ -942,7 +957,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZeroPixelsCovered) {
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pinch_target->zoom_direction(),
             MockSyntheticPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
-  EXPECT_EQ(0, pinch_target->total_num_pixels_covered());
+  EXPECT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
 }
 
 TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {

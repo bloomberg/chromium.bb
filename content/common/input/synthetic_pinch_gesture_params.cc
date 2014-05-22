@@ -9,15 +9,13 @@
 namespace content {
 
 SyntheticPinchGestureParams::SyntheticPinchGestureParams()
-    : zoom_in(true),
-      total_num_pixels_covered(100),
+    : scale_factor(1.0f),
       relative_pointer_speed_in_pixels_s(500) {}
 
 SyntheticPinchGestureParams::SyntheticPinchGestureParams(
     const SyntheticPinchGestureParams& other)
     : SyntheticGestureParams(other),
-      zoom_in(other.zoom_in),
-      total_num_pixels_covered(other.total_num_pixels_covered),
+      scale_factor(other.scale_factor),
       anchor(other.anchor),
       relative_pointer_speed_in_pixels_s(
           other.relative_pointer_speed_in_pixels_s) {}

@@ -37,7 +37,9 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const OVERRIDE;
 
-  virtual int GetTouchSlopInDips() const OVERRIDE;
+  virtual float GetTouchSlopInDips() const OVERRIDE;
+
+  virtual float GetMinScalingSpanInDips() const OVERRIDE;
 
  private:
   // Enum values below need to be kept in sync with TouchEventSynthesizer.java

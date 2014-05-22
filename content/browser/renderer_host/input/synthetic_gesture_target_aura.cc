@@ -132,10 +132,14 @@ SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
   return SyntheticGestureParams::TOUCH_INPUT;
 }
 
-int SyntheticGestureTargetAura::GetTouchSlopInDips() const {
+float SyntheticGestureTargetAura::GetTouchSlopInDips() const {
   // - 1 because Aura considers a pointer to be moving if it has moved at least
   // 'max_touch_move_in_pixels_for_click' pixels.
   return ui::GestureConfiguration::max_touch_move_in_pixels_for_click() - 1;
+}
+
+float SyntheticGestureTargetAura::GetMinScalingSpanInDips() const {
+  return ui::GestureConfiguration::min_distance_for_pinch_scroll_in_pixels();
 }
 
 aura::Window* SyntheticGestureTargetAura::GetWindow() const {

@@ -51,8 +51,7 @@ class InputParamTraitsTest : public testing::Test {
   static void Compare(const SyntheticPinchGestureParams* a,
                       const SyntheticPinchGestureParams* b) {
     EXPECT_EQ(a->gesture_source_type, b->gesture_source_type);
-    EXPECT_EQ(a->zoom_in, b->zoom_in);
-    EXPECT_EQ(a->total_num_pixels_covered, b->total_num_pixels_covered);
+    EXPECT_EQ(a->scale_factor, b->scale_factor);
     EXPECT_EQ(a->anchor, b->anchor);
     EXPECT_EQ(a->relative_pointer_speed_in_pixels_s,
               b->relative_pointer_speed_in_pixels_s);
@@ -209,8 +208,7 @@ TEST_F(InputParamTraitsTest, SyntheticPinchGestureParams) {
   scoped_ptr<SyntheticPinchGestureParams> gesture_params(
       new SyntheticPinchGestureParams);
   gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  gesture_params->zoom_in = true;
-  gesture_params->total_num_pixels_covered = 123;
+  gesture_params->scale_factor = 2.3f;
   gesture_params->anchor.SetPoint(234, 345);
   gesture_params->relative_pointer_speed_in_pixels_s = 456;
   ASSERT_EQ(SyntheticGestureParams::PINCH_GESTURE,
