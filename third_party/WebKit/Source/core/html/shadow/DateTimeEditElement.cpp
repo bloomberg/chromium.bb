@@ -401,7 +401,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
 {
     DEFINE_STATIC_LOCAL(AtomicString, textPseudoId, ("-webkit-datetime-edit-text", AtomicString::ConstructFromLiteral));
     ASSERT(text.length());
-    RefPtr<HTMLDivElement> element = HTMLDivElement::create(m_editElement.document());
+    RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(m_editElement.document());
     element->setShadowPseudoId(textPseudoId);
     if (m_parameters.locale.isRTL() && text.length()) {
         Direction dir = direction(text[0]);
@@ -662,7 +662,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
 {
     DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId, ("-webkit-datetime-edit-fields-wrapper", AtomicString::ConstructFromLiteral));
     if (!firstChild()) {
-        RefPtr<HTMLDivElement> element = HTMLDivElement::create(document());
+        RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(document());
         element->setShadowPseudoId(fieldsWrapperPseudoId);
         appendChild(element.get());
     }

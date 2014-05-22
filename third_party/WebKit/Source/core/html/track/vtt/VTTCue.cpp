@@ -811,7 +811,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
     } else {
         // Let region be the WebVTT region whose region identifier
         // matches the text track cue region identifier of cue.
-        RefPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
+        RefPtrWillBeRawPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
 
         // Append the region to the viewport, if it was not already.
         if (!container.contains(regionNode.get()))

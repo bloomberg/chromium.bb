@@ -318,7 +318,7 @@ const AtomicString& VTTRegion::textTrackRegionShadowPseudoId()
     return trackRegionShadowPseudoId;
 }
 
-PassRefPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
+PassRefPtrWillBeRawPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
 {
     if (!m_regionDisplayTree) {
         m_regionDisplayTree = HTMLDivElement::create(document);

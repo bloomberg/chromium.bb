@@ -604,7 +604,6 @@ void MediaControlTextTrackContainerElement::updateDisplay()
     HTMLVideoElement& video = toHTMLVideoElement(mediaElement());
 
     // 3. Let output be an empty list of absolutely positioned CSS block boxes.
-    Vector<RefPtr<HTMLDivElement> > output;
 
     // 4. If the user agent is exposing a user interface for video, add to
     // output one or more completely transparent positioned CSS block boxes that

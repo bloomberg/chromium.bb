@@ -89,7 +89,7 @@ public:
 
     bool isScrollingRegion() { return m_scroll; }
 
-    PassRefPtr<HTMLDivElement> getDisplayTree(Document&);
+    PassRefPtrWillBeRawPtr<HTMLDivElement> getDisplayTree(Document&);
 
     void appendVTTCueBox(PassRefPtrWillBeRawPtr<VTTCueBox>);
     void displayLastVTTCueBox();
