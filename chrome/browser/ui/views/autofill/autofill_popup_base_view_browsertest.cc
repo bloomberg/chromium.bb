@@ -74,7 +74,14 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   AutofillPopupBaseView* view_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, GestureTest) {
+// Flaky on Win only.  http://crbug.com/376299
+#if defined(OS_WIN)
+#define MAYBE_GestureTest DISABLED_GestureTest
+#else
+#define MAYBE_GestureTest GestureTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MAYBE_GestureTest) {
   gfx::Rect bounds(0, 0, 5, 5);
   gfx::Point point = bounds.CenterPoint();
   EXPECT_CALL(mock_delegate_, popup_bounds()).WillRepeatedly(ReturnRef(bounds));
