@@ -221,7 +221,6 @@ public:
         HTMLHeadElementProfile = 207,
         OverflowChangedEvent = 208,
         SVGPointMatrixTransform = 209,
-        HTMLHtmlElementManifest = 210,
         DOMFocusInOutEvent = 211,
         FileGetLastModifiedDate = 212,
         HTMLElementInnerText = 213,
