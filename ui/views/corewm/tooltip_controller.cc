@@ -186,7 +186,14 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED: {
       curr_mouse_loc_ = event->location();
-      aura::Window* target = GetTooltipTarget(*event, &curr_mouse_loc_);
+      aura::Window* target = NULL;
+      // Avoid a call to gfx::Screen::GetWindowAtScreenPoint() since it can be
+      // very expensive on X11 in cases when the tooltip is hidden anyway.
+      if (tooltips_enabled_ &&
+          !aura::Env::GetInstance()->IsMouseButtonDown() &&
+          !IsDragDropInProgress()) {
+        target = GetTooltipTarget(*event, &curr_mouse_loc_);
+      }
       SetTooltipWindow(target);
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
