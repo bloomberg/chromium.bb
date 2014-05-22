@@ -108,9 +108,9 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     webViewImpl->setPageScaleFactor(2);
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
-    RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
-    DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->domWindow();
-    RenderObject* docRenderer = webViewImpl->page()->mainFrame()->document()->renderer();
+    RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+    DOMWindow* domWindow = document->domWindow();
+    RenderObject* docRenderer = document->renderer();
 
     {
         WebMouseEvent webMouseEvent;
@@ -317,7 +317,6 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
-    RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
 
     {
         WebMouseEvent webMouseEvent;
@@ -461,9 +460,9 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     webViewImpl->layout();
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
-    RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
-    DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->domWindow();
-    RenderObject* docRenderer = webViewImpl->page()->mainFrame()->document()->renderer();
+    RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+    DOMWindow* domWindow = document->domWindow();
+    RenderObject* docRenderer = document->renderer();
 
     {
         WebGestureEvent webGestureEvent;

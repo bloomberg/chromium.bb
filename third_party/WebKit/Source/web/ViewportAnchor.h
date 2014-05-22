@@ -35,6 +35,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -66,7 +67,7 @@ private:
 
     WebCore::IntRect m_viewRect;
 
-    RefPtr<WebCore::Node> m_anchorNode;
+    RefPtrWillBePersistent<WebCore::Node> m_anchorNode;
     WebCore::LayoutRect m_anchorNodeBounds;
 
     WebCore::FloatSize m_anchorInViewCoords;

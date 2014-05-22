@@ -69,7 +69,7 @@ private:
     void reallyDestroy(WebCore::Timer<WebHelperPluginImpl>*);
 
     WebCore::Timer<WebHelperPluginImpl> m_destructionTimer;
-    RefPtr<WebCore::HTMLObjectElement> m_objectElement;
+    RefPtrWillBePersistent<WebCore::HTMLObjectElement> m_objectElement;
     RefPtr<WebPluginContainerImpl> m_pluginContainer;
 };
 

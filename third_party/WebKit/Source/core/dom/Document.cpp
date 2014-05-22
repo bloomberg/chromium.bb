@@ -5578,7 +5578,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     if (!frame() || !frame()->page())
         return;
 
-    Vector<RefPtr<Element> > associatedFormControls;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > associatedFormControls;
     copyToVector(m_associatedFormControls, associatedFormControls);
 
     frame()->page()->chrome().client().didAssociateFormControls(associatedFormControls);

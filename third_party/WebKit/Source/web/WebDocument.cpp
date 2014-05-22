@@ -208,16 +208,16 @@ WebDocumentType WebDocument::doctype() const
 
 void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
-    RefPtr<Document> document = unwrap<Document>();
+    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
     ASSERT(document);
-    RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document.get(), 0));
+    RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
     parsedSheet->parseString(sourceCode);
     document->styleEngine()->addAuthorSheet(parsedSheet);
 }
 
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
 {
-    RefPtr<Document> document = unwrap<Document>();
+    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
     Vector<String> selectors;
     selectors.append(webSelectors.data(), webSelectors.size());
     CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);

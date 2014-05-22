@@ -677,7 +677,7 @@ private:
     OwnPtr<SettingsMap> m_inspectorSettingsMap;
 
     // If set, the (plugin) node which has mouse capture.
-    RefPtr<WebCore::Node> m_mouseCaptureNode;
+    RefPtrWillBePersistent<WebCore::Node> m_mouseCaptureNode;
     RefPtr<WebCore::UserGestureToken> m_mouseCaptureGestureToken;
 
     WebCore::IntRect m_rootLayerScrollDamage;

@@ -173,7 +173,7 @@ public:
     virtual bool requestPointerLock() OVERRIDE;
     virtual void requestPointerUnlock() OVERRIDE;
 
-    virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
+    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<WebCore::Element> >&) OVERRIDE;
     virtual void didChangeValueInTextField(WebCore::HTMLFormControlElement&) OVERRIDE;
     virtual void didEndEditingOnTextField(WebCore::HTMLInputElement&) OVERRIDE;
     virtual void handleKeyboardEventOnTextField(WebCore::HTMLInputElement&, WebCore::KeyboardEvent&) OVERRIDE;

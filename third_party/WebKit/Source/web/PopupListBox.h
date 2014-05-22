@@ -274,7 +274,7 @@ private:
     int m_maxWindowWidth;
 
     // To forward last mouse release event.
-    RefPtr<WebCore::Element> m_focusedElement;
+    RefPtrWillBePersistent<WebCore::Element> m_focusedElement;
 };
 
 } // namespace blink

@@ -90,7 +90,7 @@ private:
     OwnPtr<WebLayer> m_clipLayer;
     WebCore::Path m_path;
 
-    RefPtr<WebCore::Node> m_node;
+    RefPtrWillBePersistent<WebCore::Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
     WebCore::GraphicsLayer* m_currentGraphicsLayer;
 

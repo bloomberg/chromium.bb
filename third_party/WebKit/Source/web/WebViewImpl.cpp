@@ -1856,7 +1856,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-        RefPtr<Node> node = m_mouseCaptureNode;
+        RefPtrWillBeRawPtr<Node> node = m_mouseCaptureNode;
 
         // Not all platforms call mouseCaptureLost() directly.
         if (inputEvent.type == WebInputEvent::MouseUp)
@@ -2506,11 +2506,11 @@ void WebViewImpl::clearFocusedElement()
 
     LocalFrame* localFrame = toLocalFrame(frame.get());
 
-    RefPtr<Document> document = localFrame->document();
+    RefPtrWillBeRawPtr<Document> document = localFrame->document();
     if (!document)
         return;
 
-    RefPtr<Element> oldFocusedElement = document->focusedElement();
+    RefPtrWillBeRawPtr<Element> oldFocusedElement = document->focusedElement();
 
     // Clear the focused node.
     document->setFocusedElement(nullptr);
@@ -3047,12 +3047,11 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
                                            const WebPoint& location)
 {
     HitTestResult result = hitTestResultForWindowPos(location);
-    RefPtr<Node> node = result.innerNonSharedNode();
+    RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
     if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
 
-    RefPtr<HTMLMediaElement> mediaElement =
-        static_pointer_cast<HTMLMediaElement>(node);
+    RefPtrWillBeRawPtr<HTMLMediaElement> mediaElement = static_pointer_cast<HTMLMediaElement>(node);
     switch (action.type) {
     case WebMediaPlayerAction::Play:
         if (action.enable)
@@ -3078,7 +3077,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
                                       const WebPoint& location)
 {
     HitTestResult result = hitTestResultForWindowPos(location);
-    RefPtr<Node> node = result.innerNonSharedNode();
+    RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 
