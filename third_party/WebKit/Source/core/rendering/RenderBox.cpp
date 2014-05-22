@@ -4065,16 +4065,7 @@ bool RenderBox::shrinkToAvoidFloats() const
 
 bool RenderBox::avoidsFloats() const
 {
-    // CSS2.1: "The border box of a table, a block-level replaced element, or an element in the normal flow that establishes a new block formatting
-    // context .. must not overlap the margin box of any floats in the same block formatting context."
-    // FIXME: The inclusion of horizontal rule and legend elements here isn't covered by any spec.
-    return isReplaced() || isHR() || isLegend() || isTable() || (!isFloatingOrOutOfFlowPositioned() && createsBlockFormattingContext());
-}
-
-bool RenderBox::createsBlockFormattingContext() const
-{
-    return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
-        || style()->specifiesColumns() || isRenderFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isDocumentElement() || style()->columnSpan();
+    return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
