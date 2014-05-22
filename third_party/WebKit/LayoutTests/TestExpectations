@@ -968,14 +968,17 @@ crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Imag
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure ]
+crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Win ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
+crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Mac ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
@@ -988,3 +991,5 @@ crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
 # Temporarily disabled so crrev.com/277583002 can land
 crbug.com/370056 storage/indexeddb/createIndex-after-failure.html [ Skip ]
+
+crbug.com/376432 [ Linux ] crypto/rsa-oaep-generateKey-parseAlgorithm-failures.html [ Failure ]
