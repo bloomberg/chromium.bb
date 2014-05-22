@@ -80,14 +80,9 @@ const char *__asan_default_options() {
 //   report_thread_leaks=0 - do not report unjoined threads at the end of
 //     the program execution.
 //   print_suppressions=1 - print the list of matched suppressions.
-//   suppressions=<path> - path to the suppressions file.
-//   external_symbolizer_path=<path> - path to the llvm-symbolizer binary.
 const char kTsanDefaultOptions[] =
     "detect_deadlocks=1 second_deadlock_stack=1 report_signal_unsafe=0 "
-    "report_thread_leaks=0 print_suppressions=1 "
-    "suppressions=tools/valgrind/tsan_v2/suppressions.txt "
-    "external_symbolizer_path="
-    "third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer ";
+    "report_thread_leaks=0 print_suppressions=1 ";
 
 extern "C"
 __attribute__((no_sanitize_thread))
