@@ -8,7 +8,7 @@ Chrome Apps are structured similarly to extensions
 so current developers will recognize the manifest and packaging methods.
 When you're done,
 you'll just need to produce a zip file of your code and assets
-in order to <a href="publish_app.html">publish</a> your app.
+in order to <a href="publish_app">publish</a> your app.
 </p>
 
 <p>
@@ -38,7 +38,7 @@ sample.
 
 <p>
 First create your <code>manifest.json</code> file
-(<a href="manifest.html">Formats: Manifest Files</a>
+(<a href="manifest">Formats: Manifest Files</a>
 describes this manifest in detail):
 </p>
 
@@ -60,7 +60,7 @@ describes this manifest in detail):
 <p class="note">
 <b>Important:</b>
 Chrome Apps <b>must</b> use
-<a href="manifestVersion.html">manifest version 2</a>.
+<a href="manifestVersion">manifest version 2</a>.
 </p>
 
 <h2 id="two">Step 2: Create the background script</h2>
@@ -83,7 +83,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 <p>
 In the above sample code,
-the <a href="app_lifecycle.html#lifecycle">onLaunched event</a>
+the <a href="app_lifecycle#lifecycle">onLaunched event</a>
 will be fired when the user starts the app.
 It then immediately opens a window for the app of the specified width and height.
 Your background script may contain additional listeners,

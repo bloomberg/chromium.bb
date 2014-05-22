@@ -90,7 +90,7 @@
         "name": "connect",
         "nocompile": true,
         "type": "function",
-        "description": "Connects to the content script(s) in the specified tab. The $(ref:runtime.onConnect) event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='messaging.html'>Content Script Messaging</a>.",
+        "description": "Connects to the content script(s) in the specified tab. The $(ref:runtime.onConnect) event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='messaging'>Content Script Messaging</a>.",
         "parameters": [
           {
             "type": "integer",
@@ -181,7 +181,7 @@
             "name": "windowId",
             "minimum": -2,
             "optional": true,
-            "description": "Defaults to the <a href='windows.html#current-window'>current window</a>."
+            "description": "Defaults to the <a href='windows#current-window'>current window</a>."
           },
           {
             "type": "function",
@@ -203,7 +203,7 @@
             "name": "windowId",
             "minimum": -2,
             "optional": true,
-            "description": "Defaults to the <a href='windows.html#current-window'>current window</a>."
+            "description": "Defaults to the <a href='windows#current-window'>current window</a>."
             },
           {
             "type": "function",
@@ -227,7 +227,7 @@
                 "type": "integer",
                 "minimum": -2,
                 "optional": true,
-                "description": "The window to create the new tab in. Defaults to the <a href='windows.html#current-window'>current window</a>."
+                "description": "The window to create the new tab in. Defaults to the <a href='windows#current-window'>current window</a>."
               },
               "index": {
                 "type": "integer",
@@ -331,7 +331,7 @@
               "currentWindow": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether the tabs are in the <a href='windows.html#current-window'>current window</a>."
+                "description": "Whether the tabs are in the <a href='windows#current-window'>current window</a>."
               },
               "lastFocusedWindow": {
                 "type": "boolean",
@@ -352,13 +352,13 @@
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "Match tabs against a <a href='match_patterns.html'>URL pattern</a>. Note that fragment identifiers are not matched."
+                "description": "Match tabs against a <a href='match_patterns'>URL pattern</a>. Note that fragment identifiers are not matched."
               },
               "windowId": {
                 "type": "integer",
                 "optional": true,
                 "minimum": -2,
-                "description": "The ID of the parent window, or $(ref:windows.WINDOW_ID_CURRENT) for the <a href='windows.html#current-window'>current window</a>."
+                "description": "The ID of the parent window, or $(ref:windows.WINDOW_ID_CURRENT) for the <a href='windows#current-window'>current window</a>."
               },
               "windowType": {
                 "type": "string",
@@ -436,7 +436,7 @@
             "name": "tabId",
             "minimum": 0,
             "optional": true,
-            "description": "Defaults to the selected tab of the <a href='windows.html#current-window'>current window</a>."
+            "description": "Defaults to the selected tab of the <a href='windows#current-window'>current window</a>."
           },
           {
             "type": "object",
@@ -585,7 +585,7 @@
             "name": "tabId",
             "minimum": 0,
             "optional": true,
-            "description": "Defaults to the active tab of the <a href='windows.html#current-window'>current window</a>."
+            "description": "Defaults to the active tab of the <a href='windows#current-window'>current window</a>."
           },
           {
             "type": "function",
@@ -603,14 +603,14 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='declare_permissions.html'>&lt;all_urls&gt;</a> permission to use this method.",
+        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='declare_permissions'>&lt;all_urls&gt;</a> permission to use this method.",
         "parameters": [
           {
             "type": "integer",
             "name": "windowId",
             "minimum": -2,
             "optional": true,
-            "description": "The target window. Defaults to the <a href='windows.html#current-window'>current window</a>."
+            "description": "The target window. Defaults to the <a href='windows#current-window'>current window</a>."
           },
           {
             "$ref": "types.ImageDetails",
@@ -627,7 +627,7 @@
       {
         "name": "executeScript",
         "type": "function",
-        "description": "Injects JavaScript code into a page. For details, see the <a href='content_scripts.html#pi'>programmatic injection</a> section of the content scripts doc.",
+        "description": "Injects JavaScript code into a page. For details, see the <a href='content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0, "optional": true, "description": "The ID of the tab in which to run the script; defaults to the active tab of the current window."},
           {
@@ -655,7 +655,7 @@
       {
         "name": "insertCSS",
         "type": "function",
-        "description": "Injects CSS into a page. For details, see the <a href='content_scripts.html#pi'>programmatic injection</a> section of the content scripts doc.",
+        "description": "Injects CSS into a page. For details, see the <a href='content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0, "optional": true, "description": "The ID of the tab in which to insert the CSS; defaults to the active tab of the current window."},
           {

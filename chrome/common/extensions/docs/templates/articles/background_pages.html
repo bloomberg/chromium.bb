@@ -3,7 +3,7 @@
 
 <p id="eventPageWarning" class="warning">
   <em>Caution:</em> Consider using event pages instead.
-  <a href="event_pages.html">Learn more</a>.
+  <a href="event_pages">Learn more</a>.
 </p>
 
 <p>
@@ -13,11 +13,11 @@ Background pages to the rescue.
 </p>
 
 <p>
-As the <a href="overview.html#arch">architecture overview</a> explains,
+As the <a href="overview#arch">architecture overview</a> explains,
 the background page is an HTML page that runs in the extension process.
 It exists for the lifetime of your extension,
 and only one instance of it at a time is active. (Exception: if your
-extension uses <a href="manifest/incognito.html">incognito</a>
+extension uses <a href="manifest/incognito">incognito</a>
 "split" mode, a second instance is created for incognito windows.)
 </p>
 
@@ -37,7 +37,7 @@ the background page tells the views to update.
 
 <p>
 Register your background page in the
-<a href="manifest.html">extension manifest</a>.
+<a href="manifest">extension manifest</a>.
 In the common case, a background page
 does not require any HTML markup.
 These kind of background pages can be
@@ -83,7 +83,7 @@ property instead:
 If you need the browser to start up early&mdash;so
 you can display notifications, for example&mdash;then
 you might also want to specify the
-<a href="declare_permissions.html#background">"background" permission</a>.
+<a href="declare_permissions#background">"background" permission</a>.
 </p>
 
 

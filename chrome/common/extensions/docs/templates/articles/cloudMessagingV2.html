@@ -2,7 +2,7 @@
 <h1 id="gcm">Google Cloud Messaging</h1>
 
 <p>Google Cloud Messaging (GCM) is a service for both Android-powered device and
-Chrome instances to send and receive message data from servers. <a href="gcm.html">GCM Chrome
+Chrome instances to send and receive message data from servers. <a href="gcm">GCM Chrome
 API</a> allows the Chrome apps or extensions to access the GCM
 service for the signed-in Chrome users. The service works even if an app or
 extension isn't currently running. For example, calendar updates could be pushed
@@ -13,7 +13,7 @@ Service</a> and <a href="https://developers.google.com/cloud/terms/">Google Clou
 of Service</a>.</p>
 
 <p>This document describes how to set up and use GCM. For additional information
-see the reference documentation for the <a href="gcm.html">GCM Chrome API</a> and
+see the reference documentation for the <a href="gcm">GCM Chrome API</a> and
 the <a href="http://developer.android.com/google/gcm/index.html">GCM Service</a>. To get
 help with GCM or to give us feedback, please see
 <a href="#feedback">Feedback</a>.</p>
@@ -121,7 +121,7 @@ Android</strong> toggle to ON.</li>
 
 <p>Please note that the <code>storage</code> permission is also provided here because the
 sample codes below needs to persist some data via the
-<a href="storage.html">chrome.storage</a> API.</p>
+<a href="storage">chrome.storage</a> API.</p>
 
 <h2 id="write_chrome_app_or_extension">Write Chrome App or Extension</h2>
 
@@ -234,7 +234,7 @@ recommended to stay unique across the lifetime of your app or extension, even
 after it restarts. If you use the same message ID, there may be a chance that
 the previous message gets overridden. If an auto-increment counter is used to
 create the message ID, your app or extension should persist the counter value
-via <a href="storage.html">chrome.storage</a> API and restore it when the app
+via <a href="storage">chrome.storage</a> API and restore it when the app
 reloads.</li>
 <li>Destination ID that identifies the server. This is the project number from the
 Google Developers Console plus the suffix "@gcm.googleapis.com".</li>

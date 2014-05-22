@@ -1,11 +1,11 @@
 <h1 id="lab_5_manage_data">Save and Fetch Data</h1>
 
-<p>The <a href="app_codelab3_mvc.html">sample from Lab 3</a>
+<p>The <a href="app_codelab3_mvc">sample from Lab 3</a>
 uses a static array of Todos.
 Every time your app restarts,
 whatever you&#39;ve changed is lost.
 In this section, we will save every change using
-<a href="storage.html">chrome.storage.sync</a>.
+<a href="storage">chrome.storage.sync</a>.
 </p>
 
 <p>
@@ -407,26 +407,26 @@ or <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab5_
 
 <h2 id="challenge_">Challenge</h2>
 
-<p>The current code only saves the file reference, but it doesn&#39;t open the file. Using the <a href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5 Filesystem API</a>, save the file contents in a sandboxed filesystem. When the Todo item is archived, remove the corresponding file from the sandboxed filesystem. Add an &quot;open&quot; link on each Todo that has an associated file. When the item is clicked and the file exists in the sandboxed filesystem, use the Chrome App <a href="fileSystem.html">Filesystem API</a> to request a writable FileEntry from the user. Save the file data from the sandboxed filesystem into that entry.</p>
+<p>The current code only saves the file reference, but it doesn&#39;t open the file. Using the <a href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5 Filesystem API</a>, save the file contents in a sandboxed filesystem. When the Todo item is archived, remove the corresponding file from the sandboxed filesystem. Add an &quot;open&quot; link on each Todo that has an associated file. When the item is clicked and the file exists in the sandboxed filesystem, use the Chrome App <a href="fileSystem">Filesystem API</a> to request a writable FileEntry from the user. Save the file data from the sandboxed filesystem into that entry.</p>
 
 <p class="note"><b>Tip:</b>  managing file entries using the raw HTML5 Filesystem API is not trivial. You might want to use a wrapper library, like Eric Bidelman&#39;s <a href="https://github.com/ebidel/filer.js">filer.js</a>.</p>
 
 <h2 id="takeaways_">Takeaways</h2>
 
 <ul>
-<li><p>Use <a href="storage.html">chrome.storage.sync</a> to save small data that you need to be sync&#39;ed among devices, like configuration options, application state, etc. The sync is automatic, as long as the same user is logged into Chrome on all devices.</p></li>
+<li><p>Use <a href="storage">chrome.storage.sync</a> to save small data that you need to be sync&#39;ed among devices, like configuration options, application state, etc. The sync is automatic, as long as the same user is logged into Chrome on all devices.</p></li>
 <li><p>Chrome Apps support almost all HTML5 APIs, such as drag and drop.
 HTML Filesystem API is also supported, with extra features from the Chrome App&#39;s
-<a href="fileSystem.html">Filesystem API</a>,
+<a href="fileSystem">Filesystem API</a>,
 like asking the user to pick files on her local disk for read and write.
 The vanilla HTML5 Filesystem API only allows access to a sandboxed filesystem.</p></li>
 </ul>
 
 <h2 id="you_should_also_read">You should also read</h2>
 
-<p><a href="app_storage.html">Manage Data</a> tutorial</p>
+<p><a href="app_storage">Manage Data</a> tutorial</p>
 
 <h2 id="what_39_s_next_">What's next?</h2>
 
-<p>In <a href="app_codelab6_lifecycle.html">5 - Manage App Lifecycle</a>,
+<p>In <a href="app_codelab6_lifecycle">5 - Manage App Lifecycle</a>,
 you will learn the basics of the Chrome App lifecycle. </p>

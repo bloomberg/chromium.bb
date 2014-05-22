@@ -29,7 +29,7 @@ They <b>cannot</b>:
   <li>
     Use chrome.* APIs
     (except for parts of
-    <a href="extension.html"><code>chrome.extension</code></a>)
+    <a href="extension"><code>chrome.extension</code></a>)
   </li>
   <li>
     Use variables or functions defined by their extension's pages
@@ -44,10 +44,10 @@ These limitations aren't as bad as they sound.
 Content scripts can <em>indirectly</em> use the chrome.* APIs,
 get access to extension data,
 and request extension actions
-by exchanging <a href="messaging.html">messages</a>
+by exchanging <a href="messaging">messages</a>
 with their parent extension.
 Content scripts can also
-make <a href="xhr.html">cross-site XMLHttpRequests</a>
+make <a href="xhr">cross-site XMLHttpRequests</a>
 to the same sites as their parent extensions,
 and they can
 <a href="#host-page-communication">communicate with web pages</a>
@@ -61,7 +61,7 @@ learn about the
 
 <p>If your content script's code should always be injected,
 register it in the
-<a href="manifest.html">extension manifest</a>
+<a href="manifest">extension manifest</a>
 using the <code>content_scripts</code> field,
 as in the following example.
 </p>
@@ -84,7 +84,7 @@ as in the following example.
 <p>
 If you want to inject the code only sometimes,
 use the
-<a href="declare_permissions.html"><code>permissions</code></a> field instead,
+<a href="declare_permissions"><code>permissions</code></a> field instead,
 as described in <a href="#pi">Programmatic injection</a>.
 </p>
 
@@ -117,7 +117,7 @@ can have the following properties:</p>
     <td>array of strings</td>
     <td><em>Required.</em>
     Specifies which pages this content script will be injected into.
-    See <a href="match_patterns.html">Match Patterns</a>
+    See <a href="match_patterns">Match Patterns</a>
     for more details on the syntax of these strings
     and <a href="#match-patterns-globs">Match patterns and globs</a>
     for information on how to exclude URLs.</td>
@@ -128,7 +128,7 @@ can have the following properties:</p>
     <td><em>Optional.</em>
     Excludes pages that this content script would otherwise be
     injected into.
-    See <a href="match_patterns.html">Match Patterns</a>
+    See <a href="match_patterns">Match Patterns</a>
     for more details on the syntax of these strings
     and <a href="#match-patterns-globs">Match patterns and globs</a>
     for information on how to exclude URLs.</td>
@@ -224,7 +224,7 @@ For example, assume <code>matches</code> is <code>["http://*.nytimes.com/*"]</co
 <p>
 
 <p>
-Glob properties follow a different, more flexible syntax than <a href="match_patterns.html">match patterns</a>.  Acceptable glob strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) matches any string of any length (including the empty string); the question mark (?) matches any single character.
+Glob properties follow a different, more flexible syntax than <a href="match_patterns">match patterns</a>.  Acceptable glob strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) matches any string of any length (including the empty string); the question mark (?) matches any single character.
 </p>
 
 <p>
@@ -257,12 +257,12 @@ only when the user clicks a browser action's icon.
 <p>
 To insert code into a page,
 your extension must have
-<a href="xhr.html#requesting-permission">cross-origin permissions</a>
+<a href="xhr#requesting-permission">cross-origin permissions</a>
 for the page.
 It also must be able to use the <code>chrome.tabs</code> module.
 You can get both kinds of permission
 using the manifest file's
-<a href="declare_permissions.html">permissions</a> field.
+<a href="declare_permissions">permissions</a> field.
 </p>
 
 <p>
@@ -383,7 +383,7 @@ document.getElementById("theButton").addEventListener("click",
 First, be careful not to introduce security vulnerabilities into the web site
 your content script is injected into.  For example, if your content script
 receives content from another web site (for example, by making an <a
-href="xhr.html">XMLHttpRequest</a>),
+href="xhr">XMLHttpRequest</a>),
 be careful to filter that content for <a
 href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
 scripting</a> attacks before injecting the content into the current page.
@@ -442,11 +442,11 @@ document.getElementById("someImage").src = imgURL;
 
 <p>
 You can find many
-<a href="samples.html#script">examples that use content scripts</a>.
+<a href="samples#script">examples that use content scripts</a>.
 A simple example of communication via messages is in the
-<a href="samples.html#message-timer">Message Timer</a>.
-See <a href="samples.html#page-redder">Page Redder</a> and
-<a href="samples.html#email-this-page-(by-google)">Email This Page</a>
+<a href="samples#message-timer">Message Timer</a>.
+See <a href="samples#page-redder">Page Redder</a> and
+<a href="samples#email-this-page-(by-google)">Email This Page</a>
 for examples of programmatic injection.
 </p>
 

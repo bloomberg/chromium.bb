@@ -24,7 +24,7 @@
             "description": "A human readable description of the resource."
           }
         },
-        "description": "The only content type using resource identifiers is $(ref:contentSettings.plugins). For more information, see <a href=\"contentSettings.html#resource-identifiers\">Resource Identifiers</a>."
+        "description": "The only content type using resource identifiers is $(ref:contentSettings.plugins). For more information, see <a href=\"contentSettings#resource-identifiers\">Resource Identifiers</a>."
       },
       {
         "id": "ContentSetting",
@@ -115,11 +115,11 @@
                 "properties": {
                   "primaryPattern": {
                     "type": "string",
-                    "description": "The pattern for the primary URL. For details on the format of a pattern, see <a href='contentSettings.html#patterns'>Content Setting Patterns</a>."
+                    "description": "The pattern for the primary URL. For details on the format of a pattern, see <a href='contentSettings#patterns'>Content Setting Patterns</a>."
                   },
                   "secondaryPattern": {
                     "type": "string",
-                    "description": "The pattern for the secondary URL. Defaults to matching all URLs. For details on the format of a pattern, see <a href='contentSettings.html#patterns'>Content Setting Patterns</a>.",
+                    "description": "The pattern for the secondary URL. Defaults to matching all URLs. For details on the format of a pattern, see <a href='contentSettings#patterns'>Content Setting Patterns</a>.",
                     "optional": true
                   },
                   "resourceIdentifier": {

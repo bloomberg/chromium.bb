@@ -25,9 +25,9 @@ to build a media player app using Sencha Ext JS:
 
 <ul>
   <li>Create manifest, <code>manifest.json</code>.</li>
-  <li>Create <a href="app_lifecycle.html#eventpage">event page</a>,
+  <li>Create <a href="app_lifecycle#eventpage">event page</a>,
     <code>background.js</code>.</li>
-  <li><a href="app_external.html#sandboxing">Sandbox</a> app's logic.</li>
+  <li><a href="app_external#sandboxing">Sandbox</a> app's logic.</li>
   <li>Communicate between Chrome App and sandboxed files.</li>
   <li>Discover media servers.</li>
   <li>Explore and play media.</li>
@@ -38,7 +38,7 @@ to build a media player app using Sencha Ext JS:
 
 <p>
 All Chrome Apps require a
-<a href="manifest.html">manifest file</a>
+<a href="manifest">manifest file</a>
 which contains the information Chrome needs to launch apps.
 As indicated in the manifest,
 the media player app is "offline_enabled";
@@ -50,10 +50,10 @@ accessed and played regardless of connectivity.
 The "sandbox" field is used
 to sandbox the app's main logic in a unique origin.
 All sandboxed content is exempt from the Chrome App
-<a href="contentSecurityPolicy.html">Content Security Policy</a>,
+<a href="contentSecurityPolicy">Content Security Policy</a>,
 but cannot directly access the Chrome App APIs. 
 The manifest also includes the "socket" permission;
-the media player app uses the <a href="socket.html">socket API</a>
+the media player app uses the <a href="socket">socket API</a>
 to connect to a media server over the network.
 </p>
 
@@ -117,7 +117,7 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
 <h2 id="three">Sandbox app's logic</h2>
 
 <p>Chrome Apps run in a controlled environment
-that enforces a strict <a href="contentSecurityPolicy.html">Content Security Policy (CSP)</a>.
+that enforces a strict <a href="contentSecurityPolicy">Content Security Policy (CSP)</a>.
 The media player app needs some higher privileges to render the Ext JS components.
 To comply with CSP and execute the app logic,
 the app's main page, <code>index.html</code>, creates an iframe
@@ -253,7 +253,7 @@ calls <a href="https://github.com/GoogleChrome/sencha-video-player-app/blob/mast
 
 <p>
 The <code>Upnp library</code> uses the Chrome App
-<a href="app_network.html">socket API</a>
+<a href="app_network">socket API</a>
 to connect the media player app with any discovered media servers
 and receive media data from the media server.
 <code>Upnp.js</code> also uses

@@ -13,7 +13,7 @@
 
 <p>
   Extensions, themes, and applications are simply bundles of resources, wrapped
-  up with a <a href="manifest.html"><code>manifest.json</code></a> file that
+  up with a <a href="manifest"><code>manifest.json</code></a> file that
   describes the package's contents. The format of this file is generally stable,
   but occasionally breaking changes must be made to address important issues.
   Developers should specify which version of the manifest specification their
@@ -93,7 +93,7 @@
       A content security policy is set to <code>`script-src 'self'
       chrome-extension-resource:; object-src 'self'</code> by default. This has
       a variety of impacts on developers, described at length in the
-      <a href="../extensions/contentSecurityPolicy.html">
+      <a href="../extensions/contentSecurityPolicy">
       <code>content_security_policy</code></a> documentation.
     </p>
   </li>
@@ -103,7 +103,7 @@
       websites (as the <code>src</code> of an image, or a <code>script</code>
       tag). If you want a website to be able to load a resource contained in
       your package, you'll need to explicitly whitelist it via the
-      <a href="manifest/web_accessible_resources.html">
+      <a href="manifest/web_accessible_resources">
         <code>web_accessible_resources</code>
       </a> manifest attribute. This is particularly relevant for extensions that
       build up an interface on a website via injected content scripts.
@@ -114,7 +114,7 @@
       The <code>background_page</code> property has been replaced with a
       <code>background</code> property that contains <em>either</em> a
       <code>scripts</code> or <code>page</code> property. Details are available
-      in the <a href="event_pages.html">Event Pages</a> documentation.
+      in the <a href="event_pages">Event Pages</a> documentation.
     </p>
   </li>
   <li>
@@ -124,7 +124,7 @@
         <p>
           The <code>browser_actions</code> key in the manifest, and the
           <code>chrome.browserActions</code> API are gone. Use the singular
-          <a href="browserAction.html">
+          <a href="browserAction">
             <code>browser_action</code> and <code>chrome.browserAction</code>
           </a> instead.
         </p>
@@ -132,7 +132,7 @@
       <li>
         <p>
           The <code>icons</code> property of <code>browser_action</code> has
-          been removed. Use <a href="browserAction.html#manifest">
+          been removed. Use <a href="browserAction#manifest">
             the <code>default_icon</code> property
           </a> or $(ref:browserAction.setIcon) instead.
         </p>
@@ -140,7 +140,7 @@
       <li>
         <p>
           The <code>name</code> property of <code>browser_action</code> has been
-          removed. Use <a href="browserAction.html#manifest">
+          removed. Use <a href="browserAction#manifest">
             the <code>default_title</code> property
           </a> or $(ref:browserAction.setTitle) instead.
         </p>
@@ -148,7 +148,7 @@
       <li>
         <p>
           The <code>popup</code> property of <code>browser_action</code> has
-          been removed. Use <a href="browserAction.html#manifest">
+          been removed. Use <a href="browserAction#manifest">
             the <code>default_popup</code> property
           </a> or $(ref:browserAction.setPopup) instead.
         </p>
@@ -168,7 +168,7 @@
         <p>
           The <code>page_actions</code> key in the manifest, and the
           <code>chrome.pageActions</code> API are gone. Use the singular
-          <a href="pageAction.html">
+          <a href="pageAction">
             <code>page_action</code> and <code>chrome.pageAction</code>
           </a> instead.
         </p>
@@ -176,7 +176,7 @@
       <li>
         <p>
           The <code>icons</code> property of <code>page_action</code> has been
-          removed. Use <a href="pageAction.html#manifest">
+          removed. Use <a href="pageAction#manifest">
             the <code>default_icon</code> property
           </a> or $(ref:pageAction.setIcon) instead.
         </p>
@@ -184,7 +184,7 @@
       <li>
         <p>
           The <code>name</code> property of <code>page_action</code> has been
-          removed. Use <a href="pageAction.html#manifest">
+          removed. Use <a href="pageAction#manifest">
             the <code>default_title</code> property
           </a> or $(ref:pageAction.setTitle) instead.
         </p>
@@ -192,7 +192,7 @@
       <li>
         <p>
           The <code>popup</code> property of <code>page_action</code> has been
-          removed. Use <a href="pageAction.html#manifest">
+          removed. Use <a href="pageAction#manifest">
             the <code>default_popup</code> property
           </a> or $(ref:pageAction.setPopup) instead.
         </p>
@@ -208,7 +208,7 @@
   <li>
     <p>
       The <code>chrome.self</code> API has been removed. Use
-      <a href="extension.html"><code>chrome.extension</code></a> instead.
+      <a href="extension"><code>chrome.extension</code></a> instead.
     </p>
   </li>
   <li>

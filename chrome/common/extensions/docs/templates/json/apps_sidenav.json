@@ -4,7 +4,7 @@
     "items": [
       {
         "title": "What Are Chrome Apps?",
-        "href": "/apps/about_apps.html"
+        "href": "/apps/about_apps"
       }
     ]
   },
@@ -13,7 +13,7 @@
     "items": [
       {
         "title": "Create Your First App",
-        "href": "/apps/first_app.html"
+        "href": "/apps/first_app"
       },
       {
         "title": "Tutorials",
@@ -25,39 +25,39 @@
             "items": [
               {
                 "title": "About this Codelab",
-                "href": "/apps/app_codelab.html"
+                "href": "/apps/app_codelab"
               },
               {
                 "title": "1 - Set Up Development Environment",
-                "href": "/apps/app_codelab1_setup.html"
+                "href": "/apps/app_codelab1_setup"
               },
               {
                 "title": "2 - Create Basic App",
-                "href": "/apps/app_codelab2_basic.html"
+                "href": "/apps/app_codelab2_basic"
               },
               {
                 "title": "3 - Create MVC",
-                "href": "/apps/app_codelab3_mvc.html"
+                "href": "/apps/app_codelab3_mvc"
               },
               {
                 "title": "4 - Save and Fetch Data",
-                "href": "/apps/app_codelab5_data.html"
+                "href": "/apps/app_codelab5_data"
               },
               {
                 "title": "5 - Manage App Lifecycle",
-                "href": "/apps/app_codelab6_lifecycle.html"
+                "href": "/apps/app_codelab6_lifecycle"
               },
               {
                 "title": "6 - Access User's Data",
-                "href": "/apps/app_codelab7_useridentification.html"
+                "href": "/apps/app_codelab7_useridentification"
               },
               {
                 "title": "7 - Access Web Resources",
-                "href": "/apps/app_codelab8_webresources.html"
+                "href": "/apps/app_codelab8_webresources"
               },
               {
                 "title": "8 - Publish App",
-                "href": "/apps/app_codelab_10_publishing.html"
+                "href": "/apps/app_codelab_10_publishing"
               }
             ]
           },
@@ -67,15 +67,15 @@
             "items": [
               {
                 "title": "About MVC Architecture",
-                "href": "/apps/app_frameworks.html"
+                "href": "/apps/app_frameworks"
               },
               {
                 "title": "Build Apps with AngularJS",
-                "href": "/apps/angular_framework.html"
+                "href": "/apps/angular_framework"
               },
               {
                 "title": "Build Apps with Sencha Ext JS",
-                "href": "/apps/sencha_framework.html"
+                "href": "/apps/sencha_framework"
               }
             ]
           }
@@ -91,19 +91,19 @@
             "items": [
               {
                 "title": "App Architecture",
-                "href": "/apps/app_architecture.html"
+                "href": "/apps/app_architecture"
               },
               {
                 "title": "App Lifecycle",
-                "href": "/apps/app_lifecycle.html"
+                "href": "/apps/app_lifecycle"
               },
               {
                 "title": "Offline First",
-                "href": "/apps/offline_apps.html"
+                "href": "/apps/offline_apps"
               },
               {
                 "title": "External Content",
-                "href": "/apps/app_external.html"
+                "href": "/apps/app_external"
               }
             ]
           },
@@ -113,7 +113,7 @@
             "items": [
               {
                 "title": "Content Security Policy",
-                "href": "/apps/contentSecurityPolicy.html"
+                "href": "/apps/contentSecurityPolicy"
               }
             ]
           },
@@ -127,19 +127,19 @@
                 "items": [
                   {
                     "title": "About Cloud Messaging",
-                    "href": "/apps/cloudMessaging.html"
+                    "href": "/apps/cloudMessaging"
                   },
                   {
                     "title": "Client Reference",
-                    "href": "/apps/pushMessaging.html"
+                    "href": "/apps/pushMessaging"
                   },
                   {
                     "title": "Service Reference",
-                    "href": "/apps/gcm_server.html"
+                    "href": "/apps/gcm_server"
                   },
                   {
                     "title": "Terms of Service",
-                    "href": "/apps/gcm_tos.html"
+                    "href": "/apps/gcm_tos"
                   }
                 ]
               },
@@ -149,13 +149,13 @@
                 "items": [
                   {
                     "title": "chrome.storage",
-                    "href": "/apps/storage.html"
+                    "href": "/apps/storage"
                   }
                 ]
               },
               {
                 "title": "User Authentication",
-                "href": "/apps/app_identity.html"
+                "href": "/apps/app_identity"
               }
             ]
           },
@@ -165,7 +165,7 @@
             "items": [
               {
                 "title": "Storage APIs",
-                "href": "/apps/app_storage.html"
+                "href": "/apps/app_storage"
               }
             ]
           },
@@ -175,19 +175,19 @@
             "items": [
               {
                 "title": "USB",
-                "href": "/apps/app_usb.html"
+                "href": "/apps/app_usb"
               },
               {
                 "title": "Serial",
-                "href": "/apps/app_serial.html"
+                "href": "/apps/app_serial"
               },
               {
                 "title": "Network Communications",
-                "href": "/apps/app_network.html"
+                "href": "/apps/app_network"
               },
               {
                 "title": "Bluetooth",
-                "href": "/apps/app_bluetooth.html"
+                "href": "/apps/app_bluetooth"
               }
             ]
           },
@@ -197,7 +197,7 @@
             "items": [
               {
                 "title": "Rich Notifications",
-                "href": "/apps/desktop_notifications.html"
+                "href": "/apps/desktop_notifications"
               }
             ]
           }
@@ -210,7 +210,7 @@
     "items": [
       {
         "title": "Publish Your App",
-        "href": "/apps/publish_app.html"
+        "href": "/apps/publish_app"
       },
       {
         "title": "Monetize Your App",
@@ -218,13 +218,13 @@
         "items": [
           {
             "title": "Google Wallet for Digital Goods",
-            "href": "/apps/google_wallet.html"
+            "href": "/apps/google_wallet"
           }
         ]
       },
       {
         "title": "Analytics",
-        "href": "/apps/analytics.html"
+        "href": "/apps/analytics"
       }
     ]
   },
@@ -233,23 +233,23 @@
     "items": [
       {
         "title": "Chrome Platform APIs",
-        "href": "/apps/api_index.html"
+        "href": "/apps/api_index"
       },
       {
         "title": "Webview Tag",
-        "href": "/apps/tags/webview.html"
+        "href": "/apps/tags/webview"
       },
       {
         "title": "Web APIs",
-        "href": "/apps/api_other.html"
+        "href": "/apps/api_other"
       },
       {
         "title": "Manifest File Format",
-        "href": "/apps/manifest.html"
+        "href": "/apps/manifest"
       },
       {
         "title": "Disabled Web Features",
-        "href": "/apps/app_deprecated.html"
+        "href": "/apps/app_deprecated"
       }
     ]
   },
@@ -258,7 +258,7 @@
     "items": [
       {
         "title": "Sample Apps",
-        "href": "/apps/samples.html"
+        "href": "/apps/samples"
       }
     ]
   },
@@ -267,7 +267,7 @@
     "items": [
       {
         "title": "FAQ",
-        "href": "/apps/faq.html"
+        "href": "/apps/faq"
       },
       {
         "title": "Google Groups",

@@ -3,13 +3,13 @@
 
 <p>
   Chrome's extension system enforces a fairly strict default
-  <a href='../extensions/contentSecurityPolicy.html'>
+  <a href='../extensions/contentSecurityPolicy'>
     <strong>Content Security Policy (CSP)</strong>
   </a>. The policy restrictions are straightforward: script must be moved
   out-of-line into separate JavaScript files, inline event handlers must be
   converted to use <code>addEventListener</code>, and <code>eval()</code> is
   disabled. Chrome Apps have an
-  <a href='contentSecurityPolicy.html'>even more strict
+  <a href='contentSecurityPolicy'>even more strict
   policy</a>, and we're quite happy with the security properties these policies
   provide.
 </p>
@@ -60,7 +60,7 @@
 
 <p>
   If you'd like to dive straight into code, please grab the
-  <a href='/extensions/samples.html#sandboxed-frame'>sandboxing
+  <a href='/extensions/samples#sandboxed-frame'>sandboxing
   sample extension and take off</a>. It's a working example of a tiny messaging
   API built on top of the <a href='http://handlebarsjs.com'>Handlebars</a>
   templating library, and it should give you everything you need to get going.
@@ -94,7 +94,7 @@
   In order to do something interesting with the sandboxed file, we need to load
   it in a context where it can be addressed by the extension's code. Here,
   <a href='/extensions/examples/howto/sandbox/sandbox.html'>sandbox.html</a>
-  has been loaded into the extension's <a href='event_pages.html'>Event
+  has been loaded into the extension's <a href='event_pages'>Event
   Page</a> (<a href='/extensions/examples/howto/sandbox/eventpage.html'>eventpage.html</a>)
   via an <code>iframe</code>. <a href='/extensions/examples/howto/sandbox/eventpage.js'>eventpage.js</a>
   contains code that sends a message into the sandbox whenever the browser
@@ -187,7 +187,7 @@ chrome.browserAction.onClicked.addListener(function() {
 <p>
   Back in the Event Page, we'll receive this message, and do something
   interesting with the <code>html</code> data we've been passed. In this case,
-  we'll just echo it out via a <a href='desktop_notifications.html'>Desktop
+  we'll just echo it out via a <a href='desktop_notifications'>Desktop
   Notification</a>, but it's entirely possible to use this HTML safely as part
   of the extension's UI. Inserting it via <code>innerHTML</code> doesn't pose a
   significant security risk, as even a complete compromise of the sandboxed code

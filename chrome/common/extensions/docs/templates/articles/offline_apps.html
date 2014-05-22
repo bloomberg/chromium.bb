@@ -23,7 +23,7 @@ Chrome Apps get the following for free:
     (such as images)&mdash;are <b>already downloaded</b>. </li>
   <li> Your app can <b>save and optionally sync</b>
     small amounts of data using the
-    <a href="storage.html">Chrome Storage API</a>. </li>
+    <a href="storage">Chrome Storage API</a>. </li>
   <li> Your app can <b>detect changes in connectivity</b>
     by listening for
     <a href="https://developer.mozilla.org/en/Online_and_offline_events">online and offline events</a>. </li>
@@ -92,10 +92,10 @@ Your offline-enabled app should follow these rules:
     If the resource is remote,
     you can't specify it in your HTML.
     Instead, get the data using <code>XMLHttpRequest</code>
-    (see <a href="app_external.html#external">Referencing external resources</a>).
+    (see <a href="app_external#external">Referencing external resources</a>).
     Then either refer to the data with a blob URL
     or (better yet) save and then load the data using the
-    <a href="app_storage.html">Filesystem API</a>.
+    <a href="app_storage">Filesystem API</a>.
 
     <p class="note">
       <b>Note:</b>
@@ -124,12 +124,12 @@ To provide a sandboxed iframe,
 you can create an &lt;webview> tag.
 Its contents can be remote,
 but it has no direct access to the Chrome app APIs
-(see <a href="app_external.html#webview">Embed external web pages</a>).
+(see <a href="app_external#webview">Embed external web pages</a>).
 </p>
 
 <p>
 Some of the restrictions on Chrome Apps are enforced by the 
-<a href="contentSecurityPolicy.html">Content Security Policy (CSP)</a>
+<a href="contentSecurityPolicy">Content Security Policy (CSP)</a>
 which is always the following and cannot be changed for Chrome Apps:
 </p>
 
@@ -149,7 +149,7 @@ media-src *;
 It is assumed that your app behaves well offline. If it doesn't, you should
 advertise that fact, so that its launch icon is dimmed when the user is offline.
 To do so, set <code>offline_enabled</code> to <code>false</code> in the
-<a href="manifest.html">app manifest file</a>:
+<a href="manifest">app manifest file</a>:
 </p>
 
 <pre data-filename="manifest.json">
@@ -165,7 +165,7 @@ To do so, set <code>offline_enabled</code> to <code>false</code> in the
 
 <p>
 The following table shows your options for saving data locally
-(see also <a href="app_storage.html">Manage Data</a>).
+(see also <a href="app_storage">Manage Data</a>).
 </p>
 
 <table class="simple">
@@ -186,14 +186,14 @@ The following table shows your options for saving data locally
   <td> Structured data </td>
   <td> Enables fast searches on data.
        Use with the
-       <a href="declare_permissions.html">unlimitedStorage permission</a>. </td>
+       <a href="declare_permissions">unlimitedStorage permission</a>. </td>
 </tr>
 <tr>
   <td> Filesystem API </td>
   <td> Anything else </td>
   <td> Provides a sandboxed area where you can store files.
        Use with the
-       <a href="declare_permissions.html">unlimitedStorage permission</a>. </td>
+       <a href="declare_permissions">unlimitedStorage permission</a>. </td>
 </tr>
 </table>
 
@@ -212,7 +212,7 @@ The Storage API handles data asynchronously.
 <p>
 In general, how you save data remotely is up to you,
 but some frameworks and APIs can help
-(see <a href="app_frameworks.html">MVC Architecture</a>).
+(see <a href="app_frameworks">MVC Architecture</a>).
 If you use the Chrome Storage API,
 then all syncable data
 is automatically synced
@@ -241,7 +241,7 @@ if they reinstall your app.
 Using an MVC framework can help you design and implement your app
 so that the data is completely separate from the app's
 view on the data.
-See <a href="app_frameworks.html">MVC Architecture</a>
+See <a href="app_frameworks">MVC Architecture</a>
 for a list of MVC frameworks.
 </p>
 

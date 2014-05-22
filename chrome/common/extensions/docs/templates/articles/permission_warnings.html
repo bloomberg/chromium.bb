@@ -15,7 +15,7 @@ IDS_EXTENSION_PROMPT_WARNING
 <p>
 To use most chrome.* APIs and extension capabilities,
 your extension must declare its intent in the
-<a href="manifest.html">manifest</a>,
+<a href="manifest">manifest</a>,
 often in the "permissions" field.
 Some of these declarations
 result in a warning when
@@ -150,7 +150,7 @@ that trigger them.
   </td>
   <td>
     The "plugins" permission is required by
-    <a href="npapi.html">NPAPI plugins</a>.
+    <a href="npapi">NPAPI plugins</a>.
   </td>
 </tr>
 
@@ -164,7 +164,7 @@ that trigger them.
   </td>
   <td>
     The "bookmarks" permission is required by the
-    <a href="bookmarks.html"><code>chrome.bookmarks</code></a> module.
+    <a href="bookmarks"><code>chrome.bookmarks</code></a> module.
   </td>
 </tr>
 
@@ -184,11 +184,11 @@ that trigger them.
   <td>
     <p>
       The "history" permission is required by
-      <a href="history.html"><code>chrome.history</code></a>.
+      <a href="history"><code>chrome.history</code></a>.
     </p>
     <p>
       The "topSites" permission is required by
-      <a href="topSites.html"><code>chrome.topSites</code></a>.
+      <a href="topSites"><code>chrome.topSites</code></a>.
     </p>
   </td>
 </tr>
@@ -209,12 +209,12 @@ that trigger them.
   <td>
     <p>
       The "tabs" permission is required by the
-      <a href="tabs.html"><code>chrome.tabs</code></a> and
-      <a href="windows.html"><code>chrome.windows</code></a> modules.
+      <a href="tabs"><code>chrome.tabs</code></a> and
+      <a href="windows"><code>chrome.windows</code></a> modules.
     </p>
     <p>
       The "webNavigation" permission is required by the
-      <a href="webNavigation.html"><code>chrome.webNavigation</code></a> module.
+      <a href="webNavigation"><code>chrome.webNavigation</code></a> module.
     </p>
   </td>
 </tr>
@@ -231,7 +231,7 @@ that trigger them.
   <td>
     <p>
       The "contentSettings" permission is required by
-      <a href="contentSettings.html"><code>chrome.contentSettings</code></a>.
+      <a href="contentSettings"><code>chrome.contentSettings</code></a>.
     </p>
   </td>
 </tr>
@@ -258,12 +258,12 @@ that trigger them.
   <td>
     <p>
       The "debugger" permission is required by the
-      <a href="debugger.html">debugger</a> module.
+      <a href="debugger">debugger</a> module.
     </p>
 
     <p>
       The "proxy" permission is required by the
-      <a href="proxy.html"><code>chrome.proxy</code></a> module.
+      <a href="proxy"><code>chrome.proxy</code></a> module.
     </p>
 
     <p>
@@ -275,7 +275,7 @@ that trigger them.
       <li> <code>*://*/*</code> </li>
       <li> <code>&lt;all_urls&gt;</code> </li>
     </ul>
-    <strong>Note that you may be able to avoid declaring all host permissions using the <code><a href="activeTab.html">activeTab</a></code> permission.</strong>
+    <strong>Note that you may be able to avoid declaring all host permissions using the <code><a href="activeTab">activeTab</a></code> permission.</strong>
   </td>
 </tr>
 <tr>
@@ -322,7 +322,7 @@ that trigger them.
   </td>
   <td>
     The "management" permission is required by the
-    <a href="management.html"><code>chrome.management</code></a> module.
+    <a href="management"><code>chrome.management</code></a> module.
   </td>
 </tr>
 
@@ -369,7 +369,7 @@ that trigger them.
   </td>
   <td>
     The "privacy" permission is required by the
-    <a href="privacy.html"><code>chrome.privacy</code></a> module.
+    <a href="privacy"><code>chrome.privacy</code></a> module.
   </td>
 </tr>
 
@@ -383,7 +383,7 @@ that trigger them.
   </td>
   <td>
     The "signedInDevices" permission is required by the
-    <a href="signedInDevices.html"><code>chrome.signedInDevices</code></a>
+    <a href="signedInDevices"><code>chrome.signedInDevices</code></a>
     module.
   </td>
 </tr>
@@ -398,7 +398,7 @@ that trigger them.
   </td>
   <td>
     The "ttsEngine" permission is required by the
-    <a href="ttsEngine.html"><code>chrome.ttsEngine</code></a> module.
+    <a href="ttsEngine"><code>chrome.ttsEngine</code></a> module.
   </td>
 </tr>
 </table>
@@ -440,7 +440,7 @@ The following permissions don't result in a warning:
 
 <p>
 If you'd like to see exactly which warnings your users will get,
-<a href="packaging.html">package your extension</a>
+<a href="packaging">package your extension</a>
 into a <code>.crx</code> file,
 and install it.
 </p>
@@ -452,12 +452,12 @@ and set up an autoupdate server.
 To do this, first create an update manifest
 and point to it from your extension,
 using the "update_url" key
-(see <a href="autoupdate.html">Autoupdating</a>).
-Next, <a href="packaging.html">package the extension</a>
+(see <a href="autoupdate">Autoupdating</a>).
+Next, <a href="packaging">package the extension</a>
 into a new <code>.crx</code> file,
 and install the app from this <code>.crx</code> file.
 Now, change the extension's manifest to contain the new permissions,
-and <a href="packaging.html#update">repackage the extension</a>.
+and <a href="packaging#update">repackage the extension</a>.
 Finally, update the extension
 (and all other extensions that have outstanding updates)
 by clicking the <b>chrome://extensions</b> page's

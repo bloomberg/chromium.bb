@@ -6,7 +6,7 @@
 <p>
 If you don't find an answer to your question here,
 try the
-<a href="http://code.google.com/chrome/webstore/faq.html">Chrome Web Store FAQ</a>, the
+<a href="http://code.google.com/chrome/webstore/faq">Chrome Web Store FAQ</a>, the
 <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension">[google-chrome-extension] tag on Stack Overflow</a>, the
 <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">group</a>, or the
 <a href="http://www.google.com/support/chrome_webstore/">store help</a>.
@@ -89,7 +89,7 @@ try the
   Now you can reload extensions,
   load an unpacked directory of files as if it were a packaged extension,
   and more. For a complete tutorial, see
-  <a href="/extensions/getstarted.html">Getting Started</a>.
+  <a href="/extensions/getstarted">Getting Started</a>.
 </p>
 {{/is_apps}}
 
@@ -101,7 +101,7 @@ try the
   scripting. Because Chrome supports HTML5 and CSS3, developers can
   use the latest open web technologies such as canvas and CSS animations in
   their extensions. Extensions also have access to several
-  <a href="/extensions/api_other.html">JavaScript APIs</a>
+  <a href="/extensions/api_other">JavaScript APIs</a>
   that help perform functions like JSON encoding and interacting with the
   browser.
 </p>
@@ -162,7 +162,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 <h3 id="faq-dev-02">Can extensions make cross-domain Ajax requests?</h3>
 <p>
   Yes. Extensions can make cross-domain requests.  See
-  <a href="/extensions/xhr.html">this page</a>
+  <a href="/extensions/xhr">this page</a>
   for more information.
 </p>
 
@@ -203,7 +203,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 
 <h3 id="faq-dev-06">Can extensions load DLLs?</h3>
 <p>
-  Yes, using the <a href="npapi.html">NPAPI interface</a>.
+  Yes, using the <a href="npapi">NPAPI interface</a>.
   Because of the possibility for abuse, though, we will review your extension
   before hosting it in the Chrome Web Store.
 </p>
@@ -211,12 +211,12 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 <h3 id="faq-dev-05">Can extensions create UI outside of the rendered web page?</h3>
 <p>
   Yes, your extension may add buttons to the Chrome browser's user interface.
-  See <a href="browserAction.html">browser actions</a> and
-  <a href="pageAction.html">page actions</a> for more information.
+  See <a href="browserAction">browser actions</a> and
+  <a href="pageAction">page actions</a> for more information.
 </p>
 <p>
   An extension may also create popup notifications, which exist outside of the
-  browser window.  See the <a href="desktop_notifications.html">desktop
+  browser window.  See the <a href="desktop_notifications">desktop
     notifications</a> documentation for more details.
 </p>
 
@@ -224,13 +224,13 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   navigation buttons?</h3>
 <p>
   No.  Extensions are limited to listening to the events described in the <a
-    href="api_index.html">API documentation</a>.
+    href="api_index">API documentation</a>.
 </p>
 
 <h3 id="faq-dev-11">Can two extensions communicate with each other?</h3>
 <p>
   Yes, extensions may pass messages to other extensions. See the
-  <a href="messaging.html#external">message passing documentation</a>
+  <a href="messaging#external">message passing documentation</a>
   for more information.
 </p>
 
@@ -241,7 +241,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="http://www.google.com/analytics/">Google Analytics</a> to track
   usage.  However, you must modify the tracking code to pull
   an HTTPS version of the Google Analytics library.  See
-  <a href="tut_analytics.html">this tutorial</a> for more information on doing
+  <a href="tut_analytics">this tutorial</a> for more information on doing
   this.
 </p>
 {{/is_apps}}
@@ -261,7 +261,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 </p>
 
 <p>
-  The reason that <a href="override.html">replacing the content</a>
+  The reason that <a href="override">replacing the content</a>
   hosted at these URLs entirely is
   allowed is because it forces an extension developer to implement all of the
   functionality they want without depending on the browser's internal implementation
@@ -315,7 +315,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 <h3 id="faq-dev-10">How do I create an options menu for my application?</h3>
 <p>
   You can let users set options for your extension by creating an
-  <a href="/extensions/options.html">options page</a>,
+  <a href="/extensions/options">options page</a>,
   which is a simple HTML page that will be loaded when a user clicks the
   "options" button for your extension. This page can read and write settings
   to localStorage, or even send options to a web server so that they can be
@@ -327,7 +327,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 <p>
   Chrome's built-in developer tools can be used to debug extensions
   as well as web pages. See this
-  <a href="/extensions/tut_debugging.html ">tutorial on debugging extensions</a>
+  <a href="/extensions/tut_debugging ">tutorial on debugging extensions</a>
   for more information.
 </p>
 
@@ -358,7 +358,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 <h3 id="faq-management">Why does the management API not fire events when my
   extension is installed/uninstalled?</h3>
 <p>
-  The <a href="management.html">management API</a> was intended to help create
+  The <a href="management">management API</a> was intended to help create
   new tab page replacement extensions.  It was not intended to fire
   install/uninstall events for the current extension.
 </p>

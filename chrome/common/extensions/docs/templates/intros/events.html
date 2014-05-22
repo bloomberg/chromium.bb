@@ -38,7 +38,7 @@ $(ref:app.window),
 $(ref:i18n),
 $(ref:identity),
 $(ref:runtime).
-Most <a href="api_index.html">chrome APIs</a> do.
+Most <a href="api_index">chrome APIs</a> do.
 
 {{^is_apps}}
 <div class="doc-family extensions">
@@ -52,8 +52,8 @@ for very high efficiency.
 </p>
 
 <p>Declarative event handlers are used for example in the <a
-href="declarativeWebRequest.html">Declarative Web Request API</a> and <a
-href="declarativeContent.html">Declarative Content API</a>. This page describes
+href="declarativeWebRequest">Declarative Web Request API</a> and <a
+href="declarativeContent">Declarative Content API</a>. This page describes
 the underlying concepts of all declarative event handlers.
 </p>
 
@@ -88,7 +88,7 @@ var rule = {
 <h3 id="eventobjects">Event objects</h3>
 
 <p>
-<a href="events.html">Event objects</a> may support rules. These event objects
+<a href="events">Event objects</a> may support rules. These event objects
 don't call a callback function when events happen but test whether any
 registered rule has at least one fulfilled condition and execute the actions
 associated with this rule. Event objects supporting the declarative API have
@@ -235,7 +235,7 @@ chrome.declarativeWebRequest.onRequest.addRules([rule]);</pre>
 <p>Filtered events are a mechanism that allows listeners to specify a subset of
 events that they are interested in. A listener that makes use of a filter won't
 be invoked for events that don't pass the filter, which makes the listening
-code more declarative and efficient - an <a href="event_pages.html">event
+code more declarative and efficient - an <a href="event_pages">event
   page</a> page need not be woken up to handle events it doesn't care
 about.</p>
 

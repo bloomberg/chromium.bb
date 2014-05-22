@@ -1,7 +1,7 @@
 <h1 id="lab_8_web_resources">Access Web Resources</h1>
 
 <p>Chrome Apps have a strict
-<a href="contentSecurityPolicy.html">Content Security Policy</a>
+<a href="contentSecurityPolicy">Content Security Policy</a>
 which will not let the user execute code or load resources that are hosted remotely.</p>
 
 <p>Many applications, however, need to be able to load and display content from a remote location. A News Reader, for example, needs to display remote content inline or load and show images from a remote URL.</p>
@@ -12,7 +12,7 @@ which will not let the user execute code or load resources that are hosted remot
 
 <p>Chrome Apps offer developers the ability
 to securely render third-party content in the <code>&lt;webview&gt;</code> tag.
-A <a href="webview_tag.html">webview</a>
+A <a href="webview_tag">webview</a>
 is like an iframe that you can control with greater flexibility and added security.
 It runs in a separate sandboxed process and can&#39;t communicate directly with the application.</p>
 
@@ -145,7 +145,7 @@ and launch the app from a new tab.</p>
 
 <p class="note"><b></b> Refused to load the image &#39;http://angularjs.org/img/AngularJS-large.png&#39; because it violates the following Content Security Policy directive: &quot;img-src &#39;self&#39; data: chrome-extension-resource:&quot;.</p>
 
-<p>Chrome Apps cannot load any external resource directly in the DOM, because of the <a href="contentSecurityPolicy.html">CSP restrictions</a>.</p>
+<p>Chrome Apps cannot load any external resource directly in the DOM, because of the <a href="contentSecurityPolicy">CSP restrictions</a>.</p>
 
 <p>To avoid this restriction, you can use XHR requests, grab the blob corresponding to the remote file and use it appropriately.
 For example, <code>&lt;img&gt;</code> tags can use a blob URL.
@@ -447,7 +447,7 @@ that's much more robust.</p>
 <ul>
 <li><p>The <code>&lt;webview&gt;</code> tag allows you to have a controlled browser inside your app.
 You can use it if you have part of your application that is not CSP compatible and you don&#39;t have resources to migrate it immediately, for example.
-One feature we didn&#39;t mention here is that webviews can communicate with your app and vice-versa using asynchronous <a href="app_external.html#postMessage">postMessages</a>.</p></li>
+One feature we didn&#39;t mention here is that webviews can communicate with your app and vice-versa using asynchronous <a href="app_external#postMessage">postMessages</a>.</p></li>
 <li><p>Loading resources like images from the web is not straightforward compared to a standard web page.
 But it&#39;s not too different from traditional native platforms, where you need to handle the resource download and, only when it is correctly downloaded, you can render it in the UI. We have also developed <a href="https://github.com/GoogleChrome/apps-resource-loader">a sample library</a> to asynchronously handle resource loading from XHR calls. Feel free to use it in your projects.</p></li>
 </ul>
@@ -455,11 +455,11 @@ But it&#39;s not too different from traditional native platforms, where you need
 <h2 id="you_should_also_read">You should also read</h2>
 
 <ul>
-<li><a href="webview_tag.html">Webview Tag API</a> reference</li>
-<li><a href="app_external.html">Embed Content</a> tutorial</li>
+<li><a href="webview_tag">Webview Tag API</a> reference</li>
+<li><a href="app_external">Embed Content</a> tutorial</li>
 </ul>
 
 <h2 id="what_39_s_next_">What's next?</h2>
 
-<p>In <a href="app_codelab_10_publishing.html">8 - Publish App</a>,
+<p>In <a href="app_codelab_10_publishing">8 - Publish App</a>,
 we finish off with instructions on how to publish your app in the Chrome Web Store.</p>

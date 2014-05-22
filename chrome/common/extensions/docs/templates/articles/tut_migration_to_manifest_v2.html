@@ -3,7 +3,7 @@
 <p>
 Manifest version 1 was deprecated in Chrome 18,
 and support will be phased out according to the
-<a href="manifestVersion.html#manifest-v1-support-schedule">manifest version 1 support schedule</a>.
+<a href="manifestVersion#manifest-v1-support-schedule">manifest version 1 support schedule</a>.
 The changes from version 1 to version 2
 fall under two broad categories:
 API changes and Security changes. 
@@ -61,7 +61,7 @@ followed by more detailed summaries of what these changes mean and why they were
         property that contains the code for the page.</li>
       <li>Add a <code>persistent</code> property and set it
         to <code>false</code> to convert your background page
-        to an <a href="event_pages.html">event page</a></li>
+        to an <a href="event_pages">event page</a></li>
     </ul>
 </ul>
 
@@ -83,13 +83,13 @@ followed by more detailed summaries of what these changes mean and why they were
     that need to access resources (like images and scripts)
     that are contained in the extension’s package?</li>
     <ul>
-      <li>Define the <a href="manifest/web_accessible_resources.html">web_accessible_resources</a>
+      <li>Define the <a href="manifest/web_accessible_resources">web_accessible_resources</a>
         property and list the resources
         (and optionally a separate Content Security Policy for those resources).</li>
     </ul>
   <li>Does your extension embed external Web pages?</li>
     <ul>
-      <li>Define the <a href="manifest/sandbox.html">sandbox</a> property.</li>
+      <li>Define the <a href="manifest/sandbox">sandbox</a> property.</li>
     </ul>
   <li>Is your code or library using <code>eval()</code>, new <code>Function()</code>,
     <code>innerHTML</code>, <code>setTimeout()</code>, or otherwise passing strings
@@ -175,7 +175,7 @@ A few extension APIs have been removed and replaced with new counterparts:
 
 <ul>
   <li>The <code>background_page</code> property has been replaced
-    by <a href="background_pages.html">background</a>.</li>
+    by <a href="background_pages">background</a>.</li>
   <li>The <code>chrome.self</code> property has been removed,
     use <code>chrome.extension</code>.</li>
   <li>The <code>Port.tab</code> property has been replaced
@@ -191,14 +191,14 @@ A few extension APIs have been removed and replaced with new counterparts:
 There are a number of security-related changes
 that accompany the move from manifest version 1 to version 2.
 Many of these changes stem from Chrome’s adoption of
-<a href="contentSecurityPolicy.html">Content Security Policy</a>;
+<a href="contentSecurityPolicy">Content Security Policy</a>;
 you should read more about this policy to understand its implications.
 </p>
 
 <h3 id="inline_scripts">Inline scripts and event handlers disallowed</h3>
 
 <p>
-Due to the use of <a href="contentSecurityPolicy.html">Content Security Policy</a>,
+Due to the use of <a href="contentSecurityPolicy">Content Security Policy</a>,
 you can no longer use &lt;script> tags that are inline with the HTML content.
 These must be moved to external JS files.
 In addition, inline event handlers are also not supported.
@@ -264,7 +264,7 @@ that can be used externally or come from an external source.
 If your extension embeds resources (like images, script, CSS styles, etc)
 that are used in content scripts that are injected into web pages,
 you need to use the
-<a href="manifest/web_accessible_resources.html">web_accessible_resources</a> property
+<a href="manifest/web_accessible_resources">web_accessible_resources</a> property
 to whitelist these resources so that external Web pages can use them:
 </p>
 
@@ -337,7 +337,7 @@ and the like under the new Content Security Policy:
 
 <p>
 For more details on how to do this,
-see the <a href="sandboxingEval.html">Sandboxing Eval</a> documentation.
+see the <a href="sandboxingEval">Sandboxing Eval</a> documentation.
 </p>
 
 <h2 id="further-reading">Further reading</h2>
@@ -346,9 +346,9 @@ see the <a href="sandboxingEval.html">Sandboxing Eval</a> documentation.
 The changes in manifest version 2 are designed to guide developers
 toward building more secure and robustly-architected extensions and apps.
 To see a complete list of changes from manifest version 1 to version 2,
-see the <a href="manifestVersion.html">manifest file</a> documentation.
+see the <a href="manifestVersion">manifest file</a> documentation.
 For more information about using sandboxing to isolate unsafe code,
-read the <a href="sandboxingEval.html">sandboxing eval</a> article.
+read the <a href="sandboxingEval">sandboxing eval</a> article.
 You can learn more about Content Security Policy
 by visiting our extensions-related tutorial and a
 <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy/">good introduction on HTML5Rocks</a>.

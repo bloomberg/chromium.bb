@@ -4,7 +4,7 @@
 <p>
   This tutorial demonstrates using Google Analytics to track the usage of your
   extension. If you are developing a platform app, see <a
-  href="/apps/analytics.html">Analytics for Apps</a> since apps have different
+  href="/apps/analytics">Analytics for Apps</a> since apps have different
   restrictions from extensions.
 </p>
 
@@ -12,7 +12,7 @@
 <p>
   This tutorial expects that you have some familiarity writing extensions for
   Google Chrome.  If you need information on how to write an extension, please
-  read the <a href="getstarted.html">Getting Started tutorial</a>.
+  read the <a href="getstarted">Getting Started tutorial</a>.
 </p>
 
 <p>
@@ -36,7 +36,7 @@
   was loaded using the <code>https://</code> protocol.  <strong>Chrome
   extensions and applications may <em>only</em> use the SSL-protected version of
   <code>ga.js</code></strong>. Loading <code>ga.js</code> over insecure HTTP is
-  disallowed by Chrome's default <a href="contentSecurityPolicy.html">Content
+  disallowed by Chrome's default <a href="contentSecurityPolicy">Content
   Security Policy</a>. This, plus the fact that Chrome extensions are hosted
   under the <code>chrome-extension://</code> schema, requires a slight
   modification to the usual tracking snippet to pull <code>ga.js</code> directly
@@ -61,7 +61,7 @@
 <p>
   You'll also need to ensure that your extension has access to load the resource
   by relaxing the default content security policy. The policy definition in your
-  <a href="manifest.html"><code>manifest.json</code></a> might look like:
+  <a href="manifest"><code>manifest.json</code></a> might look like:
 </p>
 
 <pre data-filename="manifest.json">
@@ -136,7 +136,7 @@ _gaq.push(['_trackPageview']);
   To ensure that tracking data from your extension is being sent to Google
   Analytics, you can inspect the pages of your extension in the
   Developer Tools window (see the
-  <a href="tut_debugging.html">debugging tutorial</a> for more information).
+  <a href="tut_debugging">debugging tutorial</a> for more information).
   As the following figure shows, you should see requests for a file named
   <strong>__utm.gif</strong> if everything is set up correctly.
 </p>

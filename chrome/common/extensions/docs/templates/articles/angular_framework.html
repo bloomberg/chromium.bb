@@ -33,12 +33,12 @@ in this case, the Google Drive API.
 <strong>Note: </strong>
 You can also build apps which talk to 3rd party APIs/services
 that are OAuth2-enabled.
-See <a href="app_identity.html#non">non-Google Account authentication</a>.
+See <a href="app_identity#non">non-Google Account authentication</a>.
 </p>
 
 <p>
 The Uploader uses OAuth2 to access the user's data. The
-<a href="identity.html">chrome.identity API</a>
+<a href="identityhtml">chrome.identity API</a>
 handles fetching an OAuth token for the logged-in user,
 so the hard work is done for us!
 Once we have a long-lived access token,
@@ -53,7 +53,7 @@ Key features this app uses:
 
 <ul>
     <li>AngularJS's autodetection for
-        <a href="contentSecurityPolicy.html">CSP</a></li>
+        <a href="contentSecurityPolicyhtml">CSP</a></li>
     <li>Render a list of files fetched from the
         <a href="https://developers.google.com/drive/get-started">Google Drive API</a></li>
     <li><a href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5 Filesystem API</a>
@@ -61,7 +61,7 @@ Key features this app uses:
     <li><a href="http://www.html5rocks.com/en/tutorials/dnd/basics/">HTML5 Drag and Drop</a>
         for importing/uploading new files from the desktop</li>
     <li>XHR2 to load images, cross-domain</li>
-    <li><a href="app_identity.html">chrome.identity API</a>
+    <li><a href="app_identityhtml">chrome.identity API</a>
         for OAuth authorization</li>
     <li>Chromeless frames to define the app's own navbar look and feel</li>
 </ul>
@@ -108,7 +108,7 @@ The most important parts of this manifest are the "oauth2" and "permissions" sec
 <p>
 The "oauth2" section defines the required parameters by OAuth2 to do its magic.
 To create a "client_id", follow the instructions in
-<a href="app_identity.html#client_id">Get your client id</a>.
+<a href="app_identityhtml#client_id">Get your client id</a>.
 The "scopes" list the authorization scopes
 that the OAuth token will be valid for (for example, the APIs the app wants to access).
 </p>
@@ -330,7 +330,7 @@ The final product for <code>main.html</code> looks something like this:
 <p>
 Unlike many other JS MVC frameworks,
 Angular v1.1.0+ requires no tweaks to work within a strict
-<a href="contentSecurityPolicy.html">CSP</a>.
+<a href="contentSecurityPolicyhtml">CSP</a>.
 It just works, out of the box!
 </p>
 

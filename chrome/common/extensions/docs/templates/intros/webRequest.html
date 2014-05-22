@@ -1,7 +1,7 @@
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "webRequest" permission in the <a
-  href="manifest.html">extension manifest</a> to use the web request
-API, along with <a href="declare_permissions.html">host permissions</a>
+  href="manifest">extension manifest</a> to use the web request
+API, along with <a href="declare_permissions">host permissions</a>
 for any hosts whose network requests you want to access. If you want to
 use the web request API in a blocking fashion, you need to request
 the "webRequestBlocking" permission in addition.
@@ -117,7 +117,7 @@ complete nor stable.
 <p>
 The webRequest API only exposes requests that the extension has
 permission to see, given its
-<a href="declare_permissions.html">host permissions</a>.
+<a href="declare_permissions">host permissions</a>.
 Moreover, only the following schemes are accessible:
 <code>http://</code>,
 <code>https://</code>,
@@ -157,7 +157,7 @@ of HTTP redirection or HTTP authentication.</p>
 <h3 id="subscription">Registering event listeners</h3>
 
 <p>To register an event listener for a web request, you use a variation on the
-<a href="events.html">usual <code>addListener()</code> function</a>.
+<a href="events">usual <code>addListener()</code> function</a>.
 In addition to specifying a callback function,
 you have to specify a filter argument and you may specify an optional extra info
 argument.</p>
@@ -199,7 +199,7 @@ request or modifying headers (<code>onBeforeSendHeaders</code>,
 triggered in various dimensions:
 <dl>
   <dt>URLs</dt>
-  <dd><a href="match_patterns.html">URL patterns</a> such as
+  <dd><a href="match_patterns">URL patterns</a> such as
   <code>*://www.google.com/foo*bar</code>.</dd>
   <dt>Types</dt>
   <dd>Request types such as <code>main_frame</code> (a document that is loaded
@@ -298,5 +298,5 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   ["blocking", "requestHeaders"]);
 </pre>
 
-<p> For more example code, see the <a href="samples.html#webrequest">web request
+<p> For more example code, see the <a href="samples#webrequest">web request
 samples</a>.</p>

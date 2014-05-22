@@ -1,6 +1,6 @@
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "proxy" permission
-in the <a href="manifest.html">extension manifest</a>
+in the <a href="manifest">extension manifest</a>
 to use the proxy settings API.
 For example:</p>
 <pre data-filename="manifest.json">
@@ -175,7 +175,7 @@ The following code sets a SOCKS 5 proxy for HTTP connections to all servers but
 foobar.com and uses direct connections for all other protocols. The settings
 apply to regular and incognito windows, as incognito windows inherit settings
 from regular windows. Please also consult the <a
-  href="types.html#ChromeSetting">Types API</a> documentation.
+  href="types#ChromeSetting">Types API</a> documentation.
 </p>
 
 <pre>
@@ -217,7 +217,7 @@ chrome.proxy.settings.set(
 <p>
 The next snippet queries the currently effective proxy settings. The effective
 proxy settings can be determined by another extension or by a policy. See the <a
-  href="types.html#ChromeSetting">Types API</a> documentation for details.
+  href="types#ChromeSetting">Types API</a> documentation for details.
 </p>
 
 <pre>

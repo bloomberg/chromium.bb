@@ -44,11 +44,11 @@ where the extension is hosted.
 <p>
 In the preferences file,
 it can point to your own server where you are hosting the extension
-(see <a href="autoupdate.html#update_url">autoupdating</a>).
+(see <a href="autoupdate#update_url">autoupdating</a>).
 The preferences JSON file also supports installing
 an extension from a <code>.crx</code> extension
 file on the user's computer
-(see <a href="hosting.html">hosting</a>).
+(see <a href="hosting">hosting</a>).
 </p>
 
 
@@ -64,9 +64,9 @@ publish it in the store, and link to the store install using
 <h2 id="prereqs">Before you begin</h2>
 
 <p>
-First, <a href="/webstore/publish.html">publish</a>
+First, <a href="/webstore/publish">publish</a>
 the extension in the Chrome Web Store,
-or package a <a href="packaging.html"><code>.crx</code> file</a>
+or package a <a href="packaging"><code>.crx</code> file</a>
 and make sure that it installs successfully.
 </p>
 
@@ -80,8 +80,8 @@ no external installs are allowed from a path to a local <code>.crx</code>
 
 <p>
 If installing from an
- <a href="autoupdate.html#update_url">update URL</a>, ensure that the extension
-is properly <a href="hosting.html">hosted</a>.
+ <a href="autoupdate#update_url">update URL</a>, ensure that the extension
+is properly <a href="hosting">hosted</a>.
 </p>
 
 <p>
@@ -279,10 +279,10 @@ not from a local file path.</p>
 <p>Yes, use the <a href="#preferences">preferences JSON</a> file
 for Mac OS X and Linux; the <a href="#registry">registry</a> for Windows.
 The extension must be hosted as explained in
-<a href="hosting.html">hosting</a>.
+<a href="hosting">hosting</a>.
 In the preferences file,
 use the "external_update_url" property to point to an
-<a href="autoupdate.html#update_manifest">update manifest</a> that has the URL for your
+<a href="autoupdate#update_manifest">update manifest</a> that has the URL for your
 extension.
 In the Windows registry,
 use the "update_url" property.</p>
@@ -328,7 +328,7 @@ However, extensions hosted on the Chrome Web Store are updated
 via the Chrome update mechanism which developers do not control.
 Extension developers should be careful about updating extensions
 that have a dependency on the native binary
-(for example, legacy extensions using <a href="npapi.html">NPAPI</a>).
+(for example, legacy extensions using <a href="npapi">NPAPI</a>).
 </p>
 
 <p><b>What if the user uninstalls the extension?</b> </p>

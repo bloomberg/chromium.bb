@@ -19,8 +19,8 @@ even when their calendaring app isn't open.
 
 <p>This document describes how to set up and use GCM.
 For additional information see the reference documentation
-for the <a href="pushMessaging.html">pushMessaging Chrome API</a> and the
-<a href="gcm_server.html">GCM service</a>.
+for the <a href="pushMessaging">pushMessaging Chrome API</a> and the
+<a href="gcm_server">GCM service</a>.
 To get help with GCM or to give us feedback, see <a href="#feedback">Feedback</a>.
 </p>
 
@@ -410,7 +410,7 @@ function showPushMessage(message) {
 You need to add the "notifications" permission
 to <code>manifest.json</code>
 to use text notifications
-(see <a href="desktop_notifications.html">Desktop Notifications</a>):
+(see <a href="desktop_notifications">Desktop Notifications</a>):
 </p>
 
 <pre data-filename="manifest.json">
@@ -455,7 +455,7 @@ To test push messaging locally:
 </p>
 
 <ol>
-  <li><a href="packaging.html">Package</a> a test version of
+  <li><a href="packaging">Package</a> a test version of
   your app or extension on the Extensions management page
   (chrome://extensions).
   Your app or extension doesn't need to be running; it just needs
@@ -490,7 +490,7 @@ HTTP status code 500 (Internal Server Error).
 One circumstance in which the ownership check commonly fails is when you are
 developing an app and you run the app without uploading it and re-downloading
 it from the Chrome Web Store. In this situation your app may not have a
-<a href="manifest/key.html">key</a> field in its manifest.json file.
+<a href="manifest/key">key</a> field in its manifest.json file.
 The <code>key</code> field gives an app its Chrome Web Store ID
 (a 32 character alphabetic code, such as "bafimiidcfafikaonocgmmcpbbhfjjik").
 If you run a version of your app without a key, the app will use a

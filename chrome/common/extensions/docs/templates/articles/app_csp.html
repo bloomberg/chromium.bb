@@ -8,7 +8,7 @@ is a good starting point.
 That document covers the broader web platform view of CSP;
 Chrome App CSP isn't as flexible.
 You should also read the
-<a href="/extensions/contentSecurityPolicy.html">Chrome extension Content Security Policy</a>,
+<a href="/extensions/contentSecurityPolicy">Chrome extension Content Security Policy</a>,
 as it's the foundation for the Chrome App CSP.
 For brevity's sake,
 we don't repeat the same information here.
@@ -98,7 +98,7 @@ that you want to do ‘eval’ things to.
 Sandboxing lifts CSP on the content that you specify.
 If you want to use the very powerful Chrome APIs in your Chrome App,
 your sandboxed content can't directly interact with these APIs
-(see <a href="app_external.html#sandboxing">Sandbox local content</a>).
+(see <a href="app_external#sandboxing">Sandbox local content</a>).
 </p>
 
 <h3 id="remote_resources">Access remote resources</h3>
@@ -107,7 +107,7 @@ your sandboxed content can't directly interact with these APIs
 You can fetch remote resources via <code>XMLHttpRequest</code>
 and serve them via <code>blob:</code>, <code>data:</code>,
 or <code>filesystem:</code> URLs
-(see <a href="app_external.html#external">Referencing external resources</a>).
+(see <a href="app_external#external">Referencing external resources</a>).
 </p>
 
 <p>
@@ -120,7 +120,7 @@ because they have good fallback behavior when offline or under spotty connectivi
 <p>
 Instead of using an iframe,
 you can call out to an external URL using an object tag
-(see <a href="app_external.html#webview">Embed external web pages</a>).
+(see <a href="app_external#webview">Embed external web pages</a>).
 </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>

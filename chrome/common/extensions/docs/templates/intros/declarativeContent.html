@@ -4,9 +4,9 @@
 The Declarative Content API allows you to show your extension's
 $(ref:pageAction page action) depending on the URL of a web page and
 the CSS selectors its content matches, without needing to take a <a
-href="declare_permissions.html#host-permissions">host permission</a> or
-inject a <a href="content_scripts.html">content script</a>.  Use the
-<a href="activeTab.html">activeTab</a> permission in order to be able
+href="declare_permissions#host-permissions">host permission</a> or
+inject a <a href="content_scripts">content script</a>.  Use the
+<a href="activeTab">activeTab</a> permission in order to be able
 to interact with a page after the user clicks on your page action.
 </p>
 
@@ -18,7 +18,7 @@ user clicks on it, you'll have to keep using the $(ref:pageAction) API.
 
 <h2 id="rules">Rules</h2>
 
-<p>As a <a href="events.html#declarative">declarative API</a>, this
+<p>As a <a href="events#declarative">declarative API</a>, this
 API lets you register rules on the
 <code>$(ref:onPageChanged)</code> $(ref:events.Event event) object which
 take an action (currently just <code>$(ref:ShowPageAction)</code>) when
@@ -71,13 +71,13 @@ var rule2 = {
 </pre>
 
 <p>
-<a href="events.html#addingrules">Added rules</a> are saved across
+<a href="events#addingrules">Added rules</a> are saved across
 browser restarts, so register them as follows:
 </p>
 <pre>
 $(ref:runtime.onInstalled chrome.runtime.onInstalled).addListener(function(details) {
-  $(ref:onPageChanged chrome.declarativeContent.onPageChanged).<a href="events.html#removingrules">removeRules</a>(undefined, function() {
-    $(ref:onPageChanged chrome.declarativeContent.onPageChanged).<a href="events.html#addingrules">addRules</a>([rule2]);
+  $(ref:onPageChanged chrome.declarativeContent.onPageChanged).<a href="events#removingrules">removeRules</a>(undefined, function() {
+    $(ref:onPageChanged chrome.declarativeContent.onPageChanged).<a href="events#addingrules">addRules</a>([rule2]);
   });
 });
 </pre>
@@ -90,7 +90,7 @@ a faster matching algorithm.
 </p>
 
 <p>
-Combine the above rule with the <a href="activeTab.html">activeTab</a>
+Combine the above rule with the <a href="activeTab">activeTab</a>
 permission to create an extension that doesn't need any install-time
 permissions but can invite the user to click its page action on
 relevant pages and can run on those pages when the user clicks the

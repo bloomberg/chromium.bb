@@ -2,7 +2,7 @@
   "alarms": {
     "Learn More": [
       {
-        "link": "event_pages.html",
+        "link": "event_pages",
         "text": "Event Pages"
       }
     ]
@@ -10,7 +10,7 @@
   "app_runtime": {
     "Learn More": [
       {
-        "link": "app_lifecycle.html",
+        "link": "app_lifecycle",
         "text": "Manage App Lifecycle"
       },
       {
@@ -22,11 +22,11 @@
   "app_window": {
     "Learn More": [
       {
-        "link": "about_apps.html#look",
+        "link": "about_apps#look",
         "text": "How they look"
       },
       {
-        "link": "app_lifecycle.html",
+        "link": "app_lifecycle",
         "text": "Manage App Lifecycle"
       },
       {
@@ -38,7 +38,7 @@
   "bluetooth": {
     "Learn More": [
       {
-        "link": "app_bluetooth.html",
+        "link": "app_bluetooth",
         "text": "Bluetooth"
       }
     ]
@@ -66,7 +66,7 @@
         "text": "\"cookies\""
       },
       {
-        "link": "declare_permissions.html#host-permissions",
+        "link": "declare_permissions#host-permissions",
         "text": "host permissions"
       }
     ]
@@ -74,11 +74,11 @@
   "declarativeContent": {
     "Learn More": [
       {
-        "link": "events.html",
+        "link": "events",
         "text": "Declarative Events"
       },
       {
-        "link": "activeTab.html",
+        "link": "activeTab",
         "text": "activeTab"
       }
     ]
@@ -90,7 +90,7 @@
         "text": "\"declarativeWebRequest\""
       },
       {
-        "link": "declare_permissions.html#host-permissions",
+        "link": "declare_permissions#host-permissions",
         "text": "host permissions"
       }
     ]
@@ -120,11 +120,11 @@
     ],
     "Learn More": [
       {
-        "link": "app_storage.html",
+        "link": "app_storage",
         "text": "Manage Data"
       },
       {
-        "link": "angular_framework.html",
+        "link": "angular_framework",
         "text": "Build Apps with AngularJS"
       },
       {
@@ -136,7 +136,7 @@
   "gcm": {
     "Learn More": [
       {
-        "link": "cloudMessagingV2.html",
+        "link": "cloudMessagingV2",
         "text": "Google Cloud Messaging"
       }
     ]
@@ -144,7 +144,7 @@
   "identity": {
     "Learn More": [
       {
-        "link": "app_identity.html",
+        "link": "app_identity",
         "text": "Identify User"
       }
     ]
@@ -181,7 +181,7 @@
   "permissions": {
     "Learn More": [
       {
-        "link": "declare_permissions.html",
+        "link": "declare_permissions",
         "text": "Declaring permissions"
       }
     ]
@@ -189,11 +189,11 @@
   "pushMessaging": {
     "Learn More": [
       {
-        "link": "cloudMessaging.html",
+        "link": "cloudMessaging",
         "text": "Google Cloud Messaging for Chrome"
       },
       {
-        "link": "gcm_server.html",
+        "link": "gcm_server",
         "text": "API Reference for GCM service"
       }
     ]
@@ -201,11 +201,11 @@
   "runtime": {
     "Learn More": [
       {
-        "link": "app_lifecycle.html",
+        "link": "app_lifecycle",
         "text": "Manage App Lifecycle"
       },
       {
-        "link": "event_pages.html",
+        "link": "event_pages",
         "text": "Event Pages"
       }
     ]
@@ -213,7 +213,7 @@
   "serial": {
     "Learn More": [
       {
-        "link": "app_usb.html",
+        "link": "app_usb",
         "text": "Accessing Hardware Devices"
       }
     ]
@@ -230,11 +230,11 @@
     ],
     "Learn More": [
       {
-        "link": "app_network.html",
+        "link": "app_network",
         "text": "Network Communications"
       },
       {
-        "link": "sencha_framework.html",
+        "link": "sencha_framework",
         "text": "Build Apps with Sencha ExtJS"
       },
       {
@@ -262,7 +262,7 @@
   "syncFileSystem": {
     "Learn More": [
       {
-        "link": "app_storage.html",
+        "link": "app_storage",
         "text": "Manage Data"
       },
       {
@@ -289,7 +289,7 @@
   "usb": {
     "Learn More": [
       {
-        "link": "app_usb.html",
+        "link": "app_usb",
         "text": "Accessing Hardware Devices"
       }
     ]
@@ -301,7 +301,7 @@
         "text": "\"webRequest\""
       },
       {
-        "link": "declare_permissions.html#host-permissions",
+        "link": "declare_permissions#host-permissions",
         "text": "host permissions"
       }
     ]

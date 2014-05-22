@@ -1,19 +1,19 @@
 [
   {
     "title": "Getting Started",
-    "href": "/extensions/getstarted.html"
+    "href": "/extensions/getstarted"
   },
   {
     "title": "Overview",
-    "href": "/extensions/overview.html"
+    "href": "/extensions/overview"
   },
   {
     "title": "What's New?",
-    "href": "/extensions/whats_new.html"
+    "href": "/extensions/whats_new"
   },
   {
     "title": "Developer's Guide",
-    "href": "/extensions/devguide.html",
+    "href": "/extensions/devguide",
     "items": [
       {
         "title": "Browser UI",
@@ -21,31 +21,31 @@
         "items": [
           {
             "title": "Browser Actions",
-            "href": "/extensions/browserAction.html"
+            "href": "/extensions/browserAction"
           },
           {
             "title": "Context Menus",
-            "href": "/extensions/contextMenus.html"
+            "href": "/extensions/contextMenus"
           },
           {
             "title": "Desktop Notifications",
-            "href": "/extensions/desktop_notifications.html"
+            "href": "/extensions/desktop_notifications"
           },
           {
             "title": "Omnibox",
-            "href": "/extensions/omnibox.html"
+            "href": "/extensions/omnibox"
           },
           {
             "title": "Options Pages",
-            "href": "/extensions/options.html"
+            "href": "/extensions/options"
           },
           {
             "title": "Override Pages",
-            "href": "/extensions/override.html"
+            "href": "/extensions/override"
           },
           {
             "title": "Page Actions",
-            "href": "/extensions/pageAction.html"
+            "href": "/extensions/pageAction"
           }
         ]
       },
@@ -55,35 +55,35 @@
         "items": [
           {
             "title": "Bookmarks",
-            "href": "/extensions/bookmarks.html"
+            "href": "/extensions/bookmarks"
           },
           {
             "title": "Cookies",
-            "href": "/extensions/cookies.html"
+            "href": "/extensions/cookies"
           },
           {
             "title": "Extending DevTools",
-            "href": "/extensions/devtools.html"
+            "href": "/extensions/devtools"
           },
           {
             "title": "Events",
-            "href": "/extensions/events.html"
+            "href": "/extensions/events"
           },
           {
             "title": "History",
-            "href": "/extensions/history.html"
+            "href": "/extensions/history"
           },
           {
             "title": "Management",
-            "href": "/extensions/management.html"
+            "href": "/extensions/management"
           },
           {
             "title": "Tabs",
-            "href": "/extensions/tabs.html"
+            "href": "/extensions/tabs"
           },
           {
             "title": "Windows",
-            "href": "/extensions/windows.html"
+            "href": "/extensions/windows"
           }
         ]
       },
@@ -93,39 +93,39 @@
         "items": [
           {
             "title": "Accessibility",
-            "href": "/extensions/a11y.html"
+            "href": "/extensions/a11y"
           },
           {
             "title": "Event Pages",
-            "href": "/extensions/event_pages.html"
+            "href": "/extensions/event_pages"
           },
           {
             "title": "Content Security Policy",
-            "href": "/extensions/contentSecurityPolicy.html"
+            "href": "/extensions/contentSecurityPolicy"
           },
           {
             "title": "Content Scripts",
-            "href": "/extensions/content_scripts.html"
+            "href": "/extensions/content_scripts"
           },
           {
             "title": "Cross-Origin XHR",
-            "href": "/extensions/xhr.html"
+            "href": "/extensions/xhr"
           },
           {
             "title": "Internationalization",
-            "href": "/extensions/i18n.html"
+            "href": "/extensions/i18n"
           },
           {
             "title": "Message Passing",
-            "href": "/extensions/messaging.html"
+            "href": "/extensions/messaging"
           },
           {
             "title": "Optional Permissions",
-            "href": "/extensions/permissions.html"
+            "href": "/extensions/permissions"
           },
           {
             "title": "NPAPI Plugins",
-            "href": "/extensions/npapi.html"
+            "href": "/extensions/npapi"
           }
         ]
       },
@@ -135,11 +135,11 @@
         "items": [
           {
             "title": "Hosting",
-            "href": "/extensions/hosting.html"
+            "href": "/extensions/hosting"
           },
           {
             "title": "Other Deployment Options",
-            "href": "/extensions/external_extensions.html"
+            "href": "/extensions/external_extensions"
           }
         ]
       }
@@ -147,23 +147,23 @@
   },
   {
     "title": "Tutorials",
-    "href": "/extensions/tutorials.html",
+    "href": "/extensions/tutorials",
     "items": [
       {
         "title": "Manifest V2",
-        "href": "/extensions/tut_migration_to_manifest_v2.html"
+        "href": "/extensions/tut_migration_to_manifest_v2"
       },
       {
         "title": "Debugging",
-        "href": "/extensions/tut_debugging.html"
+        "href": "/extensions/tut_debugging"
       },
       {
         "title": "Google Analytics",
-        "href": "/extensions/tut_analytics.html"
+        "href": "/extensions/tut_analytics"
       },
       {
         "title": "OAuth",
-        "href": "/extensions/tut_oauth.html"
+        "href": "/extensions/tut_oauth"
       }
     ]
   },
@@ -176,25 +176,25 @@
         "items": [
           {
             "title": "Manifest Files",
-            "href": "/extensions/manifest.html"
+            "href": "/extensions/manifest"
           },
           {
             "title": "Match Patterns",
-            "href": "/extensions/match_patterns.html"
+            "href": "/extensions/match_patterns"
           }
         ]
       },
       {
         "title": "Permission Warnings",
-        "href": "/extensions/permission_warnings.html"
+        "href": "/extensions/permission_warnings"
       },
       {
         "title": "chrome.* APIs",
-        "href": "/extensions/api_index.html"
+        "href": "/extensions/api_index"
       },
       {
         "title": "Other APIs",
-        "href": "/extensions/api_other.html"
+        "href": "/extensions/api_other"
       }
     ]
   },
@@ -203,7 +203,7 @@
     "items": [
       {
         "title": "FAQ",
-        "href": "/extensions/faq.html"
+        "href": "/extensions/faq"
       },
       {
         "title": "Chrome Web Store",
@@ -215,7 +215,7 @@
       },
       {
         "title": "Themes",
-        "href": "/extensions/themes.html"
+        "href": "/extensions/themes"
       }
     ]
   }

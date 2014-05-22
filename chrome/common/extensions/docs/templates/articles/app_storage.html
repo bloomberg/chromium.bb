@@ -6,18 +6,18 @@ of sending or receiving data.
 Starting with the basics,
 you should use an MVC framework to help you design and implement your app
 so that data is completely separate from the app's view on that data
-(see <a href="app_frameworks.html">MVC Architecture</a>).
+(see <a href="app_frameworks">MVC Architecture</a>).
 </p>
 
 <p>
 You also need to think about how data is handled when your app is offline
-(see <a href="offline_apps.html">Offline First</a>).
+(see <a href="offline_apps">Offline First</a>).
 This doc briefly introduces the storage options
 for sending, receiving, and saving data locally;
 the remainder of the doc shows you how
 to use Chrome's File System and Sync File System APIs
-(see also <a href="fileSystem.html">fileSystem API</a> and
-<a href="syncFileSystem.html">syncFileSystem API</a>).
+(see also <a href="fileSystem">fileSystem API</a> and
+<a href="syncFileSystem">syncFileSystem API</a>).
 </p>
 
 <p class="note">
@@ -36,19 +36,19 @@ Packaged apps use many different mechanisms
 to send and receive data.
 For external data (resources, web pages),
 you need to be aware of the
-<a href="contentSecurityPolicy.html">Content Security Policy (CSP)</a>.
+<a href="contentSecurityPolicy">Content Security Policy (CSP)</a>.
 Similar to Chrome Extensions,
 you can use
-<a href="app_external.html#external">cross-origin XMLHttpRequests</a>
+<a href="app_external#external">cross-origin XMLHttpRequests</a>
 to communicate with remote servers.
 You can also isolate external pages,
 so that the rest of your app is secure
-(see <a href="app_external.html#webview">Embed external web pages</a>).
+(see <a href="app_external#webview">Embed external web pages</a>).
 </p>
 
 <p>
 When saving data locally,
-you can use the <a href="storage.html">Chrome Storage API</a>
+you can use the <a href="storage">Chrome Storage API</a>
 to save small amounts of string data and
 IndexedDB to save structured data.
 With IndexedDB, you can persist JavaScript objects

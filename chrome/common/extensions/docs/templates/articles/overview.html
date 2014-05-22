@@ -4,7 +4,7 @@
 <p>
 Once you've finished this page
 and the
-<a href="getstarted.html">Getting Started</a> tutorial,
+<a href="getstarted">Getting Started</a> tutorial,
 you'll be all set to start writing extensions.
 </p>
 
@@ -16,18 +16,18 @@ CSS, JavaScript, images, and anything else you need&mdash;that
 adds functionality to the Google Chrome browser.
 Extensions are essentially web pages,
 and they can use all the
-<a href="api_other.html">APIs that the browser provides to web pages</a>,
+<a href="api_other">APIs that the browser provides to web pages</a>,
 from XMLHttpRequest to JSON to HTML5.
 </p>
 
 <p>
 Extensions can interact with web pages or servers using
-<a href="content_scripts.html">content scripts</a> or
-<a href="xhr.html">cross-origin XMLHttpRequests</a>.
+<a href="content_scripts">content scripts</a> or
+<a href="xhr">cross-origin XMLHttpRequests</a>.
 Extensions can also interact programmatically
 with browser features such as
-<a href="bookmarks.html">bookmarks</a>
-and <a href="tabs.html">tabs</a>.
+<a href="bookmarks">bookmarks</a>
+and <a href="tabs">tabs</a>.
 </p>
 
 <h3 id="extension-ui">Extension UIs</h3>
@@ -35,8 +35,8 @@ and <a href="tabs.html">tabs</a>.
 <p>
 Many extensions&mdash;but not Chrome Apps&mdash;add
 UI to Google Chrome in the form of
-<a href="browserAction.html">browser actions</a>
-or <a href="pageAction.html">page actions</a>.
+<a href="browserAction">browser actions</a>
+or <a href="pageAction">page actions</a>.
 Each extension can have at most one browser action or page action.
 Choose a <b>browser action</b> when the extension is relevant to most pages.
 Choose a <b>page action</b> when the extension's icon
@@ -65,19 +65,19 @@ depending on the page.
 
 <tr>
   <td>
-    This <a href="samples.html#google-mail-checker">Google Mail Checker extension</a>
+    This <a href="samples#google-mail-checker">Google Mail Checker extension</a>
     uses a <em>browser action</em>
     (icon in the toolbar).
   </td>
   <td>
-    This <a href="samples.html#mappy">Mappy extension</a>
+    This <a href="samples#mappy">Mappy extension</a>
     uses a <em>page action</em>
     (icon in the address bar)
     and <em>content script</em>
     (code injected into a web page).
   </td>
   <td>
-    This <a href="samples.html#news-reader">News Reader extension</a>
+    This <a href="samples#news-reader">News Reader extension</a>
     features a browser action that,
     when clicked,
     shows a <em>popup</em>.
@@ -90,7 +90,7 @@ Extensions (and Chrome Apps) can also present a UI in other ways,
 such as adding to the Chrome context menu,
 providing an options page,
 or using a content script that changes how pages look.
-See the <a href="devguide.html">Developer's Guide</a>
+See the <a href="devguide">Developer's Guide</a>
 for a complete list of extension features,
 with links to implementation details
 for each one.
@@ -120,7 +120,7 @@ If you upload your extension using the
 <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
 the <code>.crx</code> file is created for you.
 For details on distributing extensions,
-see <a href="hosting.html">Hosting</a>.
+see <a href="hosting">Hosting</a>.
 </p>
 
 
@@ -170,7 +170,7 @@ the ID will change again when you package the extension.
 If your extension's code
 needs to specify the full path to a file within the extension,
 you can use the <code>@@extension_id</code>
-<a href="i18n.html#overview-predefined">predefined message</a>
+<a href="i18n#overview-predefined">predefined message</a>
 to avoid hardcoding the ID during development.
 </p>
 
@@ -216,7 +216,7 @@ that uses information from google.com:
 
 <p>
 For details, see
-<a href="manifest.html">Manifest Files</a>.
+<a href="manifest">Manifest Files</a>.
 </p>
 
 <h2 id="arch">Architecture</h2>
@@ -254,8 +254,8 @@ the behavior of the browser action in both windows.
 
 <p>
 There are two types of background pages:
-<a href="background_pages.html">persistent background pages</a>,
-and <a href="event_pages.html">event pages</a>. Persistent
+<a href="background_pages">persistent background pages</a>,
+and <a href="event_pages">event pages</a>. Persistent
 background pages, as the name suggests, are always open.
 Event pages are opened and closed as needed. Unless you absolutely
 need your background page to run all the time, prefer to use
@@ -266,8 +266,8 @@ an event page.
   This could build on a figure that shows the process architecture. -->
 
 <p>
-See <a href="event_pages.html">Event Pages</a>
-and <a href="background_pages.html">Background Pages</a>
+See <a href="event_pages">Event Pages</a>
+and <a href="background_pages">Background Pages</a>
 for more details.
 </p>
 
@@ -314,9 +314,9 @@ because the popup can invoke functions on the background page.
  alt="A browser window containing a browser action that's displaying a popup. The popup's HTML file (popup.html) can communicate with the extension's background page (background.html)." />
 
 <p>
-See <a href="browserAction.html">Browser Actions</a>,
-<a href="options.html">Options</a>,
-<a href="override.html">Override Pages</a>,
+See <a href="browserAction">Browser Actions</a>,
+<a href="options">Options</a>,
+<a href="override">Override Pages</a>,
 and the <a href="#pageComm">Communication between pages</a> section
 for more details.
 </p>
@@ -376,7 +376,7 @@ asking a content script to change the appearance of its browser page.
 
 <p>
 For more information,
-see <a href="content_scripts.html">Content Scripts</a>.
+see <a href="content_scripts">Content Scripts</a>.
 </p>
 
 
@@ -506,7 +506,7 @@ since we don't do anything about the results of the update.
 
 <p>
 For more information, see the
-<a href="api_index.html">chrome.* API docs</a>
+<a href="api_index">chrome.* API docs</a>
 and watch this video:
 </p>
 
@@ -526,7 +526,7 @@ the pages can make direct function calls to each other.
 
 <p>
 To find pages in the extension, use
-<a href="extension.html"><code>chrome.extension</code></a>
+<a href="extension"><code>chrome.extension</code></a>
 methods such as
 <code>getViews()</code> and
 <code>getBackgroundPage()</code>.
@@ -600,10 +600,10 @@ Here are some ideas for where to go next:
 </p>
 
 <ul>
-  <li> <a href="getstarted.html">Tutorial: Getting Started</a> </li>
-  <li> <a href="tut_debugging.html">Tutorial: Debugging</a> </li>
-  <li> <a href="devguide.html">Developer's Guide</a> </li>
-  <li> <a href="samples.html">Samples</a> </li>
+  <li> <a href="getstarted">Tutorial: Getting Started</a> </li>
+  <li> <a href="tut_debugging">Tutorial: Debugging</a> </li>
+  <li> <a href="devguide">Developer's Guide</a> </li>
+  <li> <a href="samples">Samples</a> </li>
   <li> <a href="http://www.youtube.com/view_play_list?p=CA101D6A85FE9D4B">Videos</a>,
     such as
     <a href="http://www.youtube.com/watch?v=B4M_a7xejYI&feature=PlayList&p=CA101D6A85FE9D4B&index=6">Extension Message Passing</a>

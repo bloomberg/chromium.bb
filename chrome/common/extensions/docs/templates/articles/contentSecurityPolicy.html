@@ -18,7 +18,7 @@
   extension enables you to carefully consider the resources that your extension
   requires, and to ask the browser to ensure that those are the only resources
   your extension has access to. These policies provide security over and above
-  the <a href="declare_permissions.html">host permissions</a> your extension
+  the <a href="declare_permissions">host permissions</a> your extension
   requests; they're an additional layer of protection, not a replacement.
 </p>
 
@@ -26,7 +26,7 @@
   On the web, such a policy is defined via an HTTP header or <code>meta</code>
   element. Inside Chrome's extension system, neither is an appropriate
   mechanism. Instead, an extension's policy is defined via the extension's
-  <a href="manifest.html"><code>manifest.json</code></a> file as follows:
+  <a href="manifest"><code>manifest.json</code></a> file as follows:
 </p>
 
 <pre data-filename="manifest.json">
@@ -49,7 +49,7 @@
 <h2 id="restrictions">Default Policy Restrictions</h2>
 
 <p>
-  Packages that do not define a <a href="manifestVersion.html">
+  Packages that do not define a <a href="manifestVersion">
     <code>manifest_version</code>
   </a> have no default content security policy. Those that select
   <code>manifest_version</code> 2, have a default content security policy
@@ -98,7 +98,7 @@ function() { return foo && foo.bar && foo.bar.baz };
   malicious third-party. It does, however, require you to write your code with a
   clean separation between content and behavior (which you should of course do
   anyway, right?). An example might make this clearer. You might try to write a
-  <a href="browserAction.html#popups">Browser Action's popup</a> as a single
+  <a href="browserAction#popups">Browser Action's popup</a> as a single
   <code>popup.html</code> containing:
 </p>
 
@@ -311,9 +311,9 @@ function main() {
 <p>
   Making use of Google Analytics is the canonical example for this sort of
   policy definition. It's common enough that we've provided an Analytics
-  boilerplate of sorts in the <a href="samples.html#event-tracking-with-google-analytics">Event Tracking
+  boilerplate of sorts in the <a href="samples#event-tracking-with-google-analytics">Event Tracking
   with Google Analytics</a> sample extension, and a
-<a href="tut_analytics.html">brief tutorial</a> that goes into more detail.
+<a href="tut_analytics">brief tutorial</a> that goes into more detail.
 </p>
 
 <h3 id="relaxing-eval">Evaluated JavaScript</h3>
@@ -341,7 +341,7 @@ function main() {
   allows in order to increase security at the expense of convenience. To specify
   that your extension can only load resources of <em>any</em> type (images, etc)
   from its own package, for example, a policy of <code>default-src 'self'</code>
-  would be appropriate. The <a href="samples.html#mappy">Mappy</a> sample
+  would be appropriate. The <a href="samples#mappy">Mappy</a> sample
   extension is a good example of an extension that's been locked down above and
   beyond the defaults.
 </p>

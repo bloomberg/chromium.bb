@@ -20,7 +20,7 @@ for examples from Chrome itself.
 
 <p>
 After declaring the policies they can be read from the
-<a href="../storage.html#property-managed">storage.managed</a> API.
+<a href="../storage#property-managed">storage.managed</a> API.
 It's up to the {{platform}} to enforce the policies configured
 by the administrator.
 </p>
@@ -45,10 +45,10 @@ within the {{platform}} that contains the policy schema.
 <p>
 Chrome will then load these policies from the underlying operating system
 and from Google Apps for signed-in users. The
-<a href="../storage.html#event-onChanged">storage.onChanged</a>
+<a href="../storage#event-onChanged">storage.onChanged</a>
 event is fired whenever a policy change is detected, including while
 the browser wasn't running if the {{platform}} uses
-<a href="../event_pages.html">event pages</a>.
+<a href="../event_pages">event pages</a>.
 You can verify the policies that Chrome loaded at
 <a href="chrome://policy">chrome://policy</a>.
 </p>

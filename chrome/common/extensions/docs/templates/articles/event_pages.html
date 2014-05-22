@@ -3,7 +3,7 @@
 
 <p>
 Event pages are very similar to
-<a href="background_pages.html">background pages</a>,
+<a href="background_pages">background pages</a>,
 with one important difference:
 event pages are loaded only when they are needed.
 When the event page is not actively doing something,
@@ -29,7 +29,7 @@ new model.
 
 <p>
 Register your event page in the
-<a href="manifest.html">extension manifest</a>:
+<a href="manifest">extension manifest</a>:
 </p>
 
 {{^is_apps}}
@@ -78,7 +78,7 @@ that will cause the event page to load:
 (in order to <a href="#registration">register for events</a>).
 <li>The event page was listening for an event, and the event is dispatched.
 <li>A content script or other extension
-<a href="messaging.html">sends a message.</a>
+<a href="messaging">sends a message.</a>
 <li>Another view in the extension (for example, a popup) calls
 <code>$(ref:runtime.getBackgroundPage)</code>.
 </ul>
@@ -146,13 +146,13 @@ Follow this checklist to convert your extension's
 
   <li>If your extension uses <code>window.setTimeout()</code> or
   <code>window.setInterval()</code>, switch to using the
-  <a href="alarms.html">alarms API</a> instead. DOM-based timers won't
+  <a href="alarms">alarms API</a> instead. DOM-based timers won't
   be honored if the event page shuts down.
 
   <li>Similarly, other asynchronous HTML5 APIs like notifications and
   geolocation will not complete if the event page shuts down. Instead,
   use equivalent extension APIs, like
-  <a href="notifications.html">notifications</a>.
+  <a href="notifications">notifications</a>.
 
   <li>If your extension uses,
   <code>$(ref:extension.getBackgroundPage)</code>,
@@ -179,16 +179,16 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
   installed or upgraded, listen to the
   <code>$(ref:runtime.onInstalled)</code>
   event. This is a good place to register for
-  <a href="declarativeWebRequest.html">declarativeWebRequest</a> rules,
-  <a href="contextMenus.html">contextMenu</a> entries, and other such
+  <a href="declarativeWebRequest">declarativeWebRequest</a> rules,
+  <a href="contextMenus">contextMenu</a> entries, and other such
   one-time initialization.
 
   <li>If you need to keep runtime state in memory throughout a browser
-  session, use the <a href="storage.html">storage API</a> or
+  session, use the <a href="storage">storage API</a> or
   IndexedDB. Since the event page does not stay loaded for long, you
   can no longer rely on global variables for runtime state.
 
-  <li>Use <a href="events.html#filtered">event filters</a> to restrict
+  <li>Use <a href="events#filtered">event filters</a> to restrict
   your event notifications to the cases you care about. For example, if
   you listen to the <code>$(ref:tabs.onUpdated)</code>
   event, try using the
@@ -204,11 +204,11 @@ Keep these tips in mind when using event pages to avoid common subtle pitfalls.
   That way if your extension crashes without receiving
   <code>onSuspend</code>, no data will typically be lost.
 
-  <li>If you're using <a href="messaging.html">message passing</a>, be sure
+  <li>If you're using <a href="messaging">message passing</a>, be sure
   to close unused message ports. The event page will not shut down until all
   message ports are closed.
 
-  <li>If you're using the <a href="contextMenus.html">context menus</a> API,
+  <li>If you're using the <a href="contextMenus">context menus</a> API,
   pass a string <code>id</code> parameter to
   <code>$(ref:contextMenus.create)</code>,
   and use the

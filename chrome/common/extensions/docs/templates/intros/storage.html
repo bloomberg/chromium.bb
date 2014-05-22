@@ -15,19 +15,19 @@ with the following key differences:
   without the need for a background page.</li>
   <li>A user's extension settings can be persisted
   even when using
-  <a href="manifest/incognito.html">split incognito behavior</a>.</li>
+  <a href="manifest/incognito">split incognito behavior</a>.</li>
   <li>It's asynchronous with bulk read and write operations, and therefore
   faster than the blocking and serial <code>localStorage API</code>.
   <li>User data can be stored as objects
   (the <code>localStorage API</code> stores data in strings).</li>
   <li>Enterprise policies configured by the administrator for the extension
   can be read (using <code>storage.managed</code> with a
-  <a href="manifest/storage.html">schema</a>).</li>
+  <a href="manifest/storage">schema</a>).</li>
 </ul>
 
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "storage" permission in the <a
-  href="manifest.html">extension manifest</a>
+  href="manifest">extension manifest</a>
   to use the storage API.
   For example:</p>
 <pre data-filename="manifest.json">

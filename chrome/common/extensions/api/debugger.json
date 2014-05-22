@@ -5,7 +5,7 @@
 [
   {
     "namespace": "debugger",
-    "description": "The <code>chrome.debugger</code> API serves as an alternate transport for Chrome's <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>remote debugging protocol</a>. Use <code>chrome.debugger</code> to attach to one or more tabs to instrument network interaction, debug JavaScript, mutate the DOM and CSS, etc. Use the Debuggee <code>tabId</code> to target tabs with sendCommand and route events by <code>tabId</code> from onEvent callbacks.",
+    "description": "The <code>chrome.debugger</code> API serves as an alternate transport for Chrome's <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>remote debugging protocol</a>. Use <code>chrome.debugger</code> to attach to one or more tabs to instrument network interaction, debug JavaScript, mutate the DOM and CSS, etc. Use the Debuggee <code>tabId</code> to target tabs with sendCommand and route events by <code>tabId</code> from onEvent callbacks.",
     "types": [
       {
         "id": "Debuggee",
@@ -51,7 +51,7 @@
           {
             "type": "string",
             "name": "requiredVersion",
-            "description": "Required debugging protocol version (\"0.1\"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>here</a>."
+            "description": "Required debugging protocol version (\"0.1\"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>here</a>."
           },
           {
             "type": "function",
@@ -94,7 +94,7 @@
           {
             "type": "string",
             "name": "method",
-            "description": "Method name. Should be one of the methods defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>remote debugging protocol</a>."
+            "description": "Method name. Should be one of the methods defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>remote debugging protocol</a>."
           },
           {
             "type": "object",
@@ -154,7 +154,7 @@
           {
             "type": "string",
             "name": "method",
-            "description": "Method name. Should be one of the notifications defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging.html'>remote debugging protocol</a>."
+            "description": "Method name. Should be one of the notifications defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>remote debugging protocol</a>."
           },
           {
             "type": "object",

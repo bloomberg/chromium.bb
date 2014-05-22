@@ -2,7 +2,7 @@
 
 
 <p>
-The <a href="app_architecture.html#security">Chrome Apps security model</a> disallows
+The <a href="app_architecture#security">Chrome Apps security model</a> disallows
 external content in iframes and
 the use of inline scripting and <code>eval()</code>.
 You can override these restrictions,
@@ -27,7 +27,7 @@ Check out the
 <h2 id="external">Referencing external resources</h2>
 
 <p>
-The <a href="contentSecurityPolicy.html">Content Security Policy</a> used by apps disallows
+The <a href="contentSecurityPolicy">Content Security Policy</a> used by apps disallows
 the use of many kinds of remote URLs, so you can't directly reference external
 images, stylesheets, or fonts from an app page. Instead, you can use use
 cross-origin XMLHttpRequests to fetch these resources,
@@ -68,7 +68,7 @@ xhr.onload = function(e) {
 xhr.send();
 </pre>
 
-<p>You may want to <a href="offline_apps.html#saving-locally">save</a>
+<p>You may want to <a href="offline_apps#saving-locally">save</a>
 these resources locally, so that they are available offline.</p>
 
 <h2 id="webview">Embed external web pages</h2>
@@ -127,7 +127,7 @@ These pages are then exempt from their Content Security Policy.
 Sandboxed pages can use iframes, inline scripting,
 and <code>eval()</code>.
 Check out the manifest field description for
-<a href="manifest/sandbox.html">sandbox</a>.
+<a href="manifest/sandbox">sandbox</a>.
 </p>
 
 <p>

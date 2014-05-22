@@ -1,7 +1,7 @@
 <h1 id="url_handlers">url_handlers</h1>
 
 <p>
-Used by <a href="../app_lifecycle.html#eventpage">packaged apps</a>
+Used by <a href="../app_lifecycle#eventpage">packaged apps</a>
 to specify URL patterns the app wants to intercept and handle. An app can
 define multiple URL handlers under this manifest entry, each having an identifier,
 a URL pattern, and a title.
@@ -47,7 +47,7 @@ cannot be verified).
 Upon successful registration and installation, an app will be launched for all
 matching navigations inside browser tabs as well as other apps. The app will
 receive a new kind of the
-<a href="../app_runtime.html#event-onLaunched">app.runtime.onLaunched</a>
+<a href="../app_runtime#event-onLaunched">app.runtime.onLaunched</a>
 event, with the launchData
 object containing the matched handler's identifier (such as "view_foo_presentation"
 above), the URL being navigated to, and the referrer's URL.

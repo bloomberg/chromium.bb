@@ -19,7 +19,7 @@
 <h1>The activeTab permission</h1>
 
 <p>
-The <code>activeTab</code> permission gives an extension temporary access to the currently active tab when the user <em>invokes</em> the extension - for example by clicking its <a href="browserAction.html">browser action</a>. Access to the tab lasts until the tab is navigated or closed.
+The <code>activeTab</code> permission gives an extension temporary access to the currently active tab when the user <em>invokes</em> the extension - for example by clicking its <a href="browserAction">browser action</a>. Access to the tab lasts until the tab is navigated or closed.
 </p>
 
 <p>
@@ -42,7 +42,7 @@ This serves as an alternative for many uses of <code>&lt;all_urls&gt;</code>, bu
 <h2 id="example">Example</h2>
 
 <p>
-See the <a href="samples.html#page-redder">Page Redder</a> sample extension:
+See the <a href="samples#page-redder">Page Redder</a> sample extension:
 </p>
 
 <pre data-filename="manifest.json">
@@ -77,7 +77,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 <h2 id="motivation">Motivation</h2>
 
 <p>
-Consider a web clipping extension that has a <a href="browserAction.html">browser action</a> and <a href="contextMenus.html">context menu item</a>. This extension may only really need to access tabs when its browser action is clicked, or when its context menu item is executed.
+Consider a web clipping extension that has a <a href="browserAction">browser action</a> and <a href="contextMenus">context menu item</a>. This extension may only really need to access tabs when its browser action is clicked, or when its context menu item is executed.
 </p>
 
 <p>
@@ -94,7 +94,7 @@ In contrast, an extension with the <code>activeTab</code> permission only obtain
 While the <code>activeTab</code> permission is enabled for a tab, an extension can:
 <ul>
   <li>Call <code>$(ref:tabs.executeScript)</code> or <code>$(ref:tabs.insertCSS)</code> on that tab.
-  <li>Get the URL, title, and favicon for that tab via an API that returns a <code>$(ref:tabs.Tab)</code> object (essentially, <code>activeTab</code> grants the <code><a href="tabs.html#manifest">tabs</a></code> permission temporarily).
+  <li>Get the URL, title, and favicon for that tab via an API that returns a <code>$(ref:tabs.Tab)</code> object (essentially, <code>activeTab</code> grants the <code><a href="tabs#manifest">tabs</a></code> permission temporarily).
 </ul>
 </p>
 
@@ -103,10 +103,10 @@ While the <code>activeTab</code> permission is enabled for a tab, an extension c
 <p>
 The following user gestures enable <code>activeTab</code>:
 <ul>
-  <li>Executing a <a href="browserAction.html">browser action</a>
-  <li>Executing a <a href="pageAction.html">page action</a>
-  <li>Executing a <a href="contextMenus.html">context menu item</a>
-  <li>Executing a keyboard shortcut from the <a href="commands.html">commands API</a>
-  <li>Accepting a suggestion from the <a href="omnibox.html">omnibox API</a>
+  <li>Executing a <a href="browserAction">browser action</a>
+  <li>Executing a <a href="pageAction">page action</a>
+  <li>Executing a <a href="contextMenus">context menu item</a>
+  <li>Executing a keyboard shortcut from the <a href="commands">commands API</a>
+  <li>Accepting a suggestion from the <a href="omnibox">omnibox API</a>
 </ul>
 </p>

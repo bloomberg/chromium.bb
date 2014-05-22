@@ -6,8 +6,8 @@
 <p>If you publish using the <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>, you can <em>ignore this page</em>. You can use the dashboard to release updated versions to users, as well as to the Chrome Web Store.</p>
 
 <p>If you want to host somewhere other than the store, keep reading.
-You should also read <a href="hosting.html">Hosting</a> and
-<a href="packaging.html">Packaging</a>.</p>
+You should also read <a href="hosting">Hosting</a> and
+<a href="packaging">Packaging</a>.</p>
 
 <p class="warning"><b>Warning:</b>
 As of M33,
@@ -23,7 +23,7 @@ However, extensions hosted on the Chrome Web Store are updated
 via the Chrome update mechanism which developers do not control.
 Extension developers should be careful about updating extensions
 that have a dependency on the native binary
-(for example, legacy extensions using <a href="npapi.html">NPAPI</a>).
+(for example, legacy extensions using <a href="npapi">NPAPI</a>).
 </p>
 
 <h2 id="overview">Overview</h2>
@@ -34,7 +34,7 @@ that have a dependency on the native binary
 
 
 <h2 id="update_url">Update URL</h2>
-<p>If you're hosting your own extension or app, you need to add the "update_url" field to your <a href="manifest.html"><code>manifest.json</code></a> file,
+<p>If you're hosting your own extension or app, you need to add the "update_url" field to your <a href="manifest"><code>manifest.json</code></a> file,
 like this:</p>
 
 <pre data-filename="manifest.json">
@@ -66,7 +66,7 @@ and <strong>&lt;updatecheck></strong> elements of the update manifest:
 
 <p><b>appid</b><br>
 The extension or app ID, generated based on a hash of the public key,
-as described in <a href="packaging.html">Packaging</a>. You can find the
+as described in <a href="packaging">Packaging</a>. You can find the
 ID of an extension or Chrome App by going to the Extensions page (<b>chrome://extensions</b>).
 </p>
 {{?is_apps}}

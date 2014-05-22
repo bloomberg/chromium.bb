@@ -35,8 +35,8 @@ unless the extension has requested the appropriate cross-origin permissions.
 <h2 id="requesting-permission">Requesting cross-origin permissions</h2>
 
 <p>By adding hosts or host match patterns (or both) to the
-<a href="declare_permissions.html">permissions</a> section of the
-<a href="manifest.html">manifest</a> file, the extension can request access to
+<a href="declare_permissions">permissions</a> section of the
+<a href="manifest">manifest</a> file, the extension can request access to
 remote servers outside of its origin.</p>
 
 <pre data-filename="manifest.json">
@@ -68,7 +68,7 @@ like these:</p>
 <p>
 A match pattern of "http://*/" allows HTTP access to all reachable domains.
 Note that here,
-match patterns are similar to <a href="match_patterns.html">content script
+match patterns are similar to <a href="match_patterns">content script
 match patterns</a>,
 but any path information following the host is ignored.</p>
 
@@ -151,7 +151,7 @@ prefer HTTPS whenever possible.
 <h3 id="interaction-with-csp">Interaction with Content Security Policy</h3>
 
 <p>
-If you modify the default <a href="contentSecurityPolicy.html">Content
+If you modify the default <a href="contentSecurityPolicy">Content
 Security Policy</a> for apps or extensions by adding a
 <code>content_security_policy</code> attribute to your manifest, you'll need to
 ensure that any hosts to which you'd like to connect are allowed. While the
