@@ -272,10 +272,10 @@ module my_module {
 // This isn't actually valid .mojom, but the problem (missing ordinals) should
 // be handled at a different level.
 struct MyStruct {
-  int32 a0 @0;
-  int32 a1 @1;
-  int32 a2 @2;
-  int32 a9 @9;
+  int32 a0@0;
+  int32 a1@1;
+  int32 a2@2;
+  int32 a9@9;
   int32 a10 @10;
   int32 a11 @11;
   int32 a29 @29;
@@ -307,7 +307,7 @@ struct MyStruct {
 module my_module {
 
 struct MyStruct {
-  int32 a_missing @;
+  int32 a_missing@;
 };
 
 }  // module my_module
@@ -321,7 +321,7 @@ struct MyStruct {
 module my_module {
 
 struct MyStruct {
-  int32 a_octal @01;
+  int32 a_octal@01;
 };
 
 }  // module my_module
@@ -333,7 +333,7 @@ struct MyStruct {
       parser.Parse(source2, "my_file.mojom")
 
     source3 = """\
-module my_module { struct MyStruct { int32 a_invalid_octal @08; }; }
+module my_module { struct MyStruct { int32 a_invalid_octal@08; }; }
 """
     with self.assertRaisesRegexp(
         lexer.LexError,
@@ -342,7 +342,7 @@ module my_module { struct MyStruct { int32 a_invalid_octal @08; }; }
       parser.Parse(source3, "my_file.mojom")
 
     source4 = """\
-module my_module { struct MyStruct { int32 a_hex @0x1aB9; }; }
+module my_module { struct MyStruct { int32 a_hex@0x1aB9; }; }
 """
     with self.assertRaisesRegexp(
         lexer.LexError,
@@ -351,7 +351,7 @@ module my_module { struct MyStruct { int32 a_hex @0x1aB9; }; }
       parser.Parse(source4, "my_file.mojom")
 
     source5 = """\
-module my_module { struct MyStruct { int32 a_hex @0X0; }; }
+module my_module { struct MyStruct { int32 a_hex@0X0; }; }
 """
     with self.assertRaisesRegexp(
         lexer.LexError,
@@ -361,14 +361,14 @@ module my_module { struct MyStruct { int32 a_hex @0X0; }; }
 
     source6 = """\
 struct MyStruct {
-  int32 a_too_big @999999999999;
+  int32 a_too_big@999999999999;
 };
 """
     with self.assertRaisesRegexp(
         parser.ParseError,
         r"^my_file\.mojom:2: Error: "
             r"Ordinal value 999999999999 too large:\n"
-            r"  int32 a_too_big @999999999999;$"):
+            r"  int32 a_too_big@999999999999;$"):
       parser.Parse(source6, "my_file.mojom")
 
   def testNestedNamespace(self):

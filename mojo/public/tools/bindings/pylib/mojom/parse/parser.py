@@ -138,8 +138,8 @@ class Parser(object):
       p[0] = _ListFromConcat(p[1], p[2])
 
   def p_field(self, p):
-    """field : typename NAME default ordinal SEMI"""
-    p[0] = ('FIELD', p[1], p[2], p[4], p[3])
+    """field : typename NAME ordinal default SEMI"""
+    p[0] = ('FIELD', p[1], p[2], p[3], p[4])
 
   def p_default(self, p):
     """default : EQUALS expression
