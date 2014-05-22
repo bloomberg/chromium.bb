@@ -606,7 +606,7 @@ def UnsandboxedIRT(arch):
               # for build rules.
               command.Command([
                   'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..', '-DNACL_LINUX=1',
+                  '-I%(top_srcdir)s/..', '-DNACL_LINUX=1', '-DDEFINE_MAIN',
                   '-c', command.path.join('%(support)s', 'irt_interfaces.c'),
                   '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
           ],
