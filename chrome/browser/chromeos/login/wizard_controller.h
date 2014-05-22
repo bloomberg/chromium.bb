@@ -271,6 +271,8 @@ class WizardController : public ScreenObserver {
     local_state_for_testing_ = local_state;
   }
 
+  std::string first_screen_name() { return first_screen_name_; }
+
   // Called when network is UP.
   void StartTimezoneResolve();
 
@@ -368,6 +370,7 @@ class WizardController : public ScreenObserver {
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   friend class WizardControllerFlowTest;
+  friend class WizardControllerOobeResumeTest;
   friend class WizardInProcessBrowserTest;
   friend class WizardControllerBrokenLocalStateTest;
 

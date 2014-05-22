@@ -86,10 +86,27 @@ static int kShowDelayMs = 400;
 // Total timezone resolving process timeout.
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 
+// Stores the list of all screens that should be shown when resuming OOBE.
+const char *kResumableScreens[] = {
+  chromeos::WizardController::kNetworkScreenName,
+  chromeos::WizardController::kUpdateScreenName,
+  chromeos::WizardController::kEulaScreenName,
+  chromeos::WizardController::kEnrollmentScreenName,
+  chromeos::WizardController::kTermsOfServiceScreenName
+};
+
 // Checks flag for HID-detection screen show.
 bool CanShowHIDDetectionScreen() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableHIDDetectionOnOOBE);
+}
+
+bool IsResumableScreen(const std::string& screen) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kResumableScreens); ++i) {
+    if (screen == kResumableScreens[i])
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -209,9 +226,16 @@ void WizardController::Init(
     }
   }
 
-  AdvanceToScreen(first_screen_name);
+  const std::string screen_pref =
+      GetLocalState()->GetString(prefs::kOobeScreenPending);
+  if (is_out_of_box_ && !screen_pref.empty() && (first_screen_name.empty() ||
+      first_screen_name == WizardController::kTestNoScreenName)) {
+    first_screen_name_ = screen_pref;
+  }
+
+  AdvanceToScreen(first_screen_name_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
-      first_screen_name.empty())
+      first_screen_name_.empty())
     ShowWrongHWIDScreen();
 }
 
@@ -721,6 +745,10 @@ void WizardController::ShowCurrentScreen() {
   // flow has been switched to sign in screen (ExistingUserController).
   if (!oobe_display_)
     return;
+
+  // First remember how far have we reached so that we can resume if needed.
+  if (is_out_of_box_ && IsResumableScreen(current_screen_->GetName()))
+    StartupUtils::SaveOobePendingScreen(current_screen_->GetName());
 
   smooth_show_timer_.Stop();
 

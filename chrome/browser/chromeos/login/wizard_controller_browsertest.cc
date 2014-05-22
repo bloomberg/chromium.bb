@@ -840,6 +840,70 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 }
 
+class WizardControllerOobeResumeTest : public WizardControllerTest {
+ protected:
+  WizardControllerOobeResumeTest() {}
+  // Overriden from InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WizardControllerTest::SetUpOnMainThread();
+
+    // Make sure that OOBE is run as an "official" build.
+    WizardController::default_controller()->is_official_build_ = true;
+
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
+
+    // Set up the mocks for all screens.
+    MOCK(mock_network_screen_, network_screen_,
+         MockNetworkScreen, MockNetworkScreenActor);
+    MOCK(mock_enrollment_screen_, enrollment_screen_,
+         MockEnrollmentScreen, MockEnrollmentScreenActor);
+  }
+
+  void OnExit(ScreenObserver::ExitCodes exit_code) {
+    WizardController::default_controller()->OnExit(exit_code);
+  }
+
+  std::string GetFirstScreenName() {
+    return WizardController::default_controller()->first_screen_name();
+  }
+
+  MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
+      mock_network_screen_;
+  MockOutShowHide<MockEnrollmentScreen,
+      MockEnrollmentScreenActor>* mock_enrollment_screen_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
+                       PRE_ControlFlowResumeInterruptedOobe) {
+  // Switch to the initial screen.
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  WizardController::default_controller()->AdvanceToScreen(
+      WizardController::kNetworkScreenName);
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+              SetParameters(mock_enrollment_screen_,
+                            EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL,
+                            ""))
+      .Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+
+  WizardController::default_controller()->AdvanceToScreen(
+      WizardController::kEnrollmentScreenName);
+  EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),
+            WizardController::default_controller()->current_screen());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
+                       ControlFlowResumeInterruptedOobe) {
+  EXPECT_EQ(WizardController::kEnrollmentScreenName, GetFirstScreenName());
+}
+
 // TODO(dzhioev): Add test emaulating device with wrong HWID.
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571

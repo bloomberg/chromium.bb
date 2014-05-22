@@ -27,6 +27,9 @@ class StartupUtils {
   // Marks OOBE process as completed.
   static void MarkOobeCompleted();
 
+  // Stores the next pending OOBE screen in case it will need to be resumed.
+  static void SaveOobePendingScreen(const std::string& screen);
+
   // Returns device registration completion status, i.e. second part of OOBE.
   static bool IsDeviceRegistered();
 
