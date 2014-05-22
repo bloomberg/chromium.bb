@@ -1087,8 +1087,6 @@
             'fetch/ResourcePtr.h',
             'fetch/ScriptResource.cpp',
             'fetch/ScriptResource.h',
-            'fetch/ShaderResource.cpp',
-            'fetch/ShaderResource.h',
             'fetch/XSLStyleSheetResource.cpp',
             'fetch/XSLStyleSheetResource.h',
             'fileapi/Blob.cpp',

@@ -950,8 +950,6 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "Link subresource";
     case Resource::TextTrack:
         return "Text track";
-    case Resource::Shader:
-        return "Shader";
     case Resource::ImportResource:
         return "Imported resource";
     case Resource::Media:
@@ -987,8 +985,6 @@ const char* ResourceTypeName(Resource::Type type)
         return "LinkSubresource";
     case Resource::TextTrack:
         return "TextTrack";
-    case Resource::Shader:
-        return "Shader";
     case Resource::ImportResource:
         return "ImportResource";
     case Resource::Media:

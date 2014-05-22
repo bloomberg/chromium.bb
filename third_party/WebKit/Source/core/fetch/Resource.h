@@ -70,7 +70,6 @@ public:
         LinkPrefetch,
         LinkSubresource,
         TextTrack,
-        Shader,
         ImportResource,
         Media // Audio or video file requested by a HTML5 media element
     };

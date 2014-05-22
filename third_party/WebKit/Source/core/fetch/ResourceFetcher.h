@@ -49,7 +49,6 @@ class FontResource;
 class ImageResource;
 class RawResource;
 class ScriptResource;
-class ShaderResource;
 class SubstituteData;
 class XSLStyleSheetResource;
 class Document;
@@ -96,7 +95,6 @@ public:
     ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
     ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
-    ResourcePtr<ShaderResource> fetchShader(FetchRequest&);
     ResourcePtr<RawResource> fetchImport(FetchRequest&);
     ResourcePtr<RawResource> fetchMedia(FetchRequest&);
     ResourcePtr<RawResource> fetchTextTrack(FetchRequest&);

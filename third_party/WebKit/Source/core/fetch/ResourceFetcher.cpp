@@ -41,7 +41,6 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/ScriptResource.h"
-#include "core/fetch/ShaderResource.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -97,8 +96,6 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new Resource(request, Resource::LinkPrefetch);
     case Resource::LinkSubresource:
         return new Resource(request, Resource::LinkSubresource);
-    case Resource::Shader:
-        return new ShaderResource(request);
     case Resource::ImportResource:
         return new RawResource(request, type);
     }
@@ -140,8 +137,6 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
         return ResourceLoadPriorityLow;
     case Resource::TextTrack:
         return ResourceLoadPriorityLow;
-    case Resource::Shader:
-        return ResourceLoadPriorityMedium;
     }
     ASSERT_NOT_REACHED();
     return ResourceLoadPriorityUnresolved;
@@ -207,7 +202,6 @@ static ResourceRequest::TargetType requestTargetType(const ResourceFetcher* fetc
         return ResourceRequest::TargetIsFont;
     case Resource::Image:
         return ResourceRequest::TargetIsImage;
-    case Resource::Shader:
     case Resource::Raw:
     case Resource::ImportResource:
         return ResourceRequest::TargetIsSubresource;
@@ -326,11 +320,6 @@ ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
     return toFontResource(requestResource(Resource::Font, request));
 }
 
-ResourcePtr<ShaderResource> ResourceFetcher::fetchShader(FetchRequest& request)
-{
-    return toShaderResource(requestResource(Resource::Shader, request));
-}
-
 ResourcePtr<RawResource> ResourceFetcher::fetchImport(FetchRequest& request)
 {
     return toRawResource(requestResource(Resource::ImportResource, request));
@@ -434,7 +423,6 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             break;
 
         case Resource::TextTrack:
-        case Resource::Shader:
         case Resource::Raw:
         case Resource::Image:
         case Resource::Font:
@@ -502,7 +490,6 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
     case Resource::TextTrack:
-    case Resource::Shader:
     case Resource::ImportResource:
     case Resource::Media:
         // By default these types of resources can be loaded from any origin.
@@ -545,8 +532,6 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
             }
         }
         break;
-    case Resource::Shader:
-        // Since shaders are referenced from CSS Styles use the same rules here.
     case Resource::CSSStyleSheet:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowStyleFromSource(url, cspReporting))
             return false;

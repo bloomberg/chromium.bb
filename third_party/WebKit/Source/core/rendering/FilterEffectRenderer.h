@@ -42,7 +42,6 @@
 
 namespace WebCore {
 
-class ShaderResource;
 class Document;
 class GraphicsContext;
 class RenderLayer;
