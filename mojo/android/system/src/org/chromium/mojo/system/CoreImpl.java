@@ -208,7 +208,7 @@ public class CoreImpl implements Core, AsyncWaiter {
         if (handles != null) {
             for (Handle handle : handles) {
                 if (handle.isValid()) {
-                    ((HandleImpl) handle).invalidateHandle();
+                    ((HandleBase) handle).invalidateHandle();
                 }
             }
         }
@@ -387,7 +387,7 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     private int getMojoHandle(Handle handle) {
         if (handle.isValid()) {
-            return ((HandleImpl) handle).getMojoHandle();
+            return ((HandleBase) handle).getMojoHandle();
         }
         return 0;
     }

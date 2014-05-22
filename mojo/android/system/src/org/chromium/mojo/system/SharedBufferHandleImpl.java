@@ -9,17 +9,17 @@ import java.nio.ByteBuffer;
 /**
  * Implementation of {@link SharedBufferHandle}.
  */
-class SharedBufferHandleImpl extends HandleImpl implements SharedBufferHandle {
+class SharedBufferHandleImpl extends HandleBase implements SharedBufferHandle {
 
     /**
-     * @see HandleImpl#HandleImpl(CoreImpl, int)
+     * @see HandleBase#HandleBase(CoreImpl, int)
      */
     SharedBufferHandleImpl(CoreImpl core, int mojoHandle) {
         super(core, mojoHandle);
     }
 
     /**
-     * @see HandleImpl#HandleImpl(UntypedHandleImpl)
+     * @see HandleBase#HandleBase(HandleBase)
      */
     SharedBufferHandleImpl(UntypedHandleImpl handle) {
         super(handle);

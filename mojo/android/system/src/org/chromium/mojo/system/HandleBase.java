@@ -11,7 +11,7 @@ import org.chromium.mojo.system.Core.WaitFlags;
 /**
  * Implementation of {@link Handle}.
  */
-class HandleImpl implements Handle {
+abstract class HandleBase implements Handle {
 
     private static final String TAG = "HandleImpl";
 
@@ -21,24 +21,25 @@ class HandleImpl implements Handle {
     private int mMojoHandle;
 
     /**
-     * the core implementation. Will be used to delegate all behavior.
+     * The core implementation. Will be used to delegate all behavior.
      */
     protected CoreImpl mCore;
 
     /**
      * Base constructor. Takes ownership of the passed handle.
      */
-    HandleImpl(CoreImpl core, int mojoHandle) {
+    HandleBase(CoreImpl core, int mojoHandle) {
         mCore = core;
         mMojoHandle = mojoHandle;
     }
 
     /**
-     * Constructor for transforming an {@link UntypedHandle} into a specific one.
+     * Constructor for transforming {@link HandleBase} into a specific one. It is used to transform
+     * an {@link UntypedHandle} into a typed one, or any handle into an {@link UntypedHandle}.
      */
-    HandleImpl(UntypedHandleImpl other) {
+    protected HandleBase(HandleBase other) {
         mCore = other.mCore;
-        HandleImpl otherAsHandleImpl = other;
+        HandleBase otherAsHandleImpl = other;
         int mojoHandle = otherAsHandleImpl.mMojoHandle;
         otherAsHandleImpl.mMojoHandle = CoreImpl.INVALID_HANDLE;
         mMojoHandle = mojoHandle;
@@ -71,6 +72,14 @@ class HandleImpl implements Handle {
     @Override
     public boolean isValid() {
         return mMojoHandle != CoreImpl.INVALID_HANDLE;
+    }
+
+    /**
+     * @see org.chromium.mojo.system.Handle#toUntypedHandle()
+     */
+    @Override
+    public UntypedHandle toUntypedHandle() {
+        return new UntypedHandleImpl(this);
     }
 
     /**

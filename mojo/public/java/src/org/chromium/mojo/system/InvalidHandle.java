@@ -43,6 +43,14 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
     }
 
     /**
+     * @see Handle#toUntypedHandle()
+     */
+    @Override
+    public UntypedHandle toUntypedHandle() {
+        return this;
+    }
+
+    /**
      * @see UntypedHandle#toMessagePipeHandle()
      */
     @Override

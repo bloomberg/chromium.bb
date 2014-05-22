@@ -10,17 +10,17 @@ import java.util.List;
 /**
  * Implementation of {@link MessagePipeHandle}.
  */
-class MessagePipeHandleImpl extends HandleImpl implements MessagePipeHandle {
+class MessagePipeHandleImpl extends HandleBase implements MessagePipeHandle {
 
     /**
-     * @see HandleImpl#HandleImpl(CoreImpl, int)
+     * @see HandleBase#HandleBase(CoreImpl, int)
      */
     MessagePipeHandleImpl(CoreImpl core, int mojoHandle) {
         super(core, mojoHandle);
     }
 
     /**
-     * @see HandleImpl#HandleImpl(UntypedHandleImpl)
+     * @see HandleBase#HandleBase(HandleBase)
      */
     MessagePipeHandleImpl(UntypedHandleImpl handle) {
         super(handle);

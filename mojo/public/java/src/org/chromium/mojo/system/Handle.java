@@ -33,4 +33,9 @@ public interface Handle extends Closeable {
      */
     public boolean isValid();
 
+    /**
+     * Converts this handle into an {@link UntypedHandle}, invalidating this handle.
+     */
+    public UntypedHandle toUntypedHandle();
+
 }

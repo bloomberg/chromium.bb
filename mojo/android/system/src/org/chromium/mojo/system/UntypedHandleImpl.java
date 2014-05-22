@@ -10,13 +10,20 @@ import org.chromium.mojo.system.DataPipe.ProducerHandle;
 /**
  * Implementation of {@link UntypedHandle}.
  */
-class UntypedHandleImpl extends HandleImpl implements UntypedHandle {
+class UntypedHandleImpl extends HandleBase implements UntypedHandle {
 
     /**
-     * @see HandleImpl#HandleImpl(CoreImpl, int)
+     * @see HandleBase#HandleBase(CoreImpl, int)
      */
     UntypedHandleImpl(CoreImpl core, int mojoHandle) {
         super(core, mojoHandle);
+    }
+
+    /**
+     * @see HandleBase#HandleBase(HandleBase)
+     */
+    UntypedHandleImpl(HandleBase handle) {
+        super(handle);
     }
 
     /**

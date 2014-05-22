@@ -12,17 +12,17 @@ import java.nio.ByteBuffer;
 /**
  * Implementation of {@link ConsumerHandle}.
  */
-class DataPipeConsumerHandleImpl extends HandleImpl implements ConsumerHandle {
+class DataPipeConsumerHandleImpl extends HandleBase implements ConsumerHandle {
 
     /**
-     * @see HandleImpl#HandleImpl(CoreImpl, int)
+     * @see HandleBase#HandleBase(CoreImpl, int)
      */
     DataPipeConsumerHandleImpl(CoreImpl core, int mojoHandle) {
         super(core, mojoHandle);
     }
 
     /**
-     * @see HandleImpl#HandleImpl(UntypedHandleImpl)
+     * @see HandleBase#HandleBase(HandleBase)
      */
     DataPipeConsumerHandleImpl(UntypedHandleImpl other) {
         super(other);

@@ -12,17 +12,17 @@ import java.nio.ByteBuffer;
 /**
  * Implementation of {@link ProducerHandle}.
  */
-class DataPipeProducerHandleImpl extends HandleImpl implements ProducerHandle {
+class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
 
     /**
-     * @see HandleImpl#HandleImpl(CoreImpl, int)
+     * @see HandleBase#HandleBase(CoreImpl, int)
      */
     DataPipeProducerHandleImpl(CoreImpl core, int mojoHandle) {
         super(core, mojoHandle);
     }
 
     /**
-     * @see HandleImpl#HandleImpl(UntypedHandleImpl)
+     * @see HandleBase#HandleBase(HandleBase)
      */
     DataPipeProducerHandleImpl(UntypedHandleImpl handle) {
         super(handle);
