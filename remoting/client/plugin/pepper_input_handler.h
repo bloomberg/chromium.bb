@@ -48,6 +48,12 @@ class PepperInputHandler : public pp::MouseLock {
   void SetMouseCursor(scoped_ptr<pp::ImageData> image,
                       const pp::Point& hotspot);
 
+  // Enable or disable sending mouse input when the plugin does not have input
+  // focus.
+  void set_send_mouse_input_when_unfocused(bool send) {
+    send_mouse_input_when_unfocused_ = send;
+  }
+
  private:
   enum MouseLockState {
     MouseLockDisallowed,
@@ -89,6 +95,10 @@ class PepperInputHandler : public pp::MouseLock {
 
   // True if the plugin has focus.
   bool has_focus_;
+
+  // True if the plugin should respond to mouse input even if it does not have
+  // keyboard focus.
+  bool send_mouse_input_when_unfocused_;
 
   MouseLockState mouse_lock_state_;
 

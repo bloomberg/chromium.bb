@@ -209,6 +209,7 @@ class ChromotingInstance :
   void HandleExtensionMessage(const base::DictionaryValue& data);
   void HandleAllowMouseLockMessage();
   void HandleEnableMediaSourceRendering();
+  void HandleSendMouseInputWhenUnfocused();
 
   // Helper method called from Connect() to connect with parsed config.
   void ConnectWithConfig(const ClientConfig& config,

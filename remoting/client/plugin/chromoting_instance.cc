@@ -360,6 +360,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleAllowMouseLockMessage();
   } else if (method == "enableMediaSourceRendering") {
     HandleEnableMediaSourceRendering();
+  } else if (method == "sendMouseInputWhenUnfocused") {
+    HandleSendMouseInputWhenUnfocused();
   }
 }
 
@@ -962,6 +964,10 @@ void ChromotingInstance::HandleAllowMouseLockMessage() {
 
 void ChromotingInstance::HandleEnableMediaSourceRendering() {
   use_media_source_rendering_ = true;
+}
+
+void ChromotingInstance::HandleSendMouseInputWhenUnfocused() {
+  input_handler_.set_send_mouse_input_when_unfocused(true);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

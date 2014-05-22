@@ -23,6 +23,7 @@ PepperInputHandler::PepperInputHandler(
       input_stub_(NULL),
       callback_factory_(this),
       has_focus_(false),
+      send_mouse_input_when_unfocused_(false),
       mouse_lock_state_(MouseLockDisallowed),
       wheel_delta_x_(0),
       wheel_delta_y_(0),
@@ -74,7 +75,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
     case PP_INPUTEVENT_TYPE_MOUSEUP: {
-      if (!has_focus_)
+      if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
 
       pp::MouseInputEvent pp_mouse_event(event);
@@ -114,7 +115,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
     case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
-      if (!has_focus_)
+      if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
 
       pp::MouseInputEvent pp_mouse_event(event);
@@ -135,7 +136,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     }
 
     case PP_INPUTEVENT_TYPE_WHEEL: {
-      if (!has_focus_)
+      if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
 
       pp::WheelInputEvent pp_wheel_event(event);
