@@ -77,6 +77,8 @@ std::string GetTypeSignature(const base::Value& value) {
       return "ay";
     case base::Value::TYPE_DICTIONARY:
       return "a{sv}";
+    case base::Value::TYPE_LIST:
+      return "av";
     default:
       DLOG(ERROR) << "Unexpected type " << value.GetType();
       return std::string();
@@ -251,6 +253,55 @@ void AppendBasicTypeValueDataAsVariant(MessageWriter* writer,
   writer->OpenVariant(GetTypeSignature(value), &sub_writer);
   AppendBasicTypeValueData(&sub_writer, value);
   writer->CloseContainer(&sub_writer);
+}
+
+void AppendValueData(MessageWriter* writer, const base::Value& value) {
+  switch (value.GetType()) {
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dictionary = NULL;
+      value.GetAsDictionary(&dictionary);
+      dbus::MessageWriter array_writer(NULL);
+      writer->OpenArray("{sv}", &array_writer);
+      for (base::DictionaryValue::Iterator iter(*dictionary);
+           !iter.IsAtEnd(); iter.Advance()) {
+        dbus::MessageWriter dict_entry_writer(NULL);
+        array_writer.OpenDictEntry(&dict_entry_writer);
+        dict_entry_writer.AppendString(iter.key());
+        AppendValueDataAsVariant(&dict_entry_writer, iter.value());
+        array_writer.CloseContainer(&dict_entry_writer);
+      }
+      writer->CloseContainer(&array_writer);
+      break;
+    }
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list = NULL;
+      value.GetAsList(&list);
+      dbus::MessageWriter array_writer(NULL);
+      writer->OpenArray("v", &array_writer);
+      for (base::ListValue::const_iterator iter = list->begin();
+           iter != list->end(); ++iter) {
+        const base::Value* value = *iter;
+        AppendValueDataAsVariant(&array_writer, *value);
+      }
+      writer->CloseContainer(&array_writer);
+      break;
+    }
+    case base::Value::TYPE_BOOLEAN:
+    case base::Value::TYPE_INTEGER:
+    case base::Value::TYPE_DOUBLE:
+    case base::Value::TYPE_STRING:
+      AppendBasicTypeValueData(writer, value);
+      break;
+    default:
+      DLOG(ERROR) << "Unexpected type: " << value.GetType();
+  }
+}
+
+void AppendValueDataAsVariant(MessageWriter* writer, const base::Value& value) {
+  MessageWriter variant_writer(NULL);
+  writer->OpenVariant(GetTypeSignature(value), &variant_writer);
+  AppendValueData(&variant_writer, value);
+  writer->CloseContainer(&variant_writer);
 }
 
 }  // namespace dbus

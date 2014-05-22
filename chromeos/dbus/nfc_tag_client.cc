@@ -11,6 +11,7 @@
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/values_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::nfc_client_helpers::DBusObjectMap;
@@ -109,18 +110,7 @@ class NfcTagClientImpl : public NfcTagClient,
     // Create the arguments.
     dbus::MethodCall method_call(nfc_tag::kNfcTagInterface, nfc_tag::kWrite);
     dbus::MessageWriter writer(&method_call);
-    dbus::MessageWriter array_writer(NULL);
-    dbus::MessageWriter dict_entry_writer(NULL);
-    writer.OpenArray("{sv}", &array_writer);
-    for (base::DictionaryValue::Iterator iter(attributes);
-         !iter.IsAtEnd(); iter.Advance()) {
-      array_writer.OpenDictEntry(&dict_entry_writer);
-      dict_entry_writer.AppendString(iter.key());
-      nfc_client_helpers::AppendValueDataAsVariant(&dict_entry_writer,
-                                                   iter.value());
-      array_writer.CloseContainer(&dict_entry_writer);
-    }
-    writer.CloseContainer(&array_writer);
+    dbus::AppendValueData(&writer, attributes);
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call,

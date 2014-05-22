@@ -34,55 +34,6 @@ void OnError(const ErrorCallback& error_callback,
   error_callback.Run(error_name, error_message);
 }
 
-void AppendValueDataAsVariant(dbus::MessageWriter* writer,
-                              const base::Value& value) {
-  switch (value.GetType()) {
-    case base::Value::TYPE_DICTIONARY: {
-      const base::DictionaryValue* dictionary = NULL;
-      value.GetAsDictionary(&dictionary);
-      dbus::MessageWriter variant_writer(NULL);
-      dbus::MessageWriter array_writer(NULL);
-      writer->OpenVariant("a{sv}", &variant_writer);
-      variant_writer.OpenArray("{sv}", &array_writer);
-      for (base::DictionaryValue::Iterator iter(*dictionary);
-           !iter.IsAtEnd(); iter.Advance()) {
-        dbus::MessageWriter entry_writer(NULL);
-        array_writer.OpenDictEntry(&entry_writer);
-        entry_writer.AppendString(iter.key());
-        AppendValueDataAsVariant(&entry_writer, iter.value());
-        array_writer.CloseContainer(&entry_writer);
-      }
-      variant_writer.CloseContainer(&array_writer);
-      writer->CloseContainer(&variant_writer);
-      break;
-    }
-    case base::Value::TYPE_LIST: {
-      const base::ListValue* list = NULL;
-      value.GetAsList(&list);
-      dbus::MessageWriter variant_writer(NULL);
-      dbus::MessageWriter array_writer(NULL);
-      writer->OpenVariant("av", &variant_writer);
-      variant_writer.OpenArray("v", &array_writer);
-      for (base::ListValue::const_iterator iter = list->begin();
-           iter != list->end(); ++iter) {
-        const base::Value* value = *iter;
-        AppendValueDataAsVariant(&array_writer, *value);
-      }
-      variant_writer.CloseContainer(&array_writer);
-      writer->CloseContainer(&variant_writer);
-      break;
-    }
-    case base::Value::TYPE_BOOLEAN:
-    case base::Value::TYPE_INTEGER:
-    case base::Value::TYPE_DOUBLE:
-    case base::Value::TYPE_STRING:
-      dbus::AppendBasicTypeValueDataAsVariant(writer, value);
-      break;
-    default:
-      DLOG(ERROR) << "Unexpected type: " << value.GetType();
-  }
-}
-
 DBusObjectMap::DBusObjectMap(const std::string& service_name,
                              Delegate* delegate,
                              dbus::Bus* bus)

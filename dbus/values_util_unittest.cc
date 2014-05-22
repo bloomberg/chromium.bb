@@ -449,4 +449,242 @@ TEST(ValuesUtilTest, AppendBasicTypesAsVariant) {
   EXPECT_TRUE(value->Equals(&kStringValue));
 }
 
+TEST(ValuesUtilTest, AppendValueDataBasicTypes) {
+  const base::FundamentalValue kBoolValue(false);
+  const base::FundamentalValue kIntegerValue(42);
+  const base::FundamentalValue kDoubleValue(4.2);
+  const base::StringValue kStringValue("string");
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueData(&writer, kBoolValue);
+  AppendValueData(&writer, kIntegerValue);
+  AppendValueData(&writer, kDoubleValue);
+  AppendValueData(&writer, kStringValue);
+
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kBoolValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kIntegerValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kDoubleValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kStringValue));
+}
+
+TEST(ValuesUtilTest, AppendValueDataAsVariantBasicTypes) {
+  const base::FundamentalValue kBoolValue(false);
+  const base::FundamentalValue kIntegerValue(42);
+  const base::FundamentalValue kDoubleValue(4.2);
+  const base::StringValue kStringValue("string");
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueDataAsVariant(&writer, kBoolValue);
+  AppendValueDataAsVariant(&writer, kIntegerValue);
+  AppendValueDataAsVariant(&writer, kDoubleValue);
+  AppendValueDataAsVariant(&writer, kStringValue);
+
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kBoolValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kIntegerValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kDoubleValue));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&kStringValue));
+}
+
+TEST(ValuesUtilTest, AppendDictionary) {
+  // Set up the input dictionary.
+  const std::string kKey1 = "one";
+  const std::string kKey2 = "two";
+  const std::string kKey3 = "three";
+  const std::string kKey4 = "four";
+  const std::string kKey5 = "five";
+  const std::string kKey6 = "six";
+
+  const bool kBoolValue = true;
+  const int32 kInt32Value = -45;
+  const double kDoubleValue = 4.9;
+  const std::string kStringValue = "fifty";
+
+  base::ListValue* list_value = new base::ListValue();
+  list_value->AppendBoolean(kBoolValue);
+  list_value->AppendInteger(kInt32Value);
+
+  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  dictionary_value->SetBoolean(kKey1, kBoolValue);
+  dictionary_value->SetInteger(kKey2, kDoubleValue);
+
+  base::DictionaryValue test_dictionary;
+  test_dictionary.SetBoolean(kKey1, kBoolValue);
+  test_dictionary.SetInteger(kKey2, kInt32Value);
+  test_dictionary.SetDouble(kKey3, kDoubleValue);
+  test_dictionary.SetString(kKey4, kStringValue);
+  test_dictionary.Set(kKey5, list_value);  // takes ownership
+  test_dictionary.Set(kKey6, dictionary_value);  // takes ownership
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueData(&writer, test_dictionary);
+  base::FundamentalValue int_value(kInt32Value);
+  AppendValueData(&writer, int_value);
+
+  // Read the data.
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&test_dictionary));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&int_value));
+}
+
+TEST(ValuesUtilTest, AppendDictionaryAsVariant) {
+  // Set up the input dictionary.
+  const std::string kKey1 = "one";
+  const std::string kKey2 = "two";
+  const std::string kKey3 = "three";
+  const std::string kKey4 = "four";
+  const std::string kKey5 = "five";
+  const std::string kKey6 = "six";
+
+  const bool kBoolValue = true;
+  const int32 kInt32Value = -45;
+  const double kDoubleValue = 4.9;
+  const std::string kStringValue = "fifty";
+
+  base::ListValue* list_value = new base::ListValue();
+  list_value->AppendBoolean(kBoolValue);
+  list_value->AppendInteger(kInt32Value);
+
+  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  dictionary_value->SetBoolean(kKey1, kBoolValue);
+  dictionary_value->SetInteger(kKey2, kDoubleValue);
+
+  base::DictionaryValue test_dictionary;
+  test_dictionary.SetBoolean(kKey1, kBoolValue);
+  test_dictionary.SetInteger(kKey2, kInt32Value);
+  test_dictionary.SetDouble(kKey3, kDoubleValue);
+  test_dictionary.SetString(kKey4, kStringValue);
+  test_dictionary.Set(kKey5, list_value);  // takes ownership
+  test_dictionary.Set(kKey6, dictionary_value);  // takes ownership
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueDataAsVariant(&writer, test_dictionary);
+  base::FundamentalValue int_value(kInt32Value);
+  AppendValueData(&writer, int_value);
+
+  // Read the data.
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&test_dictionary));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&int_value));
+}
+
+TEST(ValuesUtilTest, AppendList) {
+  // Set up the input list.
+  const std::string kKey1 = "one";
+  const std::string kKey2 = "two";
+
+  const bool kBoolValue = true;
+  const int32 kInt32Value = -45;
+  const double kDoubleValue = 4.9;
+  const std::string kStringValue = "fifty";
+
+  base::ListValue* list_value = new base::ListValue();
+  list_value->AppendBoolean(kBoolValue);
+  list_value->AppendInteger(kInt32Value);
+
+  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  dictionary_value->SetBoolean(kKey1, kBoolValue);
+  dictionary_value->SetInteger(kKey2, kDoubleValue);
+
+  base::ListValue test_list;
+  test_list.AppendBoolean(kBoolValue);
+  test_list.AppendInteger(kInt32Value);
+  test_list.AppendDouble(kDoubleValue);
+  test_list.AppendString(kStringValue);
+  test_list.Append(list_value);  // takes ownership
+  test_list.Append(dictionary_value);  // takes ownership
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueData(&writer, test_list);
+  base::FundamentalValue int_value(kInt32Value);
+  AppendValueData(&writer, int_value);
+
+  // Read the data.
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&test_list));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&int_value));
+}
+
+TEST(ValuesUtilTest, AppendListAsVariant) {
+  // Set up the input list.
+  const std::string kKey1 = "one";
+  const std::string kKey2 = "two";
+
+  const bool kBoolValue = true;
+  const int32 kInt32Value = -45;
+  const double kDoubleValue = 4.9;
+  const std::string kStringValue = "fifty";
+
+  base::ListValue* list_value = new base::ListValue();
+  list_value->AppendBoolean(kBoolValue);
+  list_value->AppendInteger(kInt32Value);
+
+  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  dictionary_value->SetBoolean(kKey1, kBoolValue);
+  dictionary_value->SetInteger(kKey2, kDoubleValue);
+
+  base::ListValue test_list;
+  test_list.AppendBoolean(kBoolValue);
+  test_list.AppendInteger(kInt32Value);
+  test_list.AppendDouble(kDoubleValue);
+  test_list.AppendString(kStringValue);
+  test_list.Append(list_value);  // takes ownership
+  test_list.Append(dictionary_value);  // takes ownership
+
+  scoped_ptr<Response> response(Response::CreateEmpty());
+  MessageWriter writer(response.get());
+  AppendValueDataAsVariant(&writer, test_list);
+  base::FundamentalValue int_value(kInt32Value);
+  AppendValueData(&writer, int_value);
+
+  // Read the data.
+  MessageReader reader(response.get());
+  scoped_ptr<base::Value> value;
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&test_list));
+  value.reset(PopDataAsValue(&reader));
+  ASSERT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&int_value));
+}
+
 }  // namespace dbus
