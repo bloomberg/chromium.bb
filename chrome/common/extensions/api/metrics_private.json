@@ -69,6 +69,7 @@
             "parameters": [
               {
                 "name": "params",
+                "optional": true,
                 "type": "object",
                 "additionalProperties": { "type": "string" }
               }
