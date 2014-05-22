@@ -312,8 +312,8 @@ public:
         NamedNodeMapGetNamedItemNS = 310,
         NamedNodeMapSetNamedItemNS = 311,
         NamedNodeMapRemoveNamedItemNS = 312,
-        OpenWebDatabaseInWorker = 313,
-        OpenWebDatabaseSyncInWorker = 314,
+        OpenWebDatabaseInWorker = 313, // This doesn't work because of crbug.com/376039.
+        OpenWebDatabaseSyncInWorker = 314, // This doesn't work because of crbug.com/376039.
         PrefixedAllowFullscreenAttribute = 315,
         XHRProgressEventPosition = 316,
         XHRProgressEventTotalSize = 317,
@@ -418,6 +418,8 @@ public:
         VTTCueRenderPositionNot50 = 414,
         VTTCueRenderSizeNot100 = 415,
         VTTCueRenderAlignNotMiddle = 416,
+        // The above items are available in M36 branch.
+
         ElementRequestPointerLock = 417,
         VTTCueRenderRtl = 418,
         PostMessageFromSecureToInsecure = 419,
@@ -433,6 +435,7 @@ public:
 
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
     static void count(const Document&, Feature);
+    // This doesn't count for non-Document ExecutionContext.
     static void count(const ExecutionContext*, Feature);
     void count(CSSParserContext, CSSPropertyID);
     void count(Feature);
