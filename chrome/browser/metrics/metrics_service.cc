@@ -233,6 +233,7 @@
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
 #include "base/win/registry.h"
+#include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -484,6 +485,11 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
 
+#if defined(OS_WIN)
+  google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;
+  RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
+      google_update_metrics_provider_));
+#endif
   BrowserChildProcessObserver::Add(this);
 }
 
@@ -939,47 +945,19 @@ void MetricsService::OnInitTaskGotPluginInfo(
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   plugins_ = plugins;
 
-  // Schedules a task on a blocking pool thread to gather Google Update
-  // statistics (requires Registry reads).
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&MetricsService::InitTaskGetGoogleUpdateData,
-                 self_ptr_factory_.GetWeakPtr(),
-                 base::MessageLoop::current()->message_loop_proxy()));
-}
-
-// static
-void MetricsService::InitTaskGetGoogleUpdateData(
-    base::WeakPtr<MetricsService> self,
-    base::MessageLoopProxy* target_loop) {
-  GoogleUpdateMetrics google_update_metrics;
+  const base::Closure got_metrics_callback =
+      base::Bind(&MetricsService::OnInitTaskGotGoogleUpdateData,
+                 self_ptr_factory_.GetWeakPtr());
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  const bool system_install = GoogleUpdateSettings::IsSystemInstall();
-
-  google_update_metrics.is_system_install = system_install;
-  google_update_metrics.last_started_au =
-      GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(system_install);
-  google_update_metrics.last_checked =
-      GoogleUpdateSettings::GetGoogleUpdateLastChecked(system_install);
-  GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(
-      system_install,
-      &google_update_metrics.google_update_data);
-  GoogleUpdateSettings::GetUpdateDetail(
-      system_install,
-      &google_update_metrics.product_data);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-
-  target_loop->PostTask(FROM_HERE,
-      base::Bind(&MetricsService::OnInitTaskGotGoogleUpdateData,
-          self, google_update_metrics));
+  google_update_metrics_provider_->GetGoogleUpdateData(got_metrics_callback);
+#else
+  got_metrics_callback.Run();
+#endif
 }
 
-void MetricsService::OnInitTaskGotGoogleUpdateData(
-    const GoogleUpdateMetrics& google_update_metrics) {
+void MetricsService::OnInitTaskGotGoogleUpdateData() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-
-  google_update_metrics_ = google_update_metrics;
 
   // Start the next part of the init task: fetching performance data.  This will
   // call into |FinishedReceivingProfilerData()| when the task completes.
@@ -1136,7 +1114,7 @@ void MetricsService::CloseCurrentLog() {
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   current_log->RecordEnvironment(metrics_providers_.get(), plugins_,
-                                 google_update_metrics_, synthetic_trials);
+                                 synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
@@ -1435,7 +1413,6 @@ void MetricsService::PrepareInitialMetricsLog() {
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   initial_metrics_log_->RecordEnvironment(metrics_providers_.get(), plugins_,
-                                          google_update_metrics_,
                                           synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;

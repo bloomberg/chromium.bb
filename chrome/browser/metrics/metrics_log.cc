@@ -32,7 +32,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -66,7 +65,6 @@ using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
 typedef variations::ActiveGroupId ActiveGroupId;
-typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
 namespace {
 
@@ -236,21 +234,6 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
   }
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
-                        ProductInfo* product_info) {
-  product_info->set_version(product_data.version);
-  product_info->set_last_update_success_timestamp(
-      product_data.last_success.ToTimeT());
-  product_info->set_last_error(product_data.last_error_code);
-  product_info->set_last_extra_error(product_data.last_extra_code);
-  if (ProductInfo::InstallResult_IsValid(product_data.last_result)) {
-    product_info->set_last_result(
-        static_cast<ProductInfo::InstallResult>(product_data.last_result));
-  }
-}
-#endif
-
 #if defined(OS_WIN)
 struct ScreenDPIInformation {
   double max_dpi_x;
@@ -297,10 +280,6 @@ int64 RoundSecondsToHour(int64 time_in_seconds) {
 }
 
 }  // namespace
-
-GoogleUpdateMetrics::GoogleUpdateMetrics() : is_system_install(false) {}
-
-GoogleUpdateMetrics::~GoogleUpdateMetrics() {}
 
 static base::LazyInstance<std::string>::Leaky
     g_version_extension = LAZY_INSTANCE_INITIALIZER;
@@ -607,7 +586,6 @@ void MetricsLog::WritePluginList(
 void MetricsLog::RecordEnvironment(
     const std::vector<metrics::MetricsProvider*>& metrics_providers,
     const std::vector<content::WebPluginInfo>& plugin_list,
-    const GoogleUpdateMetrics& google_update_metrics,
     const std::vector<variations::ActiveGroupId>& synthetic_trials) {
   DCHECK(!HasEnvironment());
 
@@ -698,8 +676,6 @@ void MetricsLog::RecordEnvironment(
   WriteScreenDPIInformationProto(hardware);
 #endif
 
-  WriteGoogleUpdateProto(google_update_metrics);
-
   WritePluginList(plugin_list);
   extension_metrics_.WriteExtensionList(uma_proto()->mutable_system_profile());
 
@@ -769,34 +745,4 @@ void MetricsLog::RecordProfilerData(
   }
 
   WriteProfilerData(process_data, process_type, profile);
-}
-
-void MetricsLog::WriteGoogleUpdateProto(
-    const GoogleUpdateMetrics& google_update_metrics) {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-  SystemProfileProto::GoogleUpdate* google_update =
-      uma_proto()->mutable_system_profile()->mutable_google_update();
-
-  google_update->set_is_system_install(google_update_metrics.is_system_install);
-
-  if (!google_update_metrics.last_started_au.is_null()) {
-    google_update->set_last_automatic_start_timestamp(
-        google_update_metrics.last_started_au.ToTimeT());
-  }
-
-  if (!google_update_metrics.last_checked.is_null()) {
-    google_update->set_last_update_check_timestamp(
-      google_update_metrics.last_checked.ToTimeT());
-  }
-
-  if (!google_update_metrics.google_update_data.version.empty()) {
-    ProductDataToProto(google_update_metrics.google_update_data,
-                       google_update->mutable_google_update_status());
-  }
-
-  if (!google_update_metrics.product_data.version.empty()) {
-    ProductDataToProto(google_update_metrics.product_data,
-                       google_update->mutable_client_status());
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 }

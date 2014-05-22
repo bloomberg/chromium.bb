@@ -48,25 +48,6 @@ namespace variations {
 struct ActiveGroupId;
 }
 
-// This is a small helper struct to pass Google Update metrics in a single
-// reference argument to MetricsLog::RecordEnvironment().
-struct GoogleUpdateMetrics {
-    GoogleUpdateMetrics();
-    ~GoogleUpdateMetrics();
-
-    // Defines whether this is a user-level or system-level install.
-    bool is_system_install;
-    // The time at which Google Update last started an automatic update check.
-    base::Time last_started_au;
-    // The time at which Google Update last successfully received update
-    // information from Google servers.
-    base::Time last_checked;
-    // Details about Google Update's attempts to update itself.
-    GoogleUpdateSettings::ProductData google_update_data;
-    // Details about Google Update's attempts to update this product.
-    GoogleUpdateSettings::ProductData product_data;
-};
-
 class MetricsLog : public metrics::MetricsLogBase {
  public:
   // Creates a new metrics log of the specified type.
@@ -95,7 +76,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   void RecordEnvironment(
       const std::vector<metrics::MetricsProvider*>& metrics_providers,
       const std::vector<content::WebPluginInfo>& plugin_list,
-      const GoogleUpdateMetrics& google_update_metrics,
       const std::vector<variations::ActiveGroupId>& synthetic_trials);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
@@ -183,10 +163,6 @@ class MetricsLog : public metrics::MetricsLogBase {
 
   // Writes the list of installed plugins.
   void WritePluginList(const std::vector<content::WebPluginInfo>& plugin_list);
-
-  // Writes info about the Google Update install that is managing this client.
-  // This is a no-op if called on a non-Windows platform.
-  void WriteGoogleUpdateProto(const GoogleUpdateMetrics& google_update_metrics);
 
   // Observes network state to provide values for SystemProfile::Network.
   MetricsNetworkObserver network_observer_;

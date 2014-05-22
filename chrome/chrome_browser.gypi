@@ -1195,6 +1195,8 @@
         'browser/metrics/extension_metrics.h',
         'browser/metrics/field_trial_synchronizer.cc',
         'browser/metrics/field_trial_synchronizer.h',
+        'browser/metrics/google_update_metrics_provider_win.cc',
+        'browser/metrics/google_update_metrics_provider_win.h',
         'browser/metrics/machine_id_provider.h',
         'browser/metrics/machine_id_provider_stub.cc',
         'browser/metrics/machine_id_provider_win.cc',

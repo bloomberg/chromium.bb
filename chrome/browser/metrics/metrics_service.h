@@ -26,7 +26,6 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
@@ -41,6 +40,7 @@
 #endif
 
 class ChromeBrowserMetricsServiceObserver;
+class GoogleUpdateMetricsProviderWin;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
@@ -333,15 +333,9 @@ class MetricsService
   void OnInitTaskGotPluginInfo(
       const std::vector<content::WebPluginInfo>& plugins);
 
-  // Task launched by OnInitTaskGotPluginInfo() that continues the init task by
-  // loading Google Update statistics.  Called on a blocking pool thread.
-  static void InitTaskGetGoogleUpdateData(base::WeakPtr<MetricsService> self,
-                                          base::MessageLoopProxy* target_loop);
-
-  // Callback from InitTaskGetGoogleUpdateData() that continues the init task by
-  // loading profiler data.
-  void OnInitTaskGotGoogleUpdateData(
-      const GoogleUpdateMetrics& google_update_metrics);
+  // Called after GoogleUpdate init task has been completed that continues the
+  // init task by loading profiler data.
+  void OnInitTaskGotGoogleUpdateData();
 
   void OnUserAction(const std::string& action);
 
@@ -537,8 +531,9 @@ class MetricsService
   // The list of plugins which was retrieved on the file thread.
   std::vector<content::WebPluginInfo> plugins_;
 
-  // Google Update statistics, which were retrieved on a blocking pool thread.
-  GoogleUpdateMetrics google_update_metrics_;
+#if defined(OS_WIN)
+  GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
+#endif
 
   // The initial metrics log, used to record startup metrics (histograms and
   // profiler data). Note that if a crash occurred in the previous session, an

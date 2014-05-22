@@ -204,7 +204,6 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   TestMetricsLog log("client", 1);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
                         std::vector<content::WebPluginInfo>(),
-                        GoogleUpdateMetrics(),
                         std::vector<variations::ActiveGroupId>());
 
   // Record stability build time and version from previous session, so that
