@@ -24,6 +24,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
@@ -52,7 +53,6 @@ class SyncMessage;
 namespace blink {
 struct WebDeviceEmulationParams;
 class WebGestureEvent;
-class WebInputEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebTouchEvent;
@@ -187,6 +187,15 @@ class CONTENT_EXPORT RenderWidget
   virtual void InstrumentDidBeginFrame() {}
   virtual void InstrumentDidCancelFrame() {}
   virtual void InstrumentWillComposite() {}
+
+  // When paused in debugger, we send ack for mouse event early. This ensures
+  // that we continue receiving mouse moves and pass them to debugger. Returns
+  // whether we are paused in mouse move event and have sent the ack.
+  bool SendAckForMouseMoveFromDebugger();
+
+  // When resumed from pause in debugger while handling mouse move,
+  // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
+  void IgnoreAckForMouseMoveFromDebugger();
 
   bool UsingSynchronousRendererCompositor() const;
 
@@ -573,8 +582,11 @@ class CONTENT_EXPORT RenderWidget
   // Are we currently handling an ime event?
   bool handling_ime_event_;
 
-  // Are we currently handling a touchstart event?
-  bool handling_touchstart_event_;
+  // Type of the input event we are currently handling.
+  blink::WebInputEvent::Type handling_event_type_;
+
+  // Whether we should not send ack for the current mouse move.
+  bool ignore_ack_for_mouse_move_from_debugger_;
 
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.

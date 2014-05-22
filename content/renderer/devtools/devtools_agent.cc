@@ -77,7 +77,8 @@ DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
       is_attached_(false),
       is_devtools_client_(false),
-      gpu_route_id_(MSG_ROUTING_NONE) {
+      gpu_route_id_(MSG_ROUTING_NONE),
+      paused_in_mouse_move_(false) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
 
   render_view->webview()->setDevToolsAgentClient(this);
@@ -132,6 +133,19 @@ void DevToolsAgent::saveAgentRuntimeState(
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
     DevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();
+}
+
+void DevToolsAgent::willEnterDebugLoop() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
+  paused_in_mouse_move_ = impl->SendAckForMouseMoveFromDebugger();
+}
+
+void DevToolsAgent::didExitDebugLoop() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
+  if (paused_in_mouse_move_) {
+    impl->IgnoreAckForMouseMoveFromDebugger();
+    paused_in_mouse_move_ = false;
+  }
 }
 
 void DevToolsAgent::resetTraceEventCallback()

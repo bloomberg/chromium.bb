@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -373,7 +374,8 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       has_focus_(false),
       handling_input_event_(false),
       handling_ime_event_(false),
-      handling_touchstart_event_(false),
+      handling_event_type_(WebInputEvent::Undefined),
+      ignore_ack_for_mouse_move_from_debugger_(false),
       closing_(false),
       is_swapped_out_(swapped_out),
       input_method_is_active_(false),
@@ -903,11 +905,12 @@ void RenderWidget::OnSwapBuffersComplete() {
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
-  handling_input_event_ = true;
-  if (!input_event) {
-    handling_input_event_ = false;
+  base::AutoReset<bool> handling_input_event_resetter(
+      &handling_input_event_, true);
+  if (!input_event)
     return;
-  }
+  base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
+      &handling_event_type_, input_event->type);
 
   base::TimeTicks start_time;
   if (base::TimeTicks::IsHighResNowFastAndReliable())
@@ -993,17 +996,12 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
   }
 
-  if (input_event->type == WebInputEvent::TouchStart)
-      handling_touchstart_event_ = true;
-
   bool processed = prevent_default;
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
     if (!processed && webwidget_)
       processed = webwidget_->handleInputEvent(*input_event);
   }
-
-  handling_touchstart_event_ = false;
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
   // it's not processed by webkit, then we need to suppress the upcoming Char
@@ -1053,7 +1051,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
 
-  if (!WebInputEventTraits::IgnoresAckDisposition(*input_event)) {
+  // Note that we can't use handling_event_type_ here since it will be overriden
+  // by reentrant calls for events after the paused one.
+  bool no_ack = ignore_ack_for_mouse_move_from_debugger_ &&
+      input_event->type == WebInputEvent::MouseMove;
+  if (!WebInputEventTraits::IgnoresAckDisposition(*input_event) && !no_ack) {
     InputHostMsg_HandleInputEvent_ACK_Params ack;
     ack.type = input_event->type;
     ack.state = ack_result;
@@ -1080,6 +1082,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       Send(response.release());
     }
   }
+  ignore_ack_for_mouse_move_from_debugger_ = false;
 
 #if defined(OS_ANDROID)
   // Allow the IME to be shown when the focus changes as a consequence
@@ -1093,8 +1096,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       input_event->type == WebInputEvent::MouseUp))
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
 #endif
-
-  handling_input_event_ = false;
 
   if (!prevent_default) {
     if (WebInputEvent::isKeyboardEventType(input_event->type))
@@ -1515,6 +1516,21 @@ bool RenderWidget::ShouldHandleImeEvent() {
 #else
   return !!webwidget_;
 #endif
+}
+
+bool RenderWidget::SendAckForMouseMoveFromDebugger() {
+  if (handling_event_type_ == WebInputEvent::MouseMove) {
+    InputHostMsg_HandleInputEvent_ACK_Params ack;
+    ack.type = handling_event_type_;
+    ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+    Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
+    return true;
+  }
+  return false;
+}
+
+void RenderWidget::IgnoreAckForMouseMoveFromDebugger() {
+  ignore_ack_for_mouse_move_from_debugger_ = true;
 }
 
 void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
@@ -1963,7 +1979,7 @@ void RenderWidget::setTouchAction(
 
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).
-  if (!handling_touchstart_event_)
+  if (handling_event_type_ != WebInputEvent::TouchStart)
     return;
 
    // Verify the same values are used by the types so we can cast between them.

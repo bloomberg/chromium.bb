@@ -625,6 +625,7 @@ void InputRouterImpl::ProcessMouseAck(blink::WebInputEvent::Type type,
   if (type != WebInputEvent::MouseMove)
     return;
 
+  DCHECK(mouse_move_pending_);
   mouse_move_pending_ = false;
 
   if (next_mouse_move_) {

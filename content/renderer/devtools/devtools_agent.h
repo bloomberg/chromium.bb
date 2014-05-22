@@ -54,6 +54,8 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void saveAgentRuntimeState(const blink::WebString& state) OVERRIDE;
   virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop() OVERRIDE;
+  virtual void willEnterDebugLoop() OVERRIDE;
+  virtual void didExitDebugLoop() OVERRIDE;
   virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor) OVERRIDE;
 
   typedef void (*TraceEventCallback)(
@@ -101,6 +103,7 @@ class DevToolsAgent : public RenderViewObserver,
   bool is_attached_;
   bool is_devtools_client_;
   int32 gpu_route_id_;
+  bool paused_in_mouse_move_;
 
   static base::subtle::AtomicWord /* TraceEventCallback */ event_callback_;
 
