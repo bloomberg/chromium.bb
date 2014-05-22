@@ -189,6 +189,37 @@
     };
   }
 
+  function twoGetUserMedia(constraints1, constraints2) {
+    console.log('Calling Two GetUserMedia');
+    var result="";
+    navigator.webkitGetUserMedia(
+        constraints1,
+        function(stream) {
+          displayDetectAndAnalyzeVideoInElement(
+              stream,
+              function(aspectRatio) {
+                result = aspectRatio;
+                requestSecondGetUserMedia();
+              },
+              'local-view');
+        },
+        failedCallback);
+    var requestSecondGetUserMedia = function() {
+      navigator.webkitGetUserMedia(
+          constraints2,
+          function(stream) {
+            displayDetectAndAnalyzeVideoInElement(
+                stream,
+                function(aspectRatio) {
+                  result = result + '-' + aspectRatio;
+                  sendValueToTest(result);
+                },
+                'local-view-2');
+          },
+          failedCallback);
+    }
+  }
+
   function failedCallback(error) {
     failTest('GetUserMedia call failed with code ' + error.code);
   }
@@ -209,8 +240,17 @@
   }
 
   function displayDetectAndAnalyzeVideo(stream) {
-    plugStreamIntoVideoElement(stream, 'local-view');
-    analyzeVideo();
+    displayDetectAndAnalyzeVideoInElement(stream,
+        function(aspectRatio) {
+          sendValueToTest(aspectRatio);
+        },
+        'local-view');
+  }
+
+  function displayDetectAndAnalyzeVideoInElement(
+      stream, callback, videoElement) {
+    plugStreamIntoVideoElement(stream, videoElement);
+    detectAspectRatio(callback, videoElement);
   }
 
   function createAndRenderClone(stream) {
@@ -239,12 +279,6 @@
 
   function waitAndStopVideoTrack(waitTimeInSeconds) {
     setTimeout(stopVideoTrack, waitTimeInSeconds * 1000);
-  }
-
-  function analyzeVideo() {
-    detectAspectRatio(function(aspectRatio) {
-      sendValueToTest(aspectRatio);
-    });
   }
 
   // This test make sure multiple video renderers can be created for the same
@@ -304,9 +338,9 @@
   // pixels are not the same along the X and Y axis.
   // The result of the analysis is sent back to the test as a string on the
   // format "w=xxx:h=yyy".
-  function detectAspectRatio(callback) {
-    var videoElement = $('local-view');
-    var canvas = $('local-view-canvas');
+  function detectAspectRatio(callback, videoElementName) {
+    var videoElement = $(videoElementName);
+    var canvas = $(videoElementName + '-canvas');
 
     var maxLightGreenPixelsX = 0;
     var maxLightGreenPixelsY = 0;

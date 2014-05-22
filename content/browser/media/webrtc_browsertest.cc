@@ -106,6 +106,22 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CanSetupVideoCallWith1To1AspecRatio) {
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
+                       CanSetupVideoCallWith16To9AspecRatio) {
+  const std::string javascript =
+      "callAndExpectResolution({video: {mandatory: {minWidth: 640,"
+      " maxWidth: 640, minAspectRatio: 1.777}}}, 640, 360);";
+  MakeTypicalPeerConnectionCall(javascript);
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
+                       CanSetupVideoCallWith4To3AspecRatio) {
+  const std::string javascript =
+      "callAndExpectResolution({video: {mandatory: {minWidth: 960,"
+      "maxAspectRatio: 1.333}}}, 960, 720);";
+  MakeTypicalPeerConnectionCall(javascript);
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240376
 #define MAYBE_CanSetupAudioAndVideoCall DISABLED_CanSetupAudioAndVideoCall

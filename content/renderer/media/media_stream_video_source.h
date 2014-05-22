@@ -10,11 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_source.h"
-#include "content/renderer/media/video_frame_deliverer.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -24,6 +24,7 @@
 namespace content {
 
 class MediaStreamVideoTrack;
+class VideoTrackAdapter;
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
 // MediaStreamVideoTrack.
@@ -38,8 +39,7 @@ class MediaStreamVideoTrack;
 // the source implementation must call OnSupportedFormats.
 // MediaStreamVideoSource then match the constraints provided in AddTrack with
 // the formats and call StartSourceImpl. The source implementation must call
-// OnStartDone when the underlying source has been started or failed to
-// start.
+// OnStartDone when the underlying source has been started or failed to start.
 class CONTENT_EXPORT MediaStreamVideoSource
     : public MediaStreamSource,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
@@ -128,14 +128,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Finds the first constraints in |requested_constraints_| that can be
   // fulfilled. |best_format| is set to the video resolution that can be
-  // fulfilled. |frame_output_size| is the requested frame size after cropping.
-  // |resulting_constraints| is set to the found constraints in
-  // |requested_constraints_|.
+  // fulfilled.
   bool FindBestFormatWithConstraints(
       const media::VideoCaptureFormats& formats,
-      media::VideoCaptureFormat* best_format,
-      gfx::Size* frame_output_size,
-      blink::WebMediaConstraints* resulting_constraints);
+      media::VideoCaptureFormat* best_format);
 
   // Trigger all cached callbacks from AddTrack. AddTrack is successful
   // if the capture delegate has started and the constraints provided in
@@ -149,10 +145,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
   State state_;
 
   media::VideoCaptureFormat current_format_;
-  blink::WebMediaConstraints current_constraints_;
-  // |max_frame_output_size_| is the maximum frame size allowed by
-  // |current_constraints_|.
-  gfx::Size max_frame_output_size_;
 
   struct RequestedConstraints {
     RequestedConstraints(MediaStreamVideoTrack* track,
@@ -170,12 +162,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   media::VideoCaptureFormats supported_formats_;
 
-  // |FrameDeliverer| is an internal helper object used for delivering video
-  // frames using callbacks to all registered tracks on the IO thread.
-  class FrameDeliverer;
-  scoped_refptr<FrameDeliverer> frame_deliverer_;
+  // |track_adapter_| delivers video frames to the tracks on the IO-thread.
+  scoped_refptr<VideoTrackAdapter> track_adapter_;
 
-  // Tracks that currently are receiving video frames.
+  // Tracks that currently are connected to this source.
   std::vector<MediaStreamVideoTrack*> tracks_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

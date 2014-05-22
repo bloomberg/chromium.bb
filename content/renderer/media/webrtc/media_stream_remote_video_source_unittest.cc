@@ -92,8 +92,8 @@ class MediaStreamRemoteVideoSourceTest
       ++number_of_failed_constraints_applied_;
   }
 
-  scoped_ptr<ChildProcess> child_process_;
   base::MessageLoopForUI message_loop_;
+  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |webkit_source_|.

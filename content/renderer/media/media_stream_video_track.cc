@@ -123,6 +123,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 }
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   Stop();
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }

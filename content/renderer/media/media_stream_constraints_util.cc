@@ -25,26 +25,26 @@ bool ConvertStringToBoolean(const std::string& string, bool* value) {
 }  // namespace
 
 bool GetConstraintValueAsBoolean(const blink::WebMediaConstraints& constraints,
-                                 const std::string& key,
+                                 const std::string& name,
                                  bool* value) {
-  return GetMandatoryConstraintValueAsBoolean(constraints, key, value) ||
-         GetOptionalConstraintValueAsBoolean(constraints, key, value);
+  return GetMandatoryConstraintValueAsBoolean(constraints, name, value) ||
+         GetOptionalConstraintValueAsBoolean(constraints, name, value);
 }
 
 bool GetConstraintValueAsInteger(const blink::WebMediaConstraints& constraints,
-                                 const std::string& key,
+                                 const std::string& name,
                                  int* value) {
-  return GetMandatoryConstraintValueAsInteger(constraints, key, value) ||
-         GetOptionalConstraintValueAsInteger(constraints, key, value);
+  return GetMandatoryConstraintValueAsInteger(constraints, name, value) ||
+         GetOptionalConstraintValueAsInteger(constraints, name, value);
 }
 
 bool GetConstraintValueAsString(const blink::WebMediaConstraints& constraints,
-                                const std::string& key,
+                                const std::string& name,
                                 std::string* value) {
   blink::WebString value_str;
-  base::string16 key_16 = base::UTF8ToUTF16(key);
-  if (!constraints.getMandatoryConstraintValue(key_16, value_str) &&
-      !constraints.getOptionalConstraintValue(key_16, value_str)) {
+  base::string16 name_16 = base::UTF8ToUTF16(name);
+  if (!constraints.getMandatoryConstraintValue(name_16, value_str) &&
+      !constraints.getOptionalConstraintValue(name_16, value_str)) {
     return false;
   }
 
@@ -54,10 +54,10 @@ bool GetConstraintValueAsString(const blink::WebMediaConstraints& constraints,
 
 bool GetMandatoryConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     bool* value) {
   blink::WebString value_str;
-  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(key),
+  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
                                                value_str)) {
     return false;
   }
@@ -67,10 +67,10 @@ bool GetMandatoryConstraintValueAsBoolean(
 
 bool GetMandatoryConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     int* value) {
   blink::WebString value_str;
-  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(key),
+  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
                                                value_str)) {
     return false;
   }
@@ -78,12 +78,24 @@ bool GetMandatoryConstraintValueAsInteger(
   return base::StringToInt(value_str.utf8(), value);
 }
 
+bool GetMandatoryConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const std::string& name,
+    double* value) {
+  blink::WebString value_str;
+  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
+                                               value_str)) {
+    return false;
+  }
+  return base::StringToDouble(value_str.utf8(), value);
+}
+
 bool GetOptionalConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     bool* value) {
   blink::WebString value_str;
-  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(key),
+  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
                                               value_str)) {
     return false;
   }
@@ -93,15 +105,28 @@ bool GetOptionalConstraintValueAsBoolean(
 
 bool GetOptionalConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     int* value) {
   blink::WebString value_str;
-  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(key),
+  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
                                               value_str)) {
     return false;
   }
 
   return base::StringToInt(value_str.utf8(), value);
+}
+
+bool GetOptionalConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const std::string& name,
+    double* value) {
+  blink::WebString value_str;
+  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
+                                              value_str)) {
+    return false;
+  }
+
+  return base::StringToDouble(value_str.utf8(), value);
 }
 
 }  // namespace content

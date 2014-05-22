@@ -14,7 +14,7 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/video_frame_deliverer.h"
+#include "content/renderer/media/video_track_adapter.h"
 
 namespace content {
 
@@ -54,6 +54,75 @@ const char kGooglePrefix[] = "goog";
 // input frame height of max 360 * kMaxCropFactor pixels is accepted.
 const int kMaxCropFactor = 2;
 
+// Returns true if |constraint| has mandatory constraints.
+bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
+  blink::WebVector<blink::WebMediaConstraint> mandatory_constraints;
+  constraints.getMandatoryConstraints(mandatory_constraints);
+  return !mandatory_constraints.isEmpty();
+}
+
+// Retrieve the desired max width and height from |constraints|. If not set,
+// the |desired_width| and |desired_height| are set to
+// std::numeric_limits<int>::max();
+// If either max width or height is set as a mandatory constraint, the optional
+// constraints are not checked.
+void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
+                                 int* desired_width, int* desired_height) {
+  *desired_width = std::numeric_limits<int>::max();
+  *desired_height = std::numeric_limits<int>::max();
+
+  bool mandatory = GetMandatoryConstraintValueAsInteger(
+      constraints,
+      MediaStreamVideoSource::kMaxWidth,
+      desired_width);
+  mandatory |= GetMandatoryConstraintValueAsInteger(
+      constraints,
+      MediaStreamVideoSource::kMaxHeight,
+      desired_height);
+  if (mandatory)
+    return;
+
+  GetOptionalConstraintValueAsInteger(constraints,
+                                      MediaStreamVideoSource::kMaxWidth,
+                                      desired_width);
+  GetOptionalConstraintValueAsInteger(constraints,
+                                      MediaStreamVideoSource::kMaxHeight,
+                                      desired_height);
+}
+
+// Retrieve the desired max and min aspect ratio from |constraints|. If not set,
+// the |min_aspect_ratio| is set to 0 and |max_aspect_ratio| is set to
+// std::numeric_limits<double>::max();
+// If either min or max aspect ratio is set as a mandatory constraint, the
+// optional constraints are not checked.
+void GetDesiredMinAndMaxAspectRatio(
+    const blink::WebMediaConstraints& constraints,
+    double* min_aspect_ratio,
+    double* max_aspect_ratio) {
+  *min_aspect_ratio = 0;
+  *max_aspect_ratio = std::numeric_limits<double>::max();
+
+  bool mandatory = GetMandatoryConstraintValueAsDouble(
+      constraints,
+      MediaStreamVideoSource::kMinAspectRatio,
+      min_aspect_ratio);
+  mandatory |= GetMandatoryConstraintValueAsDouble(
+      constraints,
+      MediaStreamVideoSource::kMaxAspectRatio,
+      max_aspect_ratio);
+  if (mandatory)
+    return;
+
+  GetOptionalConstraintValueAsDouble(
+      constraints,
+      MediaStreamVideoSource::kMinAspectRatio,
+      min_aspect_ratio);
+  GetOptionalConstraintValueAsDouble(
+      constraints,
+      MediaStreamVideoSource::kMaxAspectRatio,
+      max_aspect_ratio);
+}
+
 // Returns true if |constraint| is fulfilled. |format| can be changed
 // changed by a constraint. Ie - the frame rate can be changed by setting
 // maxFrameRate.
@@ -87,22 +156,10 @@ bool UpdateFormatForConstraint(
 
   if (constraint_name == MediaStreamVideoSource::kMinAspectRatio ||
       constraint_name == MediaStreamVideoSource::kMaxAspectRatio) {
-    double double_value = 0;
-    base::StringToDouble(constraint_value, &double_value);
-
-    // The aspect ratio in |constraint.m_value| has been converted to a string
-    // and back to a double, so it may have a rounding error.
-    // E.g if the value 1/3 is converted to a string, the string will not have
-    // infinite length.
-    // We add a margin of 0.0005 which is high enough to detect the same aspect
-    // ratio but small enough to avoid matching wrong aspect ratios.
-    const double kRoundingTruncation = 0.0005;
-    double ratio = static_cast<double>(format->frame_size.width()) /
-        format->frame_size.height();
-    if (constraint_name == MediaStreamVideoSource::kMinAspectRatio)
-      return (double_value <= ratio + kRoundingTruncation);
-    // Subtract 0.0005 to avoid rounding problems. Same as above.
-    return (double_value >= ratio - kRoundingTruncation);
+    // These constraints are handled by cropping if the camera outputs the wrong
+    // aspect ratio.
+    double value;
+    return base::StringToDouble(constraint_value, &value);
   }
 
   int value;
@@ -172,13 +229,37 @@ media::VideoCaptureFormats FilterFormats(
     return supported_formats;
   }
 
+  double max_aspect_ratio;
+  double min_aspect_ratio;
+  GetDesiredMinAndMaxAspectRatio(constraints,
+                                 &min_aspect_ratio,
+                                 &max_aspect_ratio);
+
+  if (min_aspect_ratio > max_aspect_ratio || max_aspect_ratio < 0.05f) {
+    DLOG(WARNING) << "Wrong requested aspect ratio.";
+    return media::VideoCaptureFormats();
+  }
+
+  int min_width = 0;
+  GetMandatoryConstraintValueAsInteger(constraints,
+                                       MediaStreamVideoSource::kMinWidth,
+                                       &min_width);
+  int min_height = 0;
+  GetMandatoryConstraintValueAsInteger(constraints,
+                                       MediaStreamVideoSource::kMinHeight,
+                                       &min_height);
+  int max_width;
+  int max_height;
+  GetDesiredMaxWidthAndHeight(constraints, &max_width, &max_height);
+
+  if (min_width > max_width || min_height > max_height)
+    return media::VideoCaptureFormats();
+
   blink::WebVector<blink::WebMediaConstraint> mandatory;
   blink::WebVector<blink::WebMediaConstraint> optional;
   constraints.getMandatoryConstraints(mandatory);
   constraints.getOptionalConstraints(optional);
-
   media::VideoCaptureFormats candidates = supported_formats;
-
   for (size_t i = 0; i < mandatory.size(); ++i)
     FilterFormatsByConstraint(mandatory[i], true, &candidates);
 
@@ -201,33 +282,6 @@ media::VideoCaptureFormats FilterFormats(
 
   // We have done as good as we can to filter the supported resolutions.
   return candidates;
-}
-
-// Returns true if |constraint| has mandatory constraints.
-bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
-  blink::WebVector<blink::WebMediaConstraint> mandatory_constraints;
-  constraints.getMandatoryConstraints(mandatory_constraints);
-  return !mandatory_constraints.isEmpty();
-}
-
-// Retrieve the desired max width and height from |constraints|.
-void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
-                                 int* desired_width, int* desired_height) {
-  bool mandatory = GetMandatoryConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxWidth, desired_width);
-  mandatory |= GetMandatoryConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxHeight, desired_height);
-  // Skip the optional constraints if any of the mandatory constraint is
-  // specified.
-  if (mandatory)
-    return;
-
-  GetOptionalConstraintValueAsInteger(constraints,
-                                      MediaStreamVideoSource::kMaxWidth,
-                                      desired_width);
-  GetOptionalConstraintValueAsInteger(constraints,
-                                      MediaStreamVideoSource::kMaxHeight,
-                                      desired_height);
 }
 
 const media::VideoCaptureFormat& GetBestFormatBasedOnArea(
@@ -255,108 +309,20 @@ const media::VideoCaptureFormat& GetBestFormatBasedOnArea(
 void GetBestCaptureFormat(
     const media::VideoCaptureFormats& formats,
     const blink::WebMediaConstraints& constraints,
-    media::VideoCaptureFormat* capture_format,
-    gfx::Size* max_frame_output_size) {
+    media::VideoCaptureFormat* capture_format) {
   DCHECK(!formats.empty());
-  DCHECK(max_frame_output_size);
 
-  int max_width = std::numeric_limits<int>::max();
-  int max_height = std::numeric_limits<int>::max();;
+  int max_width;
+  int max_height;
   GetDesiredMaxWidthAndHeight(constraints, &max_width, &max_height);
 
   *capture_format = GetBestFormatBasedOnArea(
       formats,
       std::min(max_width, MediaStreamVideoSource::kDefaultWidth) *
       std::min(max_height, MediaStreamVideoSource::kDefaultHeight));
-
-  max_frame_output_size->set_width(max_width);
-  max_frame_output_size->set_height(max_height);
-}
-
-// Empty method used for keeping a reference to the original media::VideoFrame
-// in MediaStreamVideoSource::FrameDeliverer::DeliverFrameOnIO if cropping is
-// needed. The reference to |frame| is kept in the closure that calls this
-// method.
-void ReleaseOriginalFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
 }
 
 }  // anonymous namespace
-
-// Helper class used for delivering video frames to all registered tracks
-// on the IO-thread.
-class MediaStreamVideoSource::FrameDeliverer : public VideoFrameDeliverer {
- public:
-  FrameDeliverer(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-      : VideoFrameDeliverer(io_message_loop)  {
-  }
-
-  // Register |callback| to receive video frames of max size
-  // |max_frame_output_size| on the IO thread.
-  // TODO(perkj): Currently |max_frame_output_size| must be the same for all
-  // |callbacks|.
-  void AddCallback(void* id,
-                   const VideoCaptureDeliverFrameCB& callback,
-                   const gfx::Size& max_frame_output_size) {
-    DCHECK(thread_checker().CalledOnValidThread());
-    io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &FrameDeliverer::AddCallbackWithResolutionOnIO,
-            this, id, callback, max_frame_output_size));
-  }
-
-  virtual void DeliverFrameOnIO(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const media::VideoCaptureFormat& format) OVERRIDE {
-    DCHECK(io_message_loop()->BelongsToCurrentThread());
-    TRACE_EVENT0("video", "MediaStreamVideoSource::DeliverFrameOnIO");
-    if (max_output_size_.IsEmpty())
-      return;  // Frame received before the output has been decided.
-
-    scoped_refptr<media::VideoFrame> video_frame(frame);
-    const gfx::Size& visible_size = frame->visible_rect().size();
-    if (visible_size.width() > max_output_size_.width() ||
-        visible_size.height() > max_output_size_.height()) {
-      // If |frame| is not the size that is expected, we need to crop it by
-      // providing a new |visible_rect|. The new visible rect must be within the
-      // original |visible_rect|.
-      gfx::Rect output_rect = frame->visible_rect();
-      output_rect.ClampToCenteredSize(max_output_size_);
-      // TODO(perkj): Allow cropping of textures once http://crbug/362521 is
-      // fixed.
-      if (frame->format() != media::VideoFrame::NATIVE_TEXTURE) {
-        video_frame = media::VideoFrame::WrapVideoFrame(
-            frame,
-            output_rect,
-            output_rect.size(),
-            base::Bind(&ReleaseOriginalFrame, frame));
-      }
-    }
-    VideoFrameDeliverer::DeliverFrameOnIO(video_frame, format);
-  }
-
- protected:
-  virtual ~FrameDeliverer() {
-  }
-
-  void AddCallbackWithResolutionOnIO(
-      void* id,
-     const VideoCaptureDeliverFrameCB& callback,
-      const gfx::Size& max_frame_output_size) {
-    DCHECK(io_message_loop()->BelongsToCurrentThread());
-    // Currently we only support one frame output size.
-    DCHECK(!max_frame_output_size.IsEmpty() &&
-           (max_output_size_.IsEmpty() ||
-            max_output_size_ == max_frame_output_size));
-    max_output_size_ = max_frame_output_size;
-    VideoFrameDeliverer::AddCallbackOnIO(id, callback);
-  }
-
- private:
-  gfx::Size max_output_size_;
-};
 
 // static
 MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
@@ -375,9 +341,8 @@ bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
 
 MediaStreamVideoSource::MediaStreamVideoSource()
     : state_(NEW),
-      frame_deliverer_(
-          new MediaStreamVideoSource::FrameDeliverer(
-              ChildProcess::current()->io_message_loop_proxy())),
+      track_adapter_(new VideoTrackAdapter(
+          ChildProcess::current()->io_message_loop_proxy())),
       weak_factory_(this) {
 }
 
@@ -440,9 +405,20 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
       std::find(tracks_.begin(), tracks_.end(), video_track);
   DCHECK(it != tracks_.end());
   tracks_.erase(it);
-  // Call |RemoveCallback| here even if adding the track has failed and
-  // frame_deliverer_->AddCallback has not been called.
-  frame_deliverer_->RemoveCallback(video_track);
+
+  // Check if |video_track| is waiting for applying new constraints and remove
+  // the request in that case.
+  for (std::vector<RequestedConstraints>::iterator it =
+           requested_constraints_.begin();
+       it != requested_constraints_.end(); ++it) {
+    if (it->track == video_track) {
+      requested_constraints_.erase(it);
+      break;
+    }
+  }
+  // Call |frame_adapter_->RemoveTrack| here even if adding the track has
+  // failed and |frame_adapter_->AddCallback| has not been called.
+  track_adapter_->RemoveTrack(video_track);
 
   if (tracks_.empty())
     StopSource();
@@ -450,7 +426,8 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
 
 const scoped_refptr<base::MessageLoopProxy>&
 MediaStreamVideoSource::io_message_loop() const {
-  return frame_deliverer_->io_message_loop();
+  DCHECK(CalledOnValidThread());
+  return track_adapter_->io_message_loop();
 }
 
 void MediaStreamVideoSource::DoStopSource() {
@@ -470,9 +447,7 @@ void MediaStreamVideoSource::OnSupportedFormats(
 
   supported_formats_ = formats;
   if (!FindBestFormatWithConstraints(supported_formats_,
-                                     &current_format_,
-                                     &max_frame_output_size_,
-                                     &current_constraints_)) {
+                                     &current_format_)) {
     SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
     // This object can be deleted after calling FinalizeAddTrack. See comment
     // in the header file.
@@ -490,15 +465,12 @@ void MediaStreamVideoSource::OnSupportedFormats(
   params.requested_format = current_format_;
   StartSourceImpl(
       params,
-      base::Bind(&MediaStreamVideoSource::FrameDeliverer::DeliverFrameOnIO,
-                 frame_deliverer_));
+      base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
 }
 
 bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     const media::VideoCaptureFormats& formats,
-    media::VideoCaptureFormat* best_format,
-    gfx::Size* max_frame_output_size,
-    blink::WebMediaConstraints* resulting_constraints) {
+    media::VideoCaptureFormat* best_format) {
   // Find the first constraints that we can fulfill.
   for (std::vector<RequestedConstraints>::iterator request_it =
            requested_constraints_.begin();
@@ -511,9 +483,6 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     // we will start with whatever format is native to the source.
     if (formats.empty() && !HasMandatoryConstraints(requested_constraints)) {
       *best_format = media::VideoCaptureFormat();
-      *resulting_constraints = requested_constraints;
-      *max_frame_output_size = gfx::Size(std::numeric_limits<int>::max(),
-                                         std::numeric_limits<int>::max());
       return true;
     }
     media::VideoCaptureFormats filtered_formats =
@@ -522,9 +491,7 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
       // A request with constraints that can be fulfilled.
       GetBestCaptureFormat(filtered_formats,
                            requested_constraints,
-                           best_format,
-                           max_frame_output_size);
-      *resulting_constraints= requested_constraints;
+                           best_format);
       return true;
     }
   }
@@ -566,11 +533,23 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
         ((!current_format_.IsValid() && !HasMandatoryConstraints(
             it->constraints)) ||
          !FilterFormats(it->constraints, formats).empty());
+
     if (success) {
-      frame_deliverer_->AddCallback(it->track, it->frame_callback,
-                                    max_frame_output_size_);
+      int max_width;
+      int max_height;
+      GetDesiredMaxWidthAndHeight(it->constraints, &max_width, &max_height);
+      double max_aspect_ratio;
+      double min_aspect_ratio;
+      GetDesiredMinAndMaxAspectRatio(it->constraints,
+                                     &min_aspect_ratio,
+                                     &max_aspect_ratio);
+      track_adapter_->AddTrack(it->track,it->frame_callback,
+                               max_width, max_height,
+                               min_aspect_ratio, max_aspect_ratio);
     }
+
     DVLOG(3) << "FinalizeAddTrack() success " << success;
+
     if (!it->callback.is_null())
       it->callback.Run(this, success);
   }

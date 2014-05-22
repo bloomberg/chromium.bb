@@ -177,6 +177,21 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest,
         graph_name, "", "interarrival_time", interarrival_us, "us", true);
   }
 
+  void RunTwoGetTwoGetUserMediaWithDifferentContraints(
+      const std::string& constraints1,
+      const std::string& constraints2,
+      const std::string& expected_result) {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+    NavigateToURL(shell(), url);
+
+    std::string command = "twoGetUserMedia(" + constraints1 + ',' +
+        constraints2 + ')';
+
+    EXPECT_EQ(expected_result, ExecuteJavascriptAndReturnResult(command));
+  }
+
   void GetSources(std::vector<std::string>* audio_ids,
                   std::vector<std::string>* video_ids) {
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -425,6 +440,36 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
 
   ExecuteJavascriptAndWaitForOk(
       "twoGetUserMediaAndStop({video: true, audio: true});");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaWithEqualConstraints) {
+  std::string constraints1 = "{video: true, audio: true}";
+  const std::string& constraints2 = constraints1;
+  std::string expected_result = "w=640:h=480-w=640:h=480";
+
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
+ }
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaWithSecondVideoCropped) {
+  std::string constraints1 = "{video: true}";
+  std::string constraints2 = "{video: {mandatory: {maxHeight: 360}}}";
+  std::string expected_result = "w=640:h=480-w=640:h=360";
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaWithFirstHdSecondVga) {
+  std::string constraints1 =
+      "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
+  std::string constraints2 =
+      "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
+  std::string expected_result = "w=1280:h=720-w=640:h=480";
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,

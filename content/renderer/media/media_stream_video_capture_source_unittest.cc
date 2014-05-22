@@ -69,7 +69,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by webkit_source.

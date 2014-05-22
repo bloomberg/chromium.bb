@@ -84,7 +84,6 @@ void MockMediaStreamVideoSource::DeliverVideoFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     media::VideoCaptureFormat format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK(io_message_loop()->BelongsToCurrentThread());
   frame_callback.Run(frame, format);
 }
 

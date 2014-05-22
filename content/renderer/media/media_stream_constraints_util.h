@@ -16,57 +16,71 @@ class WebString;
 
 namespace content {
 
-// Method to get boolean value of constraint with |key| from constraints.
+// Method to get boolean value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or optional
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     bool* value);
 
-// Method to get int value of constraint with |key| from constraints.
+// Method to get int value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     int* value);
 
-// Method to get std::string value of constraint with |key| from constraints.
+// Method to get std::string value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsString(
     const blink::WebMediaConstraints& constraints,
-    const std::string& key,
+    const std::string& name,
     std::string* value);
 
-// Method to get boolean value of constraint with |key| from the
+// Method to get boolean value of constraint with |name| from the
 // mandatory constraints.
 bool CONTENT_EXPORT GetMandatoryConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
     const std::string& name,
     bool* value);
 
-// Method to get int value of constraint with |key| from the
+// Method to get int value of constraint with |name| from the
 // mandatory constraints.
 bool CONTENT_EXPORT GetMandatoryConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
     const std::string& name,
     int* value);
 
-// Method to get bool value of constraint with |key| from the
+// Method to get double value of constraint with |name| from the
+// mandatory constraints.
+bool CONTENT_EXPORT GetMandatoryConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const std::string& name,
+    double* value);
+
+// Method to get bool value of constraint with |name| from the
 // optional constraints.
 bool CONTENT_EXPORT GetOptionalConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
     const std::string& name,
     bool* value);
 
-// Method to get int value of constraint with |key| from the
+// Method to get int value of constraint with |name| from the
 // optional constraints.
 bool CONTENT_EXPORT GetOptionalConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
     const std::string& name,
     int* value);
+
+// Method to get double value of constraint with |name| from the
+// optional constraints.
+bool CONTENT_EXPORT GetOptionalConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const std::string& name,
+    double* value);
 
 }  // namespace content
 

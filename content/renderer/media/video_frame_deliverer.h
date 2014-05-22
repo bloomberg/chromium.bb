@@ -20,7 +20,7 @@ namespace content {
 // VideoFrameDeliverer is a helper class used for registering
 // VideoCaptureDeliverFrameCB on the main render thread to receive video frames
 // on the IO-thread.
-// Its used by MediaStreamVideoTrack and MediaStreamVideoSource.
+// Its used by MediaStreamVideoTrack.
 class VideoFrameDeliverer
     : public base::RefCountedThreadSafe<VideoFrameDeliverer> {
  public:
