@@ -34,6 +34,7 @@ class WebLayerTreeViewImplForTesting
   virtual void clearRootLayer();
   virtual void setViewportSize(const blink::WebSize& unused_deprecated,
                                const blink::WebSize& device_viewport_size);
+  virtual void setViewportSize(const blink::WebSize& device_viewport_size);
   virtual blink::WebSize layoutViewportSize() const;
   virtual blink::WebSize deviceViewportSize() const;
   virtual void setDeviceScaleFactor(float scale_factor);

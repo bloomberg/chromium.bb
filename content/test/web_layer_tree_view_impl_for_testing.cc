@@ -68,6 +68,11 @@ void WebLayerTreeViewImplForTesting::setViewportSize(
   layer_tree_host_->SetViewportSize(device_viewport_size);
 }
 
+void WebLayerTreeViewImplForTesting::setViewportSize(
+    const WebSize& device_viewport_size) {
+  layer_tree_host_->SetViewportSize(device_viewport_size);
+}
+
 WebSize WebLayerTreeViewImplForTesting::layoutViewportSize() const {
   return layer_tree_host_->device_viewport_size();
 }
