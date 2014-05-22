@@ -1388,6 +1388,11 @@
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
 
+    # Chrome OS: whether to build ChromeVox from sources in the Chromium
+    # repository rather than using precompiled JavaScript in
+    # chrome/third_party/chromevox.  This is still experimental.
+    'use_migrated_chromevox%': 0,
+
     # Chrome OS: whether to also build the upcoming version of
     # ChromeVox, which can then be enabled via a command-line switch.
     'use_chromevox_next%': 0,

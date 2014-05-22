@@ -9,7 +9,9 @@ Closure Library is a powerful, low level JavaScript library designed
 for building complex and scalable web applications.
 
 Local Modifications:
-Only the files actually used by ChromeVox are kept. In addition:
+Only the files actually used by ChromeVox are kept. This includes a small
+number of javaScript source files and a few python modules to scan sources for
+closure dependencies.  In addition:
 - closure/goog/i18n/messageformat.js was changed to use
   Number.prototype.toLocaleString and not depend on the number format classes
   in the Closure library.
