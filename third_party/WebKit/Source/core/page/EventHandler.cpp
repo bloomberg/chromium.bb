@@ -1255,7 +1255,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 #endif
 
     m_clickCount = mouseEvent.clickCount();
-    m_clickNode = mev.targetNode()->isTextNode() ?  mev.targetNode()->parentOrShadowHostNode() : mev.targetNode();
+    m_clickNode = mev.targetNode()->isTextNode() ?  NodeRenderingTraversal::parent(mev.targetNode()) : mev.targetNode();
 
     if (FrameView* view = m_frame->view()) {
         RenderLayer* layer = mev.targetNode()->renderer() ? mev.targetNode()->renderer()->enclosingLayer() : 0;
@@ -1495,7 +1495,7 @@ static Node* parentForClickEvent(const Node& node)
     // controls.
     if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
         return 0;
-    return node.parentOrShadowHostNode();
+    return NodeRenderingTraversal::parent(&node);
 }
 
 bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)

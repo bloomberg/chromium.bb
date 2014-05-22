@@ -1888,7 +1888,7 @@ void Node::showTreeForThisAcrossFrame() const
 
 Node* Node::enclosingLinkEventParentOrSelf()
 {
-    for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
+    for (Node* node = this; node; node = NodeRenderingTraversal::parent(node)) {
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.
