@@ -64,8 +64,9 @@ struct VolumeInfo {
   // The ID of the volume.
   std::string volume_id;
 
-  // The ID for provided file systems. If other type, then equal to zero.
-  int file_system_id;
+  // The ID for provided file systems. If other type, then empty string. Unique
+  // per providing extension.
+  std::string file_system_id;
 
   // The ID of an extension providing the file system. If other type, then equal
   // to an empty string.

@@ -43,7 +43,6 @@ Service::Service(Profile* profile,
     : profile_(profile),
       extension_registry_(extension_registry),
       file_system_factory_(base::Bind(CreateProvidedFileSystem)),
-      next_id_(1),
       weak_ptr_factory_(this) {
   extension_registry_->AddObserver(this);
 }
@@ -53,7 +52,8 @@ Service::~Service() {
 
   ProvidedFileSystemMap::iterator it = file_system_map_.begin();
   while (it != file_system_map_.end()) {
-    const int file_system_id = it->first;
+    const std::string file_system_id =
+        it->second->GetFileSystemInfo().file_system_id();
     const std::string extension_id =
         it->second->GetFileSystemInfo().extension_id();
     ++it;
@@ -85,9 +85,20 @@ void Service::SetFileSystemFactoryForTests(
   file_system_factory_ = factory_callback;
 }
 
-int Service::MountFileSystem(const std::string& extension_id,
-                             const std::string& file_system_name) {
+bool Service::MountFileSystem(const std::string& extension_id,
+                              const std::string& file_system_id,
+                              const std::string& file_system_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // If already exists a file system provided by the same extension with this
+  // id, then abort.
+  if (GetProvidedFileSystem(extension_id, file_system_id)) {
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
+                                                base::File::FILE_ERROR_EXISTS));
+    return false;
+  }
 
   // Restrict number of file systems to prevent system abusing.
   if (file_system_map_.size() + 1 > kMaxFileSystems) {
@@ -96,11 +107,8 @@ int Service::MountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
                                   base::File::FILE_ERROR_TOO_MANY_OPENED));
-    return 0;
+    return false;
   }
-
-  // The provided file system id is unique per service, so per profile.
-  int file_system_id = next_id_;
 
   fileapi::ExternalMountPoints* const mount_points =
       fileapi::ExternalMountPoints::GetSystemInstance();
@@ -121,7 +129,7 @@ int Service::MountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
                                   base::File::FILE_ERROR_INVALID_OPERATION));
-    return 0;
+    return false;
   }
 
   // Store the file system descriptor. Use the mount point name as the file
@@ -139,27 +147,25 @@ int Service::MountFileSystem(const std::string& extension_id,
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(router, file_system_info);
   DCHECK(file_system);
-  file_system_map_[file_system_id] = file_system;
-  mount_point_name_to_id_map_[mount_point_name] = file_system_id;
+  file_system_map_[FileSystemKey(extension_id, file_system_id)] = file_system;
+  mount_point_name_to_key_map_[mount_point_name] =
+      FileSystemKey(extension_id, file_system_id);
 
   FOR_EACH_OBSERVER(
       Observer,
       observers_,
       OnProvidedFileSystemMount(file_system_info, base::File::FILE_OK));
 
-  next_id_++;
-  return file_system_id;
+  return true;
 }
 
 bool Service::UnmountFileSystem(const std::string& extension_id,
-                                int file_system_id) {
+                                const std::string& file_system_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const ProvidedFileSystemMap::iterator file_system_it =
-      file_system_map_.find(file_system_id);
-  if (file_system_it == file_system_map_.end() ||
-      file_system_it->second->GetFileSystemInfo().extension_id() !=
-          extension_id) {
+      file_system_map_.find(FileSystemKey(extension_id, file_system_id));
+  if (file_system_it == file_system_map_.end()) {
     const ProvidedFileSystemInfo empty_file_system_info;
     FOR_EACH_OBSERVER(
         Observer,
@@ -192,7 +198,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
       observers_,
       OnProvidedFileSystemUnmount(file_system_info, base::File::FILE_OK));
 
-  mount_point_name_to_id_map_.erase(mount_point_name);
+  mount_point_name_to_key_map_.erase(mount_point_name);
 
   delete file_system_it->second;
   file_system_map_.erase(file_system_it);
@@ -200,11 +206,12 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
   return true;
 }
 
-bool Service::RequestUnmount(int file_system_id) {
+bool Service::RequestUnmount(const std::string& extension_id,
+                             const std::string& file_system_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProvidedFileSystemMap::iterator file_system_it =
-      file_system_map_.find(file_system_id);
+      file_system_map_.find(FileSystemKey(extension_id, file_system_id));
   if (file_system_it == file_system_map_.end())
     return false;
 
@@ -229,16 +236,13 @@ std::vector<ProvidedFileSystemInfo> Service::GetProvidedFileSystemInfoList() {
 
 ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     const std::string& extension_id,
-    int file_system_id) {
+    const std::string& file_system_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const ProvidedFileSystemMap::const_iterator file_system_it =
-      file_system_map_.find(file_system_id);
-  if (file_system_it == file_system_map_.end() ||
-      file_system_it->second->GetFileSystemInfo().extension_id() !=
-          extension_id) {
+      file_system_map_.find(FileSystemKey(extension_id, file_system_id));
+  if (file_system_it == file_system_map_.end())
     return NULL;
-  }
 
   return file_system_it->second;
 }
@@ -267,9 +271,9 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     const std::string& mount_point_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const MountPointNameToIdMap::const_iterator mapping_it =
-      mount_point_name_to_id_map_.find(mount_point_name);
-  if (mapping_it == mount_point_name_to_id_map_.end())
+  const MountPointNameToKeyMap::const_iterator mapping_it =
+      mount_point_name_to_key_map_.find(mount_point_name);
+  if (mapping_it == mount_point_name_to_key_map_.end())
     return NULL;
 
   const ProvidedFileSystemMap::const_iterator file_system_it =

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -32,17 +32,33 @@ const base::FilePath::CharType kProvidedMountPointRoot[] =
 
 }  // namespace
 
+// Escapes the file system id so it can be used as a file/directory name.
+// This is based on net/base/escape.cc: net::(anonymous namespace)::Escape
+std::string EscapeFileSystemId(const std::string& file_system_id) {
+  std::string escaped;
+  for (size_t i = 0; i < file_system_id.size(); ++i) {
+    const char c = file_system_id[i];
+    if (c == '%' || c == '.' || c == '/') {
+      base::StringAppendF(&escaped, "%%%02X", c);
+    } else {
+      escaped.push_back(c);
+    }
+  }
+  return escaped;
+}
+
 base::FilePath GetMountPath(Profile* profile,
-                            std::string extension_id,
-                            int file_system_id) {
+                            const std::string& extension_id,
+                            const std::string& file_system_id) {
   chromeos::User* const user =
       chromeos::UserManager::IsInitialized()
           ? chromeos::UserManager::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
           : NULL;
-  const std::string user_suffix = user ? "-" + user->username_hash() : "";
+  const std::string safe_file_system_id = EscapeFileSystemId(file_system_id);
+  const std::string username_suffix = user ? user->username_hash() : "";
   return base::FilePath(kProvidedMountPointRoot).AppendASCII(
-      extension_id + "-" + base::IntToString(file_system_id) + user_suffix);
+      extension_id + ":" + safe_file_system_id + ":" + username_suffix);
 }
 
 FileSystemURLParser::FileSystemURLParser(const fileapi::FileSystemURL& url)

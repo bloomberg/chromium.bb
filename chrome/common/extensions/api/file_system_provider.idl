@@ -51,17 +51,11 @@ namespace fileSystemProvider {
   };
 
   // Callback to receive the result of mount() function.
-  // <code>fileSystemID</code> will be a unique ID for the file system just
-  // mounted. The ID is used to distinguish multiple file systems mounted
-  // from a single File System Provider.
-  callback MountCallback = void(long fileSystemId,
-                                [nodoc, instanceOf=DOMError] object error);
+  callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
 
 
-  // Callback to receive the result of unmount() function with the <code>
-  // fileSystemId</code> identifier.
-  callback UnmountCallback = void(long fileSystemId,
-                                  [nodoc, instanceOf=DOMError] object error);
+  // Callback to receive the result of unmount() function.
+  callback UnmountCallback = void([nodoc, instanceOf=DOMError] object error);
 
   // Callback to be called by the providing extension in case of a success.
   callback ProviderSuccessCallback = void();
@@ -88,13 +82,19 @@ namespace fileSystemProvider {
   callback FileDataCallback = void(ArrayBuffer data, bool hasNext);
 
   interface Functions {
-    // Mounts a file system with the given <code>displayName</code>.
-    // <code>displayName</code> will be shown in the left panel of
-    // Files.app. <code>displayName</code> can contain any characters
+    // Mounts a file system with the given <code>fileSystemId</code> and <code>
+    // displayName</code>. <code>displayName</code> will be shown in the left
+    // panel of Files.app. <code>displayName</code> can contain any characters
     // including '/', but cannot be an empty string. <code>displayName</code>
     // should be descriptive but doesn't have to be unique. Duplicate display
-    // names are uniquified by adding suffix like "(1)" in the Files.app UI.
-    static void mount(DOMString displayName,
+    // names are uniquified by adding suffix like "(1)" in the Files app UI.
+    //
+    // If a file system with the passed <code>fileSystemId</code> is already
+    // mounted by this extension, then <code>errorCallback</code> will be called
+    // with <code>ProviderError.EXISTS</code> value. The <code>fileSystemId
+    // </code> must not be an empty string.
+    static void mount(DOMString fileSystemId,
+                      DOMString displayName,
                       MountCallback successCallback,
                       [nocompile] ErrorCallback errorCallback);
 
@@ -103,8 +103,8 @@ namespace fileSystemProvider {
     // the providing extension can decide to perform unmounting if not requested
     // (eg. in case of lost connection, or a file error). If there is no file
     // system with the requested id, or unmounting fails, then the
-    // <code>errorCallback</code> must be called.
-    static void unmount(long fileSystemId,
+    // <code>errorCallback</code> will be called.
+    static void unmount(DOMString fileSystemId,
                         UnmountCallback successCallback,
                         [nocompile] ErrorCallback errorCallback);
   };
@@ -116,7 +116,7 @@ namespace fileSystemProvider {
     // </code>. If unmounting is not possible (eg. due to a pending operation),
     // then <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 
@@ -125,7 +125,7 @@ namespace fileSystemProvider {
     // successCallback</code> call. In case of an error, <code>errorCallback
     // </code> must be called.
     [maxListeners=1] static void onGetMetadataRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         DOMString entryPath,
         MetadataCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -135,7 +135,7 @@ namespace fileSystemProvider {
     // successCallback</code> several times. In case of an error, <code>
     // errorCallback</code> must be called.
     [maxListeners=1] static void onReadDirectoryRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         DOMString directoryPath,
         EntriesCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -144,7 +144,7 @@ namespace fileSystemProvider {
     // If <code>create</code> is set to <code>true</code> and the file does not
     // exist, then it should be created.
     [maxListeners=1] static void onOpenFileRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         DOMString filePath,
         OpenFileMode mode,
@@ -155,7 +155,7 @@ namespace fileSystemProvider {
     // Raised when opening a file previously opened with <code>openRequestId
     // </code> is requested to be closed.
     [maxListeners=1] static void onCloseFileRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         long openRequestId,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
@@ -165,7 +165,7 @@ namespace fileSystemProvider {
     // successCallback</code> several times. In case of an error, <code>
     // errorCallback</code> must be called.
     [maxListeners=1] static void onReadFileRequested(
-        long fileSystemId,
+        DOMString fileSystemId,
         long openRequestId,
         double offset,
         double length,

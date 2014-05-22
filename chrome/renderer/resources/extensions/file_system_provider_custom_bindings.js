@@ -44,24 +44,22 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setUpdateArgumentsPostValidate(
     'mount',
-    function(displayName, successCallback, errorCallback) {
+    function(fileSystemId, displayName, successCallback, errorCallback) {
       // Piggyback the error callback onto the success callback,
       // so we can use the error callback later.
       successCallback.errorCallback_ = errorCallback;
-      return [displayName, successCallback];
+      return [fileSystemId, displayName, successCallback];
     });
 
   apiFunctions.setCustomCallback(
     'mount',
     function(name, request, response) {
-      var fileSystemId = null;
       var domError = null;
       if (request.callback && response) {
-        fileSystemId = response[0];
         // DOMError is present only if mount() failed.
-        if (response[1]) {
+        if (response[0]) {
           // Convert a Dictionary to a DOMError.
-          domError = GetDOMError(response[1].name, response[1].message);
+          domError = GetDOMError(response[0].name, response[0].message);
           response.length = 1;
         }
 
@@ -72,7 +70,7 @@ binding.registerCustomHook(function(bindingsAPI) {
         if (domError)
           errorCallback(domError);
         else
-          successCallback(fileSystemId);
+          successCallback();
       }
     });
 

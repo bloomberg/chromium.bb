@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -22,7 +23,7 @@ namespace operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
-const int kFileSystemId = 1;
+const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
 const base::FilePath::CharType kDirectoryPath[] = "/directory";
 
@@ -130,8 +131,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(3u, event_args->GetSize());
 
-  int event_file_system_id = -1;
-  EXPECT_TRUE(event_args->GetInteger(0, &event_file_system_id));
+  std::string event_file_system_id;
+  EXPECT_TRUE(event_args->GetString(0, &event_file_system_id));
   EXPECT_EQ(kFileSystemId, event_file_system_id);
 
   int event_request_id = -1;
@@ -183,8 +184,8 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   // base::Value.
   const std::string input =
       "[\n"
-      "  1,\n"  // kFileSystemId
-      "  2,\n"  // kRequestId
+      "  \"testing-file-system\",\n"  // kFileSystemId
+      "  2,\n"                        // kRequestId
       "  {\n"
       "    \"isDirectory\": false,\n"
       "    \"name\": \"blueberries.txt\",\n"

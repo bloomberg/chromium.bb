@@ -141,6 +141,9 @@ void VolumeInfoToVolumeMetadata(
   if (volume_info.type == VOLUME_TYPE_PROVIDED) {
     volume_metadata->extension_id.reset(
         new std::string(volume_info.extension_id));
+
+    volume_metadata->file_system_id.reset(
+        new std::string(volume_info.file_system_id));
   }
 
   volume_metadata->volume_label.reset(

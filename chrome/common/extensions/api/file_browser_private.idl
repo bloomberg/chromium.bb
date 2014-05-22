@@ -234,6 +234,9 @@ dictionary VolumeMetadata {
   // ID of the disk volume.
   DOMString volumeId;
 
+  // Id the provided file system (for proviided file systems).
+  DOMString? fileSystemId;
+
   // Extension providing this volume (for provided file systems).
   DOMString? extensionId;
 

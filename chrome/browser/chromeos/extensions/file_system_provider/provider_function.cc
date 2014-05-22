@@ -21,6 +21,7 @@ const char kNotFoundErrorName[] = "NotFoundError";
 const char kSecurityErrorName[] = "SecurityError";
 
 const char kEmptyNameErrorMessage[] = "Empty display name is not allowed.";
+const char kEmptyIdErrorMessage[] = "Empty file system Id s not allowed.";
 const char kMountFailedErrorMessage[] = "Mounting the file system failed.";
 const char kUnmountFailedErrorMessage[] = "Unmounting the file system failed.";
 const char kResponseFailedErrorMessage[] =
@@ -104,9 +105,9 @@ bool FileSystemProviderInternalFunction::RunSync() {
 }
 
 bool FileSystemProviderInternalFunction::Parse() {
-  int file_system_id = 0;
+  std::string file_system_id;
 
-  if (!args_->GetInteger(0, &file_system_id) ||
+  if (!args_->GetString(0, &file_system_id) ||
       !args_->GetInteger(1, &request_id_)) {
     bad_message_ = true;
     SendResponse(false);

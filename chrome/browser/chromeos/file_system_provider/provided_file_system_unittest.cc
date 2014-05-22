@@ -29,7 +29,7 @@ namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const int kExpectedRequestId = 1;
-const int kFileSystemId = 2;
+const char kFileSystemId[] = "camera-pictures";
 const char kFileSystemName[] = "Camera Pictures";
 
 class FakeEventRouter : public extensions::EventRouter {
@@ -92,7 +92,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
         NULL,
         kExtensionId);
 
-    base::FilePath mount_path =
+    const base::FilePath mount_path =
         util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_info_.reset(new ProvidedFileSystemInfo(
         kExtensionId, kFileSystemId, kFileSystemName, mount_path));
@@ -121,8 +121,8 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Success) {
   ASSERT_TRUE(event->event_args);
   base::ListValue* event_args = event->event_args.get();
   EXPECT_EQ(2u, event_args->GetSize());
-  int file_system_id = 0;
-  EXPECT_TRUE(event_args->GetInteger(0, &file_system_id));
+  std::string file_system_id;
+  EXPECT_TRUE(event_args->GetString(0, &file_system_id));
   EXPECT_EQ(kFileSystemId, file_system_id);
 
   // Remember the request id, and verify it is valid.
@@ -160,8 +160,8 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, RequestUnmount_Error) {
   ASSERT_TRUE(event->event_args);
   base::ListValue* event_args = event->event_args.get();
   EXPECT_EQ(2u, event_args->GetSize());
-  int file_system_id = 0;
-  EXPECT_TRUE(event_args->GetInteger(0, &file_system_id));
+  std::string file_system_id;
+  EXPECT_TRUE(event_args->GetString(0, &file_system_id));
   EXPECT_EQ(kFileSystemId, file_system_id);
 
   // Remember the request id, and verify it is valid.

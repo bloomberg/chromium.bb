@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_PROVIDER_FUNCTION_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_PROVIDER_FUNCTION_H_
+
 #include <string>
 
 #include "base/files/file.h"
@@ -33,6 +34,7 @@ extern const char kSecurityErrorName[];
 
 // Error messages.
 extern const char kEmptyNameErrorMessage[];
+extern const char kEmptyIdErrorMessage[];
 extern const char kMountFailedErrorMessage[];
 extern const char kUnmountFailedErrorMessage[];
 extern const char kResponseFailedErrorMessage[];

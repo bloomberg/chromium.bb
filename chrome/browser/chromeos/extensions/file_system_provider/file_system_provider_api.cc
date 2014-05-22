@@ -26,10 +26,17 @@ bool FileSystemProviderMountFunction::RunSync() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  // It's an error if the file system Id is empty.
+  if (params->file_system_id.empty()) {
+    base::ListValue* result = new base::ListValue();
+    result->Append(CreateError(kSecurityErrorName, kEmptyIdErrorMessage));
+    SetResult(result);
+    return true;
+  }
+
   // It's an error if the display name is empty.
   if (params->display_name.empty()) {
     base::ListValue* result = new base::ListValue();
-    result->Append(new base::StringValue(""));
     result->Append(CreateError(kSecurityErrorName,
                                kEmptyNameErrorMessage));
     SetResult(result);
@@ -41,24 +48,16 @@ bool FileSystemProviderMountFunction::RunSync() {
   if (!service)
     return false;
 
-  int file_system_id =
-      service->MountFileSystem(extension_id(), params->display_name);
-
-  // If the |file_system_id| is zero, then it means that registering the file
-  // system failed.
   // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-  if (!file_system_id) {
+  if (!service->MountFileSystem(
+          extension_id(), params->file_system_id, params->display_name)) {
     base::ListValue* result = new base::ListValue();
-    result->Append(new base::FundamentalValue(0));
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);
     return true;
   }
 
   base::ListValue* result = new base::ListValue();
-  result->Append(new base::FundamentalValue(file_system_id));
-  // Don't append an error on success.
-
   SetResult(result);
   return true;
 }

@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
@@ -27,6 +28,7 @@ namespace file_system_provider {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kFileSystemId[] = "camera/pictures/id !@#$%^&*()_+";
 const char kFileSystemName[] = "Camera Pictures";
 
 // Utility observer, logging events from file_system_provider::Service.
@@ -118,15 +120,16 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_TRUE(result);
 
-  EXPECT_LT(0, file_system_id);
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_EQ(kExtensionId, observer.mounts[0].file_system_info().extension_id());
-  EXPECT_EQ(1, observer.mounts[0].file_system_info().file_system_id());
+  EXPECT_EQ(kFileSystemId,
+            observer.mounts[0].file_system_info().file_system_id());
   base::FilePath expected_mount_path =
-      util::GetMountPath(profile_.get(), kExtensionId, file_system_id);
+      util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
   EXPECT_EQ(expected_mount_path.AsUTF8Unsafe(),
             observer.mounts[0].file_system_info().mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kFileSystemName,
@@ -145,22 +148,21 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_first_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_first_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_TRUE(result);
 
-  int file_system_second_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_second_id);
+  const bool second_result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_FALSE(second_result);
 
-  EXPECT_NE(file_system_first_id, file_system_second_id);
   ASSERT_EQ(2u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
-  EXPECT_EQ(base::File::FILE_OK, observer.mounts[1].error());
+  EXPECT_EQ(base::File::FILE_ERROR_EXISTS, observer.mounts[1].error());
 
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
       file_system_provider_service_->GetProvidedFileSystemInfoList();
-  ASSERT_EQ(2u, file_system_info_list.size());
+  ASSERT_EQ(1u, file_system_info_list.size());
 
   file_system_provider_service_->RemoveObserver(&observer);
 }
@@ -171,16 +173,18 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
 
   const size_t kMaxFileSystems = 16;
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
-    int file_system_id = file_system_provider_service_->MountFileSystem(
-        kExtensionId, kFileSystemName);
-    EXPECT_LT(0, file_system_id);
+    const std::string file_system_id =
+        std::string("test-") + base::IntToString(i);
+    const bool result = file_system_provider_service_->MountFileSystem(
+        kExtensionId, file_system_id, kFileSystemName);
+    EXPECT_TRUE(result);
   }
   ASSERT_EQ(kMaxFileSystems, observer.mounts.size());
 
   // The next file system is out of limit, and registering it should fail.
-  int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_EQ(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_FALSE(result);
 
   ASSERT_EQ(kMaxFileSystems + 1, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
@@ -197,27 +201,21 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_TRUE(result);
   ASSERT_EQ(1u, observer.mounts.size());
 
-  const bool result = file_system_provider_service_->UnmountFileSystem(
-      kExtensionId, file_system_id);
-  EXPECT_TRUE(result);
+  const bool unmount_result = file_system_provider_service_->UnmountFileSystem(
+      kExtensionId, kFileSystemId);
+  EXPECT_TRUE(unmount_result);
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());
 
   EXPECT_EQ(kExtensionId,
             observer.unmounts[0].file_system_info().extension_id());
-  EXPECT_EQ(1, observer.unmounts[0].file_system_info().file_system_id());
-  base::FilePath expected_mount_path =
-      util::GetMountPath(profile_.get(), kExtensionId, file_system_id);
-  EXPECT_EQ(
-      expected_mount_path.AsUTF8Unsafe(),
-      observer.unmounts[0].file_system_info().mount_path().AsUTF8Unsafe());
-  EXPECT_EQ(kFileSystemName,
-            observer.unmounts[0].file_system_info().file_system_name());
+  EXPECT_EQ(kFileSystemId,
+            observer.unmounts[0].file_system_info().file_system_id());
 
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
       file_system_provider_service_->GetProvidedFileSystemInfoList();
@@ -230,9 +228,9 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
   LoggingObserver observer;
   file_system_provider_service_->AddObserver(&observer);
 
-  int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_TRUE(result);
   ASSERT_EQ(1u, observer.mounts.size());
 
   // Directly call the observer's method.
@@ -246,14 +244,8 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
 
   EXPECT_EQ(kExtensionId,
             observer.unmounts[0].file_system_info().extension_id());
-  EXPECT_EQ(1, observer.unmounts[0].file_system_info().file_system_id());
-  base::FilePath expected_mount_path =
-      util::GetMountPath(profile_.get(), kExtensionId, file_system_id);
-  EXPECT_EQ(
-      expected_mount_path.AsUTF8Unsafe(),
-      observer.unmounts[0].file_system_info().mount_path().AsUTF8Unsafe());
-  EXPECT_EQ(kFileSystemName,
-            observer.unmounts[0].file_system_info().file_system_name());
+  EXPECT_EQ(kFileSystemId,
+            observer.unmounts[0].file_system_info().file_system_id());
 
   std::vector<ProvidedFileSystemInfo> file_system_info_list =
       file_system_provider_service_->GetProvidedFileSystemInfoList();
@@ -268,17 +260,17 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
 
   const std::string kWrongExtensionId = "helloworldhelloworldhelloworldhe";
 
-  int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  EXPECT_TRUE(result);
   ASSERT_EQ(1u, observer.mounts.size());
   ASSERT_EQ(
       1u,
       file_system_provider_service_->GetProvidedFileSystemInfoList().size());
 
-  const bool result = file_system_provider_service_->UnmountFileSystem(
-      kWrongExtensionId, file_system_id);
-  EXPECT_FALSE(result);
+  const bool unmount_result = file_system_provider_service_->UnmountFileSystem(
+      kWrongExtensionId, kFileSystemId);
+  EXPECT_FALSE(unmount_result);
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, observer.unmounts[0].error());
   ASSERT_EQ(

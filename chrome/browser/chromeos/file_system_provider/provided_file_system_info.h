@@ -17,14 +17,14 @@ class ProvidedFileSystemInfo {
  public:
   ProvidedFileSystemInfo();
   ProvidedFileSystemInfo(const std::string& extension_id,
-                         int file_system_id,
+                         const std::string& file_system_id,
                          const std::string& file_system_name,
                          const base::FilePath& mount_path);
 
   ~ProvidedFileSystemInfo();
 
   const std::string& extension_id() const { return extension_id_; }
-  int file_system_id() const { return file_system_id_; }
+  const std::string& file_system_id() const { return file_system_id_; }
   const std::string& file_system_name() const { return file_system_name_; }
   const base::FilePath& mount_path() const { return mount_path_; }
 
@@ -32,8 +32,8 @@ class ProvidedFileSystemInfo {
   // ID of the extension providing this file system.
   std::string extension_id_;
 
-  // ID of the file system, used internally.
-  int file_system_id_;
+  // ID of the file system.
+  std::string file_system_id_;
 
   // Name of the file system, can be rendered in the UI.
   std::string file_system_name_;

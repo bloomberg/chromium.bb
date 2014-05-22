@@ -24,7 +24,7 @@ namespace operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
-const int kFileSystemId = 1;
+const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
 const int kFileHandle = 3;
 const int kOffset = 10;
@@ -140,8 +140,8 @@ TEST_F(FileSystemProviderOperationsReadFileTest, Execute) {
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(5u, event_args->GetSize());
 
-  int event_file_system_id = -1;
-  EXPECT_TRUE(event_args->GetInteger(0, &event_file_system_id));
+  std::string event_file_system_id;
+  EXPECT_TRUE(event_args->GetString(0, &event_file_system_id));
   EXPECT_EQ(kFileSystemId, event_file_system_id);
 
   int event_request_id = -1;
@@ -205,7 +205,7 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
   const bool has_next = false;
 
   base::ListValue value_as_list;
-  value_as_list.Set(0, new base::FundamentalValue(kFileSystemId));
+  value_as_list.Set(0, new base::StringValue(kFileSystemId));
   value_as_list.Set(1, new base::FundamentalValue(kRequestId));
   value_as_list.Set(
       2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));

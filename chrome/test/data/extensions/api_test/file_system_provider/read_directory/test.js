@@ -4,8 +4,16 @@
 
 'use strict';
 
-var fileSystemId;
-var fileSystem;
+/**
+ * @type {DOMFileSystem}
+ */
+var fileSystem = null;
+
+/**
+ * @type {string}
+ * @const
+ */
+var FILE_SYSTEM_ID = 'vanilla';
 
 /**
  * @type {Object}
@@ -52,9 +60,29 @@ var TESTING_TIRAMISU_FILE = Object.freeze({
 });
 
 /**
+ * Gets volume information for the provided file system.
+ *
+ * @param {string} fileSystemId Id of the provided file system.
+ * @param {function(Object)} callback Callback to be called on result, with the
+ *     volume information object in case of success, or null if not found.
+ */
+function getVolumeInfo(fileSystemId, callback) {
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+    for (var i = 0; i < volumeList.length; i++) {
+      if (volumeList[i].extensionId == chrome.runtime.id &&
+          volumeList[i].fileSystemId == fileSystemId) {
+        callback(volumeList[i]);
+        return;
+      }
+    }
+    callback(null);
+  });
+}
+
+/**
  * Returns entries in the requested directory.
  *
- * @param {number} inFileSystemId ID of the file system.
+ * @param {string} inFileSystemId ID of the file system.
  * @param {string} directoryPath Path of the directory.
  * @param {function(Array.<Object>, boolean)} onSuccess Success callback with
  *     a list of entries. May be called multiple times.
@@ -62,7 +90,7 @@ var TESTING_TIRAMISU_FILE = Object.freeze({
  */
 function onReadDirectoryRequested(
     inFileSystemId, directoryPath, onSuccess, onError) {
-  if (inFileSystemId != fileSystemId) {
+  if (inFileSystemId != FILE_SYSTEM_ID) {
     onError('SECURITY_ERROR');  // enum ProviderError.
     return;
   }
@@ -82,7 +110,7 @@ function onReadDirectoryRequested(
  * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
  * must be implemented and return correct values.
  *
- * @param {number} inFileSystemId ID of the file system.
+ * @param {string} inFileSystemId ID of the file system.
  * @param {string} entryPath Path of the requested entry.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
@@ -90,7 +118,7 @@ function onReadDirectoryRequested(
  */
 function onGetMetadataRequested(
     inFileSystemId, entryPath, onSuccess, onError) {
-  if (inFileSystemId != fileSystemId) {
+  if (inFileSystemId != FILE_SYSTEM_ID) {
     onError('SECURITY_ERROR');  // enum ProviderError.
     return;
   }
@@ -115,23 +143,23 @@ function onGetMetadataRequested(
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount('chocolate.zip', function(id) {
-    fileSystemId = id;
+  chrome.fileSystemProvider.mount(FILE_SYSTEM_ID, 'chocolate.zip', function() {
     chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
         onReadDirectoryRequested);
     chrome.fileSystemProvider.onGetMetadataRequested.addListener(
         onGetMetadataRequested);
-    var volumeId =
-        'provided:' + chrome.runtime.id + '-' + fileSystemId + '-user';
 
-    chrome.fileBrowserPrivate.requestFileSystem(
-        volumeId,
-        function(inFileSystem) {
-          chrome.test.assertTrue(!!inFileSystem);
+    getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
+      chrome.test.assertTrue(!!volumeInfo);
+      chrome.fileBrowserPrivate.requestFileSystem(
+          volumeInfo.volumeId,
+          function(inFileSystem) {
+            chrome.test.assertTrue(!!inFileSystem);
 
-          fileSystem = inFileSystem;
-          callback();
-        });
+            fileSystem = inFileSystem;
+            callback();
+          });
+    });
   }, function() {
     chrome.test.fail();
   });
@@ -145,7 +173,7 @@ function runTests() {
     // Read contents of the /hello directory. This directory exists, so it
     // should succeed.
     function readEntriesSuccess() {
-      var onTestSuccess = chrome.test.callbackPass(function() {});
+      var onTestSuccess = chrome.test.callbackPass();
       fileSystem.root.getDirectory(
           'hello',
           {create: false},
@@ -182,7 +210,7 @@ function runTests() {
     // Read contents of a directory which does not exist, what should return an
     // error.
     function readEntriesError() {
-      var onTestSuccess = chrome.test.callbackPass(function() {});
+      var onTestSuccess = chrome.test.callbackPass();
       fileSystem.root.getDirectory(
           'cranberries',
           {create: false},

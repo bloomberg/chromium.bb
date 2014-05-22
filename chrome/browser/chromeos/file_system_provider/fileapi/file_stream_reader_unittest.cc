@@ -34,6 +34,7 @@ namespace file_system_provider {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kFileSystemId[] = "testing-file-system";
 
 // Logs callbacks invocations on the file stream reader.
 class EventLogger {
@@ -95,11 +96,11 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     service->SetFileSystemFactoryForTests(
         base::Bind(&FakeProvidedFileSystem::Create));
 
-    const int file_system_id =
-        service->MountFileSystem(kExtensionId, "testing-file-system");
-    ASSERT_LT(0, file_system_id);
+    const bool result = service->MountFileSystem(
+        kExtensionId, kFileSystemId, "Testing File System");
+    ASSERT_TRUE(result);
     const ProvidedFileSystemInfo& file_system_info =
-        service->GetProvidedFileSystem(kExtensionId, file_system_id)
+        service->GetProvidedFileSystem(kExtensionId, kFileSystemId)
             ->GetFileSystemInfo();
     const std::string mount_point_name =
         file_system_info.mount_path().BaseName().AsUTF8Unsafe();

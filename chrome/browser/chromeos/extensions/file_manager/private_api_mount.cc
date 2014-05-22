@@ -130,8 +130,10 @@ bool FileBrowserPrivateRemoveMountFunction::RunAsync() {
           chromeos::file_system_provider::Service::Get(GetProfile());
       DCHECK(service);
       // TODO(mtomasz): Pass a more detailed error than just a bool.
-      if (!service->RequestUnmount(volume_info.file_system_id))
+      if (!service->RequestUnmount(volume_info.extension_id,
+                                   volume_info.file_system_id)) {
         return false;
+      }
       break;
     }
     default:

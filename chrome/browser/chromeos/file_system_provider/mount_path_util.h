@@ -21,8 +21,8 @@ namespace util {
 
 // Constructs a safe mount point path for the provided file system.
 base::FilePath GetMountPath(Profile* profile,
-                            std::string extension_id,
-                            int file_system_id);
+                            const std::string& extension_id,
+                            const std::string& file_system_id);
 
 // Finds file system, which is responsible for handling the specified |url| by
 // analysing the mount path. Also, extract the file path from the virtual path

@@ -37,8 +37,8 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
 
   // Allow to pass invalid modification time, since there is no way to verify
   // it easily on any earlier stage.
-  base::Time::FromString(
-      input_modification_time.c_str(), &output->last_modified);
+  base::Time::FromString(input_modification_time.c_str(),
+                         &output->last_modified);
 
   return true;
 }

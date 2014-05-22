@@ -30,16 +30,17 @@ namespace util {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
+const char kFileSystemId[] = "File/System/Id";
 const char kFileSystemName[] = "Camera Pictures";
 
 // Creates a FileSystemURL for tests.
-fileapi::FileSystemURL CreateFileSystemURL(Profile* profile,
-                                           const std::string& extension_id,
-                                           int file_system_id,
-                                           const base::FilePath& file_path) {
-  const std::string origin = std::string("chrome-extension://") + kExtensionId;
-  const base::FilePath mount_path =
-      util::GetMountPath(profile, extension_id, file_system_id);
+fileapi::FileSystemURL CreateFileSystemURL(
+    Profile* profile,
+    const ProvidedFileSystemInfo& file_system_info,
+    const base::FilePath& file_path) {
+  const std::string origin =
+      std::string("chrome-extension://") + file_system_info.extension_id();
+  const base::FilePath mount_path = file_system_info.mount_path();
   const fileapi::ExternalMountPoints* const mount_points =
       fileapi::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
@@ -94,23 +95,26 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderMountPathUtilTest, GetMountPath) {
-  const std::string kExtensionId = "mbflcebpggnecokmikipoihdbecnjfoj";
-  const int kFileSystemId = 1;
-
   base::FilePath result = GetMountPath(profile_, kExtensionId, kFileSystemId);
-  EXPECT_EQ("/provided/mbflcebpggnecokmikipoihdbecnjfoj-1-testing-profile-hash",
-            result.AsUTF8Unsafe());
+  const std::string expected =
+      "/provided/mbflcebpggnecokmikipoihdbecnjfoj:"
+      "File%2FSystem%2FId:testing-profile-hash";
+  EXPECT_EQ(expected, result.AsUTF8Unsafe());
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
-  const int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  ASSERT_TRUE(result);
+  const ProvidedFileSystemInfo file_system_info =
+      file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
+                                                           kFileSystemId)
+          ->GetFileSystemInfo();
 
   const base::FilePath kFilePath =
       base::FilePath::FromUTF8Unsafe("/hello/world.txt");
   const fileapi::FileSystemURL url =
-      CreateFileSystemURL(profile_, kExtensionId, file_system_id, kFilePath);
+      CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
 
   FileSystemURLParser parser(url);
@@ -118,18 +122,22 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
 
   ProvidedFileSystemInterface* file_system = parser.file_system();
   ASSERT_TRUE(file_system);
-  EXPECT_EQ(file_system_id, file_system->GetFileSystemInfo().file_system_id());
+  EXPECT_EQ(kFileSystemId, file_system->GetFileSystemInfo().file_system_id());
   EXPECT_EQ(kFilePath.AsUTF8Unsafe(), parser.file_path().AsUTF8Unsafe());
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
-  const int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const bool result = file_system_provider_service_->MountFileSystem(
+      kExtensionId, kFileSystemId, kFileSystemName);
+  ASSERT_TRUE(result);
+  const ProvidedFileSystemInfo file_system_info =
+      file_system_provider_service_->GetProvidedFileSystem(kExtensionId,
+                                                           kFileSystemId)
+          ->GetFileSystemInfo();
 
   const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
   const fileapi::FileSystemURL url =
-      CreateFileSystemURL(profile_, kExtensionId, file_system_id, kFilePath);
+      CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
 
   FileSystemURLParser parser(url);
@@ -137,18 +145,20 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
 
   ProvidedFileSystemInterface* file_system = parser.file_system();
   ASSERT_TRUE(file_system);
-  EXPECT_EQ(file_system_id, file_system->GetFileSystemInfo().file_system_id());
+  EXPECT_EQ(kFileSystemId, file_system->GetFileSystemInfo().file_system_id());
   EXPECT_EQ(kFilePath.AsUTF8Unsafe(), parser.file_path().AsUTF8Unsafe());
 }
 
 TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
-  const int file_system_id = file_system_provider_service_->MountFileSystem(
-      kExtensionId, kFileSystemName);
-  EXPECT_LT(0, file_system_id);
+  const ProvidedFileSystemInfo file_system_info(
+      kExtensionId,
+      kFileSystemId,
+      kFileSystemName,
+      GetMountPath(profile_, kExtensionId, kFileSystemId));
 
-  const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
-  const fileapi::FileSystemURL url = CreateFileSystemURL(
-      profile_, kExtensionId, file_system_id + 1, kFilePath);
+  const base::FilePath file_path = base::FilePath::FromUTF8Unsafe("/hello");
+  const fileapi::FileSystemURL url =
+      CreateFileSystemURL(profile_, file_system_info, file_path);
   // It is impossible to create a cracked URL for a mount point which doesn't
   // exist, therefore is will always be invalid, and empty.
   EXPECT_FALSE(url.is_valid());

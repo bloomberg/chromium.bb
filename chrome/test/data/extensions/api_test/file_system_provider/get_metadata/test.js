@@ -4,8 +4,16 @@
 
 'use strict';
 
-var fileSystemId;
-var fileSystem;
+/**
+ * @type {DOMFileSystem}
+ */
+var fileSystem = null;
+
+/**
+ * @type {string}
+ * @const
+ */
+var FILE_SYSTEM_ID = 'vanilla';
 
 /**
  * @type {Object}
@@ -41,17 +49,36 @@ var TESTING_WRONG_TIME_FILE = Object.freeze({
 });
 
 /**
+ * Gets volume information for the provided file system.
+ *
+ * @param {string} fileSystemId Id of the provided file system.
+ * @param {function(Object)} callback Callback to be called on result, with the
+ *     volume information object in case of success, or null if not found.
+ */
+function getVolumeInfo(fileSystemId, callback) {
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+    for (var i = 0; i < volumeList.length; i++) {
+      if (volumeList[i].extensionId == chrome.runtime.id &&
+          volumeList[i].fileSystemId == fileSystemId) {
+        callback(volumeList[i]);
+        return;
+      }
+    }
+    callback(null);
+  });
+}
+
+/**
  * Returns metadata for a requested entry.
  *
- * @param {number} inFileSystemId ID of the file system.
+ * @param {string} inFileSystemId ID of the file system.
  * @param {string} entryPath Path of the requested entry.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
  * @param {function(string)} onError Error callback with an error code.
  */
-function onGetMetadataRequested(
-    inFileSystemId, entryPath, onSuccess, onError) {
-  if (inFileSystemId != fileSystemId) {
+function onGetMetadataRequested(inFileSystemId, entryPath, onSuccess, onError) {
+  if (inFileSystemId != FILE_SYSTEM_ID) {
     onError('SECURITY_ERROR');  // enum ProviderError.
     return;
   }
@@ -81,21 +108,21 @@ function onGetMetadataRequested(
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount('chocolate.zip', function(id) {
-    fileSystemId = id;
+  chrome.fileSystemProvider.mount(FILE_SYSTEM_ID, 'chocolate.zip', function() {
     chrome.fileSystemProvider.onGetMetadataRequested.addListener(
         onGetMetadataRequested);
-    var volumeId =
-        'provided:' + chrome.runtime.id + '-' + fileSystemId + '-user';
 
-    chrome.fileBrowserPrivate.requestFileSystem(
-        volumeId,
-        function(inFileSystem) {
-          chrome.test.assertTrue(!!inFileSystem);
+    getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
+      chrome.test.assertTrue(!!volumeInfo);
+      chrome.fileBrowserPrivate.requestFileSystem(
+          volumeInfo.volumeId,
+          function(inFileSystem) {
+            chrome.test.assertTrue(!!inFileSystem);
 
-          fileSystem = inFileSystem;
-          callback();
-        });
+            fileSystem = inFileSystem;
+            callback();
+          });
+    });
   }, function() {
     chrome.test.fail();
   });

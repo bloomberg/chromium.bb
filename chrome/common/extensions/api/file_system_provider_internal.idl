@@ -10,34 +10,34 @@ namespace fileSystemProviderInternal {
   interface Functions {
     // Internal. Success callback of the <code>onUnmountRequested</code>
     // event. Must be called when unmounting is completed.
-    static void unmountRequestedSuccess(long fileSystemId,
+    static void unmountRequestedSuccess(DOMString fileSystemId,
                                         long requestId);
 
     // Internal. Error callback of the <code>onUnmountRequested</code>
     // event. Must be called if unmounting fails.
     static void unmountRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
 
     // Internal. Success callback of the <code>onGetMetadataRequested</code>
     // event. Must be called if metadata is available.
     static void getMetadataRequestedSuccess(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.EntryMetadata metadata);
 
     // Internal. Error callback of the <code>onGetMetadataRequested</code>
     // event. Must be called when obtaining metadata fails.
     static void getMetadataRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
 
     // Internal. Success callback of the <code>onReadDirectoryRequested</code>
     // event. Can be called multiple times per request.
     static void readDirectoryRequestedSuccess(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.EntryMetadata[] entries,
         boolean hasNext);
@@ -45,40 +45,40 @@ namespace fileSystemProviderInternal {
     // Internal. Error callback of the <code>onReadDirectoryRequested</code>
     // event. Must be called when reading a directory fails.
     static void readDirectoryRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
 
     // Internal. Success callback of the <code>onOpenFileRequested</code> event.
     // Must be called, when opening succeeds.
     static void openFileRequestedSuccess(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId);
 
     // Internal. Error callback of the <code>onOpenFileRequested</code> event.
     // Must be called when opening fails.
     static void openFileRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
 
     // Internal. Success callback of the <code>onCloseFileRequested</code>
     // event. Must be called, when closing succeeds.
     static void closeFileRequestedSuccess(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId);
 
     // Internal. Error callback of the <code>onCloseFileRequested</code> event.
     // Must be called when closing fails.
     static void closeFileRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
 
     // Internal. Success callback of the <code>onReadFileRequested</code>
     // event. Can be called multiple times per request.
     static void readFileRequestedSuccess(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         ArrayBuffer data,
         boolean hasNext);
@@ -86,7 +86,7 @@ namespace fileSystemProviderInternal {
     // Internal. Error callback of the <code>onReadFileRequested</code>
     // event. Must be called when reading a file fails.
     static void readFileRequestedError(
-        long fileSystemId,
+        DOMString fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
   };
