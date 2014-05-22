@@ -335,9 +335,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.pinch_overlay_scrollbar_thickness);
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
   settings->setCompositorTouchHitTesting(prefs.compositor_touch_hit_testing);
-
-  settings->setThreadedHTMLParser(true);
-  settings->setUseThreadedHTMLParserForDataURLs(true);
 }
 
 }  // namespace content
