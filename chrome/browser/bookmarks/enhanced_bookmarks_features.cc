@@ -58,13 +58,19 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
 void UpdateBookmarksExperimentState(PrefService* user_prefs,
                                     PrefService* local_state,
                                     bool user_signed_in) {
+ PrefService* flags_storage = local_state;
+#if defined(OS_CHROMEOS)
+  // Chrome OS is using user prefs for flags storage.
+  flags_storage = user_prefs;
+#endif
+
   BookmarksExperimentState bookmarks_experiment_state_before =
       static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
           sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   // If user signed out, clear possible previous state.
   if (!user_signed_in) {
     bookmarks_experiment_state_before = kNoBookmarksExperiment;
-    ForceFinchBookmarkExperimentIfNeeded(local_state, kNoBookmarksExperiment);
+    ForceFinchBookmarkExperimentIfNeeded(flags_storage, kNoBookmarksExperiment);
   }
 
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
@@ -115,18 +121,16 @@ void UpdateBookmarksExperimentState(PrefService* user_prefs,
       sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
       bookmarks_experiment_new_state);
   if (bookmarks_experiment_state_before != bookmarks_experiment_new_state)
-    ForceFinchBookmarkExperimentIfNeeded(local_state,
+    ForceFinchBookmarkExperimentIfNeeded(flags_storage,
                                          bookmarks_experiment_new_state);
 }
 
 void ForceFinchBookmarkExperimentIfNeeded(
-    PrefService* local_state,
+    PrefService* flags_storage,
     BookmarksExperimentState bookmarks_experiment_state) {
-// Chrome OS doesnt use local storage for experiments flags.
-#if !defined(OS_CHROMEOS)
-  if (!local_state)
+  if (!flags_storage)
     return;
-  ListPrefUpdate update(local_state, prefs::kEnabledLabsExperiments);
+  ListPrefUpdate update(flags_storage, prefs::kEnabledLabsExperiments);
   base::ListValue* experiments_list = update.Get();
   if (!experiments_list)
     return;
@@ -148,7 +152,6 @@ void ForceFinchBookmarkExperimentIfNeeded(
     experiments_list->AppendIfNotPresent(
         new base::StringValue(switches::kManualEnhancedBookmarksOptout));
   }
-#endif
 }
 
 bool IsEnhancedBookmarksExperimentEnabled() {
