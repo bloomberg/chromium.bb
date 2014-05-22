@@ -186,6 +186,7 @@ class CreateSessionDescriptionRequest
   virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) OVERRIDE {
     tracker_.TrackOnSuccess(desc);
     webkit_request_.requestSucceeded(CreateWebKitSessionDescription(desc));
+    delete desc;
   }
   virtual void OnFailure(const std::string& error) OVERRIDE {
     tracker_.TrackOnFailure(error);
