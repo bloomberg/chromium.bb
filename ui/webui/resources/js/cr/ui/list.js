@@ -1312,13 +1312,17 @@ cr.define('cr.ui', function() {
    */
   function handleDragStart(e) {
     var element = e.target.ownerDocument.elementFromPoint(e.clientX, e.clientY);
-    var target = this.getListItemAncestor(element);
-    var index = this.getIndexOfListItem(target);
-    if (index != -1) {
-      var isAlreadySelected = this.selectionModel_.getIndexSelected(index);
-      if (!isAlreadySelected)
-        this.selectionModel_.selectedIndex = index;
-    }
+    var listItem = this.getListItemAncestor(element);
+    if (!listItem)
+      return;
+
+    var index = this.getIndexOfListItem(listItem);
+    if (index == -1)
+      return;
+
+    var isAlreadySelected = this.selectionModel_.getIndexSelected(index);
+    if (!isAlreadySelected)
+      this.selectionModel_.selectedIndex = index;
   }
 
   /**
