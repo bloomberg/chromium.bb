@@ -202,6 +202,19 @@ TEST_P(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
 }
 
+TEST_P(TileManagerTest, EnoughMemoryPendingLowResAllowAbsoluteMinimum) {
+  // A few low-res tiles required for activation, with enough memory for all
+  // tiles.
+
+  Initialize(5, ALLOW_ABSOLUTE_MINIMUM, SAME_PRIORITY_FOR_BOTH_TREES);
+  TileVector pending_low_res =
+      CreateTiles(5, TilePriority(), TilePriorityLowRes());
+
+  tile_manager()->AssignMemoryToTiles(global_state_);
+
+  EXPECT_EQ(5, AssignedMemoryCount(pending_low_res));
+}
+
 TEST_P(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
   // A few tiles of each type of priority, with enough memory for all tiles,
   // with the exception of never and soon bins.

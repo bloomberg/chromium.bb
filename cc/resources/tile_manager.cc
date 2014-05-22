@@ -590,12 +590,6 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     bool active_is_non_ideal =
         active_priority.resolution == NON_IDEAL_RESOLUTION;
 
-    // Adjust pending bin state for low res tiles. This prevents
-    // pending tree low-res tiles from being initialized before
-    // high-res tiles.
-    if (pending_is_low_res)
-      pending_bin = std::max(pending_bin, EVENTUALLY_BIN);
-
     // Adjust bin state based on if ready to draw.
     active_bin = kBinReadyToDrawMap[tile_is_ready_to_draw][active_bin];
     pending_bin = kBinReadyToDrawMap[tile_is_ready_to_draw][pending_bin];
@@ -611,14 +605,11 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     if (!tile_is_ready_to_draw && pending_is_non_ideal)
       pending_bin = NEVER_BIN;
 
-    // Compute combined bin.
-    ManagedTileBin combined_bin = std::min(active_bin, pending_bin);
-
     if (!tile_is_ready_to_draw || tile_version.requires_resource()) {
       // The bin that the tile would have if the GPU memory manager had
       // a maximally permissive policy, send to the GPU memory manager
       // to determine policy.
-      ManagedTileBin gpu_memmgr_stats_bin = combined_bin;
+      ManagedTileBin gpu_memmgr_stats_bin = std::min(active_bin, pending_bin);
       if ((gpu_memmgr_stats_bin == NOW_BIN) ||
           (gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
         memory_required_bytes_ += BytesConsumedIfAllocated(tile);
@@ -630,10 +621,15 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     tree_bin[ACTIVE_TREE] = kBinPolicyMap[memory_policy][active_bin];
     tree_bin[PENDING_TREE] = kBinPolicyMap[memory_policy][pending_bin];
 
+    // Adjust pending bin state for low res tiles. This prevents pending tree
+    // low-res tiles from being initialized before high-res tiles.
+    if (pending_is_low_res)
+      tree_bin[PENDING_TREE] = std::max(tree_bin[PENDING_TREE], EVENTUALLY_BIN);
+
     TilePriority tile_priority;
     switch (tree_priority) {
       case SAME_PRIORITY_FOR_BOTH_TREES:
-        mts.bin = kBinPolicyMap[memory_policy][combined_bin];
+        mts.bin = std::min(tree_bin[ACTIVE_TREE], tree_bin[PENDING_TREE]);
         tile_priority = tile->combined_priority();
         break;
       case SMOOTHNESS_TAKES_PRIORITY:
@@ -661,6 +657,13 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
 
     mts.visible_and_ready_to_draw =
         tree_bin[ACTIVE_TREE] == NOW_AND_READY_TO_DRAW_BIN;
+
+    // Tiles that are required for activation shouldn't be in NEVER_BIN unless
+    // smoothness takes priority or memory policy allows nothing to be
+    // initialized.
+    DCHECK(!mts.required_for_activation || mts.bin != NEVER_BIN ||
+           tree_priority == SMOOTHNESS_TAKES_PRIORITY ||
+           memory_policy == ALLOW_NOTHING);
 
     // If the tile is in NEVER_BIN and it does not have an active task, then we
     // can release the resources early. If it does have the task however, we

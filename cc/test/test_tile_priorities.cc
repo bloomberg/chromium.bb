@@ -20,4 +20,7 @@ TilePriorityRequiredForActivation::TilePriorityRequiredForActivation()
   required_for_activation = true;
 }
 
+TilePriorityLowRes::TilePriorityLowRes()
+    : TilePriority(LOW_RESOLUTION, NOW, 0) {}
+
 }  // namespace cc
