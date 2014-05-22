@@ -5,6 +5,8 @@ var gridElement = document.getElementById("gridElement");
 var inlineGridElement = document.getElementById("inlineGridElement");
 shouldBe("getComputedStyle(gridElement, '').getPropertyValue('display')", "'grid'");
 shouldBe("getComputedStyle(inlineGridElement, '').getPropertyValue('display')", "'inline-grid'");
+shouldBe("getComputedStyle(inlineFloatGridElement, '').getPropertyValue('display')", "'grid'");
+shouldBe("getComputedStyle(inlineAbsoluteGridElement, '').getPropertyValue('display')", "'grid'");
 
 debug("");
 debug("Test getting and setting display through JS");
