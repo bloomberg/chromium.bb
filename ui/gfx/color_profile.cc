@@ -8,8 +8,15 @@ namespace gfx {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void ReadColorProfile(std::vector<char>* profile);
+GFX_EXPORT bool GetDisplayColorProfile(const gfx::Rect& bounds,
+                                       std::vector<char>* profile);
 #else
 void ReadColorProfile(std::vector<char>* profile) { }
+GFX_EXPORT bool GetDisplayColorProfile(const gfx::Rect& bounds,
+                                       std::vector<char>* profile) {
+  // TODO(port): consider screen color profile support.
+  return false;
+}
 #endif
 
 ColorProfile::ColorProfile() {

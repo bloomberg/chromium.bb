@@ -141,7 +141,7 @@
         'color_analysis.h',
         'color_profile.cc',
         'color_profile.h',
-        'color_profile_mac.cc',
+        'color_profile_mac.mm',
         'color_profile_win.cc',
         'color_utils.cc',
         'color_utils.h',

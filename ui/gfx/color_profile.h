@@ -7,8 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
-
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -31,10 +30,20 @@ class GFX_EXPORT ColorProfile {
   DISALLOW_COPY_AND_ASSIGN(ColorProfile);
 };
 
+inline bool InvalidColorProfileLength(size_t length) {
+  return (length < kMinProfileLength) || (length > kMaxProfileLength);
+}
+
 // Loads the monitor color space if available.
+// TODO(noel): is this function used anywhere? If not, remove it.
 GFX_EXPORT void GetColorProfile(std::vector<char>* profile);
 
+// Return the color profile of the display nearest the screen bounds. On Win32,
+// this may read a file from disk, so it shouldn't be run on the UI/IO threads.
+// If the given bounds are empty, or are off-screen, return false meaning there
+// is no color profile associated with the bounds.
+GFX_EXPORT bool GetDisplayColorProfile(const gfx::Rect& bounds,
+                                       std::vector<char>* profile);
 }  // namespace gfx
 
 #endif  // UI_GFX_COLOR_PROFILE_H_
-
