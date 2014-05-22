@@ -479,11 +479,8 @@ class SimpleBuilder(Builder):
       self._RunParallelStages([archive_stage])
       return
 
-    # signer_results can't complete without push_image.
-    assert not config.signer_results or config.push_image
-
-    # paygen can't complete without signer_results.
-    assert not config.paygen or config.signer_results
+    # paygen can't complete without push_image.
+    assert not config.paygen or config.push_image
 
     if config.build_packages_in_background:
       self._RunStage(build_stages.BuildPackagesStage, board,
@@ -1217,9 +1214,6 @@ def _CreateParser():
   group.add_remote_option('--nosdk', action='store_true',
                           default=False,
                           help='Re-create the SDK from scratch.')
-  group.add_remote_option('--nosigner-results', action='store_false',
-                          dest='signer_results', default=True,
-                          help="Don't display signing results.")
   group.add_remote_option('--nosync', action='store_false', dest='sync',
                           default=True, help="Don't sync before building.")
   group.add_remote_option('--notests', action='store_false', dest='tests',

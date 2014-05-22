@@ -88,7 +88,6 @@ def OverrideConfigForTrybot(build_config, options):
       my_config['manifest'] = my_config['dev_manifest']
 
     my_config['push_image'] = False
-    my_config['signer_results'] = False
 
     if my_config['build_type'] != constants.PAYLOADS_TYPE:
       my_config['paygen'] = False
@@ -486,9 +485,6 @@ _settings = dict(
 
 # hwqual -- Whether we upload a hwqual tarball.
   hwqual=False,
-
-# signer_results -- Run a stage that waits for and displays signer output.
-  signer_results=False,
 
 # paygen -- Run a stage that generates release payloads for signed images.
   paygen=False,
@@ -1888,7 +1884,6 @@ _release = full.derive(official, internal,
   disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   paygen=True,
-  signer_results=True,
   signer_tests=True,
   trybot_list=True,
   hwqual=True,
@@ -1960,7 +1955,6 @@ release_pgo = _release.derive(
                                     num=4) +
            HWTestConfig.PGOList(),
   push_image=False,
-  signer_results=False,
   paygen=False,
   dev_installer_prebuilts=False,
 )
@@ -2089,7 +2083,6 @@ _brillo_release.add_config('gizmo-release',
    boards=['gizmo'],
 
    # This build doesn't generate signed images, so don't try to release them.
-   signer_results=False,
    paygen=False,
 )
 
@@ -2102,14 +2095,12 @@ _config.add_group('beaglebone-release-group',
     boards=['beaglebone'],
 
     # This build doesn't generate signed images, so don't try to release them.
-    signer_results=False,
     paygen=False,
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
 
     # This build doesn't generate signed images, so don't try to release them.
-    signer_results=False,
     paygen=False,
   ).derive(_grouped_variant_config),
 )

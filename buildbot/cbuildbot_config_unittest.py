@@ -453,24 +453,19 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             test_config.priority in constants.HWTEST_VALID_PRIORITIES,
             '%s has an invalid hwtest priority.' % build_name)
 
-  def testPushImageSignerResultsPaygenDependancies(self):
-    """Paygen requires SignerResults which requires PushImage."""
+  def testPushImagePaygenDependancies(self):
+    """Paygen requires PushImage."""
     for build_name, config in cbuildbot_config.config.iteritems():
 
-      # signer_results can't complete without push_image.
-      if config['signer_results']:
-        self.assertTrue(config['push_image'],
-                        '%s has signer_results without push_image' % build_name)
-
-      # paygen can't complete without signer_results, except for payloads
+      # paygen can't complete without push_image, except for payloads
       # where --channel arguments meet the requirements.
       if config['paygen']:
-        self.assertTrue(config['signer_results'] or
+        self.assertTrue(config['push_image'] or
                         config['build_type'] == constants.PAYLOADS_TYPE,
-                        '%s has paygen without signer_results' % build_name)
+                        '%s has paygen without push_image' % build_name)
 
   def testPaygenTestDependancies(self):
-    """Paygen requires SignerResults which requires PushImage."""
+    """perform_paygen_testing requires upload_hw_test_artifacts."""
     for build_name, config in cbuildbot_config.config.iteritems():
 
       # This requirement doesn't apply to payloads builds. Payloads are
