@@ -22,6 +22,7 @@ per-file *.isolate=maruel@chromium.org
 # Android OWNERS from chrome/android/OWNERS
 per-file *android*=aruslan@chromium.org
 per-file *android*=bulach@chromium.org
+per-file *android*=bauerb@chromium.org
 per-file *android*=dtrainor@chromium.org
 per-file *android*=nyquist@chromium.org
 per-file *android*=tedchoc@chromium.org
