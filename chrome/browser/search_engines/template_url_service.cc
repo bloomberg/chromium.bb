@@ -2042,7 +2042,7 @@ void TemplateURLService::ApplyDefaultSearchChange(
       GoogleURLTracker::RequestServerCheck(profile_, false);
 #if defined(ENABLE_RLZ)
     RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                   RLZTracker::CHROME_OMNIBOX,
+                                   RLZTracker::ChromeOmnibox(),
                                    rlz_lib::SET_TO_GOOGLE);
 #endif
   }

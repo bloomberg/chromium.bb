@@ -125,10 +125,10 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
     // This call will return false the first time(s) it is called until the
     // value has been cached. This normally would mean that at most one omnibox
     // search might not send the RLZ data but this is not really a problem.
-    rlz_lib::AccessPoint access_point = RLZTracker::CHROME_OMNIBOX;
+    rlz_lib::AccessPoint access_point = RLZTracker::ChromeOmnibox();
 #if !defined(OS_IOS)
     if (from_app_list)
-      access_point = RLZTracker::CHROME_APP_LIST;
+      access_point = RLZTracker::ChromeAppList();
 #endif
     RLZTracker::GetAccessPointRlz(access_point, &rlz_string);
   }

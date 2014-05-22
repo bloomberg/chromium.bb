@@ -446,7 +446,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     if (google_util::IsGoogleHomePageUrl(
         GURL(pref_service->GetString(prefs::kHomePage)))) {
       extra_headers = RLZTracker::GetAccessPointHttpHeader(
-          RLZTracker::CHROME_HOME_PAGE);
+          RLZTracker::ChromeHomePage());
     }
   }
 #endif  // defined(ENABLE_RLZ) && !defined(OS_IOS)
@@ -735,7 +735,7 @@ void BookmarkCurrentPage(Browser* browser) {
       case extensions::CommandService::PAGE_ACTION:
         browser->window()->ShowPageActionPopup(extension);
         return;
-    };
+    }
   }
 
   BookmarkCurrentPageInternal(browser);

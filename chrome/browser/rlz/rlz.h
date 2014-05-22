@@ -60,10 +60,10 @@ class RLZTracker : public content::NotificationObserver {
                                  rlz_lib::Event event_id);
 
   // For the point parameter of RecordProductEvent.
-  static const rlz_lib::AccessPoint CHROME_OMNIBOX;
-  static const rlz_lib::AccessPoint CHROME_HOME_PAGE;
+  static rlz_lib::AccessPoint ChromeOmnibox();
 #if !defined(OS_IOS)
-  static const rlz_lib::AccessPoint CHROME_APP_LIST;
+  static rlz_lib::AccessPoint ChromeHomePage();
+  static rlz_lib::AccessPoint ChromeAppList();
 #endif
 
   // Gets the HTTP header value that can be added to requests from the

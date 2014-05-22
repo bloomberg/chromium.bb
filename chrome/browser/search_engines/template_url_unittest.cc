@@ -660,7 +660,7 @@ TEST_F(TemplateURLTest, RLZ) {
   std::string brand;
   if (google_util::GetBrand(&brand) && !brand.empty() &&
       !google_util::IsOrganic(brand)) {
-    RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
+    RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz_string);
   }
 #elif defined(OS_ANDROID)
   SearchTermsDataAndroid::rlz_parameter_value_.Get() =
@@ -690,7 +690,7 @@ TEST_F(TemplateURLTest, RLZFromAppList) {
   std::string brand;
   if (google_util::GetBrand(&brand) && !brand.empty() &&
       !google_util::IsOrganic(brand)) {
-    RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_APP_LIST, &rlz_string);
+    RLZTracker::GetAccessPointRlz(RLZTracker::ChromeAppList(), &rlz_string);
   }
 #endif
 
