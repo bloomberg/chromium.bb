@@ -724,6 +724,7 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyTextIndent:
     case CSSPropertyTextShadow:
     case CSSPropertyTop:
+    case CSSPropertyVerticalAlign:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitBackgroundSize:
     case CSSPropertyWebkitBorderHorizontalSpacing:

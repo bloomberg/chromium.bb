@@ -224,6 +224,9 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return dataEquivalent(a.textShadow(), b.textShadow());
     case CSSPropertyTop:
         return a.top() == b.top();
+    case CSSPropertyVerticalAlign:
+        return a.verticalAlign() == b.verticalAlign()
+            && (a.verticalAlign() != LENGTH || a.verticalAlignLength() == b.verticalAlignLength());
     case CSSPropertyVisibility:
         return a.visibility() == b.visibility();
     case CSSPropertyWebkitBackgroundSize:

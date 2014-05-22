@@ -496,6 +496,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromLength(style.width(), style);
     case CSSPropertyWordSpacing:
         return createFromDouble(style.wordSpacing());
+    case CSSPropertyVerticalAlign:
+        if (style.verticalAlign() == LENGTH)
+            return createFromLength(style.verticalAlignLength(), style);
+        return AnimatableUnknown::create(CSSPrimitiveValue::create(style.verticalAlign()));
     case CSSPropertyVisibility:
         return AnimatableVisibility::create(style.visibility());
     case CSSPropertyZIndex:
