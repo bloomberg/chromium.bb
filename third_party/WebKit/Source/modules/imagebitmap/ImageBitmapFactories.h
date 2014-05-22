@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/Supplementable.h"
@@ -82,9 +83,9 @@ protected:
 private:
     class ImageBitmapLoader FINAL : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
-        static PassRefPtrWillBeRawPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, ExecutionContext* context, const IntRect& cropRect)
+        static PassRefPtrWillBeRawPtr<ImageBitmapLoader> create(ImageBitmapFactories& factory, const IntRect& cropRect, ScriptState* scriptState)
         {
-            return adoptRefWillBeNoop(new ImageBitmapLoader(factory, context, cropRect));
+            return adoptRefWillBeNoop(new ImageBitmapLoader(factory, cropRect, scriptState));
         }
 
         void loadBlobAsync(ExecutionContext*, Blob*);
@@ -95,7 +96,7 @@ private:
         virtual ~ImageBitmapLoader() { }
 
     private:
-        ImageBitmapLoader(ImageBitmapFactories&, ExecutionContext*, const IntRect&);
+        ImageBitmapLoader(ImageBitmapFactories&, const IntRect&, ScriptState*);
 
         void rejectPromise();
 

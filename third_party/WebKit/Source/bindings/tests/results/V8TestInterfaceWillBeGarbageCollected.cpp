@@ -148,7 +148,10 @@ static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::F
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
-    TOSTRING_VOID(V8StringResource<>, str, info[0]);
+    V8StringResource<> str;
+    {
+        TOSTRING_VOID_INTERNAL(str, info[0]);
+    }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::createForJSConstructor(*document, str);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

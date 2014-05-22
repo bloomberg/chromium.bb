@@ -33,11 +33,11 @@ class MediaQueryList;
 
 class MediaQueryListListener : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryListListener> {
 public:
-    static PassRefPtrWillBeRawPtr<MediaQueryListListener> create(const ScriptValue& value)
+    static PassRefPtrWillBeRawPtr<MediaQueryListListener> create(ScriptState* scriptState, const ScriptValue& value)
     {
         if (!value.isFunction())
             return nullptr;
-        return adoptRefWillBeNoop(new MediaQueryListListener(value));
+        return adoptRefWillBeNoop(new MediaQueryListListener(scriptState, value));
     }
     void queryChanged(MediaQueryList*);
 
@@ -46,7 +46,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit MediaQueryListListener(const ScriptValue&);
+    MediaQueryListListener(ScriptState*, const ScriptValue&);
 
     RefPtr<ScriptState> m_scriptState;
     ScriptValue m_function;

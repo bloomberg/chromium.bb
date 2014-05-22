@@ -546,7 +546,7 @@ inline v8::Handle<v8::Value> v8DateOrNaN(double value, v8::Isolate* isolate)
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
-PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Handle<v8::Object>, v8::Isolate*);
+PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Handle<v8::Object>, ScriptState*);
 PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
 template<class T> struct NativeValueTraits;

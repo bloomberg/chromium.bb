@@ -84,14 +84,12 @@ Vector<String> StorageQuota::supportedTypes() const
     return types;
 }
 
-ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String type)
+ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
 {
-    ASSERT(executionContext);
-
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext)));
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    SecurityOrigin* securityOrigin = executionContext->securityOrigin();
+    SecurityOrigin* securityOrigin = scriptState->executionContext()->securityOrigin();
     if (securityOrigin->isUnique()) {
         resolver->reject(DOMError::create(NotSupportedError));
         return promise;

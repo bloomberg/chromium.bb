@@ -50,9 +50,9 @@ namespace WebCore {
     V(detached, Detached)                 \
     V(attributeChanged, AttributeChanged)
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
-    v8::Isolate* isolate = toIsolate(executionContext);
+    v8::Isolate* isolate = scriptState->isolate();
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_VALUE(Value, Name) \
@@ -63,7 +63,7 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     CALLBACK_LIST(SET_HIDDEN_VALUE)
 #undef SET_HIDDEN_VALUE
 
-    return adoptRef(new V8CustomElementLifecycleCallbacks(executionContext, prototype, created, attached, detached, attributeChanged));
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptState, prototype, created, attached, detached, attributeChanged));
 }
 
 static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
@@ -89,16 +89,16 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& da
     data.GetParameter()->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
-    , ContextLifecycleObserver(executionContext)
+    , ContextLifecycleObserver(scriptState->executionContext())
     , m_owner(0)
-    , m_scriptState(ScriptState::current(toIsolate(executionContext)))
-    , m_prototype(m_scriptState->isolate(), prototype)
-    , m_created(m_scriptState->isolate(), created)
-    , m_attached(m_scriptState->isolate(), attached)
-    , m_detached(m_scriptState->isolate(), detached)
-    , m_attributeChanged(m_scriptState->isolate(), attributeChanged)
+    , m_scriptState(scriptState)
+    , m_prototype(scriptState->isolate(), prototype)
+    , m_created(scriptState->isolate(), created)
+    , m_attached(scriptState->isolate(), attached)
+    , m_detached(scriptState->isolate(), detached)
+    , m_attributeChanged(scriptState->isolate(), attributeChanged)
 {
     m_prototype.setWeak(&m_prototype, weakCallback<v8::Object>);
 

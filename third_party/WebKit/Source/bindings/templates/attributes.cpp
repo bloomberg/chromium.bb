@@ -45,7 +45,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_script_state %}
-    ScriptState* state = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% endif %}
     {% if attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}

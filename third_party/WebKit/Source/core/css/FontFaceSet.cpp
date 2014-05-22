@@ -50,9 +50,9 @@ static const char defaultFontFamily[] = "sans-serif";
 
 class LoadFontPromiseResolver FINAL : public FontFace::LoadFontCallback {
 public:
-    static PassRefPtrWillBeRawPtr<LoadFontPromiseResolver> create(FontFaceArray faces, ExecutionContext* context)
+    static PassRefPtrWillBeRawPtr<LoadFontPromiseResolver> create(FontFaceArray faces, ScriptState* scriptState)
     {
-        return adoptRefWillBeNoop(new LoadFontPromiseResolver(faces, context));
+        return adoptRefWillBeNoop(new LoadFontPromiseResolver(faces, scriptState));
     }
 
     void loadFonts(ExecutionContext*);
@@ -64,10 +64,10 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    LoadFontPromiseResolver(FontFaceArray faces, ExecutionContext* context)
+    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* scriptState)
         : m_numLoading(faces.size())
         , m_errorOccured(false)
-        , m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
+        , m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
     {
         m_fontFaces.swap(faces);
     }
@@ -457,7 +457,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
             segmentedFontFace->match(nullToSpace(text), faces);
     }
 
-    RefPtrWillBeRawPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, executionContext());
+    RefPtrWillBeRawPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->loadFonts(executionContext()); // After this, resolver->promise() may return null.
     return promise;

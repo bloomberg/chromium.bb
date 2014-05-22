@@ -25,8 +25,8 @@
 
 namespace WebCore {
 
-MediaQueryListListener::MediaQueryListListener(const ScriptValue& function)
-    : m_scriptState(ScriptState::current(function.isolate()))
+MediaQueryListListener::MediaQueryListListener(ScriptState* scriptState, const ScriptValue& function)
+    : m_scriptState(scriptState)
     , m_function(function)
 {
     ASSERT(m_function.isFunction());

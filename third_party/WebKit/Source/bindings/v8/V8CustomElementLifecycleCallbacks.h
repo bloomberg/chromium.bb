@@ -48,14 +48,14 @@ class V8PerContextData;
 
 class V8CustomElementLifecycleCallbacks FINAL : public CustomElementLifecycleCallbacks, ContextLifecycleObserver {
 public:
-    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
+    static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ScriptState*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
 
     virtual ~V8CustomElementLifecycleCallbacks();
 
     bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
 
 private:
-    V8CustomElementLifecycleCallbacks(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
+    V8CustomElementLifecycleCallbacks(ScriptState*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
 
     virtual void created(Element*) OVERRIDE;
     virtual void attached(Element*) OVERRIDE;

@@ -13,6 +13,7 @@ namespace WebCore {
 
 class ExecutionContext;
 class ScriptPromise;
+class ScriptState;
 
 class PushManager FINAL : public GarbageCollectedFinalized<PushManager>, public ScriptWrappable {
 public:
@@ -22,7 +23,7 @@ public:
     }
     virtual ~PushManager();
 
-    ScriptPromise registerPushMessaging(ExecutionContext*, const String& senderId);
+    ScriptPromise registerPushMessaging(ScriptState*, const String& senderId);
 
     void trace(Visitor*) { }
 

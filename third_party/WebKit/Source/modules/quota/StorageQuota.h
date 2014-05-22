@@ -51,7 +51,7 @@ public:
 
     Vector<String> supportedTypes() const;
 
-    ScriptPromise queryInfo(ExecutionContext*, String type);
+    ScriptPromise queryInfo(ScriptState*, String type);
     ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuota);
 
     ~StorageQuota();

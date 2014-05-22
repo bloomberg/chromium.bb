@@ -40,15 +40,15 @@
 
 namespace WebCore {
 
-V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
-    : m_scriptState(ScriptState::current(isolate))
+V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, ScriptState* scriptState)
+    : m_scriptState(scriptState)
 {
     // ..acceptNode(..) will only dispatch m_filter if m_filter->IsObject().
     // We'll make sure m_filter is either usable by acceptNode or empty.
     // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
     if (!filter.IsEmpty() && filter->IsObject()) {
-        V8HiddenValue::setHiddenValue(isolate, owner, V8HiddenValue::condition(isolate), filter);
-        m_filter.set(isolate, filter);
+        V8HiddenValue::setHiddenValue(scriptState->isolate(), owner, V8HiddenValue::condition(scriptState->isolate()), filter);
+        m_filter.set(scriptState->isolate(), filter);
         m_filter.setWeak(this, &setWeakCallback);
     }
 }

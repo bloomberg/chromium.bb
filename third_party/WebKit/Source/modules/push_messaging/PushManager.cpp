@@ -28,12 +28,12 @@ PushManager::~PushManager()
 {
 }
 
-ScriptPromise PushManager::registerPushMessaging(ExecutionContext* context, const String& senderId)
+ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const String& senderId)
 {
-    ASSERT(context->isDocument());
-    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context)));
+    ASSERT(scriptState->executionContext()->isDocument());
+    RefPtr<ScriptPromiseResolverWithContext> resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    blink::WebPushClient* client = PushController::clientFrom(toDocument(context)->page());
+    blink::WebPushClient* client = PushController::clientFrom(toDocument(scriptState->executionContext())->page());
     ASSERT(client);
     client->registerPushMessaging(senderId, new CallbackPromiseAdapter<PushRegistration, PushError>(resolver));
     return promise;

@@ -858,7 +858,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, cppValue, toNodeFilter(v8Value, info.Holder(), info.GetIsolate()));
+    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, cppValue, toNodeFilter(v8Value, info.Holder(), ScriptState::current(info.GetIsolate())));
     impl->setNodeFilterAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1861,8 +1861,8 @@ static void callWithScriptStateAnyAttributeAttributeGetter(const v8::PropertyCal
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    ScriptState* state = ScriptState::current(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(state).v8Value());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    v8SetReturnValue(info, impl->callWithScriptStateAnyAttribute(scriptState).v8Value());
 }
 
 static void callWithScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1877,7 +1877,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
-    impl->setCallWithScriptStateAnyAttribute(state, cppValue);
+    impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
 
 static void callWithScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -1892,8 +1892,8 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetter(co
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    ScriptState* state = ScriptState::current(info.GetIsolate());
-    v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(state, scriptContext).v8Value());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    v8SetReturnValue(info, impl->callWithExecutionContextAndScriptStateAnyAttribute(scriptState, scriptContext).v8Value());
 }
 
 static void callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1909,7 +1909,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(ScriptValue, cppValue, ScriptValue(ScriptState::current(info.GetIsolate()), v8Value));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->setCallWithExecutionContextAndScriptStateAnyAttribute(state, scriptContext, cppValue);
+    impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, scriptContext, cppValue);
 }
 
 static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
@@ -5317,7 +5317,7 @@ static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallback
     RefPtrWillBeRawPtr<MediaQueryListListener> mediaQueryListListenerArg;
     {
         v8::TryCatch block;
-        TONATIVE_VOID_INTERNAL(mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
+        TONATIVE_VOID_INTERNAL(mediaQueryListListenerArg, MediaQueryListListener::create(ScriptState::current(info.GetIsolate()), ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
     }
     impl->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
 }
@@ -6130,7 +6130,7 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
     RefPtrWillBeRawPtr<NodeFilter> nodeFilterArg;
     {
         v8::TryCatch block;
-        TONATIVE_VOID_INTERNAL(nodeFilterArg, toNodeFilter(info[0], info.Holder(), info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(nodeFilterArg, toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate())));
     }
     impl->voidMethodNodeFilterArg(nodeFilterArg.release());
 }
@@ -7587,8 +7587,8 @@ static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionC
 static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* state = ScriptState::current(info.GetIsolate());
-    impl->callWithScriptStateVoidMethod(state);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    impl->callWithScriptStateVoidMethod(scriptState);
 }
 
 static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7601,8 +7601,8 @@ static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* state = ScriptState::current(info.GetIsolate());
-    int result = impl->callWithScriptStateLongMethod(state);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    int result = impl->callWithScriptStateLongMethod(scriptState);
     v8SetReturnValueInt(info, result);
 }
 
@@ -7616,9 +7616,9 @@ static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* state = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithScriptStateExecutionContextVoidMethod(state, scriptContext);
+    impl->callWithScriptStateExecutionContextVoidMethod(scriptState, scriptContext);
 }
 
 static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7631,9 +7631,9 @@ static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8
 static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* state = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
-    impl->callWithScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
+    impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments.release());
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7650,16 +7650,16 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
     {
         v8::TryCatch block;
         if (UNLIKELY(info.Length() <= 0)) {
-            ScriptState* state = ScriptState::current(info.GetIsolate());
+            ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
+            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
             return;
         }
         TONATIVE_VOID_INTERNAL(optionalBooleanArg, info[0]->BooleanValue());
     }
-    ScriptState* state = ScriptState::current(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
+    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release(), optionalBooleanArg);
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

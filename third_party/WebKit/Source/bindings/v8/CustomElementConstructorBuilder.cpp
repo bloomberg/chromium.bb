@@ -161,13 +161,13 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Function> created = retrieveCallback(isolate, "createdCallback");
     v8::Handle<v8::Function> attached = retrieveCallback(isolate, "attachedCallback");
     v8::Handle<v8::Function> detached = retrieveCallback(isolate, "detachedCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    m_callbacks = V8CustomElementLifecycleCallbacks::create(executionContext.get(), m_prototype, created, attached, detached, attributeChanged);
+    m_callbacks = V8CustomElementLifecycleCallbacks::create(m_scriptState.get(), m_prototype, created, attached, detached, attributeChanged);
     return m_callbacks.get();
 }
 

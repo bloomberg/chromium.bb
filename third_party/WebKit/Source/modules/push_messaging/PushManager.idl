@@ -7,5 +7,5 @@
     RuntimeEnabled=PushMessaging,
     GarbageCollected,
 ] interface PushManager {
-    [CallWith=ExecutionContext, ImplementedAs=registerPushMessaging] Promise register(DOMString senderId);
+    [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register(DOMString senderId);
 };

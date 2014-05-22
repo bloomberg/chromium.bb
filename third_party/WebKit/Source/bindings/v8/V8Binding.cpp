@@ -144,13 +144,13 @@ v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
     return &arrayBufferAllocator;
 }
 
-PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Handle<v8::Object> creationContext, ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<NodeFilter> filter = NodeFilter::create();
 
-    v8::Handle<v8::Object> filterWrapper = toV8(filter, creationContext, isolate).As<v8::Object>();
+    v8::Handle<v8::Object> filterWrapper = toV8(filter, creationContext, scriptState->isolate()).As<v8::Object>();
 
-    RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper, isolate);
+    RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper, scriptState);
     filter->setCondition(condition.release());
 
     return filter.release();

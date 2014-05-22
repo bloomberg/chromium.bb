@@ -81,7 +81,7 @@ public:
 
     String status() const;
 
-    ScriptPromise load(ExecutionContext*);
+    ScriptPromise load(ScriptState*);
 
     LoadStatus loadStatus() const { return m_status; }
     void setLoadStatus(LoadStatus);

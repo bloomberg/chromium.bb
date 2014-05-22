@@ -148,7 +148,7 @@ def activity_logging_world_list(member, access_type=''):
 
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
-    'ScriptState': 'state',
+    'ScriptState': 'scriptState',
     'ExecutionContext': 'scriptContext',
     'ScriptArguments': 'scriptArguments.release()',
     'ActiveWindow': 'callingDOMWindow(info.GetIsolate())',
