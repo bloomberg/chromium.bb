@@ -15,11 +15,11 @@
 GoogleURLTrackerMapEntry::GoogleURLTrackerMapEntry(
     GoogleURLTracker* google_url_tracker,
     InfoBarService* infobar_service,
-    const content::NavigationController* navigation_controller)
+    scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper)
     : google_url_tracker_(google_url_tracker),
       infobar_service_(infobar_service),
       infobar_delegate_(NULL),
-      navigation_controller_(navigation_controller) {
+      navigation_helper_(navigation_helper.Pass()) {
 }
 
 GoogleURLTrackerMapEntry::~GoogleURLTrackerMapEntry() {

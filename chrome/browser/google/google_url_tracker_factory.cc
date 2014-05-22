@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/chrome_google_url_tracker_client.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -38,11 +37,8 @@ GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_ptr<GoogleURLTrackerClient> client(new ChromeGoogleURLTrackerClient());
-  scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper(
-      new GoogleURLTrackerNavigationHelperImpl());
   return new GoogleURLTracker(static_cast<Profile*>(profile),
                               client.Pass(),
-                              nav_helper.Pass(),
                               GoogleURLTracker::NORMAL_MODE);
 }
 

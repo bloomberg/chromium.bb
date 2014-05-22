@@ -696,6 +696,7 @@
         'browser/google/google_url_tracker_infobar_delegate.h',
         'browser/google/google_url_tracker_map_entry.cc',
         'browser/google/google_url_tracker_map_entry.h',
+        'browser/google/google_url_tracker_navigation_helper.cc',
         'browser/google/google_url_tracker_navigation_helper.h',
         'browser/google/google_url_tracker_navigation_helper_impl.cc',
         'browser/google/google_url_tracker_navigation_helper_impl.h',
