@@ -116,7 +116,9 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
 
-    if (controller_->CanDoShowAppInfoFlow()) {
+    // Don't display the app info dialog for the web store app.
+    if (controller_->CanDoShowAppInfoFlow() &&
+        app_id_ != extension_misc::kWebStoreAppId) {
       menu_model_->AddItemWithStringId(SHOW_APP_INFO,
                                        IDS_APP_CONTEXT_MENU_SHOW_INFO);
     }
