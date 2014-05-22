@@ -70,13 +70,6 @@ class MEDIA_EXPORT Clock {
   // exactly once.
   void SetDuration(base::TimeDelta duration);
 
-  // Resets clock to an uninitialized state.
-  void Reset();
-
-  // Notifies the clock that the end of stream has been reached. The clock state
-  // is updated accordingly.
-  void EndOfStream();
-
   // Returns the duration of the clock, or 0 if not set.
   base::TimeDelta Duration() const;
 

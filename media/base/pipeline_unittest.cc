@@ -596,6 +596,7 @@ TEST_F(PipelineTest, EndedCallback) {
   pipeline_->OnVideoRendererEnded();
   message_loop_.RunUntilIdle();
 
+  EXPECT_CALL(*audio_renderer_, StopRendering());
   EXPECT_CALL(callbacks_, OnEnded());
   text_stream()->SendEosNotification();
   message_loop_.RunUntilIdle();
@@ -645,6 +646,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_GT(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of video stream and make sure OnEnded() callback occurs.
+  EXPECT_CALL(*audio_renderer_, StopRendering());
   EXPECT_CALL(callbacks_, OnEnded());
   pipeline_->OnVideoRendererEnded();
 }
@@ -858,7 +860,6 @@ class PipelineTeardownTest : public PipelineTest {
     kInitDemuxer,
     kInitAudioRenderer,
     kInitVideoRenderer,
-    kPausing,
     kFlushing,
     kSeeking,
     kPrerolling,
@@ -882,7 +883,6 @@ class PipelineTeardownTest : public PipelineTest {
         DoInitialize(state, stop_or_error);
         break;
 
-      case kPausing:
       case kFlushing:
       case kSeeking:
       case kPrerolling:
@@ -1035,19 +1035,6 @@ class PipelineTeardownTest : public PipelineTest {
     base::Closure stop_cb = base::Bind(
         &CallbackHelper::OnStop, base::Unretained(&callbacks_));
 
-    if (state == kPausing) {
-      if (stop_or_error == kStop) {
-        EXPECT_CALL(*audio_renderer_, StopRendering())
-            .WillOnce(Stop(pipeline_.get(), stop_cb));
-      } else {
-        status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*audio_renderer_, StopRendering())
-            .WillOnce(SetError(pipeline_.get(), status));
-      }
-
-      return status;
-    }
-
     EXPECT_CALL(*audio_renderer_, StopRendering());
 
     if (state == kFlushing) {
@@ -1152,7 +1139,6 @@ class PipelineTeardownTest : public PipelineTest {
 INSTANTIATE_TEARDOWN_TEST(Stop, InitDemuxer);
 INSTANTIATE_TEARDOWN_TEST(Stop, InitAudioRenderer);
 INSTANTIATE_TEARDOWN_TEST(Stop, InitVideoRenderer);
-INSTANTIATE_TEARDOWN_TEST(Stop, Pausing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Stop, Prerolling);
@@ -1161,7 +1147,6 @@ INSTANTIATE_TEARDOWN_TEST(Stop, Playing);
 INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer);
 INSTANTIATE_TEARDOWN_TEST(Error, InitAudioRenderer);
 INSTANTIATE_TEARDOWN_TEST(Error, InitVideoRenderer);
-INSTANTIATE_TEARDOWN_TEST(Error, Pausing);
 INSTANTIATE_TEARDOWN_TEST(Error, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Error, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Error, Prerolling);

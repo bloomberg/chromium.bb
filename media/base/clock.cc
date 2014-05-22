@@ -12,9 +12,14 @@
 
 namespace media {
 
-Clock::Clock(base::TickClock* clock) : clock_(clock) {
+Clock::Clock(base::TickClock* clock)
+    : clock_(clock),
+      playing_(false),
+      underflow_(false),
+      playback_rate_(1.0f),
+      max_time_(kNoTimestamp()),
+      duration_(kNoTimestamp()) {
   DCHECK(clock_);
-  Reset();
 }
 
 Clock::~Clock() {}
@@ -103,11 +108,6 @@ base::TimeDelta Clock::ClampToValidTimeRange(base::TimeDelta time) const {
   return std::max(std::min(time, duration_), base::TimeDelta());
 }
 
-void Clock::EndOfStream() {
-  Pause();
-  SetTime(Duration(), Duration());
-}
-
 base::TimeDelta Clock::Duration() const {
   if (duration_ == kNoTimestamp())
     return base::TimeDelta();
@@ -125,16 +125,6 @@ void Clock::UpdateReferencePoints(base::TimeDelta current_time) {
 
 base::TimeDelta Clock::EstimatedElapsedTime() {
   return ClampToValidTimeRange(ElapsedViaProvidedTime(clock_->NowTicks()));
-}
-
-void Clock::Reset() {
-  playing_ = false;
-  playback_rate_ = 1.0f;
-  max_time_ = kNoTimestamp();
-  duration_ = kNoTimestamp();
-  media_time_ = base::TimeDelta();
-  reference_ = base::TimeTicks();
-  underflow_ = false;
 }
 
 }  // namespace media

@@ -42,7 +42,7 @@ Pipeline::Pipeline(
       volume_(1.0f),
       playback_rate_(0.0f),
       clock_(new Clock(&default_tick_clock_)),
-      waiting_for_clock_update_(false),
+      clock_state_(CLOCK_PAUSED),
       status_(PIPELINE_OK),
       state_(kCreated),
       audio_ended_(false),
@@ -297,8 +297,10 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
-  if (waiting_for_clock_update_ && time < clock_->Elapsed())
+  if (clock_state_ == CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE &&
+      time < clock_->Elapsed()) {
     return;
+  }
 
   // TODO(scherkus): |state_| should only be accessed on pipeline thread, see
   // http://crbug.com/137973
@@ -321,7 +323,7 @@ void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
   if (state_ == kSeeking)
     return;
 
-  DCHECK(!waiting_for_clock_update_);
+  DCHECK_NE(clock_state_, CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE);
   clock_->SetMaxTime(max_time);
 }
 
@@ -753,12 +755,8 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   // Kick off seeking!
   {
-    if (audio_renderer_)
-      audio_renderer_->StopRendering();
-
     base::AutoLock auto_lock(lock_);
-    if (clock_->IsPlaying())
-      clock_->Pause();
+    PauseClockAndStopRendering_Locked();
     clock_->SetTime(seek_timestamp, seek_timestamp);
   }
   DoSeek(seek_timestamp, base::Bind(
@@ -822,7 +820,8 @@ void Pipeline::RunEndedCallbackIfNeeded() {
 
   {
     base::AutoLock auto_lock(lock_);
-    clock_->EndOfStream();
+    PauseClockAndStopRendering_Locked();
+    clock_->SetTime(clock_->Duration(), clock_->Duration());
   }
 
   DCHECK_EQ(status_, PIPELINE_OK);
@@ -931,27 +930,25 @@ void Pipeline::StartWaitingForEnoughData() {
   DCHECK_EQ(state_, kPlaying);
   DCHECK(WaitingForEnoughData());
 
-  if (audio_renderer_)
-    audio_renderer_->StopRendering();
-
   base::AutoLock auto_lock(lock_);
-  clock_->Pause();
+  PauseClockAndStopRendering_Locked();
 }
 
 void Pipeline::StartPlayback() {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, kPlaying);
+  DCHECK_EQ(clock_state_, CLOCK_PAUSED);
   DCHECK(!WaitingForEnoughData());
 
   if (audio_renderer_) {
     // We use audio stream to update the clock. So if there is such a
     // stream, we pause the clock until we receive a valid timestamp.
     base::AutoLock auto_lock(lock_);
-    waiting_for_clock_update_ = true;
+    clock_state_ = CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE;
     audio_renderer_->StartRendering();
   } else {
     base::AutoLock auto_lock(lock_);
-    DCHECK(!waiting_for_clock_update_);
+    clock_state_ = CLOCK_PLAYING;
     clock_->SetMaxTime(clock_->Duration());
     clock_->Play();
   }
@@ -961,12 +958,32 @@ void Pipeline::StartPlayback() {
     base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 }
 
+void Pipeline::PauseClockAndStopRendering_Locked() {
+  lock_.AssertAcquired();
+  switch (clock_state_) {
+    case CLOCK_PAUSED:
+      return;
+
+    case CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE:
+      audio_renderer_->StopRendering();
+      break;
+
+    case CLOCK_PLAYING:
+      if (audio_renderer_)
+        audio_renderer_->StopRendering();
+      clock_->Pause();
+      break;
+  }
+
+  clock_state_ = CLOCK_PAUSED;
+}
+
 void Pipeline::StartClockIfWaitingForTimeUpdate_Locked() {
   lock_.AssertAcquired();
-  if (!waiting_for_clock_update_)
+  if (clock_state_ != CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE)
     return;
 
-  waiting_for_clock_update_ = false;
+  clock_state_ = CLOCK_PLAYING;
   clock_->Play();
 }
 

@@ -326,6 +326,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void StartWaitingForEnoughData();
   void StartPlayback();
 
+  void PauseClockAndStopRendering_Locked();
   void StartClockIfWaitingForTimeUpdate_Locked();
 
   // Task runner used to execute pipeline tasks.
@@ -365,10 +366,18 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // by filters.
   scoped_ptr<Clock> clock_;
 
-  // If this value is set to true, then |clock_| is paused and we are waiting
-  // for an update of the clock greater than or equal to the elapsed time to
-  // start the clock.
-  bool waiting_for_clock_update_;
+  enum ClockState {
+    // Audio (if present) is not rendering. Clock isn't playing.
+    CLOCK_PAUSED,
+
+    // Audio (if present) is rendering. Clock isn't playing.
+    CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE,
+
+    // Audio (if present) is rendering. Clock is playing.
+    CLOCK_PLAYING,
+  };
+
+  ClockState clock_state_;
 
   // Status of the pipeline.  Initialized to PIPELINE_OK which indicates that
   // the pipeline is operating correctly. Any other value indicates that the
