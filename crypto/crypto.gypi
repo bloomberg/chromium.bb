@@ -68,6 +68,8 @@
       'nss_util.cc',
       'nss_util.h',
       'nss_util_internal.h',
+      'openssl_bio_string.cc',
+      'openssl_bio_string.h',
       'openssl_util.cc',
       'openssl_util.h',
       'p224.cc',

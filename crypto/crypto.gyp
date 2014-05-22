@@ -132,6 +132,8 @@
               'ec_signature_creator_openssl.cc',
               'encryptor_openssl.cc',
               'hmac_openssl.cc',
+              'openssl_bio_string.cc',
+              'openssl_bio_string.h',
               'openssl_util.cc',
               'openssl_util.h',
               'rsa_private_key_openssl.cc',
@@ -158,6 +160,7 @@
         'hkdf_unittest.cc',
         'hmac_unittest.cc',
         'nss_util_unittest.cc',
+        'openssl_bio_string_unittest.cc',
         'p224_unittest.cc',
         'p224_spake_unittest.cc',
         'random_unittest.cc',
@@ -205,9 +208,16 @@
           'msvs_disabled_warnings': [4267, ],
         }],
         [ 'use_openssl==1', {
+          'dependencies': [
+            '../third_party/openssl/openssl.gyp:openssl',
+          ],
           'sources!': [
             'nss_util_unittest.cc',
             'rsa_private_key_nss_unittest.cc',
+          ],
+        }, {
+          'sources!': [
+            'openssl_bio_string_unittest.cc',
           ],
         }],
       ],
