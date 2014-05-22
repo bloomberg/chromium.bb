@@ -22,6 +22,10 @@ const char kDisallowArbitraryScaleFactorInImageSkia[] =
 const char kEnableBrowserTextSubpixelPositioning[] =
     "enable-browser-text-subpixel-positioning";
 
+// Uses the HarfBuzz port of RenderText on all platforms.
+const char kEnableHarfBuzzRenderText[] =
+    "enable-harfbuzz-rendertext";
+
 // Enable text glyphs to have X-positions that aren't snapped to the pixel grid
 // in webkit renderers.
 const char kEnableWebkitTextSubpixelPositioning[] =

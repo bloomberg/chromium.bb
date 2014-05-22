@@ -521,7 +521,7 @@ size_t RenderTextPango::GetGlyphTextIndex(PangoLayoutRun* run,
                                 run->glyphs->log_clusters[glyph_index]);
 }
 
-RenderText* RenderText::CreateInstance() {
+RenderText* RenderText::CreateNativeInstance() {
   return new RenderTextPango;
 }
 

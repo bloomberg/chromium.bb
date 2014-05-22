@@ -1274,7 +1274,7 @@ SelectionModel RenderTextWin::LastSelectionModelInsideRun(
   return SelectionModel(position, CURSOR_FORWARD);
 }
 
-RenderText* RenderText::CreateInstance() {
+RenderText* RenderText::CreateNativeInstance() {
   return new RenderTextWin;
 }
 

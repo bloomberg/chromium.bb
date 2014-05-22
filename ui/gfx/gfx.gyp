@@ -76,6 +76,7 @@
         '<(DEPTH)/base/base.gyp:base_static',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
@@ -90,6 +91,9 @@
       ],
       'defines': [
         'GFX_IMPLEMENTATION',
+      ],
+      'include_dirs': [
+        '<(DEPTH)/third_party/icu/source/common'
       ],
       'sources': [
         'android/device_display_info.cc',
@@ -229,6 +233,8 @@
         'range/range_win.cc',
         'render_text.cc',
         'render_text.h',
+        'render_text_harfbuzz.cc',
+        'render_text_harfbuzz.h',
         'render_text_mac.cc',
         'render_text_mac.h',
         'render_text_ozone.cc',
@@ -367,6 +373,8 @@
           'sources!': [
             'render_text.cc',
             'render_text.h',
+            'render_text_harfbuzz.cc',
+            'render_text_harfbuzz.h',
             'text_utils_skia.cc',
           ],
         }],

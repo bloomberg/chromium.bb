@@ -6,7 +6,7 @@
 
 namespace gfx {
 
-RenderText* RenderText::CreateInstance() {
+RenderText* RenderText::CreateNativeInstance() {
   return NULL;
 }
 

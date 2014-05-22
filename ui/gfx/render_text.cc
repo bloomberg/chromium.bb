@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <climits>
 
+#include "base/command_line.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -17,7 +18,10 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/render_text_harfbuzz.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -218,17 +222,14 @@ void SkiaTextRenderer::SetFontFamilyWithStyle(const std::string& family,
                                               int style) {
   DCHECK(!family.empty());
 
-  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
-  skia::RefPtr<SkTypeface> typeface =
-      skia::AdoptRef(SkTypeface::CreateFromName(family.c_str(), skia_style));
+  skia::RefPtr<SkTypeface> typeface = CreateSkiaTypeface(family.c_str(), style);
   if (typeface) {
     // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
     SetTypeface(typeface.get());
 
     // Enable fake bold text if bold style is needed but new typeface does not
     // have it.
-    paint_.setFakeBoldText((skia_style & SkTypeface::kBold) &&
-                           !typeface->isBold());
+    paint_.setFakeBoldText((style & gfx::Font::BOLD) && !typeface->isBold());
   }
 }
 
@@ -319,6 +320,7 @@ SkiaTextRenderer::DiagonalStrike::DiagonalStrike(Canvas* canvas,
                                                  Point start,
                                                  const SkPaint& paint)
     : canvas_(canvas),
+      matrix_(canvas->sk_canvas()->getTotalMatrix()),
       start_(start),
       paint_(paint),
       total_length_(0) {
@@ -339,9 +341,15 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
       SkScalarCeilToInt(SkScalarMul(text_size, kLineThickness) * 2);
   const int height = SkScalarCeilToInt(text_size - offset);
   const Point end = start_ + Vector2d(total_length_, -height);
+  const int clip_height = height + 2 * thickness;
 
   paint_.setAntiAlias(true);
   paint_.setStrokeWidth(thickness);
+
+  ScopedCanvas scoped_canvas(canvas_);
+
+  SkCanvas* sk_canvas = canvas_->sk_canvas();
+  sk_canvas->setMatrix(matrix_);
 
   const bool clipped = pieces_.size() > 1;
   int x = start_.x();
@@ -349,14 +357,12 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
     paint_.setColor(pieces_[i].second);
 
     if (clipped) {
-      canvas_->Save();
-      canvas_->ClipRect(Rect(x, 0, pieces_[i].first, start_.y() + thickness));
+      sk_canvas->clipRect(RectToSkRect(
+          Rect(x, end.y() - thickness, pieces_[i].first, clip_height)),
+          SkRegion::kReplace_Op);
     }
 
     canvas_->DrawLine(start_, end, paint_);
-
-    if (clipped)
-      canvas_->Restore();
 
     x += pieces_[i].first;
   }
@@ -394,9 +400,23 @@ Line::Line() : preceding_heights(0), baseline(0) {}
 
 Line::~Line() {}
 
+skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
+                                            int style) {
+  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
+  return skia::AdoptRef(SkTypeface::CreateFromName(family.c_str(), skia_style));
+}
+
 }  // namespace internal
 
 RenderText::~RenderText() {
+}
+
+RenderText* RenderText::CreateInstance() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHarfBuzzRenderText)) {
+    return new RenderTextHarfBuzz;
+  }
+  return CreateNativeInstance();
 }
 
 void RenderText::SetText(const base::string16& text) {

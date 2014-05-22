@@ -339,7 +339,7 @@ void RenderTextMac::ComputeRuns() {
   runs_valid_ = true;
 }
 
-RenderText* RenderText::CreateInstance() {
+RenderText* RenderText::CreateNativeInstance() {
   return new RenderTextMac;
 }
 
