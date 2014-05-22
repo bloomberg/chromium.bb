@@ -58,7 +58,6 @@ VideoSender::VideoSender(
       duplicate_ack_(0),
       last_skip_count_(0),
       current_requested_bitrate_(video_config.start_bitrate),
-      current_bitrate_divider_(1),
       congestion_control_(cast_environment->Clock(),
                           video_config.congestion_control_back_off,
                           video_config.max_bitrate,
@@ -407,12 +406,6 @@ void VideoSender::UpdateFramesInFlight() {
     if (frames_in_flight >= max_unacked_frames_) {
       video_encoder_->SkipNextFrame(true);
       return;
-    } else if (frames_in_flight > max_unacked_frames_ * 4 / 5) {
-      current_bitrate_divider_ = 3;
-    } else if (frames_in_flight > max_unacked_frames_ * 2 / 3) {
-      current_bitrate_divider_ = 2;
-    } else {
-      current_bitrate_divider_ = 1;
     }
     DCHECK(frames_in_flight <= max_unacked_frames_);
   }
@@ -429,7 +422,6 @@ void VideoSender::ResendFrame(uint32 resend_frame_id) {
 }
 
 void VideoSender::UpdateBitrate(int new_bitrate) {
-  new_bitrate /= current_bitrate_divider_;
   // Make sure we don't set the bitrate too insanely low.
   DCHECK_GT(new_bitrate, 1000);
   video_encoder_->SetBitRate(new_bitrate);

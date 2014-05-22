@@ -119,7 +119,6 @@ class VideoSender : public base::NonThreadSafe,
   // When we get close to the max number of un-acked frames, we set lower
   // the bitrate drastically to ensure that we catch up. Without this we
   // risk getting stuck in a catch-up state forever.
-  int current_bitrate_divider_;
   CongestionControl congestion_control_;
 
   // This is a "good enough" mapping for finding the RTP timestamp associated
