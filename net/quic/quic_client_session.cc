@@ -548,8 +548,14 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
     } else if (connection()->GetStats().packets_received == 0) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_BLACK_HOLE);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.QuicSession.ConnectionClose.HandshakeFailureBlackHole.QuicError",
+          error);
     } else {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_UNKNOWN);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError",
+          error);
     }
   }
 

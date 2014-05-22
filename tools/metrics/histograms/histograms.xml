@@ -13413,6 +13413,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="Net.QuicSession.ConnectionClose.HandshakeFailureBlackHole.QuicError"
+    enum="QuicErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The QUIC error which caused a QUIC connection to be closed before the
+    hanshake was confirmed, in the case where no packets were received. This
+    provides a breakdown of the entires in
+    Net.QuicSession.ConnectionClose.HandshakeNotConfirmed.Reason where the value
+    is BLACK_HOLE.
+  </summary>
+</histogram>
+
+<histogram
+    name="Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError"
+    enum="QuicErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The QUIC error which caused a QUIC connection to be closed before the
+    hanshake was confirmed, in the case where at least 1 packet was received.
+    This provides a breakdown of the entires in
+    Net.QuicSession.ConnectionClose.HandshakeNotConfirmed.Reason where the value
+    is UNKNOWN.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionClose.HandshakeNotConfirmed.Reason"
     enum="QuicHandshakeFailureReason">
   <owner>rch@chromium.org</owner>
