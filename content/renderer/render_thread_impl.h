@@ -472,7 +472,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 #endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
-  scoped_ptr<PeerConnectionDependencyFactory> media_stream_factory_;
+  scoped_ptr<PeerConnectionDependencyFactory> peer_connection_factory_;
 
   // This is used to communicate to the browser process the status
   // of all the peer connections created in the renderer.

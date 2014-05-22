@@ -377,9 +377,9 @@ void RenderThreadImpl::Init() {
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
-  media_stream_factory_.reset(new PeerConnectionDependencyFactory(
+  peer_connection_factory_.reset(new PeerConnectionDependencyFactory(
       p2p_socket_dispatcher_.get()));
-  AddObserver(media_stream_factory_.get());
+  AddObserver(peer_connection_factory_.get());
 #endif  // defined(ENABLE_WEBRTC)
 
   audio_input_message_filter_ =
@@ -533,10 +533,8 @@ void RenderThreadImpl::Shutdown() {
   RemoveFilter(audio_message_filter_.get());
   audio_message_filter_ = NULL;
 
-  // |media_stream_factory_| produces users of |vc_manager_| so it must be
-  // destroyed first.
 #if defined(ENABLE_WEBRTC)
-  media_stream_factory_.reset();
+  peer_connection_factory_.reset();
 #endif
   RemoveFilter(vc_manager_->video_capture_message_filter());
   vc_manager_.reset();
@@ -1326,7 +1324,7 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
 
 PeerConnectionDependencyFactory*
 RenderThreadImpl::GetPeerConnectionDependencyFactory() {
-  return media_stream_factory_.get();
+  return peer_connection_factory_.get();
 }
 
 GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
