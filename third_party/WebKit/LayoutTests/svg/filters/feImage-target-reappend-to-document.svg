@@ -20,10 +20,10 @@
             var greenImage = document.getElementById("feimage-green");
             document.getElementById("filter").removeChild(greenImage);
 
-            setTimeout(function() {
+            window.testRunner.displayAsyncThen(function() {
                 document.getElementById("filter").appendChild(greenImage);
                 finishRepaintTest();
-            }, 0);
+            });
         }
     ]]>
     </script>
