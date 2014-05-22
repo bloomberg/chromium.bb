@@ -7,9 +7,25 @@
 
 namespace mojo {
 
-// Specialize to perform type conversion for Mojom-defined structs and arrays.
-// Here, T is the Mojom-defined struct or array, and U is some other non-Mojom
+// Specialize the following class:
+//   template <typename T, typename U> class TypeConverter;
+// to perform type conversion for Mojom-defined structs and arrays. Here, T is
+// the Mojom-defined struct or array, and U is some other non-Mojom
 // struct or array type.
+//
+// Specializations should implement the following interface:
+//   namespace mojo {
+//   template <>
+//   class TypeConverter<T, U> {
+//    public:
+//     static T ConvertFrom(const U& input, Buffer* buf);
+//     static U ConvertTo(const T& input);
+//
+//     // Maybe (mutually exclusive):
+//     MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
+//     MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(X, Y);
+//   };
+//   }
 //
 // EXAMPLE:
 //
@@ -94,14 +110,7 @@ namespace mojo {
 // Although these macros are convenient, they make conversions less obvious.
 // Users may do conversions excessively without paying attention to the cost. So
 // please use them wisely.
-template <typename T, typename U> class TypeConverter {
-  // static T ConvertFrom(const U& input, Buffer* buf);
-  // static U ConvertTo(const T& input);
-
-  // Maybe (mutually exclusive):
-  // MOJO_ALLOW_IMPLICIT_TYPE_CONVERSION();
-  // MOJO_INHERIT_IMPLICIT_TYPE_CONVERSION(X, Y);
-};
+template <typename T, typename U> class TypeConverter;
 
 }  // namespace mojo
 
