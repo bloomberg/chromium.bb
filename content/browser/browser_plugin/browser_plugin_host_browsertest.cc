@@ -425,7 +425,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
 
 // This test verifies that if a browser plugin is hidden before navigation,
 // the guest starts off hidden.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, HiddenBeforeNavigation) {
+// This test is flaky under ThreadSanitizer, see http://crbug.com/370240
+#if !defined(THREAD_SANITIZER)
+#define MAYBE_HiddenBeforeNavigation HiddenBeforeNavigation
+#else
+#define MAYBE_HiddenBeforeNavigation DISABLED_HiddenBeforeNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_HiddenBeforeNavigation) {
   const char* kEmbedderURL = "/browser_plugin_embedder.html";
   const std::string embedder_code =
       "document.getElementById('plugin').style.visibility = 'hidden'";
