@@ -65,6 +65,7 @@ function prepareTestScenario() {
     shouldThrow("ctx.fill(null)");
     shouldThrow("ctx.fill(null, null)");
     shouldThrow("ctx.fill(null, 'nonzero')");
+    shouldThrow("ctx.fill(path, null)");
     shouldThrow("ctx.fill([], 'nonzero')");
     shouldThrow("ctx.fill({}, 'nonzero')");
     shouldThrow("ctx.fill(null, 'evenodd')");
@@ -72,6 +73,10 @@ function prepareTestScenario() {
     shouldThrow("ctx.fill({}, 'evenodd')");
     shouldThrow("ctx.fill('gazonk')");
     shouldThrow("ctx.fill(path, 'gazonk')");
+    shouldThrow("ctx.fill(undefined)");
+    shouldThrow("ctx.fill(undefined, undefined)");
+    shouldThrow("ctx.fill(undefined, path)");
+    shouldThrow("ctx.fill(path, undefined)");
 }
 
 // Run test and allow variation of results.

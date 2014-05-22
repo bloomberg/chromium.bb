@@ -67,6 +67,7 @@ function prepareTestScenario() {
     shouldThrow("ctx.clip(null)");
     shouldThrow("ctx.clip(null, null)");
     shouldThrow("ctx.clip(null, 'nonzero')");
+    shouldThrow("ctx.clip(path, null)");
     shouldThrow("ctx.clip([], 'nonzero')");
     shouldThrow("ctx.clip({}, 'nonzero')");
     shouldThrow("ctx.clip(null, 'evenodd')");
@@ -74,6 +75,10 @@ function prepareTestScenario() {
     shouldThrow("ctx.clip({}, 'evenodd')");
     shouldThrow("ctx.clip('gazonk')");
     shouldThrow("ctx.clip(path, 'gazonk')");
+    shouldThrow("ctx.clip(undefined)");
+    shouldThrow("ctx.clip(undefined, undefined)");
+    shouldThrow("ctx.clip(undefined, 'nonzero')");
+    shouldThrow("ctx.clip(path, undefined)");
 }
 
 // Run test and allow variation of results.

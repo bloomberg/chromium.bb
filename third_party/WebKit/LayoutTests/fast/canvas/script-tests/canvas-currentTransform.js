@@ -175,6 +175,8 @@ shouldBe("imgdata[6]", "255");
 
 debug("Check assigning an invalid object throws exception as expected");
 shouldThrow("ctx.currentTransform = ctx", '"TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'."');
+shouldThrow("ctx.currentTransform = undefined", '"TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'."');
+shouldThrow("ctx.currentTransform = null", '"TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'."');
 
 debug("Check handling non-finite values. see 2d.transformation.setTransform.nonfinite.html");
 ctx.fillStyle = 'red';

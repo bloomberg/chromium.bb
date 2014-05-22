@@ -61,17 +61,17 @@ function prepareTestScenario() {
     shouldThrow("ctx.isPointInPath(50, 50, 'gazonk')");
     debug('');
 
-    debug('Testing null isPointInPath with Path object');
-    path = null;
+    debug('Testing invalid type isPointInPath with Path object');
     shouldThrow("ctx.isPointInPath(null, 50, 50)");
     shouldThrow("ctx.isPointInPath(null, 50, 50, 'nonzero')");
     shouldThrow("ctx.isPointInPath(null, 50, 50, 'evenodd')");
-    shouldThrow("ctx.isPointInPath(path, 50, 50)");
-    shouldThrow("ctx.isPointInPath(path, 50, 50, 'nonzero')");
-    shouldThrow("ctx.isPointInPath(path, 50, 50, 'evenodd')");
-    debug('');
-
-    debug('Testing invalid type isPointInPath with Path object');
+    shouldThrow("ctx.isPointInPath(null, 50, 50, null)");
+    shouldThrow("ctx.isPointInPath(path, 50, 50, null)");
+    shouldThrow("ctx.isPointInPath(undefined, 50, 50)");
+    shouldThrow("ctx.isPointInPath(undefined, 50, 50, 'nonzero')");
+    shouldThrow("ctx.isPointInPath(undefined, 50, 50, 'evenodd')");
+    shouldThrow("ctx.isPointInPath(undefined, 50, 50, undefined)");
+    shouldThrow("ctx.isPointInPath(path, 50, 50, undefined)");
     shouldThrow("ctx.isPointInPath([], 50, 50)");
     shouldThrow("ctx.isPointInPath([], 50, 50, 'nonzero')");
     shouldThrow("ctx.isPointInPath([], 50, 50, 'evenodd')");

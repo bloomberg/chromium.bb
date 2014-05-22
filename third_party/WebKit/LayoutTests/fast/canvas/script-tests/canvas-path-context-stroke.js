@@ -47,6 +47,7 @@ function prepareTestScenario() {
 
     // Test exception cases.
     shouldThrow("ctx.stroke(null)");
+    shouldThrow("ctx.stroke(undefined)");
     shouldThrow("ctx.stroke([])");
     shouldThrow("ctx.stroke({})");
 }

@@ -3,6 +3,9 @@ description("Test canvas createImageData()");
 ctx = document.createElement('canvas').getContext('2d');
 
 shouldThrow("ctx.createImageData(null)");
+shouldThrow("ctx.createImageData(undefined)");
+shouldThrow("ctx.createImageData([])");
+shouldThrow("ctx.createImageData({})");
 
 // create a 100x50 imagedata and fill it with white pixels
 

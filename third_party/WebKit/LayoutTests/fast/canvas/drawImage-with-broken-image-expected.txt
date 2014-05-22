@@ -6,6 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS ctx.drawImage(null, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.drawImage(null, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.drawImage(undefined, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.drawImage(undefined, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.drawImage(undefined, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
 PASS ctx.drawImage(invalidImage, 0, 0) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
 PASS ctx.drawImage(invalidImage, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
 PASS ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..

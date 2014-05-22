@@ -163,6 +163,8 @@ PASS context.putImageData(buffer, 0, 0, undefined, 0, 0, 0) threw exception Type
 PASS context.putImageData(buffer, 0, 0, 0, undefined, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 5 is non-finite..
 PASS context.putImageData(buffer, 0, 0, 0, 0, undefined, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 6 is non-finite..
 PASS context.putImageData(buffer, 0, 0, 0, 0, 0, undefined) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': float parameter 7 is non-finite..
+PASS context.putImageData(null, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': parameter 1 is not of type 'ImageData'..
+PASS context.putImageData(undefined, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'putImageData' on 'CanvasRenderingContext2D': parameter 1 is not of type 'ImageData'..
 PASS successfullyParsed is true
 
 TEST COMPLETE

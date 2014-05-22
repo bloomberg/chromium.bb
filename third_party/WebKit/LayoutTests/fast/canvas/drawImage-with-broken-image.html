@@ -14,10 +14,13 @@
 
     var ctx = document.createElement("canvas").getContext('2d');
     function draw() {
-        // null images should throw TypeError
+        // null and undefined images should throw TypeError
         shouldThrow("ctx.drawImage(null, 0, 0)");
         shouldThrow("ctx.drawImage(null, 0, 0, 20, 20)");
         shouldThrow("ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0, 20, 20, 0, 0, 20, 20)");
 
         // broken images should not throw
         shouldThrow("ctx.drawImage(invalidImage, 0, 0)");

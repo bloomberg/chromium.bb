@@ -68,6 +68,18 @@ var tests = [
         shouldThrow("context.createPattern(green1x1, {toString:function(){ return null;}})");
     },
     function () {
+        shouldThrow("context.createPattern(null, '')");
+    },
+    function () {
+        shouldThrow("context.createPattern(undefined, '')");
+    },
+    function () {
+        shouldThrow("context.createPattern({}, '')");
+    },
+    function () {
+        shouldThrow("context.createPattern([], '')");
+    },
+    function () {
         var didThrow = false;
         try {
             var pattern = context.createPattern(green1x1, '');

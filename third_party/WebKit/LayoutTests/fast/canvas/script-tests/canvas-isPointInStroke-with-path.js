@@ -30,8 +30,9 @@ shouldBeFalse("ctx.isPointInStroke(path,NaN,122)");
 shouldBeFalse("ctx.isPointInStroke(path,18,NaN)");
 debug("");
 
-debug("Check null and invalid type");
+debug("Check invalid type");
 shouldThrow("ctx.isPointInStroke(null,70,20)");
+shouldThrow("ctx.isPointInStroke(undefined,70,20)");
 shouldThrow("ctx.isPointInStroke([],20,70)");
 shouldThrow("ctx.isPointInStroke({},120,70)");
 debug("");

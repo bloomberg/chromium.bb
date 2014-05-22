@@ -220,6 +220,8 @@ shouldThrow("context.putImageData(buffer, 0, 0, undefined, 0, 0, 0)");
 shouldThrow("context.putImageData(buffer, 0, 0, 0, undefined, 0, 0)");
 shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, undefined, 0)");
 shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, undefined)");
+shouldThrow("context.putImageData(null, 0, 0, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(undefined, 0, 0, 0, 0, 0, 0)");
 
 // Ensure we don't mess up bounds clipping checks
 var rectcanvas = document.createElement("canvas");

@@ -153,6 +153,7 @@ debug("");
 
 debug("Test case 5: exceptions");
 shouldThrow("context.scrollPathIntoView(null);");
+shouldThrow("context.scrollPathIntoView(undefined);");
 shouldThrow("context.scrollPathIntoView([]);");
 shouldThrow("context.scrollPathIntoView({});");
 debug("");
