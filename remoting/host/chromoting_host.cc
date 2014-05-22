@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -29,6 +30,8 @@ using remoting::protocol::InputStub;
 namespace remoting {
 
 namespace {
+
+const char kEnableVp9SwitchName[] = "enable-vp9";
 
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   // Number of initial errors (in sequence) to ignore before applying
@@ -89,9 +92,11 @@ ChromotingHost::ChromotingHost(
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
-  // VP9 encode is not yet supported.
-  protocol::CandidateSessionConfig::DisableVideoCodec(
-      protocol_config_.get(), protocol::ChannelConfig::CODEC_VP9);
+  // Disable VP9 unless it is explicitly enabled via the command-line.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableVp9SwitchName)) {
+    protocol::CandidateSessionConfig::DisableVideoCodec(
+        protocol_config_.get(), protocol::ChannelConfig::CODEC_VP9);
+  }
 
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
     protocol::CandidateSessionConfig::DisableAudioChannel(
