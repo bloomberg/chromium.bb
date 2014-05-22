@@ -34,6 +34,7 @@ group("root") {
     "//crypto",
     "//device/usb",
     #"//extensions/common/api:extensions_api",
+    "//gin",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/service",
     "//ipc",
