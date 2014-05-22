@@ -35,6 +35,7 @@
           'out_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target)_newlib_pnacl.pexe',
           'nmf_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target).nmf',
           'out_pnacl_newlib_x86_32_nonsfi_nexe': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
+          'nmf_pnacl_newlib_nonsfi%': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target).nmf',
         }],
       ],
     },
@@ -64,8 +65,8 @@
           },
         ],
       }],
-      # Nonsfi pnacl copy is covered below. Currently, these are exclusive.
-      ['test_files!=[] and build_pnacl_newlib==1 and disable_pnacl==0 and enable_x86_32_nonsfi==0', {
+      # Nonsfi pnacl copy is covered below.
+      ['test_files!=[] and build_pnacl_newlib==1 and disable_pnacl==0', {
         'copies': [
           {
             'destination': '>(nacl_pnacl_newlib_out_dir)',
@@ -106,6 +107,7 @@
           ],
           'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
           'create_nmf_args_portable%': [],
+          'create_nonsfi_test_nmf': '<(DEPTH)/ppapi/tests/create_nonsfi_test_nmf.py',
         },
         'target_conditions': [
           ['generate_nmf==1 and build_newlib==1', {
@@ -202,6 +204,26 @@
                   '--output=>(nmf_pnacl_newlib)',
                   '>(out_pnacl_newlib)',
                   '>@(create_nmf_args_portable)',
+                ],
+              },
+            ],
+          }],
+          ['generate_nmf==1 and build_pnacl_newlib==1 and disable_pnacl==0 and enable_x86_32_nonsfi==1', {
+            'actions': [
+              {
+                'action_name': 'Generate PNACL NEWLIB nonsfi NMF',
+                # If we add support for ARM, we should split the dependency on
+                # out_pnacl_newlib_x86_32_nonsfi_nexe to 'target_conditions',
+                # similar to build_newlib=1 config declared above.
+                'inputs': ['>(create_nonsfi_test_nmf)',
+                           '>(out_pnacl_newlib_x86_32_nonsfi_nexe)'],
+                'outputs': ['>(nmf_pnacl_newlib_nonsfi)'],
+                'action': [
+                  'python',
+                  '>(create_nonsfi_test_nmf)',
+                  '--output=>(nmf_pnacl_newlib_nonsfi)',
+                  '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                  '>@(create_nmf_args_portable)'
                 ],
               },
             ],

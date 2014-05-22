@@ -20,6 +20,7 @@
           # converted.
           '<(DEPTH)/ppapi/native_client/tests/ppapi_browser/progress_event_listener.js',
           '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
+
           # Files that aren't assosiated with any particular executable.
           'bad/ppapi_bad.html',
           'bad/ppapi_bad.js',
@@ -34,6 +35,16 @@
           'manifest_file/test_file.txt',
         ],
       },
+      'conditions': [
+        ['target_arch=="ia32" and OS=="linux"', {
+          # Enable nonsfi testing only on ia32-linux environment.
+          # This flag causes test_files to be copied into nonsfi directory,
+          # too.
+          'variables': {
+            'enable_x86_32_nonsfi': 1,
+          },
+        }],
+      ],
     },
     {
       'target_name': 'simple_test',
@@ -617,6 +628,22 @@
         '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref_lib',
         'nacl_ppapi_util',
       ],
+      'conditions': [
+        ['target_arch=="ia32" and OS=="linux"', {
+          # Enable nonsfi testing only on ia32-linux environment.
+          'variables': {
+            # This is needed to build a non-SFI nexe binary.
+            # Note that this triggers building nexe files for other
+            # architectures, such as x86-32 (based on enable_XXX variables).
+            # As described above, although the tests for pnacl are currently
+            # disabled, but building the binary should work.
+            # We cannot disable building, as enable_XXX variables are also used
+            # to build newlib linked nexes.
+            'build_pnacl_newlib': 1,
+            'enable_x86_32_nonsfi': 1,
+          },
+        }],
+      ],
     },
     {
       'target_name': 'irt_exception_test',
@@ -627,11 +654,6 @@
         'generate_nmf': 1,
         'nexe_destination_dir': 'nacl_test_data',
         'build_pnacl_newlib': 1,
-        'nonsfi_destination_dir': '<(PRODUCT_DIR)/>(nexe_destination_dir)/nonsfi',
-        # Workaround because generate_nmf doesn't work yet for NonSFI,
-        # explicitly specify the destination directory for NonSFI so
-        # that we don't have to move it around.
-        'out_pnacl_newlib_x86_32_nonsfi_nexe': '>(nonsfi_destination_dir)/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
@@ -658,29 +680,11 @@
         'ppapi_test_lib',
       ],
       'conditions': [
-        ['disable_pnacl==0 and target_arch=="ia32" and OS=="linux"', {
+        ['target_arch=="ia32" and OS=="linux"', {
+          # Enable nonsfi testing only on ia32-linux environment.
           'variables': {
             'enable_x86_32_nonsfi': 1,
-            # Files specifically for NonSFI NaCl. nmf file is
-            # hand-crafted until generate_nmf learns about NonSFI
-            # case, and generate_nmf is the one who usually copies
-            # those files.
-            'nonsfi_test_files': [
-              # TODO(ncbray) move into chrome/test/data/nacl when all tests are
-              # converted.
-              '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
-              'irt_exception/irt_exception_test.html',
-              'irt_exception/irt_exception_test.nmf',
-            ],
           },
-          'copies': [
-            {
-              'destination': '>(nonsfi_destination_dir)',
-              'files': [
-                '>@(nonsfi_test_files)',
-              ],
-            },
-          ],
         }],
       ],
     },
@@ -1168,46 +1172,6 @@
                 '>@(test_files)',
               ],
             },
-          ],
-        },
-        {
-          'target_name': 'nonsfi_irt_manifest_file',
-          'type': 'none',
-          'variables': {
-            'nexe_target': 'irt_manifest_file',
-            'enable_x86_32': 0,
-            'enable_x86_64': 0,
-            'enable_x86_32_nonsfi': 1,
-            'build_pnacl_newlib': 1,
-            # create_nmf.py doesn't support nonsfi.
-            # TODO(crbug.com/368949): Clean this up after nonsfi support on
-            # create_nmf.py.
-            'generate_nmf': 0,
-            'nexe_destination_dir': 'nacl_test_data',
-            'link_flags': [
-              '-lnacl_ppapi_util',
-              '-lppapi_cpp',
-              '-lppapi',
-              '-lnacl',
-            ],
-            'sources': [
-              'manifest_file/irt_manifest_file_test.cc',
-            ],
-            'test_files': [
-              # TODO(ncbray) move into chrome/test/data/nacl when all tests are
-              # converted.
-              '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
-              'manifest_file/irt_manifest_file.nmf',
-              'manifest_file/irt_manifest_file_test.html',
-              'manifest_file/test_file.txt',
-            ],
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
-            '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
-            'nacl_ppapi_util',
           ],
         },
       ],
