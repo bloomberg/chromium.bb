@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_bridge.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -22,6 +23,7 @@
 
 using autofill::AutofillPopupView;
 using autofill::PasswordGenerationPopupView;
+using base::scoped_nsobject;
 
 namespace {
 
@@ -44,7 +46,6 @@ NSColor* HelpTextColor() {
 
 @implementation PasswordGenerationPopupViewCocoa
 
-#pragma mark -
 #pragma mark Initialisers
 
 - (id)initWithFrame:(NSRect)frame {
@@ -55,14 +56,33 @@ NSColor* HelpTextColor() {
 - (id)initWithController:
     (autofill::PasswordGenerationPopupController*)controller
                    frame:(NSRect)frame {
-  self = [super initWithDelegate:controller frame:frame];
-  if (self)
+  if (self = [super initWithDelegate:controller frame:frame]) {
     controller_ = controller;
+    NSFont* font = controller_->font_list().GetPrimaryFont().GetNativeFont();
+
+    passwordField_ = [self textFieldWithText:controller_->password()
+                                    withFont:font
+                                       color:[self nameColor]
+                                   alignment:NSLeftTextAlignment];
+    [self addSubview:passwordField_];
+
+    passwordSubtextField_ =
+        [self textFieldWithText:controller_->SuggestedText()
+                       withFont:font
+                          color:[self subtextColor]
+                      alignment:NSRightTextAlignment];
+    [self addSubview:passwordSubtextField_];
+
+    helpTextField_ = [self textFieldWithText:controller_->HelpText()
+                                    withFont:font
+                                       color:HelpTextColor()
+                                   alignment:NSLeftTextAlignment];
+    [self addSubview:helpTextField_];
+  }
 
   return self;
 }
 
-#pragma mark -
 #pragma mark NSView implementation:
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -72,13 +92,9 @@ NSColor* HelpTextColor() {
 
   [self drawBackgroundAndBorder];
 
-  NSRect bounds = [self bounds];
-  bounds.origin.y += autofill::kPopupBorderThickness;
-
   if (controller_->password_selected()) {
     // Draw a highlight under the suggested password.
-    NSRect highlightBounds =
-        NSRectFromCGRect(controller_->password_bounds().ToCGRect());
+    NSRect highlightBounds = [self passwordBounds];
     highlightBounds.origin.y +=
         PasswordGenerationPopupView::kPasswordVerticalInset;
     highlightBounds.size.height -=
@@ -87,81 +103,82 @@ NSColor* HelpTextColor() {
     [NSBezierPath fillRect:highlightBounds];
   }
 
-  NSFont* font = controller_->font_list().GetPrimaryFont().GetNativeFont();
-  NSRect passwordBounds =
-      NSRectFromCGRect(controller_->password_bounds().ToCGRect());
-
-  BOOL isRTL = NO;  // TODO(dubroy): Implement RTL support.
-  [self drawText:base::SysUTF16ToNSString(controller_->password())
-        withFont:font
-           color:[self nameColor]
-          bounds:passwordBounds
-       alignment:isRTL ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT];
-
-  [self drawText:base::SysUTF16ToNSString(controller_->SuggestedText())
-        withFont:font
-           color:[self subtextColor]
-          bounds:passwordBounds
-       alignment:isRTL ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT];
-
   // Render the background of the help text.
-  NSRect helpBounds =
-      NSRectFromCGRect(controller_->help_bounds().ToCGRect());
   [HelpTextBackgroundColor() set];
-  [NSBezierPath fillRect:helpBounds];
+  [NSBezierPath fillRect:[self helpBounds]];
 
   // Render the divider.
-  NSRect helpBorder = helpBounds;
-  helpBorder.size.height = 1;
   [DividerColor() set];
-  [NSBezierPath fillRect:helpBorder];
-
-  // Adjust |helpBounds| so that the divider is not included when calculating
-  // where the text should be rendered.
-  helpBounds.origin.x += 1;
-  helpBounds.size.height -= 1;
-
-  // Render the help text.
-  [self drawText:base::SysUTF16ToNSString(controller_->HelpText())
-        withFont:font
-           color:HelpTextColor()
-          bounds:helpBounds
-       alignment:isRTL ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT];
+  [NSBezierPath fillRect:[self dividerBounds]];
 }
 
-- (void)drawText:(NSString*)text
-        withFont:(NSFont*)font
-           color:(id)color
-          bounds:(NSRect)bounds
-       alignment:(gfx::HorizontalAlignment)alignment {
-  NSDictionary* textAttributes = @{
-    NSFontAttributeName: font,
-    NSForegroundColorAttributeName: color,
-  };
-  // Adjust horizontal padding before measuring.
-  bounds.size.width -= 2 * controller_->kHorizontalPadding;
-  bounds.origin.x += controller_->kHorizontalPadding;
-
-  NSSize textSize =
-      [text boundingRectWithSize:bounds.size
-                         options:NSStringDrawingUsesLineFragmentOrigin
-                      attributes:textAttributes].size;
-
-  // Center the text vertically within the bounds.
-  bounds.origin.y = NSMinY(bounds) + (NSHeight(bounds) - textSize.height) / 2;
-
-  if (alignment == gfx::ALIGN_RIGHT)
-    bounds.origin.x += NSWidth(bounds) - textSize.width;
-
-  [text drawInRect:bounds withAttributes:textAttributes];
-}
-
-#pragma mark -
 #pragma mark Public API:
+
+- (void)updateBoundsAndRedrawPopup {
+  [self positionTextField:passwordField_ inRect:[self passwordBounds]];
+  [self positionTextField:passwordSubtextField_ inRect:[self passwordBounds]];
+  [self positionTextField:helpTextField_ inRect:[self helpBounds]];
+
+  [super updateBoundsAndRedrawPopup];
+}
 
 - (void)controllerDestroyed {
   controller_ = NULL;
   [super delegateDestroyed];
+}
+
+#pragma mark Private helpers:
+
+- (NSTextField*)textFieldWithText:(const base::string16&)text
+                         withFont:(NSFont*)font
+                            color:(NSColor*)color
+                        alignment:(NSTextAlignment)alignment {
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setAlignment:alignment];
+
+  NSDictionary* textAttributes = @{
+    NSFontAttributeName : font,
+    NSForegroundColorAttributeName : color,
+    NSParagraphStyleAttributeName : paragraphStyle
+  };
+
+  scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(text)
+              attributes:textAttributes]);
+
+  NSTextField* textField =
+      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
+  [textField setAttributedStringValue:attributedString];
+  [textField setEditable:NO];
+  [textField setSelectable:NO];
+  [textField setDrawsBackground:NO];
+  [textField setBezeled:NO];
+
+  return textField;
+}
+
+- (void)positionTextField:(NSTextField*)textField inRect:(NSRect)bounds {
+  NSRect frame = NSInsetRect(bounds, controller_->kHorizontalPadding, 0);
+  [textField setFrame:frame];
+
+  // Center the text vertically within the bounds.
+  NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(textField);
+  [textField setFrameOrigin:
+      NSInsetRect(frame, 0, floor(-delta.height/2)).origin];
+}
+
+- (NSRect)passwordBounds {
+  return NSRectFromCGRect(controller_->password_bounds().ToCGRect());
+}
+
+- (NSRect)helpBounds {
+  return NSRectFromCGRect(controller_->help_bounds().ToCGRect());
+}
+
+- (NSRect)dividerBounds {
+  return NSRectFromCGRect(controller_->divider_bounds().ToCGRect());
 }
 
 @end

@@ -19,6 +19,10 @@ class AutofillPopupController;
  @private
   // The cross-platform controller for this view.
   __weak autofill::PasswordGenerationPopupController* controller_;
+
+  __weak NSTextField* passwordField_;
+  __weak NSTextField* passwordSubtextField_;
+  __weak NSTextField* helpTextField_;
 }
 
 // Designated initializer.

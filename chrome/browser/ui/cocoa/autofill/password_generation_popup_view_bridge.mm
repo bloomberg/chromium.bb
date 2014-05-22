@@ -40,7 +40,7 @@ void PasswordGenerationPopupViewBridge::UpdateBoundsAndRedrawPopup() {
 }
 
 void PasswordGenerationPopupViewBridge::PasswordSelectionUpdated() {
-  [view_ updateBoundsAndRedrawPopup];
+  [view_ setNeedsDisplay:YES];
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
