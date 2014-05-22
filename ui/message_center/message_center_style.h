@@ -6,6 +6,8 @@
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_export.h"
