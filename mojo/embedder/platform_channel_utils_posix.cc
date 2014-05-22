@@ -47,6 +47,10 @@ const int kSendFlags = MSG_NOSIGNAL;
 ssize_t PlatformChannelWrite(PlatformHandle h,
                              const void* bytes,
                              size_t num_bytes) {
+  DCHECK(h.is_valid());
+  DCHECK(bytes);
+  DCHECK_GT(num_bytes, 0u);
+
 #if defined(OS_MACOSX)
   return HANDLE_EINTR(write(h.fd, bytes, num_bytes));
 #else
@@ -57,6 +61,10 @@ ssize_t PlatformChannelWrite(PlatformHandle h,
 ssize_t PlatformChannelWritev(PlatformHandle h,
                               struct iovec* iov,
                               size_t num_iov) {
+  DCHECK(h.is_valid());
+  DCHECK(iov);
+  DCHECK_GT(num_iov, 0u);
+
 #if defined(OS_MACOSX)
   return HANDLE_EINTR(writev(h.fd, iov, static_cast<int>(num_iov)));
 #else
@@ -65,6 +73,35 @@ ssize_t PlatformChannelWritev(PlatformHandle h,
   msg.msg_iovlen = num_iov;
   return HANDLE_EINTR(sendmsg(h.fd, &msg, kSendFlags));
 #endif
+}
+
+ssize_t PlatformChannelSendmsgWithHandles(PlatformHandle h,
+                                          struct iovec* iov,
+                                          size_t num_iov,
+                                          PlatformHandle* platform_handles,
+                                          size_t num_platform_handles) {
+  DCHECK(iov);
+  DCHECK_GT(num_iov, 0u);
+  DCHECK(platform_handles);
+  DCHECK_GT(num_platform_handles, 0u);
+  DCHECK_LE(num_platform_handles, kPlatformChannelMaxNumHandles);
+
+  char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
+  struct msghdr msg = {};
+  msg.msg_iov = iov;
+  msg.msg_iovlen = num_iov;
+  msg.msg_control = cmsg_buf;
+  msg.msg_controllen = CMSG_LEN(num_platform_handles * sizeof(int));
+  struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
+  cmsg->cmsg_level = SOL_SOCKET;
+  cmsg->cmsg_type = SCM_RIGHTS;
+  cmsg->cmsg_len = CMSG_LEN(num_platform_handles * sizeof(int));
+  for (size_t i = 0; i < num_platform_handles; i++) {
+    DCHECK(platform_handles[i].is_valid());
+    reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] = platform_handles[i].fd;
+  }
+
+  return HANDLE_EINTR(sendmsg(h.fd, &msg, kSendFlags));
 }
 
 bool PlatformChannelSendHandles(PlatformHandle h,
