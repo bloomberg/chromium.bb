@@ -302,10 +302,20 @@ void RenderTable::updateLogicalWidth()
     }
 
     // Finally, with our true width determined, compute our margins for real.
-    ComputedMarginValues marginValues;
-    computeMarginsForDirection(InlineDirection, cb, availableLogicalWidth, logicalWidth(), marginValues.m_start, marginValues.m_end, style()->marginStart(), style()->marginEnd());
-    setMarginStart(marginValues.m_start);
-    setMarginEnd(marginValues.m_end);
+    setMarginStart(0);
+    setMarginEnd(0);
+    if (!hasPerpendicularContainingBlock) {
+        ComputedMarginValues marginValues;
+        bool hasInvertedDirection =  cb->style()->isLeftToRightDirection() == style()->isLeftToRightDirection();
+        computeInlineDirectionMargins(cb, availableLogicalWidth, logicalWidth(),
+            hasInvertedDirection ? marginValues.m_start : marginValues.m_end,
+            hasInvertedDirection ? marginValues.m_end : marginValues.m_start);
+        setMarginStart(marginValues.m_start);
+        setMarginEnd(marginValues.m_end);
+    } else {
+        setMarginStart(minimumValueForLength(style()->marginStart(), availableLogicalWidth));
+        setMarginEnd(minimumValueForLength(style()->marginEnd(), availableLogicalWidth));
+    }
 
     // We should NEVER shrink the table below the min-content logical width, or else the table can't accomodate
     // its own content which doesn't match CSS nor what authors expect.
