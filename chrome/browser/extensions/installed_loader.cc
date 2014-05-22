@@ -45,36 +45,40 @@ namespace errors = manifest_errors;
 namespace {
 
 // The following enumeration is used in histograms matching
-// Extensions.ManifestReload* .  Values may be added, as long as existing
-// values are not changed.
+// Extensions.ManifestReload*.
 enum ManifestReloadReason {
-  NOT_NEEDED = 0,  // Reload not needed.
-  UNPACKED_DIR,  // Unpacked directory.
+  NOT_NEEDED = 0,        // Reload not needed.
+  UNPACKED_DIR,          // Unpacked directory.
   NEEDS_RELOCALIZATION,  // The locale has changed since we read this extension.
-  CORRUPT_PREFERENCES,  // The manifest in the preferences is corrupt.
+  CORRUPT_PREFERENCES,   // The manifest in the preferences is corrupt.
+
+  // New enum values must go above here.
   NUM_MANIFEST_RELOAD_REASONS
 };
 
-// Used in histogram Extension.BackgroundPageType. Values may be added, as
-// long as existing values are not changed.
+// Used in histogram Extension.BackgroundPageType.
 enum BackgroundPageType {
   NO_BACKGROUND_PAGE = 0,
-  BACKGROUND_PAGE_PERSISTENT = 1,
-  EVENT_PAGE = 2,
+  BACKGROUND_PAGE_PERSISTENT,
+  EVENT_PAGE,
+
+  // New enum values must go above here.
+  NUM_BACKGROUND_PAGE_TYPES
 };
 
-// Used in histogram Extensions.ExternalItemState. Values may be added, as
-// long as existing values are not changed.
+// Used in histogram Extensions.ExternalItemState.
 enum ExternalItemState {
   DEPRECATED_EXTERNAL_ITEM_DISABLED = 0,
-  DEPRECATED_EXTERNAL_ITEM_ENABLED = 1,
-  EXTERNAL_ITEM_WEBSTORE_DISABLED = 2,
-  EXTERNAL_ITEM_WEBSTORE_ENABLED = 3,
-  EXTERNAL_ITEM_NONWEBSTORE_DISABLED = 4,
-  EXTERNAL_ITEM_NONWEBSTORE_ENABLED = 5,
-  EXTERNAL_ITEM_WEBSTORE_UNINSTALLED = 6,
-  EXTERNAL_ITEM_NONWEBSTORE_UNINSTALLED = 7,
-  EXTERNAL_ITEM_MAX_ITEMS = 8
+  DEPRECATED_EXTERNAL_ITEM_ENABLED,
+  EXTERNAL_ITEM_WEBSTORE_DISABLED,
+  EXTERNAL_ITEM_WEBSTORE_ENABLED,
+  EXTERNAL_ITEM_NONWEBSTORE_DISABLED,
+  EXTERNAL_ITEM_NONWEBSTORE_ENABLED,
+  EXTERNAL_ITEM_WEBSTORE_UNINSTALLED,
+  EXTERNAL_ITEM_NONWEBSTORE_UNINSTALLED,
+
+  // New enum values must go above here.
+  EXTERNAL_ITEM_MAX_ITEMS
 };
 
 bool IsManifestCorrupt(const base::DictionaryValue* manifest) {
@@ -160,7 +164,6 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
       info.extension_id != extension->id()) {
     error = errors::kCannotChangeExtensionID;
     extension = NULL;
-    content::RecordAction(UserMetricsAction("Extensions.IDChangedError"));
   }
 
   // Check policy on every load in case an extension was blacklisted while
@@ -222,8 +225,6 @@ void InstalledLoader::LoadAllExtensions() {
 
     ManifestReloadReason reload_reason = ShouldReloadExtensionManifest(*info);
     ++reload_reason_counts[reload_reason];
-    UMA_HISTOGRAM_ENUMERATION("Extensions.ManifestReloadEnumValue",
-                              reload_reason, 100);
 
     if (reload_reason != NOT_NEEDED) {
       // Reloading an extension reads files from disk.  We do this on the
@@ -294,7 +295,6 @@ void InstalledLoader::LoadAllExtensions() {
   int page_action_count = 0;
   int browser_action_count = 0;
   int disabled_for_permissions_count = 0;
-  int item_user_count = 0;
   int non_webstore_ntp_override_count = 0;
   int incognito = 0;
   int not_incognito = 0;
@@ -316,13 +316,15 @@ void InstalledLoader::LoadAllExtensions() {
     // muck up any of the stats. Later, though, we want to omit component and
     // unpacked, as they are less interesting.
     if (extension->is_app())
-      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLocation", location, 100);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.AppLocation", location, Manifest::NUM_LOCATIONS);
     else if (extension->is_extension())
-      UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionLocation", location, 100);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionLocation", location, Manifest::NUM_LOCATIONS);
 
     if (!ManifestURL::UpdatesFromGallery(extension)) {
       UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.NonWebstoreLocation", location, 100);
+          "Extensions.NonWebstoreLocation", location, Manifest::NUM_LOCATIONS);
 
       // Check for inconsistencies if the extension was supposedly installed
       // from the webstore.
@@ -370,7 +372,7 @@ void InstalledLoader::LoadAllExtensions() {
 
     UMA_HISTOGRAM_ENUMERATION("Extensions.ManifestVersion",
                               extension->manifest_version(),
-                              10);
+                              10);  // TODO(kalman): Why 10 manifest versions?
 
     // We might have wanted to count legacy packaged apps here, too, since they
     // are effectively extensions. Unfortunately, it's too late, as we don't
@@ -378,13 +380,14 @@ void InstalledLoader::LoadAllExtensions() {
     if (type == Manifest::TYPE_EXTENSION) {
       UMA_HISTOGRAM_ENUMERATION("Extensions.BackgroundPageType",
                                 GetBackgroundPageType(extension),
-                                10);
+                                NUM_BACKGROUND_PAGE_TYPES);
     }
 
     // Using an enumeration shows us the total installed ratio across all users.
     // Using the totals per user at each startup tells us the distribution of
     // usage for each user (e.g. 40% of users have at least one app installed).
-    UMA_HISTOGRAM_ENUMERATION("Extensions.LoadType", type, 100);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.LoadType", type, Manifest::NUM_LOAD_TYPES);
     switch (type) {
       case Manifest::TYPE_THEME:
         ++theme_count;
@@ -425,8 +428,6 @@ void InstalledLoader::LoadAllExtensions() {
         }
         break;
     }
-    if (!Manifest::IsExternalLocation(location))
-      ++item_user_count;
 
     if (extension_action_manager->GetPageAction(*extension))
       ++page_action_count;
@@ -502,7 +503,6 @@ void InstalledLoader::LoadAllExtensions() {
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAllUser", item_user_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp",
                            app_user_count + app_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAppUser", app_user_count);

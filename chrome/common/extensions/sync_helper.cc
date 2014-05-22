@@ -67,6 +67,9 @@ SyncType GetSyncType(const Extension* extension) {
     case Manifest::TYPE_THEME:
     case Manifest::TYPE_SHARED_MODULE:
       return SYNC_TYPE_NONE;
+
+    case Manifest::NUM_LOAD_TYPES:
+      NOTREACHED();
   }
   NOTREACHED();
   return SYNC_TYPE_NONE;

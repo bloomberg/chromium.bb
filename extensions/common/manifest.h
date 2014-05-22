@@ -39,14 +39,15 @@ class Manifest {
                                // prefs), installed from an update URL.
     EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
                                // admin policies), installed from an update URL.
-    COMMAND_LINE,       // --load-extension.
-    EXTERNAL_POLICY,    // A crx file from an external directory (via admin
-                        // policies), cached locally and installed from the
-                        // cache.
-    EXTERNAL_COMPONENT, // Similar to COMPONENT in that it's considered an
-                        // internal implementation detail of chrome, but
-                        // installed from an update URL like the *DOWNLOAD ones.
+    COMMAND_LINE,              // --load-extension.
+    EXTERNAL_POLICY,     // A crx file from an external directory (via admin
+                         // policies), cached locally and installed from the
+                         // cache.
+    EXTERNAL_COMPONENT,  // Similar to COMPONENT in that it's considered an
+                         // internal implementation detail of chrome, but
+    // installed from an update URL like the *DOWNLOAD ones.
 
+    // New enum values must go above here.
     NUM_LOCATIONS
   };
 
@@ -62,7 +63,10 @@ class Manifest {
     // backwards compatibility, we can't remove support for packaged apps
     TYPE_LEGACY_PACKAGED_APP,
     TYPE_PLATFORM_APP,
-    TYPE_SHARED_MODULE
+    TYPE_SHARED_MODULE,
+
+    // New enum values must go above here.
+    NUM_LOAD_TYPES
   };
 
   // Given two install sources, return the one which should take priority

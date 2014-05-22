@@ -93,12 +93,15 @@ bool UserMayLoad(const base::ListValue* blacklist,
     case Manifest::TYPE_HOSTED_APP:
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
     case Manifest::TYPE_PLATFORM_APP:
-    case Manifest::TYPE_SHARED_MODULE:
+    case Manifest::TYPE_SHARED_MODULE: {
       base::FundamentalValue type_value(extension->GetType());
       if (allowed_types &&
           allowed_types->Find(type_value) == allowed_types->end())
         return ReturnLoadError(extension, error);
       break;
+    }
+    case Manifest::NUM_LOAD_TYPES:
+      NOTREACHED();
   }
 
   // Check the whitelist/forcelist first.
