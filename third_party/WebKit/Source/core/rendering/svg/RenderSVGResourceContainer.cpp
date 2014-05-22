@@ -257,7 +257,7 @@ AffineTransform RenderSVGResourceContainer::computeResourceSpaceTransform(Render
 
 bool RenderSVGResourceContainer::shouldTransformOnTextPainting(RenderObject* object, AffineTransform& resourceTransform)
 {
-    ASSERT_UNUSED(object, object);
+    ASSERT(object);
 
     // This method should only be called for RenderObjects that deal with text rendering. Cmp. RenderObject.h's is*() methods.
     ASSERT(object->isSVGText() || object->isSVGTextPath() || object->isSVGInline());
