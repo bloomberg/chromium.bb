@@ -61,11 +61,15 @@ struct VolumeInfo {
   VolumeInfo();
   ~VolumeInfo();
 
-  // The ID for provided file system. If other type, then equal to zero.
-  int file_system_id;
-
   // The ID of the volume.
   std::string volume_id;
+
+  // The ID for provided file systems. If other type, then equal to zero.
+  int file_system_id;
+
+  // The ID of an extension providing the file system. If other type, then equal
+  // to an empty string.
+  std::string extension_id;
 
   // The type of mounted volume.
   VolumeType type;
@@ -92,9 +96,10 @@ struct VolumeInfo {
   // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/)
   base::FilePath system_path_prefix;
 
-  // If disk is a parent, then its label, else parents label.
-  // (e.g. "TransMemory")
-  std::string drive_label;
+  // Label for the volume if the volume is either removable or a provided
+  // file system. In case of removables, if disk is a parent, then its label,
+  // else parents label (e.g. "TransMemory").
+  std::string volume_label;
 
   // Is the device is a parent device (i.e. sdb rather than sdb1).
   bool is_parent;

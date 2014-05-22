@@ -368,11 +368,19 @@ CommandHandler.COMMANDS_['unmount'] = {
         locationInfo && locationInfo.isRootEntry && locationInfo.rootType;
 
     event.canExecute = (rootType == VolumeManagerCommon.RootType.ARCHIVE ||
-                        rootType == VolumeManagerCommon.RootType.REMOVABLE);
+                        rootType == VolumeManagerCommon.RootType.REMOVABLE ||
+                        rootType == VolumeManagerCommon.RootType.PROVIDED);
     event.command.setHidden(!event.canExecute);
-    event.command.label = rootType == VolumeManagerCommon.RootType.ARCHIVE ?
-        str('CLOSE_ARCHIVE_BUTTON_LABEL') :
-        str('UNMOUNT_DEVICE_BUTTON_LABEL');
+
+    switch (rootType) {
+      case VolumeManagerCommon.RootType.ARCHIVE:
+      case VolumeManagerCommon.RootType.PROVIDED:
+        event.command.label = str('CLOSE_VOLUME_BUTTON_LABEL');
+        break;
+      case VolumeManagerCommon.RootType.REMOVABLE:
+        event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
+        break;
+    }
   }
 };
 

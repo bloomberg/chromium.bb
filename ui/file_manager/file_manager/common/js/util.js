@@ -1361,6 +1361,7 @@ util.getEntryLabel = function(volumeManager, entry) {
       case VolumeManagerCommon.RootType.ARCHIVE:
       case VolumeManagerCommon.RootType.REMOVABLE:
       case VolumeManagerCommon.RootType.MTP:
+      case VolumeManagerCommon.RootType.PROVIDED:
         return locationInfo.volumeInfo.label;
       default:
         console.error('Unsupported root type: ' + locationInfo.rootType);

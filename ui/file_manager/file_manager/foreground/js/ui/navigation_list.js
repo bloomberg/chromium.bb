@@ -52,11 +52,23 @@ NavigationListItem.prototype.setModelItem = function(modelItem) {
 
   var typeIcon;
   if (modelItem.isVolume) {
+    if (modelItem.volumeInfo.volumeType == 'provided') {
+      var backgroundImage = '-webkit-image-set(' +
+          'url(chrome://extension-icon/' + modelItem.volumeInfo.extensionId +
+              '/24/1) 1x, ' +
+          'url(chrome://extension-icon/' + modelItem.volumeInfo.extensionId +
+              '/48/1) 2x);';
+      // The icon div is not yet added to DOM, therefore it is impossible to
+      // use style.backgroundImage.
+      this.iconDiv_.setAttribute(
+          'style', 'background-image: ' + backgroundImage);
+    }
     typeIcon = modelItem.volumeInfo.volumeType;
   } else if (modelItem.isShortcut) {
     // Shortcuts are available for Drive only.
     typeIcon = VolumeManagerCommon.VolumeType.DRIVE;
   }
+
   this.iconDiv_.setAttribute('volume-type-icon', typeIcon);
 
   if (modelItem.isVolume) {
@@ -70,7 +82,9 @@ NavigationListItem.prototype.setModelItem = function(modelItem) {
       (modelItem.volumeInfo.volumeType ===
            VolumeManagerCommon.VolumeType.ARCHIVE ||
        modelItem.volumeInfo.volumeType ===
-           VolumeManagerCommon.VolumeType.REMOVABLE)) {
+           VolumeManagerCommon.VolumeType.REMOVABLE ||
+       modelItem.volumeInfo.volumeType ===
+           VolumeManagerCommon.VolumeType.PROVIDED)) {
     this.eject_ = cr.doc.createElement('div');
     // Block other mouse handlers.
     this.eject_.addEventListener(
@@ -105,7 +119,9 @@ NavigationListItem.prototype.maybeSetContextMenu = function(menu) {
   if (this.modelItem_.isVolume && (this.modelItem_.volumeInfo.volumeType ===
           VolumeManagerCommon.VolumeType.REMOVABLE ||
       this.modelItem_.volumeInfo.volumeType ===
-          VolumeManagerCommon.VolumeType.ARCHIVE) ||
+          VolumeManagerCommon.VolumeType.ARCHIVE ||
+      this.modelItem_.volumeInfo.volumeType ===
+          VolumeManagerCommon.VolumeType.PROVIDED) ||
       this.modelItem_.isShortcut) {
     cr.ui.contextMenuHandler.setContextMenu(this, menu);
   }

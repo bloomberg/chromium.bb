@@ -34,6 +34,9 @@ VolumeManagerCommon.RootType = Object.freeze({
   // Root for a MTP volume.
   MTP: 'mtp',
 
+  // Root for a provided volume.
+  PROVIDED: 'provided',
+
   // Root for entries that is not located under RootType.DRIVE. e.g. shared
   // files.
   DRIVE_OTHER: 'drive_other',
@@ -120,4 +123,5 @@ VolumeManagerCommon.VolumeType = Object.freeze({
   ARCHIVE: 'archive',
   CLOUD_DEVICE: 'cloud_device',
   MTP: 'mtp',
+  PROVIDED: 'provided'
 });

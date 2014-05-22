@@ -261,7 +261,7 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
     Eject device
   </message>
-  <message name="IDS_FILE_BROWSER_CLOSE_ARCHIVE_BUTTON_LABEL" desc="Title of the action for closing the archive.">
+  <message name="IDS_FILE_BROWSER_CLOSE_VOLUME_BUTTON_LABEL" desc="Title of the action for closing either an archive volume or a volume provided by an extension.">
     Close
   </message>
   <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">

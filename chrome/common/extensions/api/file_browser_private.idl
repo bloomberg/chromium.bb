@@ -234,6 +234,12 @@ dictionary VolumeMetadata {
   // ID of the disk volume.
   DOMString volumeId;
 
+  // Extension providing this volume (for provided file systems).
+  DOMString? extensionId;
+
+  // Label of the volume (if available).
+  DOMString? volumeLabel;
+
   // Description of the profile where the volume belongs.
   // TODO(hirono): Remove the property because of the design change of
   // multi-profile support.
@@ -251,9 +257,6 @@ dictionary VolumeMetadata {
   // Path to identify the device. This is consistent with DeviceEvent's
   // devicePath.
   DOMString? devicePath;
-
-  // Label of the device.
-  DOMString? deviceLabel;
 
   // Whether the device is parent or not (i.e. sdb rather than sdb1).
   boolean? isParentDevice;

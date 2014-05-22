@@ -19,6 +19,8 @@
  * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
  *     information.
  * @param {string} label Label of the volume.
+ * @param {string} extensionId Id of the extension providing this volume. Empty
+ *     for native volumes.
  * @constructor
  */
 function VolumeInfo(
@@ -29,7 +31,8 @@ function VolumeInfo(
     deviceType,
     isReadOnly,
     profile,
-    label) {
+    label,
+    extensionId) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
   this.fileSystem_ = fileSystem;
@@ -65,6 +68,7 @@ function VolumeInfo(
   this.deviceType_ = deviceType;
   this.isReadOnly_ = isReadOnly;
   this.profile_ = Object.freeze(profile);
+  this.extensionId_ = extensionId;
 
   Object.seal(this);
 }
@@ -130,6 +134,12 @@ VolumeInfo.prototype = {
    */
   get label() {
     return this.label_;
+  },
+  /**
+   * @return {string} Id of an extennsion providing this volume.
+   */
+  get extensionId() {
+    return this.extensionId_;
   }
 };
 
@@ -201,7 +211,10 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
       localizedLabel = str('DRIVE_DIRECTORY_LABEL');
       break;
     default:
-      localizedLabel = volumeMetadata.volumeId.split(':', 2)[1];
+      // TODO(mtomasz): Calculate volumeLabel for all types of volumes in the
+      // C++ layer.
+      localizedLabel = volumeMetadata.volumeLabel ||
+          volumeMetadata.volumeId.split(':', 2)[1];
       break;
   }
 
@@ -219,7 +232,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
               volumeMetadata.deviceType,
               volumeMetadata.isReadOnly,
               volumeMetadata.profile,
-              localizedLabel));
+              localizedLabel,
+              volumeMetadata.extensionId));
           return;
         }
         if (volumeMetadata.volumeType ==
@@ -244,7 +258,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.deviceType,
             volumeMetadata.isReadOnly,
             volumeMetadata.profile,
-            localizedLabel));
+            localizedLabel,
+            volumeMetadata.extensionId));
       });
 };
 
@@ -260,6 +275,7 @@ volumeManagerUtil.volumeListOrder_ = [
   VolumeManagerCommon.VolumeType.ARCHIVE,
   VolumeManagerCommon.VolumeType.REMOVABLE,
   VolumeManagerCommon.VolumeType.MTP,
+  VolumeManagerCommon.VolumeType.PROVIDED,
   VolumeManagerCommon.VolumeType.CLOUD_DEVICE
 ];
 
@@ -734,6 +750,9 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         break;
       case VolumeManagerCommon.VolumeType.MTP:
         rootType = VolumeManagerCommon.RootType.MTP;
+        break;
+      case VolumeManagerCommon.VolumeType.PROVIDED:
+        rootType = VolumeManagerCommon.RootType.PROVIDED;
         break;
       default:
         // Programming error, throw an exception.
