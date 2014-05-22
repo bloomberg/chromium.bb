@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/accessibility/automation_manager_views.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 
 #include <vector>
 
@@ -20,24 +20,24 @@
 using content::BrowserContext;
 
 // static
-AutomationManagerViews* AutomationManagerViews::GetInstance() {
-  return Singleton<AutomationManagerViews>::get();
+AutomationManagerAsh* AutomationManagerAsh::GetInstance() {
+  return Singleton<AutomationManagerAsh>::get();
 }
 
-void AutomationManagerViews::Enable(BrowserContext* context) {
+void AutomationManagerAsh::Enable(BrowserContext* context) {
   enabled_ = true;
   Reset();
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
 }
 
-void AutomationManagerViews::Disable() {
+void AutomationManagerAsh::Disable() {
   enabled_ = false;
 
   // Reset the serializer to save memory.
   current_tree_serializer_->Reset();
 }
 
-void AutomationManagerViews::HandleEvent(BrowserContext* context,
+void AutomationManagerAsh::HandleEvent(BrowserContext* context,
                                          views::View* view,
                                          ui::AXEvent event_type) {
   if (!enabled_) {
@@ -63,18 +63,38 @@ void AutomationManagerViews::HandleEvent(BrowserContext* context,
   SendEvent(context, aura_obj, event_type);
 }
 
-AutomationManagerViews::AutomationManagerViews() : enabled_(false) {}
+void AutomationManagerAsh::DoDefault(int32 id) {
+  CHECK(enabled_);
+  current_tree_->DoDefault(id);
+}
 
-AutomationManagerViews::~AutomationManagerViews() {}
+void AutomationManagerAsh::Focus(int32 id) {
+  CHECK(enabled_);
+  current_tree_->Focus(id);
+}
 
-void AutomationManagerViews::Reset() {
-  current_tree_.reset(new AXTreeSourceViews());
+void AutomationManagerAsh::MakeVisible(int32 id) {
+  CHECK(enabled_);
+  current_tree_->MakeVisible(id);
+}
+
+void AutomationManagerAsh::SetSelection(int32 id, int32 start, int32 end) {
+  CHECK(enabled_);
+  current_tree_->SetSelection(id, start, end);
+}
+
+AutomationManagerAsh::AutomationManagerAsh() : enabled_(false) {}
+
+AutomationManagerAsh::~AutomationManagerAsh() {}
+
+void AutomationManagerAsh::Reset() {
+  current_tree_.reset(new AXTreeSourceAsh());
   current_tree_serializer_.reset(
       new ui::AXTreeSerializer<views::AXAuraObjWrapper*>(
           current_tree_.get()));
 }
 
-void AutomationManagerViews::SendEvent(BrowserContext* context,
+void AutomationManagerAsh::SendEvent(BrowserContext* context,
                                        views::AXAuraObjWrapper* aura_obj,
                                        ui::AXEvent event_type) {
   ui::AXTreeUpdate update;

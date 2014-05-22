@@ -22,6 +22,10 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
       std::vector<AXAuraObjWrapper*>* out_children) OVERRIDE;
   virtual void Serialize(ui::AXNodeData* out_node_data) OVERRIDE;
   virtual int32 GetID() OVERRIDE;
+  virtual void DoDefault() OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void MakeVisible() OVERRIDE;
+  virtual void SetSelection(int32 start, int32 end) OVERRIDE;
 
  private:
   View* view_;

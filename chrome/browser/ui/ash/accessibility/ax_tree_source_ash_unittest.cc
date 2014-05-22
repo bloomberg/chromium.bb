@@ -6,7 +6,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/ash/accessibility/ax_tree_source_views.h"
+#include "chrome/browser/ui/ash/accessibility/ax_tree_source_ash.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
@@ -39,10 +39,10 @@ size_t GetSize(AXAuraObjWrapper* tree) {
   return count;
 }
 
-class AXTreeSourceViewsTest : public ash::test::AshTestBase {
+class AXTreeSourceAshTest : public ash::test::AshTestBase {
  public:
-  AXTreeSourceViewsTest() {}
-  virtual ~AXTreeSourceViewsTest() {}
+  AXTreeSourceAshTest() {}
+  virtual ~AXTreeSourceAshTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
@@ -66,11 +66,11 @@ class AXTreeSourceViewsTest : public ash::test::AshTestBase {
   Textfield* textfield_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceViewsTest);
+  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceAshTest);
 };
 
-TEST_F(AXTreeSourceViewsTest, Accessors) {
-  AXTreeSourceViews ax_tree;
+TEST_F(AXTreeSourceAshTest, Accessors) {
+  AXTreeSourceAsh ax_tree;
   ASSERT_TRUE(ax_tree.GetRoot());
 
   // ID's should start at 1 and there should be a root.
@@ -102,8 +102,8 @@ TEST_F(AXTreeSourceViewsTest, Accessors) {
   ASSERT_EQ(ax_tree.GetRoot(), test_root);
 }
 
-TEST_F(AXTreeSourceViewsTest, Serialization) {
-  AXTreeSourceViews ax_tree;
+TEST_F(AXTreeSourceAshTest, Serialization) {
+  AXTreeSourceAsh ax_tree;
   ui::AXTreeSerializer<AXAuraObjWrapper*> ax_serializer(&ax_tree);
   ui::AXTreeUpdate out_update;
 
@@ -134,4 +134,30 @@ TEST_F(AXTreeSourceViewsTest, Serialization) {
   ASSERT_EQ(textfield_wrapper->GetID(), out_update2.nodes[1].id);
   ASSERT_EQ(ui::AX_ROLE_TEXT_FIELD,
             out_update2.nodes[1].role);
+}
+
+TEST_F(AXTreeSourceAshTest, DoDefault) {
+  AXTreeSourceAsh ax_tree;
+
+  // Grab a wrapper to |DoDefault| (click).
+  AXAuraObjWrapper* textfield_wrapper =
+      AXAuraObjCache::GetInstance()->GetOrCreate(textfield_);
+
+  // Click and verify focus.
+  ASSERT_FALSE(textfield_->HasFocus());
+  textfield_wrapper->DoDefault();
+  ASSERT_TRUE(textfield_->HasFocus());
+}
+
+TEST_F(AXTreeSourceAshTest, Focus) {
+  AXTreeSourceAsh ax_tree;
+
+  // Grab a wrapper to focus.
+  AXAuraObjWrapper* textfield_wrapper =
+      AXAuraObjCache::GetInstance()->GetOrCreate(textfield_);
+
+  // Focus and verify.
+  ASSERT_FALSE(textfield_->HasFocus());
+  textfield_wrapper->Focus();
+  ASSERT_TRUE(textfield_->HasFocus());
 }

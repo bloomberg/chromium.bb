@@ -14,6 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_window_custom_bindings.h"
+#include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
@@ -136,6 +137,10 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       scoped_ptr<NativeHandler>(
           new extensions::CastStreamingNativeHandler(context)));
 #endif
+  module_system->RegisterNativeHandler(
+      "automationInternal",
+      scoped_ptr<NativeHandler>(
+          new extensions::AutomationInternalCustomBindings(context)));
 }
 
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(

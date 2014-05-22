@@ -110,6 +110,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsEmptyInteractActions) {
+  LoadPage();
+  ASSERT_TRUE(RunExtensionSubtest(
+          "automation/tests/tabs_empty_interact", "actions.html"))
+      << message_;
+}
+
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
@@ -119,6 +126,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
                                   "desktop_not_requested.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "actions.html"))
+      << message_;
 }
 #else
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {

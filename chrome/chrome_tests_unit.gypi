@@ -1442,7 +1442,7 @@
         'browser/ui/app_list/test/fake_profile_store.h',
         'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
-        'browser/ui/ash/accessibility/ax_tree_source_views_unittest.cc',
+        'browser/ui/ash/accessibility/ax_tree_source_ash_unittest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
         'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
         'browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc',

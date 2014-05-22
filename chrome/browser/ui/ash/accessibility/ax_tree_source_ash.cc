@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/accessibility/ax_tree_source_views.h"
+#include "chrome/browser/ui/ash/accessibility/ax_tree_source_ash.h"
 
 #include <vector>
 
@@ -12,46 +12,70 @@
 using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;
 
-AXTreeSourceViews::AXTreeSourceViews() {
+AXTreeSourceAsh::AXTreeSourceAsh() {
   root_.reset(
       new AXRootObjWrapper(AXAuraObjCache::GetInstance()->GetNextID()));
 }
 
-AXTreeSourceViews::~AXTreeSourceViews() {
+AXTreeSourceAsh::~AXTreeSourceAsh() {
   root_.reset();
 }
 
-AXAuraObjWrapper* AXTreeSourceViews::GetRoot() const {
+void AXTreeSourceAsh::DoDefault(int32 id) {
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
+  CHECK(obj);
+  obj->DoDefault();
+}
+
+void AXTreeSourceAsh::Focus(int32 id) {
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
+  CHECK(obj);
+  obj->Focus();
+}
+
+void AXTreeSourceAsh::MakeVisible(int32 id) {
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
+  CHECK(obj);
+  obj->MakeVisible();
+}
+
+void AXTreeSourceAsh::SetSelection(int32 id, int32 start, int32 end) {
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
+  CHECK(obj);
+  obj->SetSelection(start, end);
+}
+
+AXAuraObjWrapper* AXTreeSourceAsh::GetRoot() const {
   return root_.get();
 }
 
-AXAuraObjWrapper* AXTreeSourceViews::GetFromId(int32 id) const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetFromId(int32 id) const {
   if (id == root_->GetID())
     return root_.get();
   return AXAuraObjCache::GetInstance()->Get(id);
 }
 
-int32 AXTreeSourceViews::GetId(AXAuraObjWrapper* node) const {
+int32 AXTreeSourceAsh::GetId(AXAuraObjWrapper* node) const {
   return node->GetID();
 }
 
-void AXTreeSourceViews::GetChildren(AXAuraObjWrapper* node,
+void AXTreeSourceAsh::GetChildren(AXAuraObjWrapper* node,
     std::vector<AXAuraObjWrapper*>* out_children) const {
   node->GetChildren(out_children);
 }
 
-AXAuraObjWrapper* AXTreeSourceViews::GetParent(AXAuraObjWrapper* node) const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetParent(AXAuraObjWrapper* node) const {
   AXAuraObjWrapper* parent = node->GetParent();
   if (!parent && root_->HasChild(node))
     parent = root_.get();
   return parent;
 }
 
-bool AXTreeSourceViews::IsValid(AXAuraObjWrapper* node) const {
+bool AXTreeSourceAsh::IsValid(AXAuraObjWrapper* node) const {
   return node && node->GetID() != -1;
 }
 
-bool AXTreeSourceViews::IsEqual(AXAuraObjWrapper* node1,
+bool AXTreeSourceAsh::IsEqual(AXAuraObjWrapper* node1,
                                 AXAuraObjWrapper* node2) const {
   if (!node1 || !node2)
     return false;
@@ -59,16 +83,16 @@ bool AXTreeSourceViews::IsEqual(AXAuraObjWrapper* node1,
   return node1->GetID() == node2->GetID() && node1->GetID() != -1;
 }
 
-AXAuraObjWrapper* AXTreeSourceViews::GetNull() const {
+AXAuraObjWrapper* AXTreeSourceAsh::GetNull() const {
   return NULL;
 }
 
-void AXTreeSourceViews::SerializeNode(
+void AXTreeSourceAsh::SerializeNode(
     AXAuraObjWrapper* node, ui::AXNodeData* out_data) const {
   node->Serialize(out_data);
 }
 
-std::string AXTreeSourceViews::ToString(
+std::string AXTreeSourceAsh::ToString(
     AXAuraObjWrapper* root, std::string prefix) {
   ui::AXNodeData data;
   root->Serialize(&data);

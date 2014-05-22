@@ -52,6 +52,8 @@
         'renderer/extensions/app_bindings.h',
         'renderer/extensions/app_window_custom_bindings.cc',
         'renderer/extensions/app_window_custom_bindings.h',
+        'renderer/extensions/automation_internal_custom_bindings.cc',
+        'renderer/extensions/automation_internal_custom_bindings.h',
         'renderer/extensions/cast_streaming_native_handler.cc',
         'renderer/extensions/cast_streaming_native_handler.h',
         'renderer/extensions/chrome_extension_helper.cc',

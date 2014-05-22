@@ -51,7 +51,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "chrome/browser/ui/ash/accessibility/automation_manager_views.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
@@ -201,7 +201,7 @@ void ChromeViewsDelegate::NotifyAccessibilityEvent(
       view, event_type);
 
 #if defined(USE_ASH)
-  AutomationManagerViews::GetInstance()->HandleEvent(
+  AutomationManagerAsh::GetInstance()->HandleEvent(
       GetProfileForWindow(view->GetWidget()), view, event_type);
 #endif
 }

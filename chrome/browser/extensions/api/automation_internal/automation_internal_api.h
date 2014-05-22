@@ -13,6 +13,18 @@ namespace content {
 struct AXEventNotificationDetails;
 }  // namespace content
 
+namespace extensions {
+class AutomationActionAdapter;
+
+namespace api {
+namespace automation_internal {
+namespace PerformAction {
+struct Params;
+}  // namespace PerformAction
+}  // namespace automation_internal
+}  // namespace api
+}  // namespace extensions
+
 namespace ui {
 struct AXNodeData;
 }
@@ -38,6 +50,12 @@ class AutomationInternalPerformActionFunction
   virtual ~AutomationInternalPerformActionFunction() {}
 
   virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+
+ private:
+  // Helper function to route an action to an action adapter.
+  ExtensionFunction::ResponseAction RouteActionToAdapter(
+      api::automation_internal::PerformAction::Params* params,
+      AutomationActionAdapter* adapter);
 };
 
 class AutomationInternalEnableDesktopFunction

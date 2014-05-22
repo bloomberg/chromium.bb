@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
-#define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_ASH_H_
+#define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_ASH_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-#include "chrome/browser/ui/ash/accessibility/ax_tree_source_views.h"
+#include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
+#include "chrome/browser/ui/ash/accessibility/ax_tree_source_ash.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -23,10 +24,10 @@ class View;
 }  // namespace views
 
 // Manages a tree of automation nodes.
-class AutomationManagerViews {
+class AutomationManagerAsh : public extensions::AutomationActionAdapter {
  public:
   // Get the single instance of this class.
-  static AutomationManagerViews* GetInstance();
+  static AutomationManagerAsh* GetInstance();
 
   // Enable automation support for views.
   void Enable(content::BrowserContext* context);
@@ -39,11 +40,19 @@ class AutomationManagerViews {
                    views::View* view,
                    ui::AXEvent event_type);
 
- private:
-  friend struct DefaultSingletonTraits<AutomationManagerViews>;
+  // AutomationActionAdapter implementation.
+  virtual void DoDefault(int32 id) OVERRIDE;
+  virtual void Focus(int32 id) OVERRIDE;
+  virtual void MakeVisible(int32 id) OVERRIDE;
+  virtual void SetSelection(int32 id, int32 start, int32 end) OVERRIDE;
 
-  AutomationManagerViews();
-  ~AutomationManagerViews();
+ protected:
+  virtual ~AutomationManagerAsh();
+
+ private:
+  friend struct DefaultSingletonTraits<AutomationManagerAsh>;
+
+  AutomationManagerAsh();
 
     // Reset all state in this manager.
   void Reset();
@@ -58,14 +67,14 @@ class AutomationManagerViews {
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).
   // A tree becomes active when an event is fired on a descendant view.
-  scoped_ptr <AXTreeSourceViews> current_tree_;
+  scoped_ptr <AXTreeSourceAsh> current_tree_;
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.
   scoped_ptr<ui::AXTreeSerializer<views::AXAuraObjWrapper*> >
       current_tree_serializer_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutomationManagerViews);
+  DISALLOW_COPY_AND_ASSIGN(AutomationManagerAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AUTOMATION_MANAGER_ASH_H_

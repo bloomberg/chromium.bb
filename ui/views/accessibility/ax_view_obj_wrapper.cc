@@ -44,7 +44,13 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   view_->GetAccessibleState(&view_data);
   out_node_data->id = GetID();
   out_node_data->role = view_data.role;
+
   out_node_data->state = view_data.state();
+  if (view_->HasFocus())
+    out_node_data->state |= 1 << ui::AX_STATE_FOCUSED;
+  if (view_->IsFocusable())
+    out_node_data->state |= 1 << ui::AX_STATE_FOCUSABLE;
+
   out_node_data->location = view_->GetBoundsInScreen();
 
   out_node_data->AddStringAttribute(
@@ -60,6 +66,26 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
 
 int32 AXViewObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(view_);
+}
+
+void AXViewObjWrapper::DoDefault() {
+  gfx::Rect rect = view_->GetBoundsInScreen();
+  gfx::Point center = rect.CenterPoint();
+  view_->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, center, center,
+                                       ui::EF_LEFT_MOUSE_BUTTON,
+                                       ui::EF_LEFT_MOUSE_BUTTON));
+}
+
+void AXViewObjWrapper::Focus() {
+  view_->RequestFocus();
+}
+
+void AXViewObjWrapper::MakeVisible() {
+  // TODO(dtseng): Implement.
+}
+
+void AXViewObjWrapper::SetSelection(int32 start, int32 end) {
+  // TODO(dtseng): Implement.
 }
 
 }  // namespace views

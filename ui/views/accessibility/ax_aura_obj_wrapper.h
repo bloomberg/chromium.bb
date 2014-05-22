@@ -24,11 +24,18 @@ class VIEWS_EXPORT AXAuraObjWrapper {
  public:
   virtual ~AXAuraObjWrapper() {}
 
+  // Traversal and serialization.
   virtual AXAuraObjWrapper* GetParent() = 0;
   virtual void GetChildren(
       std::vector<AXAuraObjWrapper*>* out_children) = 0;
   virtual void Serialize(ui::AXNodeData* out_node_data) = 0;
   virtual int32 GetID() = 0;
+
+  // Actions.
+  virtual void DoDefault() {}
+  virtual void Focus() {}
+  virtual void MakeVisible() {}
+  virtual void SetSelection(int32 start, int32 end) {}
 };
 
 }  // namespace views

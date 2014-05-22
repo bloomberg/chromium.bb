@@ -6,6 +6,8 @@ var AutomationEvent = require('automationEvent').AutomationEvent;
 var automationInternal =
     require('binding').Binding.create('automationInternal').generate();
 var utils = require('utils');
+var IsInteractPermitted =
+    requireNative('automationInternal').IsInteractPermitted;
 
 /**
  * A single node in the Automation tree.
@@ -66,17 +68,18 @@ AutomationNodeImpl.prototype = {
     this.performAction_('doDefault');
   },
 
-  focus: function() {
+  focus: function(opt_callback) {
     this.performAction_('focus');
   },
 
-  makeVisible: function() {
+  makeVisible: function(opt_callback) {
     this.performAction_('makeVisible');
   },
 
-  setSelection: function(startIndex, endIndex) {
+  setSelection: function(startIndex, endIndex, opt_callback) {
     this.performAction_('setSelection',
-                        {startIndex: startIndex, endIndex: endIndex});
+                        { startIndex: startIndex,
+                          endIndex: endIndex });
   },
 
   addEventListener: function(eventType, callback, capture) {
@@ -179,14 +182,22 @@ AutomationNodeImpl.prototype = {
 
   performAction_: function(actionType, opt_args) {
     // Not yet initialized.
-    if (!this.owner.processID ||
-        !this.owner.routingID ||
-        !this.wrapper.id)
+    if (this.owner.processID === undefined ||
+        this.owner.routingID === undefined ||
+        this.wrapper.id === undefined) {
       return;
-    automationInternal.performAction({processID: this.owner.processID,
-                                      routingID: this.owner.routingID,
-                                      automationNodeID: this.wrapper.id,
-                                      actionType: actionType},
+    }
+
+    // Check permissions.
+    if (!IsInteractPermitted()) {
+      throw new Error(actionType + ' requires {"desktop": true} or' +
+          ' {"interact": true} in the "automation" manifest key.');
+    }
+
+    automationInternal.performAction({ processID: this.owner.processID,
+                                       routingID: this.owner.routingID,
+                                       automationNodeID: this.wrapper.id,
+                                       actionType: actionType },
                                      opt_args || {});
   }
 };

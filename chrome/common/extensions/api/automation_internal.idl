@@ -56,9 +56,9 @@ namespace automationInternal {
   // All possible actions that can be performed on automation nodes.
   enum ActionType {
     focus,
-    do_default,
-    make_visible,
-    set_selection
+    doDefault,
+    makeVisible,
+    setSelection
   };
 
   // Arguments required for all actions supplied to performAction.

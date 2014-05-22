@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
-#define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_ASH_H_
+#define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_ASH_H_
 
 #include <map>
 
@@ -18,11 +18,17 @@ class AXAuraObjWrapper;
 
 // This class exposes the views hierarchy as an accessibility tree permitting
 // use with other accessibility classes.
-class AXTreeSourceViews
+class AXTreeSourceAsh
     : public ui::AXTreeSource<views::AXAuraObjWrapper*> {
  public:
-  AXTreeSourceViews();
-  virtual ~AXTreeSourceViews();
+  AXTreeSourceAsh();
+  virtual ~AXTreeSourceAsh();
+
+  // A set of actions invoked on an Aura view.
+  void DoDefault(int32 id);
+  void Focus(int32 id);
+  void MakeVisible(int32 id);
+  void SetSelection(int32 id, int32 start, int32 end);
 
   // AXTreeSource implementation.
   virtual views::AXAuraObjWrapper* GetRoot() const OVERRIDE;
@@ -45,7 +51,7 @@ class AXTreeSourceViews
  private:
   scoped_ptr<AXRootObjWrapper> root_;
 
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceViews);
+  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_ASH_ACCESSIBILITY_AX_TREE_SOURCE_ASH_H_
