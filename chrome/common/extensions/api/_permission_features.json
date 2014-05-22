@@ -744,8 +744,8 @@
       "extension", "legacy_packaged_app", "platform_app"
     ]
   },
-  "preferencesPrivate":  {
-    "channel": "dev",
+  "preferencesPrivate": {
+    "channel": "stable",
     "extension_types": [
       "extension"
     ],
