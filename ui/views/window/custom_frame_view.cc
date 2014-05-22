@@ -5,7 +5,6 @@
 #include "ui/views/window/custom_frame_view.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
@@ -17,7 +16,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/views_delegate.h"
@@ -26,7 +24,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/frame_background.h"
-#include "ui/views/window/window_button_order_provider.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 
@@ -70,13 +67,6 @@ const gfx::FontList& GetTitleFontList() {
   return title_font_list;
 }
 
-void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
-  button->SetVisible(true);
-  button->SetImageAlignment(ImageButton::ALIGN_LEFT,
-                            ImageButton::ALIGN_BOTTOM);
-  button->SetBoundsRect(bounds);
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,9 +80,7 @@ CustomFrameView::CustomFrameView()
       restore_button_(NULL),
       close_button_(NULL),
       should_show_maximize_button_(false),
-      frame_background_(new FrameBackground()),
-      minimum_title_bar_x_(0),
-      maximum_title_bar_x_(-1) {
+      frame_background_(new FrameBackground()) {
 }
 
 CustomFrameView::~CustomFrameView() {
@@ -101,12 +89,19 @@ CustomFrameView::~CustomFrameView() {
 void CustomFrameView::Init(Widget* frame) {
   frame_ = frame;
 
-  close_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_CLOSE,
-      IDR_CLOSE, IDR_CLOSE_H, IDR_CLOSE_P);
+  close_button_ = new ImageButton(this);
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+
+  // Close button images will be set in LayoutWindowControls().
+  AddChildView(close_button_);
+
   minimize_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_MINIMIZE,
       IDR_MINIMIZE, IDR_MINIMIZE_H, IDR_MINIMIZE_P);
+
   maximize_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_MAXIMIZE,
       IDR_MAXIMIZE, IDR_MAXIMIZE_H, IDR_MAXIMIZE_P);
+
   restore_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_RESTORE,
       IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P);
 
@@ -281,7 +276,7 @@ int CustomFrameView::NonClientTopBorderHeight() const {
 int CustomFrameView::CaptionButtonY() const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-  return frame_->IsMaximized() ? FrameBorderThickness() : kFrameBorderThickness;
+  return frame_->IsMaximized() ? FrameBorderThickness() : kFrameShadowThickness;
 }
 
 int CustomFrameView::TitlebarBottomThickness() const {
@@ -319,8 +314,7 @@ gfx::Rect CustomFrameView::IconBounds() const {
   // 3D edge (or nothing at all, for maximized windows) above; hence the +1.
   int y = unavailable_px_at_top + (NonClientTopBorderHeight() -
       unavailable_px_at_top - size - TitlebarBottomThickness() + 1) / 2;
-  return gfx::Rect(frame_thickness + kIconLeftSpacing + minimum_title_bar_x_,
-                   y, size, size);
+  return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
 }
 
 bool CustomFrameView::ShouldShowTitleBarAndBorder() const {
@@ -474,68 +468,70 @@ const gfx::ImageSkia* CustomFrameView::GetFrameImage() const {
 }
 
 void CustomFrameView::LayoutWindowControls() {
-  minimum_title_bar_x_ = 0;
-  maximum_title_bar_x_ = width();
-
-  if (bounds().IsEmpty())
-    return;
-
+  close_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
+                                   ImageButton::ALIGN_BOTTOM);
   int caption_y = CaptionButtonY();
   bool is_maximized = frame_->IsMaximized();
   // There should always be the same number of non-shadow pixels visible to the
-  // side of the caption buttons.  In maximized mode we extend the edge button
-  // to the screen corner to obey Fitts' Law.
-  int extra_width = is_maximized ?
+  // side of the caption buttons.  In maximized mode we extend the rightmost
+  // button to the screen corner to obey Fitts' Law.
+  int right_extra_width = is_maximized ?
       (kFrameBorderThickness - kFrameShadowThickness) : 0;
-  int next_button_x = FrameBorderThickness();
+  gfx::Size close_button_size = close_button_->GetPreferredSize();
+  close_button_->SetBounds(width() - FrameBorderThickness() -
+      right_extra_width - close_button_size.width(), caption_y,
+      close_button_size.width() + right_extra_width,
+      close_button_size.height());
 
+  // When the window is restored, we show a maximized button; otherwise, we show
+  // a restore button.
   bool is_restored = !is_maximized && !frame_->IsMinimized();
   ImageButton* invisible_button = is_restored ? restore_button_
                                               : maximize_button_;
   invisible_button->SetVisible(false);
 
-  WindowButtonOrderProvider* button_order =
-      WindowButtonOrderProvider::GetInstance();
-  const std::vector<views::FrameButton>& leading_buttons =
-      button_order->leading_buttons();
-  const std::vector<views::FrameButton>& trailing_buttons =
-      button_order->trailing_buttons();
-
-  ImageButton* button = NULL;
-  for (std::vector<views::FrameButton>::const_iterator it =
-           leading_buttons.begin(); it != leading_buttons.end(); ++it) {
-    button = GetImageButton(*it);
-    if (!button)
-      continue;
-    gfx::Rect target_bounds(gfx::Point(next_button_x, caption_y),
-                            button->GetPreferredSize());
-    if (it == leading_buttons.begin())
-      target_bounds.set_width(target_bounds.width() + extra_width);
-    LayoutButton(button, target_bounds);
-    next_button_x += button->width();
-    minimum_title_bar_x_ = std::min(width(), next_button_x);
+  ImageButton* visible_button = is_restored ? maximize_button_
+                                            : restore_button_;
+  FramePartImage normal_part, hot_part, pushed_part;
+  int next_button_x;
+  if (should_show_maximize_button_) {
+    visible_button->SetVisible(true);
+    visible_button->SetImageAlignment(ImageButton::ALIGN_LEFT,
+                                      ImageButton::ALIGN_BOTTOM);
+    gfx::Size visible_button_size = visible_button->GetPreferredSize();
+    visible_button->SetBounds(close_button_->x() - visible_button_size.width(),
+                              caption_y, visible_button_size.width(),
+                              visible_button_size.height());
+    next_button_x = visible_button->x();
+  } else {
+    visible_button->SetVisible(false);
+    next_button_x = close_button_->x();
   }
 
-  // Trailing buttions are laid out in a RTL fashion
-  next_button_x = width() - FrameBorderThickness();
-  for (std::vector<views::FrameButton>::const_reverse_iterator it =
-           trailing_buttons.rbegin(); it != trailing_buttons.rend(); ++it) {
-    button = GetImageButton(*it);
-    if (!button)
-      continue;
-    gfx::Rect target_bounds(gfx::Point(next_button_x, caption_y),
-                            button->GetPreferredSize());
-    if (it == trailing_buttons.rbegin())
-      target_bounds.set_width(target_bounds.width() + extra_width);
-    target_bounds.Offset(-target_bounds.width(), 0);
-    LayoutButton(button, target_bounds);
-    next_button_x = button->x();
-    maximum_title_bar_x_ = std::max(minimum_title_bar_x_, next_button_x);
-  }
+  minimize_button_->SetVisible(true);
+  minimize_button_->SetImageAlignment(ImageButton::ALIGN_LEFT,
+                                      ImageButton::ALIGN_BOTTOM);
+  gfx::Size minimize_button_size = minimize_button_->GetPreferredSize();
+  minimize_button_->SetBounds(
+      next_button_x - minimize_button_size.width(), caption_y,
+      minimize_button_size.width(),
+      minimize_button_size.height());
+
+  normal_part = IDR_CLOSE;
+  hot_part = IDR_CLOSE_H;
+  pushed_part = IDR_CLOSE_P;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  close_button_->SetImage(CustomButton::STATE_NORMAL,
+                          rb.GetImageNamed(normal_part).ToImageSkia());
+  close_button_->SetImage(CustomButton::STATE_HOVERED,
+                          rb.GetImageNamed(hot_part).ToImageSkia());
+  close_button_->SetImage(CustomButton::STATE_PRESSED,
+                          rb.GetImageNamed(pushed_part).ToImageSkia());
 }
 
 void CustomFrameView::LayoutTitleBar() {
-  DCHECK_GE(maximum_title_bar_x_, 0);
   // The window title position is calculated based on the icon position, even
   // when there is no icon.
   gfx::Rect icon_bounds(IconBounds());
@@ -557,7 +553,7 @@ void CustomFrameView::LayoutTitleBar() {
   // title from overlapping the 3D edge at the bottom of the titlebar.
   title_bounds_.SetRect(title_x,
       icon_bounds.y() + ((icon_bounds.height() - title_height - 1) / 2),
-      std::max(0, maximum_title_bar_x_ - kTitleCaptionSpacing -
+      std::max(0, minimize_button_->x() - kTitleCaptionSpacing -
       title_x), title_height);
 }
 
@@ -589,33 +585,6 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
   button->SetImage(CustomButton::STATE_PRESSED,
                    rb.GetImageNamed(pushed_image_id).ToImageSkia());
   AddChildView(button);
-  return button;
-}
-
-ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
-  ImageButton* button = NULL;
-  switch (frame_button) {
-    case views::FRAME_BUTTON_MINIMIZE: {
-      button = minimize_button_;
-      break;
-    }
-    case views::FRAME_BUTTON_MAXIMIZE: {
-      bool is_restored = !frame_->IsMaximized() && !frame_->IsMinimized();
-      button = is_restored ? maximize_button_ : restore_button_;
-      if (!should_show_maximize_button_) {
-        // If we should not show the maximize/restore button, then we return
-        // NULL as we don't want this button to become visible and to be laid
-        // out.
-        button->SetVisible(false);
-        return NULL;
-      }
-      break;
-    }
-    case views::FRAME_BUTTON_CLOSE: {
-      button = close_button_;
-      break;
-    }
-  }
   return button;
 }
 

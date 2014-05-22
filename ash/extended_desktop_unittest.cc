@@ -518,7 +518,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
       w1, gfx::Rect(50, 50, 50, 50), false /* transient */);
   // Transient child of the transient child.
   views::Widget* w1_t11 = CreateTestWidgetWithParent(
-      w1_t1, gfx::Rect(1200, 70, 35, 35), false /* transient */);
+      w1_t1, gfx::Rect(1200, 70, 30, 30), false /* transient */);
 
   views::Widget* w11 = CreateTestWidgetWithParent(
       w1, gfx::Rect(10, 10, 40, 40), true /* child */);
@@ -532,7 +532,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   EXPECT_EQ(root_windows[0], w11_t1->GetNativeView()->GetRootWindow());
   EXPECT_EQ("50,50 50x50",
             w1_t1->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1200,70 35x35",
+  EXPECT_EQ("1200,70 30x30",
             w1_t11->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("20,20 40x40",
             w11->GetWindowBoundsInScreen().ToString());
@@ -552,7 +552,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   // Transient window's screen bounds stays the same.
   EXPECT_EQ("50,50 50x50",
             w1_t1->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1200,70 35x35",
+  EXPECT_EQ("1200,70 30x30",
             w1_t11->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("1300,100 80x80",
             w11_t1->GetWindowBoundsInScreen().ToString());

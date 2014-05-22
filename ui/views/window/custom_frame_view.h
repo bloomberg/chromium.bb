@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/window/frame_buttons.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -30,8 +29,8 @@ class Widget;
 //  rendering the non-standard window caption, border, and controls.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
-                                     public ButtonListener {
+class CustomFrameView : public NonClientFrameView,
+                        public ButtonListener {
  public:
   CustomFrameView();
   virtual ~CustomFrameView();
@@ -60,8 +59,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
-  friend class CustomFrameViewTest;
-
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.
   int FrameBorderThickness() const;
@@ -107,13 +104,8 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   SkColor GetFrameColor() const;
   const gfx::ImageSkia* GetFrameImage() const;
 
-  // Performs the layout for the window control buttons based on the
-  // configuration specified in WindowButtonOrderProvider. The sizing and
-  // positions of the buttons affects LayoutTitleBar, call this beforehand.
+  // Layout various sub-components of this view.
   void LayoutWindowControls();
-
-  // Calculations depend on the positions of the window controls. Always call
-  // LayoutWindowControls beforehand.
   void LayoutTitleBar();
   void LayoutClientView();
 
@@ -123,10 +115,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
                                        int normal_image_id,
                                        int hot_image_id,
                                        int pushed_image_id);
-
-  // Returns the window caption button for the given FrameButton type, if it
-  // should be visible. Otherwise NULL.
-  ImageButton* GetImageButton(views::FrameButton button);
 
   // The bounds of the client view, in this view's coordinates.
   gfx::Rect client_view_bounds_;
@@ -151,11 +139,6 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
 
   // Background painter for the window frame.
   scoped_ptr<FrameBackground> frame_background_;
-
-  // The horizontal boundaries for the title bar to layout within. Restricted
-  // by the space used by the leading and trailing buttons.
-  int minimum_title_bar_x_;
-  int maximum_title_bar_x_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
