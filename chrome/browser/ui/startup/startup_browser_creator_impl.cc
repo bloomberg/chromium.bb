@@ -839,7 +839,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     return;
 
   if (HasPendingUncleanExit(browser->profile())) {
-    if (!command_line_.HasSwitch(switches::kEnableSessionCrashedBubble) ||
+    // Can't use command_line_ here because command_line_ isn't set to have
+    // correct values when a profile window is opened after the browser starts
+    // up (via profile switcher). See function FindOrCreateNewWindowForProfile.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSessionCrashedBubble) ||
         !ShowSessionCrashedBubble(browser))
       SessionCrashedInfoBarDelegate::Create(browser);
   }
