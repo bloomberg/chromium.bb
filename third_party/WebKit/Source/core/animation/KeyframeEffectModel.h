@@ -33,9 +33,9 @@
 
 #include "core/animation/AnimatableValueKeyframe.h"
 #include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationSource.h"
 #include "core/animation/InterpolationEffect.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/animation/TimedItem.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"

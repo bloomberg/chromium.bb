@@ -32,7 +32,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 
 #include "StylePropertyShorthand.h"
-#include "core/animation/TimedItem.h"
+#include "core/animation/AnimationSource.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

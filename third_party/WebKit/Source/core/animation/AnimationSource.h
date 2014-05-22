@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TimedItem_h
-#define TimedItem_h
+#ifndef AnimationSource_h
+#define AnimationSource_h
 
 #include "core/animation/Timing.h"
 #include "platform/heap/Handle.h"
@@ -40,8 +40,8 @@
 namespace WebCore {
 
 class AnimationPlayer;
-class TimedItem;
-class TimedItemTiming;
+class AnimationSource;
+class AnimationSourceTiming;
 
 enum TimingUpdateReason {
     TimingUpdateOnDemand,
@@ -58,7 +58,7 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-class TimedItem : public RefCountedWillBeGarbageCollectedFinalized<TimedItem> {
+class AnimationSource : public RefCountedWillBeGarbageCollectedFinalized<AnimationSource> {
     friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:
     // Note that logic in CSSAnimations depends on the order of these values.
@@ -72,10 +72,10 @@ public:
     class EventDelegate {
     public:
         virtual ~EventDelegate() { };
-        virtual void onEventCondition(const TimedItem*) = 0;
+        virtual void onEventCondition(const AnimationSource*) = 0;
     };
 
-    virtual ~TimedItem() { }
+    virtual ~AnimationSource() { }
 
     virtual bool isAnimation() const { return false; }
 
@@ -104,7 +104,7 @@ public:
     AnimationPlayer* player() { return m_player; }
     AnimationPlayer* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specifiedTiming() const { return m_timing; }
-    PassRefPtrWillBeRawPtr<TimedItemTiming> timing();
+    PassRefPtrWillBeRawPtr<AnimationSourceTiming> timing();
     void updateSpecifiedTiming(const Timing&);
 
     // This method returns time in ms as it is unused except via the API.
@@ -114,9 +114,9 @@ public:
     virtual void trace(Visitor*);
 
 protected:
-    explicit TimedItem(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
+    explicit AnimationSource(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
 
-    // When TimedItem receives a new inherited time via updateInheritedTime
+    // When AnimationSource receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
@@ -143,7 +143,7 @@ protected:
     virtual void specifiedTimingChanged() { }
 
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
-    RawPtrWillBeMember<TimedItem> m_parent;
+    RawPtrWillBeMember<AnimationSource> m_parent;
     const double m_startTime;
     RawPtrWillBeMember<AnimationPlayer> m_player;
     Timing m_timing;

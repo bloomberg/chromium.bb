@@ -8,6 +8,7 @@ AnalyserNode
 Animation
 AnimationEvent
 AnimationPlayerEvent
+AnimationSource
 AnimationTimeline
 ApplicationCache
 ApplicationCacheErrorEvent
@@ -430,7 +431,6 @@ TextTrackCue
 TextTrackCueList
 TextTrackList
 TimeRanges
-TimedItem
 Timing
 Touch
 TouchEvent

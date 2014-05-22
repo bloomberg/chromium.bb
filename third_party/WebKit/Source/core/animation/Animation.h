@@ -32,8 +32,8 @@
 #define Animation_h
 
 #include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationSource.h"
 #include "core/animation/EffectInput.h"
-#include "core/animation/TimedItem.h"
 #include "core/animation/TimingInput.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -45,7 +45,7 @@ class Element;
 class ExceptionState;
 class SampledEffect;
 
-class Animation FINAL : public TimedItem {
+class Animation FINAL : public AnimationSource {
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
@@ -106,7 +106,7 @@ private:
     friend class AnimationAnimationV8Test;
 };
 
-DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());
+DEFINE_TYPE_CASTS(Animation, AnimationSource, animationSource, animationSource->isAnimation(), animationSource.isAnimation());
 
 } // namespace WebCore
 

@@ -31,7 +31,7 @@
 #ifndef AnimationPlayer_h
 #define AnimationPlayer_h
 
-#include "core/animation/TimedItem.h"
+#include "core/animation/AnimationSource.h"
 #include "core/events/EventTarget.h"
 #include "wtf/RefPtr.h"
 
@@ -45,7 +45,7 @@ class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<
 public:
 
     ~AnimationPlayer();
-    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, TimedItem*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, AnimationSource*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);
@@ -94,10 +94,10 @@ public:
     void setStartTime(double startTime) { setStartTimeInternal(startTime / 1000); }
     void setStartTimeInternal(double, bool isUpdateFromCompositor = false);
 
-    const TimedItem* source() const { return m_content.get(); }
-    TimedItem* source() { return m_content.get(); }
-    TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
-    void setSource(TimedItem*);
+    const AnimationSource* source() const { return m_content.get(); }
+    AnimationSource* source() { return m_content.get(); }
+    AnimationSource* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
+    void setSource(AnimationSource*);
 
     double timeLag() { return timeLagInternal() * 1000; }
     double timeLagInternal() { return currentTimeWithoutLag() - currentTimeInternal(); }
@@ -150,7 +150,7 @@ public:
     void trace(Visitor*);
 
 private:
-    AnimationPlayer(AnimationTimeline&, TimedItem*);
+    AnimationPlayer(AnimationTimeline&, AnimationSource*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
     double currentTimeWithoutLag() const;
@@ -165,7 +165,7 @@ private:
 
     SortInfo m_sortInfo;
 
-    RefPtrWillBeMember<TimedItem> m_content;
+    RefPtrWillBeMember<AnimationSource> m_content;
     RawPtrWillBeMember<AnimationTimeline> m_timeline;
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;

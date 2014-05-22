@@ -8,7 +8,7 @@ FAIL document.timeline should not be exposed without experimental web platform f
 This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
 FAIL Timing should not be exposed without experimental web platform features enabled.
 This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
-FAIL TimedItem should not be exposed without experimental web platform features enabled.
+FAIL AnimationSource should not be exposed without experimental web platform features enabled.
 This test is expected to fail in LayouTests/webexposed. assert_false: expected false got true
 Harness: the test ran to completion.
 

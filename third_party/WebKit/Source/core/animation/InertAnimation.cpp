@@ -40,7 +40,7 @@ PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRa
 }
 
 InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, bool paused)
-    : TimedItem(timing)
+    : AnimationSource(timing)
     , m_effect(effect)
     , m_paused(paused)
 {
@@ -66,7 +66,7 @@ double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
 void InertAnimation::trace(Visitor* visitor)
 {
     visitor->trace(m_effect);
-    TimedItem::trace(visitor);
+    AnimationSource::trace(visitor);
 }
 
 } // namespace WebCore

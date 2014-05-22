@@ -6,8 +6,8 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "core/animation/AnimationSourceTiming.h"
 #include "core/animation/AnimationTestHelper.h"
-#include "core/animation/TimedItemTiming.h"
 
 #include <gtest/gtest.h>
 

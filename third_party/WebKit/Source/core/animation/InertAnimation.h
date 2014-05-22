@@ -32,12 +32,12 @@
 #define InertAnimation_h
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/TimedItem.h"
+#include "core/animation/AnimationSource.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class InertAnimation FINAL : public TimedItem {
+class InertAnimation FINAL : public AnimationSource {
 public:
     static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused);
     PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(double inheritedTime);

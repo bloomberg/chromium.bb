@@ -33,8 +33,8 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
+#include "core/animation/AnimationSource.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/TimedItem.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
