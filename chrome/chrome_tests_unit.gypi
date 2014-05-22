@@ -1142,6 +1142,7 @@
         'browser/password_manager/password_store_x_unittest.cc',
         'browser/performance_monitor/database_unittest.cc',
         'browser/plugins/plugin_finder_unittest.cc',
+        'browser/plugins/plugin_info_message_filter_unittest.cc',
         'browser/plugins/plugin_installer_unittest.cc',
         'browser/plugins/plugin_metadata_unittest.cc',
         'browser/plugins/plugin_prefs_unittest.cc',
@@ -1201,7 +1202,6 @@
         'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
         'browser/renderer_context_menu/render_view_context_menu_test_util.h',
         'browser/renderer_context_menu/render_view_context_menu_unittest.cc',
-        'browser/renderer_host/plugin_info_message_filter_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
         'browser/resources/chromeos/braille_ime/braille_ime.js',
@@ -2241,7 +2241,7 @@
             ['exclude', '^browser/plugins/'],
           ],
           'sources!': [
-            'browser/renderer_host/plugin_info_message_filter_unittest.cc',
+            'browser/plugins/plugin_info_message_filter_unittest.cc',
           ],
         }],
         ['enable_printing!=1', {

@@ -38,8 +38,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   class Context {
    public:
     Context(int render_process_id, Profile* profile);
-    // Dummy constructor for tests.
-    Context();
+
     ~Context();
 
     void DecidePluginStatus(

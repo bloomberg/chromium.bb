@@ -79,12 +79,6 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
           content::BrowserThread::IO));
 }
 
-PluginInfoMessageFilter::Context::Context()
-    : render_process_id_(0),
-      resource_context_(NULL),
-      host_content_settings_map_(NULL) {
-}
-
 PluginInfoMessageFilter::Context::~Context() {
 }
 
@@ -359,16 +353,27 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
             policy_url, policy_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
             std::string(), &info));
   } else {
-    value.reset(
+    content_settings::SettingInfo specific_info;
+    scoped_ptr<base::Value> specific_setting(
         host_content_settings_map_->GetWebsiteSetting(
             policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
-            &info));
-    if (value.get()) {
-      uses_plugin_specific_setting = true;
+            &specific_info));
+    content_settings::SettingInfo general_info;
+    scoped_ptr<base::Value> general_setting(
+        host_content_settings_map_->GetWebsiteSetting(
+            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS,
+            std::string(), &general_info));
+
+    // If there is a plugin-specific setting, we use it, unless the general
+    // setting was set by policy, in which case it takes precedence.
+    uses_plugin_specific_setting = specific_setting &&
+        (general_info.source != content_settings::SETTING_SOURCE_POLICY);
+    if (uses_plugin_specific_setting) {
+      value = specific_setting.Pass();
+      info = specific_info;
     } else {
-      value.reset(host_content_settings_map_->GetWebsiteSetting(
-          policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-          &info));
+      value = general_setting.Pass();
+      info = general_info;
     }
   }
   *setting = content_settings::ValueToContentSetting(value.get());
