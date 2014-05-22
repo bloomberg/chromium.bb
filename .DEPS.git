@@ -258,7 +258,7 @@ deps_os = {
         'src/third_party/mesa/src':
             None,
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@75b9c61b5af6017ad12f1ffd1c33b68ab5d1f7b7',
+            Var('git_url') + '/chromium/deps/nss.git@e53cfe83bf6bd79d109a1687cf924ad9a7b41a2b',
         'src/third_party/openmax_dl':
             None,
         'src/third_party/opus/src':
@@ -307,7 +307,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@75b9c61b5af6017ad12f1ffd1c33b68ab5d1f7b7',
+            Var('git_url') + '/chromium/deps/nss.git@e53cfe83bf6bd79d109a1687cf924ad9a7b41a2b',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@5936b871e6a087b7e50d4cbcb122378d8a07499f',
         'src/third_party/swig/mac':
@@ -357,7 +357,7 @@ deps_os = {
         'src/third_party/nacl_sdk_binaries':
             Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@75b9c61b5af6017ad12f1ffd1c33b68ab5d1f7b7',
+            Var('git_url') + '/chromium/deps/nss.git@e53cfe83bf6bd79d109a1687cf924ad9a7b41a2b',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@1ceaa279daa62b71e3431e58f68be6a96dd1519a',
         'src/third_party/perl':
