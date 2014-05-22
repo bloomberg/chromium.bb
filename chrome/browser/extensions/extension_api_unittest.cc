@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -31,7 +32,10 @@ void ExtensionApiUnittest::SetUp() {
 
 void ExtensionApiUnittest::CreateBackgroundPage() {
   if (!contents_) {
-    AddTab(browser(), BackgroundInfo::GetBackgroundURL(extension()));
+    GURL url = BackgroundInfo::GetBackgroundURL(extension());
+    if (url.is_empty())
+      url = GURL(content::kAboutBlankURL);
+    AddTab(browser(), url);
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
   }
 }

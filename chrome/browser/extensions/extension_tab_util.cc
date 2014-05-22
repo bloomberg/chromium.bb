@@ -166,10 +166,9 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   // -title
   // -favIconUrl
 
-  std::string url_string;
   GURL url;
   if (params.url.get()) {
-    url_string = *params.url;
+    std::string url_string= *params.url;
     url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
         url_string, function->GetExtension());
     if (!url.is_valid()) {
@@ -177,6 +176,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
           ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError, url_string);
       return NULL;
     }
+  } else {
+    url = GURL(chrome::kChromeUINewTabURL);
   }
 
   // Don't let extensions crash the browser or renderers.

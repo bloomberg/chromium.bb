@@ -25,6 +25,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -656,6 +657,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   // Simulate a browser restart by creating the profiles in the PRE_ part.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
+  ASSERT_TRUE(test_server()->Start());
+
   // Create two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
@@ -667,7 +670,24 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
       dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
   ASSERT_TRUE(profile2);
 
-  // Use a couple arbitrary URLs.
+  // Open some urls with the browsers, and close them.
+  Browser* browser1 = new Browser(
+      Browser::CreateParams(Browser::TYPE_TABBED, profile1,
+                            browser()->host_desktop_type()));
+  chrome::NewTab(browser1);
+  ui_test_utils::NavigateToURL(browser1,
+                               test_server()->GetURL("files/empty.html"));
+  browser1->window()->Close();
+
+  Browser* browser2 = new Browser(
+      Browser::CreateParams(Browser::TYPE_TABBED, profile2,
+                            browser()->host_desktop_type()));
+  chrome::NewTab(browser2);
+  ui_test_utils::NavigateToURL(browser2,
+                               test_server()->GetURL("files/form.html"));
+  browser2->window()->Close();
+
+  // Set different startup preferences for the 2 profiles.
   std::vector<GURL> urls1;
   urls1.push_back(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
@@ -689,7 +709,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   profile2->GetPrefs()->CommitPendingWrite();
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
+#if defined (OS_MACOSX)
+// crbug.com/376184
+#define MAYBE_UpdateWithTwoProfiles DISABLED_UpdateWithTwoProfiles
+#else
+#define MAYBE_UpdateWithTwoProfiles UpdateWithTwoProfiles
+#endif
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_UpdateWithTwoProfiles) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -740,8 +767,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(GURL(content::kAboutBlankURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ("/files/empty.html",
+            tab_strip->GetWebContentsAt(0)->GetURL().path());
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2,
                                         browser()->host_desktop_type()));
@@ -749,8 +776,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(GURL(content::kAboutBlankURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ("/files/form.html",
+            tab_strip->GetWebContentsAt(0)->GetURL().path());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
@@ -802,7 +829,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   pref_urls.urls = urls;
   SessionStartupPref::SetStartupPref(profile_urls, pref_urls);
 
-  // Close the browser.
+  // Open a page with profile_last.
+  Browser* browser_last = new Browser(
+      Browser::CreateParams(Browser::TYPE_TABBED, profile_last,
+                            browser()->host_desktop_type()));
+  chrome::NewTab(browser_last);
+  ui_test_utils::NavigateToURL(browser_last,
+                               test_server()->GetURL("files/empty.html"));
+  browser_last->window()->Close();
+
+  // Close the main browser.
   chrome::HostDesktopType original_desktop_type =
       browser()->host_desktop_type();
   browser()->window()->Close();
@@ -852,8 +888,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(GURL(content::kAboutBlankURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ("/files/empty.html",
+            tab_strip->GetWebContentsAt(0)->GetURL().path());
 
   // profile_home2 was not launched since it would've only opened the home page.
   ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2, original_desktop_type));
@@ -1184,6 +1220,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   //    "show_on_first_run_allowed": true
   //  }
   // }
+  ASSERT_TRUE(test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser_creator.AddFirstRunTab(signin::GetPromoURL(signin::SOURCE_START_PAGE,
@@ -1233,7 +1270,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   //  }
   // }
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(GURL("new_tab_page"));
+  browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, true);
@@ -1280,7 +1317,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   //  }
   // }
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(GURL("new_tab_page"));
+  browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowOnFirstRunAllowed, false);

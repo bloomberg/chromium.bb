@@ -1333,7 +1333,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 
   // Open a second tab and wait.
   EXPECT_NE(static_cast<WebContents*>(NULL),
-            chrome::AddSelectedTabWithURL(browser(), GURL(),
+            chrome::AddSelectedTabWithURL(browser(),
+                                          GURL(content::kAboutBlankURL),
                                           content::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());

@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                                      base::FilePath(), owning_window, ""));
 
   // Open a singleton tab in background.
-  chrome::NavigateParams p(browser(), GURL("www.google.com"),
+  chrome::NavigateParams p(browser(), GURL("http://www.google.com"),
                            content::PAGE_TRANSITION_LINK);
   p.window_action = chrome::NavigateParams::SHOW_WINDOW;
   p.disposition = SINGLETON_TAB;

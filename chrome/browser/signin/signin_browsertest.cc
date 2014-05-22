@@ -31,7 +31,7 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
-const char kNonSigninURL[] = "www.google.com";
+const char kNonSigninURL[] = "http://www.google.com";
 }
 
 class SigninBrowserTest : public InProcessBrowserTest {
@@ -148,7 +148,14 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
       active_tab->GetRenderProcessHost()->GetID()));
 }
 
-IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
+#if defined (OS_MACOSX)
+// crbug.com/375197
+#define MAYBE_NotTrustedAfterRedirect DISABLED_NotTrustedAfterRedirect
+#else
+#define MAYBE_NotTrustedAfterRedirect NotTrustedAfterRedirect
+#endif
+
+IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_NotTrustedAfterRedirect) {
   ChromeSigninClient* signin =
       ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());

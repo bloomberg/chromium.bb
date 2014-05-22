@@ -15,6 +15,7 @@
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "components/web_modal/test_web_contents_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/common/url_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/webview/webview.h"
@@ -56,7 +57,7 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
     view_delegate_.SetProfile(profile());
 
-    AddTab(browser(), GURL());
+    AddTab(browser(), GURL(content::kAboutBlankURL));
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(0);
     ASSERT_TRUE(contents);

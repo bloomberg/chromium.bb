@@ -709,9 +709,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                                   host_desktop_type_));
       if (urls_to_open_.empty()) {
         // No tab browsers were created and no URLs were supplied on the command
-        // line. Add an empty URL, which is treated as opening the users home
-        // page.
-        urls_to_open_.push_back(GURL());
+        // line. Open the new tab page.
+        urls_to_open_.push_back(GURL(chrome::kChromeUINewTabURL));
       }
       AppendURLsToBrowser(browser, urls_to_open_);
       browser->window()->Show();

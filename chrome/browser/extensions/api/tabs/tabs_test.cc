@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/url_constants.h"
 #include "ui/gfx/rect.h"
 
 namespace extensions {
@@ -392,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   for (size_t i = 0; i < kExtraWindows; ++i)
     CreateBrowser(browser()->profile());
 
-  GURL url;
+  GURL url(content::kAboutBlankURL);
   AddTabAtIndexToBrowser(browser(), 0, url, content::PAGE_TRANSITION_LINK);
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
@@ -509,9 +510,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
-  static const char kNewBlankTabArgs[] ="about:blank";
-
-  content::OpenURLParams params(GURL(kNewBlankTabArgs), content::Referrer(),
+  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+                                content::Referrer(),
                                 NEW_FOREGROUND_TAB,
                                 content::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
@@ -553,9 +553,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
-  static const char kNewBlankTabArgs[] ="about:blank";
-
-  content::OpenURLParams params(GURL(kNewBlankTabArgs), content::Referrer(),
+  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+                                content::Referrer(),
                                 NEW_FOREGROUND_TAB,
                                 content::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
