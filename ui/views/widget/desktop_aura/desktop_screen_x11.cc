@@ -383,6 +383,21 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
         display.set_work_area(intersection);
       }
 
+      switch (crtc->rotation) {
+        case RR_Rotate_0:
+          display.set_rotation(gfx::Display::ROTATE_0);
+          break;
+        case RR_Rotate_90:
+          display.set_rotation(gfx::Display::ROTATE_90);
+          break;
+        case RR_Rotate_180:
+          display.set_rotation(gfx::Display::ROTATE_180);
+          break;
+        case RR_Rotate_270:
+          display.set_rotation(gfx::Display::ROTATE_270);
+          break;
+      }
+
       displays.push_back(display);
 
       XRRFreeCrtcInfo(crtc);
