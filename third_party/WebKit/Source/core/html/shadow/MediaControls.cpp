@@ -209,7 +209,7 @@ void MediaControls::makeTransparent()
 
 bool MediaControls::shouldHideMediaControls()
 {
-    return !m_panel->hovered();
+    return !m_panel->hovered() && mediaElement().hasVideo();
 }
 
 void MediaControls::playbackStarted()
