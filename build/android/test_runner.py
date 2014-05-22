@@ -117,6 +117,11 @@ def AddGTestOptions(option_parser):
                            help='Timeout to wait for each test',
                            type='int',
                            default=60)
+  option_parser.add_option('--isolate_file_path',
+                           '--isolate-file-path',
+                           dest='isolate_file_path',
+                           help='.isolate file path to override the default '
+                                'path')
   # TODO(gkanwar): Move these to Common Options once we have the plumbing
   # in our other test types to handle these commands
   AddCommonOptions(option_parser)
@@ -505,6 +510,7 @@ def _RunGTests(options, devices):
         options.run_disabled,
         options.test_arguments,
         options.timeout,
+        options.isolate_file_path,
         suite_name)
     runner_factory, tests = gtest_setup.Setup(gtest_options, devices)
 
