@@ -640,6 +640,8 @@ class HWTestConfig(object):
     critical: Usually we consider structural failures here as OK.
     num: Maximum number of devices to use when scheduling tests in the hw lab.
     file_bugs: Should we file bugs if a test fails in a suite run.
+    retry: Should we retry a test if a test fails in a suite run. Retry only
+           works when async is False.
   """
 
   DEFAULT_HW_TEST = 'bvt'
@@ -698,7 +700,8 @@ class HWTestConfig(object):
     with overrides for optional args.
     """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
-                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
+                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
+                        retry=True)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return [cls(cls.CQ_HW_TEST, **default_dict)]
@@ -717,7 +720,8 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, critical=False, fatal_timeouts=True,
-               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY):
+               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
+               retry=False):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
@@ -728,6 +732,7 @@ class HWTestConfig(object):
     self.fatal_timeouts = fatal_timeouts
     self.file_bugs = file_bugs
     self.priority = priority
+    self.retry = retry
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""

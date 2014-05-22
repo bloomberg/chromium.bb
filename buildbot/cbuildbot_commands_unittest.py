@@ -169,6 +169,7 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self._wait_for_results = False
     self._priority = 'test-priority'
     self._timeout_mins = 23
+    self._retry = False
 
   def testRunHWTestSuiteMinimal(self):
     """Test RunHWTestSuite without optional arguments."""
@@ -184,13 +185,14 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     commands.RunHWTestSuite(self._build, self._suite, self._board,
                             self._pool, self._num, self._file_bugs,
                             self._wait_for_results, self._priority,
-                            self._timeout_mins, debug=False)
+                            self._timeout_mins, self._retry, debug=False)
     self.assertCommandCalled([
         commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
         'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
         '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
         '--file_bugs', 'True', '--no_wait', 'True',
-        '--priority', 'test-priority', '--timeout_mins', '23'
+        '--priority', 'test-priority', '--timeout_mins', '23',
+        '--retry', 'False',
     ], error_code_ok=True)
 
   def testRunHWTestSuiteFailure(self):

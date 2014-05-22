@@ -715,7 +715,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
 
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
-                   debug=True):
+                   retry=None, debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -730,6 +730,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     wait_for_results: If True, wait for autotest results before returning.
     priority: Priority of this suite run.
     timeout_mins: Timeout in minutes for the suite job and its sub-jobs.
+    retry: If True, will enable job-level retry. Only works when
+           wait_for_results is True.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -758,6 +760,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
   if timeout_mins is not None:
     cmd += ['--timeout_mins', str(timeout_mins)]
+
+  if retry is not None:
+    cmd += ['--retry', str(retry)]
 
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
