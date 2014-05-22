@@ -153,7 +153,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
    public:
     WriteOp(scoped_refptr<FileHandleHolder> file_handle,
             int64_t offset,
-            const char* buffer,
+            scoped_ptr<char[]> buffer,
             int32_t bytes_to_write,
             bool append);
 
@@ -167,13 +167,13 @@ class PPAPI_PROXY_EXPORT FileIOResource
 
     scoped_refptr<FileHandleHolder> file_handle_;
     int64_t offset_;
-    const char* buffer_;
+    scoped_ptr<char[]> buffer_;
     int32_t bytes_to_write_;
     bool append_;
   };
 
   void OnRequestWriteQuotaComplete(int64_t offset,
-                                   const char* buffer,
+                                   scoped_ptr<char[]> buffer,
                                    int32_t bytes_to_write,
                                    scoped_refptr<TrackedCallback> callback,
                                    int64_t granted);
@@ -199,8 +199,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
   int32_t OnReadComplete(scoped_refptr<ReadOp> read_op,
                          PP_ArrayOutput array_output,
                          int32_t result);
-  int32_t OnWriteComplete(scoped_refptr<WriteOp> write_op,
-                          int32_t result);
+  int32_t OnWriteComplete(int32_t result);
 
   // Reply message handlers for operations that are done in the host.
   void OnPluginMsgGeneralComplete(scoped_refptr<TrackedCallback> callback,

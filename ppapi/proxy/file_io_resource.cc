@@ -85,28 +85,28 @@ int32_t FileIOResource::ReadOp::DoWork() {
 
 FileIOResource::WriteOp::WriteOp(scoped_refptr<FileHandleHolder> file_handle,
                                  int64_t offset,
-                                 const char* buffer,
+                                 scoped_ptr<char[]> buffer,
                                  int32_t bytes_to_write,
                                  bool append)
-  : file_handle_(file_handle),
-    offset_(offset),
-    buffer_(buffer),
-    bytes_to_write_(bytes_to_write),
-    append_(append) {
+    : file_handle_(file_handle),
+      offset_(offset),
+      buffer_(buffer.Pass()),
+      bytes_to_write_(bytes_to_write),
+      append_(append) {
 }
 
 FileIOResource::WriteOp::~WriteOp() {
 }
 
 int32_t FileIOResource::WriteOp::DoWork() {
-  // We can't just call WritePlatformFile in append mode, since NaCl doesn't
+  // In append mode, we can't call WritePlatformFile, since NaCl doesn't
   // implement fcntl, causing the function to call pwrite, which is incorrect.
   if (append_) {
     return base::WritePlatformFileAtCurrentPos(
-        file_handle_->raw_handle(), buffer_, bytes_to_write_);
+        file_handle_->raw_handle(), buffer_.get(), bytes_to_write_);
   } else {
     return base::WritePlatformFile(
-        file_handle_->raw_handle(), offset_, buffer_, bytes_to_write_);
+        file_handle_->raw_handle(), offset_, buffer_.get(), bytes_to_write_);
   }
 }
 
@@ -306,12 +306,19 @@ int32_t FileIOResource::Write(int64_t offset,
     }
 
     if (increase > 0) {
+      // Request a quota reservation. This makes the Write asynchronous, so we
+      // must copy the plugin's buffer.
+      scoped_ptr<char[]> copy(new char[bytes_to_write]);
+      memcpy(copy.get(), buffer, bytes_to_write);
       int64_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
               increase,
               base::Bind(&FileIOResource::OnRequestWriteQuotaComplete,
                          this,
-                         offset, buffer, bytes_to_write, callback));
+                         offset,
+                         base::Passed(&copy),
+                         bytes_to_write,
+                         callback));
       if (result == PP_OK_COMPLETIONPENDING)
         return PP_OK_COMPLETIONPENDING;
       DCHECK(result == increase);
@@ -515,16 +522,18 @@ int32_t FileIOResource::WriteValidated(
     return result;
   }
 
-  // For the non-blocking case, post a task to the file thread.
+  // For the non-blocking case, post a task to the file thread. We must copy the
+  // plugin's buffer at this point.
+  scoped_ptr<char[]> copy(new char[bytes_to_write]);
+  memcpy(copy.get(), buffer, bytes_to_write);
   scoped_refptr<WriteOp> write_op(
-      new WriteOp(file_handle_, offset, buffer, bytes_to_write, append));
+      new WriteOp(file_handle_, offset, copy.Pass(), bytes_to_write, append));
   base::PostTaskAndReplyWithResult(
       PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
       Bind(&FileIOResource::WriteOp::DoWork, write_op),
       RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
-  callback->set_completion_task(
-      Bind(&FileIOResource::OnWriteComplete, this, write_op));
+  callback->set_completion_task(Bind(&FileIOResource::OnWriteComplete, this));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -582,7 +591,7 @@ int32_t FileIOResource::OnReadComplete(scoped_refptr<ReadOp> read_op,
 
 void FileIOResource::OnRequestWriteQuotaComplete(
     int64_t offset,
-    const char* buffer,
+    scoped_ptr<char[]> buffer,
     int32_t bytes_to_write,
     scoped_refptr<TrackedCallback> callback,
     int64_t granted) {
@@ -602,9 +611,22 @@ void FileIOResource::OnRequestWriteQuotaComplete(
       max_written_offset_ = max_offset;
   }
 
-  int32_t result = WriteValidated(offset, buffer, bytes_to_write, callback);
-  if (result != PP_OK_COMPLETIONPENDING)
+  if (callback->is_blocking()) {
+    int32_t result =
+        WriteValidated(offset, buffer.get(), bytes_to_write, callback);
+    DCHECK(result != PP_OK_COMPLETIONPENDING);
     callback->Run(result);
+  } else {
+    bool append = (open_flags_ & PP_FILEOPENFLAG_APPEND) != 0;
+    scoped_refptr<WriteOp> write_op(new WriteOp(
+        file_handle_, offset, buffer.Pass(), bytes_to_write, append));
+    base::PostTaskAndReplyWithResult(
+        PpapiGlobals::Get()->GetFileTaskRunner(),
+        FROM_HERE,
+        Bind(&FileIOResource::WriteOp::DoWork, write_op),
+        RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
+    callback->set_completion_task(Bind(&FileIOResource::OnWriteComplete, this));
+  }
 }
 
 void FileIOResource::OnRequestSetLengthQuotaComplete(
@@ -623,8 +645,7 @@ void FileIOResource::OnRequestSetLengthQuotaComplete(
   SetLengthValidated(length, callback);
 }
 
-int32_t FileIOResource::OnWriteComplete(scoped_refptr<WriteOp> write_op,
-                                        int32_t result) {
+int32_t FileIOResource::OnWriteComplete(int32_t result) {
   DCHECK(state_manager_.get_pending_operation() ==
          FileIOStateManager::OPERATION_WRITE);
   // |result| is the return value of WritePlatformFile; -1 indicates failure.

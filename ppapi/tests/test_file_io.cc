@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "ppapi/c/pp_errors.h"
@@ -875,12 +876,20 @@ std::string TestFileIO::TestParallelWrites() {
   int32_t rv_2 = PP_OK;
   while (size_1 >= 0 && size_2 >= 0 && size_1 + size_2 > 0) {
     if (size_1 > 0) {
-      rv_1 = file_io.Write(write_offset_1, buf_1, size_1,
-                           callback_1.GetCallback());
+      // Copy the buffer so we can erase it below.
+      std::string str_1(buf_1);
+      rv_1 = file_io.Write(
+          write_offset_1, &str_1[0], str_1.size(), callback_1.GetCallback());
+      // Erase the buffer to test that async writes copy it.
+      std::fill(str_1.begin(), str_1.end(), 0);
     }
     if (size_2 > 0) {
-      rv_2 = file_io.Write(write_offset_2, buf_2, size_2,
-                           callback_2.GetCallback());
+      // Copy the buffer so we can erase it below.
+      std::string str_2(buf_2);
+      rv_2 = file_io.Write(
+          write_offset_2, &str_2[0], str_2.size(), callback_2.GetCallback());
+      // Erase the buffer to test that async writes copy it.
+      std::fill(str_2.begin(), str_2.end(), 0);
     }
 
     if (size_1 > 0) {
