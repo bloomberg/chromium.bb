@@ -1526,47 +1526,6 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestAtomicCommitWithPartialUpdate);
 
-class LayerTreeHostTestFinishAllRendering : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestFinishAllRendering() : once_(false), draw_count_(0) {}
-
-  virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetNeedsRedraw();
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    if (once_)
-      return;
-    once_ = true;
-    layer_tree_host()->SetNeedsRedraw();
-    {
-      base::AutoLock lock(lock_);
-      draw_count_ = 0;
-    }
-    layer_tree_host()->FinishAllRendering();
-    {
-      base::AutoLock lock(lock_);
-      EXPECT_EQ(0, draw_count_);
-    }
-    EndTest();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    base::AutoLock lock(lock_);
-    ++draw_count_;
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  bool once_;
-  base::Lock lock_;
-  int draw_count_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFinishAllRendering);
-
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
  protected:
