@@ -56,7 +56,6 @@ typedef WTF::HashMap<const RenderBlock*, OwnPtr<TrackedRendererListHashSet> > Tr
 typedef WTF::HashMap<const RenderBox*, OwnPtr<HashSet<RenderBlock*> > > TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
-enum CaretType { CursorCaret, DragCaret };
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
 enum TextRunFlag {
@@ -386,10 +385,9 @@ private:
     void paintColumnContents(PaintInfo&, const LayoutPoint&, bool paintFloats = false);
     void paintColumnRules(PaintInfo&, const LayoutPoint&);
     void paintSelection(PaintInfo&, const LayoutPoint&);
-    void paintCaret(PaintInfo&, const LayoutPoint&, CaretType);
+    void paintCarets(PaintInfo&, const LayoutPoint&);
 
-    bool hasCaret() const { return hasCaret(CursorCaret) || hasCaret(DragCaret); }
-    bool hasCaret(CaretType) const;
+    bool hasCaret() const;
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
