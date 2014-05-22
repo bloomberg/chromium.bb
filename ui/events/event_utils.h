@@ -6,6 +6,7 @@
 #define UI_EVENTS_EVENT_UTILS_H_
 
 #include "base/event_types.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/display.h"
@@ -31,6 +32,11 @@ class Event;
 
 // Updates the list of devices for cached properties.
 EVENTS_EXPORT void UpdateDeviceList();
+
+// Returns a ui::Event wrapping a native event. Ownership of the returned value
+// is transferred to the caller.
+EVENTS_EXPORT scoped_ptr<Event> EventFromNative(
+    const base::NativeEvent& native_event);
 
 // Get the EventType from a native event.
 EVENTS_EXPORT EventType EventTypeFromNative(
