@@ -12,12 +12,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::vector;
-using testing::_;
 using testing::ElementsAre;
 using testing::Pair;
 using testing::Pointwise;
 using testing::Return;
 using testing::StrictMock;
+using testing::_;
 
 namespace net {
 namespace test {

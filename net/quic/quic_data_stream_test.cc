@@ -19,12 +19,12 @@
 
 using base::StringPiece;
 using std::min;
-using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
+using testing::_;
 
 namespace net {
 namespace test {

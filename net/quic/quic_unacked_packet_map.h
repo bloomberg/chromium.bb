@@ -116,7 +116,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // transmissions.
   // TODO(ianswett): Remove largest_observed_ once the map tracks whether a
   // transmission is useful for RTT purposes internally.
-  void RemoveRetransmittibility(QuicPacketSequenceNumber sequence_number,
+  void RemoveRetransmittability(QuicPacketSequenceNumber sequence_number,
                                 QuicPacketSequenceNumber largest_observed_);
 
   // Removes an entry from the unacked packet map which is not pending, has

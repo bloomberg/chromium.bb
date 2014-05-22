@@ -122,7 +122,7 @@ void QuicUnackedPacketMap::NackPacket(QuicPacketSequenceNumber sequence_number,
   it->second.nack_count = max(min_nacks, it->second.nack_count);
 }
 
-void QuicUnackedPacketMap::RemoveRetransmittibility(
+void QuicUnackedPacketMap::RemoveRetransmittability(
     QuicPacketSequenceNumber sequence_number,
     QuicPacketSequenceNumber largest_observed) {
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);

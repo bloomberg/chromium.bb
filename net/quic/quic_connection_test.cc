@@ -31,7 +31,6 @@
 using base::StringPiece;
 using std::map;
 using std::vector;
-using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::ContainerEq;
@@ -43,6 +42,7 @@ using testing::Ref;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
+using testing::_;
 
 namespace net {
 namespace test {

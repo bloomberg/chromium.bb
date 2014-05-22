@@ -259,7 +259,7 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
       // they are not retransmitted or considered lost from a congestion control
       // perspective.
       pending_retransmissions_.erase(it->first);
-      unacked_packets_.RemoveRetransmittibility(it->first, largest_observed_);
+      unacked_packets_.RemoveRetransmittability(it->first, largest_observed_);
       unacked_packets_.SetNotPending(it->first);
     }
   }
@@ -339,7 +339,7 @@ void QuicSentPacketManager::MarkPacketRevived(
         newest_transmission, delta_largest_observed);
   }
 
-  unacked_packets_.RemoveRetransmittibility(sequence_number, largest_observed_);
+  unacked_packets_.RemoveRetransmittability(sequence_number, largest_observed_);
 }
 
 QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
@@ -380,7 +380,7 @@ QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
     unacked_packets_.SetNotPending(newest_transmission);
   }
   unacked_packets_.SetNotPending(sequence_number);
-  unacked_packets_.RemoveRetransmittibility(sequence_number, largest_observed_);
+  unacked_packets_.RemoveRetransmittability(sequence_number, largest_observed_);
 
   QuicUnackedPacketMap::const_iterator next_unacked = unacked_packets_.begin();
   while (next_unacked != unacked_packets_.end() &&

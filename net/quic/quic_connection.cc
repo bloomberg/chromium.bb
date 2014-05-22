@@ -25,17 +25,17 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
+using base::StringPiece;
 using base::hash_map;
 using base::hash_set;
-using base::StringPiece;
 using std::list;
 using std::make_pair;
-using std::min;
 using std::max;
+using std::min;
 using std::numeric_limits;
-using std::vector;
 using std::set;
 using std::string;
+using std::vector;
 
 namespace net {
 
