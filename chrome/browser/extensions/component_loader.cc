@@ -519,10 +519,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
           base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
     }
 
-    if (!command_line->HasSwitch(chromeos::switches::kDisableFirstRunUI)) {
-      Add(IDR_FIRST_RUN_DIALOG_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("chromeos/first_run/app")));
-    }
+    Add(IDR_FIRST_RUN_DIALOG_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("chromeos/first_run/app")));
 
     Add(IDR_NETWORK_CONFIGURATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/network_configuration")));

@@ -1509,13 +1509,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "disable-first-run-ui",
-    IDS_FLAGS_DISABLE_FIRST_RUN_UI_NAME,
-    IDS_FLAGS_DISABLE_FIRST_RUN_UI_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableFirstRunUI)
-  },
-  {
     "enable-first-run-ui-transitions",
     IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_NAME,
     IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION,

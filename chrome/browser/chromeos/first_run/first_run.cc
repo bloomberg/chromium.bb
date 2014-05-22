@@ -65,13 +65,11 @@ class DialogLauncher : public content::NotificationObserver {
     bool launched_in_test = command_line->HasSwitch(::switches::kTestType);
     bool launched_in_telemetry =
         command_line->HasSwitch(switches::kOobeSkipPostLogin);
-    bool first_run_disabled =
-        command_line->HasSwitch(switches::kDisableFirstRunUI);
     bool is_user_new = chromeos::UserManager::Get()->IsCurrentUserNew();
     bool first_run_forced = command_line->HasSwitch(switches::kForceFirstRunUI);
     bool first_run_seen =
         profile_->GetPrefs()->GetBoolean(prefs::kFirstRunTutorialShown);
-    if (!launched_in_telemetry && !first_run_disabled &&
+    if (!launched_in_telemetry &&
         ((is_user_new && !first_run_seen && !launched_in_test) ||
          first_run_forced)) {
       LaunchDialogForProfile(profile_);

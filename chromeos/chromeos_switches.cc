@@ -199,9 +199,6 @@ const char kStubCrosSettings[]              = "stub-cros-settings";
 // Disables SAML sigin support.
 const char kDisableSamlSignin[]             = "disable-saml-signin";
 
-// Disables new first-run overlay UI.
-const char kDisableFirstRunUI[] = "disable-first-run-ui";
-
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 

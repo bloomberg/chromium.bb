@@ -6276,12 +6276,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to disable new first-run UI.">
-          Disable new first-run UI.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_FIRST_RUN_UI_DESCRIPTION" desc="Description for the flag to disable new first-run UI.">
-          If disabled, overlay tutorial won't be shown after first sign-in.
-        </message>
         <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_NAME" desc="Name of the flag to enable animated transitions for the first-run tutorial.">
           Enable animated transitions in the first-run tutorial.
         </message>
