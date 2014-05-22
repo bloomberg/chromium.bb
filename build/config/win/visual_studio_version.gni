@@ -19,4 +19,3 @@ if (visual_studio_path == "") {
   visual_studio_path = toolchain_data[0]
   windows_sdk_path = toolchain_data[1]
 }
-

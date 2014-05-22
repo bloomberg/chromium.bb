@@ -14,6 +14,29 @@ group("allocator") {
   }
 }
 
+# This config and libc modification are only used on Windows.
+if (is_win) {
+  import("//build/config/win/visual_studio_version.gni")
+
+  config("nocmt") {
+    ldflags = [
+      "/NODEFAULTLIB:libcmt",
+      "/NODEFAULTLIB:libcmtd",
+    ]
+    libs = [ rebase_path("$target_gen_dir/allocator/libcmt.lib") ]
+  }
+
+  action("prep_libc") {
+    script = "prep_libc.py"
+    outputs = [ "$target_gen_dir/allocator/libcmt.lib" ]
+    args = [
+      visual_studio_path + "/vc/lib",
+      rebase_path("$target_gen_dir/allocator"),
+      cpu_arch,
+    ]
+  }
+}
+
 if (!is_android) {
   # tcmalloc currently won't compile on Android.
   source_set("tcmalloc") {
@@ -125,6 +148,8 @@ if (!is_android) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
+    deps = []
+
     if (is_win) {
       sources -= [
         "$tcmalloc_dir/src/base/elf_mem_image.cc",
@@ -152,7 +177,14 @@ if (!is_android) {
         "$tcmalloc_dir/src/profiler.cc",
       ]
       defines += [ "PERFTOOLS_DLL_DECL=" ]
+
+      direct_dependent_configs = [ ":nocmt" ]
+
+      deps += [
+        ":prep_libc",
+      ]
     }
+
     if (is_linux || is_android) {
       sources -= [
         "$tcmalloc_dir/src/system-alloc.h",
@@ -191,7 +223,7 @@ if (!is_android) {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    deps = [
+    deps += [
       "//base/third_party/dynamic_annotations",
     ]
 

@@ -12,7 +12,7 @@
 # VCLibDir is the path where VC is installed, something like:
 #    C:\Program Files\Microsoft Visual Studio 8\VC\lib
 # OutputDir is the directory where the modified libcmt file should be stored.
-# arch is either 'ia32' or 'x64'
+# arch is one of: 'ia32', 'x86' or 'x64'. ia32 and x86 are synonyms.
 
 import os
 import shutil
