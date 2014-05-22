@@ -29,6 +29,7 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

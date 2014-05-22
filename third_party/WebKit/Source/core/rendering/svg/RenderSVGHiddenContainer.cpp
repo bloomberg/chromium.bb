@@ -20,6 +20,7 @@
 #include "config.h"
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

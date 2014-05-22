@@ -33,6 +33,7 @@
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

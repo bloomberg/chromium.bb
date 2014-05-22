@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
 #include "SVGNames.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
 

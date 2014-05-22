@@ -32,7 +32,6 @@
 #define RenderSVGModelObject_h
 
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/FloatRect.h"
 

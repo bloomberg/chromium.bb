@@ -26,7 +26,6 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/rendering/GraphicsContextAnnotator.h"
@@ -36,6 +35,7 @@
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGPathData.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

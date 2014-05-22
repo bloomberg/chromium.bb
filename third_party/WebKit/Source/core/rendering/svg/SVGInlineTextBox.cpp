@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTheme.h"

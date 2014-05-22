@@ -24,7 +24,6 @@
 #define RenderSVGRoot_h
 
 #include "core/rendering/RenderReplaced.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
