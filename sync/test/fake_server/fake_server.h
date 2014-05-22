@@ -32,7 +32,9 @@ class FakeServer {
 
     // Called after FakeServer has processed a successful commit. The types
     // updated as part of the commit are passed in |committed_model_types|.
-    virtual void OnCommit(syncer::ModelTypeSet committed_model_types) = 0;
+    virtual void OnCommit(
+        const std::string& committer_id,
+        syncer::ModelTypeSet committed_model_types) = 0;
   };
 
   FakeServer();
@@ -71,7 +73,8 @@ class FakeServer {
                                sync_pb::GetUpdatesResponse* response);
 
   // Processes a Commit call.
-  bool HandleCommitRequest(const sync_pb::CommitMessage& commit,
+  bool HandleCommitRequest(const sync_pb::CommitMessage& message,
+                           const std::string& invalidator_client_id,
                            sync_pb::CommitResponse* response);
 
   // Inserts the default permanent items in |entities_|.

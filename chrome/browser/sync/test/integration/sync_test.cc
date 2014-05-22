@@ -405,6 +405,11 @@ void SyncTest::InitializeInvalidations(int index) {
                 GetProfile(index),
                 fake_server::FakeServerInvalidationService::Build));
     fake_server_->AddObserver(invalidation_service);
+    if (TestUsesSelfNotifications()) {
+      invalidation_service->EnableSelfNotifications();
+    } else {
+      invalidation_service->DisableSelfNotifications();
+    }
     fake_server_invalidation_services_[index] = invalidation_service;
   } else {
     invalidation::P2PInvalidationService* p2p_invalidation_service =

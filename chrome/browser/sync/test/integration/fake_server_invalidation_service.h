@@ -50,11 +50,20 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
       base::Callback<void(const base::DictionaryValue&)> caller) const OVERRIDE;
   virtual IdentityProvider* GetIdentityProvider() OVERRIDE;
 
+  // Functions to enable or disable sending of self-notifications.  In the real
+  // world, clients do not receive notifications of their own commits.
+  void EnableSelfNotifications();
+  void DisableSelfNotifications();
+
   // FakeServer::Observer:
-  virtual void OnCommit(syncer::ModelTypeSet committed_model_types) OVERRIDE;
+  virtual void OnCommit(
+      const std::string& committer_id,
+      syncer::ModelTypeSet committed_model_types) OVERRIDE;
 
  private:
   std::string client_id_;
+  bool self_notify_;
+
   syncer::InvalidatorRegistrar invalidator_registrar_;
   FakeProfileOAuth2TokenService token_service_;
   FakeIdentityProvider identity_provider_;

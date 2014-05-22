@@ -227,6 +227,7 @@ void FakeServer::HandleCommand(const string& request,
       break;
     case sync_pb::ClientToServerMessage::COMMIT:
       success = HandleCommitRequest(message.commit(),
+                                    message.invalidator_client_id(),
                                     response_proto.mutable_commit());
       break;
     default:
@@ -396,6 +397,7 @@ bool FakeServer::DeleteChildren(const string& id) {
 
 bool FakeServer::HandleCommitRequest(
     const sync_pb::CommitMessage& commit,
+    const std::string& invalidator_client_id,
     sync_pb::CommitResponse* response) {
   std::map<string, string> client_to_server_ids;
   string guid = commit.cache_guid();
@@ -430,7 +432,8 @@ bool FakeServer::HandleCommitRequest(
     committed_model_types.Put(entity->GetModelType());
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnCommit(committed_model_types));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnCommit(invalidator_client_id, committed_model_types));
   return true;
 }
 
