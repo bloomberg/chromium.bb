@@ -5,7 +5,6 @@
 #ifndef LIBRARIES_NACL_IO_TYPED_FS_FACTORY_H_
 #define LIBRARIES_NACL_IO_TYPED_FS_FACTORY_H_
 
-#include "nacl_io/filesystem.h"
 #include "nacl_io/fs_factory.h"
 
 namespace nacl_io {

@@ -17,7 +17,7 @@ class PipeNode : public StreamNode {
  public:
   explicit PipeNode(Filesystem* fs);
 
-  virtual EventEmitter* GetEventEmitter();
+  virtual PipeEventEmitter* GetEventEmitter();
   virtual Error Read(const HandleAttr& attr,
                      void* buf,
                      size_t count,

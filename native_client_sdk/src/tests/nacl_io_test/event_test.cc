@@ -174,14 +174,18 @@ TEST(PipeTest, Listener) {
   {
     EventListenerLock locker(&pipe);
     EXPECT_EQ(0, locker.WaitOnEvent(POLLOUT, 0));
-    EXPECT_EQ(sizeof(hello), pipe.Write_Locked(hello, sizeof(hello)));
+    int out_bytes = 0;
+    EXPECT_EQ(0, pipe.Write_Locked(hello, sizeof(hello), &out_bytes));
+    EXPECT_EQ(sizeof(hello), out_bytes);
   }
 
   // We should now be able to poll
   {
     EventListenerLock locker(&pipe);
     EXPECT_EQ(0, locker.WaitOnEvent(POLLIN, 0));
-    EXPECT_EQ(sizeof(hello), pipe.Read_Locked(tmp, sizeof(tmp)));
+    int out_bytes = -1;
+    EXPECT_EQ(0, pipe.Read_Locked(tmp, sizeof(tmp), &out_bytes));
+    EXPECT_EQ(sizeof(hello), out_bytes);
   }
 
   // Verify we can read it correctly.

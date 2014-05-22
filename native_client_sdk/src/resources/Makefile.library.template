@@ -47,6 +47,10 @@ CFLAGS += {{' '.join(target['CFLAGS_GCC'])}}
 endif
 [[]]
 
+[[for define in target.get('DEFINES', []):]]
+CFLAGS += -D{{define}}
+[[]]
+
 SOURCES = \
 [[for source in sorted(target['SOURCES']):]]
   {{source}} \

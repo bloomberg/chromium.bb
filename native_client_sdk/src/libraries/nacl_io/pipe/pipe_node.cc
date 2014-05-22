@@ -20,9 +20,12 @@ const size_t kDefaultPipeSize = 512 * 1024;
 namespace nacl_io {
 
 PipeNode::PipeNode(Filesystem* fs)
-    : StreamNode(fs), pipe_(new PipeEventEmitter(kDefaultPipeSize)) {}
+    : StreamNode(fs), pipe_(new PipeEventEmitter(kDefaultPipeSize)) {
+}
 
-EventEmitter* PipeNode::GetEventEmitter() { return pipe_.get(); }
+PipeEventEmitter* PipeNode::GetEventEmitter() {
+  return pipe_.get();
+}
 
 Error PipeNode::Read(const HandleAttr& attr,
                      void* buf,
@@ -32,11 +35,13 @@ Error PipeNode::Read(const HandleAttr& attr,
 
   EventListenerLock wait(GetEventEmitter());
   Error err = wait.WaitOnEvent(POLLIN, ms);
+  if (err == ETIMEDOUT)
+    err = EWOULDBLOCK;
   if (err)
     return err;
 
-  *out_bytes = pipe_->Read_Locked(static_cast<char*>(buf), count);
-  return 0;
+  return GetEventEmitter()->Read_Locked(static_cast<char*>(buf), count,
+                                        out_bytes);
 }
 
 Error PipeNode::Write(const HandleAttr& attr,
@@ -47,11 +52,13 @@ Error PipeNode::Write(const HandleAttr& attr,
 
   EventListenerLock wait(GetEventEmitter());
   Error err = wait.WaitOnEvent(POLLOUT, ms);
+  if (err == ETIMEDOUT)
+    err = EWOULDBLOCK;
   if (err)
     return err;
 
-  *out_bytes = pipe_->Write_Locked(static_cast<const char*>(buf), count);
-  return 0;
+  return GetEventEmitter()->Write_Locked(static_cast<const char*>(buf),
+                                         count, out_bytes);
 }
 
 }  // namespace nacl_io

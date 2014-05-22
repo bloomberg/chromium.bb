@@ -110,6 +110,8 @@ Error TtyNode::Read(const HandleAttr& attr,
 
   // If interrupted, return
   Error err = wait.WaitOnEvent(POLLIN, -1);
+  if (err == ETIMEDOUT)
+    err = EWOULDBLOCK;
   if (err != 0)
     return err;
 

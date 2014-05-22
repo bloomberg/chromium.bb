@@ -21,6 +21,7 @@
 
 #include "nacl_io/ioctl.h"
 #include "nacl_io/kernel_wrap.h"
+#include "nacl_io/log.h"
 #include "nacl_io/nacl_io.h"
 
 #include "ppapi/c/ppb_var.h"
@@ -277,11 +278,15 @@ bool PSInstance::ProcessProperties() {
       tioc_nacl_output handler;
       handler.handler = TtyOutputHandlerStatic;
       handler.user_data = this;
-      ioctl(tty_fd_, TIOCNACLOUTPUT, reinterpret_cast<char*>(&handler));
+      ioctl(tty_fd_, TIOCNACLOUTPUT, &handler);
     } else {
       Error("Failed to open /dev/tty.\n");
     }
   }
+
+  RegisterMessageHandler("jspipe1", MessageHandlerInputStatic, this);
+  RegisterMessageHandler("jspipe2", MessageHandlerInputStatic, this);
+  RegisterMessageHandler("jspipe3", MessageHandlerInputStatic, this);
 
   exit_message_ = getenv("PS_EXIT_MESSAGE");
 
@@ -400,20 +405,59 @@ void PSInstance::MessageHandlerExit(const pp::Var& message) {
   pthread_mutex_unlock(&exit_lock_);
 }
 
-void PSInstance::MessageHandlerInput(const pp::Var& message) {
-  // Since our message may contain null characters, we can't send it as a
-  // naked C string, so we package it up in this struct before sending it
-  // to the ioctl.
-  assert(message.is_string());
-  std::string buffer = message.AsString();
+void PSInstance::MessageHandlerInput(const pp::Var& key,
+                                     const pp::Var& message) {
+  std::string key_string = key.AsString();
 
-  struct tioc_nacl_input_string ioctl_message;
-  ioctl_message.length = buffer.size();
-  ioctl_message.buffer = buffer.c_str();
-  int ret =
-    ioctl(tty_fd_, TIOCNACLINPUT, reinterpret_cast<char*>(&ioctl_message));
-  if (ret != 0 && errno != ENOTTY) {
-    Error("ioctl returned unexpected error: %d.\n", ret);
+  // Legacy support for passing TTY data as a string, rather than a array
+  // buffer. TODO(sbc): remove this in a future release.
+  if (message.is_string() && key_string == tty_prefix_) {
+    std::string buffer = message.AsString();
+    Warn("Passing TTY input as a string is deprected.  Please use a "
+         "JavaScript ArrayBuffer instead");
+
+    // Since our message may contain null characters, we can't send it as a
+    // naked C string, so we package it up in this struct before sending it
+    // to the ioctl.
+    struct tioc_nacl_input_string ioctl_message;
+    ioctl_message.length = buffer.size();
+    ioctl_message.buffer = buffer.c_str();
+    int ret =
+      ioctl(tty_fd_, TIOCNACLINPUT, &ioctl_message);
+    if (ret != 0 && errno != ENOTTY) {
+      Error("ioctl returned unexpected error: %d.\n", ret);
+    }
+  }
+
+  if (!message.is_array_buffer()) {
+    Error("Expected ArrayBuffer object but got: %d", message.pp_var().type);
+    return;
+  }
+
+  const char* filename = NULL;
+  if (key_string == tty_prefix_) {
+    filename = "/dev/tty";
+  } else if (key_string == "jspipe1") {
+    filename = "/dev/jspipe1";
+  } else if (key_string == "jspipe2") {
+    filename = "/dev/jspipe2";
+  } else if (key_string == "jspipe3") {
+    filename = "/dev/jspipe3";
+  } else {
+    Error("unexpected input key: %s", key_string.c_str());
+    return;
+  }
+
+  int fd = open(filename, O_RDONLY);
+  if (fd < 0) {
+    Error("error opening file: %s (%s)", filename, strerror(errno));
+    return;
+  }
+
+  int ret = ioctl(fd, NACL_IOC_HANDLEMESSAGE, &message.pp_var());
+  if (ret != 0) {
+    Error("ioctl on %s failed: %d.\n", filename, ret);
+    return;
   }
 }
 
@@ -427,7 +471,7 @@ void PSInstance::HandleResize(int width, int height) {
   memset(&size, 0, sizeof(size));
   size.ws_col = width;
   size.ws_row = height;
-  ioctl(tty_fd_, TIOCSWINSZ, reinterpret_cast<char*>(&size));
+  ioctl(tty_fd_, TIOCSWINSZ, &size);
 }
 
 void PSInstance::MessageHandlerResize(const pp::Var& message) {
@@ -458,7 +502,7 @@ void PSInstance::MessageHandlerInputStatic(const pp::Var& key,
                                            const pp::Var& value,
                                            void* user_data) {
   PSInstance* instance = reinterpret_cast<PSInstance*>(user_data);
-  instance->MessageHandlerInput(value);
+  instance->MessageHandlerInput(key, value);
 }
 
 void PSInstance::MessageHandlerResizeStatic(const pp::Var& key,
@@ -471,6 +515,7 @@ void PSInstance::MessageHandlerResizeStatic(const pp::Var& key,
 void PSInstance::RegisterMessageHandler(std::string message_name,
                                         MessageHandler_t handler,
                                         void* user_data) {
+  Trace("registering msg handler: %s", message_name.c_str());
   if (handler == NULL) {
     message_handlers_.erase(message_name);
     return;
@@ -483,16 +528,18 @@ void PSInstance::RegisterMessageHandler(std::string message_name,
 void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   assert(PSE_INSTANCE_HANDLEMESSAGE == type);
 
-  // If the user has specified a tty_prefix_, then filter out the
-  // matching message here and pass them to the tty node via
-  // ioctl() rather then adding them to the event queue.
   pp::Var event(var);
+  // Legacy support for passing TTY input as a string <prefix>:<payload>
+  // TODO(sbc): remove this in a future release.
   if (tty_fd_ >= 0 && event.is_string()) {
+    Warn("passing TTY data using a string prefix is deprected."
+         " Use a JavaScript dictionary instead.");
     std::string message = event.AsString();
     size_t prefix_len = strlen(tty_prefix_);
     if (message.size() > prefix_len) {
       if (!strncmp(message.c_str(), tty_prefix_, prefix_len)) {
-        MessageHandlerInput(pp::Var(message.substr(prefix_len)));
+        MessageHandlerInput(pp::Var(message.substr(0, prefix_len)),
+                            pp::Var(message.substr(prefix_len)));
         return;
       }
     }
@@ -506,6 +553,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
     pp::VarArray keys = dictionary.GetKeys();
     if (keys.GetLength() == 1) {
       pp::Var key = keys.Get(0);
+      Trace("calling handler for: %s", key.AsString().c_str());
       MessageHandlerMap::iterator iter =
           message_handlers_.find(key.AsString());
       if (iter != message_handlers_.end()) {

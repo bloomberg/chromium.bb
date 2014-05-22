@@ -40,6 +40,33 @@ function attachListeners() {
     var func = window[id];
     buttonEl.addEventListener('click', func);
   }
+
+  $('pipe_input_box').addEventListener('keypress', onPipeInput)
+  $('pipe_output').disabled = true;
+
+  $('pipe_name').addEventListener('change',
+                                  function() { $('pipe_output').value = ''; })
+}
+
+// Called with keypress events on the pipe input box
+function onPipeInput(e) {
+  // Create an arraybuffer containing the 16-bit char code
+  // from the keypress event.
+  var buffer = new ArrayBuffer(1*2);
+  var bufferView = new Uint16Array(buffer);
+  bufferView[0] = e.charCode;
+
+  // Pass the buffer in a dictionary over the NaCl module
+  var pipeSelect = $('pipe_name');
+  var pipeName = pipeSelect[pipeSelect.selectedIndex].value;
+  var message = {
+    pipe: pipeName,
+    operation: 'write',
+    payload: buffer,
+  };
+  nacl_module.postMessage(message);
+  e.preventDefault();
+  return false;
 }
 
 function onRadioClicked(e) {
@@ -279,24 +306,44 @@ function postCall(func) {
   });
 }
 
+function ArrayBufferToString(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
 // Called by the common.js module.
 function handleMessage(message_event) {
   var data = message_event.data;
   if ((typeof(data) === 'string' || data instanceof String)) {
     common.logMessage(data);
-  } else {
-    // Result from a function call.
-    var params = data.args;
-    var funcName = data.cmd;
-    var callback = funcToCallback[funcName];
+  } else if (data instanceof Object) {
+    var pipeName = data['pipe']
+    if (pipeName !== undefined) {
+      // Message for JavaScript I/O pipe
+      var operation = data['operation'];
+      if (operation == 'write') {
+        $('pipe_output').value += ArrayBufferToString(data['payload']);
+      } else if (operation == 'ack') {
+        common.logMessage(pipeName + ": ack:" + data['payload']);
+      } else {
+        common.logMessage('Got unexpected pipe operation: ' + operation);
+      }
+    } else {
+      // Result from a function call.
+      var params = data.args;
+      var funcName = data.cmd;
+      var callback = funcToCallback[funcName];
 
-    if (!callback) {
-      common.logMessage('Error: Bad message ' + funcName +
-                        ' received from NaCl module.');
-      return;
+      if (!callback) {
+        common.logMessage('Error: Bad message ' + funcName +
+                          ' received from NaCl module.');
+        return;
+      }
+
+      delete funcToCallback[funcName];
+      callback.apply(null, params);
     }
-
-    delete funcToCallback[funcName];
-    callback.apply(null, params);
+  } else {
+    common.logMessage('Error: Unknow message `' + data +
+                      '` received from NaCl module.');
   }
 }

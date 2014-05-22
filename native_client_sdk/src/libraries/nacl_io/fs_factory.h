@@ -8,19 +8,18 @@
 #include <errno.h>
 
 #include "nacl_io/error.h"
+#include "nacl_io/filesystem.h"
 #include "sdk_util/scoped_ref.h"
 
 namespace nacl_io {
 
-class Filesystem;
 class PepperInterface;
-struct FsInitArgs;
 
 class FsFactory {
  public:
   virtual ~FsFactory() {}
   virtual Error CreateFilesystem(const FsInitArgs& args,
-                                 sdk_util::ScopedRef<Filesystem>* out_fs) = 0;
+                                 ScopedFilesystem* out_fs) = 0;
 };
 
 }  // namespace nacl_io

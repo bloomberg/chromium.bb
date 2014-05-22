@@ -72,6 +72,9 @@ endif
 [[    cflags = 'CFLAGS']]
 [[  ]]
 [[  ExpandDict(cflags, flags)]]
+[[  for define in target.get('DEFINES', []):]]
+{{cflags}} += -D{{define}}
+[[  ]]
 [[  if 'CFLAGS_GCC' in target:]]
 ifneq ($(TOOLCHAIN),pnacl)
 {{cflags}} += {{' '.join(target['CFLAGS_GCC'])}}

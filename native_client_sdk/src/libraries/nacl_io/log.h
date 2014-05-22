@@ -9,7 +9,7 @@
 
 #define LOG_PREFIX "nacl_io: "
 
-#if defined(NACL_IO_LOGGING)
+#if NACL_IO_LOGGING
 #define LOG_TRACE(format, ...) \
   nacl_io_log(LOG_PREFIX format "\n", ##__VA_ARGS__)
 #else

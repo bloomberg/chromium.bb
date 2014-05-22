@@ -103,6 +103,19 @@ void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
 }
 
 FakeVarData* FakeVarManager::GetVarData(PP_Var var) {
+  switch (var.type) {
+    // These types don't have any var data as their data
+    // is stored directly in the var's value union.
+    case PP_VARTYPE_UNDEFINED:
+    case PP_VARTYPE_NULL:
+    case PP_VARTYPE_BOOL:
+    case PP_VARTYPE_INT32:
+    case PP_VARTYPE_DOUBLE:
+      return NULL;
+    default:
+      break;
+  }
+
   VarMap::iterator iter = var_map_.find(var.value.as_id);
   if (iter == var_map_.end())
     return NULL;

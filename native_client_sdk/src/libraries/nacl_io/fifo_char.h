@@ -25,8 +25,8 @@ class FIFOChar : public FIFOInterface {
   virtual bool IsFull();
   virtual bool Resize(size_t len);
 
-  size_t ReadAvailable();
-  size_t WriteAvailable();
+  virtual size_t ReadAvailable();
+  virtual size_t WriteAvailable();
 
   // Reads out no more than the requested len without updating the tail.
   // Returns actual amount read.

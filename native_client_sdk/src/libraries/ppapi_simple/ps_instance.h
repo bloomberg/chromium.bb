@@ -154,11 +154,12 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   // Called by Init to processes default and embed tag arguments prior to
   // launching the 'ppapi_main' thread.
   virtual bool ProcessProperties();
+
  private:
   static void* MainThreadThunk(void *start_info);
   ssize_t TtyOutputHandler(const char* buf, size_t count);
   void MessageHandlerExit(const pp::Var& message);
-  void MessageHandlerInput(const pp::Var& message);
+  void MessageHandlerInput(const pp::Var& key, const pp::Var& message);
   void MessageHandlerResize(const pp::Var& message);
   void HandleResize(int width, int height);
 
@@ -169,13 +170,13 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
 
   /// Handle exit confirmation message from JavaScript.
   static void MessageHandlerExitStatic(const pp::Var& key,
-                                       const pp::Var& value,
+                                       const pp::Var& message,
                                        void* user_data);
 
   /// Handle input message from JavaScript.  The value is
   /// expected to be of type string.
   static void MessageHandlerInputStatic(const pp::Var& key,
-                                        const pp::Var& value,
+                                        const pp::Var& message,
                                         void* user_data);
 
 
@@ -183,7 +184,7 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   /// expected to be an array of 2 integers representing the
   /// number of columns and rows in the TTY.
   static void MessageHandlerResizeStatic(const pp::Var& key,
-                                         const pp::Var& value,
+                                         const pp::Var& message,
                                          void* user_data);
 
  protected:

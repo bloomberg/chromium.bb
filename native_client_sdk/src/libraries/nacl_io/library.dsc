@@ -8,10 +8,12 @@
   ],
   'TARGETS': [
     {
+      'DEFINES': ['NACL_IO_LOGGING=0'],
       'NAME' : 'nacl_io',
       'TYPE' : 'lib',
       'SOURCES' : [
         "devfs/dev_fs.cc",
+        "devfs/jspipe_event_emitter.cc",
         "devfs/jspipe_node.cc",
         "devfs/tty_event_emitter.cc",
         "devfs/tty_node.cc",
@@ -162,6 +164,7 @@
       'FILES': [
         "char_node.h",
         "devfs/dev_fs.h",
+        "devfs/jspipe_event_emitter.h",
         "devfs/jspipe_node.h",
         "devfs/tty_event_emitter.h",
         "devfs/tty_node.h",

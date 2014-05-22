@@ -330,11 +330,11 @@ Error DevFs::Init(const FsInitArgs& args) {
   INITIALIZE_DEV_NODE_1("/stdout", RealNode, 1);
   INITIALIZE_DEV_NODE_1("/stderr", RealNode, 2);
   INITIALIZE_DEV_NODE("/jspipe1", JSPipeNode);
-  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe1");
+  new_node->Ioctl(NACL_IOC_PIPE_SETNAME, "jspipe1");
   INITIALIZE_DEV_NODE("/jspipe2", JSPipeNode);
-  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe2");
+  new_node->Ioctl(NACL_IOC_PIPE_SETNAME, "jspipe2");
   INITIALIZE_DEV_NODE("/jspipe3", JSPipeNode);
-  new_node->Ioctl(TIOCNACLPIPENAME, "jspipe3");
+  new_node->Ioctl(NACL_IOC_PIPE_SETNAME, "jspipe3");
 
   return 0;
 }

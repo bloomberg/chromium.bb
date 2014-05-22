@@ -13,18 +13,19 @@ PipeEventEmitter::PipeEventEmitter(size_t size)
   UpdateStatus_Locked();
 }
 
-size_t PipeEventEmitter::Read_Locked(char* data, size_t len) {
-  size_t out_len = fifo_.Read(data, len);
+Error PipeEventEmitter::Read_Locked(char* data, size_t len, int* out_bytes) {
+  *out_bytes = fifo_.Read(data, len);
 
   UpdateStatus_Locked();
-  return out_len;
+  return 0;
 }
 
-size_t PipeEventEmitter::Write_Locked(const char* data, size_t len) {
-  size_t out_len = fifo_.Write(data, len);
+Error PipeEventEmitter::Write_Locked(const char* data, size_t len,
+                                     int* out_bytes) {
+  *out_bytes = fifo_.Write(data, len);
 
   UpdateStatus_Locked();
-  return out_len;
+  return 0;
 }
 
 }  // namespace nacl_io

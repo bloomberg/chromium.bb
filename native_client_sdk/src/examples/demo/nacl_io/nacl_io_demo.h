@@ -16,10 +16,8 @@
 struct PP_Var CStrToVar(const char* str);
 char* VprintfToNewString(const char* format, va_list args) PRINTF_LIKE(1, 0);
 char* PrintfToNewString(const char* format, ...) PRINTF_LIKE(1, 2);
-struct PP_Var PrintfToVar(const char* format, ...) PRINTF_LIKE(1, 2);
 struct PP_Var GetDictVar(struct PP_Var var, const char* key);
 
-extern PP_Instance g_instance;
 extern PPB_Var* g_ppb_var;
 extern PPB_VarArray* g_ppb_var_array;
 extern PPB_VarDictionary* g_ppb_var_dictionary;

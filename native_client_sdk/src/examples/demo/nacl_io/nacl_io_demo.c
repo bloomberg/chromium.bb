@@ -6,11 +6,19 @@
 #include "nacl_io_demo.h"
 
 #include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/mount.h>
+#include <sys/param.h>
+#include <sys/select.h>
+#include <sys/stat.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
@@ -23,6 +31,7 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
+#include "nacl_io/ioctl.h"
 #include "nacl_io/nacl_io.h"
 
 #include "handlers.h"
@@ -37,9 +46,9 @@ typedef struct {
   HandleFunc function;
 } FuncNameMapping;
 
-PP_Instance g_instance = 0;
-PPB_GetInterface g_get_browser_interface = NULL;
-PPB_Messaging* g_ppb_messaging = NULL;
+static PP_Instance g_instance = 0;
+static PPB_GetInterface g_get_browser_interface = NULL;
+static PPB_Messaging* g_ppb_messaging = NULL;
 PPB_Var* g_ppb_var = NULL;
 PPB_VarArray* g_ppb_var_array = NULL;
 PPB_VarDictionary* g_ppb_var_dictionary = NULL;
@@ -70,6 +79,7 @@ static FuncNameMapping g_function_map[] = {
 
 /** A handle to the thread the handles messages. */
 static pthread_t g_handle_message_thread;
+static pthread_t g_echo_thread;
 
 /**
  * Create a new PP_Var from a C string.
@@ -118,34 +128,25 @@ char* PrintfToNewString(const char* format, ...) {
 }
 
 /**
- * Printf to a new PP_Var.
+ * Vprintf to a new PP_Var.
  * @param[in] format A print format string.
- * @param[in] ... The printf arguments.
+ * @param[in] va_list The printf arguments.
  * @return A new PP_Var.
  */
-struct PP_Var PrintfToVar(const char* format, ...) {
-  char* string;
-  va_list args;
+static struct PP_Var VprintfToVar(const char* format, va_list args) {
   struct PP_Var var;
-
-  va_start(args, format);
-  string = VprintfToNewString(format, args);
-  va_end(args);
-
+  char* string = VprintfToNewString(format, args);
   var = g_ppb_var->VarFromUtf8(string, strlen(string));
   free(string);
-
   return var;
 }
 
 /**
- * Convert a PP_Var to a C string, given a buffer.
+ * Convert a PP_Var to a C string.
  * @param[in] var The PP_Var to convert.
- * @param[out] buffer The buffer to write to.
- * @param[in] length The length of |buffer|.
- * @return The number of characters written.
+ * @return A newly allocated, NULL-terminated string.
  */
-const char* VarToCStr(struct PP_Var var) {
+static const char* VarToCStr(struct PP_Var var) {
   uint32_t length;
   const char* str = g_ppb_var->VarToUtf8(var, &length);
   if (str == NULL) {
@@ -174,10 +175,18 @@ struct PP_Var GetDictVar(struct PP_Var dict, const char* key) {
 }
 
 /**
- * Send a newly-created PP_Var to JavaScript, then release it.
- * @param[in] var The PP_Var to send.
+ * Post a message to JavaScript.
+ * @param[in] format A printf format string.
+ * @param[in] ... The printf arguments.
  */
-static void PostMessageVar(struct PP_Var var) {
+static void PostMessage(const char* format, ...) {
+  struct PP_Var var;
+  va_list args;
+
+  va_start(args, format);
+  var = VprintfToVar(format, args);
+  va_end(args);
+
   g_ppb_messaging->PostMessage(g_instance, var);
   g_ppb_var->Release(var);
 }
@@ -243,15 +252,14 @@ static void HandleMessage(struct PP_Var message) {
   const char* function_name;
   struct PP_Var params;
   if (ParseMessage(message, &function_name, &params)) {
-    PostMessageVar(CStrToVar("Error: Unable to parse message"));
+    PostMessage("Error: Unable to parse message");
     return;
   }
 
   HandleFunc function = GetFunctionByName(function_name);
   if (!function) {
     /* Function name wasn't found. Error. */
-    PostMessageVar(
-        PrintfToVar("Error: Unknown function \"%s\"", function_name));
+    PostMessage("Error: Unknown function \"%s\"", function_name);
     return;
   }
 
@@ -261,22 +269,76 @@ static void HandleMessage(struct PP_Var message) {
   int result = (*function)(params, &result_var, &error);
   if (result != 0) {
     /* Error. */
-    struct PP_Var var;
     if (error != NULL) {
-      var = PrintfToVar("Error: \"%s\" failed: %s.", function_name, error);
+      PostMessage("Error: \"%s\" failed: %s.", function_name, error);
       free((void*)error);
     } else {
-      var = PrintfToVar("Error: \"%s\" failed.", function_name);
+      PostMessage("Error: \"%s\" failed.", function_name);
     }
-
-    /* Post the error to JavaScript, so the user can see it. */
-    PostMessageVar(var);
     return;
   }
 
   /* Function returned an output dictionary. Send it to JavaScript. */
-  PostMessageVar(result_var);
+  g_ppb_messaging->PostMessage(g_instance, result_var);
   g_ppb_var->Release(result_var);
+}
+
+
+/**
+ * Helper function used by EchoThread which reads from a file descriptor
+ * and writes all the data that it reads back to the same descriptor.
+ */
+static void EchoInput(int fd) {
+  char buffer[512];
+  while (1) {
+    int rtn = read(fd, buffer, 512);
+    if (rtn > 0) {
+      int wrote = write(fd, buffer, rtn);
+      if (wrote < rtn)
+        PostMessage("only wrote %d/%d bytes\n", wrote, rtn);
+    } else {
+      if (rtn < 0 && errno != EAGAIN)
+        PostMessage("read failed: %d (%s)\n", errno, strerror(errno));
+      break;
+    }
+  }
+}
+
+/**
+ * Worker thread that listens for input on JS pipe nodes and echos all input
+ * back to the same pipe.
+ */
+static void* EchoThread(void* user_data) {
+  int fd1 = open("/dev/jspipe1", O_RDWR | O_NONBLOCK);
+  int fd2 = open("/dev/jspipe2", O_RDWR | O_NONBLOCK);
+  int fd3 = open("/dev/jspipe3", O_RDWR | O_NONBLOCK);
+  int nfds = MAX(fd1, fd2);
+  nfds = MAX(nfds, fd3);
+  while (1) {
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(fd1, &readfds);
+    FD_SET(fd2, &readfds);
+    FD_SET(fd3, &readfds);
+    int rtn = select(nfds + 1, &readfds, NULL, NULL, NULL);
+    if (rtn < 0 && errno != EAGAIN) {
+      PostMessage("select failed: %s\n", strerror(errno));
+      break;
+    }
+    if (rtn > 0) {
+      if (FD_ISSET(fd1, &readfds))
+        EchoInput(fd1);
+      if (FD_ISSET(fd2, &readfds))
+        EchoInput(fd2);
+      if (FD_ISSET(fd3, &readfds))
+        EchoInput(fd3);
+    }
+
+  }
+  close(fd1);
+  close(fd2);
+  close(fd3);
+  return 0;
 }
 
 /**
@@ -318,6 +380,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
         "");      /* data */
 
   pthread_create(&g_handle_message_thread, NULL, &HandleMessageThread, NULL);
+  pthread_create(&g_echo_thread, NULL, &EchoThread, NULL);
   InitializeMessageQueue();
 
   return PP_TRUE;
@@ -341,12 +404,41 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
 
 static void Messaging_HandleMessage(PP_Instance instance,
                                     struct PP_Var message) {
+  /* Special case for jspipe input handling */
+  if (message.type != PP_VARTYPE_DICTIONARY) {
+    PostMessage("Got unexpected message type: %d\n", message.type);
+    return;
+  }
+
+  struct PP_Var pipe_var = CStrToVar("pipe");
+  struct PP_Var pipe_name = g_ppb_var_dictionary->Get(message, pipe_var);
+  g_ppb_var->Release(pipe_var);
+
+  /* Special case for jspipe input handling */
+  if (pipe_name.type == PP_VARTYPE_STRING) {
+    char file_name[PATH_MAX];
+    snprintf(file_name, PATH_MAX, "/dev/%s", VarToCStr(pipe_name));
+    int fd = open(file_name, O_RDONLY);
+    g_ppb_var->Release(pipe_name);
+    if (fd < 0) {
+      PostMessage("Warning: opening %s failed.", file_name);
+      goto done;
+    }
+    if (ioctl(fd, NACL_IOC_HANDLEMESSAGE, &message) != 0) {
+      PostMessage("Error: ioctl on %s failed: %s", file_name, strerror(errno));
+    }
+    close(fd);
+    goto done;
+  }
+
   g_ppb_var->AddRef(message);
   if (!EnqueueMessage(message)) {
     g_ppb_var->Release(message);
-    PostMessageVar(
-        PrintfToVar("Warning: dropped message because the queue was full."));
+    PostMessage("Warning: dropped message because the queue was full.");
   }
+
+done:
+  g_ppb_var->Release(pipe_name);
 }
 
 #define GET_INTERFACE(var, type, name)            \

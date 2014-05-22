@@ -10,6 +10,7 @@
 
 #include "nacl_io/error.h"
 #include "nacl_io/event_listener.h"
+#include "nacl_io/log.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/ostermios.h"

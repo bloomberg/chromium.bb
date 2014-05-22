@@ -24,8 +24,8 @@ class PipeEventEmitter : public StreamEventEmitter {
  public:
   PipeEventEmitter(size_t size);
 
-  size_t Read_Locked(char* data, size_t len);
-  size_t Write_Locked(const char* data, size_t len);
+  Error Read_Locked(char* data, size_t len, int* out_bytes);
+  Error Write_Locked(const char* data, size_t len, int* out_bytes);
 
  protected:
   virtual FIFOChar* in_fifo() { return &fifo_; }
