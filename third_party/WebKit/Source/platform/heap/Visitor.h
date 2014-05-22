@@ -665,7 +665,7 @@ public: \
     { \
         typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
         COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
-        visitor->mark(this, &WebCore::TraceTrait<TYPE>::trace); \
+        visitor->mark(static_cast<const TYPE*>(this), &WebCore::TraceTrait<TYPE>::trace); \
     } \
     virtual bool isAlive(WebCore::Visitor* visitor) const OVERRIDE  \
     { \
