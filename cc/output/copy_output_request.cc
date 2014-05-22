@@ -46,8 +46,9 @@ CopyOutputRequest::~CopyOutputRequest() {
 }
 
 void CopyOutputRequest::SendResult(scoped_ptr<CopyOutputResult> result) {
+  bool success = !result->IsEmpty();
   base::ResetAndReturn(&result_callback_).Run(result.Pass());
-  TRACE_EVENT_ASYNC_END0("cc", "CopyOutputRequest", this);
+  TRACE_EVENT_ASYNC_END1("cc", "CopyOutputRequest", this, "success", success);
 }
 
 void CopyOutputRequest::SendEmptyResult() {
