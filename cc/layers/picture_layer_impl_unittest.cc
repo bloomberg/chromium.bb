@@ -1915,9 +1915,11 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   virtual void InitializeRenderer() OVERRIDE {
-    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
-        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))
-                                      .PassAs<OutputSurface>());
+    bool delegated_rendering = false;
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::CreateDeferredGL(
+            scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
+            delegated_rendering).PassAs<OutputSurface>());
   }
 
   virtual void SetUp() OVERRIDE {

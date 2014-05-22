@@ -3185,10 +3185,12 @@ void InitializeGLAndCheck(ContextSharedData* shared_data,
 
 TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
   scoped_ptr<ContextSharedData> shared_data = ContextSharedData::Create();
-  FakeOutputSurfaceClient client;
+  bool delegated_rendering = false;
   scoped_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice)));
+          scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
+          delegated_rendering));
+  FakeOutputSurfaceClient client(output_surface.get());
   EXPECT_TRUE(output_surface->BindToClient(&client));
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());

@@ -105,6 +105,11 @@ class CC_EXPORT OutputSurface {
   // thread.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
+  // This is called by the compositor on the compositor thread inside ReleaseGL
+  // in order to release the ContextProvider. Only used with
+  // deferred_gl_initialization capability.
+  void ReleaseContextProvider();
+
   // Enable or disable vsync.
   void SetThrottleFrameProduction(bool enable);
 

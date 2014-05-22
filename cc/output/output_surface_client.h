@@ -28,6 +28,7 @@ class CC_EXPORT OutputSurfaceClient {
   // the compositor should be able to draw using GL what was previously
   // committed.
   virtual void DeferredInitialize() = 0;
+  // Must call OutputSurface::ReleaseContextProvider inside this call.
   virtual void ReleaseGL() = 0;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;

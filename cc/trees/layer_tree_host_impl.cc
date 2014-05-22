@@ -573,7 +573,10 @@ static DrawMode GetDrawMode(OutputSurface* output_surface) {
     return DRAW_MODE_HARDWARE;
   } else {
     DCHECK_EQ(!output_surface->software_device(),
-              output_surface->capabilities().delegated_rendering);
+              output_surface->capabilities().delegated_rendering &&
+                  !output_surface->capabilities().deferred_gl_initialization)
+        << output_surface->capabilities().delegated_rendering << " "
+        << output_surface->capabilities().deferred_gl_initialization;
     return DRAW_MODE_SOFTWARE;
   }
 }
@@ -1823,13 +1826,12 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
 
 void LayerTreeHostImpl::CreateAndSetRenderer(
     OutputSurface* output_surface,
-    ResourceProvider* resource_provider,
-    bool skip_gl_renderer) {
+    ResourceProvider* resource_provider) {
   DCHECK(!renderer_);
   if (output_surface->capabilities().delegated_rendering) {
     renderer_ = DelegatingRenderer::Create(
         this, &settings_, output_surface, resource_provider);
-  } else if (output_surface->context_provider() && !skip_gl_renderer) {
+  } else if (output_surface->context_provider()) {
     renderer_ = GLRenderer::Create(this,
                                    &settings_,
                                    output_surface,
@@ -1956,9 +1958,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (output_surface->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);
 
-  bool skip_gl_renderer = false;
-  CreateAndSetRenderer(
-      output_surface.get(), resource_provider.get(), skip_gl_renderer);
+  CreateAndSetRenderer(output_surface.get(), resource_provider.get());
 
   transfer_buffer_memory_limit_ =
       GetMaxTransferBufferUsageBytes(output_surface->context_provider().get());
@@ -2026,9 +2026,7 @@ void LayerTreeHostImpl::DeferredInitialize() {
 
   resource_provider_->InitializeGL();
 
-  bool skip_gl_renderer = false;
-  CreateAndSetRenderer(
-      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
+  CreateAndSetRenderer(output_surface_.get(), resource_provider_.get());
 
   EnforceZeroBudget(false);
   client_->SetNeedsCommitOnImplThread();
@@ -2048,9 +2046,8 @@ void LayerTreeHostImpl::ReleaseGL() {
   staging_resource_pool_.reset();
   resource_provider_->InitializeSoftware();
 
-  bool skip_gl_renderer = true;
-  CreateAndSetRenderer(
-      output_surface_.get(), resource_provider_.get(), skip_gl_renderer);
+  output_surface_->ReleaseContextProvider();
+  CreateAndSetRenderer(output_surface_.get(), resource_provider_.get());
 
   EnforceZeroBudget(true);
   DCHECK(GetRendererCapabilities().using_map_image);

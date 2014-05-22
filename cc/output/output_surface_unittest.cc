@@ -126,7 +126,8 @@ class OutputSurfaceTestInitializeNewContext3d : public ::testing::Test {
   OutputSurfaceTestInitializeNewContext3d()
       : context_provider_(TestContextProvider::Create()),
         output_surface_(
-            scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice)) {}
+            scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice)),
+        client_(&output_surface_) {}
 
  protected:
   void BindOutputSurface() {

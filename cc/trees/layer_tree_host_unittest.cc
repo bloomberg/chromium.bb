@@ -20,6 +20,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
@@ -2725,7 +2726,8 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
         TestWebGraphicsContext3D::Create());
 
     return FakeOutputSurface::CreateDeferredGL(
-        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice));
+        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
+        delegating_renderer());
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -2784,6 +2786,24 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     did_release_gl_ = true;
   }
 
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ASSERT_TRUE(result);
+    DelegatedFrameData* delegated_frame_data =
+        output_surface()->last_sent_frame().delegated_frame_data.get();
+    if (!delegated_frame_data)
+      return;
+
+    // Return all resources immediately.
+    TransferableResourceArray resources_to_return =
+        output_surface()->resources_held_by_parent();
+
+    CompositorFrameAck ack;
+    for (size_t i = 0; i < resources_to_return.size(); ++i)
+      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
+    host_impl->ReclaimResources(&ack);
+  }
+
   virtual void AfterTest() OVERRIDE {
     EXPECT_TRUE(did_initialize_gl_);
     EXPECT_TRUE(did_release_gl_);
@@ -2797,7 +2817,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   int last_source_frame_number_drawn_;
 };
 
-MULTI_THREAD_DIRECT_RENDERER_TEST_F(LayerTreeHostTestDeferredInitialize);
+MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
 
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {

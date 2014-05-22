@@ -483,10 +483,8 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
-  void CreateAndSetRenderer(
-      OutputSurface* output_surface,
-      ResourceProvider* resource_provider,
-      bool skip_gl_renderer);
+  void CreateAndSetRenderer(OutputSurface* output_surface,
+                            ResourceProvider* resource_provider);
   void CreateAndSetTileManager(ResourceProvider* resource_provider,
                                ContextProvider* context_provider,
                                bool use_zero_copy,

@@ -10,16 +10,26 @@
 
 namespace cc {
 
+class OutputSurface;
+
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
   FakeOutputSurfaceClient()
-      : begin_frame_count_(0),
+      : output_surface_(NULL),
+        begin_frame_count_(0),
+        deferred_initialize_called_(false),
+        did_lose_output_surface_called_(false),
+        memory_policy_(0) {}
+
+  explicit FakeOutputSurfaceClient(OutputSurface* output_surface)
+      : output_surface_(output_surface),
+        begin_frame_count_(0),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
 
   virtual void DeferredInitialize() OVERRIDE;
-  virtual void ReleaseGL() OVERRIDE {}
+  virtual void ReleaseGL() OVERRIDE;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) OVERRIDE {}
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
@@ -49,6 +59,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
 
  private:
+  OutputSurface* output_surface_;
   int begin_frame_count_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;

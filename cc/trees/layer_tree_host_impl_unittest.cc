@@ -5542,8 +5542,11 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   // No main thread evictions in resourceless software mode.
   set_reduce_memory_result(false);
   CountingSoftwareDevice* software_device = new CountingSoftwareDevice();
-  FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
-      scoped_ptr<SoftwareOutputDevice>(software_device)).release();
+  bool delegated_rendering = false;
+  FakeOutputSurface* output_surface =
+      FakeOutputSurface::CreateDeferredGL(
+          scoped_ptr<SoftwareOutputDevice>(software_device),
+          delegated_rendering).release();
   EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
                              scoped_ptr<OutputSurface>(output_surface)));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
@@ -5569,8 +5572,11 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
 TEST_F(LayerTreeHostImplTest,
        ForcedDrawToSoftwareDeviceSkipsUnsupportedLayers) {
   set_reduce_memory_result(false);
-  FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
-      scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())).release();
+  bool delegated_rendering = false;
+  FakeOutputSurface* output_surface =
+      FakeOutputSurface::CreateDeferredGL(
+          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()),
+          delegated_rendering).release();
   EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
                              scoped_ptr<OutputSurface>(output_surface)));
 
@@ -5607,9 +5613,11 @@ class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
 
     set_reduce_memory_result(false);
 
+    bool delegated_rendering = false;
     scoped_ptr<FakeOutputSurface> output_surface(
         FakeOutputSurface::CreateDeferredGL(
-            scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())));
+            scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()),
+            delegated_rendering));
     output_surface_ = output_surface.get();
 
     EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
