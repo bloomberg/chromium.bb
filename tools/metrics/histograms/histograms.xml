@@ -6281,10 +6281,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.FileAccessAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of installed extensions (and friends) that could have been given
-    access to the file:// scheme, and were. This excludes entities such as
-    platform apps (which don't have host permissions) and hosted apps (which
-    aren't shown on chrome://extensions). See also
+    The number of extensions (and friends) that could have been given access to
+    the file:// scheme, and were, for users that have at least one extension
+    that could have been given access. This excludes anything that doesn't show
+    up in chrome://extensions (platform apps, hosted apps, component
+    extensions), policy-installed extensions, and unpacked extensions. See also
     Extensions.FileAccessNotAllowed.
   </summary>
 </histogram>
@@ -6292,10 +6293,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.FileAccessNotAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of installed extensions (and friends) that could have been given
-    access to the file:// scheme, but weren't. This excludes entities such as
-    platform apps (which don't have host permissions) and hosted apps (which
-    aren't shown on chrome://extensions). See also Extensions.FileAccessAllowed.
+    The number of extensions (and friends) that could have been given access to
+    the file:// scheme, but weren't, for users that have at least one extension
+    that could have been given access. This excludes anything that doesn't show
+    up in chrome://extensions (platform apps, hosted apps, component
+    extensions), policy-installed extensions, and unpacked extensions. See also
+    Extensions.FileAccessAllowed.
   </summary>
 </histogram>
 
@@ -6325,20 +6328,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.IncognitoAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of installed extensions (and friends) that could have been
-    enabled in incognito, and were. This excludes entities such as platform apps
-    (which cannot be enabled) and hosted apps (which aren't shown on
-    chrome://extensions). See also Extensions.IncognitoNotAllowed.
+    The number of extensions (and friends) that could have been allowed in
+    incognito, and were, for users that have at least one extension that could
+    have been allowed. This excludes anything that doesn't show up in
+    chrome://extensions (platform apps, hosted apps, component extensions),
+    policy-installed extensions, and unpacked extensions. See also
+    Extensions.IncognitoNotAllowed.
   </summary>
 </histogram>
 
 <histogram name="Extensions.IncognitoNotAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>
-    The number of installed extensions (and friends) that could have been
-    enabled in incognito, but weren't. This excludes entities such as platform
-    apps (which cannot be enabled) and hosted apps (which aren't shown on
-    chrome://extensions). See also Extensions.IncognitoAllowed.
+    The number of extensions (and friends) that could have been allowed in
+    incognito, but weren't, for users that have at least one extension that
+    could have been allowed. This excludes anything that doesn't show up in
+    chrome://extensions (platform apps, hosted apps, component extensions),
+    policy-installed extensions, and unpacked extensions. See also
+    Extensions.IncognitoAllowed.
   </summary>
 </histogram>
 

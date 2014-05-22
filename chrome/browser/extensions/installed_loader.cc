@@ -296,10 +296,10 @@ void InstalledLoader::LoadAllExtensions() {
   int browser_action_count = 0;
   int disabled_for_permissions_count = 0;
   int non_webstore_ntp_override_count = 0;
-  int incognito = 0;
-  int not_incognito = 0;
-  int file_access = 0;
-  int not_file_access = 0;
+  int incognito_allowed_count = 0;
+  int incognito_not_allowed_count = 0;
+  int file_access_allowed_count = 0;
+  int file_access_not_allowed_count = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
   ExtensionActionManager* extension_action_manager =
@@ -444,19 +444,21 @@ void InstalledLoader::LoadAllExtensions() {
         extension, "Extensions.Permissions_Load");
 
     // For incognito and file access, skip anything that doesn't appear in
-    // settings.
-    if (extension->ShouldDisplayInExtensionSettings()) {
+    // settings. Also, policy-installed (and unpacked of course, checked above)
+    // extensions are boring.
+    if (extension->ShouldDisplayInExtensionSettings() &&
+        !Manifest::IsPolicyLocation(extension->location())) {
       if (extension->can_be_incognito_enabled()) {
         if (util::IsIncognitoEnabled(extension->id(), profile))
-          ++incognito;
+          ++incognito_allowed_count;
         else
-          ++not_incognito;
+          ++incognito_not_allowed_count;
       }
       if (extension->wants_file_access()) {
         if (util::AllowFileAccess(extension->id(), profile))
-          ++file_access;
+          ++file_access_allowed_count;
         else
-          ++not_file_access;
+          ++file_access_not_allowed_count;
       }
     }
   }
@@ -527,10 +529,18 @@ void InstalledLoader::LoadAllExtensions() {
                            disabled_for_permissions_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",
                            non_webstore_ntp_override_count);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoAllowed", incognito);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoNotAllowed", not_incognito);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessAllowed", file_access);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessNotAllowed", not_file_access);
+  if (incognito_allowed_count + incognito_not_allowed_count > 0) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoAllowed",
+                             incognito_allowed_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoNotAllowed",
+                             incognito_not_allowed_count);
+  }
+  if (file_access_allowed_count + file_access_not_allowed_count > 0) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessAllowed",
+                             file_access_allowed_count);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessNotAllowed",
+                             file_access_not_allowed_count);
+  }
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
