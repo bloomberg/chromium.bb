@@ -416,9 +416,8 @@ void NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(
   base::File::Info file_info;
   base::FilePath platform_path;
   scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
-  base::File::Error error =
-      CreateSnapshotFileSync(context.get(), url, &file_info, &platform_path,
-                             &file_ref);
+  base::File::Error error = CreateSnapshotFileSync(
+      context.get(), url, &file_info, &platform_path, &file_ref);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

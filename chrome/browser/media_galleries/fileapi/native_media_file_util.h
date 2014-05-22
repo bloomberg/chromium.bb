@@ -225,7 +225,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
 
 
   // Not owned, owned by the backend which owns this.
-  MediaPathFilter* media_path_filter_;
+  MediaPathFilter* const media_path_filter_;
 
   base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
 

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_H_
 
-#include <list>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

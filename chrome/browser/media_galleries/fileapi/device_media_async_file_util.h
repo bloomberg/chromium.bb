@@ -12,18 +12,9 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace base {
-class SequencedTaskRunner;
-class Time;
-}
-
 namespace fileapi {
 class FileSystemOperationContext;
 class FileSystemURL;
-}
-
-namespace net {
-class IOBuffer;
 }
 
 namespace webkit_blob {
@@ -39,10 +30,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
   virtual ~DeviceMediaAsyncFileUtil();
 
-  // Returns an instance of DeviceMediaAsyncFileUtil. Returns NULL if
-  // asynchronous operation is not supported. Callers own the returned
-  // object.
-  static DeviceMediaAsyncFileUtil* Create(
+  // Returns an instance of DeviceMediaAsyncFileUtil.
+  static scoped_ptr<DeviceMediaAsyncFileUtil> Create(
       const base::FilePath& profile_path,
       MediaFileValidationType validation_type);
 
@@ -137,16 +126,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // Called when GetFileInfo method call succeeds. |file_info| contains the
   // file details of the requested url. |callback| is invoked to complete the
   // GetFileInfo request.
-  void OnDidGetFileInfo(
-      const AsyncFileUtil::GetFileInfoCallback& callback,
-      const base::File::Info& file_info);
-
-  // Called when GetFileInfo method call failed to get the details of file
-  // specified by the requested url. |callback| is invoked to notify the
-  // caller about the file |error|.
-  void OnGetFileInfoError(
-      const AsyncFileUtil::GetFileInfoCallback& callback,
-      base::File::Error error);
+  void OnDidGetFileInfo(const GetFileInfoCallback& callback,
+                        const base::File::Info& file_info);
 
   // Called when ReadDirectory method call succeeds. |callback| is invoked to
   // complete the ReadDirectory request.
@@ -160,51 +141,11 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // in any two calls are disjoint), and |has_more| will be true, except for
   // the last chunk.
   void OnDidReadDirectory(
-      const AsyncFileUtil::ReadDirectoryCallback& callback,
-      const AsyncFileUtil::EntryList& file_list,
+      const ReadDirectoryCallback& callback,
+      const EntryList& file_list,
       bool has_more);
 
-  // Called when ReadDirectory method call failed to enumerate the directory
-  // objects. |callback| is invoked to notify the caller about the |error|
-  // that occured while reading the directory objects.
-  void OnReadDirectoryError(
-      const AsyncFileUtil::ReadDirectoryCallback& callback,
-      base::File::Error error);
-
-  // Called when the snapshot file specified by the |platform_path| is
-  // successfully created. |file_info| contains the device media file details
-  // for which the snapshot file is created.
-  void OnDidCreateSnapshotFile(
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::SequencedTaskRunner* media_task_runner,
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path);
-
-  // Called after OnDidCreateSnapshotFile finishes media check.
-  // |callback| is invoked to complete the CreateSnapshotFile request.
-  void OnDidCheckMedia(
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const base::File::Info& file_info,
-      scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
-      base::File::Error error);
-
-  // Called when CreateSnapshotFile method call fails. |callback| is invoked to
-  // notify the caller about the |error|.
-  void OnCreateSnapshotFileError(
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::File::Error error);
-
-  // Called when the snapshot file specified by the |snapshot_file_path| is
-  // created to hold the contents of the url.path(). If the snapshot
-  // file is successfully created, |snapshot_file_path| will be an non-empty
-  // file path. In case of failure, |snapshot_file_path| will be an empty file
-  // path. Forwards the CreateSnapshot request to the delegate to copy the
-  // contents of url.path() to |snapshot_file_path|.
-  void OnSnapshotFileCreatedRunTask(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const fileapi::FileSystemURL& url,
-      const base::FilePath& snapshot_file_path);
+  bool validate_media_files() const;
 
   // Profile path.
   const base::FilePath profile_path_;
