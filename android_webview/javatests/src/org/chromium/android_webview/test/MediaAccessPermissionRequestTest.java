@@ -32,7 +32,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
         }
     }
 
-    private final String mData = "<html> <script> " +
+    private static final String mData = "<html> <script> " +
             "var constraints = {audio: true, video: true};" +
             "var video = document.querySelector('video');" +
             "function successCallback(stream) {" +
@@ -130,15 +130,20 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
         final OnPermissionRequestHelper helper = new OnPermissionRequestHelper();
         TestAwContentsClient contentsClient =
                 new TestAwContentsClient() {
+                    private AwPermissionRequest mRequest;
                     @Override
                     public void onPermissionRequest(AwPermissionRequest awPermissionRequest) {
+                        assertNull(mRequest);
+                        mRequest = awPermissionRequest;
                         // Don't respond and wait for the request canceled.
                         helper.notifyCalled();
                     }
                     @Override
                     public void onPermissionRequestCanceled(
                             AwPermissionRequest awPermissionRequest) {
-                        helper.notifyCanceled();
+                        assertNotNull(mRequest);
+                        if (mRequest == awPermissionRequest) helper.notifyCanceled();
+                        mRequest = null;
                     }
                 };
         final AwTestContainerView testContainerView =
@@ -152,6 +157,6 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
         // Load the same page again, the previous request should be canceled.
         loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
-        assert (helper.canceled());
+        assertTrue(helper.canceled());
     }
 }
