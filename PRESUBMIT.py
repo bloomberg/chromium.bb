@@ -1104,9 +1104,19 @@ _DEPRECATED_CSS = [
 
 def _CheckNoDeprecatedCSS(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
-      properties, functions or values. """
+      properties, functions or values. Our external
+      documentation is ignored by the hooks as it
+      needs to be consumed by WebKit. """
   results = []
-  file_filter = lambda f: f.LocalPath().endswith('.css')
+  file_inclusion_pattern = (r".+\.css$")
+  black_list = (_EXCLUDED_PATHS +
+                _TEST_CODE_EXCLUDED_PATHS +
+                input_api.DEFAULT_BLACK_LIST +
+                (r"^chrome/common/extensions/docs",
+                 r"^chrome/docs",
+                 r"^native_client_sdk"))
+  file_filter = lambda f: input_api.FilterSourceFile(
+      f, white_list=file_inclusion_pattern, black_list=black_list)
   for fpath in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in fpath.ChangedContents():
       for (deprecated_value, value) in _DEPRECATED_CSS:
