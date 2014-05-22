@@ -213,10 +213,10 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
       gpu::GPU_FEATURE_TYPE_WEBGL));
 
   // The below times out: http://crbug.com/166060
-  return;
-
+#if 0
   const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, true);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {

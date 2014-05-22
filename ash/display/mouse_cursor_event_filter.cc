@@ -469,15 +469,12 @@ void MouseCursorEventFilter::GetSrcAndDstRootWindows(aura::Window** src_root,
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessaryForTest(
     aura::Window* target_root,
     const gfx::Point& point_in_screen) {
-  if (enable_mouse_warp_in_native_coords) {
-    gfx::Point native = point_in_screen;
-    wm::ConvertPointFromScreen(target_root, &native);
-    target_root->GetHost()->ConvertPointToNativeScreen(&native);
-    return WarpMouseCursorInNativeCoords(native, point_in_screen);
-  } else {
+  if (!enable_mouse_warp_in_native_coords)
     return WarpMouseCursorInScreenCoords(target_root, point_in_screen);
-  }
-  return true;
+  gfx::Point native = point_in_screen;
+  wm::ConvertPointFromScreen(target_root, &native);
+  target_root->GetHost()->ConvertPointToNativeScreen(&native);
+  return WarpMouseCursorInNativeCoords(native, point_in_screen);
 }
 
 }  // namespace ash

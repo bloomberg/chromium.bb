@@ -275,8 +275,6 @@ void OOM_Handler(_OOM_INFO*) {
   // the buffer is then used, it provides a handy mapping of memory starting at
   // address 0 for an attacker to utilize.
   abort();
-  // Paranoia, just in case.
-  *(volatile char*)0 = '\0';
 }
 
 OOM_INFO g_oom_info = {

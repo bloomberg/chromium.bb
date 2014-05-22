@@ -281,8 +281,9 @@ bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
 #if defined(OS_WIN) && !defined(NDEBUG)
   LOG(WARNING) << "Workaround for 177163, prematurely returning";
   return true;
-#endif
+#else
   return RunExtensionTestImpl(extension_name, page_url, NULL, flags);
+#endif
 }
 
 

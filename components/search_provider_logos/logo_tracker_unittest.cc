@@ -224,8 +224,8 @@ class MockLogoCache : public LogoCache {
   }
 
   virtual scoped_ptr<EncodedLogo> GetCachedLogo() OVERRIDE {
-    return make_scoped_ptr(logo_ ? new EncodedLogo(*logo_) : NULL);
     OnGetCachedLogo();
+    return make_scoped_ptr(logo_ ? new EncodedLogo(*logo_) : NULL);
   }
 
  private:

@@ -30,7 +30,6 @@ talk_base::AdapterType ConvertConnectionTypeToAdapterType(
     default:
         return talk_base::ADAPTER_TYPE_UNKNOWN;
   }
-  return talk_base::ADAPTER_TYPE_UNKNOWN;
 }
 
 }  // namespace

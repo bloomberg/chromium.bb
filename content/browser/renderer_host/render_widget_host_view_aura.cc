@@ -2371,8 +2371,6 @@ scoped_ptr<ResizeLock> RenderWidgetHostViewAura::CreateResizeLock(
       desired_size,
       defer_compositor_lock,
       base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
-  ResizeLock* lock = NULL;
-  return scoped_ptr<ResizeLock>(lock);
 }
 
 DelegatedFrameHost* RenderWidgetHostViewAura::GetDelegatedFrameHost() const {
