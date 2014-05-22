@@ -524,8 +524,8 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_NPAPINotSupported)
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,
-                    int32 /* page_id */,
-                    GURL /* url of OS description document */,
+                    GURL /* page_url */,
+                    GURL /* osdd_url */,
                     search_provider::OSDDType)
 
 // Find out if the given url's security origin is installed as a search

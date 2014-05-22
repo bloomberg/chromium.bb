@@ -389,10 +389,10 @@ void ChromeRenderViewObserver::DidStartLoading() {
 
 void ChromeRenderViewObserver::DidStopLoading() {
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  GURL osd_url = main_frame->document().openSearchDescriptionURL();
-  if (!osd_url.is_empty()) {
+  GURL osdd_url = main_frame->document().openSearchDescriptionURL();
+  if (!osdd_url.is_empty()) {
     Send(new ChromeViewHostMsg_PageHasOSDD(
-        routing_id(), render_view()->GetPageId(), osd_url,
+        routing_id(), main_frame->document().url(), osdd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
 

@@ -35,8 +35,8 @@ class SearchEngineTabHelper
   friend class content::WebContentsUserData<SearchEngineTabHelper>;
 
   // Handles when a page specifies an OSDD (OpenSearch Description Document).
-  void OnPageHasOSDD(int32 page_id,
-                     const GURL& doc_url,
+  void OnPageHasOSDD(const GURL& page_url,
+                     const GURL& osdd_url,
                      const search_provider::OSDDType& msg_provider_type);
 
   // If params has a searchable form, this tries to create a new keyword.
