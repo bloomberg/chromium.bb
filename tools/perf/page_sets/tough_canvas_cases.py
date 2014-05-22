@@ -14,7 +14,7 @@ class ToughCanvasCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_canvas_cases.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         "javascript": "document.readyState == 'complete'"

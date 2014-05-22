@@ -46,7 +46,7 @@ class Page2(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'Next 35',
@@ -81,7 +81,7 @@ class Page4(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': ('window.Chorus !== undefined &&'
@@ -103,7 +103,7 @@ class Page5(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 8}))
 
 
@@ -131,7 +131,7 @@ class Page7(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': ('document.getElementById("u_0_c") !== null &&'
@@ -149,7 +149,7 @@ class Page8(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById("paginatortarget") !== null'
@@ -193,7 +193,7 @@ class Page11(KeyMobileSitesPage):
       name='LinkedIn')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript':
@@ -258,7 +258,7 @@ class Page16(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'Other Answers (1 - 20 of 149)',
@@ -282,7 +282,7 @@ class Page17(KeyMobileSitesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById("og_user_warning") !== null'
@@ -358,7 +358,7 @@ class Page21(KeyMobileSitesPage):
                      'version for now')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 5}))
     action_runner.RunAction(WaitAction(
       {
@@ -395,7 +395,7 @@ class Page22(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById("element-5") !== null'
@@ -435,7 +435,7 @@ class Page24(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': ('typeof NEWS_telemetryReady !== "undefined" && '
@@ -455,7 +455,7 @@ class Page25(KeyMobileSitesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById(":h") != null'

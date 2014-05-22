@@ -88,7 +88,7 @@ class WebglConformancePage(page_module.Page):
     self.script_to_evaluate_on_commit = conformance_harness_script
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {'javascript': 'webglTestHarness._finished', 'timeout': 120}))
 

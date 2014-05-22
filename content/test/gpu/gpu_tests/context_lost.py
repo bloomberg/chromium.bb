@@ -137,7 +137,7 @@ class WebGLContextLostFromGPUProcessExitPage(page.Page):
     self.force_garbage_collection = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {'javascript': 'window.domAutomationController._loaded'}))
 
@@ -154,7 +154,7 @@ class WebGLContextLostFromLoseContextExtensionPage(page.Page):
     self.force_garbage_collection = False
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {'javascript': 'window.domAutomationController._finished'}))
 
@@ -170,7 +170,7 @@ class WebGLContextLostFromQuantityPage(page.Page):
     self.force_garbage_collection = True
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {'javascript': 'window.domAutomationController._loaded'}))
 

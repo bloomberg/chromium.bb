@@ -35,8 +35,8 @@ class MapsPage(page_module.Page):
       base_dir=base_dir)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.Run(NavigateAction())
-    action_runner.Run(WaitAction({'javascript': 'window.testDone'}))
+    action_runner.NavigateToPage(self)
+    action_runner.RunAction(WaitAction({'javascript': 'window.testDone'}))
 
 
 @test.Disabled

@@ -22,7 +22,7 @@ class PlusAltPostsPhotosPage(page_module.Page):
     self.archive_data_file = 'data/plus_alt_posts_photos.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'Barack Obama',

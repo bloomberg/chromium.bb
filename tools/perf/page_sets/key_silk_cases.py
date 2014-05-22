@@ -17,7 +17,7 @@ class KeySilkCasesPage(page_module.Page):
     self.archive_data_file = 'data/key_silk_cases.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -283,7 +283,7 @@ class Page16(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 2}))
 
   def SwipeToDismiss(self, action_runner):
@@ -317,7 +317,7 @@ class Page17(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 2}))
 
   def RunSmoothness(self, action_runner):
@@ -361,7 +361,7 @@ class Page18(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -399,7 +399,7 @@ class Page19(KeySilkCasesPage):
 
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 2}))
     self.ToggleDrawer(action_runner)
 
@@ -476,7 +476,7 @@ class Page21(KeySilkCasesPage):
 
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 3}))
     self.ScrollKnowledgeCardToTop(action_runner)
 
@@ -495,7 +495,7 @@ class Page22(KeySilkCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementsByClassName("fHa").length > 0'
@@ -552,7 +552,7 @@ class Page24(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById(":h") != null'
@@ -580,7 +580,7 @@ class Page25(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementById(":h") != null'
@@ -615,7 +615,7 @@ class Page26(KeySilkCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.getElementsByClassName("tweet").length > 0'

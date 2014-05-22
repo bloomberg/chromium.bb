@@ -30,7 +30,7 @@ class GoogleSearchPage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'Next',
@@ -50,7 +50,7 @@ class GmailPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript' : (
@@ -71,7 +71,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds':2}))
 
   def RunSmoothness(self, action_runner):
@@ -106,7 +106,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'Home',
@@ -135,7 +135,7 @@ class YoutubePage(ToughPinchZoomCasesPage):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds':2}))
 
 class BlogSpotPage(ToughPinchZoomCasesPage):
@@ -151,7 +151,7 @@ class BlogSpotPage(ToughPinchZoomCasesPage):
       page_set=page_set, name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'accessibility',
@@ -170,7 +170,7 @@ class FacebookPage(ToughPinchZoomCasesPage):
     self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text': 'About',
@@ -208,7 +208,7 @@ class TwitterPage(ToughPinchZoomCasesPage):
       page_set=page_set, name='Twitter')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds':2}))
 
 class ESPNPage(ToughPinchZoomCasesPage):
@@ -242,7 +242,7 @@ class YahooGamePage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds':2}))
 
 class ToughPinchZoomCasesPageSet(page_set_module.PageSet):

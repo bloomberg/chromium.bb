@@ -17,7 +17,7 @@ class MapsPage(page_module.Page):
     self.archive_data_file = 'data/maps.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction({'seconds': 3}))
 
   def RunSmoothness(self, action_runner):

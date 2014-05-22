@@ -23,7 +23,7 @@ class Page1(WebrtcCasesPage):
       page_set=page_set)
 
   def RunWebrtc(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 10

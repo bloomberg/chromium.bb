@@ -22,7 +22,7 @@ class CalendarForwardBackwardPage(page_module.Page):
     self.archive_data_file = 'data/calendar_forward_backward.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2

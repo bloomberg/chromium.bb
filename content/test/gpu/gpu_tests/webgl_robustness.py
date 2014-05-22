@@ -57,7 +57,7 @@ class WebglRobustnessPage(page.Page):
     self.script_to_evaluate_on_commit = robustness_harness_script
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(
       WaitAction({'javascript': 'webglTestHarness._finished'}))
 

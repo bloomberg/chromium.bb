@@ -24,7 +24,7 @@ class GmailExpandCollapseConversationPage(
     self.archive_data_file = 'data/gmail_expand_collapse_conversation.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'condition': 'element',

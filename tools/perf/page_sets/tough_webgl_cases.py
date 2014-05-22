@@ -14,7 +14,7 @@ class ToughWebglCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_webgl_cases.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.readyState == "complete"'
@@ -37,7 +37,7 @@ class Page1(ToughWebglCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.readyState == "complete"'
@@ -53,7 +53,7 @@ class Page2(ToughWebglCasesPage):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'document.readyState == "complete"'

@@ -35,7 +35,7 @@ class GoogleWebSearchPage(Top25Page):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text' : 'Next',
@@ -148,7 +148,7 @@ class GmailPage(Top25Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': ('window.gmonkey !== undefined &&'
@@ -195,7 +195,7 @@ class GoogleCalendarPage(Top25Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -362,7 +362,7 @@ class GoogleDocPage(Top25Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -395,7 +395,7 @@ class GooglePlusPage(Top25Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text' : 'Home',
@@ -488,7 +488,7 @@ class YoutubePage(Top25Page):
     self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -507,7 +507,7 @@ class BlogspotPage(Top25Page):
       name='Blogger')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text' : 'accessibility',
@@ -560,7 +560,7 @@ class WordpressPage(Top25Page):
       name='Wordpress')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'condition': 'element',
@@ -611,7 +611,7 @@ class FacebookPage(Top25Page):
     self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'text' : 'About',
@@ -702,7 +702,7 @@ class TwitterPage(Top25Page):
       name='Twitter')
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2
@@ -771,7 +771,7 @@ class YahooGamesPage(Top25Page):
       page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'seconds': 2

@@ -31,12 +31,12 @@ class SmoothnessController(object):
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
     # Start the smooth marker for all smooth actions.
-    runner = action_runner.ActionRunner(None, tab)
+    runner = action_runner.ActionRunner(tab)
     runner.BeginInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
 
   def Stop(self, tab):
     # End the smooth marker for all smooth actions.
-    runner = action_runner.ActionRunner(None, tab)
+    runner = action_runner.ActionRunner(tab)
     runner.EndInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsRawDisplayFrameRateSupported():

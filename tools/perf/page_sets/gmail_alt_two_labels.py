@@ -23,7 +23,7 @@ class GmailAltTwoLabelsPage(page_module.Page):
     self.archive_data_file = 'data/gmail_alt_two_labels.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript':

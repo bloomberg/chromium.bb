@@ -19,7 +19,7 @@ class IndexeddbOfflinePage(page_module.Page):
     self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
         {
             'text': 'initialized',

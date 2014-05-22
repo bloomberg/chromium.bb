@@ -20,7 +20,7 @@ class PolymerPage(page_module.Page):
     '''
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       { 'javascript': "window.__polymer_ready" }))
 

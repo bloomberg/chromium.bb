@@ -16,7 +16,7 @@ class PixelTestsPage(page_module.Page):
     self.revision = revision
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction())
+    action_runner.NavigateToPage(self)
     action_runner.RunAction(WaitAction(
       {
         'javascript': 'domAutomationController._finished',

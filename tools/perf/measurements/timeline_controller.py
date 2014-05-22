@@ -36,12 +36,12 @@ class TimelineController(object):
       categories = page.GetSyntheticDelayCategories()
     tab.browser.StartTracing(','.join(categories))
     # Start the smooth marker for all actions.
-    runner = action_runner.ActionRunner(None, tab)
+    runner = action_runner.ActionRunner(tab)
     runner.BeginInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
 
   def Stop(self, tab):
     # End the smooth marker for all actions.
-    runner = action_runner.ActionRunner(None, tab)
+    runner = action_runner.ActionRunner(tab)
     runner.EndInteraction(RUN_SMOOTH_ACTIONS, [tir_module.IS_SMOOTH])
     # Stop tracing.
     timeline_data = tab.browser.StopTracing()

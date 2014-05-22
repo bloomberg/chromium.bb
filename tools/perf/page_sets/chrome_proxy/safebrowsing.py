@@ -19,7 +19,7 @@ class SafebrowsingPage(page_module.Page):
     self.archive_data_file = '../data/chrome_proxy_safebrowsing.json'
 
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(NavigateAction({'timeout_seconds': 5}))
+    action_runner.NavigateToPage(self, timeout_seconds=5)
 
 
 class SafebrowsingPageSet(page_set_module.PageSet):
