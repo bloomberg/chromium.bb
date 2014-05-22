@@ -540,6 +540,42 @@ TEST_F(NativeBackendKWalletTest, BasicAddLogin) {
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 
+TEST_F(NativeBackendKWalletTest, BasicUpdateLogin) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunDBThread();
+
+  PasswordForm new_form_google(form_google_);
+  new_form_google.times_used = 10;
+  new_form_google.action = GURL("http://www.google.com/different/login");
+
+  // Update login
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::UpdateLogin),
+                 base::Unretained(&backend),
+                 new_form_google,
+                 base::Unretained(&changes)));
+  RunDBThread();
+
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ(PasswordStoreChange::UPDATE, changes.front().type());
+  EXPECT_EQ(new_form_google, changes.front().form());
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&new_form_google);
+  ExpectationArray expected;
+  expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+}
+
 TEST_F(NativeBackendKWalletTest, BasicListLogins) {
   NativeBackendKWalletStub backend(42);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
@@ -598,6 +634,39 @@ TEST_F(NativeBackendKWalletTest, BasicRemoveLogin) {
   RunDBThread();
 
   expected.clear();
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+}
+
+TEST_F(NativeBackendKWalletTest, UpdateNonexistentLogin) {
+  NativeBackendKWalletStub backend(42);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
+
+  // First add an unrelated login.
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunDBThread();
+
+  std::vector<const PasswordForm*> forms;
+  forms.push_back(&form_google_);
+  ExpectationArray expected;
+  expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+
+  // Attempt to update a login that doesn't exist.
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::UpdateLogin),
+                 base::Unretained(&backend),
+                 form_isc_,
+                 base::Unretained(&changes)));
+
+  RunDBThread();
+
+  EXPECT_EQ(PasswordStoreChangeList(), changes);
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 

@@ -301,23 +301,35 @@ password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
   return changes;
 }
 
-bool NativeBackendKWallet::UpdateLogin(const PasswordForm& form) {
+bool NativeBackendKWallet::UpdateLogin(
+    const PasswordForm& form,
+    password_manager::PasswordStoreChangeList* changes) {
+  DCHECK(changes);
+  changes->clear();
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
     return false;
 
-  PasswordFormList forms;
-  GetLoginsList(&forms, form.signon_realm, wallet_handle);
+  ScopedVector<autofill::PasswordForm> forms;
+  GetLoginsList(&forms.get(), form.signon_realm, wallet_handle);
 
+  bool updated = false;
   for (size_t i = 0; i < forms.size(); ++i) {
-    if (CompareForms(form, *forms[i], true))
+    if (CompareForms(form, *forms[i], true)) {
       *forms[i] = form;
+      updated = true;
+    }
+  }
+  if (!updated)
+    return true;
+
+  if (SetLoginsList(forms.get(), form.signon_realm, wallet_handle)) {
+    changes->push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::UPDATE, form));
+    return true;
   }
 
-  bool ok = SetLoginsList(forms, form.signon_realm, wallet_handle);
-
-  STLDeleteElements(&forms);
-  return ok;
+  return false;
 }
 
 bool NativeBackendKWallet::RemoveLogin(const PasswordForm& form) {

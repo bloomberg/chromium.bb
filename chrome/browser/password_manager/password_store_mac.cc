@@ -885,13 +885,10 @@ PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
 PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
     const PasswordForm& form) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
-  PasswordStoreChangeList changes;
-  int update_count = 0;
-  if (!login_metadata_db_->UpdateLogin(form, &update_count))
-    return changes;
+  PasswordStoreChangeList changes = login_metadata_db_->UpdateLogin(form);
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
-  if (update_count == 0 &&
+  if (changes.empty() &&
       !keychain_adapter.HasPasswordsMergeableWithForm(form)) {
     // If the password isn't in either the DB or the keychain, then it must have
     // been deleted after autofill happened, and should not be re-added.
@@ -900,11 +897,8 @@ PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
 
   // The keychain add will update if there is a collision and add if there
   // isn't, which is the behavior we want, so there's no separate update call.
-  if (AddToKeychainIfNecessary(form)) {
-    if (update_count == 0)
-      changes = login_metadata_db_->AddLogin(form);
-    else
-      changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
+  if (AddToKeychainIfNecessary(form) && changes.empty()) {
+    changes = login_metadata_db_->AddLogin(form);
   }
   return changes;
 }

@@ -83,7 +83,9 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   // Implements NativeBackend interface.
   virtual password_manager::PasswordStoreChangeList AddLogin(
       const autofill::PasswordForm& form) OVERRIDE;
-  virtual bool UpdateLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual bool UpdateLogin(
+      const autofill::PasswordForm& form,
+      password_manager::PasswordStoreChangeList* changes) OVERRIDE;
   virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLoginsCreatedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;

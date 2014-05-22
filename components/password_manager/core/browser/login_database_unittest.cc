@@ -29,6 +29,11 @@ PasswordStoreChangeList AddChangeForForm(const PasswordForm& form) {
                                                      form));
 }
 
+PasswordStoreChangeList UpdateChangeForForm(const PasswordForm& form) {
+  return PasswordStoreChangeList(1, PasswordStoreChange(
+      PasswordStoreChange::UPDATE, form));
+}
+
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
@@ -219,9 +224,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // We update, and check to make sure it matches the
   // old form, and there is only one record.
-  int rows_changed = 0;
-  EXPECT_TRUE(db_.UpdateLogin(form6, &rows_changed));
-  EXPECT_EQ(1, rows_changed);
+  EXPECT_EQ(UpdateChangeForForm(form6), db_.UpdateLogin(form6));
   // matches
   EXPECT_TRUE(db_.GetLogins(form5, &result));
   EXPECT_EQ(1U, result.size());
@@ -753,7 +756,8 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   completed_form.username_element = encountered_form.username_element;
   completed_form.password_element = encountered_form.password_element;
   completed_form.submit_element = encountered_form.submit_element;
-  EXPECT_TRUE(db_.UpdateLogin(completed_form, NULL));
+  EXPECT_EQ(AddChangeForForm(completed_form), db_.AddLogin(completed_form));
+  EXPECT_TRUE(db_.RemoveLogin(incomplete_form));
 
   // Get matches for encountered_form again.
   EXPECT_TRUE(db_.GetLogins(encountered_form, &result));
@@ -792,6 +796,9 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   complete_form.username_element = ASCIIToUTF16("username_element");
   complete_form.password_element = ASCIIToUTF16("password_element");
   complete_form.submit_element = ASCIIToUTF16("submit");
+
+  // An update fails because the primary key for |complete_form| is different.
+  EXPECT_EQ(PasswordStoreChangeList(), db_.UpdateLogin(complete_form));
   EXPECT_EQ(AddChangeForForm(complete_form), db_.AddLogin(complete_form));
 
   // Make sure both passwords exist.
@@ -802,19 +809,22 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
 
   // Simulate the user changing their password.
   complete_form.password_value = ASCIIToUTF16("new_password");
-  EXPECT_TRUE(db_.UpdateLogin(complete_form, NULL));
+  EXPECT_EQ(UpdateChangeForForm(complete_form), db_.UpdateLogin(complete_form));
 
-  // Only one updated form should exist now.
+  // Both still exist now.
   EXPECT_TRUE(db_.GetAutofillableLogins(&result.get()));
-  ASSERT_EQ(1U, result.size());
+  ASSERT_EQ(2U, result.size());
 
-  PasswordForm expected_form(complete_form);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // On Mac, passwords are not stored in login database, instead they're in
   // the keychain.
-  expected_form.password_value.clear();
+  complete_form.password_value.clear();
+  incomplete_form.password_value.clear();
 #endif  // OS_MACOSX && !OS_IOS
-  EXPECT_EQ(expected_form, *result[0]);
+  if (result[0]->username_element.empty())
+    std::swap(result[0], result[1]);
+  EXPECT_EQ(complete_form, *result[0]);
+  EXPECT_EQ(incomplete_form, *result[1]);
 }
 
 TEST_F(LoginDatabaseTest, DoubleAdd) {

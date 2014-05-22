@@ -270,13 +270,6 @@ void PasswordFormManager::ProvisionallySave(
   // bless it with the action URL from the observed form. See bug 1107719.
   if (pending_credentials_.action.is_empty())
     pending_credentials_.action = observed_form_.action;
-  // Similarly, bless incomplete credentials with *_element info.
-  if (pending_credentials_.password_element.empty())
-    pending_credentials_.password_element = observed_form_.password_element;
-  if (pending_credentials_.username_element.empty())
-    pending_credentials_.username_element = observed_form_.username_element;
-  if (pending_credentials_.submit_element.empty())
-    pending_credentials_.submit_element = observed_form_.submit_element;
 
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
@@ -581,6 +574,17 @@ void PasswordFormManager::UpdateLogin() {
     copy.origin = observed_form_.origin;
     copy.action = observed_form_.action;
     password_store->AddLogin(copy);
+  } else if (pending_credentials_.password_element.empty() ||
+             pending_credentials_.username_element.empty() ||
+             pending_credentials_.submit_element.empty()) {
+    // password_element and username_element can't be updated because they are
+    // part of Sync and PasswordStore primary key. Thus, we must delete the old
+    // one and add again.
+    password_store->RemoveLogin(pending_credentials_);
+    pending_credentials_.password_element = observed_form_.password_element;
+    pending_credentials_.username_element = observed_form_.username_element;
+    pending_credentials_.submit_element = observed_form_.submit_element;
+    password_store->AddLogin(pending_credentials_);
   } else {
     password_store->UpdateLogin(pending_credentials_);
   }

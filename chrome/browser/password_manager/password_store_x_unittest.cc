@@ -62,7 +62,10 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
   virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) OVERRIDE {
     return PasswordStoreChangeList();
   }
-  virtual bool UpdateLogin(const PasswordForm& form) OVERRIDE { return false; }
+  virtual bool UpdateLogin(const PasswordForm& form,
+                           PasswordStoreChangeList* changes) OVERRIDE {
+    return false;
+  }
   virtual bool RemoveLogin(const PasswordForm& form) OVERRIDE { return false; }
 
   virtual bool RemoveLoginsCreatedBetween(
@@ -100,10 +103,14 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return PasswordStoreChangeList(1, change);
   }
 
-  virtual bool UpdateLogin(const PasswordForm& form) OVERRIDE {
+  virtual bool UpdateLogin(const PasswordForm& form,
+                           PasswordStoreChangeList* changes) OVERRIDE {
     for (size_t i = 0; i < all_forms_.size(); ++i)
-      if (CompareForms(all_forms_[i], form, true))
+      if (CompareForms(all_forms_[i], form, true)) {
         all_forms_[i] = form;
+        changes->push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
+                                               form));
+      }
     return true;
   }
 

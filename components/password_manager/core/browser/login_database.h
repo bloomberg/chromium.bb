@@ -39,9 +39,11 @@ class LoginDatabase {
   // primary key columns contain the values associated with the removed form.
   PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form);
 
-  // Updates remembered password form. Returns true on success and sets
-  // items_changed (if non-NULL) to the number of logins updated.
-  bool UpdateLogin(const autofill::PasswordForm& form, int* items_changed);
+  // Updates existing password form. Returns the list of applied changes
+  // ({}, {UPDATE}). The password is looked up by the tuple {origin,
+  // username_element, username_value, password_element, signon_realm}.
+  // These columns stay intact.
+  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form);
 
   // Removes |form| from the list of remembered password forms.
   bool RemoveLogin(const autofill::PasswordForm& form);

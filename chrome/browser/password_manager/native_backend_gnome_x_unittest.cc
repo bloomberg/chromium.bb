@@ -556,7 +556,8 @@ class NativeBackendGnomeTest : public testing::Test {
             FROM_HERE,
             base::Bind(base::IgnoreResult(&NativeBackendGnome::UpdateLogin),
                        base::Unretained(&backend),
-                       new_facebook));
+                       new_facebook,
+                       base::Owned(new PasswordStoreChangeList)));
         break;
       case UPDATE_BY_ADDLOGIN:
         BrowserThread::PostTask(
@@ -756,13 +757,19 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 
   // Update login
+  PasswordStoreChangeList changes;
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(base::IgnoreResult(&NativeBackendGnome::UpdateLogin),
-                 base::Unretained(&backend), new_form_google));
+                 base::Unretained(&backend),
+                 new_form_google,
+                 base::Unretained(&changes)));
 
   RunBothThreads();
 
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ(PasswordStoreChange::UPDATE, changes.front().type());
+  EXPECT_EQ(new_form_google, changes.front().form());
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], new_form_google, "chrome-42");
@@ -829,6 +836,39 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
   EXPECT_EQ(1u, form_list.size());
   STLDeleteElements(&form_list);
 
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
+TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  // First add an unrelated login.
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunBothThreads();
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+
+  // Attempt to update a login that doesn't exist.
+  PasswordStoreChangeList changes;
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::UpdateLogin),
+                 base::Unretained(&backend),
+                 form_isc_,
+                 base::Unretained(&changes)));
+
+  RunBothThreads();
+
+  EXPECT_EQ(PasswordStoreChangeList(), changes);
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");

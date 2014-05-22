@@ -687,6 +687,9 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   complete_form.username_element = encountered_form.username_element;
   complete_form.submit_element = encountered_form.submit_element;
 
+  PasswordForm obsolete_form(*incomplete_form);
+  obsolete_form.action = encountered_form.action;
+
   // Feed the incomplete credentials to the manager.
   std::vector<PasswordForm*> results;
   results.push_back(incomplete_form);  // Takes ownership.
@@ -696,9 +699,11 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
       complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   // By now that form has been used once.
   complete_form.times_used = 1;
+  obsolete_form.times_used = 1;
 
   // Check that PasswordStore receives an update request with the complete form.
-  EXPECT_CALL(*mock_store(), UpdateLogin(complete_form));
+  EXPECT_CALL(*mock_store(), RemoveLogin(obsolete_form));
+  EXPECT_CALL(*mock_store(), AddLogin(complete_form));
   form_manager.Save();
 }
 

@@ -335,11 +335,11 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   return list;
 }
 
-bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
+PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
           ENCRYPTION_RESULT_SUCCESS)
-    return false;
+    return PasswordStoreChangeList();
 
   // Replacement is necessary to deal with updating imported credentials. See
   // crbug.com/349138 for details.
@@ -351,14 +351,11 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
       "preferred = ?, "
       "possible_usernames = ?, "
       "times_used = ?, "
-      "username_element = ?, "
-      "password_element = ?, "
       "submit_element = ? "
       "WHERE origin_url = ? AND "
-      "(username_element = ? OR username_element = '') AND "
+      "username_element = ? AND "
       "username_value = ? AND "
-      "(password_element = ? OR password_element = '') AND "
-      "(submit_element = ? OR submit_element = '') AND "
+      "password_element = ? AND "
       "signon_realm = ?"));
   s.BindString(0, form.action.spec());
   s.BindBlob(1, encrypted_password.data(),
@@ -368,24 +365,22 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
   Pickle pickle = SerializeVector(form.other_possible_usernames);
   s.BindBlob(4, pickle.data(), pickle.size());
   s.BindInt(5, form.times_used);
-  s.BindString16(6, form.username_element);
-  s.BindString16(7, form.password_element);
-  s.BindString16(8, form.submit_element);
+  s.BindString16(6, form.submit_element);
 
-  s.BindString(9, form.origin.spec());
-  s.BindString16(10, form.username_element);
-  s.BindString16(11, form.username_value);
-  s.BindString16(12, form.password_element);
-  s.BindString16(13, form.submit_element);
-  s.BindString(14, form.signon_realm);
+  s.BindString(7, form.origin.spec());
+  s.BindString16(8, form.username_element);
+  s.BindString16(9, form.username_value);
+  s.BindString16(10, form.password_element);
+  s.BindString(11, form.signon_realm);
 
   if (!s.Run())
-    return false;
+    return PasswordStoreChangeList();
 
-  if (items_changed)
-    *items_changed = db_.GetLastChangeCount();
+  PasswordStoreChangeList list;
+  if (db_.GetLastChangeCount())
+    list.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
 
-  return true;
+  return list;
 }
 
 bool LoginDatabase::RemoveLogin(const PasswordForm& form) {

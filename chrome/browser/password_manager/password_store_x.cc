@@ -65,8 +65,7 @@ PasswordStoreChangeList PasswordStoreX::UpdateLoginImpl(
     const PasswordForm& form) {
   CheckMigration();
   PasswordStoreChangeList changes;
-  if (use_native_backend() && backend_->UpdateLogin(form)) {
-    changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
+  if (use_native_backend() && backend_->UpdateLogin(form, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::UpdateLoginImpl(form);
