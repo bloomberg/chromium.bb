@@ -149,7 +149,7 @@ top type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 touch-action type_name=TouchAction, custom_value
 touch-action-delay type_name=TouchActionDelay, initial=initialTouchActionDelay
 unicode-bidi
-vertical-align custom_value
+vertical-align custom_inherit, custom_value
 visibility
 white-space
 widows type_name=short, custom_all

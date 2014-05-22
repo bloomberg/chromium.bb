@@ -780,6 +780,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyPerspectiveOrigin(StyleResolver
     }
 }
 
+void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverState& state)
+{
+    EVerticalAlign verticalAlign = state.parentStyle()->verticalAlign();
+    state.style()->setVerticalAlign(verticalAlign);
+    if (verticalAlign == LENGTH)
+        state.style()->setVerticalAlignLength(state.parentStyle()->verticalAlignLength());
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())
