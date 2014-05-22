@@ -36,7 +36,7 @@ public:
     virtual ~HTMLAllCollection();
 
     Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
-    void namedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<NodeList>&, bool&, RefPtr<Element>&);
+    void namedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<NodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
 
 private:
     HTMLAllCollection(ContainerNode&, CollectionType);

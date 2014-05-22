@@ -204,15 +204,8 @@ WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) co
 {
     TrackExceptionState exceptionState;
     WebElement element;
-    if (m_private->isContainerNode()) {
-#if ENABLE(OILPAN)
-        // FIXME: ContainerNode::querySelector should return an Element raw
-        // pointer.
-        element = toContainerNode(m_private.get())->querySelector(tag, exceptionState).get();
-#else
+    if (m_private->isContainerNode())
         element = toContainerNode(m_private.get())->querySelector(tag, exceptionState);
-#endif
-    }
     ec = exceptionState.code();
     return element;
 }

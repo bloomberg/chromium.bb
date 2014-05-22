@@ -65,7 +65,7 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     return 0;
 }
 
-void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
+void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtrWillBeRawPtr<Element>& returnValue1)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -75,8 +75,7 @@ void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0
 
     if (namedItems.size() == 1) {
         returnValue1Enabled = true;
-        // FIXME: Oilpan: remove the call to |get| when Element becomes [GarbageCollected].
-        returnValue1 = namedItems.at(0).get();
+        returnValue1 = namedItems.at(0);
         return;
     }
 

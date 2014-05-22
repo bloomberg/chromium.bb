@@ -108,7 +108,7 @@ public:
     unsigned countChildren() const;
     Node* traverseToChildAt(unsigned index) const;
 
-    PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
     PassRefPtrWillBeRawPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
     void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);

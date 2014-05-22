@@ -30,6 +30,7 @@
 
 [
     Constructor(DOMString str),
+    NamedConstructor=TestInterface(DOMString str),
     WillBeGarbageCollected,
 ] interface TestInterfaceWillBeGarbageCollected : EventTarget { // Inherit from EventTarget to test order of internal fields
     attribute TestInterfaceWillBeGarbageCollected attr1;

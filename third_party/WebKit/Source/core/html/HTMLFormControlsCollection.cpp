@@ -192,7 +192,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtrWillBeRawPtr<Element>& element)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -202,8 +202,7 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& rad
 
     if (namedItems.size() == 1) {
         elementEnabled = true;
-        // FIXME: Oilpan: remove the call to |get| when Element becomes [GarbageCollected].
-        element = namedItems.at(0).get();
+        element = namedItems.at(0);
         return;
     }
 

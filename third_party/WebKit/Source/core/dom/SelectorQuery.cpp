@@ -141,7 +141,7 @@ PassRefPtrWillBeRawPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootN
     return StaticNodeList::adopt(result);
 }
 
-PassRefPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
 {
     Element* matchedElement = 0;
     execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
@@ -480,7 +480,7 @@ PassRefPtrWillBeRawPtr<NodeList> SelectorQuery::queryAll(ContainerNode& rootNode
     return m_selectors.queryAll(rootNode);
 }
 
-PassRefPtr<Element> SelectorQuery::queryFirst(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<Element> SelectorQuery::queryFirst(ContainerNode& rootNode) const
 {
     return m_selectors.queryFirst(rootNode);
 }

@@ -50,7 +50,7 @@ public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
     PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
-    PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
     bool canUseFastQuery(const ContainerNode& rootNode) const;
@@ -91,7 +91,7 @@ public:
     explicit SelectorQuery(const CSSSelectorList&);
     bool matches(Element&) const;
     PassRefPtrWillBeRawPtr<NodeList> queryAll(ContainerNode& rootNode) const;
-    PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
+    PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
     SelectorDataList m_selectors;
     CSSSelectorList m_selectorList;

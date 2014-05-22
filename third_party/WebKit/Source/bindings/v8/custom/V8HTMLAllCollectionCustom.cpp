@@ -71,7 +71,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
         return result;
     }
 
-    RefPtr<Element> result = collection->item(index->Uint32Value());
+    RefPtrWillBeRawPtr<Element> result = collection->item(index->Uint32Value());
     return toV8(result.release(), info.Holder(), info.GetIsolate());
 }
 

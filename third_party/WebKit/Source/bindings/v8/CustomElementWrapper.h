@@ -31,6 +31,7 @@
 #ifndef CustomElementWrapper_h
 #define CustomElementWrapper_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
@@ -47,7 +48,7 @@ private:
     friend v8::Handle<v8::Object> createV8HTMLWrapper(HTMLElement*, v8::Handle<v8::Object>, v8::Isolate*);
     friend v8::Handle<v8::Object> createV8SVGWrapper(SVGElement*, v8::Handle<v8::Object>, v8::Isolate*);
 
-    static v8::Handle<v8::Object> wrap(PassRefPtr<ElementType>, v8::Handle<v8::Object> creationContext, v8::Isolate*, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*));
+    static v8::Handle<v8::Object> wrap(PassRefPtrWillBeRawPtr<ElementType>, v8::Handle<v8::Object> creationContext, v8::Isolate*, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*));
 };
 
 } // namespace WebCore

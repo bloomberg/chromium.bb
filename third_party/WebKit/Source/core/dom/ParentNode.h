@@ -62,7 +62,7 @@ public:
         return count;
     }
 
-    static PassRefPtr<Element> querySelector(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<Element> querySelector(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelector(selectors, exceptionState);
     }
