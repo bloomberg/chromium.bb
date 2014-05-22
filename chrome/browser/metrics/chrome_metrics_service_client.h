@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/metrics/network_stats_uploader.h"
 #include "components/metrics/metrics_service_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,6 +31,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
+  virtual void OnLogUploadComplete() OVERRIDE;
 
   // Stores a weak pointer to the given |service|.
   // TODO(isherman): Fix the memory ownership model so that this method is not
@@ -53,6 +55,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   content::NotificationRegistrar registrar_;
   base::ThreadChecker thread_checker_;
+
+  NetworkStatsUploader network_stats_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceClient);
 };

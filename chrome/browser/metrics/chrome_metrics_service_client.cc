@@ -68,6 +68,11 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
   return std::string();
 }
 
+void ChromeMetricsServiceClient::OnLogUploadComplete() {
+  // Collect network stats after each UMA upload.
+  network_stats_uploader_.CollectAndReportNetworkStats();
+}
+
 void ChromeMetricsServiceClient::RegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());

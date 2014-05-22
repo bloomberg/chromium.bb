@@ -37,4 +37,7 @@ std::string TestMetricsServiceClient::GetVersionString() {
   return "5.0.322.0-64-devel";
 }
 
+void TestMetricsServiceClient::OnLogUploadComplete() {
+}
+
 }  // namespace metrics

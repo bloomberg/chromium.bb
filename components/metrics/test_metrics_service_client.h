@@ -23,6 +23,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
+  virtual void OnLogUploadComplete() OVERRIDE;
 
   const std::string& get_client_id() const { return client_id_; }
 

@@ -189,21 +189,18 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
-#include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
-#include "chrome/browser/net/http_pipelining_compatibility_client.h"
-#include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
+#include "components/metrics/metrics_service_client.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
@@ -219,11 +216,6 @@
 #include "extensions/browser/process_map.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-
-// TODO(port): port browser_distribution.h.
-#if !defined(OS_POSIX)
-#include "chrome/installer/util/browser_distribution.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -821,15 +813,6 @@ void MetricsService::CountBrowserCrashDumpAttempts() {
 // Initialization methods
 
 void MetricsService::InitializeMetricsState() {
-#if defined(OS_POSIX)
-  network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
-  http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
-#else
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  network_stats_server_ = dist->GetNetworkStatsServer();
-  http_pipelining_test_server_ = dist->GetHttpPipeliningTestServer();
-#endif
-
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
 
@@ -1596,16 +1579,8 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
                                log_manager_.has_unsent_logs());
   }
 
-  // Collect network stats if UMA upload succeeded.
-  IOThread* io_thread = g_browser_process->io_thread();
-  if (server_is_healthy && io_thread) {
-    chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread);
-    chrome_browser_net::CollectPipeliningCapabilityStatsOnUIThread(
-        http_pipelining_test_server_, io_thread);
-#if defined(OS_WIN)
-    chrome::CollectTimeTicksStats();
-#endif
-  }
+  if (server_is_healthy)
+    client_->OnLogUploadComplete();
 }
 
 void MetricsService::IncrementPrefValue(const char* path) {

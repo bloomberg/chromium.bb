@@ -37,6 +37,9 @@ class MetricsServiceClient {
 
   // Returns the version of the application as a string.
   virtual std::string GetVersionString() = 0;
+
+  // Called by the metrics service when a log has been uploaded.
+  virtual void OnLogUploadComplete() = 0;
 };
 
 }  // namespace metrics

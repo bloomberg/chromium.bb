@@ -482,10 +482,6 @@ class MetricsService
 
   content::NotificationRegistrar registrar_;
 
-  // Set to true when |ResetMetricsIDsIfNecessary| is called for the first time.
-  // This prevents multiple resets within the same Chrome session.
-  bool metrics_ids_reset_check_performed_;
-
   // Indicate whether recording and reporting are currently happening.
   // These should not be set directly, but by calling SetRecording and
   // SetReporting.
@@ -523,12 +519,6 @@ class MetricsService
 
   // The outstanding transmission appears as a URL Fetch operation.
   scoped_ptr<net::URLFetcher> current_fetch_;
-
-  // The TCP/UDP echo server to collect network connectivity stats.
-  std::string network_stats_server_;
-
-  // The HTTP pipelining test server.
-  std::string http_pipelining_test_server_;
 
   // Whether the MetricsService object has received any notifications since
   // the last time a transmission was sent.
