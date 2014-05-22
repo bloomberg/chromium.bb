@@ -596,8 +596,6 @@ void DevToolsUIBindings::Unsubscribe(const std::string& event_type) {
     return;
   }
 
-  subscribers_.erase(event_type);
-
   if (event_type == kDevicesChanged) {
     remote_targets_handler_.reset();
   } else if (event_type == kDeviceCountChanged) {
@@ -605,6 +603,8 @@ void DevToolsUIBindings::Unsubscribe(const std::string& event_type) {
   } else {
     LOG(ERROR) << "Attempt to stop unknown event listener " << event_type;
   }
+
+  subscribers_.erase(event_type);
 }
 
 void DevToolsUIBindings::EnableRemoteDeviceCounter(bool enable) {
