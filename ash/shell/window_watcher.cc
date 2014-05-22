@@ -138,9 +138,6 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   }
 }
 
-void WindowWatcher::OnDisplayBoundsChanged(const gfx::Display& display) {
-}
-
 void WindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
   aura::Window* root = Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(new_display.id());
@@ -150,6 +147,9 @@ void WindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
 void WindowWatcher::OnDisplayRemoved(const gfx::Display& old_display) {
   // All windows in the display has already been removed, so no need to
   // remove observers.
+}
+
+void WindowWatcher::OnDisplayMetricsChanged(const gfx::Display&, uint32_t) {
 }
 
 }  // namespace shell

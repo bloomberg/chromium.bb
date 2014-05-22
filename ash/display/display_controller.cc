@@ -549,15 +549,6 @@ bool DisplayController::UpdateWorkAreaOfDisplayNearestWindow(
   return GetDisplayManager()->UpdateWorkAreaOfDisplay(id, insets);
 }
 
-void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
-  const DisplayInfo& display_info =
-      GetDisplayManager()->GetDisplayInfo(display.id());
-  DCHECK(!display_info.bounds_in_native().IsEmpty());
-  AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
-  ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
-  SetDisplayPropertiesOnHost(ash_host, display);
-}
-
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   if (primary_tree_host_for_replace_) {
     DCHECK(window_tree_hosts_.empty());
@@ -612,8 +603,9 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
     GetRootWindowSettings(GetWindow(primary_host))->display_id =
         primary_display_id;
 
-    OnDisplayBoundsChanged(
-        GetDisplayManager()->GetDisplayForId(primary_display_id));
+    OnDisplayMetricsChanged(
+        GetDisplayManager()->GetDisplayForId(primary_display_id),
+        DISPLAY_METRIC_BOUNDS);
   }
   RootWindowController* controller =
       GetRootWindowController(GetWindow(host_to_delete));
@@ -623,6 +615,20 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   // root window itself yet because the stack may be using it.
   controller->Shutdown();
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
+}
+
+void DisplayController::OnDisplayMetricsChanged(const gfx::Display& display,
+                                                uint32_t metrics) {
+  if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
+                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR)))
+    return;
+
+  const DisplayInfo& display_info =
+      GetDisplayManager()->GetDisplayInfo(display.id());
+  DCHECK(!display_info.bounds_in_native().IsEmpty());
+  AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
+  ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
+  SetDisplayPropertiesOnHost(ash_host, display);
 }
 
 void DisplayController::OnHostResized(const aura::WindowTreeHost* host) {

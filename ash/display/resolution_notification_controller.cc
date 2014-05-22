@@ -285,10 +285,6 @@ void ResolutionNotificationController::RevertResolutionChange() {
       display_id, old_resolution);
 }
 
-void ResolutionNotificationController::OnDisplayBoundsChanged(
-    const gfx::Display& display) {
-}
-
 void ResolutionNotificationController::OnDisplayAdded(
     const gfx::Display& new_display) {
 }
@@ -297,6 +293,10 @@ void ResolutionNotificationController::OnDisplayRemoved(
     const gfx::Display& old_display) {
   if (change_info_ && change_info_->display_id == old_display.id())
     RevertResolutionChange();
+}
+
+void ResolutionNotificationController::OnDisplayMetricsChanged(
+    const gfx::Display&, uint32_t) {
 }
 
 void ResolutionNotificationController::OnDisplayConfigurationChanged() {

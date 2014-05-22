@@ -561,14 +561,6 @@ void MessagePopupCollection::SetDisplayInfo(const gfx::Rect& work_area,
   RepositionWidgets();
 }
 
-void MessagePopupCollection::OnDisplayBoundsChanged(
-    const gfx::Display& display) {
-  if (display.id() != display_id_)
-    return;
-
-  SetDisplayInfo(display.work_area(), display.bounds());
-}
-
 void MessagePopupCollection::OnDisplayAdded(const gfx::Display& new_display) {
 }
 
@@ -578,6 +570,15 @@ void MessagePopupCollection::OnDisplayRemoved(const gfx::Display& old_display) {
     display_id_ = display.id();
     SetDisplayInfo(display.work_area(), display.bounds());
   }
+}
+
+void MessagePopupCollection::OnDisplayMetricsChanged(
+    const gfx::Display& display, uint32_t metrics) {
+  if (display.id() != display_id_)
+    return;
+
+  if (metrics & DISPLAY_METRIC_BOUNDS || metrics & DISPLAY_METRIC_WORK_AREA)
+    SetDisplayInfo(display.work_area(), display.bounds());
 }
 
 views::Widget* MessagePopupCollection::GetWidgetForTest(const std::string& id)

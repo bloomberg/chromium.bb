@@ -176,16 +176,17 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
 
  private:
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
-    changed_display_.push_back(display);
-  }
-
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
     added_display_.push_back(new_display);
   }
 
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE {
     removed_display_.push_back(old_display);
+  }
+
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t metrics) OVERRIDE {
+    changed_display_.push_back(display);
   }
 
   scoped_ptr<DesktopScreenX11> screen_;
@@ -453,6 +454,99 @@ TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
   EXPECT_FALSE(rwh->IsMaximized());
 
   widget->CloseNow();
+}
+
+// Test that rotating the displays notifies the DisplayObservers.
+TEST_F(DesktopScreenX11Test, RotationChange) {
+  std::vector<gfx::Display> displays;
+  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+  screen()->ProcessDisplayChange(displays);
+  ResetDisplayChanges();
+
+  displays[0].set_rotation(gfx::Display::ROTATE_90);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(1u, changed_display_.size());
+
+  displays[1].set_rotation(gfx::Display::ROTATE_90);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[0].set_rotation(gfx::Display::ROTATE_270);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(3u, changed_display_.size());
+
+  displays[0].set_rotation(gfx::Display::ROTATE_270);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(3u, changed_display_.size());
+
+  displays[0].set_rotation(gfx::Display::ROTATE_0);
+  displays[1].set_rotation(gfx::Display::ROTATE_0);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(5u, changed_display_.size());
+}
+
+// Test that changing the displays workarea notifies the DisplayObservers.
+TEST_F(DesktopScreenX11Test, WorkareaChange) {
+  std::vector<gfx::Display> displays;
+  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+  screen()->ProcessDisplayChange(displays);
+  ResetDisplayChanges();
+
+  displays[0].set_work_area(gfx::Rect(0, 0, 300, 300));
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(1u, changed_display_.size());
+
+  displays[1].set_work_area(gfx::Rect(0, 0, 300, 300));
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[0].set_work_area(gfx::Rect(0, 0, 300, 300));
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[1].set_work_area(gfx::Rect(0, 0, 300, 300));
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[0].set_work_area(gfx::Rect(0, 0, 640, 480));
+  displays[1].set_work_area(gfx::Rect(640, 0, 1024, 768));
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(4u, changed_display_.size());
+}
+
+// Test that changing the device scale factor notifies the DisplayObservers.
+TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
+  std::vector<gfx::Display> displays;
+  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+  screen()->ProcessDisplayChange(displays);
+  ResetDisplayChanges();
+
+  displays[0].set_device_scale_factor(2.5f);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(1u, changed_display_.size());
+
+  displays[1].set_device_scale_factor(2.5f);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[0].set_device_scale_factor(2.5f);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[1].set_device_scale_factor(2.5f);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(2u, changed_display_.size());
+
+  displays[0].set_device_scale_factor(1.f);
+  displays[1].set_device_scale_factor(1.f);
+  screen()->ProcessDisplayChange(displays);
+  EXPECT_EQ(4u, changed_display_.size());
 }
 
 }  // namespace views

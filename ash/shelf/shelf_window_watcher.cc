@@ -267,9 +267,6 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
   AddShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnDisplayBoundsChanged(const gfx::Display& display) {
-}
-
 void ShelfWindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
   // Add a new RootWindow and its ActivationClient to observed list.
   aura::Window* root_window = Shell::GetInstance()->display_controller()->
@@ -286,6 +283,10 @@ void ShelfWindowWatcher::OnDisplayRemoved(const gfx::Display& old_display) {
   // Instead, we remove an observer from RootWindow and ActivationClient in the
   // OnRootWindowDestroyed().
   // Do nothing here.
+}
+
+void ShelfWindowWatcher::OnDisplayMetricsChanged(const gfx::Display&,
+                                                 uint32_t) {
 }
 
 }  // namespace ash

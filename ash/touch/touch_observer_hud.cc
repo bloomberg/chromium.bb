@@ -86,18 +86,20 @@ void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   delete this;
 }
 
-void TouchObserverHUD::OnDisplayBoundsChanged(const gfx::Display& display) {
-  if (display.id() != display_id_)
-    return;
-  widget_->SetSize(display.size());
-}
-
 void TouchObserverHUD::OnDisplayAdded(const gfx::Display& new_display) {}
 
 void TouchObserverHUD::OnDisplayRemoved(const gfx::Display& old_display) {
   if (old_display.id() != display_id_)
     return;
   widget_->CloseNow();
+}
+
+void TouchObserverHUD::OnDisplayMetricsChanged(const gfx::Display& display,
+                                               uint32_t metrics) {
+  if (display.id() != display_id_ || !(metrics & DISPLAY_METRIC_BOUNDS))
+    return;
+
+  widget_->SetSize(display.size());
 }
 
 #if defined(OS_CHROMEOS)

@@ -98,7 +98,8 @@ class DisplayManagerTest : public test::AshTestBase,
   }
 
   // aura::DisplayObserver overrides:
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t) OVERRIDE {
     changed_.push_back(display);
   }
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
@@ -387,8 +388,11 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
   EXPECT_EQ(1, host->compositor()->device_scale_factor());
   EXPECT_EQ("1000x600",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("1 0 0", GetCountSummary());
+
   UpdateDisplay("1000x600*2");
   EXPECT_EQ(2, host->compositor()->device_scale_factor());
+  EXPECT_EQ("2 0 0", GetCountSummary());
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
@@ -846,17 +850,23 @@ TEST_F(DisplayManagerTest, Rotate) {
   EXPECT_EQ("2 0 0", GetCountSummary());
   reset();
 
-  // Updating tothe same configuration should report no changes.
+  // Updating to the same configuration should report no changes.
   UpdateDisplay("100x200/l,300x400");
   EXPECT_EQ("0 0 0", GetCountSummary());
   reset();
 
-  UpdateDisplay("100x200/l,300x400");
-  EXPECT_EQ("0 0 0", GetCountSummary());
+  // Rotating 180 degrees should report one change.
+  UpdateDisplay("100x200/r,300x400");
+  EXPECT_EQ("1 0 0", GetCountSummary());
   reset();
 
   UpdateDisplay("200x200");
   EXPECT_EQ("1 0 1", GetCountSummary());
+  reset();
+
+  // Rotating 180 degrees should report one change.
+  UpdateDisplay("200x200/u");
+  EXPECT_EQ("1 0 0", GetCountSummary());
   reset();
 
   UpdateDisplay("200x200/l");
@@ -1047,8 +1057,7 @@ class TestDisplayObserver : public gfx::DisplayObserver {
   virtual ~TestDisplayObserver() {}
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
-  }
+  virtual void OnDisplayMetricsChanged(const gfx::Display&,uint32_t) OVERRIDE {}
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
     // Mirror window should already be delete before restoring
     // the external display.

@@ -27,6 +27,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
@@ -347,8 +348,10 @@ void DisplayManager::SetLayoutForCurrentDisplays(
 
     // Primary's bounds stay the same. Just notify bounds change
     // on the secondary.
-    screen_ash_->NotifyBoundsChanged(
-        ScreenUtil::GetSecondaryDisplay());
+    screen_ash_->NotifyMetricsChanged(
+        ScreenUtil::GetSecondaryDisplay(),
+        gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+            gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
     if (delegate_)
       delegate_->PostDisplayConfigurationChange();
   }
@@ -643,7 +646,7 @@ void DisplayManager::UpdateDisplays(
             new_display_info_list.end(),
             DisplayInfoSortFunctor());
   DisplayList removed_displays;
-  std::vector<size_t> changed_display_indices;
+  std::map<size_t, uint32_t> display_changes;
   std::vector<size_t> added_display_indices;
 
   DisplayList::iterator curr_iter = displays_.begin();
@@ -713,18 +716,32 @@ void DisplayManager::UpdateDisplays(
           CreateDisplayFromDisplayInfoById(new_info_iter->id());
       const DisplayInfo& new_display_info = GetDisplayInfo(new_display.id());
 
-      bool host_window_bounds_changed =
-          current_display_info.bounds_in_native() !=
-          new_display_info.bounds_in_native();
+      uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_NONE;
 
-      if (force_bounds_changed_ ||
-          host_window_bounds_changed ||
-          (current_display.device_scale_factor() !=
-           new_display.device_scale_factor()) ||
+      // At that point the new Display objects we have are not entirely updated,
+      // they are missing the translation related to the Display disposition in
+      // the layout.
+      // Using display.bounds() and display.work_area() would fail most of the
+      // time.
+      if (force_bounds_changed_ || (current_display_info.bounds_in_native() !=
+                                    new_display_info.bounds_in_native()) ||
           (current_display_info.size_in_pixel() !=
-           new_display.GetSizeInPixel()) ||
-          (current_display.rotation() != new_display.rotation())) {
-        changed_display_indices.push_back(new_displays.size());
+           new_display.GetSizeInPixel())) {
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                   gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+      }
+
+      if (current_display.device_scale_factor() !=
+          new_display.device_scale_factor()) {
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+      }
+
+      if (current_display.rotation() != new_display.rotation())
+        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_ROTATION;
+
+      if (metrics != gfx::DisplayObserver::DISPLAY_METRIC_NONE) {
+        display_changes.insert(
+            std::pair<size_t, uint32_t>(new_displays.size(), metrics));
       }
 
       new_display.UpdateWorkAreaFromInsets(current_display.GetWorkAreaInsets());
@@ -751,7 +768,7 @@ void DisplayManager::UpdateDisplays(
   // Do not update |displays_| if there's nothing to be updated. Without this,
   // it will not update the display layout, which causes the bug
   // http://crbug.com/155948.
-  if (changed_display_indices.empty() && added_display_indices.empty() &&
+  if (display_changes.empty() && added_display_indices.empty() &&
       removed_displays.empty()) {
     return;
   }
@@ -768,11 +785,13 @@ void DisplayManager::UpdateDisplays(
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
       std::find(added_display_indices.begin(),
                 added_display_indices.end(),
-                updated_index) == added_display_indices.end() &&
-      std::find(changed_display_indices.begin(),
-                changed_display_indices.end(),
-                updated_index) == changed_display_indices.end()) {
-    changed_display_indices.push_back(updated_index);
+                updated_index) == added_display_indices.end()) {
+    uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                       gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+    if (display_changes.find(updated_index) != display_changes.end())
+      metrics |= display_changes[updated_index];
+
+    display_changes[updated_index] = metrics;
   }
 
   displays_ = new_displays;
@@ -801,15 +820,16 @@ void DisplayManager::UpdateDisplays(
   // it can mirror the display newly added. This can happen when switching
   // from dock mode to software mirror mode.
   non_desktop_display_updater.reset();
-  for (std::vector<size_t>::iterator iter = changed_display_indices.begin();
-       iter != changed_display_indices.end(); ++iter) {
-    screen_ash_->NotifyBoundsChanged(displays_[*iter]);
+  for (std::map<size_t, uint32_t>::iterator iter = display_changes.begin();
+       iter != display_changes.end();
+       ++iter) {
+    screen_ash_->NotifyMetricsChanged(displays_[iter->first], iter->second);
   }
   if (delegate_)
     delegate_->PostDisplayConfigurationChange();
 
 #if defined(USE_X11) && defined(OS_CHROMEOS)
-  if (!changed_display_indices.empty() && base::SysInfo::IsRunningOnChromeOS())
+  if (!display_changes.empty() && base::SysInfo::IsRunningOnChromeOS())
     ui::ClearX11DefaultRootWindow();
 #endif
 }
@@ -957,7 +977,8 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
       return false;
     gfx::Display* display = FindDisplayForId(display_id);
     display->SetSize(display_info_[display_id].size_in_pixel());
-    screen_ash_->NotifyBoundsChanged(*display);
+    screen_ash_->NotifyMetricsChanged(
+        *display, gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
     return true;
   }
   return false;

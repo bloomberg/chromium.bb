@@ -1529,22 +1529,23 @@ void RenderWidgetHostViewAura::OnCandidateWindowHidden() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, gfx::DisplayObserver implementation:
 
-void RenderWidgetHostViewAura::OnDisplayBoundsChanged(
-    const gfx::Display& display) {
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
-  if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
-    UpdateScreenInfo(window_);
-    current_cursor_.SetDisplayInfo(display);
-    UpdateCursorIfOverSelf();
-  }
-}
-
 void RenderWidgetHostViewAura::OnDisplayAdded(
     const gfx::Display& new_display) {
 }
 
 void RenderWidgetHostViewAura::OnDisplayRemoved(
     const gfx::Display& old_display) {
+}
+
+void RenderWidgetHostViewAura::OnDisplayMetricsChanged(
+    const gfx::Display& display, uint32_t metrics) {
+  // The screen info should be updated regardless of the metric change.
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
+  if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
+    UpdateScreenInfo(window_);
+    current_cursor_.SetDisplayInfo(display);
+    UpdateCursorIfOverSelf();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
