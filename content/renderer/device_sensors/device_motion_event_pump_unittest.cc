@@ -16,24 +16,30 @@ namespace content {
 
 class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
  public:
-  MockDeviceMotionListener();
+  MockDeviceMotionListener() : did_change_device_motion_(false) {
+    memset(&data_, 0, sizeof(data_));
+  }
   virtual ~MockDeviceMotionListener() { }
+
   virtual void didChangeDeviceMotion(
-      const blink::WebDeviceMotionData&) OVERRIDE;
+      const blink::WebDeviceMotionData& data) OVERRIDE {
+    memcpy(&data_, &data, sizeof(data));
+    did_change_device_motion_ = true;
+  }
+
+  bool did_change_device_motion() const {
+    return did_change_device_motion_;
+  }
+  const blink::WebDeviceMotionData& data() const {
+    return data_;
+  }
+
+ private:
   bool did_change_device_motion_;
   blink::WebDeviceMotionData data_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDeviceMotionListener);
 };
-
-MockDeviceMotionListener::MockDeviceMotionListener()
-    : did_change_device_motion_(false) {
-  memset(&data_, 0, sizeof(data_));
-}
-
-void MockDeviceMotionListener::didChangeDeviceMotion(
-    const blink::WebDeviceMotionData& data) {
-  memcpy(&data_, &data, sizeof(data));
-  did_change_device_motion_ = true;
-}
 
 class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
@@ -50,6 +56,9 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
     Stop();
     base::MessageLoop::current()->QuitWhenIdle();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpForTesting);
 };
 
 class DeviceMotionEventPumpTest : public testing::Test {
@@ -82,11 +91,18 @@ class DeviceMotionEventPumpTest : public testing::Test {
     data.allAvailableSensorsAreActive = allAvailableSensorsActive;
   }
 
+  MockDeviceMotionListener* listener() { return listener_.get(); }
+  DeviceMotionEventPumpForTesting* motion_pump() { return motion_pump_.get(); }
+  base::SharedMemoryHandle handle() { return handle_; }
+
+ private:
   scoped_ptr<MockDeviceMotionListener> listener_;
   scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
   base::SharedMemoryHandle handle_;
   base::SharedMemory shared_memory_;
   DeviceMotionHardwareBuffer* buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpTest);
 };
 
 TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
@@ -94,13 +110,13 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
 
   InitBuffer(true);
 
-  motion_pump_->SetListener(listener_.get());
-  motion_pump_->OnDidStart(handle_);
+  motion_pump()->SetListener(listener());
+  motion_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
 
-  blink::WebDeviceMotionData& received_data = listener_->data_;
-  EXPECT_TRUE(listener_->did_change_device_motion_);
+  const blink::WebDeviceMotionData& received_data = listener()->data();
+  EXPECT_TRUE(listener()->did_change_device_motion());
   EXPECT_TRUE(received_data.hasAccelerationX);
   EXPECT_EQ(1, static_cast<double>(received_data.accelerationX));
   EXPECT_TRUE(received_data.hasAccelerationX);
@@ -121,14 +137,14 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
 
   InitBuffer(false);
 
-  motion_pump_->SetListener(listener_.get());
-  motion_pump_->OnDidStart(handle_);
+  motion_pump()->SetListener(listener());
+  motion_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
 
-  blink::WebDeviceMotionData& received_data = listener_->data_;
+  const blink::WebDeviceMotionData& received_data = listener()->data();
   // No change in device motion because allAvailableSensorsAreActive is false.
-  EXPECT_FALSE(listener_->did_change_device_motion_);
+  EXPECT_FALSE(listener()->did_change_device_motion());
   EXPECT_FALSE(received_data.hasAccelerationX);
   EXPECT_FALSE(received_data.hasAccelerationX);
   EXPECT_FALSE(received_data.hasAccelerationY);
