@@ -837,6 +837,7 @@
         'browser/drive/fake_drive_service_unittest.cc',
         'browser/enumerate_modules_model_unittest_win.cc',
         'browser/extensions/active_tab_unittest.cc',
+        'browser/extensions/active_script_controller_unittest.cc',
         'browser/extensions/activity_log/activity_database_unittest.cc',
         'browser/extensions/activity_log/activity_log_enabled_unittest.cc',
         'browser/extensions/activity_log/activity_log_unittest.cc',

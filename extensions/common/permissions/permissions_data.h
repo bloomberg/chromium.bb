@@ -135,6 +135,11 @@ class PermissionsData {
   // network, etc.)
   static bool HasEffectiveAccessToAllHosts(const Extension* extension);
 
+  // Whether the extension has access to so many hosts that we should treat it
+  // as "all_hosts" for warning purposes.
+  // For example, '*://*.com/*'.
+  static bool ShouldWarnAllHosts(const Extension* extension);
+
   // Returns the full list of permission messages that the given |extension|
   // should display at install time.
   static PermissionMessages GetPermissionMessages(const Extension* extension);
@@ -179,7 +184,9 @@ class PermissionsData {
 
   // Returns true if the user should be alerted that the |extension| is running
   // a script.
-  static bool RequiresActionForScriptExecution(const Extension* extension);
+  static bool RequiresActionForScriptExecution(const Extension* extension,
+                                               int tab_id,
+                                               const GURL& url);
 
   // Parse the permissions of a given extension in the initialization process.
   bool ParsePermissions(Extension* extension, base::string16* error);

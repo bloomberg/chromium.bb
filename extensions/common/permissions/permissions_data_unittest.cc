@@ -14,7 +14,9 @@
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -22,7 +24,9 @@
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::UTF16ToUTF8;
 using content::SocketPermissionRequest;
@@ -34,6 +38,8 @@ namespace extensions {
 
 namespace {
 
+const char kAllHostsPermission[] = "*://*/*";
+
 bool CheckSocketPermission(
     scoped_refptr<Extension> extension,
     SocketPermissionRequest::OperationType type,
@@ -42,6 +48,43 @@ bool CheckSocketPermission(
   SocketPermission::CheckParam param(type, host, port);
   return PermissionsData::CheckAPIPermissionWithParam(
       extension.get(), APIPermission::kSocket, &param);
+}
+
+// Creates and returns an extension with the given |id|, |host_permissions|, and
+// manifest |location|.
+scoped_refptr<const Extension> GetExtensionWithHostPermission(
+    const std::string& id,
+    const std::string& host_permissions,
+    Manifest::Location location) {
+  ListBuilder permissions;
+  if (!host_permissions.empty())
+    permissions.Append(host_permissions);
+
+  return ExtensionBuilder()
+      .SetManifest(
+          DictionaryBuilder()
+              .Set("name", id)
+              .Set("description", "an extension")
+              .Set("manifest_version", 2)
+              .Set("version", "1.0.0")
+              .Set("permissions", permissions.Pass())
+              .Build())
+      .SetLocation(location)
+      .SetID(id)
+      .Build();
+}
+
+bool RequiresActionForScriptExecution(const std::string& extension_id,
+                                      const std::string& host_permissions,
+                                      Manifest::Location location) {
+  scoped_refptr<const Extension> extension =
+      GetExtensionWithHostPermission(extension_id,
+                                     host_permissions,
+                                     location);
+  return PermissionsData::RequiresActionForScriptExecution(
+      extension,
+      -1,  // Ignore tab id for these.
+      GURL::EmptyGURL());
 }
 
 }  // namespace
@@ -151,6 +194,46 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
         extension,
         SocketPermissionRequest::UDP_SEND_TO,
         "239.255.255.250", 1900));
+}
+
+TEST(ExtensionPermissionsTest, RequiresActionForScriptExecution) {
+  // Extensions with all_hosts should require action.
+  EXPECT_TRUE(RequiresActionForScriptExecution(
+      "all_hosts_permissions", kAllHostsPermission, Manifest::INTERNAL));
+  // Extensions with nearly all hosts are treated the same way.
+  EXPECT_TRUE(RequiresActionForScriptExecution(
+      "pseudo_all_hosts_permissions", "*://*.com/*", Manifest::INTERNAL));
+  // Extensions with explicit permissions shouldn't require action.
+  EXPECT_FALSE(RequiresActionForScriptExecution(
+      "explicit_permissions", "https://www.google.com/*", Manifest::INTERNAL));
+  // Policy extensions are exempt...
+  EXPECT_FALSE(RequiresActionForScriptExecution(
+      "policy", kAllHostsPermission, Manifest::EXTERNAL_POLICY));
+  // ... as are component extensions.
+  EXPECT_FALSE(RequiresActionForScriptExecution(
+      "component", kAllHostsPermission, Manifest::COMPONENT));
+  // Throw in an external pref extension to make sure that it's not just working
+  // for everything non-internal.
+  EXPECT_TRUE(RequiresActionForScriptExecution(
+      "external_pref", kAllHostsPermission, Manifest::EXTERNAL_PREF));
+
+  // If we grant an extension tab permissions, then it should no longer require
+  // action.
+  scoped_refptr<const Extension> extension =
+      GetExtensionWithHostPermission("all_hosts_permissions",
+                                     kAllHostsPermission,
+                                     Manifest::INTERNAL);
+  URLPatternSet allowed_hosts;
+  allowed_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_HTTPS, "https://www.google.com/*"));
+  scoped_refptr<PermissionSet> tab_permissions(
+      new PermissionSet(APIPermissionSet(),
+                        ManifestPermissionSet(),
+                        allowed_hosts,
+                        URLPatternSet()));
+  PermissionsData::UpdateTabSpecificPermissions(extension, 0, tab_permissions);
+  EXPECT_FALSE(PermissionsData::RequiresActionForScriptExecution(
+      extension, 0, GURL("https://www.google.com/")));
 }
 
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {

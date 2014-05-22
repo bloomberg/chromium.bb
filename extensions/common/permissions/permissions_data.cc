@@ -238,6 +238,25 @@ bool IsTrustedId(const std::string& extension_id) {
   return extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
 }
 
+// Returns true if the |extension| has tab-specific permission to operate on
+// the tab specified by |tab_id| with the given |url|.
+// Note that if this returns false, it doesn't mean the extension can't run on
+// the given tab, only that it does not have tab-specific permission to do so.
+bool HasTabSpecificPermissionToExecuteScript(
+    const Extension* extension,
+    int tab_id,
+    const GURL& url) {
+  if (tab_id >= 0) {
+    scoped_refptr<const PermissionSet> tab_permissions =
+        PermissionsData::GetTabSpecificPermissions(extension, tab_id);
+    if (tab_permissions.get() &&
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(url)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 struct PermissionsData::InitialPermissions {
@@ -414,6 +433,12 @@ bool PermissionsData::HasEffectiveAccessToAllHosts(const Extension* extension) {
 }
 
 // static
+bool PermissionsData::ShouldWarnAllHosts(const Extension* extension) {
+  base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
+  return GetActivePermissions(extension)->ShouldWarnAllHosts();
+}
+
+// static
 PermissionMessages PermissionsData::GetPermissionMessages(
     const Extension* extension) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
@@ -490,15 +515,8 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
     return false;
   }
 
-  // If a tab ID is specified, try the tab-specific permissions.
-  if (tab_id >= 0) {
-    scoped_refptr<const PermissionSet> tab_permissions =
-        GetTabSpecificPermissions(extension, tab_id);
-    if (tab_permissions.get() &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(document_url)) {
-      return true;
-    }
-  }
+  if (HasTabSpecificPermissionToExecuteScript(extension, tab_id, top_frame_url))
+    return true;
 
   bool can_access = false;
 
@@ -562,14 +580,26 @@ bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
 
 // static
 bool PermissionsData::RequiresActionForScriptExecution(
-    const Extension* extension) {
+    const Extension* extension,
+    int tab_id,
+    const GURL& url) {
   // For now, the user should be notified when an extension with all hosts
-  // permission tries to execute a script on a page. Exceptions for policy-
-  // enabled and component extensions.
-  return extension->ShouldDisplayInExtensionSettings() &&
-         !Manifest::IsPolicyLocation(extension->location()) &&
-         !Manifest::IsComponentLocation(extension->location()) &&
-         HasEffectiveAccessToAllHosts(extension);
+  // permission tries to execute a script on a page, with exceptions for policy-
+  // enabled and component extensions. If this doesn't meet those criteria,
+  // return immediately.
+  if (!extension->ShouldDisplayInExtensionSettings() ||
+      Manifest::IsPolicyLocation(extension->location()) ||
+      Manifest::IsComponentLocation(extension->location()) ||
+      !ShouldWarnAllHosts(extension)) {
+    return false;
+  }
+
+  // If the extension has explicit permission to run on the given tab, then
+  // we don't need to alert the user.
+  if (HasTabSpecificPermissionToExecuteScript(extension, tab_id, url))
+    return false;
+
+  return true;
 }
 
 bool PermissionsData::ParsePermissions(Extension* extension,

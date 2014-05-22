@@ -13,6 +13,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "url/gurl.h"
 
 using content::RenderProcessHost;
 using content::WebContentsObserver;
@@ -41,7 +42,19 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   APIPermissionSet new_apis;
   URLPatternSet new_hosts;
 
-  if (extension->HasAPIPermission(APIPermission::kActiveTab)) {
+  // If the extension requires action for script execution, we grant it
+  // active tab-style permissions, even if it doesn't have the activeTab
+  // permission in the manifest.
+  // We don't take tab id into account, because we want to know if the extension
+  // should require active tab in general (not for the current tab).
+  bool requires_action_for_script_execution =
+      PermissionsData::RequiresActionForScriptExecution(
+          extension,
+          -1,  // No tab id.
+          GURL::EmptyGURL());
+
+  if (extension->HasAPIPermission(APIPermission::kActiveTab) ||
+      requires_action_for_script_execution) {
     URLPattern pattern(UserScript::ValidUserScriptSchemes());
     // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
     if (pattern.Parse(web_contents()->GetURL().spec()) ==

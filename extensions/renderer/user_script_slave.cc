@@ -18,6 +18,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -183,7 +184,10 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     const Extension* extension = GetExtension(injection->extension_id());
     DCHECK(extension);
 
-    if (PermissionsData::RequiresActionForScriptExecution(extension)) {
+    if (PermissionsData::RequiresActionForScriptExecution(
+            extension,
+            ExtensionHelper::Get(top_render_view)->tab_id(),
+            document_url)) {
       // TODO(rdevlin.cronin): Right now, this is just a notification, but soon
       // we should block without user consent.
       top_render_view->Send(

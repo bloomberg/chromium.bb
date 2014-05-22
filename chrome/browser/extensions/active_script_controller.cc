@@ -9,9 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -70,8 +72,12 @@ ActiveScriptController* ActiveScriptController::GetForWebContents(
 bool ActiveScriptController::RequiresUserConsentForScriptInjection(
     const Extension* extension) {
   CHECK(extension);
-  if (!PermissionsData::RequiresActionForScriptExecution(extension))
+  if (!PermissionsData::RequiresActionForScriptExecution(
+          extension,
+          SessionID::IdForTab(web_contents()),
+          web_contents()->GetVisibleURL())) {
     return false;
+  }
 
   // If the feature is not enabled, we automatically allow all extensions to
   // run scripts.
@@ -164,6 +170,11 @@ LocationBarController::Action ActiveScriptController::OnClicked(
   PendingRequestList requests;
   iter->second.swap(requests);
   pending_requests_.erase(extension->id());
+
+  // Clicking to run the extension counts as granting it permission to run on
+  // the given tab.
+  TabHelper::FromWebContents(web_contents())->
+      active_tab_permission_granter()->GrantIfRequested(extension);
 
   // Run all pending injections for the given extension.
   for (PendingRequestList::iterator request = requests.begin();

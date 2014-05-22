@@ -8,12 +8,14 @@
 #include <iterator>
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
-using extensions::URLPatternSet;
+namespace extensions {
 
 namespace {
 
@@ -28,13 +30,11 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
 
 }  // namespace
 
-namespace extensions {
-
 //
 // PermissionSet
 //
 
-PermissionSet::PermissionSet() {}
+PermissionSet::PermissionSet() : should_warn_all_hosts_(UNINITIALIZED) {}
 
 PermissionSet::PermissionSet(
     const APIPermissionSet& apis,
@@ -43,7 +43,8 @@ PermissionSet::PermissionSet(
     const URLPatternSet& scriptable_hosts)
     : apis_(apis),
       manifest_permissions_(manifest_permissions),
-      scriptable_hosts_(scriptable_hosts) {
+      scriptable_hosts_(scriptable_hosts),
+      should_warn_all_hosts_(UNINITIALIZED) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitPermissions();
   InitEffectiveHosts();
@@ -230,6 +231,12 @@ bool PermissionSet::HasEffectiveAccessToAllHosts() const {
   return false;
 }
 
+bool PermissionSet::ShouldWarnAllHosts() const {
+  if (should_warn_all_hosts_ == UNINITIALIZED)
+    InitShouldWarnAllHosts();
+  return should_warn_all_hosts_ == WARN_ALL_HOSTS;
+}
+
 bool PermissionSet::HasEffectiveAccessToURL(const GURL& url) const {
   return effective_hosts().MatchesURL(url);
 }
@@ -260,6 +267,50 @@ void PermissionSet::InitEffectiveHosts() {
 
   URLPatternSet::CreateUnion(
       explicit_hosts(), scriptable_hosts(), &effective_hosts_);
+}
+
+void PermissionSet::InitShouldWarnAllHosts() const {
+  if (HasEffectiveAccessToAllHosts()) {
+    should_warn_all_hosts_ = WARN_ALL_HOSTS;
+    return;
+  }
+
+  for (URLPatternSet::const_iterator iter = effective_hosts_.begin();
+       iter != effective_hosts_.end();
+       ++iter) {
+    // If this doesn't even match subdomains, it can't possibly imply all hosts.
+    if (!iter->match_subdomains())
+      continue;
+
+    // If iter->host() is a recognized TLD, this will be 0. We don't include
+    // private TLDs, so that, e.g., *.appspot.com does not imply all hosts.
+    size_t registry_length =
+        net::registry_controlled_domains::GetRegistryLength(
+            iter->host(),
+            net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    // If there was more than just a TLD in the host (e.g., *.foobar.com), it
+    // doesn't imply all hosts.
+    if (registry_length > 0)
+      continue;
+
+    // At this point the host could either be just a TLD ("com") or some unknown
+    // TLD-like string ("notatld"). To disambiguate between them construct a
+    // fake URL, and check the registry. This returns 0 if the TLD is
+    // unrecognized, or the length of the recognized TLD.
+    registry_length = net::registry_controlled_domains::GetRegistryLength(
+        base::StringPrintf("foo.%s", iter->host().c_str()),
+        net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    // If we recognized this TLD, then this is a pattern like *.com, and it
+    // should imply all hosts.
+    if (registry_length > 0) {
+      should_warn_all_hosts_ = WARN_ALL_HOSTS;
+      return;
+    }
+  }
+
+  should_warn_all_hosts_ = DONT_WARN_ALL_HOSTS;
 }
 
 }  // namespace extensions

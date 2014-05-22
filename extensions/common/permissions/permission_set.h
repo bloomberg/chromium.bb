@@ -96,6 +96,11 @@ class PermissionSet
   // origins.
   bool HasEffectiveAccessToAllHosts() const;
 
+  // Returns true if this permission set has access to so many hosts, that we
+  // should treat it as all hosts for warning purposes.
+  // For example, '*://*.com/*'.
+  bool ShouldWarnAllHosts() const;
+
   // Returns true if this permission set includes effective access to |url|.
   bool HasEffectiveAccessToURL(const GURL& url) const;
 
@@ -121,13 +126,14 @@ class PermissionSet
 
   ~PermissionSet();
 
-  void AddAPIPermission(APIPermission::ID id);
-
   // Adds permissions implied independently of other context.
   void InitImplicitPermissions();
 
   // Initializes the effective host permission based on the data in this set.
   void InitEffectiveHosts();
+
+  // Initializes |has_access_to_most_hosts_|.
+  void InitShouldWarnAllHosts() const;
 
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.
@@ -147,6 +153,16 @@ class PermissionSet
 
   // The list of hosts this effectively grants access to.
   URLPatternSet effective_hosts_;
+
+  enum ShouldWarnAllHostsType {
+    UNINITIALIZED = 0,
+    WARN_ALL_HOSTS,
+    DONT_WARN_ALL_HOSTS
+  };
+  // Whether or not this permission set includes access to so many origins, we
+  // should treat it as all_hosts for warning purposes.
+  // Lazily initialized (and therefore mutable).
+  mutable ShouldWarnAllHostsType should_warn_all_hosts_;
 };
 
 }  // namespace extensions
