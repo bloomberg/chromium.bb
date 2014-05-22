@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -20,7 +22,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
@@ -64,14 +65,19 @@ class CacheMaxAgeHandler {
  private:
   std::string path_;
   int request_count_;
-};
 
-}  // namespace
+  DISALLOW_COPY_AND_ASSIGN(CacheMaxAgeHandler);
+};
 
 class CrashRecoveryBrowserTest : public InProcessBrowserTest {
  protected:
   WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kDisableBreakpad);
   }
 };
 
@@ -127,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
 // ID of the RenderProcessHost was stale, so the NavigationEntry in the new tab
 // was not committed.  This prevents regression of that bug.
 IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
-  const base::FilePath::CharType* kTitle2File =
+  const base::FilePath::CharType kTitle2File[] =
       FILE_PATH_LITERAL("title2.html");
 
   ui_test_utils::NavigateToURL(
@@ -165,5 +171,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
   content::WaitForLoadStop(GetActiveWebContents());
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 }
+
+}  // namespace
 
 #endif
