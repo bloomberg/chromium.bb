@@ -10,8 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-
-#pragma comment(lib, "shlwapi.lib")  // for SHDeleteKey
+#include "base/win/windows_version.h"
 
 namespace base {
 namespace win {
@@ -30,23 +29,29 @@ inline DWORD to_wchar_size(DWORD byte_size) {
   return (byte_size + sizeof(wchar_t) - 1) / sizeof(wchar_t);
 }
 
+// Mask to pull WOW64 access flags out of REGSAM access.
+const REGSAM kWow64AccessMask = KEY_WOW64_32KEY | KEY_WOW64_64KEY;
+
 }  // namespace
 
 // RegKey ----------------------------------------------------------------------
 
 RegKey::RegKey()
     : key_(NULL),
-      watch_event_(0) {
+      watch_event_(0),
+      wow64access_(0) {
 }
 
 RegKey::RegKey(HKEY key)
     : key_(key),
-      watch_event_(0) {
+      watch_event_(0),
+      wow64access_(0) {
 }
 
 RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
     : key_(NULL),
-      watch_event_(0) {
+      watch_event_(0),
+      wow64access_(0) {
   if (rootkey) {
     if (access & (KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK))
       Create(rootkey, subkey, access);
@@ -54,6 +59,7 @@ RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
       Open(rootkey, subkey, access);
   } else {
     DCHECK(!subkey);
+    wow64access_ = access & kWow64AccessMask;
   }
 }
 
@@ -76,6 +82,7 @@ LONG RegKey::CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subhkey;
+    wow64access_ = access & kWow64AccessMask;
   }
 
   return result;
@@ -83,13 +90,21 @@ LONG RegKey::CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
 
 LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
   DCHECK(name && access);
+  // After the application has accessed an alternate registry view using one of
+  // the [KEY_WOW64_32KEY / KEY_WOW64_64KEY] flags, all subsequent operations
+  // (create, delete, or open) on child registry keys must explicitly use the
+  // same flag. Otherwise, there can be unexpected behavior.
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx.
+  if ((access & kWow64AccessMask) != wow64access_) {
+    NOTREACHED();
+    return ERROR_INVALID_PARAMETER;
+  }
   HKEY subkey = NULL;
   LONG result = RegCreateKeyEx(key_, name, 0, NULL, REG_OPTION_NON_VOLATILE,
                                access, NULL, &subkey, NULL);
- if (result == ERROR_SUCCESS) {
-   Close();
-
-   key_ = subkey;
+  if (result == ERROR_SUCCESS) {
+    Close();
+    key_ = subkey;
   }
 
   return result;
@@ -103,6 +118,7 @@ LONG RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   if (result == ERROR_SUCCESS) {
     Close();
     key_ = subhkey;
+    wow64access_ = access & kWow64AccessMask;
   }
 
   return result;
@@ -110,6 +126,15 @@ LONG RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
 
 LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
   DCHECK(relative_key_name && access);
+  // After the application has accessed an alternate registry view using one of
+  // the [KEY_WOW64_32KEY / KEY_WOW64_64KEY] flags, all subsequent operations
+  // (create, delete, or open) on child registry keys must explicitly use the
+  // same flag. Otherwise, there can be unexpected behavior.
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx.
+  if ((access & kWow64AccessMask) != wow64access_) {
+    NOTREACHED();
+    return ERROR_INVALID_PARAMETER;
+  }
   HKEY subkey = NULL;
   LONG result = RegOpenKeyEx(key_, relative_key_name, 0, access, &subkey);
 
@@ -127,17 +152,21 @@ void RegKey::Close() {
   if (key_) {
     ::RegCloseKey(key_);
     key_ = NULL;
+    wow64access_ = 0;
   }
 }
 
+// TODO(wfh): Remove this and other unsafe methods. See http://crbug.com/375400
 void RegKey::Set(HKEY key) {
   if (key_ != key) {
     Close();
     key_ = key;
+    wow64access_ = 0;
   }
 }
 
 HKEY RegKey::Take() {
+  DCHECK(wow64access_ == 0);
   StopWatching();
   HKEY key = key_;
   key_ = NULL;
@@ -168,8 +197,43 @@ LONG RegKey::GetValueNameAt(int index, std::wstring* name) const {
 LONG RegKey::DeleteKey(const wchar_t* name) {
   DCHECK(key_);
   DCHECK(name);
-  LONG result = SHDeleteKey(key_, name);
-  return result;
+  HKEY subkey = NULL;
+
+  // Verify the key exists before attempting delete to replicate previous
+  // behavior.
+  LONG result =
+      RegOpenKeyEx(key_, name, 0, READ_CONTROL | wow64access_, &subkey);
+  if (result != ERROR_SUCCESS)
+    return result;
+  RegCloseKey(subkey);
+
+  return RegDelRecurse(key_, std::wstring(name), wow64access_);
+}
+
+LONG RegKey::DeleteEmptyKey(const wchar_t* name) {
+  DCHECK(key_);
+  DCHECK(name);
+
+  HKEY target_key = NULL;
+  LONG result = RegOpenKeyEx(key_, name, 0, KEY_READ | wow64access_,
+                             &target_key);
+
+  if (result != ERROR_SUCCESS)
+    return result;
+
+  DWORD count = 0;
+  result = RegQueryInfoKey(target_key, NULL, 0, NULL, NULL, NULL, NULL, &count,
+                           NULL, NULL, NULL, NULL);
+
+  RegCloseKey(target_key);
+
+  if (result != ERROR_SUCCESS)
+    return result;
+
+  if (count == 0)
+    return RegDeleteKeyExWrapper(key_, name, wow64access_, 0);
+
+  return ERROR_DIR_NOT_EMPTY;
 }
 
 LONG RegKey::DeleteValue(const wchar_t* value_name) {
@@ -339,6 +403,83 @@ LONG RegKey::StopWatching() {
     watch_event_ = 0;
     result = ERROR_SUCCESS;
   }
+  return result;
+}
+
+// static
+LONG RegKey::RegDeleteKeyExWrapper(HKEY hKey,
+                                   const wchar_t* lpSubKey,
+                                   REGSAM samDesired,
+                                   DWORD Reserved) {
+  typedef LSTATUS(WINAPI* RegDeleteKeyExPtr)(HKEY, LPCWSTR, REGSAM, DWORD);
+
+  RegDeleteKeyExPtr reg_delete_key_ex_func =
+      reinterpret_cast<RegDeleteKeyExPtr>(
+          GetProcAddress(GetModuleHandleA("advapi32.dll"), "RegDeleteKeyExW"));
+
+  if (reg_delete_key_ex_func)
+    return reg_delete_key_ex_func(hKey, lpSubKey, samDesired, Reserved);
+
+  // Windows XP does not support RegDeleteKeyEx, so fallback to RegDeleteKey.
+  return RegDeleteKey(hKey, lpSubKey);
+}
+
+// static
+LONG RegKey::RegDelRecurse(HKEY root_key,
+                           const std::wstring& name,
+                           REGSAM access) {
+  // First, see if the key can be deleted without having to recurse.
+  LONG result = RegDeleteKeyExWrapper(root_key, name.c_str(), access, 0);
+  if (result == ERROR_SUCCESS)
+    return result;
+
+  HKEY target_key = NULL;
+  result = RegOpenKeyEx(
+      root_key, name.c_str(), 0, KEY_ENUMERATE_SUB_KEYS | access, &target_key);
+
+  if (result == ERROR_FILE_NOT_FOUND)
+    return ERROR_SUCCESS;
+  if (result != ERROR_SUCCESS)
+    return result;
+
+  std::wstring subkey_name(name);
+
+  // Check for an ending slash and add one if it is missing.
+  if (!name.empty() && subkey_name[name.length() - 1] != L'\\')
+    subkey_name += L"\\";
+
+  // Enumerate the keys
+  result = ERROR_SUCCESS;
+  const DWORD kMaxKeyNameLength = MAX_PATH;
+  const size_t base_key_length = subkey_name.length();
+  std::wstring key_name;
+  while (result == ERROR_SUCCESS) {
+    DWORD key_size = kMaxKeyNameLength;
+    result = RegEnumKeyEx(target_key,
+                          0,
+                          WriteInto(&key_name, kMaxKeyNameLength),
+                          &key_size,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL);
+
+    if (result != ERROR_SUCCESS)
+      break;
+
+    key_name.resize(key_size);
+    subkey_name.resize(base_key_length);
+    subkey_name += key_name;
+
+    if (RegDelRecurse(root_key, subkey_name, access) != ERROR_SUCCESS)
+      break;
+  }
+
+  RegCloseKey(target_key);
+
+  // Try again to delete the key.
+  result = RegDeleteKeyExWrapper(root_key, name.c_str(), access, 0);
+
   return result;
 }
 

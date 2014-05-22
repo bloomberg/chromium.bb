@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -16,30 +17,53 @@ namespace win {
 
 namespace {
 
-const wchar_t kRootKey[] = L"Base_Registry_Unittest";
-
 class RegistryTest : public testing::Test {
- public:
-  RegistryTest() {}
-
  protected:
+#if defined(_WIN64)
+  static const REGSAM kNativeViewMask = KEY_WOW64_64KEY;
+  static const REGSAM kRedirectedViewMask = KEY_WOW64_32KEY;
+#else
+  static const REGSAM kNativeViewMask = KEY_WOW64_32KEY;
+  static const REGSAM kRedirectedViewMask = KEY_WOW64_64KEY;
+#endif  //  _WIN64
+
+  RegistryTest() {}
   virtual void SetUp() OVERRIDE {
     // Create a temporary key.
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(kRootKey);
     ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
     ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, kRootKey, KEY_READ));
+    foo_software_key_ = L"Software\\";
+    foo_software_key_ += kRootKey;
+    foo_software_key_ += L"\\Foo";
   }
 
   virtual void TearDown() OVERRIDE {
     // Clean up the temporary key.
     RegKey key(HKEY_CURRENT_USER, L"", KEY_SET_VALUE);
     ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
   }
+
+  static bool IsRedirectorPresent() {
+#if defined(_WIN64)
+    return true;
+#else
+    return OSInfo::GetInstance()->wow64_status() == OSInfo::WOW64_ENABLED;
+#endif
+  }
+
+  const wchar_t* const kRootKey = L"Base_Registry_Unittest";
+  std::wstring foo_software_key_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RegistryTest);
 };
+
+// static
+const REGSAM RegistryTest::kNativeViewMask;
+const REGSAM RegistryTest::kRedirectedViewMask;
 
 TEST_F(RegistryTest, ValueTest) {
   RegKey key;
@@ -156,6 +180,153 @@ TEST_F(RegistryTest, TruncatedCharTest) {
   EXPECT_EQ(0, std::memcmp(kData, iterator.Value(), arraysize(kData)));
   ++iterator;
   EXPECT_FALSE(iterator.Valid());
+}
+
+TEST_F(RegistryTest, RecursiveDelete) {
+  RegKey key;
+  // Create kRootKey->Foo
+  //                  \->Bar (TestValue)
+  //                     \->Foo (TestValue)
+  //                        \->Bar
+  //                           \->Foo
+  //                  \->Moo
+  //                  \->Foo
+  // and delete kRootKey->Foo
+  std::wstring foo_key(kRootKey);
+  foo_key += L"\\Foo";
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Bar", KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"TestValue", L"TestData"));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Moo", KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Foo", KEY_WRITE));
+  foo_key += L"\\Bar";
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  foo_key += L"\\Foo";
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Foo", KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"TestValue", L"TestData"));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
+
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_WRITE));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteKey(L"Bar"));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteEmptyKey(L"Foo"));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteEmptyKey(L"Foo\\Bar\\Foo"));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteEmptyKey(L"Foo\\Bar"));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteEmptyKey(L"Foo\\Foo"));
+
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Bar", KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"Foo", KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(L""));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
+
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(L"Foo"));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteKey(L"Foo"));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
+}
+
+// This test requires running as an Administrator as it tests redirected
+// registry writes to HKLM\Software
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa384253.aspx
+TEST_F(RegistryTest, Wow64RedirectedFromNative) {
+  if (!IsRedirectorPresent())
+    return;
+
+  RegKey key;
+
+  // Test redirected key access from non-redirected.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE,
+                       foo_software_key_.c_str(),
+                       KEY_WRITE | kRedirectedViewMask));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(), KEY_READ));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     foo_software_key_.c_str(),
+                     KEY_READ | kNativeViewMask));
+
+  // Open the non-redirected view of the parent and try to delete the test key.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, L"Software", KEY_SET_VALUE));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     L"Software",
+                     KEY_SET_VALUE | kNativeViewMask));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+
+  // Open the redirected view and delete the key created above.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     L"Software",
+                     KEY_SET_VALUE | kRedirectedViewMask));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+}
+
+TEST_F(RegistryTest, Wow64NativeFromRedirected) {
+  if (!IsRedirectorPresent())
+    return;
+  RegKey key;
+
+  // Test non-redirected key access from redirected.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE,
+                       foo_software_key_.c_str(),
+                       KEY_WRITE | kNativeViewMask));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, foo_software_key_.c_str(), KEY_READ));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     foo_software_key_.c_str(),
+                     KEY_READ | kRedirectedViewMask));
+
+  // Open the redirected view of the parent and try to delete the test key
+  // from the non-redirected view.
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     L"Software",
+                     KEY_SET_VALUE | kRedirectedViewMask));
+  ASSERT_NE(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE,
+                     L"Software",
+                     KEY_SET_VALUE | kNativeViewMask));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
+}
+
+TEST_F(RegistryTest, OpenSubKey) {
+  RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER,
+                     kRootKey,
+                     KEY_READ | KEY_CREATE_SUB_KEY));
+
+  ASSERT_NE(ERROR_SUCCESS, key.OpenKey(L"foo", KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(L"foo", KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.OpenKey(L"foo", KEY_READ));
+
+  std::wstring foo_key(kRootKey);
+  foo_key += L"\\Foo";
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, foo_key.c_str(), KEY_READ));
+
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(L"foo"));
 }
 
 }  // namespace

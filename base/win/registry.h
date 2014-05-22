@@ -71,6 +71,10 @@ class BASE_EXPORT RegKey {
   // it.
   LONG DeleteKey(const wchar_t* name);
 
+  // Deletes an empty subkey.  If the subkey has subkeys or values then this
+  // will fail.
+  LONG DeleteEmptyKey(const wchar_t* name);
+
   // Deletes a single value within the key.
   LONG DeleteValue(const wchar_t* name);
 
@@ -132,8 +136,20 @@ class BASE_EXPORT RegKey {
   HKEY Handle() const { return key_; }
 
  private:
+  // Calls RegDeleteKeyEx on supported platforms, alternatively falls back to
+  // RegDeleteKey.
+  static LONG RegDeleteKeyExWrapper(HKEY hKey,
+                                    const wchar_t* lpSubKey,
+                                    REGSAM samDesired,
+                                    DWORD Reserved);
+
+  // Recursively deletes a key and all of its subkeys.
+  static LONG RegDelRecurse(HKEY root_key,
+                            const std::wstring& name,
+                            REGSAM access);
   HKEY key_;  // The registry key being iterated.
   HANDLE watch_event_;
+  REGSAM wow64access_;
 
   DISALLOW_COPY_AND_ASSIGN(RegKey);
 };
