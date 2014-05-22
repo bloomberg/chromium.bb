@@ -327,9 +327,22 @@ bool ResourceMetadataStorage::UpgradeOldDB(
     options.verify_checksums = true;
     scoped_ptr<leveldb::Iterator> it(resource_map->NewIterator(options));
 
+    // First, get the set of local IDs associated with cache entries.
+    std::set<std::string> cached_entry_ids;
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+      if (IsCacheEntryKey(it->key()))
+        cached_entry_ids.insert(GetIdFromCacheEntryKey(it->key()));
+    }
+    if (!it->status().ok())
+      return false;
+
+    // Delete all entries except cache entries and IDs.
     leveldb::WriteBatch batch;
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
-      if (!IsCacheEntryKey(it->key()) && !IsIdEntryKey(it->key()))
+      const bool is_cache = IsCacheEntryKey(it->key());
+      const bool is_used_id = IsIdEntryKey(it->key()) &&
+          cached_entry_ids.count(it->value().ToString());
+      if (!is_cache && !is_used_id)
         batch.Delete(it->key());
     }
     if (!it->status().ok())
