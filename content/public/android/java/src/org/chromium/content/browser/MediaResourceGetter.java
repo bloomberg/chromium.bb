@@ -188,7 +188,13 @@ class MediaResourceGetter {
 
     @VisibleForTesting
     boolean configure(Context context, String url, String cookies, String userAgent) {
-        URI uri = URI.create(url);
+        URI uri;
+        try {
+            uri = URI.create(url);
+        } catch (IllegalArgumentException  e) {
+            Log.e(TAG, "Cannot parse uri.", e);
+            return false;
+        }
         String scheme = uri.getScheme();
         if (scheme == null || scheme.equals("file")) {
             File file = uriToFile(uri.getPath());
