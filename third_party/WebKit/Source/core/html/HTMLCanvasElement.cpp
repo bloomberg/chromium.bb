@@ -92,11 +92,10 @@ PassRefPtrWillBeRawPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& do
 HTMLCanvasElement::~HTMLCanvasElement()
 {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
-    HashSet<CanvasObserver*>::iterator end = m_observers.end();
-    for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
-        (*it)->canvasDestroyed(this);
-
 #if !ENABLE(OILPAN)
+    HashSet<RawPtr<CanvasObserver> >::iterator end = m_observers.end();
+    for (HashSet<RawPtr<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
+        (*it)->canvasDestroyed(this);
     m_context.clear(); // Ensure this goes away before the ImageBuffer.
 #endif
 }
@@ -217,8 +216,8 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
 
 void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
 {
-    HashSet<CanvasObserver*>::iterator end = m_observers.end();
-    for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator end = m_observers.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasChanged(this, rect);
 }
 
@@ -275,8 +274,8 @@ void HTMLCanvasElement::reset()
         }
     }
 
-    HashSet<CanvasObserver*>::iterator end = m_observers.end();
-    for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator end = m_observers.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasResized(this);
 }
 
@@ -530,6 +529,7 @@ void HTMLCanvasElement::notifySurfaceInvalid()
 
 void HTMLCanvasElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_observers);
     visitor->trace(m_context);
     HTMLElement::trace(visitor);
 }

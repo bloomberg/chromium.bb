@@ -670,7 +670,8 @@ public: \
     virtual bool isAlive(WebCore::Visitor* visitor) const OVERRIDE  \
     { \
         return visitor->isAlive(this); \
-    }
+    } \
+private:
 
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
