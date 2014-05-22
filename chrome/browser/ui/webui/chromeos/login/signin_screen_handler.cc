@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -315,7 +316,9 @@ SigninScreenHandler::SigninScreenHandler(
       offline_login_active_(false),
       last_network_state_(NetworkStateInformer::UNKNOWN),
       has_pending_auth_ui_(false),
-      caps_lock_enabled_(false),
+      caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
+                             ->GetImeKeyboard()
+                             ->CapsLockIsEnabled()),
       gaia_screen_handler_(gaia_screen_handler) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
@@ -341,10 +344,26 @@ SigninScreenHandler::SigninScreenHandler(
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
+
+  // Since keyboard handling differs between ChromeOS and Linux we need to
+  // use different observers depending on the two platforms.
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    chromeos::input_method::ImeKeyboard* keyboard =
+        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+    keyboard->AddObserver(this);
+  } else {
+    ash::Shell::GetInstance()->PrependPreTargetHandler(this);
+  }
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    chromeos::input_method::ImeKeyboard* keyboard =
+        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+    keyboard->RemoveObserver(this);
+  } else {
+    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  }
   weak_factory_.InvalidateWeakPtrs();
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
@@ -730,9 +749,6 @@ void SigninScreenHandler::Initialize() {
   if (!delegate_)
     return;
 
-  // Make sure the event is processed by this before the IME.
-  ash::Shell::GetInstance()->PrependPreTargetHandler(this);
-
   if (show_on_init_) {
     show_on_init_ = false;
     ShowImpl();
@@ -929,12 +945,8 @@ void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
 }
 
 void SigninScreenHandler::OnKeyEvent(ui::KeyEvent* key) {
-  if (key->type() == ui::ET_KEY_PRESSED &&
-      key->key_code() == ui::VKEY_CAPITAL) {
-    caps_lock_enabled_ = !caps_lock_enabled_;
-    if (page_is_ready())
-      CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
-  }
+  if (key->type() == ui::ET_KEY_PRESSED && key->key_code() == ui::VKEY_CAPITAL)
+    OnCapsLockChanged(!caps_lock_enabled_);
 }
 
 void SigninScreenHandler::Observe(int type,
@@ -1815,6 +1827,12 @@ GaiaScreenHandler::FrameState SigninScreenHandler::FrameState() const {
 net::Error SigninScreenHandler::FrameError() const {
   DCHECK(gaia_screen_handler_);
   return gaia_screen_handler_->frame_error();
+}
+
+void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
+  caps_lock_enabled_ = enabled;
+  if (page_is_ready())
+    CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
 }
 
 }  // namespace chromeos

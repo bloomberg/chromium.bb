@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
@@ -199,7 +200,8 @@ class SigninScreenHandler
       public content::NotificationObserver,
       public ui::EventHandler,
       public ScreenlockBridge::LockHandler,
-      public NetworkStateInformer::NetworkStateInformerObserver {
+      public NetworkStateInformer::NetworkStateInformerObserver,
+      public input_method::ImeKeyboard::Observer {
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
@@ -444,6 +446,9 @@ class SigninScreenHandler
 
   GaiaScreenHandler::FrameState FrameState() const;
   net::Error FrameError() const;
+
+  // input_method::ImeKeyboard::Observer implementation:
+  virtual void OnCapsLockChanged(bool enabled) OVERRIDE;
 
   // Current UI state of the signin screen.
   UIState ui_state_;
