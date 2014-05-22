@@ -51,40 +51,18 @@ ConnectionToHost::~ConnectionToHost() {
     signal_strategy_->RemoveListener(this);
 }
 
-ClipboardStub* ConnectionToHost::clipboard_stub() {
-  return &clipboard_forwarder_;
-}
-
-HostStub* ConnectionToHost::host_stub() {
-  // TODO(wez): Add a HostFilter class, equivalent to input filter.
-  return control_dispatcher_.get();
-}
-
-InputStub* ConnectionToHost::input_stub() {
-  return &event_forwarder_;
-}
-
 void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
-                               const std::string& host_jid,
-                               const std::string& host_public_key,
                                scoped_ptr<TransportFactory> transport_factory,
                                scoped_ptr<Authenticator> authenticator,
-                               HostEventCallback* event_callback,
-                               ClientStub* client_stub,
-                               ClipboardStub* clipboard_stub,
-                               VideoStub* video_stub,
-                               AudioStub* audio_stub) {
+                               const std::string& host_jid,
+                               const std::string& host_public_key,
+                               HostEventCallback* event_callback) {
+  DCHECK(client_stub_);
+  DCHECK(clipboard_stub_);
+  DCHECK(monitored_video_stub_);
+
   signal_strategy_ = signal_strategy;
   event_callback_ = event_callback;
-  client_stub_ = client_stub;
-  clipboard_stub_ = clipboard_stub;
-  monitored_video_stub_.reset(new MonitoredVideoStub(
-      video_stub,
-      base::TimeDelta::FromSeconds(
-          MonitoredVideoStub::kConnectivityCheckDelaySeconds),
-      base::Bind(&ConnectionToHost::OnVideoChannelStatus,
-                 base::Unretained(this))));
-  audio_stub_ = audio_stub;
   authenticator_ = authenticator.Pass();
 
   // Save jid of the host. The actual connection is created later after
@@ -103,6 +81,41 @@ void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
 
 const SessionConfig& ConnectionToHost::config() {
   return session_->config();
+}
+
+ClipboardStub* ConnectionToHost::clipboard_forwarder() {
+  return &clipboard_forwarder_;
+}
+
+HostStub* ConnectionToHost::host_stub() {
+  // TODO(wez): Add a HostFilter class, equivalent to input filter.
+  return control_dispatcher_.get();
+}
+
+InputStub* ConnectionToHost::input_stub() {
+  return &event_forwarder_;
+}
+
+void ConnectionToHost::set_client_stub(ClientStub* client_stub) {
+  client_stub_ = client_stub;
+}
+
+void ConnectionToHost::set_clipboard_stub(ClipboardStub* clipboard_stub) {
+  clipboard_stub_ = clipboard_stub;
+}
+
+void ConnectionToHost::set_video_stub(VideoStub* video_stub) {
+  DCHECK(video_stub);
+  monitored_video_stub_.reset(new MonitoredVideoStub(
+      video_stub,
+      base::TimeDelta::FromSeconds(
+          MonitoredVideoStub::kConnectivityCheckDelaySeconds),
+      base::Bind(&ConnectionToHost::OnVideoChannelStatus,
+                 base::Unretained(this))));
+}
+
+void ConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
+  audio_stub_ = audio_stub;
 }
 
 void ConnectionToHost::OnSignalStrategyStateChange(

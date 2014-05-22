@@ -16,10 +16,6 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 

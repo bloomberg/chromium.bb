@@ -66,16 +66,17 @@ void ChromotingClient::Start(
   // Create a WeakPtr to ourself for to use for all posted tasks.
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
+  connection_->set_client_stub(this);
+  connection_->set_clipboard_stub(this);
+  connection_->set_video_stub(video_renderer_);
+  connection_->set_audio_stub(audio_decode_scheduler_.get());
+
   connection_->Connect(signal_strategy,
-                       config_.host_jid,
-                       config_.host_public_key,
                        transport_factory.Pass(),
                        authenticator.Pass(),
-                       this,
-                       this,
-                       this,
-                       video_renderer_,
-                       audio_decode_scheduler_.get());
+                       config_.host_jid,
+                       config_.host_public_key,
+                       this);
 }
 
 void ChromotingClient::SetCapabilities(

@@ -214,10 +214,6 @@ void It2MeHost::FinishConnect() {
       protocol::CandidateSessionConfig::CreateDefault();
   protocol::CandidateSessionConfig::DisableAudioChannel(protocol_config.get());
 
-  // VP9 encode is not yet supported.
-  protocol::CandidateSessionConfig::DisableVideoCodec(
-      protocol_config.get(), protocol::ChannelConfig::CODEC_VP9);
-
   host_->set_protocol_config(protocol_config.Pass());
 
   // Create event logger.

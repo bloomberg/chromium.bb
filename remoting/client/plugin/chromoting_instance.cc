@@ -829,7 +829,7 @@ void ChromotingInstance::HandleSendClipboardItem(
   protocol::ClipboardEvent event;
   event.set_mime_type(mime_type);
   event.set_data(item);
-  host_connection_->clipboard_stub()->InjectClipboardEvent(event);
+  host_connection_->clipboard_forwarder()->InjectClipboardEvent(event);
 }
 
 void ChromotingInstance::HandleNotifyClientResolution(

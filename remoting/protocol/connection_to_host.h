@@ -23,10 +23,6 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
 
-namespace pp {
-class Instance;
-}  // namespace pp
-
 namespace remoting {
 
 class XmppProxy;
@@ -87,23 +83,35 @@ class ConnectionToHost : public SignalStrategy::Listener,
   ConnectionToHost(bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
-  // |signal_strategy| must outlive connection. |audio_stub| may be
-  // null, in which case audio will not be requested.
+  // Set the stubs which will handle messages from the host.
+  // The caller must ensure that stubs out-live the connection.
+  // Unless otherwise specified, all stubs must be set before Connect()
+  // is called.
+  void set_client_stub(ClientStub* client_stub);
+  void set_clipboard_stub(ClipboardStub* clipboard_stub);
+  void set_video_stub(VideoStub* video_stub);
+  // If no audio stub is specified then audio will not be requested.
+  void set_audio_stub(AudioStub* audio_stub);
+
+  // Initiates a connection to the host specified by |host_jid|.
+  // |signal_strategy| is used to signal to the host, and must outlive the
+  // connection. Data channels will be negotiated over |transport_factory|.
+  // |authenticator| will be used to authenticate the session and data channels.
+  // |event_callback| will be notified of changes in the state of the connection
+  // and must outlive the ConnectionToHost.
+  // Caller must set stubs (see below) before calling Connect.
   virtual void Connect(SignalStrategy* signal_strategy,
-                       const std::string& host_jid,
-                       const std::string& host_public_key,
                        scoped_ptr<TransportFactory> transport_factory,
                        scoped_ptr<Authenticator> authenticator,
-                       HostEventCallback* event_callback,
-                       ClientStub* client_stub,
-                       ClipboardStub* clipboard_stub,
-                       VideoStub* video_stub,
-                       AudioStub* audio_stub);
+                       const std::string& host_jid,
+                       const std::string& host_public_key,
+                       HostEventCallback* event_callback);
 
+  // Returns the session configuration that was negotiated with the host.
   virtual const SessionConfig& config();
 
   // Stubs for sending data to the host.
-  virtual ClipboardStub* clipboard_stub();
+  virtual ClipboardStub* clipboard_forwarder();
   virtual HostStub* host_stub();
   virtual InputStub* input_stub();
 
