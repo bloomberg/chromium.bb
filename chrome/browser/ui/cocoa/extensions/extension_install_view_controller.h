@@ -30,8 +30,7 @@ class PageNavigator;
   IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* okButton_;
 
-  // Present only when the dialog has permission warnings or OAuth issues to
-  // display.
+  // Present only when the dialog has permission warnings issues to display.
   IBOutlet NSOutlineView* outlineView_;
 
   // Present only in the install dialogs with webstore data (inline and

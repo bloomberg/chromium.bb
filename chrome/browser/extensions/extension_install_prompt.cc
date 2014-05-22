@@ -18,13 +18,10 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/pref_names.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_util.h"
@@ -120,17 +117,6 @@ static const int
         IDS_EXTENSION_PROMPT_CAN_ACCESS,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-};
-static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-    IDS_EXTENSION_PROMPT_OAUTH_HEADER,
-    0,  // Inline installs don't show OAuth permissions.
-    0,  // Bundle installs don't show OAuth permissions.
-    IDS_EXTENSION_PROMPT_OAUTH_REENABLE_HEADER,
-    IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER,
-    0,
-    0,
-    IDS_EXTENSION_PROMPT_OAUTH_HEADER,
-    IDS_EXTENSION_PROMPT_OAUTH_HEADER,
 };
 
 // Size of extension icon in top left of dialog.
@@ -235,31 +221,9 @@ void ExtensionInstallPrompt::Prompt::SetIsShowingDetails(
     case PERMISSIONS_DETAILS:
       is_showing_details_for_permissions_[index] = is_showing_details;
       break;
-    case OAUTH_DETAILS:
-      is_showing_details_for_oauth_[index] = is_showing_details;
-      break;
     case RETAINED_FILES_DETAILS:
       is_showing_details_for_retained_files_ = is_showing_details;
       break;
-  }
-}
-
-void ExtensionInstallPrompt::Prompt::SetOAuthIssueAdvice(
-    const IssueAdviceInfo& issue_advice) {
-  is_showing_details_for_oauth_.clear();
-  for (size_t i = 0; i < issue_advice.size(); ++i)
-    is_showing_details_for_oauth_.push_back(false);
-
-  oauth_issue_advice_ = issue_advice;
-}
-
-void ExtensionInstallPrompt::Prompt::SetUserNameFromProfile(Profile* profile) {
-  // |profile| can be NULL in unit tests.
-  if (profile) {
-    oauth_user_name_ = base::UTF8ToUTF16(profile->GetPrefs()->GetString(
-        prefs::kGoogleServicesUsername));
-  } else {
-    oauth_user_name_.clear();
   }
 }
 
@@ -376,10 +340,6 @@ base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
   return l10n_util::GetStringUTF16(kPermissionsHeaderIds[type_]);
 }
 
-base::string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
-  return l10n_util::GetStringFUTF16(kOAuthHeaderIds[type_], oauth_user_name_);
-}
-
 base::string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
   const int kRetainedFilesMessageIDs[6] = {
       IDS_EXTENSION_PROMPT_RETAINED_FILES_DEFAULT,
@@ -471,23 +431,10 @@ bool ExtensionInstallPrompt::Prompt::GetIsShowingDetails(
     case PERMISSIONS_DETAILS:
       CHECK_LT(index, is_showing_details_for_permissions_.size());
       return is_showing_details_for_permissions_[index];
-    case OAUTH_DETAILS:
-      CHECK_LT(index, is_showing_details_for_oauth_.size());
-      return is_showing_details_for_oauth_[index];
     case RETAINED_FILES_DETAILS:
       return is_showing_details_for_retained_files_;
   }
   return false;
-}
-
-size_t ExtensionInstallPrompt::Prompt::GetOAuthIssueCount() const {
-  return oauth_issue_advice_.size();
-}
-
-const IssueAdviceInfoEntry& ExtensionInstallPrompt::Prompt::GetOAuthIssue(
-    size_t index) const {
-  CHECK_LT(index, oauth_issue_advice_.size());
-  return oauth_issue_advice_[index];
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetRetainedFileCount() const {
@@ -550,33 +497,25 @@ scoped_refptr<Extension>
 }
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
-    : OAuth2TokenService::Consumer("extensions_install"),
-      record_oauth2_grant_(false),
-      ui_loop_(base::MessageLoop::current()),
+    : ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
       show_params_(contents),
       delegate_(NULL),
-      prompt_(UNSET_PROMPT_TYPE) {
-  prompt_.SetUserNameFromProfile(install_ui_->profile());
-}
+      prompt_(UNSET_PROMPT_TYPE) {}
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(
     Profile* profile,
     gfx::NativeWindow native_window,
     content::PageNavigator* navigator)
-    : OAuth2TokenService::Consumer("extensions_install"),
-      record_oauth2_grant_(false),
-      ui_loop_(base::MessageLoop::current()),
+    : ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       bundle_(NULL),
       install_ui_(ExtensionInstallUI::Create(profile)),
       show_params_(native_window, navigator),
       delegate_(NULL),
-      prompt_(UNSET_PROMPT_TYPE) {
-  prompt_.SetUserNameFromProfile(install_ui_->profile());
-}
+      prompt_(UNSET_PROMPT_TYPE) {}
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 }
@@ -698,21 +637,6 @@ void ExtensionInstallPrompt::ConfirmPermissions(
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::ConfirmIssueAdvice(
-    Delegate* delegate,
-    const Extension* extension,
-    const IssueAdviceInfo& issue_advice) {
-  DCHECK(ui_loop_ == base::MessageLoop::current());
-  extension_ = extension;
-  delegate_ = delegate;
-  prompt_.set_type(PERMISSIONS_PROMPT);
-
-  record_oauth2_grant_ = true;
-  prompt_.SetOAuthIssueAdvice(issue_advice);
-
-  LoadImageIfNeeded();
-}
-
 void ExtensionInstallPrompt::ReviewPermissions(
     Delegate* delegate,
     const Extension* extension,
@@ -779,48 +703,6 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   extensions::ImageLoader::Get(install_ui_->profile())->LoadImageAsync(
       extension_, image, gfx::Size(pixel_size, pixel_size),
       base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
-}
-
-void ExtensionInstallPrompt::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(login_token_request_.get(), request);
-  login_token_request_.reset();
-
-  const extensions::OAuth2Info& oauth2_info =
-      extensions::OAuth2Info::GetOAuth2Info(extension_);
-
-  token_flow_.reset(new OAuth2MintTokenFlow(
-      install_ui_->profile()->GetRequestContext(),
-      this,
-      OAuth2MintTokenFlow::Parameters(
-          access_token,
-          extension_->id(),
-          oauth2_info.client_id,
-          oauth2_info.scopes,
-          OAuth2MintTokenFlow::MODE_ISSUE_ADVICE)));
-  token_flow_->Start();
-}
-
-void ExtensionInstallPrompt::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(login_token_request_.get(), request);
-  login_token_request_.reset();
-  ShowConfirmation();
-}
-
-void ExtensionInstallPrompt::OnIssueAdviceSuccess(
-    const IssueAdviceInfo& advice_info) {
-  prompt_.SetOAuthIssueAdvice(advice_info);
-  record_oauth2_grant_ = true;
-  ShowConfirmation();
-}
-
-void ExtensionInstallPrompt::OnMintTokenFailure(
-    const GoogleServiceAuthError& error) {
-  ShowConfirmation();
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {

@@ -262,48 +262,6 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   EXPECT_TRUE([[controller warningsSeparator] isHidden]);
 }
 
-TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
-
-  ExtensionInstallPrompt::Prompt prompt =
-      chrome::BuildExtensionInstallPrompt(extension_.get());
-  std::vector<base::string16> permissions;
-  permissions.push_back(base::UTF8ToUTF16("warning 1"));
-  prompt.SetPermissions(permissions);
-  // No details provided with this permission.
-  std::vector<base::string16> details;
-  details.push_back(base::string16());
-  prompt.SetPermissionsDetails(details);
-
-  IssueAdviceInfoEntry issue;
-  issue.description = base::UTF8ToUTF16("issue description 1");
-  issue.details.push_back(base::UTF8ToUTF16("issue detail 1"));
-  IssueAdviceInfo issues;
-  issues.push_back(issue);
-  prompt.SetOAuthIssueAdvice(issues);
-  prompt.SetIsShowingDetails(
-      ExtensionInstallPrompt::OAUTH_DETAILS, 0, true);
-
-  base::scoped_nsobject<ExtensionInstallViewController> controller(
-      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
-                                                       delegate:&delegate
-                                                         prompt:prompt]);
-
-  [controller view];  // Force nib load.
-  NSOutlineView* outlineView = [controller outlineView];
-  EXPECT_TRUE(outlineView);
-  EXPECT_EQ(6, [outlineView numberOfRows]);
-  EXPECT_NSEQ(base::SysUTF16ToNSString(prompt.GetOAuthIssue(0).description),
-              [[outlineView dataSource] outlineView:outlineView
-                          objectValueForTableColumn:nil
-                                             byItem:[outlineView itemAtRow:3]]);
-
-  EXPECT_NSEQ(base::SysUTF16ToNSString(prompt.GetOAuthIssue(0).details[0]),
-              [[outlineView dataSource] outlineView:outlineView
-                          objectValueForTableColumn:nil
-                                             byItem:[outlineView itemAtRow:4]]);
-}
-
 TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   chrome::MockExtensionInstallPromptDelegate delegate;
 

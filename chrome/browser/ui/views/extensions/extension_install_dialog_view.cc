@@ -437,7 +437,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // +--------------------+------+
   //
   // Regular install
-  // w/ permissions XOR oauth issues    no permissions
+  // w/ permissions                     no permissions
   // +--------------------+------+  +--------------+------+
   // | heading            | icon |  | heading      | icon |
   // +--------------------|      |  +--------------+------+
@@ -447,23 +447,6 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // +--------------------|      |
   // | permission2        |      |
   // +--------------------+------+
-  //
-  // w/ permissions AND oauth issues
-  // +--------------------+------+
-  // | heading            | icon |
-  // +--------------------|      |
-  // | permissions_header |      |
-  // +--------------------|      |
-  // | permission1        |      |
-  // +--------------------|      |
-  // | permission2        |      |
-  // +--------------------+------+
-  // | oauth header              |
-  // +---------------------------+
-  // | oauth issue 1             |
-  // +---------------------------+
-  // | oauth issue 2             |
-  // +---------------------------+
   //
   // If the ExtensionPermissionDialog is on, the layout is modified depending
   // on the experiment group. For text only experiment, a footer is added at the
@@ -513,7 +496,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // the dialog depending on the experiment group.
 
   int left_column_width =
-      (prompt.ShouldShowPermissions() + prompt.GetOAuthIssueCount() +
+      (prompt.ShouldShowPermissions() +
        prompt.GetRetainedFileCount()) > 0 ?
           kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
@@ -706,54 +689,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     }
   }
 
-  if (prompt.GetOAuthIssueCount()) {
-    // Slide in under the permissions, if there are any. If there are
-    // permissions, the OAuth prompt stretches all the way to the right of the
-    // dialog. If there are no permissions, the OAuth prompt just takes up the
-    // left column.
-    int space_for_oauth = left_column_width;
-    if (prompt.GetPermissionCount()) {
-      space_for_oauth += kIconSize;
-      views::ColumnSet* column_set = layout->AddColumnSet(++column_set_id);
-      column_set->AddColumn(views::GridLayout::FILL,
-                            views::GridLayout::FILL,
-                            1,
-                            views::GridLayout::USE_PREF,
-                            0,  // no fixed width
-                            space_for_oauth);
-    }
-
-    layout->StartRowWithPadding(0, column_set_id,
-                                0, views::kRelatedControlVerticalSpacing);
-    views::Label* oauth_header = new views::Label(prompt.GetOAuthHeading());
-    oauth_header->SetMultiLine(true);
-    oauth_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    oauth_header->SizeToFit(left_column_width);
-    layout->AddView(oauth_header);
-
-    for (size_t i = 0; i < prompt.GetOAuthIssueCount(); ++i) {
-      layout->StartRowWithPadding(
-          0, column_set_id,
-          0, views::kRelatedControlVerticalSpacing);
-
-      PermissionDetails details;
-      const IssueAdviceInfoEntry& entry = prompt.GetOAuthIssue(i);
-      for (size_t x = 0; x < entry.details.size(); ++x)
-        details.push_back(entry.details[x]);
-      ExpandableContainerView* issue_advice_view =
-          new ExpandableContainerView(
-              this, entry.description, details, space_for_oauth,
-              true, true, false);
-      layout->AddView(issue_advice_view);
-    }
-  }
   if (prompt.GetRetainedFileCount()) {
-    // Slide in under the permissions or OAuth, if there are any. If there are
-    // either, the retained files prompt stretches all the way to the right of
-    // the dialog. If there are no permissions or OAuth, the retained files
-    // prompt just takes up the left column.
+    // Slide in under the permissions, if there are any. If there are
+    // either, the retained files prompt stretches all the way to the
+    // right of the dialog. If there are no permissions, the retained
+    // files prompt just takes up the left column.
     int space_for_files = left_column_width;
-    if (prompt.GetPermissionCount() || prompt.GetOAuthIssueCount()) {
+    if (prompt.GetPermissionCount()) {
       space_for_files += kIconSize;
       views::ColumnSet* column_set = layout->AddColumnSet(++column_set_id);
       column_set->AddColumn(views::GridLayout::FILL,
@@ -816,10 +758,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
         (prompt.experiment()->show_details_link() &&
             prompt.experiment()->should_show_inline_explanations() &&
             !inline_explanations_.empty())) {
-      // Don't show the "Show details" link if there are OAuth issues or
-      // retained files. These have their own "Show details" links and having
+      // Don't show the "Show details" link if there are retained
+      // files.  These have their own "Show details" links and having
       // multiple levels of links is confusing.
-      if (prompt.GetOAuthIssueCount() + prompt.GetRetainedFileCount() == 0) {
+      if (prompt.GetRetainedFileCount() == 0) {
         int text_id =
             prompt.experiment()->should_show_expandable_permission_list() ?
             IDS_EXTENSION_PROMPT_EXPERIMENT_SHOW_PERMISSIONS :
@@ -921,10 +863,6 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
         // have a padding row above it). This also works for the 'no special
         // permissions' case.
         icon_row_span = 3 + permission_count * 2;
-      } else if (prompt_.GetOAuthIssueCount()) {
-        // Also span the permission header and each of the permission rows (all
-        // have a padding row above it).
-        icon_row_span = 3 + prompt_.GetOAuthIssueCount() * 2;
       } else if (prompt_.GetRetainedFileCount()) {
         // Also span the permission header and the retained files container.
         icon_row_span = 4;

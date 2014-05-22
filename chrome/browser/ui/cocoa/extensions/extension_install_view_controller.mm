@@ -190,7 +190,6 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   } else if (prompt.has_webstore_data()) {
     nibName = @"ExtensionInstallPromptWebstoreData";
   } else if (!prompt.ShouldShowPermissions() &&
-             prompt.GetOAuthIssueCount() == 0 &&
              prompt.GetRetainedFileCount() == 0) {
     nibName = @"ExtensionInstallPromptNoWarnings";
   } else {
@@ -308,10 +307,9 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     OffsetControlVerticallyToFitContent(itemsField_, &totalOffset);
   }
 
-  // If there are any warnings or OAuth issues, then we have to do some special
-  // layout.
-  if (prompt_->ShouldShowPermissions() || prompt_->GetOAuthIssueCount() > 0 ||
-      prompt_->GetRetainedFileCount() > 0) {
+  // If there are any warnings or retained files, then we have to do
+  // some special layout.
+  if (prompt_->ShouldShowPermissions() || prompt_->GetRetainedFileCount() > 0) {
     NSSize spacing = [outlineView_ intercellSpacing];
     spacing.width += 2;
     spacing.height += 2;
@@ -637,41 +635,6 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
         buildItemWithTitle:heading
             cellAttributes:kBoldText | kAutoExpandCell | kNoExpandMarker
                   children:children]];
-  }
-
-  if (prompt.GetOAuthIssueCount() > 0) {
-    type = ExtensionInstallPrompt::OAUTH_DETAILS;
-
-    NSMutableArray* children = [NSMutableArray array];
-
-    for (size_t i = 0; i < prompt.GetOAuthIssueCount(); ++i) {
-      NSMutableArray* details = [NSMutableArray array];
-      const IssueAdviceInfoEntry& issue = prompt.GetOAuthIssue(i);
-      if (!issue.details.empty() && prompt.GetIsShowingDetails(type, i)) {
-        for (size_t j = 0; j < issue.details.size(); ++j) {
-          [details addObject:
-              [self buildItemWithTitle:SysUTF16ToNSString(issue.details[j])
-                        cellAttributes:kNoExpandMarker
-                              children:nil]];
-        }
-      }
-
-      [children addObject:
-          [self buildItemWithTitle:SysUTF16ToNSString(issue.description)
-                    cellAttributes:kUseBullet | kAutoExpandCell
-                          children:details]];
-
-      if (!issue.details.empty()) {
-        // Add a row for the link.
-        [children addObject:
-            [self buildDetailToggleItem:type permissionsDetailIndex:i]];
-      }
-    }
-
-    [warnings addObject:
-    [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetOAuthHeading())
-              cellAttributes:kBoldText | kAutoExpandCell| kNoExpandMarker
-                    children:children]];
   }
 
   if (prompt.GetRetainedFileCount() > 0) {
