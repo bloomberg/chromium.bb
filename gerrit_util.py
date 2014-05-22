@@ -75,7 +75,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     headers.setdefault('Authorization', 'Basic %s' % (
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))
   else:
-    LOGGER.debug('No authorization found in netrc.')
+    LOGGER.debug('No authorization found in netrc for %s.' % bare_host)
 
   if 'Authorization' in headers and not path.startswith('a/'):
     url = '/a/%s' % path
