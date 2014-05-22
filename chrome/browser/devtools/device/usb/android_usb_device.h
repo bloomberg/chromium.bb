@@ -153,7 +153,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   AndroidUsbSockets sockets_;
 
   // Outgoing bulk queue
-  typedef std::pair<scoped_refptr<net::IOBuffer>, size_t> BulkMessage;
+  typedef scoped_refptr<net::IOBufferWithSize> BulkMessage;
   std::queue<BulkMessage> outgoing_queue_;
 
   // Outgoing messages pending connect

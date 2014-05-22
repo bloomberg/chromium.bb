@@ -400,20 +400,22 @@ void AndroidUsbDevice::Queue(scoped_refptr<AdbMessage> message) {
   header.push_back(body_length);
   header.push_back(Checksum(message->body));
   header.push_back(message->command ^ 0xffffffff);
-  scoped_refptr<net::IOBuffer> header_buffer = new net::IOBuffer(kHeaderSize);
+  scoped_refptr<net::IOBufferWithSize> header_buffer =
+      new net::IOBufferWithSize(kHeaderSize);
   memcpy(header_buffer.get()->data(), &header[0], kHeaderSize);
-  outgoing_queue_.push(std::make_pair(header_buffer, kHeaderSize));
+  outgoing_queue_.push(header_buffer);
 
   // Queue body.
   if (!message->body.empty()) {
-    scoped_refptr<net::IOBuffer> body_buffer = new net::IOBuffer(body_length);
+    scoped_refptr<net::IOBufferWithSize> body_buffer =
+        new net::IOBufferWithSize(body_length);
     memcpy(body_buffer->data(), message->body.data(), message->body.length());
     if (append_zero)
       body_buffer->data()[body_length - 1] = 0;
-    outgoing_queue_.push(std::make_pair(body_buffer, body_length));
+    outgoing_queue_.push(body_buffer);
     if (zero_mask_ && (body_length & zero_mask_) == 0) {
       // Send a zero length packet.
-      outgoing_queue_.push(std::make_pair(body_buffer, 0));
+      outgoing_queue_.push(new net::IOBufferWithSize(0));
     }
   }
   ProcessOutgoing();
@@ -427,10 +429,10 @@ void AndroidUsbDevice::ProcessOutgoing() {
 
   BulkMessage message = outgoing_queue_.front();
   outgoing_queue_.pop();
-  DumpMessage(true, message.first->data(), message.second);
+  DumpMessage(true, message->data(), message->size());
   usb_handle_->BulkTransfer(
       usb_service::USB_DIRECTION_OUTBOUND, outbound_address_,
-      message.first, message.second, kUsbTimeout,
+      message, message->size(), kUsbTimeout,
       base::Bind(&AndroidUsbDevice::OutgoingMessageSent,
                  weak_factory_.GetWeakPtr()));
 }
