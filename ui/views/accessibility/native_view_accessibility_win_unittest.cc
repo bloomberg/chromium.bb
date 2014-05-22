@@ -128,7 +128,6 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
   Widget::InitParams owned_init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   owned_init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  owned_init_params.child = false;
   owned_init_params.parent = widget.GetNativeView();
   owned_widget.Init(owned_init_params);
   owned_widget.Show();

@@ -16,7 +16,7 @@ ChromeViewsDelegate::GetOpacityForInitParams(
 #endif
   // We want translucent windows when either we are in ASH or we are
   // a top level window which is not of type TYPE_WINDOW.
-  if (params.top_level && params.type != views::Widget::InitParams::TYPE_WINDOW)
+  if (!params.child && params.type != views::Widget::InitParams::TYPE_WINDOW)
     return views::Widget::InitParams::TRANSLUCENT_WINDOW;
 
   return views::Widget::InitParams::OPAQUE_WINDOW;

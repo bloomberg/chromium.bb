@@ -212,9 +212,6 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   init_params.delegate = this;
   init_params.remove_standard_frame = IsFrameless() || has_frame_color_;
   init_params.use_system_default_icon = true;
-  // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
-  // could plumb context through to here in some cases.
-  init_params.top_level = true;
   if (create_params.transparent_background)
     init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   init_params.keep_on_top = create_params.always_on_top;
@@ -317,9 +314,6 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 #else
   params.bounds = gfx::Rect(preferred_size_);
 #endif
-  // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
-  // could plumb context through to here in some cases.
-  params.top_level = true;
   widget()->Init(params);
   widget()->set_focus_on_creation(create_params.focused);
 

@@ -268,15 +268,14 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // On desktop Linux Chrome must run in an environment that supports a variety
   // of window managers, some of which do not play nicely with parts of our UI
   // that have specific expectations about window sizing and placement. For this
-  // reason windows opened as top level (params.top_level) are always
-  // constrained by the browser frame, so we can position them correctly. This
-  // has some negative side effects, like dialogs being clipped by the browser
-  // frame, but the side effects are not as bad as the poor window manager
-  // interactions. On Windows however these WM interactions are not an issue, so
-  // we open windows requested as top_level as actual top level windows on the
-  // desktop.
+  // reason windows opened as top level (!params.child) are always constrained
+  // by the browser frame, so we can position them correctly. This has some
+  // negative side effects, like dialogs being clipped by the browser frame, but
+  // the side effects are not as bad as the poor window manager interactions. On
+  // Windows however these WM interactions are not an issue, so we open windows
+  // requested as top_level as actual top level windows on the desktop.
   use_non_toplevel_window = use_non_toplevel_window &&
-      (!params->top_level ||
+      (params->child ||
        chrome::GetHostDesktopTypeForNativeView(params->parent) !=
           chrome::HOST_DESKTOP_TYPE_NATIVE);
 
@@ -314,15 +313,18 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // context.
   if (params->context)
     params->context = params->context->GetRootWindow();
-  DCHECK(params->parent || params->context || params->top_level)
+  DCHECK(params->parent || params->context || !params->child)
       << "Please provide a parent or context for this widget.";
   if (!params->parent && !params->context)
     params->context = ash::Shell::GetPrimaryRootWindow();
 #elif defined(USE_AURA)
   // While the majority of the time, context wasn't plumbed through due to the
-  // existence of a global WindowTreeClient, if this window is a toplevel, it's
+  // existence of a global WindowTreeClient, if this window is toplevel, it's
   // possible that there is no contextual state that we can use.
-  if (params->parent == NULL && params->context == NULL && params->top_level) {
+  if (params->parent == NULL &&
+      params->context == NULL &&
+      !params->child &&
+      params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
     // We need to make a decision about where to place this window based on the
     // desktop type.
     switch (chrome::GetActiveDesktop()) {

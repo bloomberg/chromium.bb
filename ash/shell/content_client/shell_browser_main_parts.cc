@@ -67,7 +67,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
     if (params->native_widget)
       return;
 
-    if (!params->parent && !params->context && params->top_level)
+    if (!params->parent && !params->context && !params->child)
       params->context = Shell::GetPrimaryRootWindow();
   }
 

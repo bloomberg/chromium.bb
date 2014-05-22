@@ -59,7 +59,6 @@ void NativeAppWindowViews::InitializeWindow(
   // Stub implementation. See also ChromeNativeAppWindowViews.
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
-  init_params.top_level = true;
   init_params.keep_on_top = create_params.always_on_top;
   widget_->Init(init_params);
   widget_->CenterWindow(

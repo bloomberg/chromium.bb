@@ -227,7 +227,7 @@ void AppListViewTestDesktop::AppListViewTestViewsDelegate::OnBeforeWidgetInit(
   if (!params->parent && !params->context)
     params->context = parent_->GetContext();
 #elif defined(USE_AURA)
-  if (params->parent == NULL && params->context == NULL && params->top_level)
+  if (params->parent == NULL && params->context == NULL && !params->child)
     params->native_widget = new views::DesktopNativeWidgetAura(delegate);
 #endif
 }

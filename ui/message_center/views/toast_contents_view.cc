@@ -334,8 +334,6 @@ void ToastContentsView::CreateWidget(gfx::NativeView parent) {
   params.keep_on_top = true;
   if (parent)
     params.parent = parent;
-  else
-    params.top_level = true;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.delegate = this;
   views::Widget* widget = new views::Widget();

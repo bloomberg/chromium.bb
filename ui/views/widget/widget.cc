@@ -118,7 +118,6 @@ Widget::InitParams::InitParams()
       parent(NULL),
       native_widget(NULL),
       desktop_window_tree_host(NULL),
-      top_level(false),
       layer_type(aura::WINDOW_LAYER_TEXTURED),
       context(NULL),
       force_show_in_taskbar(false) {
@@ -127,7 +126,7 @@ Widget::InitParams::InitParams()
 Widget::InitParams::InitParams(Type type)
     : type(type),
       delegate(NULL),
-      child(type == TYPE_CONTROL),
+      child(false),
       opacity(INFER_OPACITY),
       accept_events(true),
       activatable(ACTIVATABLE_DEFAULT),
@@ -143,7 +142,6 @@ Widget::InitParams::InitParams(Type type)
       parent(NULL),
       native_widget(NULL),
       desktop_window_tree_host(NULL),
-      top_level(false),
       layer_type(aura::WINDOW_LAYER_TEXTURED),
       context(NULL),
       force_show_in_taskbar(false) {
@@ -202,7 +200,6 @@ Widget* Widget::CreateWindowWithBounds(WidgetDelegate* delegate,
   Widget::InitParams params;
   params.bounds = bounds;
   params.delegate = delegate;
-  params.top_level = true;
   widget->Init(params);
   return widget;
 }
@@ -332,11 +329,8 @@ void Widget::Init(const InitParams& in_params) {
   TRACE_EVENT0("views", "Widget::Init");
   InitParams params = in_params;
 
-  is_top_level_ = params.top_level ||
-      (!params.child &&
-       params.type != InitParams::TYPE_CONTROL &&
-       params.type != InitParams::TYPE_TOOLTIP);
-  params.top_level = is_top_level_;
+  params.child |= (params.type == InitParams::TYPE_CONTROL);
+  is_top_level_ = (!params.child && params.type != InitParams::TYPE_TOOLTIP);
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
       params.type != views::Widget::InitParams::TYPE_WINDOW &&

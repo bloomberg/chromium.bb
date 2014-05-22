@@ -42,7 +42,6 @@ class NativeWidgetTest : public ViewsTestBase {
     Widget* widget = new Widget;
     Widget::InitParams params = CreateParams(type);
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-    params.child = false; // Implicitly set to true by ctor with TYPE_CONTROL.
     params.bounds = gfx::Rect(10, 10, 200, 200);
     widget->Init(params);
     return widget->native_widget_private();

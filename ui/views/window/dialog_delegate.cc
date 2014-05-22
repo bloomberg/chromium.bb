@@ -35,7 +35,6 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
   }
   params.context = context;
   params.parent = parent;
-  params.top_level = true;
   // TODO(msw): Add a matching shadow type and remove the bubble frame border?
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   widget->Init(params);

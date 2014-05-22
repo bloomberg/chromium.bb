@@ -496,7 +496,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
   views::Widget::InitParams params;
   params.bounds = gfx::Rect(0, 0, width, height);
   params.delegate = new ShellWindowDelegateView(this);
-  params.top_level = true;
   params.remove_standard_frame = true;
   window_widget_->Init(params);
 #endif
