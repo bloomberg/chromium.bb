@@ -1,4 +1,4 @@
-Tests generateKey() with bad RSASSA-PKCS1-v1_5 parameters.
+Tests generateKey() with bad RSA-OAEP parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -10,7 +10,7 @@ error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a U
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: NotSupportedError: RsaHashedKeyGenParams: hash: Algorithm: Unrecognized name
-error is: SyntaxError: RsaHashedKeyGenParams: hash: Missing or not a dictionary
+error is: DataError: The "publicExponent" is either empty, zero, or too large
 PASS successfullyParsed is true
 
 TEST COMPLETE

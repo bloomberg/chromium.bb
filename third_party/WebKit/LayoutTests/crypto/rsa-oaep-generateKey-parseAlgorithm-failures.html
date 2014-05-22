@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests generateKey() with bad RSA-OAEP parameters.");
+jsTestIsAsync = true;
+
+extractable = true;
+keyUsages = ['sign', 'verify'];
+
+Promise.resolve(null).then(function() {
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: -30}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: NaN}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}}, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP',  hash: {name: 'sha-1'}, modulusLength: 10}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP',  hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: 10}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: null}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'NOT-A-HASH'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>

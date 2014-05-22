@@ -16,27 +16,35 @@ extractable = true;
 keyUsages = ['sign', 'verify'];
 
 Promise.resolve(null).then(function() {
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: -30}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: NaN}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: 10}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: 10}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages);
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: null}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'NOT-A-HASH'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 }).then(finishJSTest, failAndFinishJSTest);

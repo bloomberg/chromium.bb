@@ -72,6 +72,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", 7, blink::WebCryptoAlgorithmIdAesCbc},
     {"AES-GCM", 7, blink::WebCryptoAlgorithmIdAesGcm},
     {"AES-CTR", 7, blink::WebCryptoAlgorithmIdAesCtr},
+    {"RSA-OAEP", 8, blink::WebCryptoAlgorithmIdRsaOaep},
     {"RSAES-PKCS1-V1_5", 16, blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
     {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
@@ -218,18 +219,17 @@ const AlgorithmInfo algorithmIdToInfo[] = {
         }
     }, { // Index 9
         "RSA-OAEP", {
-            // FIXME:
-            Undefined, // Encrypt
-            Undefined, // Decrypt
+            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Encrypt
+            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Decrypt
             Undefined, // Sign
             Undefined, // Verify
             Undefined, // Digest
-            Undefined, // GenerateKey
-            Undefined, // ImportKey
+            blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
+            blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
             Undefined, // DeriveKey
             Undefined, // DeriveBits
-            Undefined, // WrapKey
-            Undefined // UnwrapKey
+            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // WrapKey
+            blink::WebCryptoAlgorithmParamsTypeRsaOaepParams // UnwrapKey
         }
     }, { // Index 10
         "AES-CTR", {
@@ -818,6 +818,25 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//     dictionary RsaOaepParams : Algorithm {
+//       CryptoOperationData? label;
+//     };
+bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+{
+    bool hasLabel;
+    RefPtr<ArrayBufferView> label;
+    if (!getOptionalCryptoOperationData(raw, "label", hasLabel, label, context, result))
+        return false;
+
+    const unsigned char* labelStart = hasLabel ? static_cast<const unsigned char*>(label->baseAddress()) : 0;
+    unsigned labelLength = hasLabel ? label->byteLength() : 0;
+
+    params = adoptPtr(new blink::WebCryptoRsaOaepParams(hasLabel, labelStart, labelLength));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ErrorContext& context, CryptoResult* result)
 {
     switch (type) {
@@ -851,8 +870,8 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
         context.add("AesGcmParams");
         return parseAesGcmParams(raw, params, context, result);
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
-        // TODO
-        notImplemented();
+        context.add("RsaOaepParams");
+        return parseRsaOaepParams(raw, params, context, result);
         break;
     }
     ASSERT_NOT_REACHED();
