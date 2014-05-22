@@ -38174,10 +38174,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="No viewport tag"/>
   <int value="1" label="Viewport meta with device width"/>
   <int value="2" label="Viewport meta with constant width"/>
-  <int value="4" label="Viewport meta other"/>
-  <int value="5" label="HandheldFriendly meta"/>
-  <int value="6" label="MobileOptimized meta"/>
-  <int value="7" label="XHTML-MP document type"/>
+  <int value="3" label="Viewport meta other"/>
+  <int value="4" label="HandheldFriendly meta"/>
+  <int value="5" label="MobileOptimized meta"/>
+  <int value="6" label="XHTML-MP document type"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">
