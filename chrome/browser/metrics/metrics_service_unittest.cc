@@ -37,9 +37,7 @@ class TestMetricsService : public MetricsService {
       : MetricsService(state_manager, client) {}
   virtual ~TestMetricsService() {}
 
-  MetricsLogManager* log_manager() {
-    return &log_manager_;
-  }
+  using MetricsService::log_manager;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsService);

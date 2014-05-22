@@ -251,8 +251,6 @@
         'common/media/webrtc_logging_message_data.cc',
         'common/media/webrtc_logging_message_data.h',
         'common/media_galleries/metadata_types.h',
-        'common/metrics/metrics_service_base.cc',
-        'common/metrics/metrics_service_base.h',
         'common/multi_process_lock.h',
         'common/multi_process_lock_linux.cc',
         'common/multi_process_lock_mac.cc',

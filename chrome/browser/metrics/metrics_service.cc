@@ -169,6 +169,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -271,6 +273,12 @@ const size_t kUploadLogAvoidRetransmitSize = 50000;
 
 // Interval, in minutes, between state saves.
 const int kSaveStateIntervalMinutes = 5;
+
+// The metrics server's URL.
+const char kServerUrl[] = "https://clients4.google.com/uma/v2";
+
+// The MIME type for the uploaded metrics data.
+const char kMimeType[] = "application/vnd.chrome.uma";
 
 enum ResponseStatus {
   UNKNOWN_FAILURE,
@@ -431,8 +439,9 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
 MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
                                metrics::MetricsServiceClient* client)
-    : MetricsServiceBase(g_browser_process->local_state(),
-                         kUploadLogAvoidRetransmitSize),
+    : log_manager_(g_browser_process->local_state(),
+                   kUploadLogAvoidRetransmitSize),
+      histogram_snapshot_manager_(this),
       state_manager_(state_manager),
       client_(client),
       recording_active_(false),
@@ -589,6 +598,29 @@ void MetricsService::SetUpNotifications(
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
                  content::NotificationService::AllSources());
+}
+
+void MetricsService::RecordDelta(const base::HistogramBase& histogram,
+                                 const base::HistogramSamples& snapshot) {
+  log_manager_.current_log()->RecordHistogramDelta(histogram.histogram_name(),
+                                                   snapshot);
+}
+
+void MetricsService::InconsistencyDetected(
+    base::HistogramBase::Inconsistency problem) {
+  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
+}
+
+void MetricsService::UniqueInconsistencyDetected(
+    base::HistogramBase::Inconsistency problem) {
+  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
+}
+
+void MetricsService::InconsistencyDetectedInLoggedCount(int amount) {
+  UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser",
+                       std::abs(amount));
 }
 
 void MetricsService::BrowserChildProcessHostConnected(
@@ -1584,6 +1616,18 @@ void MetricsService::GetCurrentSyntheticFieldTrials(
 scoped_ptr<MetricsLog> MetricsService::CreateLog(MetricsLog::LogType log_type) {
   return make_scoped_ptr(new MetricsLog(
       state_manager_->client_id(), session_id_, log_type, client_));
+}
+
+void MetricsService::RecordCurrentHistograms() {
+  DCHECK(log_manager_.current_log());
+  histogram_snapshot_manager_.PrepareDeltas(
+      base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+void MetricsService::RecordCurrentStabilityHistograms() {
+  DCHECK(log_manager_.current_log());
+  histogram_snapshot_manager_.PrepareDeltas(
+      base::Histogram::kNoFlags, base::Histogram::kUmaStabilityHistogramFlag);
 }
 
 void MetricsService::LogCleanShutdown() {

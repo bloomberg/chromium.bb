@@ -18,6 +18,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_flattener.h"
+#include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
@@ -25,7 +27,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
-#include "chrome/common/metrics/metrics_service_base.h"
+#include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
@@ -42,6 +44,7 @@ class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
+class HistogramSamples;
 class MessageLoopProxy;
 }
 
@@ -89,11 +92,11 @@ struct SyntheticTrialGroup {
 };
 
 class MetricsService
-    : public chrome_browser_metrics::TrackingSynchronizerObserver,
+    : public base::HistogramFlattener,
+      public chrome_browser_metrics::TrackingSynchronizerObserver,
       public content::BrowserChildProcessObserver,
       public content::NotificationObserver,
-      public net::URLFetcherDelegate,
-      public MetricsServiceBase {
+      public net::URLFetcherDelegate {
  public:
   // The execution phase of the browser.
   enum ExecutionPhase {
@@ -169,6 +172,15 @@ class MetricsService
   static void SetUpNotifications(content::NotificationRegistrar* registrar,
                                  content::NotificationObserver* observer);
 
+  // HistogramFlattener:
+  virtual void RecordDelta(const base::HistogramBase& histogram,
+                           const base::HistogramSamples& snapshot) OVERRIDE;
+  virtual void InconsistencyDetected(
+      base::HistogramBase::Inconsistency problem) OVERRIDE;
+  virtual void UniqueInconsistencyDetected(
+      base::HistogramBase::Inconsistency problem) OVERRIDE;
+  virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
+
   // Implementation of content::BrowserChildProcessObserver
   virtual void BrowserChildProcessHostConnected(
       const content::ChildProcessData& data) OVERRIDE;
@@ -177,7 +189,7 @@ class MetricsService
   virtual void BrowserChildProcessInstanceCreated(
       const content::ChildProcessData& data) OVERRIDE;
 
-  // Implementation of content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -254,6 +266,10 @@ class MetricsService
   // should not be called more than once.
   void CheckForClonedInstall(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+ protected:
+  // Exposed for testing.
+  metrics::MetricsLogManager* log_manager() { return &log_manager_; }
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.
@@ -441,6 +457,20 @@ class MetricsService
 
   // Creates a new MetricsLog instance with the given |log_type|.
   scoped_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
+
+  // Record complete list of histograms into the current log.
+  // Called when we close a log.
+  void RecordCurrentHistograms();
+
+  // Record complete list of stability histograms into the current log,
+  // i.e., histograms with the |kUmaStabilityHistogramFlag| flag set.
+  void RecordCurrentStabilityHistograms();
+
+  // Manager for the various in-flight logs.
+  metrics::MetricsLogManager log_manager_;
+
+  // |histogram_snapshot_manager_| prepares histogram deltas for transmission.
+  base::HistogramSnapshotManager histogram_snapshot_manager_;
 
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
