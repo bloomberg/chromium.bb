@@ -48,21 +48,4 @@
       'command_buffer/client/vertex_array_object_manager.h',
     ]
   },
-  'conditions': [
-    ['OS == "android"', {
-      'targets': [
-        {
-          'target_name': 'gpu_unittests_apk',
-          'type': 'none',
-          'dependencies': [
-            'gpu_unittests',
-          ],
-          'variables': {
-            'test_suite_name': 'gpu_unittests',
-          },
-          'includes': [ '../build/apk_test.gypi' ],
-        },
-      ],
-    }],
-  ],
 }

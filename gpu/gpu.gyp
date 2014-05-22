@@ -606,6 +606,17 @@
             '../build/apk_test.gypi',
           ],
         },
+        {
+          'target_name': 'gpu_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'gpu_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'gpu_unittests',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
       ],
     }],
   ],
