@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -519,7 +520,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 }
 
 void RunFaviconCallbackAsync(
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     const std::vector<favicon_base::FaviconBitmapResult>* results) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
@@ -565,7 +566,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
     const std::vector<ui::ScaleFactor>& scale_factors,
-    const FaviconService::FaviconResultsCallback& callback) const {
+    const favicon_base::FaviconResultsCallback& callback) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.

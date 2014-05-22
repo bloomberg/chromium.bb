@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon_base/favicon_callback.h"
 
 class BookmarkNode;
 class GURL;
@@ -19,18 +20,10 @@ namespace base {
 struct UserMetricsAction;
 }
 
-namespace favicon_base {
-struct FaviconImageResult;
-}
-
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
 class BookmarkClient {
  public:
-  // Callback for GetFaviconImageForURL().
-  typedef base::Callback<void(const favicon_base::FaviconImageResult&)>
-      FaviconImageCallback;
-
   // Types representing a set of BookmarkNode and a mapping from BookmarkNode
   // to the number of time the corresponding URL has been typed by the user in
   // the Omnibox.
@@ -50,7 +43,7 @@ class BookmarkClient {
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
-      const FaviconImageCallback& callback,
+      const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   // Returns true if the embedder supports typed count for URL.

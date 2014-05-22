@@ -72,6 +72,6 @@ struct FaviconBitmapResult {
 // HistoryBackend::SetFavicons().
 typedef FaviconBitmapResult FaviconBitmapData;
 
-}  // namespace chrome
+}  // namespace favicon_base
 
 #endif  // COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_

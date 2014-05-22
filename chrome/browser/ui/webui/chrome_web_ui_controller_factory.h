@@ -7,9 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
+#include "components/favicon_base/favicon_callback.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
-#include "chrome/browser/favicon/favicon_service.h"
+#include "ui/base/layout.h"
 
 class Profile;
 
@@ -36,7 +37,7 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
       Profile* profile,
       const GURL& page_url,
       const std::vector<ui::ScaleFactor>& scale_factors,
-      const FaviconService::FaviconResultsCallback& callback) const;
+      const favicon_base::FaviconResultsCallback& callback) const;
 
   static ChromeWebUIControllerFactory* GetInstance();
 

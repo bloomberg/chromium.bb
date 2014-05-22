@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
@@ -202,7 +203,7 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
 
 void SQLiteCursor::GetFaviconForIDInUIThread(
     favicon_base::FaviconID id,
-    const FaviconService::FaviconRawCallback& callback) {
+    const favicon_base::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());

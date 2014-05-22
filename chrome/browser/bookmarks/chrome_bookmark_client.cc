@@ -60,7 +60,7 @@ base::CancelableTaskTracker::TaskId ChromeBookmarkClient::GetFaviconImageForURL(
     const GURL& page_url,
     int icon_types,
     int desired_size_in_dip,
-    const FaviconImageCallback& callback,
+    const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);

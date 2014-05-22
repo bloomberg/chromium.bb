@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -87,7 +88,7 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
 // Run favicon callbck with image result. If no favicon was available then
 // |image| will be empty.
 void RunFaviconCallbackAsync(
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     const gfx::Image& image) {
   std::vector<favicon_base::FaviconBitmapResult>* favicon_bitmap_results =
       new std::vector<favicon_base::FaviconBitmapResult>();
@@ -405,7 +406,7 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
 void ExtensionWebUI::GetFaviconForURL(
     Profile* profile,
     const GURL& page_url,
-    const FaviconService::FaviconResultsCallback& callback) {
+    const favicon_base::FaviconResultsCallback& callback) {
   // Even when the extensions service is enabled by default, it's still
   // disabled in incognito mode.
   ExtensionService* service = profile->GetExtensionService();

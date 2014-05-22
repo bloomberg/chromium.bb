@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -489,7 +490,7 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
     const GURL& page_url,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   // TODO(pkotwicz): pass in all of |image_urls_| to
   // UpdateFaviconMappingsAndFetch().
@@ -502,7 +503,7 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
 void FaviconHandler::GetFaviconFromFaviconService(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   client_->GetFaviconService()->GetFavicon(
       icon_url, icon_type, preferred_icon_size(), callback, tracker);
@@ -511,7 +512,7 @@ void FaviconHandler::GetFaviconFromFaviconService(
 void FaviconHandler::GetFaviconForURLFromFaviconService(
     const GURL& page_url,
     int icon_types,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   client_->GetFaviconService()->GetFaviconForURL(
       FaviconService::FaviconForURLParams(

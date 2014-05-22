@@ -13,9 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "components/favicon/core/favicon_url.h"
+#include "components/favicon_base/favicon_callback.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -126,19 +126,19 @@ class FaviconHandler {
       const GURL& page_url,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
-      const FaviconService::FaviconResultsCallback& callback,
+      const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   virtual void GetFaviconFromFaviconService(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
-      const FaviconService::FaviconResultsCallback& callback,
+      const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   virtual void GetFaviconForURLFromFaviconService(
       const GURL& page_url,
       int icon_types,
-      const FaviconService::FaviconResultsCallback& callback,
+      const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   virtual void SetHistoryFavicons(const GURL& page_url,

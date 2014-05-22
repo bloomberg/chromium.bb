@@ -27,7 +27,7 @@ namespace {
 
 void CancelOrRunFaviconResultsCallback(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     const std::vector<favicon_base::FaviconBitmapResult>& results) {
   if (is_canceled.Run())
     return;
@@ -37,7 +37,7 @@ void CancelOrRunFaviconResultsCallback(
 // Helper to run callback with empty results if we cannot get the history
 // service.
 base::CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return tracker->PostTask(
       base::MessageLoopProxy::current().get(),
@@ -50,12 +50,12 @@ base::CancelableTaskTracker::TaskId GetFaviconForChromeURL(
     Profile* profile,
     const GURL& page_url,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   base::CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
   base::CancelableTaskTracker::TaskId id =
       tracker->NewTrackedTaskId(&is_canceled_cb);
-  FaviconService::FaviconResultsCallback cancelable_cb =
+  favicon_base::FaviconResultsCallback cancelable_cb =
       Bind(&CancelOrRunFaviconResultsCallback, is_canceled_cb, callback);
   ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(profile,
       page_url, desired_scale_factors, cancelable_cb);
@@ -72,7 +72,7 @@ FaviconService::FaviconService(Profile* profile)
 
 // static
 void FaviconService::FaviconResultsCallbackRunner(
-    const FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     const std::vector<favicon_base::FaviconBitmapResult>* results) {
   callback.Run(*results);
 }
@@ -81,9 +81,9 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     int desired_size_in_dip,
-    const FaviconImageCallback& callback,
+    const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconResultsCallback callback_runner =
+  favicon_base::FaviconResultsCallback callback_runner =
       Bind(&FaviconService::RunFaviconImageCallbackWithBitmapResults,
            base::Unretained(this), callback, desired_size_in_dip);
   if (history_service_) {
@@ -102,9 +102,9 @@ base::CancelableTaskTracker::TaskId FaviconService::GetRawFavicon(
     favicon_base::IconType icon_type,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
-    const FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconResultsCallback callback_runner =
+  favicon_base::FaviconResultsCallback callback_runner =
       Bind(&FaviconService::RunFaviconRawCallbackWithBitmapResults,
            base::Unretained(this),
            callback, desired_size_in_dip, desired_scale_factor);
@@ -127,7 +127,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFavicon(
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     int desired_size_in_dip,
-    const FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   if (history_service_) {
     std::vector<GURL> icon_urls;
@@ -146,7 +146,7 @@ FaviconService::UpdateFaviconMappingsAndFetch(
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
-    const FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   if (history_service_) {
     return history_service_->UpdateFaviconMappingsAndFetch(
@@ -159,7 +159,7 @@ FaviconService::UpdateFaviconMappingsAndFetch(
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImageForURL(
     const FaviconForURLParams& params,
-    const FaviconImageCallback& callback,
+    const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return GetFaviconForURLImpl(
       params,
@@ -174,7 +174,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconImageForURL(
 base::CancelableTaskTracker::TaskId FaviconService::GetRawFaviconForURL(
     const FaviconForURLParams& params,
     ui::ScaleFactor desired_scale_factor,
-    const FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
   std::vector<ui::ScaleFactor> desired_scale_factors;
   desired_scale_factors.push_back(desired_scale_factor);
@@ -194,9 +194,9 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForURL(
     const GURL& page_url,
     const std::vector<int>& icon_types,
     int minimum_size_in_pixels,
-    const FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  FaviconResultsCallback favicon_results_callback =
+  favicon_base::FaviconResultsCallback favicon_results_callback =
       Bind(&FaviconService::RunFaviconRawCallbackWithBitmapResults,
            base::Unretained(this), callback, 0, ui::ScaleFactor());
   if (page_url.SchemeIs(content::kChromeUIScheme) ||
@@ -214,7 +214,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForURL(
 
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURL(
     const FaviconForURLParams& params,
-    const FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return GetFaviconForURLImpl(params,
                               FaviconUtil::GetFaviconScaleFactors(),
@@ -224,13 +224,13 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURL(
 
 base::CancelableTaskTracker::TaskId FaviconService::GetLargestRawFaviconForID(
     favicon_base::FaviconID favicon_id,
-    const FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
   // Use 0 as |desired_size_in_dip| to get the largest bitmap for |favicon_id|
   // without any resizing.
   int desired_size_in_dip = 0;
   ui::ScaleFactor desired_scale_factor = ui::SCALE_FACTOR_100P;
-  FaviconResultsCallback callback_runner =
+  favicon_base::FaviconResultsCallback callback_runner =
       Bind(&FaviconService::RunFaviconRawCallbackWithBitmapResults,
            base::Unretained(this),
            callback, desired_size_in_dip, desired_scale_factor);
@@ -323,7 +323,7 @@ FaviconService::~FaviconService() {}
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
     const FaviconForURLParams& params,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   if (params.page_url.SchemeIs(content::kChromeUIScheme) ||
       params.page_url.SchemeIs(extensions::kExtensionScheme)) {
@@ -341,7 +341,7 @@ base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
 }
 
 void FaviconService::RunFaviconImageCallbackWithBitmapResults(
-    const FaviconImageCallback& callback,
+    const favicon_base::FaviconImageCallback& callback,
     int desired_size_in_dip,
     const std::vector<favicon_base::FaviconBitmapResult>&
         favicon_bitmap_results) {
@@ -358,7 +358,7 @@ void FaviconService::RunFaviconImageCallbackWithBitmapResults(
 }
 
 void FaviconService::RunFaviconRawCallbackWithBitmapResults(
-    const FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
     const std::vector<favicon_base::FaviconBitmapResult>&

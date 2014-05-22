@@ -125,7 +125,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
       new ScopedJavaGlobalRef<jobject>();
   j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
 
-  FaviconService::FaviconImageCallback callback_runner = base::Bind(
+  favicon_base::FaviconImageCallback callback_runner = base::Bind(
       &OnLocalFaviconAvailable, base::Owned(j_scoped_favicon_callback));
 
   favicon_service->GetFaviconImageForURL(
@@ -161,7 +161,7 @@ void FaviconHelper::GetLargestRawFaviconForUrl(
       new ScopedJavaGlobalRef<jobject>();
   j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
 
-  FaviconService::FaviconRawCallback callback_runner = base::Bind(
+  favicon_base::FaviconRawCallback callback_runner = base::Bind(
       &OnFaviconBitmapResultAvailable, base::Owned(j_scoped_favicon_callback));
   favicon_service->GetLargestRawFaviconForURL(
       profile,

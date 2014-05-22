@@ -34,7 +34,7 @@ class ChromeBookmarkClient : public BookmarkClient,
       const GURL& page_url,
       int icon_types,
       int desired_size_in_dip,
-      const FaviconImageCallback& callback,
+      const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker) OVERRIDE;
   virtual bool SupportsTypedCountForNodes() OVERRIDE;
   virtual void GetTypedCountForNodes(

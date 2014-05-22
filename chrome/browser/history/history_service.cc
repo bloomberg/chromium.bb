@@ -74,12 +74,12 @@ namespace {
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 void RunWithFaviconResults(
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     std::vector<favicon_base::FaviconBitmapResult>* bitmap_results) {
   callback.Run(*bitmap_results);
 }
 
-void RunWithFaviconResult(const FaviconService::FaviconRawCallback& callback,
+void RunWithFaviconResult(const favicon_base::FaviconRawCallback& callback,
                           favicon_base::FaviconBitmapResult* bitmap_result) {
   callback.Run(*bitmap_result);
 }
@@ -559,7 +559,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
     int icon_types,
     int desired_size_in_dip,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -583,7 +583,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     int icon_types,
     int desired_size_in_dip,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -606,7 +606,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
     const GURL& page_url,
     const std::vector<int>& icon_types,
     int minimum_size_in_pixels,
-    const FaviconService::FaviconRawCallback& callback,
+    const favicon_base::FaviconRawCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -628,7 +628,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
     favicon_base::FaviconID favicon_id,
     int desired_size_in_dip,
     ui::ScaleFactor desired_scale_factor,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -653,7 +653,7 @@ HistoryService::UpdateFaviconMappingsAndFetch(
     int icon_types,
     int desired_size_in_dip,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    const FaviconService::FaviconResultsCallback& callback,
+    const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

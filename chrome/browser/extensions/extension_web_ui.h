@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "components/favicon_base/favicon_callback.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class Profile;
@@ -67,7 +67,7 @@ class ExtensionWebUI : public content::WebUIController {
   static void GetFaviconForURL(
       Profile* profile,
       const GURL& page_url,
-      const FaviconService::FaviconResultsCallback& callback);
+      const favicon_base::FaviconResultsCallback& callback);
 
  private:
   // Unregister the specified override, and if it's the currently active one,
