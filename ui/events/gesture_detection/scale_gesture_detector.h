@@ -33,6 +33,10 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
 
     // Whether double-tap drag scaling is enabled.
     bool quick_scale_enabled;
+
+    // Minimum pinch span change before pinch occurs (in dips). See
+    // crbug.com/373318.
+    float min_pinch_update_span_delta;
   };
 
   class ScaleGestureListener {

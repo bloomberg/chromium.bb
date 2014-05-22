@@ -33,7 +33,9 @@ const float kScaleFactor = .5f;
 ScaleGestureDetector::Config::Config()
     : min_scaling_touch_major(48),
       min_scaling_span(200),
-      quick_scale_enabled(true) {}
+      quick_scale_enabled(true),
+      min_pinch_update_span_delta(0) {
+}
 
 ScaleGestureDetector::Config::~Config() {}
 

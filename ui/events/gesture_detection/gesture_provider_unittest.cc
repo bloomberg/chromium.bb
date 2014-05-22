@@ -217,6 +217,13 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void SetMinPinchUpdateSpanDelta(float min_pinch_update_span_delta) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.scale_gesture_detector_config.min_pinch_update_span_delta =
+        min_pinch_update_span_delta;
+    SetUpWithConfig(config);
+  }
+
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -1908,6 +1915,87 @@ TEST_F(GestureProviderTest, TwoFingerTapCancelledByDistanceBetweenPointers) {
 
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type);
   EXPECT_EQ(1U, GetReceivedGestureCount());
+}
+
+// Verify that pinch zoom only sends updates which exceed the
+// min_pinch_update_span_delta.
+TEST_F(GestureProviderTest, PinchZoomWithThreshold) {
+  const float kMinPinchUpdateDistance = 5;
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float touch_slop = GetTouchSlop();
+
+  SetMinPinchUpdateSpanDelta(kMinPinchUpdateDistance);
+  gesture_provider_->SetDoubleTapSupportForPageEnabled(false);
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+  gesture_provider_->SetMultiTouchZoomSupportEnabled(true);
+
+  int secondary_coord_x = kFakeCoordX + 20 * touch_slop;
+  int secondary_coord_y = kFakeCoordY + 20 * touch_slop;
+
+  // First finger down.
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+
+  // Second finger down.
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            secondary_coord_x,
+                            secondary_coord_y);
+
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+
+  // Move second finger.
+  secondary_coord_x += 5 * touch_slop;
+  secondary_coord_y += 5 * touch_slop;
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            secondary_coord_x,
+                            secondary_coord_y);
+
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_UPDATE));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
+
+  // Small move, shouldn't trigger pinch.
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            secondary_coord_x + kMinPinchUpdateDistance,
+                            secondary_coord_y);
+
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_UPDATE));
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+
+  // Small move, but combined with the previous move, should trigger pinch. We
+  // need to overshoot kMinPinchUpdateDistance by a fair bit, as the span
+  // calculation factors in touch radius.
+  const float kOvershootMinPinchUpdateDistance = 3;
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            secondary_coord_x + kMinPinchUpdateDistance +
+                                kOvershootMinPinchUpdateDistance,
+                            secondary_coord_y);
+
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_UPDATE));
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
 }
 
 }  // namespace ui

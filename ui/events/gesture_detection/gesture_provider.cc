@@ -130,7 +130,8 @@ class GestureProvider::ScaleGestureListenerImpl
       : scale_gesture_detector_(config, this),
         provider_(provider),
         ignore_multitouch_events_(false),
-        pinch_event_sent_(false) {}
+        pinch_event_sent_(false),
+        min_pinch_update_span_delta_(config.min_pinch_update_span_delta) {}
 
   bool OnTouchEvent(const MotionEvent& event) {
     // TODO: Need to deal with multi-touch transition.
@@ -180,6 +181,11 @@ class GestureProvider::ScaleGestureListenerImpl
                                     detector.GetFocusY(),
                                     e.GetPointerCount(),
                                     GetBoundingBox(e)));
+    }
+
+    if (std::abs(detector.GetCurrentSpan() - detector.GetPreviousSpan()) <
+        min_pinch_update_span_delta_) {
+      return false;
     }
 
     float scale = detector.GetScaleFactor();
@@ -246,6 +252,10 @@ class GestureProvider::ScaleGestureListenerImpl
 
   // Whether any pinch zoom event has been sent to native.
   bool pinch_event_sent_;
+
+  // The minimum change in span required before this is considered a pinch. See
+  // crbug.com/373318.
+  float min_pinch_update_span_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(ScaleGestureListenerImpl);
 };
