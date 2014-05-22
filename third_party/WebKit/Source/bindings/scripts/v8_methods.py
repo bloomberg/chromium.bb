@@ -40,6 +40,22 @@ import v8_utilities
 from v8_utilities import has_extended_attribute_value
 
 
+def argument_needs_try_catch(argument):
+    idl_type = argument.idl_type
+    base_type = not idl_type.array_or_sequence_type and idl_type.base_type
+
+    return not (
+        # These cases are handled by separate code paths in the
+        # generate_argument() macro in Source/bindings/templates/methods.cpp.
+        idl_type.is_callback_interface or
+        base_type == 'SerializedScriptValue' or
+        (argument.is_variadic and idl_type.is_wrapper_type) or
+        # String and enumeration arguments converted using one of the
+        # TOSTRING_* macros in Source/bindings/v8/V8BindingMacros.h don't
+        # use a v8::TryCatch.
+        (base_type == 'DOMString' and not argument.is_variadic))
+
+
 def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
@@ -79,10 +95,14 @@ def generate_method(interface, method):
         'DoNotCheckSecurity' not in extended_attributes)
     is_raises_exception = 'RaisesException' in extended_attributes
 
+    arguments_need_try_catch = any(argument_needs_try_catch(argument)
+                                   for argument in arguments)
+
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': [generate_argument(interface, method, argument, index)
+        'arguments': [generate_argument(interface, method, argument, index, arguments_need_try_catch)
                       for index, argument in enumerate(arguments)],
+        'arguments_need_try_catch': arguments_need_try_catch,
         'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': idl_type.cpp_type,
         'cpp_value': this_cpp_value,
@@ -137,14 +157,16 @@ def generate_method(interface, method):
     }
 
 
-def generate_argument(interface, method, argument, index):
+def generate_argument(interface, method, argument, index, method_has_try_catch):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
     return {
-        'cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=is_variadic_wrapper_type),
+        'cpp_type': idl_type.cpp_type_args(extended_attributes=extended_attributes,
+                                           used_as_argument=True,
+                                           used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_default': 'Default' in extended_attributes,
@@ -173,7 +195,7 @@ def generate_argument(interface, method, argument, index):
         'name': argument.name,
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, method_has_try_catch),
     }
 
 
@@ -244,15 +266,13 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
-def v8_value_to_local_cpp_value(argument, index):
+def v8_value_to_local_cpp_value(argument, index, method_has_try_catch):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        vector_type = v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type)
-        return 'TONATIVE_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
-            vector_type=vector_type, cpp_type=idl_type.cpp_type, name=name,
-            index=index)
+        return 'TONATIVE_VOID_INTERNAL({name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
+            cpp_type=idl_type.cpp_type, name=name, index=index)
     # [Default=NullString]
     if (argument.is_optional and idl_type.name == 'String' and
         extended_attributes.get('Default') == 'NullString'):
@@ -260,7 +280,8 @@ def v8_value_to_local_cpp_value(argument, index):
     else:
         v8_value = 'info[%s]' % index
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, v8_value,
-                                                name, index=index)
+                                                name, index=index, declare_variable=False,
+                                                method_has_try_catch=method_has_try_catch)
 
 
 ################################################################################

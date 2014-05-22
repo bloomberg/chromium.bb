@@ -97,19 +97,28 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         throwMinimumArityTypeError(exceptionState, 1, info.Length());
         return;
     }
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    TONATIVE_VOID(bool, defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
-    TOSTRING_VOID(V8StringResource<>, defaultUndefinedOptionalStringArg, info[3]);
-    TOSTRING_VOID(V8StringResource<>, defaultNullStringOptionalstringArg, argumentOrNull(info, 4));
-    if (UNLIKELY(info.Length() <= 5)) {
-        RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg);
-        v8::Handle<v8::Object> wrapper = info.Holder();
-        V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
-        v8SetReturnValue(info, wrapper);
-        return;
+    V8StringResource<> stringArg;
+    bool defaultUndefinedOptionalBooleanArg;
+    int defaultUndefinedOptionalLongArg;
+    V8StringResource<> defaultUndefinedOptionalStringArg;
+    V8StringResource<> defaultNullStringOptionalstringArg;
+    V8StringResource<> optionalStringArg;
+    {
+        v8::TryCatch block;
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
+        TOSTRING_VOID_INTERNAL_RETHROW(defaultUndefinedOptionalStringArg, info[3], block);
+        TOSTRING_VOID_INTERNAL_RETHROW(defaultNullStringOptionalstringArg, argumentOrNull(info, 4), block);
+        if (UNLIKELY(info.Length() <= 5)) {
+            RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg);
+            v8::Handle<v8::Object> wrapper = info.Holder();
+            V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNamedConstructor>(impl.release(), &V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
+            v8SetReturnValue(info, wrapper);
+            return;
+        }
+        TOSTRING_VOID_INTERNAL_RETHROW(optionalStringArg, info[5], block);
     }
-    TOSTRING_VOID(V8StringResource<>, optionalStringArg, info[5]);
     RefPtr<TestInterfaceNamedConstructor> impl = TestInterfaceNamedConstructor::createForJSConstructor(*document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

@@ -169,11 +169,20 @@ enum V8StringResourceMode {
 template <V8StringResourceMode Mode = DefaultMode>
 class V8StringResource {
 public:
+    V8StringResource()
+        : m_mode(Externalize)
+    {
+    }
+
     V8StringResource(v8::Handle<v8::Value> object)
         : m_v8Object(object)
         , m_mode(Externalize)
-        , m_string()
     {
+    }
+
+    void operator=(v8::Handle<v8::Value> object)
+    {
+        m_v8Object = object;
     }
 
     bool prepare()

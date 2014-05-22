@@ -102,11 +102,15 @@ static void TestTypedefsReplaceableAttributeSetterCallback(v8::Local<v8::String>
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->voidMethodArrayOfLongsArg();
-        return;
+    Vector<int> arrayOfLongsArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->voidMethodArrayOfLongsArg();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
     }
-    TONATIVE_VOID(Vector<int>, arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
 
@@ -124,8 +128,13 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    TONATIVE_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[1]);
+    float floatArg;
+    V8StringResource<> stringArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[1], block);
+    }
     impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
@@ -143,11 +152,14 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-        return;
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceTypeArg;
+    {
+        if (info.Length() <= 0 || !info[0]->IsFunction()) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+            return;
+        }
+        testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg.release());
 }
 
@@ -165,7 +177,11 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    TONATIVE_VOID(Vector<RefPtr<TestInterfaceEmpty> >, testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyTypeSequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    }
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
@@ -209,7 +225,11 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    TONATIVE_VOID(Vector<String>, arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    Vector<String> arrayOfStringsArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    }
     v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.GetIsolate()));
 }
 
@@ -227,7 +247,11 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    TONATIVE_VOID(Vector<String>, stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    Vector<String> stringArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    }
     v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.GetIsolate()));
 }
 
@@ -245,7 +269,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwMinimumArityTypeErrorForConstructor("TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    V8StringResource<> stringArg;
+    {
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+    }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

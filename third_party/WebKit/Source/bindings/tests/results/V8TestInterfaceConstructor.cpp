@@ -65,24 +65,37 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[1]);
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
-    TONATIVE_VOID(Dictionary, dictionaryArg, Dictionary(info[3], info.GetIsolate()));
-    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
-        exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
-        exceptionState.throwIfNeeded();
-        return;
+    double doubleArg;
+    V8StringResource<> stringArg;
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    Dictionary dictionaryArg;
+    Vector<String> sequenceStringArg;
+    Vector<Dictionary> sequenceDictionaryArg;
+    Dictionary optionalDictionaryArg;
+    TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[1], block);
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
+        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
+        if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+            exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
+            block.ReThrow();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toNativeArray<Dictionary>(info[5], 6, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
+        if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+            exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
+            block.ReThrow();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
     }
-    TONATIVE_VOID(Vector<String>, sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
-    TONATIVE_VOID(Vector<Dictionary>, sequenceDictionaryArg, toNativeArray<Dictionary>(info[5], 6, info.GetIsolate()));
-    TONATIVE_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
-    if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
-        exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TONATIVE_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
     ExecutionContext* context = currentExecutionContext(isolate);
     Document& document = *toDocument(currentExecutionContext(isolate));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);

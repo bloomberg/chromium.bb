@@ -249,11 +249,15 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(c
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
-        return;
+    bool optionalBooleanArgument;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalBooleanArgument, info[0]->BooleanValue());
     }
-    TONATIVE_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
     v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)), impl);
 }
 
@@ -267,11 +271,15 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCall
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
-        return;
+    bool optionalBooleanArgument;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalBooleanArgument, info[0]->BooleanValue());
     }
-    TONATIVE_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)));
 }
 

@@ -51,7 +51,10 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, name, info[0]);
+    V8StringResource<> name;
+    {
+        TOSTRING_VOID_INTERNAL(name, info[0]);
+    }
     bool result0Enabled = false;
     RefPtr<Node> result0;
     bool result1Enabled = false;

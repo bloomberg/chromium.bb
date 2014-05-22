@@ -79,7 +79,11 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceWillBeGarbageCollected* arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->func(arg);
 }
 
@@ -97,7 +101,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwMinimumArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
-    TOSTRING_VOID(V8StringResource<>, str, info[0]);
+    V8StringResource<> str;
+    {
+        TOSTRING_VOID_INTERNAL(str, info[0]);
+    }
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> impl = TestInterfaceWillBeGarbageCollected::create(str);
 
     v8::Handle<v8::Object> wrapper = info.Holder();

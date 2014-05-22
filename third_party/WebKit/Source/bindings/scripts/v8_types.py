@@ -119,7 +119,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
-def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_in_cpp_sequence=False):
+def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
     """Returns C++ type corresponding to IDL type.
 
     |idl_type| argument is of type IdlType, while return value is a string
@@ -145,7 +145,10 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False, used_in
     idl_type = idl_type.preprocessed_type
 
     # Composite types
-    array_or_sequence_type = idl_type.array_or_sequence_type
+    if used_as_variadic_argument:
+        array_or_sequence_type = idl_type
+    else:
+        array_or_sequence_type = idl_type.array_or_sequence_type
     if array_or_sequence_type:
         vector_type = cpp_ptr_type('Vector', 'HeapVector', array_or_sequence_type.gc_type)
         return cpp_template_type(vector_type, array_or_sequence_type.cpp_type_args(used_in_cpp_sequence=True))
@@ -432,13 +435,13 @@ def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, in
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, method_has_try_catch=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, used_as_argument=True)
 
     idl_type = idl_type.preprocessed_type
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index)
-    args = [this_cpp_type, variable_name, cpp_value]
+    args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
         macro = 'TOSTRING_VOID'
     elif idl_type.is_integer_type:
@@ -446,6 +449,20 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         args.append('exceptionState')
     else:
         macro = 'TONATIVE_VOID'
+
+    if declare_variable:
+        args.insert(0, this_cpp_type)
+    else:
+        # Use a macro that assumes a previously declared local variable.
+        macro += '_INTERNAL'
+        if method_has_try_catch and macro == 'TOSTRING_VOID_INTERNAL':
+            # The TOSTRING_VOID_INTERNAL macro comes in two flavors; use the
+            # right one depending on whether the containing method has a
+            # v8::TryCatch local (named 'block') declared or not. If there is
+            # such a local, its ReThrow() method must be called if an exception
+            # is thrown.
+            macro += '_RETHROW'
+            args.append('block')
 
     return '%s(%s)' % (macro, ', '.join(args))
 

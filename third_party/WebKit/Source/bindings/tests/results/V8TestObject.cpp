@@ -4798,7 +4798,11 @@ static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, dateArg, toCoreDate(info[0]));
+    double dateArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(dateArg, toCoreDate(info[0]));
+    }
     impl->voidMethodDateArg(dateArg);
 }
 
@@ -4816,7 +4820,10 @@ static void voidMethodStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    V8StringResource<> stringArg;
+    {
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+    }
     impl->voidMethodStringArg(stringArg);
 }
 
@@ -4835,7 +4842,11 @@ static void voidMethodDOMTimeStampArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, domTimeStampArg, toUInt64(info[0], exceptionState), exceptionState);
+    unsigned long long domTimeStampArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(domTimeStampArg, toUInt64(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodDOMTimeStampArg(domTimeStampArg);
 }
 
@@ -4853,7 +4864,11 @@ static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
+    bool booleanArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(booleanArg, info[0]->BooleanValue());
+    }
     impl->voidMethodBooleanArg(booleanArg);
 }
 
@@ -4872,7 +4887,11 @@ static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, byteArg, toInt8(info[0], exceptionState), exceptionState);
+    int byteArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(byteArg, toInt8(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodByteArg(byteArg);
 }
 
@@ -4890,7 +4909,11 @@ static void voidMethodDoubleArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    double doubleArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+    }
     impl->voidMethodDoubleArg(doubleArg);
 }
 
@@ -4908,7 +4931,11 @@ static void voidMethodFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
+    float floatArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+    }
     impl->voidMethodFloatArg(floatArg);
 }
 
@@ -4927,7 +4954,11 @@ static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodLongArg(longArg);
 }
 
@@ -4946,7 +4977,11 @@ static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(long long, longLongArg, toInt64(info[0], exceptionState), exceptionState);
+    long long longLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longLongArg, toInt64(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodLongLongArg(longLongArg);
 }
 
@@ -4965,7 +5000,11 @@ static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, octetArg, toUInt8(info[0], exceptionState), exceptionState);
+    unsigned octetArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(octetArg, toUInt8(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodOctetArg(octetArg);
 }
 
@@ -4984,7 +5023,11 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, shortArg, toInt16(info[0], exceptionState), exceptionState);
+    int shortArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(shortArg, toInt16(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodShortArg(shortArg);
 }
 
@@ -5003,7 +5046,11 @@ static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, unsignedLongArg, toUInt32(info[0], exceptionState), exceptionState);
+    unsigned unsignedLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedLongArg, toUInt32(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodUnsignedLongArg(unsignedLongArg);
 }
 
@@ -5022,7 +5069,11 @@ static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, unsignedLongLongArg, toUInt64(info[0], exceptionState), exceptionState);
+    unsigned long long unsignedLongLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedLongLongArg, toUInt64(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodUnsignedLongLongArg(unsignedLongLongArg);
 }
 
@@ -5041,7 +5092,11 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(unsigned, unsignedShortArg, toUInt16(info[0], exceptionState), exceptionState);
+    unsigned unsignedShortArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(unsignedShortArg, toUInt16(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodUnsignedShortArg(unsignedShortArg);
 }
 
@@ -5072,7 +5127,11 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -5091,8 +5150,13 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    int longArg;
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    }
     impl->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
 
@@ -5136,7 +5200,11 @@ static void voidMethodVoidCallbackFunctionArgMethod(const v8::FunctionCallbackIn
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, voidCallbackFunctionArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    ScriptValue voidCallbackFunctionArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(voidCallbackFunctionArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    }
     impl->voidMethodVoidCallbackFunctionArg(voidCallbackFunctionArg);
 }
 
@@ -5154,7 +5222,11 @@ static void voidMethodAnyCallbackFunctionOptionalAnyArgMethod(const v8::Function
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, anyCallbackFunctionOptionalAnyArgArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    ScriptValue anyCallbackFunctionOptionalAnyArgArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(anyCallbackFunctionOptionalAnyArgArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    }
     impl->voidMethodAnyCallbackFunctionOptionalAnyArg(anyCallbackFunctionOptionalAnyArgArg);
 }
 
@@ -5198,7 +5270,11 @@ static void voidMethodCompareHowArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Range::CompareHow, compareHowArg, static_cast<Range::CompareHow>(info[0]->Int32Value()));
+    Range::CompareHow compareHowArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(compareHowArg, static_cast<Range::CompareHow>(info[0]->Int32Value()));
+    }
     impl->voidMethodCompareHowArg(compareHowArg);
 }
 
@@ -5216,7 +5292,11 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(EventTarget*, eventTargetArg, V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    EventTarget* eventTargetArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(eventTargetArg, V8DOMWrapper::isDOMWrapper(info[0]) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast(info[0]))->toEventTarget(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    }
     impl->voidMethodEventTargetArg(eventTargetArg);
 }
 
@@ -5234,7 +5314,11 @@ static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallback
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(RefPtrWillBeRawPtr<MediaQueryListListener>, mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
+    RefPtrWillBeRawPtr<MediaQueryListListener> mediaQueryListListenerArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(mediaQueryListListenerArg, MediaQueryListListener::create(ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
+    }
     impl->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
 }
 
@@ -5252,7 +5336,11 @@ static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptValue, anyArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    ScriptValue anyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(anyArg, ScriptValue(ScriptState::current(info.GetIsolate()), info[0]));
+    }
     impl->voidMethodAnyArg(anyArg);
 }
 
@@ -5270,7 +5358,11 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Attr*, attrArg, V8Attr::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Attr* attrArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(attrArg, V8Attr::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodAttrArg(attrArg);
 }
 
@@ -5288,7 +5380,11 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Document*, documentArg, V8Document::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Document* documentArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(documentArg, V8Document::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodDocumentArg(documentArg);
 }
 
@@ -5306,7 +5402,11 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(DocumentType*, documentTypeArg, V8DocumentType::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    DocumentType* documentTypeArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(documentTypeArg, V8DocumentType::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodDocumentTypeArg(documentTypeArg);
 }
 
@@ -5324,7 +5424,11 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Element*, elementArg, V8Element::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Element* elementArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(elementArg, V8Element::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodElementArg(elementArg);
 }
 
@@ -5342,7 +5446,11 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Node*, nodeArg, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Node* nodeArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(nodeArg, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodNodeArg(nodeArg);
 }
 
@@ -5425,7 +5533,11 @@ static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ArrayBuffer*, arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+    ArrayBuffer* arrayBufferArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+    }
     impl->voidMethodArrayBufferArg(arrayBufferArg);
 }
 
@@ -5443,7 +5555,11 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ArrayBuffer*, arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+    ArrayBuffer* arrayBufferArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayBufferArg, info[0]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[0])) : 0);
+    }
     impl->voidMethodArrayBufferOrNullArg(arrayBufferArg);
 }
 
@@ -5461,7 +5577,11 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ArrayBufferView*, arrayBufferViewArg, info[0]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0);
+    ArrayBufferView* arrayBufferViewArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayBufferViewArg, info[0]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[0])) : 0);
+    }
     impl->voidMethodArrayBufferViewArg(arrayBufferViewArg);
 }
 
@@ -5479,7 +5599,11 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Float32Array*, float32ArrayArg, info[0]->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0);
+    Float32Array* float32ArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(float32ArrayArg, info[0]->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0);
+    }
     impl->voidMethodFloat32ArrayArg(float32ArrayArg);
 }
 
@@ -5497,7 +5621,11 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Int32Array*, int32ArrayArg, info[0]->IsInt32Array() ? V8Int32Array::toNative(v8::Handle<v8::Int32Array>::Cast(info[0])) : 0);
+    Int32Array* int32ArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(int32ArrayArg, info[0]->IsInt32Array() ? V8Int32Array::toNative(v8::Handle<v8::Int32Array>::Cast(info[0])) : 0);
+    }
     impl->voidMethodInt32ArrayArg(int32ArrayArg);
 }
 
@@ -5515,7 +5643,11 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Uint8Array*, uint8ArrayArg, info[0]->IsUint8Array() ? V8Uint8Array::toNative(v8::Handle<v8::Uint8Array>::Cast(info[0])) : 0);
+    Uint8Array* uint8ArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(uint8ArrayArg, info[0]->IsUint8Array() ? V8Uint8Array::toNative(v8::Handle<v8::Uint8Array>::Cast(info[0])) : 0);
+    }
     impl->voidMethodUint8ArrayArg(uint8ArrayArg);
 }
 
@@ -5572,7 +5704,11 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<int>, arrayLongArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    Vector<int> arrayLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayLongArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    }
     impl->voidMethodArrayLongArg(arrayLongArg);
 }
 
@@ -5590,7 +5726,11 @@ static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<String>, arrayStringArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    Vector<String> arrayStringArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayStringArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    }
     impl->voidMethodArrayStringArg(arrayStringArg);
 }
 
@@ -5608,7 +5748,11 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<RefPtr<TestInterfaceEmpty> >, arrayTestInterfaceEmptyArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    Vector<RefPtr<TestInterfaceEmpty> > arrayTestInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(arrayTestInterfaceEmptyArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodArrayTestInterfaceEmptyArg(arrayTestInterfaceEmptyArg);
 }
 
@@ -5665,7 +5809,11 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<int>, longSequenceArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    Vector<int> longSequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(longSequenceArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    }
     impl->voidMethodSequenceLongArg(longSequenceArg);
 }
 
@@ -5683,7 +5831,11 @@ static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<String>, stringSequenceArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    Vector<String> stringSequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(stringSequenceArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    }
     impl->voidMethodSequenceStringArg(stringSequenceArg);
 }
 
@@ -5701,7 +5853,11 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<RefPtr<TestInterfaceEmpty> >, testInterfaceEmptySequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptySequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptySequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodSequenceTestInterfaceEmptyArg(testInterfaceEmptySequenceArg);
 }
 
@@ -5719,7 +5875,11 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallba
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* nullableTestInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodTestInterfaceEmptyOrNullArg(nullableTestInterfaceEmptyArg);
 }
 
@@ -5737,11 +5897,14 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-        return;
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    {
+        if (info.Length() <= 0 || !info[0]->IsFunction()) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+            return;
+        }
+        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     impl->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
 }
 
@@ -5756,12 +5919,14 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     OwnPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg;
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
-        if (!info[0]->IsFunction()) {
-            throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-            return;
+    {
+        if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
+            if (!info[0]->IsFunction()) {
+                throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+                return;
+            }
+            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release());
 }
@@ -5780,11 +5945,14 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-        return;
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    {
+        if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+            return;
+        }
+        testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     impl->voidMethodTestCallbackInterfaceOrNullArg(testCallbackInterfaceArg.release());
 }
 
@@ -5815,11 +5983,16 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, testEnumTypeArg, info[0]);
-    String string = testEnumTypeArg;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestObject", "parameter 1 ('" + string + "') is not a valid enum value."), info.GetIsolate());
-        return;
+    V8StringResource<> testEnumTypeArg;
+    {
+        v8::TryCatch block;
+        TOSTRING_VOID_INTERNAL_RETHROW(testEnumTypeArg, info[0], block);
+        String string = testEnumTypeArg;
+        if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestObject", "parameter 1 ('" + string + "') is not a valid enum value."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
     }
     impl->voidMethodTestEnumArg(testEnumTypeArg);
 }
@@ -5903,10 +6076,15 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Dictionary, dictionaryArg, Dictionary(info[0], info.GetIsolate()));
-    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
-        return;
+    Dictionary dictionaryArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[0], info.GetIsolate()));
+        if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
     }
     impl->voidMethodDictionaryArg(dictionaryArg);
 }
@@ -5926,7 +6104,10 @@ static void voidMethodEventListenerArgMethod(const v8::FunctionCallbackInfo<v8::
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    RefPtr<EventListener> eventListenerArg = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
+    RefPtr<EventListener> eventListenerArg;
+    {
+        eventListenerArg = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[1], false, ListenerFindOrCreate);
+    }
     impl->voidMethodEventListenerArg(eventListenerArg);
     if (listener && !impl->toNode())
         removeHiddenValueFromArray(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
@@ -5946,7 +6127,11 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(RefPtrWillBeRawPtr<NodeFilter>, nodeFilterArg, toNodeFilter(info[0], info.Holder(), info.GetIsolate()));
+    RefPtrWillBeRawPtr<NodeFilter> nodeFilterArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(nodeFilterArg, toNodeFilter(info[0], info.Holder(), info.GetIsolate()));
+    }
     impl->voidMethodNodeFilterArg(nodeFilterArg.release());
 }
 
@@ -5964,10 +6149,15 @@ static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptPromise, promiseArg, ScriptPromise(ScriptState::current(info.GetIsolate()), info[0]));
-    if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."), info.GetIsolate());
-        return;
+    ScriptPromise promiseArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(promiseArg, ScriptPromise(ScriptState::current(info.GetIsolate()), info[0]));
+        if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
     }
     impl->voidMethodPromiseArg(promiseArg);
 }
@@ -5987,9 +6177,12 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    RefPtr<SerializedScriptValue> serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
-    if (exceptionState.throwIfNeeded())
-        return;
+    RefPtr<SerializedScriptValue> serializedScriptValueArg;
+    {
+        serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
     impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
 
@@ -6007,7 +6200,11 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(RefPtrWillBeRawPtr<XPathNSResolver>, xPathNSResolverArg, toXPathNSResolver(info[0], info.GetIsolate()));
+    RefPtrWillBeRawPtr<XPathNSResolver> xPathNSResolverArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(xPathNSResolverArg, toXPathNSResolver(info[0], info.GetIsolate()));
+    }
     impl->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
 }
 
@@ -6025,7 +6222,11 @@ static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, dictionarySequenceArg, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    Vector<Dictionary> dictionarySequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(dictionarySequenceArg, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    }
     impl->voidMethodDictionarySequenceArg(dictionarySequenceArg);
 }
 
@@ -6044,8 +6245,13 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
+    V8StringResource<> stringArg;
+    int longArg;
+    {
+        v8::TryCatch block;
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
+    }
     impl->voidMethodStringArgLongArg(stringArg, longArg);
 }
 
@@ -6059,11 +6265,14 @@ static void voidMethodStringArgLongArgMethodCallback(const v8::FunctionCallbackI
 static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->voidMethodOptionalStringArg();
-        return;
+    V8StringResource<> optionalStringArg;
+    {
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->voidMethodOptionalStringArg();
+            return;
+        }
+        TOSTRING_VOID_INTERNAL(optionalStringArg, info[0]);
     }
-    TOSTRING_VOID(V8StringResource<>, optionalStringArg, info[0]);
     impl->voidMethodOptionalStringArg(optionalStringArg);
 }
 
@@ -6077,11 +6286,15 @@ static void voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallback
 static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->voidMethodOptionalTestInterfaceEmptyArg();
-        return;
+    TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->voidMethodOptionalTestInterfaceEmptyArg();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     }
-    TONATIVE_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
 
@@ -6096,11 +6309,15 @@ static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->voidMethodOptionalLongArg();
-        return;
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->voidMethodOptionalLongArg();
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     impl->voidMethodOptionalLongArg(optionalLongArg);
 }
 
@@ -6115,11 +6332,15 @@ static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8:
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
-        return;
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(), info.GetIsolate());
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValueString(info, impl->stringMethodOptionalLongArg(optionalLongArg), info.GetIsolate());
 }
 
@@ -6134,11 +6355,15 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "testInterfaceEmptyMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
-        return;
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg());
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValue(info, impl->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -6153,11 +6378,15 @@ static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::V
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "longMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
-        return;
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            v8SetReturnValueInt(info, impl->longMethodOptionalLongArg());
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValueInt(info, impl->longMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -6176,12 +6405,17 @@ static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInf
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    if (UNLIKELY(info.Length() <= 1)) {
-        impl->voidMethodLongArgOptionalLongArg(longArg);
-        return;
+    int longArg;
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        if (UNLIKELY(info.Length() <= 1)) {
+            impl->voidMethodLongArgOptionalLongArg(longArg);
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[1], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[1], exceptionState), exceptionState);
     impl->voidMethodLongArgOptionalLongArg(longArg, optionalLongArg);
 }
 
@@ -6200,17 +6434,23 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::Func
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    if (UNLIKELY(info.Length() <= 1)) {
-        impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
-        return;
+    int longArg;
+    int optionalLongArg1;
+    int optionalLongArg2;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        if (UNLIKELY(info.Length() <= 1)) {
+            impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg1, toInt32(info[1], exceptionState), exceptionState);
+        if (UNLIKELY(info.Length() <= 2)) {
+            impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg2, toInt32(info[2], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg1, toInt32(info[1], exceptionState), exceptionState);
-    if (UNLIKELY(info.Length() <= 2)) {
-        impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
-        return;
-    }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg2, toInt32(info[2], exceptionState), exceptionState);
     impl->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1, optionalLongArg2);
 }
 
@@ -6229,12 +6469,17 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    if (UNLIKELY(info.Length() <= 1)) {
-        impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
-        return;
+    int longArg;
+    TestInterfaceEmpty* optionalTestInterfaceEmpty;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        if (UNLIKELY(info.Length() <= 1)) {
+            impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     }
-    TONATIVE_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     impl->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
 
@@ -6253,12 +6498,17 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    if (UNLIKELY(info.Length() <= 1)) {
-        impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
-        return;
+    TestInterfaceEmpty* optionalTestInterfaceEmpty;
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmpty, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        if (UNLIKELY(info.Length() <= 1)) {
+            impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
     impl->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty, longArg);
 }
 
@@ -6272,10 +6522,15 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v
 static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
-    if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObject", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
-        return;
+    Dictionary optionalDictionaryArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
+        if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+            throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObject", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
     }
     impl->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
 }
@@ -6290,7 +6545,11 @@ static void voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCall
 static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<String>, variadicStringArgs, toNativeArguments<String>(info, 0));
+    Vector<String> variadicStringArgs;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(variadicStringArgs, toNativeArguments<String>(info, 0));
+    }
     impl->voidMethodVariadicStringArg(variadicStringArgs);
 }
 
@@ -6308,8 +6567,13 @@ static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbac
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    TONATIVE_VOID(Vector<String>, variadicStringArgs, toNativeArguments<String>(info, 1));
+    V8StringResource<> stringArg;
+    Vector<String> variadicStringArgs;
+    {
+        v8::TryCatch block;
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TONATIVE_VOID_INTERNAL(variadicStringArgs, toNativeArguments<String>(info, 1));
+    }
     impl->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
 }
 
@@ -6324,12 +6588,14 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
-    for (int i = 0; i < info.Length(); ++i) {
-        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-            throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-            return;
+    {
+        for (int i = 0; i < info.Length(); ++i) {
+            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+                throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                return;
+            }
+            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[i])));
         }
-        variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[i])));
     }
     impl->voidMethodVariadicTestInterfaceEmptyArg(variadicTestInterfaceEmptyArgs);
 }
@@ -6348,14 +6614,19 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
-    for (int i = 1; i < info.Length(); ++i) {
-        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
-            throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", "parameter 2 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-            return;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        for (int i = 1; i < info.Length(); ++i) {
+            if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
+                throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObject", "parameter 2 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+                block.ReThrow();
+                return;
+            }
+            variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[i])));
         }
-        variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[i])));
     }
     impl->voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(testInterfaceEmptyArg, variadicTestInterfaceEmptyArgs);
 }
@@ -6371,12 +6642,14 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::F
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected> > variadicTestInterfaceGarbageCollectedArg;
-    for (int i = 0; i < info.Length(); ++i) {
-        if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-            throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."), info.GetIsolate());
-            return;
+    {
+        for (int i = 0; i < info.Length(); ++i) {
+            if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
+                throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."), info.GetIsolate());
+                return;
+            }
+            variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[i])));
         }
-        variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[i])));
     }
     impl->voidMethodVariadicTestInterfaceGarbageCollectedArg(variadicTestInterfaceGarbageCollectedArg);
 }
@@ -6392,12 +6665,14 @@ static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(const
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > variadicTestInterfaceWillBeGarbageCollectedArg;
-    for (int i = 0; i < info.Length(); ++i) {
-        if (!V8TestInterfaceWillBeGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-            throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'."), info.GetIsolate());
-            return;
+    {
+        for (int i = 0; i < info.Length(); ++i) {
+            if (!V8TestInterfaceWillBeGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
+                throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObject", "parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'."), info.GetIsolate());
+                return;
+            }
+            variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[i])));
         }
-        variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toNative(v8::Handle<v8::Object>::Cast(info[i])));
     }
     impl->voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(variadicTestInterfaceWillBeGarbageCollectedArg);
 }
@@ -6413,7 +6688,11 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodA(longArg);
 }
 
@@ -6421,8 +6700,13 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
+    int longArg1;
+    int longArg2;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg1, toInt32(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg2, toInt32(info[1], exceptionState), exceptionState);
+    }
     impl->overloadedMethodA(longArg1, longArg2);
 }
 
@@ -6463,7 +6747,11 @@ static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodB(longArg);
 }
 
@@ -6471,12 +6759,17 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    if (UNLIKELY(info.Length() <= 1)) {
-        impl->overloadedMethodB(stringArg);
-        return;
+    V8StringResource<> stringArg;
+    int longArg;
+    {
+        v8::TryCatch block;
+        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        if (UNLIKELY(info.Length() <= 1)) {
+            impl->overloadedMethodB(stringArg);
+            return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
     impl->overloadedMethodB(stringArg, longArg);
 }
 
@@ -6521,14 +6814,22 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodC(longArg);
 }
 
 static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->overloadedMethodC(testInterfaceEmptyArg);
 }
 
@@ -6567,14 +6868,22 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodD(longArg);
 }
 
 static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<int>, longArrayArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    Vector<int> longArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(longArrayArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    }
     impl->overloadedMethodD(longArrayArg);
 }
 
@@ -6613,14 +6922,22 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodE(longArg);
 }
 
 static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->overloadedMethodE(testInterfaceEmptyOrNullArg);
 }
 
@@ -6662,18 +6979,25 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->overloadedMethodF();
-        return;
+    V8StringResource<> stringArg;
+    {
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->overloadedMethodF();
+            return;
+        }
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
     }
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
     impl->overloadedMethodF(stringArg);
 }
 
 static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    double doubleArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+    }
     impl->overloadedMethodF(doubleArg);
 }
 
@@ -6722,14 +7046,22 @@ static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedMethodG(longArg);
 }
 
 static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->overloadedMethodG(testInterfaceEmptyOrNullArg);
 }
 
@@ -6771,14 +7103,22 @@ static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceImplementation*, testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceImplementation* testInterfaceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->overloadedMethodH(testInterfaceArg);
 }
 
 static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->overloadedMethodH(testInterfaceEmptyArg);
 }
 
@@ -6816,14 +7156,21 @@ static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    V8StringResource<> stringArg;
+    {
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+    }
     impl->overloadedMethodI(stringArg);
 }
 
 static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    double doubleArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
+    }
     impl->overloadedMethodI(doubleArg);
 }
 
@@ -6874,7 +7221,11 @@ static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedPerWorldBindingsMethod(longArg);
 }
 
@@ -6915,7 +7266,11 @@ static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->overloadedPerWorldBindingsMethod(longArg);
 }
 
@@ -6955,15 +7310,24 @@ static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8:
 static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     TestObject::overloadedStaticMethod(longArg);
 }
 
 static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
+    int longArg1;
+    int longArg2;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg1, toInt32(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg2, toInt32(info[1], exceptionState), exceptionState);
+    }
     TestObject::overloadedStaticMethod(longArg1, longArg2);
 }
 
@@ -7009,9 +7373,13 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     unsigned clampUnsignedShortArg = 0;
-    TONATIVE_VOID(double, clampUnsignedShortArgNativeValue, info[0]->NumberValue());
-    if (!std::isnan(clampUnsignedShortArgNativeValue))
-        clampUnsignedShortArg = clampTo<unsigned short>(clampUnsignedShortArgNativeValue);
+    {
+        v8::TryCatch block;
+        double clampUnsignedShortArgNativeValue;
+        TONATIVE_VOID_INTERNAL(clampUnsignedShortArgNativeValue, info[0]->NumberValue());
+        if (!std::isnan(clampUnsignedShortArgNativeValue))
+            clampUnsignedShortArg = clampTo<unsigned short>(clampUnsignedShortArgNativeValue);
+    }
     impl->voidMethodClampUnsignedShortArg(clampUnsignedShortArg);
 }
 
@@ -7031,9 +7399,13 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     unsigned clampUnsignedLongArg = 0;
-    TONATIVE_VOID(double, clampUnsignedLongArgNativeValue, info[0]->NumberValue());
-    if (!std::isnan(clampUnsignedLongArgNativeValue))
-        clampUnsignedLongArg = clampTo<unsigned long>(clampUnsignedLongArgNativeValue);
+    {
+        v8::TryCatch block;
+        double clampUnsignedLongArgNativeValue;
+        TONATIVE_VOID_INTERNAL(clampUnsignedLongArgNativeValue, info[0]->NumberValue());
+        if (!std::isnan(clampUnsignedLongArgNativeValue))
+            clampUnsignedLongArg = clampTo<unsigned long>(clampUnsignedLongArgNativeValue);
+    }
     impl->voidMethodClampUnsignedLongArg(clampUnsignedLongArg);
 }
 
@@ -7047,7 +7419,11 @@ static void voidMethodClampUnsignedLongArgMethodCallback(const v8::FunctionCallb
 static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* defaultUndefinedTestInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
 
@@ -7062,7 +7438,11 @@ static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackIn
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultUndefinedLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, defaultUndefinedLongArg, toInt32(info[0], exceptionState), exceptionState);
+    int defaultUndefinedLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedLongArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->voidMethodDefaultUndefinedLongArg(defaultUndefinedLongArg);
 }
 
@@ -7076,7 +7456,10 @@ static void voidMethodDefaultUndefinedLongArgMethodCallback(const v8::FunctionCa
 static void voidMethodDefaultUndefinedStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, defaultUndefinedStringArg, info[0]);
+    V8StringResource<> defaultUndefinedStringArg;
+    {
+        TOSTRING_VOID_INTERNAL(defaultUndefinedStringArg, info[0]);
+    }
     impl->voidMethodDefaultUndefinedStringArg(defaultUndefinedStringArg);
 }
 
@@ -7090,7 +7473,10 @@ static void voidMethodDefaultUndefinedStringArgMethodCallback(const v8::Function
 static void voidMethodDefaultNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, defaultNullStringStringArg, argumentOrNull(info, 0));
+    V8StringResource<> defaultNullStringStringArg;
+    {
+        TOSTRING_VOID_INTERNAL(defaultNullStringStringArg, argumentOrNull(info, 0));
+    }
     impl->voidMethodDefaultNullStringStringArg(defaultNullStringStringArg);
 }
 
@@ -7109,7 +7495,11 @@ static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, enforceRangeLongArg, toInt32(info[0], EnforceRange, exceptionState), exceptionState);
+    int enforceRangeLongArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(enforceRangeLongArg, toInt32(info[0], EnforceRange, exceptionState), exceptionState);
+    }
     impl->voidMethodEnforceRangeLongArg(enforceRangeLongArg);
 }
 
@@ -7127,7 +7517,10 @@ static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCal
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<WithNullCheck>, treatNullAsNullStringStringArg, info[0]);
+    V8StringResource<WithNullCheck> treatNullAsNullStringStringArg;
+    {
+        TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
+    }
     impl->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
 
@@ -7145,7 +7538,10 @@ static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMe
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, treatNullAsNullStringStringArg, info[0]);
+    V8StringResource<WithUndefinedOrNullCheck> treatNullAsNullStringStringArg;
+    {
+        TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
+    }
     impl->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
 
@@ -7250,13 +7646,17 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8:
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        ScriptState* state = ScriptState::current(info.GetIsolate());
-        RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-        impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
-        return;
+    bool optionalBooleanArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            ScriptState* state = ScriptState::current(info.GetIsolate());
+            RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(optionalBooleanArg, info[0]->BooleanValue());
     }
-    TONATIVE_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
     ScriptState* state = ScriptState::current(info.GetIsolate());
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
@@ -7457,7 +7857,11 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->DeprecateAsOverloadedMethod(arg);
 }
 
@@ -7506,7 +7910,11 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->DeprecateAsSameValueOverloadedMethod(arg);
 }
 
@@ -7554,7 +7962,11 @@ static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->measureAsOverloadedMethod(arg);
 }
 
@@ -7603,7 +8015,11 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->measureAsSameValueOverloadedMethod(arg);
 }
 
@@ -7651,7 +8067,11 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
 }
 
@@ -7701,7 +8121,11 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
 }
 
@@ -7751,7 +8175,11 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
+    int arg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState);
+    }
     impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
 }
 
@@ -7849,7 +8277,11 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -7867,7 +8299,11 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -7982,13 +8418,17 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalLongArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
-        if (exceptionState.throwIfNeeded())
+    int optionalLongArg;
+    {
+        v8::TryCatch block;
+        if (UNLIKELY(info.Length() <= 0)) {
+            impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
+            if (exceptionState.throwIfNeeded())
+                return;
             return;
-        return;
+        }
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     impl->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -8009,12 +8449,15 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-        exceptionState.throwIfNeeded();
-        return;
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    {
+        if (info.Length() <= 0 || !info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -8032,13 +8475,15 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     OwnPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg;
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
-        if (!info[0]->IsFunction()) {
-            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
-            exceptionState.throwIfNeeded();
-            return;
+    {
+        if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
+            if (!info[0]->IsFunction()) {
+                exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+                exceptionState.throwIfNeeded();
+                return;
+            }
+            optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -8077,7 +8522,11 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    int longArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(scriptContext, longArg, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -8189,11 +8638,16 @@ static void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethod(const v8:
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
-        throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-        return;
+    TestInterfaceEmpty* testInterfaceEmptyArg;
+    {
+        v8::TryCatch block;
+        if (info.Length() > 0 && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     }
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -8211,7 +8665,11 @@ static void typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArgMethod(cons
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->typeCheckingNullableVoidMethodTestInterfaceEmptyOrNullArg(testInterfaceEmptyOrNullArg);
 }
 
@@ -8229,11 +8687,16 @@ static void typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArgMe
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
-        throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
-        return;
+    TestInterfaceEmpty* testInterfaceEmptyOrNullArg;
+    {
+        v8::TryCatch block;
+        if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            throwTypeError(ExceptionMessages::failedToExecute("typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     }
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->typeCheckingInterfaceNullableVoidMethodTestInterfaceEmptyOrNullArg(testInterfaceEmptyOrNullArg);
 }
 
@@ -8251,15 +8714,22 @@ static void typeCheckingUnrestrictedVoidMethodFloatArgDoubleArgMethod(const v8::
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
-    if (!std::isfinite(floatArg)) {
-        throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "float parameter 1 is non-finite."), info.GetIsolate());
-        return;
-    }
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[1]->NumberValue()));
-    if (!std::isfinite(doubleArg)) {
-        throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "double parameter 2 is non-finite."), info.GetIsolate());
-        return;
+    float floatArg;
+    double doubleArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
+        if (!std::isfinite(floatArg)) {
+            throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "float parameter 1 is non-finite."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[1]->NumberValue()));
+        if (!std::isfinite(doubleArg)) {
+            throwTypeError(ExceptionMessages::failedToExecute("typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg", "TestObject", "double parameter 2 is non-finite."), info.GetIsolate());
+            block.ReThrow();
+            return;
+        }
     }
     impl->typeCheckingUnrestrictedVoidMethodFloatArgDoubleArg(floatArg, doubleArg);
 }
@@ -8291,7 +8761,11 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(HeapVector<Member<TestInterfaceGarbageCollected> >, testInterfaceGarbageCollectedSequenceArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+    HeapVector<Member<TestInterfaceGarbageCollected> > testInterfaceGarbageCollectedSequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceGarbageCollectedSequenceArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodTestInterfaceGarbageCollectedSequenceArg(testInterfaceGarbageCollectedSequenceArg);
 }
 
@@ -8309,7 +8783,11 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(HeapVector<Member<TestInterfaceGarbageCollected> >, testInterfaceGarbageCollectedArrayArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+    HeapVector<Member<TestInterfaceGarbageCollected> > testInterfaceGarbageCollectedArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceGarbageCollectedArrayArg, (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodTestInterfaceGarbageCollectedArrayArg(testInterfaceGarbageCollectedArrayArg);
 }
 
@@ -8327,7 +8805,11 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethod(const
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedSequenceArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > testInterfaceWillBeGarbageCollectedSequenceArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceWillBeGarbageCollectedSequenceArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(testInterfaceWillBeGarbageCollectedSequenceArg);
 }
 
@@ -8345,7 +8827,11 @@ static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethod(const v8
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> >, testInterfaceWillBeGarbageCollectedArrayArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> > testInterfaceWillBeGarbageCollectedArrayArg;
+    {
+        v8::TryCatch block;
+        TONATIVE_VOID_INTERNAL(testInterfaceWillBeGarbageCollectedArrayArg, (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate())));
+    }
     impl->voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(testInterfaceWillBeGarbageCollectedArrayArg);
 }
 
