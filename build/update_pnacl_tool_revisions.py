@@ -102,12 +102,8 @@ def GetCurrentRevision():
 
 def SetCurrentRevision(revision_num):
   for package in PKGS:
-    ExecCommand([sys.executable, PKG_VER] +
-                # TODO(dschuff) pnacl_newlib shouldn't use cloud-bucket
-                #               once we switch fully to toolchain_build.
-                (['--cloud-bucket', 'nativeclient-archive2/pnacl_buildsh'] if
-                 package == 'pnacl_newlib' else []) +
-                ['setrevision',
+    ExecCommand([sys.executable, PKG_VER,
+                 'setrevision',
                  '--revision-package', package,
                  '--revision', str(revision_num)])
 
