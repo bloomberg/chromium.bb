@@ -208,6 +208,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   typedef std::map<webrtc::MediaStreamInterface*,
       content::RemoteMediaStreamImpl*> RemoteStreamMap;
   RemoteStreamMap remote_streams_;
+  scoped_refptr<webrtc::UMAObserver> uma_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };

@@ -31216,6 +31216,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.IPMetrics" enum="PeerConnectionCounters">
+  <owner>mallinath@chromium.org</owner>
+  <summary>
+    Counters on IPv4 and IPv6 usage in PeerConnection. These values are logged
+    once per PeerConnection.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.IPv4Interfaces">
+  <owner>mallinath@chromium.org</owner>
+  <summary>
+    Number of IPv4 network interfaces discovered in a PeerConnection Session.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.IPv6Interfaces">
+  <owner>mallinath@chromium.org</owner>
+  <summary>
+    Number of IPv6 network interfaces discovered in a PeerConnection Session.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.TimeToConnect" units="milliseconds">
+  <owner>mallinath@chromium.org</owner>
+  <summary>Time to setup a peer to peer call with PeerConnection.</summary>
+</histogram>
+
 <histogram name="WebRTC.ReceivedAudioTrackDuration" units="milliseconds">
   <owner>perkj@chromium.org</owner>
   <summary>
@@ -39897,6 +39924,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Clicked 'Manage passwords'"/>
   <int value="5" label="Clicked 'Done'"/>
   <int value="6" label="Clicked 'Enable password manager'"/>
+</enum>
+
+<enum name="PeerConnectionCounters" type="int">
+  <int value="0" label="PeerConnection enabled with IPv4."/>
+  <int value="1" label="PeerConnection enabled with Ipv6."/>
+  <int value="2" label="IPv4 BestConnection."/>
+  <int value="3" label="IPv6 BestConnection."/>
 </enum>
 
 <enum name="PepperInterface" type="int">

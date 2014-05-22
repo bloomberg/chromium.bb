@@ -316,6 +316,40 @@ void LocalRTCStatsResponse::addStatistic(size_t report,
   impl_.addStatistic(report, name, value);
 }
 
+class PeerConnectionUMAObserver : public webrtc::UMAObserver {
+ public:
+  PeerConnectionUMAObserver() {}
+  virtual ~PeerConnectionUMAObserver() {}
+
+  virtual void IncrementCounter(
+      webrtc::PeerConnectionUMAMetricsCounter counter) OVERRIDE {
+    UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics",
+                              counter,
+                              webrtc::kBoundary);
+  }
+
+  virtual void AddHistogramSample(
+      webrtc::PeerConnectionUMAMetricsName type, int value) OVERRIDE {
+    switch (type) {
+      case webrtc::kTimeToConnect:
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WebRTC.PeerConnection.TimeToConnect",
+            base::TimeDelta::FromMilliseconds(value));
+        break;
+      case webrtc::kNetworkInterfaces_IPv4:
+        UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
+                                 value);
+        break;
+      case webrtc::kNetworkInterfaces_IPv6:
+        UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
+                                 value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+};
+
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory)
@@ -364,6 +398,8 @@ bool RTCPeerConnectionHandler::initialize(
     peer_connection_tracker_->RegisterPeerConnection(
         this, servers, constraints, frame_);
 
+  uma_observer_ = new talk_base::RefCountedObject<PeerConnectionUMAObserver>();
+  native_peer_connection_->RegisterUMAObserver(uma_observer_.get());
   return true;
 }
 
