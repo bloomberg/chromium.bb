@@ -299,6 +299,9 @@ below:
       <message name="IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD" desc="Text for denoting day of month field position in date format. Short text is prefered. See http://crbug.com/152632 for samples.">
         yyyy
       </message>
+      <message name="IDS_FORM_SELECT_MENU_LIST_TEXT" desc="Text for the menu list rendering of a select element.">
+        <ph name="SELECTED_COUNT">$1<ex>3</ex></ph> selected
+      </message>
       <message name="IDS_FORM_THIS_MONTH_LABEL" desc="Label for button in month picker to select this month.">
         This month
       </message>

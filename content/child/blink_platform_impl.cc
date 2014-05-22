@@ -315,6 +315,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_RECENT_SEARCHES_NONE;
     case WebLocalizedString::SearchMenuRecentSearchesText:
       return IDS_RECENT_SEARCHES;
+    case WebLocalizedString::SelectMenuListText:
+      return IDS_FORM_SELECT_MENU_LIST_TEXT;
     case WebLocalizedString::SubmitButtonDefaultLabel:
       return IDS_FORM_SUBMIT_LABEL;
     case WebLocalizedString::ThisMonthButtonLabel:
