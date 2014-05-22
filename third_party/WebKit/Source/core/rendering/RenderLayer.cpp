@@ -1908,7 +1908,8 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
         } else if (!compositedLayerMapping()->paintsIntoCompositedAncestor()
             && !shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection)
             && !paintForFixedRootBackground(this, paintFlags)) {
-            // If this RenderLayer should paint into its own backing, that will be done via CompositedLayerMapping::paintIntoLayer().
+            // If this RenderLayer should paint into its own backing, that will be done via CompositedLayerMapping::paintContents()
+            // and CompositedLayerMapping::doPaintTask().
             return;
         }
     } else if (viewportConstrainedNotCompositedReason() == NotCompositedForBoundsOutOfView) {
