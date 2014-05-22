@@ -204,7 +204,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     bool isVertical = false;
     if (element().renderer()) {
         ControlPart part = element().renderer()->style()->appearance();
-        isVertical = part == SliderVerticalPart || part == MediaVolumeSliderPart;
+        isVertical = part == SliderVerticalPart;
     }
 
     Decimal newValue;

@@ -21,13 +21,18 @@ function mediaControlsElement(first, id)
     return null;
 }
 
-function mediaControlsButtonCoordinates(element, id)
+function mediaControlsButton(element, id)
 {
     var controlID = "-webkit-media-controls-" + id;
     var button = mediaControlsElement(internals.shadowRoot(element).firstChild, controlID);
     if (!button)
         throw "Failed to find media control element ID '" + id + "'";
+    return button;
+}
 
+function mediaControlsButtonCoordinates(element, id)
+{
+    var button = mediaControlsButton(element, id);
     var buttonBoundingRect = button.getBoundingClientRect();
     var x = buttonBoundingRect.left + buttonBoundingRect.width / 2;
     var y = buttonBoundingRect.top + buttonBoundingRect.height / 2;
@@ -36,11 +41,7 @@ function mediaControlsButtonCoordinates(element, id)
 
 function mediaControlsButtonDimensions(element, id)
 {
-    var controlID = "-webkit-media-controls-" + id;
-    var button = mediaControlsElement(internals.shadowRoot(element).firstChild, controlID);
-    if (!button)
-        throw "Failed to find media control element ID '" + id + "'";
-
+    var button = mediaControlsButton(element, id);
     var buttonBoundingRect = button.getBoundingClientRect();
     return new Array(buttonBoundingRect.width, buttonBoundingRect.height);
 }
