@@ -692,7 +692,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position) {
   uint8* frame_data =
       const_cast<uint8*>(test_stream_.input_file.data() + position);
 
-  CHECK_GT(current_framerate_, 0);
+  CHECK_GT(current_framerate_, 0U);
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalYuvData(
           kInputFormat,
