@@ -41,7 +41,7 @@ class TrybotPatchPool(object):
     self.remote_patches = tuple(remote_patches)
 
   def __nonzero__(self):
-    """Returns True if the pool has no patches."""
+    """Returns True if the pool has any patches."""
     return any([self.gerrit_patches, self.local_patches, self.remote_patches])
 
   def Filter(self, **kwargs):
