@@ -33,9 +33,13 @@ def main ():
     parser.error('all arguments are required.')
   (v8_shell, mock_js, axs_testing_js, test_api, js2webui, test_type,
       inputfile, inputrelfile, cxxoutfile, jsoutfile) = args
+  cmd = [v8_shell]
+  icudatafile = os.path.join(os.path.dirname(v8_shell), 'icudtl.dat')
+  if os.path.exists(icudatafile):
+    cmd.extend(['--icu-data-file=%s' % icudatafile])
   arguments = [js2webui, inputfile, inputrelfile, cxxoutfile, test_type]
-  cmd = [v8_shell, '-e', "arguments=" + json.dumps(arguments), mock_js,
-         axs_testing_js, test_api, js2webui]
+  cmd.extend(['-e', "arguments=" + json.dumps(arguments), mock_js,
+         axs_testing_js, test_api, js2webui])
   if opts.verbose or opts.impotent:
     print cmd
   if not opts.impotent:
