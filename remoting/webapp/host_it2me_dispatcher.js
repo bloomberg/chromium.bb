@@ -56,6 +56,8 @@ remoting.HostIt2MeDispatcher.prototype.initialize =
 
   function onNativeMessagingStarted() {
     console.log('Native Messaging supported.');
+
+    that.npapiHost_ = null;
     onDispatcherInitialized();
   }
 
@@ -87,6 +89,20 @@ remoting.HostIt2MeDispatcher.prototype.onNativeMessagingError_ =
     function(error) {
   this.nativeMessagingHost_ = null;
   this.onErrorHandler_(error);
+}
+
+/**
+ * @return {boolean}
+ */
+remoting.HostIt2MeDispatcher.prototype.usingNpapi = function() {
+  return this.npapiHost_ != null;
+}
+
+/**
+ * @return {remoting.HostPlugin}
+ */
+remoting.HostIt2MeDispatcher.prototype.getNpapiHost = function() {
+  return this.npapiHost_;
 }
 
 /**

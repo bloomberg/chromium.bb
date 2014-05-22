@@ -12,6 +12,13 @@ remoting.HostController = function() {
   this.hostDispatcher_ = this.createDispatcher_();
 };
 
+/**
+ * @return {remoting.HostDispatcher}
+ */
+remoting.HostController.prototype.getDispatcher = function() {
+  return this.hostDispatcher_;
+};
+
 // Note that the values in the enums below are copied from
 // daemon_controller.h and must be kept in sync.
 /** @enum {number} */

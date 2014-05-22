@@ -49,8 +49,7 @@ remoting.HostInstallDialog.hostDownloadUrls = {
 /**
  * Starts downloading host components and shows installation prompt.
  *
- * @param {remoting.HostController} hostController Used to install the host on
- *     Windows.
+ * @param {remoting.HostPlugin} hostPlugin Used to install the host on Windows.
  * @param {function(remoting.HostController.AsyncResult):void} onDone Callback
  *     called when user clicks Ok, presumably after installing the host. The
  *     handler must verify that the host has been installed and call tryAgain()
@@ -60,14 +59,24 @@ remoting.HostInstallDialog.hostDownloadUrls = {
  * @return {void}
  */
 remoting.HostInstallDialog.prototype.show = function(
-    hostController, onDone, onError) {
+    hostPlugin, onDone, onError) {
   // On Windows, host installation is automatic (handled by the NPAPI plugin)
   // and we don't show the dialog. On Mac and Linux, we show the dialog and the
   // user is expected to manually install the host before clicking OK.
   // TODO (weitaosu): Make host installation automatic for IT2Me (like Me2Me) on
   // Windows. Currently hostController is always null for IT2Me.
-  if (navigator.platform == 'Win32' && hostController != null) {
-    hostController.installHost(onDone, onError);
+  if (navigator.platform == 'Win32' && hostPlugin != null) {
+    // Currently we show two dialogs (each with a UAC prompt) when a user
+    // enables the host for the first time, one for installing the host (by the
+    // plugin) and the other for starting the host (by the native messaging
+    // host). We'd like to reduce it to one but don't have a good solution
+    // right now.
+    // We also show the same message on the two dialogs because. We don't want
+    // to confuse the user by saying "Installing Remote Desktop" because in
+    // their mind "Remote Desktop" (the webapp) has already been installed.
+    remoting.showSetupProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
+
+    hostPlugin.installHost(onDone);
   } else {
     this.continueInstallButton_.addEventListener(
         'click', this.onOkClickedHandler_, false);

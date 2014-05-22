@@ -276,3 +276,12 @@ function confineOrRestoreFocus_(mutations) {
     }
   }
 }
+
+/**
+ * @param {string} tag
+ */
+remoting.showSetupProcessingMessage = function(tag) {
+  var messageDiv = document.getElementById('host-setup-processing-message');
+  l10n.localizeElementFromTag(messageDiv, tag);
+  remoting.setMode(remoting.AppMode.HOST_SETUP_PROCESSING);
+}

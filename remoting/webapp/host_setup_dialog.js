@@ -273,16 +273,6 @@ remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {
 };
 
 /**
- * @param {string} tag
- * @private
- */
-remoting.HostSetupDialog.prototype.showProcessingMessage_ = function(tag) {
-  var messageDiv = document.getElementById('host-setup-processing-message');
-  l10n.localizeElementFromTag(messageDiv, tag);
-  remoting.setMode(remoting.AppMode.HOST_SETUP_PROCESSING);
-}
-
-/**
  * Updates current UI mode according to the current state of the setup
  * flow and start the action corresponding to the current step (if
  * any).
@@ -319,13 +309,14 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
   } else if (state == remoting.HostSetupFlow.State.INSTALL_HOST) {
     this.installHost_();
   } else if (state == remoting.HostSetupFlow.State.STARTING_HOST) {
-    this.showProcessingMessage_(/*i18n-content*/'HOST_SETUP_STARTING');
+    remoting.showSetupProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
     this.startHost_();
   } else if (state == remoting.HostSetupFlow.State.UPDATING_PIN) {
-    this.showProcessingMessage_(/*i18n-content*/'HOST_SETUP_UPDATING_PIN');
+    remoting.showSetupProcessingMessage(
+        /*i18n-content*/'HOST_SETUP_UPDATING_PIN');
     this.updatePin_();
   } else if (state == remoting.HostSetupFlow.State.STOPPING_HOST) {
-    this.showProcessingMessage_(/*i18n-content*/'HOST_SETUP_STOPPING');
+    remoting.showSetupProcessingMessage(/*i18n-content*/'HOST_SETUP_STOPPING');
     this.stopHost_();
   } else if (state == remoting.HostSetupFlow.State.HOST_STARTED) {
     // TODO(jamiewalch): Only display the second string if the computer's power
@@ -396,21 +387,10 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
     }
   };
 
-  if (navigator.platform == 'Win32') {
-    // Currently we show two dialogs (each with a UAC prompt) when a user
-    // enables the host for the first time, one for installing the host (by the
-    // plugin) and the other for starting the host (by the native messaging
-    // host). We'd like to reduce it to one but don't have a good solution
-    // right now.
-    // We also show the same message on the two dialogs because. We don't want
-    // to confuse the user by saying "Installing Remote Desktop" because in
-    // their mind "Remote Deskto" (the webapp) has already been installed.
-    that.showProcessingMessage_(/*i18n-content*/'HOST_SETUP_STARTING');
-  }
-
   /** @type {remoting.HostInstallDialog} */
   var hostInstallDialog = new remoting.HostInstallDialog();
-  hostInstallDialog.show(this.hostController_, onDone, onError);
+  hostInstallDialog.show(
+      this.hostController_.getDispatcher().getNpapiHost(), onDone, onError);
 }
 
 /**

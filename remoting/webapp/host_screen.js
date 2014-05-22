@@ -38,15 +38,37 @@ remoting.tryShare = function() {
                               onDispatcherInitializationFailed);
   }
 
- /** @return {remoting.HostPlugin} */
+  /** @return {remoting.HostPlugin} */
   var createPluginForIt2Me = function() {
     return remoting.createNpapiPlugin(
         document.getElementById('host-plugin-container'));
   }
 
+  /** @param {remoting.HostController.AsyncResult} asyncResult */
+  var onHostInstalled = function(asyncResult) {
+    if (asyncResult == remoting.HostController.AsyncResult.OK) {
+      tryInitializeDispatcher();
+    } else if (asyncResult == remoting.HostController.AsyncResult.CANCELLED) {
+      onInstallError(remoting.Error.CANCELLED);
+    } else {
+      onInstallError(remoting.Error.UNEXPECTED);
+    }
+  };
+
   var onDispatcherInitialized = function () {
-    remoting.startHostUsingDispatcher_(hostDispatcher);
-  }
+    if (hostDispatcher.usingNpapi()) {
+      hostInstallDialog = new remoting.HostInstallDialog();
+      if (navigator.platform == 'Win32') {
+        hostInstallDialog.show(
+            hostDispatcher.getNpapiHost(), onHostInstalled, onInstallError);
+      } else {
+        hostInstallDialog.show(null, onHostInstalled, onInstallError);
+      }
+    } else {
+      // Host alrady installed.
+      remoting.startHostUsingDispatcher_(hostDispatcher);
+    }
+  };
 
   /** @param {remoting.Error} error */
   var onDispatcherInitializationFailed = function(error) {
@@ -55,29 +77,20 @@ remoting.tryShare = function() {
       return;
     }
 
-    // If we failed to initialize dispatcher then prompt the user to install the
-    // host.
+    // If we failed to initialize the dispatcher then prompt the user to install
+    // the host manually.
     if (hostInstallDialog == null) {
-      var onDone = function(asyncResult) {
-        // TODO (weitaosu): Ignore asyncResult for now because it is not set
-        // during manual host installation. We should fix it after switching
-        // to automatic host installation on Windows.
-        tryInitializeDispatcher();
-      };
-
       hostInstallDialog = new remoting.HostInstallDialog();
 
       (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).show(
-          null,
-          onDone,
-          onInstallPromptError);
+          null, onHostInstalled, onInstallError);
     } else {
       (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).tryAgain();
     }
-  }
+  };
 
   /** @param {remoting.Error} error */
-  var onInstallPromptError = function(error) {
+  var onInstallError = function(error) {
     if (error == remoting.Error.CANCELLED) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
