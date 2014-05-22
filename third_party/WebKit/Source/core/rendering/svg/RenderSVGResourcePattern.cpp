@@ -90,14 +90,13 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsign
     // Ignore 2D rotation, as it doesn't affect the size of the tile.
     SVGRenderingContext::clear2DRotation(absoluteTransformIgnoringRotation);
     FloatRect absoluteTileBoundaries = absoluteTransformIgnoringRotation.mapRect(tileBoundaries);
-    FloatRect clampedAbsoluteTileBoundaries;
 
     // Scale the tile size to match the scale level of the patternTransform.
     absoluteTileBoundaries.scale(static_cast<float>(m_attributes.patternTransform().xScale()),
         static_cast<float>(m_attributes.patternTransform().yScale()));
 
     // Build tile image.
-    OwnPtr<ImageBuffer> tileImage = createTileImage(m_attributes, tileBoundaries, absoluteTileBoundaries, tileImageTransform, clampedAbsoluteTileBoundaries);
+    OwnPtr<ImageBuffer> tileImage = createTileImage(m_attributes, tileBoundaries, absoluteTileBoundaries, tileImageTransform);
     if (!tileImage)
         return 0;
 
@@ -229,10 +228,9 @@ bool RenderSVGResourcePattern::buildTileImageTransform(RenderObject* renderer,
 PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternAttributes& attributes,
                                                                   const FloatRect& tileBoundaries,
                                                                   const FloatRect& absoluteTileBoundaries,
-                                                                  const AffineTransform& tileImageTransform,
-                                                                  FloatRect& clampedAbsoluteTileBoundaries) const
+                                                                  const AffineTransform& tileImageTransform) const
 {
-    clampedAbsoluteTileBoundaries = SVGRenderingContext::clampedAbsoluteTargetRect(absoluteTileBoundaries);
+    FloatRect clampedAbsoluteTileBoundaries = SVGRenderingContext::clampedAbsoluteTargetRect(absoluteTileBoundaries);
 
     IntSize imageSize(roundedIntSize(clampedAbsoluteTileBoundaries.size()));
     if (imageSize.isEmpty())
