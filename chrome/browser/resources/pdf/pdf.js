@@ -25,6 +25,12 @@ function getScrollbarWidth() {
 }
 
 /**
+ * The minimum number of pixels to offset the toolbar by from the bottom and
+ * right side of the screen.
+ */
+PDFViewer.MIN_TOOLBAR_OFFSET = 15;
+
+/**
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
  */
@@ -325,8 +331,12 @@ PDFViewer.prototype = {
     var hasScrollbars = this.viewport_.documentHasScrollbars();
     var scrollbarWidth = this.viewport_.scrollbarWidth;
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
-    var toolbarRight = hasScrollbars.vertical ? 0 : scrollbarWidth;
-    var toolbarBottom = hasScrollbars.horizontal ? 0 : scrollbarWidth;
+    var toolbarRight = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
+    var toolbarBottom = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
+    if (hasScrollbars.vertical)
+      toolbarRight -= scrollbarWidth;
+    if (hasScrollbars.horizontal)
+      toolbarBottom -= scrollbarWidth;
     this.toolbar_.style.right = toolbarRight + 'px';
     this.toolbar_.style.bottom = toolbarBottom + 'px';
 
