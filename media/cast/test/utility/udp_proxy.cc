@@ -477,7 +477,8 @@ class UDPProxyImpl : public UDPProxy {
                                     &tick_clock_);
 
     VLOG(0) << "From:" << local_port_.ToString();
-    VLOG(0) << "To:" << destination_.ToString();
+    if (!destination_is_mutable_)
+      VLOG(0) << "To:" << destination_.ToString();
 
     CHECK_GE(socket_->Bind(local_port_), 0);
 
