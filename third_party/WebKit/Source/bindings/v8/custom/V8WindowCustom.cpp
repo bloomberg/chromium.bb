@@ -157,12 +157,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
         return;
     }
 
-    ASSERT(frame);
-    v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame, DOMWrapperWorld::current(info.GetIsolate()));
-    if (context.IsEmpty())
-        return;
-
-    v8::Handle<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()));
+    v8::Handle<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder()->CreationContext()->Global(), V8HiddenValue::event(info.GetIsolate()));
     if (jsEvent.IsEmpty())
         return;
     v8SetReturnValue(info, jsEvent);
@@ -177,12 +172,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
         return;
     }
 
-    ASSERT(frame);
-    v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame, DOMWrapperWorld::current(info.GetIsolate()));
-    if (context.IsEmpty())
-        return;
-
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()), value);
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder()->CreationContext()->Global(), V8HiddenValue::event(info.GetIsolate()), value);
 }
 
 void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
