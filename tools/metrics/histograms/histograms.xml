@@ -2726,6 +2726,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cras.StreamTimeoutMilliSeconds" units="milliseconds">
+  <owner>hychao@chromium.org</owner>
+  <summary>
+    The longest additional time CRAS(Chrome OS audio server) ever waits for a
+    stream exceeding the timeout threshold. This value is recorded per stream
+    when it gets removed and used to investigate the audio glitch/skip problem
+    on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Cros.ClickOnShelf" enum="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
