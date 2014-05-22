@@ -514,15 +514,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     """Parses the DEPS file for this dependency."""
     assert not self.deps_parsed
     assert not self.dependencies
-    # One thing is unintuitive, vars = {} must happen before Var() use.
-    local_scope = {}
-    var = self.VarImpl(self.custom_vars, local_scope)
-    global_scope = {
-      'File': self.FileImpl,
-      'From': self.FromImpl,
-      'Var': var.Lookup,
-      'deps_os': {},
-    }
+
+    deps_content = None
+    use_strict = False
     filepath = os.path.join(self.root.root_dir, self.name, self.deps_file)
     if not os.path.isfile(filepath):
       logging.info(
@@ -531,11 +525,39 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     else:
       deps_content = gclient_utils.FileRead(filepath)
       logging.debug('ParseDepsFile(%s) read:\n%s' % (self.name, deps_content))
+      use_strict = 'use strict' in deps_content.splitlines()[0]
+
+    local_scope = {}
+    if deps_content:
+      # One thing is unintuitive, vars = {} must happen before Var() use.
+      var = self.VarImpl(self.custom_vars, local_scope)
+      if use_strict:
+        logging.info(
+          'ParseDepsFile(%s): Strict Mode Enabled', self.name)
+        global_scope = {
+          '__builtins__': {'None': None},
+          'Var': var.Lookup,
+          'deps_os': {},
+        }
+      else:
+        global_scope = {
+          'File': self.FileImpl,
+          'From': self.FromImpl,
+          'Var': var.Lookup,
+          'deps_os': {},
+        }
       # Eval the content.
       try:
         exec(deps_content, global_scope, local_scope)
       except SyntaxError, e:
         gclient_utils.SyntaxErrorToError(filepath, e)
+      if use_strict:
+        for key, val in local_scope.iteritems():
+          if not isinstance(val, (dict, list, tuple, str)):
+            raise gclient_utils.Error(
+              'ParseDepsFile(%s): Strict mode disallows %r -> %r' %
+              (self.name, key, val))
+
     deps = local_scope.get('deps', {})
     if 'recursion' in local_scope:
       self.recursion_override = local_scope.get('recursion')
