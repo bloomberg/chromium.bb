@@ -360,22 +360,18 @@ static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSProp
     return true;
 }
 
-bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const CSSParserContext& parserContext)
+bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID, const CSSParserContext& parserContext)
 {
-    if (!valueID)
+    if (valueID == CSSValueInvalid)
         return false;
 
     switch (propertyId) {
-    case CSSPropertyBackgroundRepeatX: // repeat | no-repeat | inherit
-    case CSSPropertyBackgroundRepeatY: // repeat | no-repeat | inherit
-        if (valueID == CSSValueRepeat || valueID == CSSValueNoRepeat)
-            return true;
-        break;
-    case CSSPropertyBorderCollapse: // collapse | separate | inherit
-        if (valueID == CSSValueCollapse || valueID == CSSValueSeparate)
-            return true;
-        break;
-    case CSSPropertyBorderTopStyle: // <border-style> | inherit
+    case CSSPropertyBackgroundRepeatX: // repeat | no-repeat
+    case CSSPropertyBackgroundRepeatY: // repeat | no-repeat
+        return valueID == CSSValueRepeat || valueID == CSSValueNoRepeat;
+    case CSSPropertyBorderCollapse: // collapse | separate
+        return valueID == CSSValueCollapse || valueID == CSSValueSeparate;
+    case CSSPropertyBorderTopStyle: // <border-style>
     case CSSPropertyBorderRightStyle: // Defined as: none | hidden | dotted | dashed |
     case CSSPropertyBorderBottomStyle: // solid | double | groove | ridge | inset | outset
     case CSSPropertyBorderLeftStyle:
@@ -384,353 +380,201 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const
     case CSSPropertyWebkitBorderEndStyle:
     case CSSPropertyWebkitBorderStartStyle:
     case CSSPropertyWebkitColumnRuleStyle:
-        if (valueID >= CSSValueNone && valueID <= CSSValueDouble)
-            return true;
-        break;
+        return valueID >= CSSValueNone && valueID <= CSSValueDouble;
     case CSSPropertyBoxSizing:
-         if (valueID == CSSValueBorderBox || valueID == CSSValueContentBox)
-             return true;
-         break;
-    case CSSPropertyCaptionSide: // top | bottom | left | right | inherit
-        if (valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueTop || valueID == CSSValueBottom)
-            return true;
-        break;
-    case CSSPropertyClear: // none | left | right | both | inherit
-        if (valueID == CSSValueNone || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueBoth)
-            return true;
-        break;
-    case CSSPropertyDirection: // ltr | rtl | inherit
-        if (valueID == CSSValueLtr || valueID == CSSValueRtl)
-            return true;
-        break;
+        return valueID == CSSValueBorderBox || valueID == CSSValueContentBox;
+    case CSSPropertyCaptionSide: // top | bottom | left | right
+        return valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueTop || valueID == CSSValueBottom;
+    case CSSPropertyClear: // none | left | right | both
+        return valueID == CSSValueNone || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueBoth;
+    case CSSPropertyDirection: // ltr | rtl
+        return valueID == CSSValueLtr || valueID == CSSValueRtl;
     case CSSPropertyDisplay:
         // inline | block | list-item | inline-block | table |
         // inline-table | table-row-group | table-header-group | table-footer-group | table-row |
-        // table-column-group | table-column | table-cell | table-caption | -webkit-box | -webkit-inline-box | none | inherit
+        // table-column-group | table-column | table-cell | table-caption | -webkit-box | -webkit-inline-box | none
         // flex | inline-flex | -webkit-flex | -webkit-inline-flex | grid | inline-grid | lazy-block
-        if ((valueID >= CSSValueInline && valueID <= CSSValueInlineFlex) || valueID == CSSValueWebkitFlex || valueID == CSSValueWebkitInlineFlex || valueID == CSSValueNone)
-            return true;
-        if (valueID == CSSValueGrid || valueID == CSSValueInlineGrid)
-            return RuntimeEnabledFeatures::cssGridLayoutEnabled();
-        break;
-
-    case CSSPropertyEmptyCells: // show | hide | inherit
-        if (valueID == CSSValueShow || valueID == CSSValueHide)
-            return true;
-        break;
+        return (valueID >= CSSValueInline && valueID <= CSSValueInlineFlex) || valueID == CSSValueWebkitFlex || valueID == CSSValueWebkitInlineFlex || valueID == CSSValueNone
+            || (RuntimeEnabledFeatures::cssGridLayoutEnabled() && (valueID == CSSValueGrid || valueID == CSSValueInlineGrid));
+    case CSSPropertyEmptyCells: // show | hide
+        return valueID == CSSValueShow || valueID == CSSValueHide;
     case CSSPropertyFloat: // left | right | none | center (for buggy CSS, maps to none)
-        if (valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueNone || valueID == CSSValueCenter)
-            return true;
-        break;
-    case CSSPropertyFontStyle: // normal | italic | oblique | inherit
-        if (valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique)
-            return true;
-        break;
+        return valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueNone || valueID == CSSValueCenter;
+    case CSSPropertyFontStyle: // normal | italic | oblique
+        return valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique;
     case CSSPropertyImageRendering: // auto | optimizeContrast
-        if (valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast;
     case CSSPropertyIsolation: // auto | isolate
-        if (valueID == CSSValueAuto || valueID == CSSValueIsolate)
-            return RuntimeEnabledFeatures::cssCompositingEnabled();
-        break;
-    case CSSPropertyListStylePosition: // inside | outside | inherit
-        if (valueID == CSSValueInside || valueID == CSSValueOutside)
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssCompositingEnabled()
+            && (valueID == CSSValueAuto || valueID == CSSValueIsolate);
+    case CSSPropertyListStylePosition: // inside | outside
+        return valueID == CSSValueInside || valueID == CSSValueOutside;
     case CSSPropertyListStyleType:
         // See section CSS_PROP_LIST_STYLE_TYPE of file CSSValueKeywords.in
         // for the list of supported list-style-types.
-        if ((valueID >= CSSValueDisc && valueID <= CSSValueKatakanaIroha) || valueID == CSSValueNone)
-            return true;
-        break;
+        return (valueID >= CSSValueDisc && valueID <= CSSValueKatakanaIroha) || valueID == CSSValueNone;
     case CSSPropertyObjectFit:
-        if (RuntimeEnabledFeatures::objectFitPositionEnabled()) {
-            if (valueID == CSSValueFill || valueID == CSSValueContain || valueID == CSSValueCover || valueID == CSSValueNone || valueID == CSSValueScaleDown)
-                return true;
-        }
-        break;
-    case CSSPropertyOutlineStyle: // (<border-style> except hidden) | auto | inherit
-        if (valueID == CSSValueAuto || valueID == CSSValueNone || (valueID >= CSSValueInset && valueID <= CSSValueDouble))
-            return true;
-        break;
+        return RuntimeEnabledFeatures::objectFitPositionEnabled()
+            && (valueID == CSSValueFill || valueID == CSSValueContain || valueID == CSSValueCover || valueID == CSSValueNone || valueID == CSSValueScaleDown);
+    case CSSPropertyOutlineStyle: // (<border-style> except hidden) | auto
+        return valueID == CSSValueAuto || valueID == CSSValueNone || (valueID >= CSSValueInset && valueID <= CSSValueDouble);
     case CSSPropertyOverflowWrap: // normal | break-word
     case CSSPropertyWordWrap:
-        if (valueID == CSSValueNormal || valueID == CSSValueBreakWord)
-            return true;
-        break;
-    case CSSPropertyOverflowX: // visible | hidden | scroll | auto | overlay | inherit
-        if (valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueScroll || valueID == CSSValueAuto || valueID == CSSValueOverlay)
-            return true;
-        break;
-    case CSSPropertyOverflowY: // visible | hidden | scroll | auto | overlay | inherit | -webkit-paged-x | -webkit-paged-y
-        if (valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueScroll || valueID == CSSValueAuto || valueID == CSSValueOverlay || valueID == CSSValueWebkitPagedX || valueID == CSSValueWebkitPagedY)
-            return true;
-        break;
-    case CSSPropertyPageBreakAfter: // auto | always | avoid | left | right | inherit
+        return valueID == CSSValueNormal || valueID == CSSValueBreakWord;
+    case CSSPropertyOverflowX: // visible | hidden | scroll | auto | overlay
+        return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueScroll || valueID == CSSValueAuto || valueID == CSSValueOverlay;
+    case CSSPropertyOverflowY: // visible | hidden | scroll | auto | overlay | -webkit-paged-x | -webkit-paged-y
+        return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueScroll || valueID == CSSValueAuto || valueID == CSSValueOverlay || valueID == CSSValueWebkitPagedX || valueID == CSSValueWebkitPagedY;
+    case CSSPropertyPageBreakAfter: // auto | always | avoid | left | right
     case CSSPropertyPageBreakBefore:
     case CSSPropertyWebkitColumnBreakAfter:
     case CSSPropertyWebkitColumnBreakBefore:
-        if (valueID == CSSValueAuto || valueID == CSSValueAlways || valueID == CSSValueAvoid || valueID == CSSValueLeft || valueID == CSSValueRight)
-            return true;
-        break;
-    case CSSPropertyPageBreakInside: // avoid | auto | inherit
+        return valueID == CSSValueAuto || valueID == CSSValueAlways || valueID == CSSValueAvoid || valueID == CSSValueLeft || valueID == CSSValueRight;
+    case CSSPropertyPageBreakInside: // avoid | auto
     case CSSPropertyWebkitColumnBreakInside:
-        if (valueID == CSSValueAuto || valueID == CSSValueAvoid)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueAvoid;
     case CSSPropertyPointerEvents:
         // none | visiblePainted | visibleFill | visibleStroke | visible |
-        // painted | fill | stroke | auto | all | bounding-box | inherit
-        if (valueID == CSSValueVisible || valueID == CSSValueNone || valueID == CSSValueAll || valueID == CSSValueAuto || (valueID >= CSSValueVisiblepainted && valueID <= CSSValueBoundingBox))
-            return true;
-        break;
-    case CSSPropertyPosition: // static | relative | absolute | fixed | sticky | inherit
-        if (valueID == CSSValueStatic || valueID == CSSValueRelative || valueID == CSSValueAbsolute || valueID == CSSValueFixed
-            || (RuntimeEnabledFeatures::cssStickyPositionEnabled() && valueID == CSSValueSticky))
-            return true;
-        break;
+        // painted | fill | stroke | auto | all | bounding-box
+        return valueID == CSSValueVisible || valueID == CSSValueNone || valueID == CSSValueAll || valueID == CSSValueAuto || (valueID >= CSSValueVisiblepainted && valueID <= CSSValueBoundingBox);
+    case CSSPropertyPosition: // static | relative | absolute | fixed | sticky
+        return valueID == CSSValueStatic || valueID == CSSValueRelative || valueID == CSSValueAbsolute || valueID == CSSValueFixed
+            || (RuntimeEnabledFeatures::cssStickyPositionEnabled() && valueID == CSSValueSticky);
     case CSSPropertyResize: // none | both | horizontal | vertical | auto
-        if (valueID == CSSValueNone || valueID == CSSValueBoth || valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueAuto)
-            return true;
-        break;
+        return valueID == CSSValueNone || valueID == CSSValueBoth || valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueAuto;
     case CSSPropertyScrollBehavior: // instant | smooth
-        if (valueID == CSSValueInstant || valueID == CSSValueSmooth)
-            return RuntimeEnabledFeatures::cssomSmoothScrollEnabled();
-    case CSSPropertySpeak: // none | normal | spell-out | digits | literal-punctuation | no-punctuation | inherit
-        if (valueID == CSSValueNone || valueID == CSSValueNormal || valueID == CSSValueSpellOut || valueID == CSSValueDigits || valueID == CSSValueLiteralPunctuation || valueID == CSSValueNoPunctuation)
-            return true;
-        break;
-    case CSSPropertyTableLayout: // auto | fixed | inherit
-        if (valueID == CSSValueAuto || valueID == CSSValueFixed)
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssomSmoothScrollEnabled()
+            && (valueID == CSSValueInstant || valueID == CSSValueSmooth);
+    case CSSPropertySpeak: // none | normal | spell-out | digits | literal-punctuation | no-punctuation
+        return valueID == CSSValueNone || valueID == CSSValueNormal || valueID == CSSValueSpellOut || valueID == CSSValueDigits || valueID == CSSValueLiteralPunctuation || valueID == CSSValueNoPunctuation;
+    case CSSPropertyTableLayout: // auto | fixed
+        return valueID == CSSValueAuto || valueID == CSSValueFixed;
     case CSSPropertyTextAlignLast:
         // auto | start | end | left | right | center | justify
-        if (RuntimeEnabledFeatures::css3TextEnabled()
-            && ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto))
-            return true;
-        break;
+        return RuntimeEnabledFeatures::css3TextEnabled()
+            && ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto);
     case CSSPropertyTextJustify:
         // auto | none | inter-word | distribute
-        if (RuntimeEnabledFeatures::css3TextEnabled()
-            && (valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone))
-            return true;
-        break;
+        return RuntimeEnabledFeatures::css3TextEnabled()
+            && (valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone);
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextOverlineMode:
     case CSSPropertyTextUnderlineMode:
-        if (valueID == CSSValueContinuous || valueID == CSSValueSkipWhiteSpace)
-            return true;
-        break;
+        return valueID == CSSValueContinuous || valueID == CSSValueSkipWhiteSpace;
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverlineStyle:
     case CSSPropertyTextUnderlineStyle:
-        if (valueID == CSSValueNone || valueID == CSSValueSolid || valueID == CSSValueDouble || valueID == CSSValueDashed || valueID == CSSValueDotDash || valueID == CSSValueDotDotDash || valueID == CSSValueWave)
-            return true;
-        break;
+        return valueID == CSSValueNone || valueID == CSSValueSolid || valueID == CSSValueDouble || valueID == CSSValueDashed || valueID == CSSValueDotDash || valueID == CSSValueDotDotDash || valueID == CSSValueWave;
     case CSSPropertyTextOverflow: // clip | ellipsis
-        if (valueID == CSSValueClip || valueID == CSSValueEllipsis)
-            return true;
-        break;
+        return valueID == CSSValueClip || valueID == CSSValueEllipsis;
     case CSSPropertyTextRendering: // auto | optimizeSpeed | optimizeLegibility | geometricPrecision
-        if (valueID == CSSValueAuto || valueID == CSSValueOptimizespeed || valueID == CSSValueOptimizelegibility || valueID == CSSValueGeometricprecision)
-            return true;
-        break;
-    case CSSPropertyTextTransform: // capitalize | uppercase | lowercase | none | inherit
-        if ((valueID >= CSSValueCapitalize && valueID <= CSSValueLowercase) || valueID == CSSValueNone)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueOptimizespeed || valueID == CSSValueOptimizelegibility || valueID == CSSValueGeometricprecision;
+    case CSSPropertyTextTransform: // capitalize | uppercase | lowercase | none
+        return (valueID >= CSSValueCapitalize && valueID <= CSSValueLowercase) || valueID == CSSValueNone;
     case CSSPropertyTouchActionDelay: // none | script
-        if (RuntimeEnabledFeatures::cssTouchActionDelayEnabled() && (valueID == CSSValueScript || valueID == CSSValueNone))
-            return true;
-        break;
-    case CSSPropertyVisibility: // visible | hidden | collapse | inherit
-        if (valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse)
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssTouchActionDelayEnabled()
+            && (valueID == CSSValueScript || valueID == CSSValueNone);
+    case CSSPropertyVisibility: // visible | hidden | collapse
+        return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse;
     case CSSPropertyWebkitAppearance:
-        if ((valueID >= CSSValueCheckbox && valueID <= CSSValueTextarea) || valueID == CSSValueNone)
-            return true;
-        break;
+        return (valueID >= CSSValueCheckbox && valueID <= CSSValueTextarea) || valueID == CSSValueNone;
     case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
-        if (valueID == CSSValueVisible || valueID == CSSValueHidden)
-            return true;
-        break;
+        return valueID == CSSValueVisible || valueID == CSSValueHidden;
     case CSSPropertyMixBlendMode:
-        if (RuntimeEnabledFeatures::cssCompositingEnabled() && (valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen
-            || valueID == CSSValueOverlay || valueID == CSSValueDarken || valueID == CSSValueLighten ||  valueID == CSSValueColorDodge
-            || valueID == CSSValueColorBurn || valueID == CSSValueHardLight || valueID == CSSValueSoftLight || valueID == CSSValueDifference
-            || valueID == CSSValueExclusion || valueID == CSSValueHue || valueID == CSSValueSaturation || valueID == CSSValueColor
-            || valueID == CSSValueLuminosity))
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssCompositingEnabled()
+            && (valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen || valueID == CSSValueOverlay
+            || valueID == CSSValueDarken || valueID == CSSValueLighten || valueID == CSSValueColorDodge || valueID == CSSValueColorBurn
+            || valueID == CSSValueHardLight || valueID == CSSValueSoftLight || valueID == CSSValueDifference || valueID == CSSValueExclusion
+            || valueID == CSSValueHue || valueID == CSSValueSaturation || valueID == CSSValueColor || valueID == CSSValueLuminosity);
     case CSSPropertyWebkitBorderFit:
-        if (valueID == CSSValueBorder || valueID == CSSValueLines)
-            return true;
-        break;
+        return valueID == CSSValueBorder || valueID == CSSValueLines;
     case CSSPropertyWebkitBoxAlign:
-        if (valueID == CSSValueStretch || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline)
-            return true;
-        break;
+        return valueID == CSSValueStretch || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline;
     case CSSPropertyWebkitBoxDecorationBreak:
-         if (valueID == CSSValueClone || valueID == CSSValueSlice)
-             return true;
-         break;
+        return valueID == CSSValueClone || valueID == CSSValueSlice;
     case CSSPropertyWebkitBoxDirection:
-        if (valueID == CSSValueNormal || valueID == CSSValueReverse)
-            return true;
-        break;
+        return valueID == CSSValueNormal || valueID == CSSValueReverse;
     case CSSPropertyWebkitBoxLines:
-        if (valueID == CSSValueSingle || valueID == CSSValueMultiple)
-                return true;
-        break;
+        return valueID == CSSValueSingle || valueID == CSSValueMultiple;
     case CSSPropertyWebkitBoxOrient:
-        if (valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueInlineAxis || valueID == CSSValueBlockAxis)
-            return true;
-        break;
+        return valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueInlineAxis || valueID == CSSValueBlockAxis;
     case CSSPropertyWebkitBoxPack:
-        if (valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueJustify)
-            return true;
-        break;
+        return valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueJustify;
     case CSSPropertyInternalCallback:
         // This property is only injected programmatically, not parsed from stylesheets.
         return false;
     case CSSPropertyColumnFill:
-        if (RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
-            if (valueID == CSSValueAuto || valueID == CSSValueBalance)
-                return true;
-        }
-        break;
+        return RuntimeEnabledFeatures::regionBasedColumnsEnabled()
+            && (valueID == CSSValueAuto || valueID == CSSValueBalance);
     case CSSPropertyAlignContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
-         if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch)
-             return true;
-         break;
+        return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch;
     case CSSPropertyAlignItems:
         // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
-        if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch)
-            return true;
-        break;
+        return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch;
     case CSSPropertyAlignSelf:
         // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
-        if (valueID == CSSValueAuto || valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch;
     case CSSPropertyFlexDirection:
-        if (valueID == CSSValueRow || valueID == CSSValueRowReverse || valueID == CSSValueColumn || valueID == CSSValueColumnReverse)
-            return true;
-        break;
+        return valueID == CSSValueRow || valueID == CSSValueRowReverse || valueID == CSSValueColumn || valueID == CSSValueColumnReverse;
     case CSSPropertyFlexWrap:
-        if (valueID == CSSValueNowrap || valueID == CSSValueWrap || valueID == CSSValueWrapReverse)
-             return true;
-        break;
+        return valueID == CSSValueNowrap || valueID == CSSValueWrap || valueID == CSSValueWrapReverse;
     case CSSPropertyJustifyContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
-        if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround)
-            return true;
-        break;
+        return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround;
     case CSSPropertyFontKerning:
-        if (valueID == CSSValueAuto || valueID == CSSValueNormal || valueID == CSSValueNone)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueNormal || valueID == CSSValueNone;
     case CSSPropertyWebkitFontSmoothing:
-        if (valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueAntialiased || valueID == CSSValueSubpixelAntialiased)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueAntialiased || valueID == CSSValueSubpixelAntialiased;
     case CSSPropertyGridAutoFlow:
-        if (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn)
-            return RuntimeEnabledFeatures::cssGridLayoutEnabled();
-        break;
+        return RuntimeEnabledFeatures::cssGridLayoutEnabled()
+            && (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn);
     case CSSPropertyWebkitLineBreak: // auto | loose | normal | strict | after-white-space
-        if (valueID == CSSValueAuto || valueID == CSSValueLoose || valueID == CSSValueNormal || valueID == CSSValueStrict || valueID == CSSValueAfterWhiteSpace)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueLoose || valueID == CSSValueNormal || valueID == CSSValueStrict || valueID == CSSValueAfterWhiteSpace;
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
-        if (valueID == CSSValueCollapse || valueID == CSSValueSeparate || valueID == CSSValueDiscard)
-            return true;
-        break;
+        return valueID == CSSValueCollapse || valueID == CSSValueSeparate || valueID == CSSValueDiscard;
     case CSSPropertyInternalMarqueeDirection:
-        if (valueID == CSSValueForwards || valueID == CSSValueBackwards || valueID == CSSValueAhead || valueID == CSSValueReverse || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueDown
-            || valueID == CSSValueUp || valueID == CSSValueAuto)
-            return true;
-        break;
+        return valueID == CSSValueForwards || valueID == CSSValueBackwards || valueID == CSSValueAhead || valueID == CSSValueReverse || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueDown
+            || valueID == CSSValueUp || valueID == CSSValueAuto;
     case CSSPropertyInternalMarqueeStyle:
-        if (valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate)
-            return true;
-        break;
+        return valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate;
     case CSSPropertyWebkitPrintColorAdjust:
-        if (valueID == CSSValueExact || valueID == CSSValueEconomy)
-            return true;
-        break;
+        return valueID == CSSValueExact || valueID == CSSValueEconomy;
     case CSSPropertyWebkitRtlOrdering:
-        if (valueID == CSSValueLogical || valueID == CSSValueVisual)
-            return true;
-        break;
-
+        return valueID == CSSValueLogical || valueID == CSSValueVisual;
     case CSSPropertyWebkitRubyPosition:
-        if (valueID == CSSValueBefore || valueID == CSSValueAfter)
-            return true;
-        break;
-
+        return valueID == CSSValueBefore || valueID == CSSValueAfter;
     case CSSPropertyWebkitTextCombine:
-        if (valueID == CSSValueNone || valueID == CSSValueHorizontal)
-            return true;
-        break;
+        return valueID == CSSValueNone || valueID == CSSValueHorizontal;
     case CSSPropertyWebkitTextEmphasisPosition:
-        if (valueID == CSSValueOver || valueID == CSSValueUnder)
-            return true;
-        break;
-    case CSSPropertyWebkitTextSecurity:
-        // disc | circle | square | none | inherit
-        if (valueID == CSSValueDisc || valueID == CSSValueCircle || valueID == CSSValueSquare || valueID == CSSValueNone)
-            return true;
-        break;
+        return valueID == CSSValueOver || valueID == CSSValueUnder;
+    case CSSPropertyWebkitTextSecurity: // disc | circle | square | none
+        return valueID == CSSValueDisc || valueID == CSSValueCircle || valueID == CSSValueSquare || valueID == CSSValueNone;
     case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
-        if (valueID == CSSValueFlat || valueID == CSSValuePreserve3d)
-            return true;
-        break;
+        return valueID == CSSValueFlat || valueID == CSSValuePreserve3d;
     case CSSPropertyWebkitUserDrag: // auto | none | element
-        if (valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueElement)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueElement;
     case CSSPropertyWebkitUserModify: // read-only | read-write
-        if (valueID == CSSValueReadOnly || valueID == CSSValueReadWrite || valueID == CSSValueReadWritePlaintextOnly)
-            return true;
-        break;
+        return valueID == CSSValueReadOnly || valueID == CSSValueReadWrite || valueID == CSSValueReadWritePlaintextOnly;
     case CSSPropertyWebkitUserSelect: // auto | none | text | all
-        if (valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueText || valueID == CSSValueAll)
-            return true;
-        break;
+        return valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueText || valueID == CSSValueAll;
     case CSSPropertyWebkitWrapFlow:
-        if (!RuntimeEnabledFeatures::cssExclusionsEnabled())
-            return false;
-        if (valueID == CSSValueAuto || valueID == CSSValueBoth || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueMaximum || valueID == CSSValueClear)
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssExclusionsEnabled()
+            && (valueID == CSSValueAuto || valueID == CSSValueBoth || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueMaximum || valueID == CSSValueClear);
     case CSSPropertyWebkitWrapThrough:
-        if (!RuntimeEnabledFeatures::cssExclusionsEnabled())
-            return false;
-        if (valueID == CSSValueWrap || valueID == CSSValueNone)
-            return true;
-        break;
+        return RuntimeEnabledFeatures::cssExclusionsEnabled()
+            && (valueID == CSSValueWrap || valueID == CSSValueNone);
     case CSSPropertyWebkitWritingMode:
-        if (valueID >= CSSValueHorizontalTb && valueID <= CSSValueHorizontalBt)
-            return true;
-        break;
-    case CSSPropertyWhiteSpace: // normal | pre | nowrap | inherit
-        if (valueID == CSSValueNormal || valueID == CSSValuePre || valueID == CSSValuePreWrap || valueID == CSSValuePreLine || valueID == CSSValueNowrap)
-            return true;
-        break;
+        return valueID >= CSSValueHorizontalTb && valueID <= CSSValueHorizontalBt;
+    case CSSPropertyWhiteSpace: // normal | pre | nowrap
+        return valueID == CSSValueNormal || valueID == CSSValuePre || valueID == CSSValuePreWrap || valueID == CSSValuePreLine || valueID == CSSValueNowrap;
     case CSSPropertyWordBreak: // normal | break-all | break-word (this is a custom extension)
-        if (valueID == CSSValueNormal || valueID == CSSValueBreakAll || valueID == CSSValueBreakWord)
-            return true;
-        break;
+        return valueID == CSSValueNormal || valueID == CSSValueBreakAll || valueID == CSSValueBreakWord;
     default:
         ASSERT_NOT_REACHED();
         return false;
