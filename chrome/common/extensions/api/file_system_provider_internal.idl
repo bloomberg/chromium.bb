@@ -80,7 +80,7 @@ namespace fileSystemProviderInternal {
     static void readFileRequestedSuccess(
         long fileSystemId,
         long requestId,
-        DOMString data,
+        ArrayBuffer data,
         boolean hasNext);
 
     // Internal. Error callback of the <code>onReadFileRequested</code>

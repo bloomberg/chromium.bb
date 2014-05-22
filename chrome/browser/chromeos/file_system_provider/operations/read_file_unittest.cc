@@ -6,10 +6,10 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -181,7 +181,6 @@ TEST_F(FileSystemProviderOperationsReadFileTest, Execute_NoListener) {
 }
 
 TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
-  using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
       ReadFileRequestedSuccess::Params;
 
@@ -202,44 +201,33 @@ TEST_F(FileSystemProviderOperationsReadFileTest, OnSuccess) {
 
   EXPECT_TRUE(read_file.Execute(kRequestId));
 
-  // Sample input as JSON. Keep in sync with file_system_provider_api.idl.
-  // As for now, it is impossible to create *::Params class directly, not from
-  // base::Value.
-  const std::string input =
-      "[\n"
-      "  1,\n"          // kFileSystemId
-      "  2,\n"          // kRequestId
-      "  \"ABCDE\",\n"  // 5 bytes
-      "  false\n"       // has_next
-      "]\n";
+  const std::string data = "ABCDE";
+  const bool has_next = false;
 
-  int json_error_code;
-  std::string json_error_msg;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      input, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg));
-  ASSERT_TRUE(value.get()) << json_error_msg;
+  base::ListValue value_as_list;
+  value_as_list.Set(0, new base::FundamentalValue(kFileSystemId));
+  value_as_list.Set(1, new base::FundamentalValue(kRequestId));
+  value_as_list.Set(
+      2, base::BinaryValue::CreateWithCopiedBuffer(data.c_str(), data.size()));
+  value_as_list.Set(3, new base::FundamentalValue(has_next));
 
-  base::ListValue* value_as_list;
-  ASSERT_TRUE(value->GetAsList(&value_as_list));
-  scoped_ptr<Params> params(Params::Create(*value_as_list));
+  scoped_ptr<Params> params(Params::Create(value_as_list));
   ASSERT_TRUE(params.get());
   scoped_ptr<RequestValue> request_value(
       RequestValue::CreateForReadFileSuccess(params.Pass()));
   ASSERT_TRUE(request_value.get());
 
-  const bool has_next = false;
   read_file.OnSuccess(kRequestId, request_value.Pass(), has_next);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
   EXPECT_EQ(kLength, event->chunk_length());
   EXPECT_FALSE(event->has_next());
-  EXPECT_EQ("ABCDE", std::string(io_buffer_->data() + kOffset, kLength));
+  EXPECT_EQ(data, std::string(io_buffer_->data(), kLength));
   EXPECT_EQ(base::File::FILE_OK, event->result());
 }
 
 TEST_F(FileSystemProviderOperationsReadFileTest, OnError) {
-  using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::ReadFileRequestedError::
       Params;
 

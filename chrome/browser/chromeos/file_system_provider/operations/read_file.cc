@@ -54,7 +54,7 @@ ReadFile::ReadFile(
       buffer_(buffer),
       offset_(offset),
       length_(length),
-      current_offset_(offset),
+      current_offset_(0),
       callback_(callback) {
 }
 

@@ -195,8 +195,8 @@ eventBindings.registerArgumentMassager(
         fileSystemProviderInternal.closeFileRequestedError(
           fileSystemId, requestId, error);
       }
-      dispatch([fileSystemId, openRequestId, openRequestId, onSuccessCallback,
-                onErrorCallback]);
+      dispatch([fileSystemId, openRequestId, onSuccessCallback,
+          onErrorCallback]);
     });
 
 eventBindings.registerArgumentMassager(

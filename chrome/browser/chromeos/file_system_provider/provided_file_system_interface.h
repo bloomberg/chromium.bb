@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
 class EventRouter;
@@ -84,6 +85,9 @@ class ProvidedFileSystemInterface {
 
   // Returns a request manager for the file system.
   virtual RequestManager* GetRequestManager() = 0;
+
+  // Returns a weak pointer to this object.
+  virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() = 0;
 };
 
 }  // namespace file_system_provider

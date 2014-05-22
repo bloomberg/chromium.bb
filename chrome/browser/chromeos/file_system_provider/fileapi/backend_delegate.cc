@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
@@ -36,8 +37,9 @@ BackendDelegate::CreateFileStreamReader(
     fileapi::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
-  NOTIMPLEMENTED();
-  return scoped_ptr<webkit_blob::FileStreamReader>();
+
+  return scoped_ptr<webkit_blob::FileStreamReader>(
+      new FileStreamReader(context, url, offset, expected_modification_time));
 }
 
 scoped_ptr<fileapi::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(

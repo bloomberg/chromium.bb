@@ -15,13 +15,19 @@
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "extensions/browser/event_router.h"
 
+namespace net {
+class IOBuffer;
+}  // namespace net
+
 namespace chromeos {
 namespace file_system_provider {
 
 ProvidedFileSystem::ProvidedFileSystem(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info)
-    : event_router_(event_router), file_system_info_(file_system_info) {
+    : event_router_(event_router),
+      file_system_info_(file_system_info),
+      weak_ptr_factory_(this) {
 }
 
 ProvidedFileSystem::~ProvidedFileSystem() {}
@@ -118,6 +124,10 @@ const ProvidedFileSystemInfo& ProvidedFileSystem::GetFileSystemInfo() const {
 
 RequestManager* ProvidedFileSystem::GetRequestManager() {
   return &request_manager_;
+}
+
+base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace file_system_provider

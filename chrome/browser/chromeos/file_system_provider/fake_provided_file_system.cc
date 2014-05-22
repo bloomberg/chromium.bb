@@ -31,9 +31,17 @@ void AddDirectoryEntry(fileapi::AsyncFileUtil::EntryList* entry_list,
 
 }  // namespace
 
+const char kFakeFileName[] = "hello.txt";
+const char kFakeFilePath[] = "/hello.txt";
+const char kFakeFileText[] =
+    "This is a testing file. Lorem ipsum dolor sit amet est.";
+const size_t kFakeFileSize = sizeof(kFakeFileText) - 1u;
+
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info), last_file_handle_(0) {
+    : file_system_info_(file_system_info),
+      last_file_handle_(0),
+      weak_ptr_factory_(this) {
 }
 
 FakeProvidedFileSystem::~FakeProvidedFileSystem() {}
@@ -47,27 +55,42 @@ void FakeProvidedFileSystem::RequestUnmount(
 void FakeProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
-  // Return fake metadata for the root directory only.
-  if (entry_path.AsUTF8Unsafe() != "/") {
+  if (entry_path.AsUTF8Unsafe() == "/") {
+    base::File::Info file_info;
+    file_info.size = 0;
+    file_info.is_directory = true;
+    file_info.is_symbolic_link = false;
+    base::Time last_modified_time;
+    const bool result = base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014",
+                                               &last_modified_time);
+    DCHECK(result);
+    file_info.last_modified = last_modified_time;
+
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback, base::File::FILE_ERROR_NOT_FOUND, base::File::Info()));
+        FROM_HERE, base::Bind(callback, base::File::FILE_OK, file_info));
     return;
   }
 
-  base::File::Info file_info;
-  file_info.size = 0;
-  file_info.is_directory = true;
-  file_info.is_symbolic_link = false;
-  base::Time last_modified_time;
-  const bool result = base::Time::FromString("Thu Apr 24 00:46:52 UTC 2014",
-                                             &last_modified_time);
-  DCHECK(result);
-  file_info.last_modified = last_modified_time;
+  if (entry_path.AsUTF8Unsafe() == kFakeFilePath) {
+    base::File::Info file_info;
+    file_info.size = kFakeFileSize;
+    file_info.is_directory = false;
+    file_info.is_symbolic_link = false;
+    base::Time last_modified_time;
+    const bool result = base::Time::FromString("Fri Apr 25 01:47:53 UTC 2014",
+                                               &last_modified_time);
+    DCHECK(result);
+    file_info.last_modified = last_modified_time;
+
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, base::File::FILE_OK, file_info));
+    return;
+  }
 
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, base::File::FILE_OK, file_info));
+      FROM_HERE,
+      base::Bind(
+          callback, base::File::FILE_ERROR_NOT_FOUND, base::File::Info()));
 }
 
 void FakeProvidedFileSystem::ReadDirectory(
@@ -87,9 +110,9 @@ void FakeProvidedFileSystem::ReadDirectory(
   {
     fileapi::AsyncFileUtil::EntryList entry_list;
     AddDirectoryEntry(&entry_list,
-                      "hello.txt",
+                      kFakeFileName,
                       fileapi::DirectoryEntry::FILE,
-                      1024 /* size */,
+                      kFakeFileSize,
                       "Thu Apr 24 00:46:52 UTC 2014");
 
     AddDirectoryEntry(&entry_list,
@@ -130,14 +153,14 @@ void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
   }
 
   const int file_handle = ++last_file_handle_;
-  opened_files_.insert(file_handle);
+  opened_files_[file_handle] = file_path;
   callback.Run(file_handle, base::File::FILE_OK);
 }
 
 void FakeProvidedFileSystem::CloseFile(
     int file_handle,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  const std::set<int>::iterator opened_file_it =
+  const OpenedFilesMap::iterator opened_file_it =
       opened_files_.find(file_handle);
   if (opened_file_it == opened_files_.end()) {
     base::MessageLoopProxy::current()->PostTask(
@@ -156,13 +179,41 @@ void FakeProvidedFileSystem::ReadFile(
     int64 offset,
     int length,
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
-  // TODO(mtomasz): Implement together with the FileStreamReader.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 0 /* chunk_length */,
-                 false /* has_next */,
-                 base::File::FILE_ERROR_SECURITY));
+  const OpenedFilesMap::iterator opened_file_it =
+      opened_files_.find(file_handle);
+  if (opened_file_it == opened_files_.end() ||
+      opened_file_it->second.AsUTF8Unsafe() != kFakeFilePath) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   0 /* chunk_length */,
+                   false /* has_next */,
+                   base::File::FILE_ERROR_SECURITY));
+    return;
+  }
+
+  // Send the response byte by byte.
+  size_t current_offset = static_cast<size_t>(offset);
+  size_t current_length = static_cast<size_t>(length);
+
+  // Reading behind EOF, is fine, it will just read 0 bytes.
+  if (current_offset > kFakeFileSize || !current_length) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   0 /* chunk_length */,
+                   false /* has_next */,
+                   base::File::FILE_OK));
+  }
+
+  while (current_offset < kFakeFileSize && current_length) {
+    buffer->data()[current_offset - offset] = kFakeFileText[current_offset];
+    const bool has_next =
+        (current_offset + 1 < kFakeFileSize) && (current_length - 1);
+    callback.Run(1, has_next, base::File::FILE_OK);
+    current_offset++;
+    current_length--;
+  }
 }
 
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
@@ -179,6 +230,11 @@ ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info) {
   return new FakeProvidedFileSystem(file_system_info);
+}
+
+base::WeakPtr<ProvidedFileSystemInterface>
+FakeProvidedFileSystem::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace file_system_provider

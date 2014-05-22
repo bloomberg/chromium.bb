@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
@@ -56,12 +57,14 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
                         const ReadChunkReceivedCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
+  virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() OVERRIDE;
 
  private:
   extensions::EventRouter* event_router_;
   RequestManager request_manager_;
   ProvidedFileSystemInfo file_system_info_;
 
+  base::WeakPtrFactory<ProvidedFileSystemInterface> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystem);
 };
 

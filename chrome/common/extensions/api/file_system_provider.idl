@@ -85,7 +85,7 @@ namespace fileSystemProvider {
   // data will be returned, then <code>hasNext</code> must be true, and it
   // has to be called again with additional entries. If no more data is
   // available, then <code>hasNext</code> must be set to false.
-  callback FileDataCallback = void(DOMString data, bool hasNext);
+  callback FileDataCallback = void(ArrayBuffer data, bool hasNext);
 
   interface Functions {
     // Mounts a file system with the given <code>displayName</code>.
@@ -145,6 +145,7 @@ namespace fileSystemProvider {
     // exist, then it should be created.
     [maxListeners=1] static void onOpenFileRequested(
         long fileSystemId,
+        long requestId,
         DOMString filePath,
         OpenFileMode mode,
         boolean create,

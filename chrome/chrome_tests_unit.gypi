@@ -708,6 +708,7 @@
         'browser/chromeos/file_manager/volume_manager_unittest.cc',
         'browser/chromeos/file_system_provider/fake_provided_file_system.cc',
         'browser/chromeos/file_system_provider/fake_provided_file_system.h',
+        'browser/chromeos/file_system_provider/fileapi/file_stream_reader_unittest.cc',
         'browser/chromeos/file_system_provider/fileapi/provider_async_file_util_unittest.cc',
         'browser/chromeos/file_system_provider/mount_path_util_unittest.cc',
         'browser/chromeos/file_system_provider/operations/close_file_unittest.cc',

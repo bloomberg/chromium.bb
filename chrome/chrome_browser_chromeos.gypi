@@ -376,6 +376,8 @@
         'browser/chromeos/file_manager/zip_file_creator.h',
         'browser/chromeos/file_system_provider/fileapi/backend_delegate.cc',
         'browser/chromeos/file_system_provider/fileapi/backend_delegate.h',
+        'browser/chromeos/file_system_provider/fileapi/file_stream_reader.cc',
+        'browser/chromeos/file_system_provider/fileapi/file_stream_reader.h',
         'browser/chromeos/file_system_provider/fileapi/provider_async_file_util.cc',
         'browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h',
         'browser/chromeos/file_system_provider/mount_path_util.cc',
