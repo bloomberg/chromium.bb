@@ -184,4 +184,42 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals("CA", storedProfile2.getCountryCode());
     }
 
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testMultilineStreetAddress() throws InterruptedException, ExecutionException {
+        final String streetAddress1 = "Chez Mireille COPEAU Appartment. 2\n"
+                + "Entree A Batiment Jonquille\n"
+                + "25 RUE DE L'EGLISE";
+        final String streetAddress2 = streetAddress1 + "\n"
+                + "Fourth floor\n"
+                + "The red bell";
+        AutofillProfile profile1 = new AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */,
+                "Monsieur Jean DELHOURME", "Acme Inc.",
+                streetAddress1,
+                "Tahiti", "Mahina", "Orofara",
+                "98709", "CEDEX 98703",
+                "French Polynesia", "50.71.53", "john@acme.inc", "");
+        String profileGuid1 = mHelper.setProfile(profile1);
+        assertEquals(1, mHelper.getNumberOfProfiles());
+        AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
+        assertEquals("PF", storedProfile1.getCountryCode());
+        assertEquals("Monsieur Jean DELHOURME", storedProfile1.getFullName());
+        assertEquals(streetAddress1, storedProfile1.getStreetAddress());
+        assertEquals("Tahiti", storedProfile1.getRegion());
+        assertEquals("Mahina", storedProfile1.getLocality());
+        assertEquals("Orofara", storedProfile1.getDependentLocality());
+        assertEquals("98709", storedProfile1.getPostalCode());
+        assertEquals("CEDEX 98703", storedProfile1.getSortingCode());
+        assertEquals("50.71.53", storedProfile1.getPhoneNumber());
+        assertEquals("john@acme.inc", storedProfile1.getEmailAddress());
+
+        profile1.setStreetAddress(streetAddress2);
+        mHelper.setProfile(profile1);
+        assertEquals(1, mHelper.getNumberOfProfiles());
+        storedProfile1 = mHelper.getProfile(profileGuid1);
+
+        // TODO(estade): http://crbug.com/375545.
+        // assertEquals(streetAddress2, storedProfile1.getStreetAddress());
+    }
 }
