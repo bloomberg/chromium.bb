@@ -145,8 +145,10 @@ ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
 
 ImageBitmap::~ImageBitmap()
 {
+#if !ENABLE(OILPAN)
     if (m_imageElement)
         m_imageElement->removeClient(this);
+#endif
 }
 
 PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect)
@@ -226,6 +228,7 @@ FloatSize ImageBitmap::sourceSize() const
 
 void ImageBitmap::trace(Visitor* visitor)
 {
+    visitor->trace(m_imageElement);
     ImageLoaderClient::trace(visitor);
 }
 

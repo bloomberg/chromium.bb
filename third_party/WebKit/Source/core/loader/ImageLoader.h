@@ -126,11 +126,25 @@ private:
     // or to schedule a microtask.
     bool shouldLoadImmediately(const KURL&) const;
 
-    typedef WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<ImageLoaderClient> > ImageLoaderClientSet;
+    void willRemoveClient(ImageLoaderClient&);
 
     Element* m_element;
     ResourcePtr<ImageResource> m_image;
-    ImageLoaderClientSet m_clients;
+#if ENABLE(OILPAN)
+    class ImageLoaderClientRemover {
+    public:
+        ImageLoaderClientRemover(ImageLoader& loader, ImageLoaderClient& client) : m_loader(loader), m_client(client) { }
+        ~ImageLoaderClientRemover();
+
+    private:
+        ImageLoader& m_loader;
+        ImageLoaderClient& m_client;
+    };
+    friend class ImageLoaderClientRemover;
+    PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> > m_clients;
+#else
+    HashSet<ImageLoaderClient*> m_clients;
+#endif
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     WeakPtr<Task> m_pendingTask; // owned by Microtask

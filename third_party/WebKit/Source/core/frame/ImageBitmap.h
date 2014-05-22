@@ -31,7 +31,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(Image*, const IntRect&);
 
     PassRefPtr<Image> bitmapImage() const;
-    PassRefPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
+    PassRefPtrWillBeRawPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
 
     IntRect bitmapRect() const { return m_bitmapRect; }
 
@@ -63,7 +63,7 @@ private:
 
     // ImageBitmaps constructed from HTMLImageElements hold a reference to the HTMLImageElement until
     // the image source changes.
-    RefPtr<HTMLImageElement> m_imageElement;
+    RefPtrWillBeMember<HTMLImageElement> m_imageElement;
     RefPtr<Image> m_bitmap;
 
     IntRect m_bitmapRect; // The rect where the underlying Image should be placed in reference to the ImageBitmap.

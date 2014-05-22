@@ -504,7 +504,7 @@ static bool executeInsertImage(LocalFrame& frame, Event*, EditorCommandSource, c
 {
     // FIXME: If userInterface is true, we should display a dialog box and let the user choose a local image.
     ASSERT(frame.document());
-    RefPtr<HTMLImageElement> image = HTMLImageElement::create(*frame.document());
+    RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(*frame.document());
     image->setSrc(value);
     return executeInsertNode(frame, image.release());
 }
