@@ -106,6 +106,7 @@
       'trees/layer_tree_host_unittest_delegated.cc',
       'trees/layer_tree_host_unittest_occlusion.cc',
       'trees/layer_tree_host_unittest_picture.cc',
+      'trees/layer_tree_host_unittest_proxy.cc',
       'trees/layer_tree_host_unittest_scroll.cc',
       'trees/layer_tree_host_unittest_video.cc',
       'trees/layer_tree_impl_unittest.cc',

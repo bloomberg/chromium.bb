@@ -19,7 +19,8 @@ class ContextProvider;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
 
-class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
+class CC_EXPORT SingleThreadProxy : public Proxy,
+                    NON_EXPORTED_BASE(LayerTreeHostImplClient) {
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,

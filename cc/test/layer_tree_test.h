@@ -78,6 +78,12 @@ class TestHooks : public AnimationDelegate {
                                        bool visible) {}
   virtual base::TimeDelta LowFrequencyAnimationInterval() const;
 
+  // Hooks for SchedulerClient.
+  virtual void ScheduledActionBeginOutputSurfaceCreation() {}
+  virtual void ScheduledActionSendBeginMainFrame() {}
+  virtual void ScheduledActionCommit() {}
+  virtual void ScheduledActionDrawAndSwapIfPossible() {}
+
   // Implementation of AnimationDelegate:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                                       Animation::TargetProperty target_property)
