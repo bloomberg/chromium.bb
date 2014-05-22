@@ -35,79 +35,86 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   void set_bounding_box(const gfx::RectF& box) { bounding_box_ = box; }
 
   float scroll_x_hint() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, type_);
+    DCHECK_EQ(ET_GESTURE_SCROLL_BEGIN, type_);
     return data.scroll_begin.x_hint;
   }
 
   float scroll_y_hint() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, type_);
+    DCHECK_EQ(ET_GESTURE_SCROLL_BEGIN, type_);
     return data.scroll_begin.y_hint;
   }
 
   float scroll_x() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
     return data.scroll_update.x;
   }
 
   float scroll_y() const {
-    DCHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
     return data.scroll_update.y;
   }
 
   float velocity_x() const {
-    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    DCHECK_EQ(ET_SCROLL_FLING_START, type_);
     return data.fling_velocity.x;
   }
 
   float velocity_y() const {
-    DCHECK(type_ == ui::ET_SCROLL_FLING_START);
+    DCHECK_EQ(ET_SCROLL_FLING_START, type_);
     return data.fling_velocity.y;
   }
 
   float first_finger_width() const {
-    DCHECK_EQ(ui::ET_GESTURE_TWO_FINGER_TAP, type_);
+    DCHECK_EQ(ET_GESTURE_TWO_FINGER_TAP, type_);
     return data.first_finger_enclosing_rectangle.width;
   }
 
   float first_finger_height() const {
-    DCHECK_EQ(ui::ET_GESTURE_TWO_FINGER_TAP, type_);
+    DCHECK_EQ(ET_GESTURE_TWO_FINGER_TAP, type_);
     return data.first_finger_enclosing_rectangle.height;
   }
 
   float scale() const {
-    DCHECK_EQ(ui::ET_GESTURE_PINCH_UPDATE, type_);
+    DCHECK_EQ(ET_GESTURE_PINCH_UPDATE, type_);
     return data.scale;
   }
 
   bool swipe_left() const {
-    DCHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.left;
   }
 
   bool swipe_right() const {
-    DCHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.right;
   }
 
   bool swipe_up() const {
-    DCHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.up;
   }
 
   bool swipe_down() const {
-    DCHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    DCHECK_EQ(ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.down;
   }
 
   int tap_count() const {
-    DCHECK(type_ == ui::ET_GESTURE_TAP ||
-           type_ == ui::ET_GESTURE_TAP_UNCONFIRMED ||
+    DCHECK(type_ == ET_GESTURE_TAP ||
+           type_ == ET_GESTURE_TAP_UNCONFIRMED ||
            type_ == ET_GESTURE_DOUBLE_TAP);
     return data.tap_count;
   }
 
+  void set_tap_count(int tap_count) {
+    DCHECK(type_ == ET_GESTURE_TAP ||
+           type_ == ET_GESTURE_TAP_UNCONFIRMED ||
+           type_ == ET_GESTURE_DOUBLE_TAP);
+    data.tap_count = tap_count;
+  }
+
  private:
-  ui::EventType type_;
+  EventType type_;
   union Details {
     Details();
     struct {  // SCROLL start details.

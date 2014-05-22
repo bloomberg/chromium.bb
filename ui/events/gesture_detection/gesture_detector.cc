@@ -187,9 +187,9 @@ GestureDetector::GestureDetector(
       last_focus_y_(0),
       down_focus_x_(0),
       down_focus_y_(0),
-  longpress_enabled_(true),
-  swipe_enabled_(false),
-  two_finger_tap_enabled_(false) {
+      longpress_enabled_(true),
+      swipe_enabled_(false),
+      two_finger_tap_enabled_(false) {
   DCHECK(listener_);
   Init(config);
 }
@@ -519,14 +519,9 @@ void GestureDetector::OnTapTimeout() {
 }
 
 void GestureDetector::Cancel() {
-  timeout_handler_->Stop();
+  CancelTaps();
   velocity_tracker_.Clear();
-  is_double_tapping_ = false;
   still_down_ = false;
-  always_in_tap_region_ = false;
-  always_in_bigger_tap_region_ = false;
-  defer_confirm_single_tap_ = false;
-  in_longpress_ = false;
 }
 
 void GestureDetector::CancelTaps() {

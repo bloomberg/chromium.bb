@@ -3366,11 +3366,6 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
 
 // Check that appropriate touch events generate double tap gesture events.
 TEST_P(GestureRecognizerTest, GestureEventDoubleTap) {
-  // TODO(tdresser): enable this test with unified GR once double / triple tap
-  // gestures work. See crbug.com/357270.
-  if (UsingUnifiedGR())
-    return;
-
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3412,11 +3407,6 @@ TEST_P(GestureRecognizerTest, GestureEventDoubleTap) {
 
 // Check that appropriate touch events generate triple tap gesture events.
 TEST_P(GestureRecognizerTest, GestureEventTripleTap) {
-  // TODO(tdresser): enable this test with unified GR once double / triple tap
-  // gestures work. See crbug.com/357270.
-  if (UsingUnifiedGR())
-    return;
-
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -3457,17 +3447,35 @@ TEST_P(GestureRecognizerTest, GestureEventTripleTap) {
                           kTouchId, tes.LeapForward(50));
   DispatchEventUsingWindowDispatcher(&release3);
 
+  // Third, Fourth and Fifth Taps. Taps after the third should have their
+  // |tap_count| wrap around back to 1.
+  for (int i = 3; i < 5; ++i) {
+    ui::TouchEvent press3(ui::ET_TOUCH_PRESSED,
+                          gfx::Point(102, 206),
+                          kTouchId,
+                          tes.LeapForward(200));
+    DispatchEventUsingWindowDispatcher(&press3);
+    ui::TouchEvent release3(ui::ET_TOUCH_RELEASED,
+                            gfx::Point(102, 206),
+                            kTouchId,
+                            tes.LeapForward(50));
+    DispatchEventUsingWindowDispatcher(&release3);
 
-  EXPECT_TRUE(delegate->tap());
-  EXPECT_TRUE(delegate->tap_down());
-  EXPECT_FALSE(delegate->tap_cancel());
-  EXPECT_TRUE(delegate->begin());
-  EXPECT_TRUE(delegate->end());
-  EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_FALSE(delegate->scroll_end());
+    EXPECT_TRUE(delegate->tap());
+    EXPECT_TRUE(delegate->tap_down());
+    EXPECT_FALSE(delegate->tap_cancel());
+    EXPECT_TRUE(delegate->begin());
+    EXPECT_TRUE(delegate->end());
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_FALSE(delegate->scroll_update());
+    EXPECT_FALSE(delegate->scroll_end());
 
-  EXPECT_EQ(3, delegate->tap_count());
+    // The behavior for the Aura GR is incorrect.
+    if (UsingUnifiedGR())
+      EXPECT_EQ(1 + (i % 3), delegate->tap_count());
+    else
+      EXPECT_EQ(3, delegate->tap_count());
+  }
 }
 
 // Check that we don't get a double tap when the two taps are far apart.
@@ -4267,8 +4275,6 @@ TEST_P(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
   EXPECT_NE(default_flags, delegate->flags());
 }
 
-// TODO - re-enable these tests once memory management issues have been sorted
-// out. See crbug.com/371990.
 INSTANTIATE_TEST_CASE_P(GestureRecognizer,
                         GestureRecognizerTest,
                         ::testing::Bool());

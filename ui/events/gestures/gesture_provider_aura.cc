@@ -8,6 +8,7 @@
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_config_helper.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
+#include "ui/events/gestures/gesture_configuration.h"
 
 namespace ui {
 
@@ -40,6 +41,7 @@ bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
   }
 
   pointer_state_.OnTouch(event);
+
   bool result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
   pointer_state_.CleanupRemovedTouchPoints(event);
   return result;
@@ -51,18 +53,52 @@ void GestureProviderAura::OnTouchEventAck(bool event_consumed) {
 
 void GestureProviderAura::OnGestureEvent(
     const GestureEventData& gesture) {
+  GestureEventDetails details = gesture.details;
+
+  if (gesture.type == ET_GESTURE_TAP) {
+    int tap_count = 1;
+    if (previous_tap_ && IsConsideredDoubleTap(*previous_tap_, gesture))
+      tap_count = 1 + (previous_tap_->details.tap_count() % 3);
+    details.set_tap_count(tap_count);
+    if (!previous_tap_)
+      previous_tap_.reset(new GestureEventData(gesture));
+    else
+      *previous_tap_ = gesture;
+    previous_tap_->details = details;
+  } else if (gesture.type == ET_GESTURE_TAP_CANCEL) {
+    previous_tap_.reset();
+  }
+
   ui::GestureEvent event(gesture.type,
                          gesture.x,
                          gesture.y,
                          last_touch_event_flags_,
                          gesture.time - base::TimeTicks(),
-                         gesture.details,
+                         details,
                          // ui::GestureEvent stores a bitfield indicating the
                          // ids of active touch points. This is currently only
                          // used when one finger is down, and will eventually
                          // be cleaned up. See crbug.com/366707.
                          1 << gesture.motion_event_id);
   client_->OnGestureEvent(&event);
+}
+
+bool GestureProviderAura::IsConsideredDoubleTap(
+    const GestureEventData& previous_tap,
+    const GestureEventData& current_tap) const {
+  if (current_tap.time - previous_tap.time >
+      base::TimeDelta::FromMilliseconds(
+          ui::GestureConfiguration::max_seconds_between_double_click() *
+          1000)) {
+    return false;
+  }
+
+  double double_tap_slop_square =
+      GestureConfiguration::max_distance_between_taps_for_double_tap();
+  double_tap_slop_square *= double_tap_slop_square;
+  const float delta_x = previous_tap.x - current_tap.x;
+  const float delta_y = previous_tap.y - current_tap.y;
+  return (delta_x * delta_x + delta_y * delta_y < double_tap_slop_square);
 }
 
 }  // namespace content
