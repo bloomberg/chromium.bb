@@ -140,13 +140,10 @@ class AccountReconcilor : public KeyedService,
   virtual void PerformAddToChromeAction(const std::string& account_id,
                                         int session_index);
   virtual void PerformLogoutAllAccountsAction();
-  virtual void PerformAddAccountToTokenService(
-      const std::string& account_id,
-      const std::string& refresh_token);
 
   // Used to remove an account from chrome and the cookie jar.
-  virtual void PerformStartRemoveAction(const std::string& account_id);
-  virtual void PerformFinishRemoveAction(
+  virtual void StartRemoveAction(const std::string& account_id);
+  virtual void FinishRemoveAction(
       const std::string& account_id,
       const GoogleServiceAuthError& error,
       const std::vector<std::pair<std::string, bool> >& accounts);

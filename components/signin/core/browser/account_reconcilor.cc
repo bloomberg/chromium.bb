@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -335,7 +334,7 @@ void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
 
 void AccountReconcilor::OnRefreshTokenRevoked(const std::string& account_id) {
   VLOG(1) << "AccountReconcilor::OnRefreshTokenRevoked: " << account_id;
-  PerformStartRemoveAction(account_id);
+  StartRemoveAction(account_id);
 }
 
 void AccountReconcilor::OnRefreshTokensLoaded() {}
@@ -357,28 +356,22 @@ void AccountReconcilor::GoogleSignedOut(const std::string& username) {
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
-  if (!switches::IsNewProfileManagement())
-    return;
   VLOG(1) << "AccountReconcilor::PerformMergeAction: " << account_id;
   merge_session_helper_.LogIn(account_id);
 }
 
-void AccountReconcilor::PerformStartRemoveAction(
-    const std::string& account_id) {
-  VLOG(1) << "AccountReconcilor::PerformStartRemoveAction: " << account_id;
-  GetAccountsFromCookie(base::Bind(
-      &AccountReconcilor::PerformFinishRemoveAction,
-      base::Unretained(this),
-      account_id));
+void AccountReconcilor::StartRemoveAction(const std::string& account_id) {
+  VLOG(1) << "AccountReconcilor::StartRemoveAction: " << account_id;
+  GetAccountsFromCookie(base::Bind(&AccountReconcilor::FinishRemoveAction,
+                                   base::Unretained(this),
+                                   account_id));
 }
 
-void AccountReconcilor::PerformFinishRemoveAction(
+void AccountReconcilor::FinishRemoveAction(
     const std::string& account_id,
     const GoogleServiceAuthError& error,
     const std::vector<std::pair<std::string, bool> >& accounts) {
-  if (!switches::IsNewProfileManagement())
-    return;
-  VLOG(1) << "AccountReconcilor::PerformFinishRemoveAction:"
+  VLOG(1) << "AccountReconcilor::FinishRemoveAction:"
           << " account=" << account_id << " error=" << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     AbortReconcile();
@@ -396,8 +389,6 @@ void AccountReconcilor::PerformFinishRemoveAction(
 
 void AccountReconcilor::PerformAddToChromeAction(const std::string& account_id,
                                                  int session_index) {
-  if (!switches::IsNewProfileManagement())
-    return;
   VLOG(1) << "AccountReconcilor::PerformAddToChromeAction:"
           << " account=" << account_id << " session_index=" << session_index;
 
@@ -408,8 +399,6 @@ void AccountReconcilor::PerformAddToChromeAction(const std::string& account_id,
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
-  if (!switches::IsNewProfileManagement())
-    return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
   merge_session_helper_.LogOutAllAccounts();
 }
@@ -723,22 +712,13 @@ void AccountReconcilor::HandleFailedAccountIdCheck(
   FinishReconcile();
 }
 
-void AccountReconcilor::PerformAddAccountToTokenService(
-    const std::string& account_id,
-    const std::string& refresh_token) {
-  // The flow should never get to this method if new_profile_management is
-  // false, but better safe than sorry.
-  if (!switches::IsNewProfileManagement())
-    return;
-  token_service_->UpdateCredentials(account_id, refresh_token);
-}
-
 void AccountReconcilor::HandleRefreshTokenFetched(
     const std::string& account_id,
     const std::string& refresh_token) {
   if (!refresh_token.empty()) {
-    PerformAddAccountToTokenService(account_id, refresh_token);
+    token_service_->UpdateCredentials(account_id, refresh_token);
   }
+
   // Remove the account from the list that is being updated.
   for (std::vector<std::pair<std::string, int> >::iterator i =
            add_to_chrome_.begin();
