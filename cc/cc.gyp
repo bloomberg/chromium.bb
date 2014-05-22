@@ -374,8 +374,6 @@
         'resources/raster_worker_pool.h',
         'resources/rasterizer.cc',
         'resources/rasterizer.h',
-        'resources/rasterizer_delegate.cc',
-        'resources/rasterizer_delegate.h',
         'resources/release_callback.h',
         'resources/resource.cc',
         'resources/resource.h',

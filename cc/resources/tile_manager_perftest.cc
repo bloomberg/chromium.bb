@@ -116,8 +116,7 @@ class TileManagerPerfTest : public testing::Test, public TileManagerClient {
   virtual void InitializeRenderer() {
     host_impl_.InitializeRenderer(
         FakeOutputSurface::Create3d().PassAs<OutputSurface>());
-    tile_manager()->SetRasterizersForTesting(g_fake_rasterizer.Pointer(),
-                                             g_fake_rasterizer.Pointer());
+    tile_manager()->SetRasterizerForTesting(g_fake_rasterizer.Pointer());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {

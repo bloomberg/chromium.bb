@@ -486,15 +486,14 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
-  void CreateAndSetRenderer(OutputSurface* output_surface,
-                            ResourceProvider* resource_provider);
-  void CreateAndSetTileManager(ResourceProvider* resource_provider,
-                               ContextProvider* context_provider,
-                               bool use_zero_copy,
-                               bool use_one_copy,
-                               bool allow_rasterize_on_demand);
+  void CreateAndSetRenderer();
+  void CreateAndSetTileManager();
+  void DestroyTileManager();
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
+
+  bool UseZeroCopyTextureUpload() const;
+  bool UseOneCopyTextureUpload() const;
 
   void ScrollViewportBy(gfx::Vector2dF scroll_delta);
   void AnimatePageScale(base::TimeTicks monotonic_time);
@@ -564,7 +563,6 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TileManager> tile_manager_;
   bool use_gpu_rasterization_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
-  scoped_ptr<RasterWorkerPool> direct_raster_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<Renderer> renderer_;

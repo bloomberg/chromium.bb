@@ -367,13 +367,11 @@ scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
-    Rasterizer* gpu_rasterizer,
     bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   return make_scoped_ptr(new TileManager(client,
                                          resource_pool,
                                          rasterizer,
-                                         gpu_rasterizer,
                                          use_rasterize_on_demand,
                                          rendering_stats_instrumentation));
 }
@@ -382,11 +380,11 @@ TileManager::TileManager(
     TileManagerClient* client,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
-    Rasterizer* gpu_rasterizer,
     bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
       resource_pool_(resource_pool),
+      rasterizer_(rasterizer),
       prioritized_tiles_dirty_(false),
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
@@ -399,12 +397,7 @@ TileManager::TileManager(
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       use_rasterize_on_demand_(use_rasterize_on_demand) {
-  Rasterizer* rasterizers[NUM_RASTERIZER_TYPES] = {
-      rasterizer,      // RASTERIZER_TYPE_DEFAULT
-      gpu_rasterizer,  // RASTERIZER_TYPE_GPU
-  };
-  rasterizer_delegate_ =
-      RasterizerDelegate::Create(this, rasterizers, arraysize(rasterizers));
+  rasterizer_->SetClient(this);
 }
 
 TileManager::~TileManager() {
@@ -415,14 +408,14 @@ TileManager::~TileManager() {
   CleanUpReleasedTiles();
   DCHECK_EQ(0u, tiles_.size());
 
-  RasterTaskQueue empty[NUM_RASTERIZER_TYPES];
-  rasterizer_delegate_->ScheduleTasks(empty);
+  RasterTaskQueue empty;
+  rasterizer_->ScheduleTasks(&empty);
   orphan_raster_tasks_.clear();
 
   // This should finish all pending tasks and release any uninitialized
   // resources.
-  rasterizer_delegate_->Shutdown();
-  rasterizer_delegate_->CheckForCompletedTasks();
+  rasterizer_->Shutdown();
+  rasterizer_->CheckForCompletedTasks();
 
   DCHECK_EQ(0u, bytes_releasable_);
   DCHECK_EQ(0u, resources_releasable_);
@@ -500,7 +493,7 @@ void TileManager::DidFinishRunningTasks() {
       !memory_usage_above_limit)
     return;
 
-  rasterizer_delegate_->CheckForCompletedTasks();
+  rasterizer_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TileVector tiles_that_need_to_be_rasterized;
@@ -707,7 +700,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
   if (!did_check_for_completed_tasks_since_last_schedule_tasks_) {
-    rasterizer_delegate_->CheckForCompletedTasks();
+    rasterizer_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
 
@@ -736,7 +729,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
 bool TileManager::UpdateVisibleTiles() {
   TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
 
-  rasterizer_delegate_->CheckForCompletedTasks();
+  rasterizer_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TRACE_EVENT_INSTANT1(
@@ -1013,8 +1006,7 @@ void TileManager::ScheduleTasks(
 
   DCHECK(did_check_for_completed_tasks_since_last_schedule_tasks_);
 
-  for (size_t i = 0; i < NUM_RASTERIZER_TYPES; ++i)
-    raster_queue_[i].Reset();
+  raster_queue_.Reset();
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -1032,12 +1024,9 @@ void TileManager::ScheduleTasks(
     if (!tile_version.raster_task_)
       tile_version.raster_task_ = CreateRasterTask(tile);
 
-    size_t pool_type = tile->use_gpu_rasterization() ? RASTERIZER_TYPE_GPU
-                                                     : RASTERIZER_TYPE_DEFAULT;
-
-    raster_queue_[pool_type].items.push_back(RasterTaskQueue::Item(
+    raster_queue_.items.push_back(RasterTaskQueue::Item(
         tile_version.raster_task_.get(), tile->required_for_activation()));
-    raster_queue_[pool_type].required_for_activation_count +=
+    raster_queue_.required_for_activation_count +=
         tile->required_for_activation();
   }
 
@@ -1048,7 +1037,7 @@ void TileManager::ScheduleTasks(
   // Schedule running of |raster_tasks_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_tasks_|.
-  rasterizer_delegate_->ScheduleTasks(raster_queue_);
+  rasterizer_->ScheduleTasks(&raster_queue_);
 
   // It's now safe to clean up orphan tasks as raster worker pool is not
   // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
@@ -1633,11 +1622,9 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
   return a_priority.IsHigherPriorityThan(b_priority);
 }
 
-void TileManager::SetRasterizersForTesting(Rasterizer* rasterizer,
-                                           Rasterizer* gpu_rasterizer) {
-  Rasterizer* rasterizers[2] = {rasterizer, gpu_rasterizer};
-  rasterizer_delegate_ =
-      RasterizerDelegate::Create(this, rasterizers, arraysize(rasterizers));
+void TileManager::SetRasterizerForTesting(Rasterizer* rasterizer) {
+  rasterizer_ = rasterizer;
+  rasterizer_->SetClient(this);
 }
 
 }  // namespace cc

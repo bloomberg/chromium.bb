@@ -22,12 +22,10 @@
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/rasterizer.h"
-#include "cc/resources/rasterizer_delegate.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 
 namespace cc {
-class RasterizerDelegate;
 class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
@@ -158,7 +156,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
       TileManagerClient* client,
       ResourcePool* resource_pool,
       Rasterizer* rasterizer,
-      Rasterizer* gpu_rasterizer,
       bool use_rasterize_on_demand,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~TileManager();
@@ -225,8 +222,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
     }
   }
 
-  void SetRasterizersForTesting(Rasterizer* rasterizer,
-                                Rasterizer* gpu_rasterizer);
+  void SetRasterizerForTesting(Rasterizer* rasterizer);
 
   void CleanUpReleasedTilesForTesting() { CleanUpReleasedTiles(); }
 
@@ -234,7 +230,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   TileManager(TileManagerClient* client,
               ResourcePool* resource_pool,
               Rasterizer* rasterizer,
-              Rasterizer* gpu_rasterizer,
               bool use_rasterize_on_demand,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
@@ -264,12 +259,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
 
  private:
-  enum RasterizerType {
-    RASTERIZER_TYPE_DEFAULT,
-    RASTERIZER_TYPE_GPU,
-    NUM_RASTERIZER_TYPES
-  };
-
   void OnImageDecodeTaskCompleted(int layer_id,
                                   SkPixelRef* pixel_ref,
                                   bool was_canceled);
@@ -296,7 +285,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   TileManagerClient* client_;
   ResourcePool* resource_pool_;
-  scoped_ptr<RasterizerDelegate> rasterizer_delegate_;
+  Rasterizer* rasterizer_;
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
@@ -338,8 +327,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   ResourceFormat resource_format_;
 
-  // Queues used when scheduling raster tasks.
-  RasterTaskQueue raster_queue_[NUM_RASTERIZER_TYPES];
+  // Queue used when scheduling raster tasks.
+  RasterTaskQueue raster_queue_;
 
   std::vector<scoped_refptr<RasterTask> > orphan_raster_tasks_;
 

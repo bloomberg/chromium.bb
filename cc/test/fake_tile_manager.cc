@@ -65,7 +65,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   NULL,
                   g_fake_rasterizer.Pointer(),
-                  g_fake_rasterizer.Pointer(),
                   true,
                   NULL) {}
 
@@ -73,7 +72,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
                   resource_pool,
-                  g_fake_rasterizer.Pointer(),
                   g_fake_rasterizer.Pointer(),
                   true,
                   NULL) {}
@@ -83,7 +81,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  bool allow_on_demand_raster)
     : TileManager(client,
                   resource_pool,
-                  g_fake_rasterizer.Pointer(),
                   g_fake_rasterizer.Pointer(),
                   allow_on_demand_raster,
                   NULL) {}
