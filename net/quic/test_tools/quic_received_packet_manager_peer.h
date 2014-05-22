@@ -15,7 +15,7 @@ namespace test {
 
 class QuicReceivedPacketManagerPeer {
  public:
-  static void RecalculateEntropyHash(
+  static void SetCumulativeEntropyUpTo(
       QuicReceivedPacketManager* received_packet_manager,
       QuicPacketSequenceNumber peer_least_unacked,
       QuicPacketEntropyHash entropy_hash);

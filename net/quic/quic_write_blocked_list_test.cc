@@ -4,6 +4,7 @@
 //
 #include "net/quic/quic_write_blocked_list.h"
 
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -93,7 +94,7 @@ TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
 
   // Try to add a stream to the write blocked list multiple times at the same
   // priority.
-  const QuicStreamId kBlockedId = 5;
+  const QuicStreamId kBlockedId = kClientDataStreamId1;
   write_blocked_list.PushBack(kBlockedId,
                               QuicWriteBlockedList::kHighestPriority);
   write_blocked_list.PushBack(kBlockedId,

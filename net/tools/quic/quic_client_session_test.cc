@@ -15,9 +15,9 @@
 
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
-using net::test::kInitialFlowControlWindowForTest;
 using net::test::PacketSavingConnection;
 using net::test::SupportedVersions;
+using net::test::kInitialFlowControlWindowForTest;
 using testing::_;
 
 namespace net {

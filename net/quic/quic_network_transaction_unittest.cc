@@ -54,9 +54,6 @@ static const char kQuicAlternateProtocolHttpHeader[] =
 static const char kQuicAlternateProtocolHttpsHeader[] =
     "Alternate-Protocol: 443:quic\r\n\r\n";
 
-// Used by the QuicNetworkTransactionTest unit tests.
-const net::QuicStreamId kStreamId5 = 5;
-
 }  // namespace
 
 namespace net {
@@ -324,13 +321,13 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
 
@@ -386,13 +383,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
 
@@ -464,13 +461,13 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
 
@@ -506,13 +503,13 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
 
@@ -592,13 +589,13 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
 
@@ -618,13 +615,13 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
   mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 1);
@@ -695,13 +692,13 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddRead(
-      ConstructResponseHeadersPacket(1, kStreamId5, false, false,
+      ConstructResponseHeadersPacket(1, kClientDataStreamId1, false, false,
                                      GetResponseHeaders("200 OK")));
   mock_quic_data.AddRead(
-      ConstructDataPacket(2, kStreamId5, false, true, 0, "hello!"));
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
   mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 1);
@@ -902,7 +899,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   MockQuicData mock_quic_data;
   mock_quic_data.AddRead(ConstructConnectionClosePacket(1));
   mock_quic_data.AddWrite(
-      ConstructRequestHeadersPacket(1, kStreamId5, true, true,
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "http", "/")));
   mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
   mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 0);

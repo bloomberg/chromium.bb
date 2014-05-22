@@ -54,6 +54,7 @@ using net::test::QuicConnectionPeer;
 using net::test::QuicPacketCreatorPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
+using net::test::kClientDataStreamId1;
 using net::tools::test::PacketDroppingTestWriter;
 using net::tools::test::QuicDispatcherPeer;
 using net::tools::test::QuicServerPeer;
@@ -923,7 +924,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   client_->client()->WaitForEvents();
   // Transmit the cancel, and ensure the connection is torn down properly.
   SetPacketLossPercentage(0);
-  QuicStreamId stream_id = 5;
+  QuicStreamId stream_id = kClientDataStreamId1;
   session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
 
   // WaitForEvents waits 50ms and returns true if there are outstanding

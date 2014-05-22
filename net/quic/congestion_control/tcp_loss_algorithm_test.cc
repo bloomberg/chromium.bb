@@ -171,7 +171,7 @@ TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   // Early retransmit when the final packet gets acked and the first is nacked.
   unacked_packets_.SetNotPending(2);
   unacked_packets_.NackPacket(1, 1);
-  unacked_packets_.NeuterPacket(1);
+  unacked_packets_.RemoveRetransmittibility(1, 1);
   VerifyLosses(2, NULL, 0);
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }

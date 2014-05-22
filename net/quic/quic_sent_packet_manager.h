@@ -82,12 +82,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void OnIncomingAck(const ReceivedPacketInfo& received_info,
                      QuicTime ack_receive_time);
 
-  // Discards any information for the packet corresponding to |sequence_number|.
-  // If this packet has been retransmitted, information on those packets
-  // will be discarded as well.  Also discards it from the congestion window if
-  // it is present.
-  void DiscardUnackedPacket(QuicPacketSequenceNumber sequence_number);
-
   // Returns true if the non-FEC packet |sequence_number| is unacked.
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
 

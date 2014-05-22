@@ -31,6 +31,12 @@ static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
 static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
 
+// Data stream IDs start at 5: the crypto stream is 1, headers stream is 3.
+static const QuicStreamId kClientDataStreamId1 = 5;
+static const QuicStreamId kClientDataStreamId2 = 7;
+static const QuicStreamId kClientDataStreamId3 = 9;
+static const QuicStreamId kClientDataStreamId4 = 11;
+
 // Returns the test peer IP address.
 IPAddressNumber TestPeerIPAddress();
 

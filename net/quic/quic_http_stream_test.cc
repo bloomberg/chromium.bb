@@ -129,7 +129,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
-        stream_id_(5),
+        stream_id_(kClientDataStreamId1),
         maker_(GetParam(), connection_id_),
         random_generator_(0) {
     IPAddressNumber ip;

@@ -169,7 +169,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket() {
-    QuicStreamId stream_id = 5;
+    QuicStreamId stream_id = kClientDataStreamId1;
     return maker_.MakeRstPacket(
         1, true, stream_id,
         AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
@@ -663,7 +663,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  QuicStreamId stream_id = 5;
+  QuicStreamId stream_id = kClientDataStreamId1;
   scoped_ptr<QuicEncryptedPacket> rst(
       maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {

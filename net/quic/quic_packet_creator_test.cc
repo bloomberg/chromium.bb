@@ -116,10 +116,10 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   // Returns the number of bytes consumed by the non-data fields of a stream
   // frame, assuming it is the last frame in the packet
   size_t GetStreamFrameOverhead(InFecGroup is_in_fec_group) {
-    return QuicFramer::GetMinStreamFrameSize(
-        client_framer_.version(), kStreamId, kOffset, true, is_in_fec_group);
+    return QuicFramer::GetMinStreamFrameSize(client_framer_.version(),
+                                             kClientDataStreamId1, kOffset,
+                                             true, is_in_fec_group);
   }
-  static const QuicStreamId kStreamId = 1u;
   static const QuicStreamOffset kOffset = 1u;
 
   QuicFrames frames_;
@@ -503,12 +503,13 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
     creator_.options()->max_packet_length = i;
     const bool should_have_room = i > overhead + GetStreamFrameOverhead(
         NOT_IN_FEC_GROUP);
-    ASSERT_EQ(should_have_room,
-              creator_.HasRoomForStreamFrame(kStreamId, kOffset));
+    ASSERT_EQ(should_have_room, creator_.HasRoomForStreamFrame(
+                                    kClientDataStreamId1, kOffset));
     if (should_have_room) {
       QuicFrame frame;
       size_t bytes_consumed = creator_.CreateStreamFrame(
-          kStreamId, MakeIOVector("testdata"), kOffset, false, &frame);
+          kClientDataStreamId1, MakeIOVector("testdata"), kOffset, false,
+          &frame);
       EXPECT_LT(0u, bytes_consumed);
       ASSERT_TRUE(creator_.AddSavedFrame(frame));
       SerializedPacket serialized_packet = creator_.SerializePacket();
@@ -530,7 +531,7 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId, MakeIOVector(data), kOffset, false, &frame);
+        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -559,7 +560,7 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId, MakeIOVector(data), kOffset, false, &frame);
+        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -589,7 +590,7 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
 
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId, MakeIOVector(data), kOffset, false, &frame);
+        kCryptoStreamId, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     SerializedPacket serialized_packet = creator_.SerializePacket();
@@ -622,7 +623,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId + 2, MakeIOVector(data), kOffset, false, &frame);
+        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     SerializedPacket serialized_packet = creator_.SerializePacket();

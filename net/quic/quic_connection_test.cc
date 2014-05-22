@@ -59,11 +59,6 @@ const QuicPacketEntropyHash kTestEntropyHash = 76;
 const int kDefaultRetransmissionTimeMs = 500;
 const int kMinRetransmissionTimeMs = 200;
 
-// Used by TestConnection::SendStreamData3.
-const QuicStreamId kStreamId3 = 3;
-// Used by TestConnection::SendStreamData5.
-const QuicStreamId kStreamId5 = 5;
-
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
   explicit TestReceiveAlgorithm(QuicCongestionFeedbackFrame* feedback)
@@ -473,11 +468,13 @@ class TestConnection : public QuicConnection {
   }
 
   QuicConsumedData SendStreamData3() {
-    return SendStreamDataWithString(kStreamId3, "food", 0, !kFin, NULL);
+    return SendStreamDataWithString(kClientDataStreamId1, "food", 0, !kFin,
+                                    NULL);
   }
 
   QuicConsumedData SendStreamData5() {
-    return SendStreamDataWithString(kStreamId5, "food2", 0, !kFin, NULL);
+    return SendStreamDataWithString(kClientDataStreamId2, "food2", 0,
+                                    !kFin, NULL);
   }
 
   // Ensures the connection can write stream data before writing.
@@ -1587,8 +1584,8 @@ TEST_P(QuicConnectionTest, FramePacking) {
   }
   EXPECT_FALSE(writer_->ack_frames().empty());
   EXPECT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kStreamId3, writer_->stream_frames()[0].stream_id);
-  EXPECT_EQ(kStreamId5, writer_->stream_frames()[1].stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
@@ -1640,7 +1637,7 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
   // Parse the last packet and ensure it's the stream frame from stream 3.
   EXPECT_EQ(1u, writer_->frame_count());
   EXPECT_EQ(1u, writer_->stream_frames().size());
-  EXPECT_EQ(kStreamId3, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingFEC) {
@@ -1706,8 +1703,8 @@ TEST_P(QuicConnectionTest, FramePackingAckResponse) {
   }
   EXPECT_FALSE(writer_->ack_frames().empty());
   ASSERT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kStreamId3, writer_->stream_frames()[0].stream_id);
-  EXPECT_EQ(kStreamId5, writer_->stream_frames()[1].stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendv) {
@@ -1794,8 +1791,8 @@ TEST_P(QuicConnectionTest, OnCanWrite) {
   // two different streams.
   EXPECT_EQ(2u, writer_->frame_count());
   EXPECT_EQ(2u, writer_->stream_frames().size());
-  EXPECT_EQ(kStreamId3, writer_->stream_frames()[0].stream_id);
-  EXPECT_EQ(kStreamId5, writer_->stream_frames()[1].stream_id);
+  EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0].stream_id);
+  EXPECT_EQ(kClientDataStreamId2, writer_->stream_frames()[1].stream_id);
 }
 
 TEST_P(QuicConnectionTest, RetransmitOnNack) {
@@ -2323,21 +2320,24 @@ TEST_P(QuicConnectionTest,
   QuicPacketSequenceNumber sequence_number;
   SendStreamDataToPeer(3, "foo", 0, !kFin, &sequence_number);
 
+  // Simulate the retransmission alarm firing and the socket blocking.
+  BlockOnNextWrite();
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  clock_.AdvanceTime(DefaultRetransmissionTime());
+  connection_.GetRetransmissionAlarm()->Fire();
+
+  // Go forward secure.
   connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                            new TaggingEncrypter(0x02));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  connection_.NeuterUnencryptedPackets();
 
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
-
-  QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
-      DefaultRetransmissionTime());
-
-  EXPECT_EQ(default_retransmission_time,
+  EXPECT_EQ(QuicTime::Zero(),
             connection_.GetRetransmissionAlarm()->deadline());
-  // Simulate the retransmission alarm firing.
-  clock_.AdvanceTime(DefaultRetransmissionTime());
-  connection_.GetRetransmissionAlarm()->Fire();
+  // Unblock the socket and ensure that no packets are sent.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  writer_->SetWritable();
+  connection_.OnCanWrite();
 }
 
 TEST_P(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
@@ -2997,7 +2997,8 @@ TEST_P(QuicConnectionTest, NoAckOnOldNacks) {
 TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingPacket) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(1);
-  connection_.SendStreamDataWithString(kStreamId3, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 0,
+                                       !kFin, NULL);
   // Check that ack is bundled with outgoing data and that delayed ack
   // alarm is reset.
   if (version() > QUIC_VERSION_15) {
@@ -3022,8 +3023,10 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnOutgoingCryptoPacket) {
 
 TEST_P(QuicConnectionTest, BundleAckWithDataOnIncomingAck) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  connection_.SendStreamDataWithString(kStreamId3, "foo", 0, !kFin, NULL);
-  connection_.SendStreamDataWithString(kStreamId3, "foo", 3, !kFin, NULL);
+  connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 0,
+                                       !kFin, NULL);
+  connection_.SendStreamDataWithString(kClientDataStreamId1, "foo", 3,
+                                       !kFin, NULL);
   // Ack the second packet, which will retransmit the first packet.
   QuicAckFrame ack = InitAckFrame(2, 0);
   NackPacket(1, &ack);
@@ -3247,7 +3250,7 @@ TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
   QuicPacketEntropyHash entropy[51];
   entropy[0] = 0;
   for (int i = 1; i < 51; ++i) {
-    bool should_send = i % 10 != 0;
+    bool should_send = i % 10 != 1;
     bool entropy_flag = (i & (i - 1)) != 0;
     if (!should_send) {
       entropy[i] = entropy[i - 1];
@@ -3260,7 +3263,6 @@ TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
     }
     ProcessDataPacket(i, 1, entropy_flag);
   }
-  // Till 50 since 50th packet is not sent.
   for (int i = 1; i < 50; ++i) {
     EXPECT_EQ(entropy[i], QuicConnectionPeer::ReceivedEntropyHash(
         &connection_, i));

@@ -11,12 +11,12 @@ namespace net {
 namespace test {
 
 // static
-void QuicReceivedPacketManagerPeer::RecalculateEntropyHash(
+void QuicReceivedPacketManagerPeer::SetCumulativeEntropyUpTo(
     QuicReceivedPacketManager* received_packet_manager,
     QuicPacketSequenceNumber peer_least_unacked,
     QuicPacketEntropyHash entropy_hash) {
-  received_packet_manager->RecalculateEntropyHash(peer_least_unacked,
-                                                  entropy_hash);
+  received_packet_manager->entropy_tracker_.SetCumulativeEntropyUpTo(
+      peer_least_unacked, entropy_hash);
 }
 
 // static

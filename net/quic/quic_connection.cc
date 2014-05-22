@@ -1443,16 +1443,6 @@ bool QuicConnection::ShouldDiscardPacket(
     return true;
   }
 
-  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
-      level == ENCRYPTION_NONE) {
-    // Drop packets that are NULL encrypted since the peer won't accept them
-    // anymore.
-    DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
-             << " since the packet is NULL encrypted.";
-    sent_packet_manager_.DiscardUnackedPacket(sequence_number);
-    return true;
-  }
-
   // If the packet has been discarded before sending, don't send it.
   // This occurs if a packet gets serialized, queued, then discarded.
   if (!sent_packet_manager_.IsUnacked(sequence_number)) {
@@ -1461,11 +1451,23 @@ bool QuicConnection::ShouldDiscardPacket(
     return true;
   }
 
+  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
+      level == ENCRYPTION_NONE) {
+    // Drop packets that are NULL encrypted since the peer won't accept them
+    // anymore.
+    DVLOG(1) << ENDPOINT << "Dropping NULL encrypted packet: "
+             << sequence_number << " since the connection is forward secure.";
+    LOG_IF(DFATAL,
+           sent_packet_manager_.HasRetransmittableFrames(sequence_number))
+        << "Once forward secure, all NULL encrypted packets should be "
+        << "neutered.";
+    return true;
+  }
+
   if (retransmittable == HAS_RETRANSMITTABLE_DATA &&
       !sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-    DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
-             << " since a previous transmission has been acked.";
-    sent_packet_manager_.DiscardUnackedPacket(sequence_number);
+    LOG(DFATAL) << ENDPOINT << "Dropping unacked packet: " << sequence_number
+                << " This should have been removed when it was Neutered.";
     return true;
   }
 

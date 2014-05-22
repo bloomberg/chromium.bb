@@ -110,14 +110,20 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if there are any pending crypto packets.
   bool HasPendingCryptoPackets() const;
 
-  // Removes entries from the unacked packet map, and deletes
-  // the retransmittable frames associated with the packet.
-  // Does not remove any previous or subsequent transmissions of this packet.
-  void RemovePacket(QuicPacketSequenceNumber sequence_number);
+  // Removes any retransmittable frames from this transmission or an associated
+  // transmission.  It removes any nnon-pending transmissions less than or
+  // equal to |largest_observed|, and disconnects any other packets from other
+  // transmissions.
+  // TODO(ianswett): Remove largest_observed_ once the map tracks whether a
+  // transmission is useful for RTT purposes internally.
+  void RemoveRetransmittibility(QuicPacketSequenceNumber sequence_number,
+                                QuicPacketSequenceNumber largest_observed_);
 
-  // Neuters the specified packet.  Deletes any retransmittable
-  // frames, and sets all_transmissions to only include itself.
-  void NeuterPacket(QuicPacketSequenceNumber sequence_number);
+  // Removes an entry from the unacked packet map which is not pending, has
+  // no retransmittable frames, and no associated transmissions.
+  // TODO(ianswett): Remove or make this method private once the map tracks
+  // the three reasons for tracking a packet correctly.
+  void RemoveRttOnlyPacket(QuicPacketSequenceNumber sequence_number);
 
   // Returns true if the packet's only purpose is to measure RTT.  It must not
   // be pending, have retransmittable frames, or be linked to transmissions

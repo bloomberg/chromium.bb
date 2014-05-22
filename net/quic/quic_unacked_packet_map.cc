@@ -90,8 +90,11 @@ void QuicUnackedPacketMap::ClearPreviousRetransmissions(size_t num_to_clear) {
       break;
     }
 
+    it->second.all_transmissions->erase(sequence_number);
+    LOG_IF(DFATAL, it->second.all_transmissions->empty())
+        << "Previous retransmissions must have a newer transmission.";
     ++it;
-    RemovePacket(sequence_number);
+    unacked_packets_.erase(sequence_number);
     --num_to_clear;
   }
 }
@@ -119,38 +122,36 @@ void QuicUnackedPacketMap::NackPacket(QuicPacketSequenceNumber sequence_number,
   it->second.nack_count = max(min_nacks, it->second.nack_count);
 }
 
-void QuicUnackedPacketMap::RemovePacket(
-    QuicPacketSequenceNumber sequence_number) {
+void QuicUnackedPacketMap::RemoveRetransmittibility(
+    QuicPacketSequenceNumber sequence_number,
+    QuicPacketSequenceNumber largest_observed) {
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
   if (it == unacked_packets_.end()) {
     LOG(DFATAL) << "packet is not unacked: " << sequence_number;
     return;
   }
-  TransmissionInfo* transmission_info = &it->second;
-  DCHECK(!transmission_info->pending);
-  MaybeRemoveRetransmittableFrames(transmission_info);
-  transmission_info->all_transmissions->erase(sequence_number);
-  if (transmission_info->all_transmissions->empty()) {
-    delete transmission_info->all_transmissions;
+  SequenceNumberSet* all_transmissions = it->second.all_transmissions;
+  // TODO(ianswett): Consider optimizing this for lone packets.
+  // TODO(ianswett): Consider adding a check to ensure there are retranmittable
+  // frames associated with this packet.
+  for (SequenceNumberSet::reverse_iterator it = all_transmissions->rbegin();
+       it != all_transmissions->rend(); ++it) {
+    TransmissionInfo* transmission_info = FindOrNull(unacked_packets_, *it);
+    if (transmission_info == NULL) {
+      LOG(DFATAL) << "All transmissions in all_transmissions must be present "
+                  << "in the unacked packet map.";
+      continue;
+    }
+    MaybeRemoveRetransmittableFrames(transmission_info);
+    if (sequence_number <= largest_observed && !transmission_info->pending) {
+      unacked_packets_.erase(*it);
+    } else {
+      transmission_info->all_transmissions = new SequenceNumberSet();
+      transmission_info->all_transmissions->insert(*it);
+    }
   }
-  unacked_packets_.erase(it);
-}
 
-void QuicUnackedPacketMap::NeuterPacket(
-    QuicPacketSequenceNumber sequence_number) {
-  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
-  if (it == unacked_packets_.end()) {
-    LOG(DFATAL) << "packet is not unacked: " << sequence_number;
-    return;
-  }
-  TransmissionInfo* transmission_info = &it->second;
-  // TODO(ianswett): Ensure packets are pending before neutering them.
-  MaybeRemoveRetransmittableFrames(transmission_info);
-  if (transmission_info->all_transmissions->size() > 1) {
-    transmission_info->all_transmissions->erase(sequence_number);
-    transmission_info->all_transmissions = new SequenceNumberSet();
-    transmission_info->all_transmissions->insert(sequence_number);
-  }
+  delete all_transmissions;
 }
 
 void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
@@ -163,6 +164,21 @@ void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
     delete transmission_info->retransmittable_frames;
     transmission_info->retransmittable_frames = NULL;
   }
+}
+
+void QuicUnackedPacketMap::RemoveRttOnlyPacket(
+    QuicPacketSequenceNumber sequence_number) {
+  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
+  if (it == unacked_packets_.end()) {
+    LOG(DFATAL) << "packet is not unacked: " << sequence_number;
+    return;
+  }
+  TransmissionInfo* transmission_info = &it->second;
+  DCHECK(!transmission_info->pending);
+  DCHECK(transmission_info->retransmittable_frames == NULL);
+  DCHECK_EQ(1u, transmission_info->all_transmissions->size());
+  delete transmission_info->all_transmissions;
+  unacked_packets_.erase(it);
 }
 
 // static

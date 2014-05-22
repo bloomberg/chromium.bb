@@ -194,7 +194,8 @@ TEST_P(QuicHeadersStreamTest, EffectivePriority) {
 }
 
 TEST_P(QuicHeadersStreamTest, WriteHeaders) {
-  for (QuicStreamId stream_id = 5; stream_id < 9; stream_id +=2) {
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
     for (int count = 0; count < 2; ++count) {
       bool fin = (count == 0);
       if (is_server()) {
@@ -209,7 +210,8 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessRawData) {
-  for (QuicStreamId stream_id = 5; stream_id < 9; stream_id +=2) {
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
     for (int count = 0; count < 2; ++count) {
       bool fin = (count == 0);
       for (QuicPriority priority = 0; priority < 7; ++priority) {

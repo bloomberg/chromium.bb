@@ -29,11 +29,11 @@
 using base::hash_map;
 using std::set;
 using std::vector;
-using testing::_;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::StrictMock;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -273,8 +273,8 @@ TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {
 }
 
 TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
-  QuicStreamId stream_id1 = 5;
-  QuicStreamId stream_id2 = stream_id1 + 2;
+  QuicStreamId stream_id1 = kClientDataStreamId1;
+  QuicStreamId stream_id2 = kClientDataStreamId2;
   QuicDataStream* stream1 = session_.GetIncomingDataStream(stream_id1);
   QuicDataStreamPeer::SetHeadersDecompressed(stream1, true);
   QuicDataStream* stream2 = session_.GetIncomingDataStream(stream_id2);
@@ -294,7 +294,7 @@ TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
 }
 
 TEST_P(QuicSessionTest, StreamIdTooLarge) {
-  QuicStreamId stream_id = 5;
+  QuicStreamId stream_id = kClientDataStreamId1;
   session_.GetIncomingDataStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
   session_.GetIncomingDataStream(stream_id + kMaxStreamIdDelta + 2);
@@ -568,7 +568,7 @@ TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
 }
 
 TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
-  QuicStreamId stream_id1 = 5;
+  QuicStreamId stream_id1 = kClientDataStreamId1;
   // Send two bytes of payload.
   QuicStreamFrame data1(stream_id1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
@@ -589,8 +589,7 @@ TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
   // multiple connection close frames.
 
   // Create valid stream.
-  const QuicStreamId kStreamId = 5;
-  QuicStreamFrame data1(kStreamId, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   session_.OnStreamFrames(frames);

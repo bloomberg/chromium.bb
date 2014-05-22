@@ -444,7 +444,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
-  // Ensure packet 2 is lost when 4 and 5 are sent and acked.
+  // Ensure packet 2 is lost when 4 is sent and 3 and 4 are acked.
   SendDataPacket(4);
   received_info.largest_observed = 4;
   received_info.missing_packets.insert(2);
@@ -616,14 +616,6 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketUnackedFec) {
   EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
 }
 
-TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketDiscardUnacked) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
-
-  manager_.OnSerializedPacket(serialized_packet);
-  manager_.DiscardUnackedPacket(1u);
-  EXPECT_EQ(0u, manager_.GetLeastUnackedSentPacket());
-}
-
 TEST_F(QuicSentPacketManagerTest, GetLeastUnackedPacketAndDiscard) {
   VerifyUnackedPackets(NULL, 0);
 
@@ -643,19 +635,12 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedPacketAndDiscard) {
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(NULL, 0);
 
-  manager_.DiscardUnackedPacket(1);
-  EXPECT_EQ(2u, manager_.GetLeastUnackedSentPacket());
-
   // Ack 2, which has never been sent, so there's no rtt update.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   manager_.OnIncomingAck(received_info, clock_.Now());
 
   EXPECT_EQ(3u, manager_.GetLeastUnackedSentPacket());
-
-  // Discard the 3rd packet and ensure there are no FEC packets.
-  manager_.DiscardUnackedPacket(3);
-  EXPECT_FALSE(manager_.HasUnackedPackets());
 }
 
 TEST_F(QuicSentPacketManagerTest, GetSentTime) {
