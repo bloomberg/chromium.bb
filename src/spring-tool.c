@@ -40,6 +40,11 @@ weston_view_schedule_repaint(struct weston_view *view)
 {
 }
 
+WL_EXPORT void
+weston_compositor_schedule_repaint(struct weston_compositor *compositor)
+{
+}
+
 int
 main(int argc, char *argv[])
 {

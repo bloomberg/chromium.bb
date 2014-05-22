@@ -161,6 +161,8 @@ weston_view_animation_frame(struct weston_animation *base,
 	struct weston_view_animation *animation =
 		container_of(base,
 			     struct weston_view_animation, animation);
+	struct weston_compositor *compositor =
+		animation->view->surface->compositor;
 
 	if (base->frame_counter <= 1)
 		animation->spring.timestamp = msecs;
@@ -178,6 +180,15 @@ weston_view_animation_frame(struct weston_animation *base,
 
 	weston_view_geometry_dirty(animation->view);
 	weston_view_schedule_repaint(animation->view);
+
+	/* The view's output_mask will be zero if its position is
+	 * offscreen. Animations should always run but as they are also
+	 * run off the repaint cycle, if there's nothing to repaint
+	 * the animation stops running. Therefore if we catch this situation
+	 * and schedule a repaint on all outputs it will be avoided.
+	 */
+	if (animation->view->output_mask == 0)
+		weston_compositor_schedule_repaint(compositor);
 }
 
 static struct weston_view_animation *
