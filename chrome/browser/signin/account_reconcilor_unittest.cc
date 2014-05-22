@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -12,10 +15,13 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -36,9 +42,9 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
   virtual ~MockAccountReconcilor() {}
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
-  MOCK_METHOD1(StartRemoveAction, void(const std::string& account_id));
+  MOCK_METHOD1(PerformStartRemoveAction, void(const std::string& account_id));
   MOCK_METHOD3(
-      FinishRemoveAction,
+      PerformFinishRemoveAction,
       void(const std::string& account_id,
            const GoogleServiceAuthError& error,
            const std::vector<std::pair<std::string, bool> >& accounts));
@@ -74,7 +80,7 @@ class AccountReconcilorTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  TestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
 
@@ -99,11 +105,12 @@ class AccountReconcilorTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfile* profile_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
   MockAccountReconcilor* mock_reconcilor_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
+  TestingProfileManager* testing_profile_manager_;
 };
 
 AccountReconcilorTest::AccountReconcilorTest()
@@ -113,14 +120,26 @@ AccountReconcilorTest::AccountReconcilorTest()
       url_fetcher_factory_(NULL) {}
 
 void AccountReconcilorTest::SetUp() {
-  TestingProfile::Builder builder;
-  builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                            BuildFakeProfileOAuth2TokenService);
-  builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                            FakeSigninManagerBase::Build);
-  builder.AddTestingFactory(AccountReconcilorFactory::GetInstance(),
-                            MockAccountReconcilor::Build);
-  profile_ = builder.Build();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+
+  testing_profile_manager_ =
+      new TestingProfileManager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(testing_profile_manager_->SetUp());
+
+  TestingProfile::TestingFactories factories;
+  factories.push_back(std::make_pair(
+      ProfileOAuth2TokenServiceFactory::GetInstance(),
+      BuildFakeProfileOAuth2TokenService));
+  factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
+      FakeSigninManagerBase::Build));
+  factories.push_back(std::make_pair(AccountReconcilorFactory::GetInstance(),
+      MockAccountReconcilor::Build));
+
+  profile_ = testing_profile_manager_->CreateTestingProfile("name",
+                              scoped_ptr<PrefServiceSyncable>(),
+                              base::UTF8ToUTF16("name"), 0, std::string(),
+                              factories);
 
   signin_manager_ =
       static_cast<FakeSigninManagerForTesting*>(
@@ -132,8 +151,8 @@ void AccountReconcilorTest::SetUp() {
 }
 
 void AccountReconcilorTest::TearDown() {
-  // Destroy the profile before all threads are torn down.
-  profile_.reset();
+  // The |testing_profile_manager_| will handle destroying the profile.
+  delete testing_profile_manager_;
 }
 
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
@@ -175,6 +194,7 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
   ASSERT_TRUE(reconcilor);
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 
+  signin_manager()->set_password("password");
   signin_manager()->OnExternalSigninCompleted(kTestEmail);
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
@@ -186,6 +206,7 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
 
 TEST_F(AccountReconcilorTest, Reauth) {
   signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  signin_manager()->set_password("password");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -421,6 +442,7 @@ TEST_F(AccountReconcilorTest, StartReconcileNoopMultiple) {
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
+
 
 TEST_F(AccountReconcilorTest, StartReconcileAddToCookie) {
   signin_manager()->SetAuthenticatedUsername("user@gmail.com");

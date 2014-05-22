@@ -150,6 +150,8 @@ class FakeGaia {
                         net::test_server::BasicHttpResponse* http_response);
   void HandleListAccounts(const net::test_server::HttpRequest& request,
                           net::test_server::BasicHttpResponse* http_response);
+  void HandlePeopleGet(const net::test_server::HttpRequest& request,
+                       net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first
