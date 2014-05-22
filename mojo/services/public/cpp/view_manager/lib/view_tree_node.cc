@@ -124,6 +124,40 @@ class ScopedSetActiveViewNotifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveViewNotifier);
 };
 
+class ScopedSetBoundsNotifier {
+ public:
+  ScopedSetBoundsNotifier(ViewTreeNode* node,
+                          const gfx::Rect& old_bounds,
+                          const gfx::Rect& new_bounds)
+      : node_(node),
+        old_bounds_(old_bounds),
+        new_bounds_(new_bounds) {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeBoundsChange(node_,
+                           old_bounds_,
+                           new_bounds_,
+                           ViewTreeNodeObserver::DISPOSITION_CHANGING));
+  }
+  ~ScopedSetBoundsNotifier() {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeBoundsChange(node_,
+                           old_bounds_,
+                           new_bounds_,
+                           ViewTreeNodeObserver::DISPOSITION_CHANGED));
+  }
+
+ private:
+  ViewTreeNode* node_;
+  const gfx::Rect old_bounds_;
+  const gfx::Rect new_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
+};
+
 class ScopedDestructionNotifier {
  public:
   explicit ScopedDestructionNotifier(ViewTreeNode* node)
@@ -159,11 +193,19 @@ ViewTreeNode* ViewTreeNode::Create(ViewManager* view_manager) {
 }
 
 void ViewTreeNode::Destroy() {
+  // TODO(beng): only proceed if |manager_| OwnsNode(this).
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->DestroyViewTreeNode(id_);
   while (!children_.empty())
     children_.front()->Destroy();
   LocalDestroy();
+}
+
+void ViewTreeNode::SetBounds(const gfx::Rect& bounds) {
+  // TODO(beng): only proceed if |manager_| OwnsNode(this).
+  if (manager_)
+    ViewManagerPrivate(manager_).synchronizer()->SetBounds(id_, bounds);
+  LocalSetBounds(bounds_, bounds);
 }
 
 void ViewTreeNode::AddObserver(ViewTreeNodeObserver* observer) {
@@ -274,6 +316,13 @@ void ViewTreeNode::LocalSetActiveView(View* view) {
   active_view_ = view;
   if (active_view_)
     ViewPrivate(active_view_).set_node(this);
+}
+
+void ViewTreeNode::LocalSetBounds(const gfx::Rect& old_bounds,
+                                  const gfx::Rect& new_bounds) {
+  DCHECK(old_bounds == bounds_);
+  ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
+  bounds_ = new_bounds;
 }
 
 }  // namespace view_manager

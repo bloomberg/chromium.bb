@@ -258,6 +258,7 @@
             '../ui/gl/gl.gyp:gl',
             'mojo_cpp_bindings',
             'mojo_environment_chromium',
+            'mojo_geometry_bindings',
             'mojo_gles2',
             'mojo_view_manager_lib',
             'mojo_shell_client',

@@ -5,7 +5,9 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
+#include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +21,9 @@ typedef testing::Test ViewTreeNodeTest;
 // Subclass with public ctor/dtor.
 class TestViewTreeNode : public ViewTreeNode {
  public:
-  TestViewTreeNode() {}
+  TestViewTreeNode() {
+    ViewTreeNodePrivate(this).set_id(1);
+  }
   ~TestViewTreeNode() {}
 
  private:
@@ -340,6 +344,80 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().front()));
   p111.phase = ViewTreeNodeObserver::DISPOSITION_CHANGED;
   EXPECT_TRUE(TreeChangeParamsMatch(p111, o111.received_params().back()));
+}
+
+namespace {
+
+typedef std::vector<std::string> Changes;
+
+std::string NodeIdToString(TransportNodeId id) {
+  return (id == 0) ? "null" :
+      base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
+}
+
+std::string RectToString(const gfx::Rect& rect) {
+  return base::StringPrintf("%d,%d %dx%d",
+                            rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+std::string PhaseToString(ViewTreeNodeObserver::DispositionChangePhase phase) {
+  return phase == ViewTreeNodeObserver::DISPOSITION_CHANGING ?
+      "changing" : "changed";
+}
+
+class BoundsChangeObserver : public ViewTreeNodeObserver {
+ public:
+  explicit BoundsChangeObserver(ViewTreeNode* node) : node_(node) {
+    node_->AddObserver(this);
+  }
+  virtual ~BoundsChangeObserver() {
+    node_->RemoveObserver(this);
+  }
+
+  Changes GetAndClearChanges() {
+    Changes changes;
+    changes.swap(changes_);
+    return changes;
+  }
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeBoundsChange(ViewTreeNode* node,
+                                  const gfx::Rect& old_bounds,
+                                  const gfx::Rect& new_bounds,
+                                  DispositionChangePhase phase) OVERRIDE {
+    changes_.push_back(
+        base::StringPrintf(
+            "node=%s old_bounds=%s new_bounds=%s phase=%s",
+            NodeIdToString(node->id()).c_str(),
+            RectToString(old_bounds).c_str(),
+            RectToString(new_bounds).c_str(),
+            PhaseToString(phase).c_str()));
+  }
+
+  ViewTreeNode* node_;
+  Changes changes_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
+};
+
+}  // namespace
+
+TEST_F(ViewTreeNodeObserverTest, SetBounds) {
+  TestViewTreeNode v1;
+  {
+    BoundsChangeObserver observer(&v1);
+    v1.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+    Changes changes = observer.GetAndClearChanges();
+    EXPECT_EQ(2U, changes.size());
+    EXPECT_EQ(
+        "node=0,1 old_bounds=0,0 0x0 new_bounds=0,0 100x100 phase=changing",
+        changes[0]);
+    EXPECT_EQ(
+        "node=0,1 old_bounds=0,0 0x0 new_bounds=0,0 100x100 phase=changed",
+        changes[1]);
+  }
 }
 
 }  // namespace view_manager

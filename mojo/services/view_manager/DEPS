@@ -1,5 +1,6 @@
 include_rules = [
   "+mojo/aura",
+  "+mojo/geometry",
   "+mojo/services",
   "+third_party/skia",
   "+ui/aura",

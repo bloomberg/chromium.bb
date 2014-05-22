@@ -18,6 +18,7 @@
 
 namespace mojo {
 namespace view_manager {
+namespace {
 
 base::RunLoop* current_run_loop = NULL;
 
@@ -67,6 +68,36 @@ class ActiveViewChangedObserver : public ViewTreeNodeObserver {
 // Waits until the active view id of the supplied node changes.
 void WaitForActiveViewToChange(ViewTreeNode* node) {
   ActiveViewChangedObserver observer(node);
+  node->AddObserver(&observer);
+  DoRunLoop();
+  node->RemoveObserver(&observer);
+}
+
+class BoundsChangeObserver : public ViewTreeNodeObserver {
+ public:
+  explicit BoundsChangeObserver(ViewTreeNode* node) : node_(node) {}
+  virtual ~BoundsChangeObserver() {}
+
+ private:
+  // Overridden from ViewTreeNodeObserver:
+  virtual void OnNodeBoundsChange(ViewTreeNode* node,
+                                  const gfx::Rect& old_bounds,
+                                  const gfx::Rect& new_bounds,
+                                  DispositionChangePhase phase) OVERRIDE {
+    DCHECK_EQ(node, node_);
+    if (phase != ViewTreeNodeObserver::DISPOSITION_CHANGED)
+      return;
+    QuitRunLoop();
+  }
+
+  ViewTreeNode* node_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
+};
+
+// Wait until the bounds of the supplied node change.
+void WaitForBoundsToChange(ViewTreeNode* node) {
+  BoundsChangeObserver observer(node);
   node->AddObserver(&observer);
   DoRunLoop();
   node->RemoveObserver(&observer);
@@ -184,6 +215,8 @@ void WaitForDestruction(ViewManager* view_manager,
   }
   DoRunLoop();
 }
+
+}  // namespace
 
 // ViewManager -----------------------------------------------------------------
 
@@ -526,6 +559,22 @@ TEST_F(ViewManagerTest, MapSubtreeOnAttach) {
   View* view11_2 = view_manager_2()->GetViewById(view11->id());
   EXPECT_TRUE(node11_2 != NULL);
   EXPECT_EQ(view11_2, node11_2->active_view());
+}
+
+// Verifies that bounds changes applied to a node hierarchy in one connection
+// are reflected to another.
+TEST_F(ViewManagerTest, SetBounds) {
+  ViewTreeNode* node1 = CreateNodeInParent(view_manager_1()->tree());
+  WaitForTreeSizeToMatch(view_manager_2()->tree(), 2);
+
+  ViewTreeNode* node1_2 = view_manager_2()->GetNodeById(node1->id());
+  EXPECT_EQ(node1->bounds(), node1_2->bounds());
+
+  node1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  WaitForBoundsToChange(node1_2);
+  EXPECT_EQ(node1->bounds(), node1_2->bounds());
+
+
 }
 
 }  // namespace view_manager

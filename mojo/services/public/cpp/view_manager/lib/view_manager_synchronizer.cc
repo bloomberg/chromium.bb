@@ -99,7 +99,9 @@ class ViewManagerTransaction {
     // parent.)
     TYPE_HIERARCHY,
     // View replacement.
-    TYPE_SET_ACTIVE_VIEW
+    TYPE_SET_ACTIVE_VIEW,
+    // Node bounds.
+    TYPE_SET_BOUNDS
   };
 
   ViewManagerTransaction(TransactionType transaction_type,
@@ -305,6 +307,32 @@ class SetActiveViewTransaction : public ViewManagerTransaction {
   DISALLOW_COPY_AND_ASSIGN(SetActiveViewTransaction);
 };
 
+class SetBoundsTransaction : public ViewManagerTransaction {
+ public:
+  SetBoundsTransaction(TransportNodeId node_id,
+                       const gfx::Rect& bounds,
+                       ViewManagerSynchronizer* synchronizer)
+      : ViewManagerTransaction(TYPE_SET_BOUNDS, synchronizer),
+        node_id_(node_id),
+        bounds_(bounds) {}
+  virtual ~SetBoundsTransaction() {}
+
+ private:
+  // Overridden from ViewManagerTransaction:
+  virtual void DoCommit() OVERRIDE {
+    AllocationScope scope;
+    service()->SetNodeBounds(node_id_, bounds_, ActionCompletedCallback());
+  }
+  virtual void DoActionCompleted(bool success) OVERRIDE {
+    // TODO(beng): recovery?
+  }
+
+  const TransportNodeId node_id_;
+  const gfx::Rect bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetBoundsTransaction);
+};
+
 ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
     : view_manager_(view_manager),
       connected_(false),
@@ -399,6 +427,14 @@ void ViewManagerSynchronizer::SetActiveView(TransportNodeId node_id,
   Sync();
 }
 
+void ViewManagerSynchronizer::SetBounds(TransportNodeId node_id,
+                                        const gfx::Rect& bounds) {
+  DCHECK(connected_);
+  pending_transactions_.push_back(
+      new SetBoundsTransaction(node_id, bounds, this));
+  Sync();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, IViewManagerClient implementation:
 
@@ -421,6 +457,13 @@ void ViewManagerSynchronizer::OnConnectionEstablished(
 void ViewManagerSynchronizer::OnServerChangeIdAdvanced(
     uint32_t next_server_change_id) {
   next_server_change_id_ = next_server_change_id;
+}
+
+void ViewManagerSynchronizer::OnNodeBoundsChanged(uint32 node_id,
+                                                  const Rect& old_bounds,
+                                                  const Rect& new_bounds) {
+  ViewTreeNode* node = view_manager_->GetNodeById(node_id);
+  ViewTreeNodePrivate(node).LocalSetBounds(old_bounds, new_bounds);
 }
 
 void ViewManagerSynchronizer::OnNodeHierarchyChanged(

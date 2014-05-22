@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
 namespace view_manager {
@@ -33,6 +34,10 @@ class ViewTreeNode {
 
   // Configuration.
   TransportNodeId id() const { return id_; }
+
+  // Geometric disposition.
+  const gfx::Rect& bounds() { return bounds_; }
+  void SetBounds(const gfx::Rect& bounds);
 
   // Observation.
   void AddObserver(ViewTreeNodeObserver* observer);
@@ -68,6 +73,7 @@ class ViewTreeNode {
   void LocalAddChild(ViewTreeNode* child);
   void LocalRemoveChild(ViewTreeNode* child);
   void LocalSetActiveView(View* view);
+  void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
 
   ViewManager* manager_;
   TransportNodeId id_;
@@ -76,6 +82,7 @@ class ViewTreeNode {
 
   ObserverList<ViewTreeNodeObserver> observers_;
 
+  gfx::Rect bounds_;
   View* active_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeNode);

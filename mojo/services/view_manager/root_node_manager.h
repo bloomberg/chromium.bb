@@ -82,6 +82,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // These functions trivially delegate to all ViewManagerConnections, which in
   // term notify their clients.
+  void ProcessNodeBoundsChanged(const Node* node,
+                                const gfx::Rect& old_bounds,
+                                const gfx::Rect& new_bounds);
   void ProcessNodeHierarchyChanged(const Node* node,
                                    const Node* new_parent,
                                    const Node* old_parent);
@@ -116,7 +119,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     return connection_id == change_source_;
   }
 
-  // Overriden from NodeDelegate:
+  // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,
                                       const Node* new_parent,
                                       const Node* old_parent) OVERRIDE;

@@ -142,6 +142,7 @@
       ],
       'dependencies': [
         'mojo_cpp_bindings',
+        'mojo_geometry_bindings',
       ],
     },
     {
@@ -149,6 +150,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_geometry_bindings',
+        'mojo_geometry_lib',
         'mojo_shell_bindings',
         'mojo_view_manager_bindings',
         'mojo_view_manager_common',
@@ -184,6 +188,8 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'mojo_environment_chromium',
+        'mojo_geometry_bindings',
+        'mojo_geometry_lib',
         'mojo_shell_test_support',
         'mojo_view_manager_bindings',
         'mojo_view_manager_lib',
@@ -276,8 +282,11 @@
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../ui/aura/aura.gyp:aura',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
             'mojo_environment_chromium',
+            'mojo_geometry_bindings',
+            'mojo_geometry_lib',
             'mojo_shell_client',
             'mojo_shell_test_support',
             'mojo_system_impl',

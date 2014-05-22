@@ -5,6 +5,7 @@
 #include "mojo/services/view_manager/view_manager_connection.h"
 
 #include "base/stl_util.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
@@ -97,6 +98,20 @@ const View* ViewManagerConnection::GetView(const ViewId& id) const {
     return i == view_map_.end() ? NULL : i->second;
   }
   return root_node_manager_->GetView(id);
+}
+
+void ViewManagerConnection::ProcessNodeBoundsChanged(
+    const Node* node,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    bool originated_change) {
+  if (originated_change)
+    return;
+  TransportNodeId node_id = NodeIdToTransportId(node->id());
+  if (known_nodes_.count(node_id) > 0) {
+    AllocationScope scope;
+    client()->OnNodeBoundsChanged(node_id, old_bounds, new_bounds);
+  }
 }
 
 void ViewManagerConnection::ProcessNodeHierarchyChanged(
@@ -580,6 +595,30 @@ void ViewManagerConnection::SetRoots(
       root_node_manager_->GetConnection(connection_id);
   callback.Run(connection &&
                connection->ProcessSetRoots(id_, transport_node_ids));
+}
+
+void ViewManagerConnection::SetNodeBounds(
+    TransportNodeId node_id,
+    const Rect& bounds,
+    const Callback<void(bool)>& callback) {
+  if (NodeIdFromTransportId(node_id).connection_id != id_) {
+    callback.Run(false);
+    return;
+  }
+
+  Node* node = GetNode(NodeIdFromTransportId(node_id));
+  if (!node) {
+    callback.Run(false);
+    return;
+  }
+
+  RootNodeManager::ScopedChange change(
+      this, root_node_manager_,
+      RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID, false);
+  gfx::Rect old_bounds = node->window()->bounds();
+  node->window()->SetBounds(bounds);
+  root_node_manager_->ProcessNodeBoundsChanged(node, old_bounds, bounds);
+  callback.Run(true);
 }
 
 void ViewManagerConnection::OnNodeHierarchyChanged(const Node* node,

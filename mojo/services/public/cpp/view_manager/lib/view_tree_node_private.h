@@ -39,9 +39,12 @@ class ViewTreeNodePrivate {
   void LocalRemoveChild(ViewTreeNode* child) {
     node_->LocalRemoveChild(child);
   }
-
   void LocalSetActiveView(View* view) {
     node_->LocalSetActiveView(view);
+  }
+  void LocalSetBounds(const gfx::Rect& old_bounds,
+                      const gfx::Rect& new_bounds) {
+    node_->LocalSetBounds(old_bounds, new_bounds);
   }
 
  private:

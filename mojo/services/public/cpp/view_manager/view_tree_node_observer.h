@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace mojo {
 namespace view_manager {
 
@@ -40,6 +44,11 @@ class ViewTreeNodeObserver {
                                       View* old_view,
                                       View* new_view,
                                       DispositionChangePhase phase) {}
+
+  virtual void OnNodeBoundsChange(ViewTreeNode* node,
+                                  const gfx::Rect& old_bounds,
+                                  const gfx::Rect& new_bounds,
+                                  DispositionChangePhase phase) {}
 
  protected:
   virtual ~ViewTreeNodeObserver() {}

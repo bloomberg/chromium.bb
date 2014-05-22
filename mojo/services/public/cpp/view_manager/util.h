@@ -7,6 +7,14 @@
 
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
+// TODO(beng): #$*&@#(@ MacOSX SDK!
+#if defined(HiWord)
+#undef HiWord
+#endif
+#if defined(LoWord)
+#undef LoWord
+#endif
+
 namespace mojo {
 namespace view_manager {
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "../../../../public/interfaces/geometry/geometry.mojom"
+
 module mojo.view_manager {
 
 struct INode {
@@ -32,6 +34,9 @@ interface IViewManager {
   // are sent as a result of this. Only the connection that created the node can
   // delete it.
   DeleteNode(uint32 node_id) => (bool success);
+
+  // Sets the specified bounds of the specified node.
+  SetNodeBounds(uint32 node_id, mojo.Rect bounds) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
   // This fails for any of the following reasons:
@@ -107,6 +112,9 @@ interface IViewManagerClient {
   // some way but client 2 isn't notified of the change, then client 2 gets
   // OnServerChangeIdAdvanced().
   OnServerChangeIdAdvanced(uint32 next_server_change_id);
+
+  // Invoked when a node's bounds have changed.
+  OnNodeBoundsChanged(uint32 node, mojo.Rect old_bounds, mojo.Rect new_bounds);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null node. For example, if the old_parent is NULL, 0 is

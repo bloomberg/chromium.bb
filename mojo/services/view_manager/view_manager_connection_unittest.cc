@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/shell/connect.h"
@@ -19,6 +20,7 @@
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
 
@@ -58,6 +60,15 @@ void DoRunLoop() {
 std::string NodeIdToString(TransportNodeId id) {
   return (id == 0) ? "null" :
       base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
+}
+
+// Converts |rect| into a string.
+std::string RectToString(const Rect& rect) {
+  return base::StringPrintf("%d,%d %dx%d",
+                            rect.position().x(),
+                            rect.position().y(),
+                            rect.size().width(),
+                            rect.size().height());
 }
 
 // Boolean callback. Sets |result_cache| to the value of |result| and quits
@@ -135,6 +146,16 @@ bool DeleteNode(IViewManager* view_manager, TransportNodeId node_id) {
 bool DeleteView(IViewManager* view_manager, TransportViewId view_id) {
   bool result = false;
   view_manager->DeleteView(view_id, base::Bind(&BooleanCallback, &result));
+  DoRunLoop();
+  return result;
+}
+
+bool SetNodeBounds(IViewManager* view_manager,
+                   TransportNodeId node_id,
+                   const gfx::Rect& bounds) {
+  bool result = false;
+  view_manager->SetNodeBounds(node_id, bounds,
+                              base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -268,6 +289,17 @@ class ViewManagerClientImpl : public IViewManagerClient {
         base::StringPrintf(
             "ServerChangeIdAdvanced %d",
             static_cast<int>(next_server_change_id)));
+    QuitIfNecessary();
+  }
+  virtual void OnNodeBoundsChanged(TransportNodeId node_id,
+                                   const Rect& old_bounds,
+                                   const Rect& new_bounds) OVERRIDE {
+    changes_.push_back(
+        base::StringPrintf(
+            "BoundsChanged node=%s old_bounds=%s new_bounds=%s",
+            NodeIdToString(node_id).c_str(),
+            RectToString(old_bounds).c_str(),
+            RectToString(new_bounds).c_str()));
     QuitIfNecessary();
   }
   virtual void OnNodeHierarchyChanged(
@@ -1144,6 +1176,32 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
     EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[0].ToString());
     EXPECT_EQ("node=1,11 parent=1,1 view=1,51", nodes[1].ToString());
   }
+}
+
+TEST_F(ViewManagerConnectionTest, SetNodeBounds) {
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(1, 1),
+                      1));
+  EstablishSecondConnection();
+
+  AllocationScope scope;
+  ASSERT_TRUE(SetNodeBounds(view_manager_.get(),
+                            CreateNodeId(1, 1),
+                            gfx::Rect(0, 0, 100, 100)));
+
+  client2_.DoRunLoopUntilChangesCount(1);
+  Changes changes(client2_.GetAndClearChanges());
+  ASSERT_EQ(1u, changes.size());
+  EXPECT_EQ("BoundsChanged node=1,1 old_bounds=0,0 0x0 new_bounds=0,0 100x100",
+            changes[0]);
+
+  // Should not be possible to change the bounds of a node created by another
+  // connection.
+  ASSERT_FALSE(SetNodeBounds(view_manager2_.get(),
+                             CreateNodeId(1, 1),
+                             gfx::Rect(0, 0, 0, 0)));
 }
 
 // Various assertions around SetRoots.

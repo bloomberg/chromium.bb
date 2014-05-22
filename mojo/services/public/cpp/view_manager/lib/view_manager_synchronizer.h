@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
@@ -48,6 +49,7 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   bool OwnsView(TransportViewId id) const;
 
   void SetActiveView(TransportNodeId node_id, TransportViewId view_id);
+  void SetBounds(TransportNodeId node_id, const gfx::Rect& bounds);
 
   void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
     changes_acked_callback_ = callback;
@@ -67,6 +69,9 @@ class ViewManagerSynchronizer : public IViewManagerClient {
       const mojo::Array<INode>& nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(
       uint32_t next_server_change_id) OVERRIDE;
+  virtual void OnNodeBoundsChanged(uint32 node_id,
+                                   const Rect& old_bounds,
+                                   const Rect& new_bounds) OVERRIDE;
   virtual void OnNodeHierarchyChanged(
       uint32 node_id,
       uint32 new_parent_id,

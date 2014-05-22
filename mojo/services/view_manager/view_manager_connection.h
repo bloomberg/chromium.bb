@@ -16,6 +16,10 @@
 #include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace mojo {
 namespace view_manager {
 namespace service {
@@ -60,6 +64,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
   // necessary.
+  void ProcessNodeBoundsChanged(const Node* node,
+                                const gfx::Rect& old_bounds,
+                                const gfx::Rect& new_bounds,
+                                bool originated_change);
   void ProcessNodeHierarchyChanged(const Node* node,
                                    const Node* new_parent,
                                    const Node* old_parent,
@@ -157,6 +165,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
       TransportConnectionId connection_id,
       const Array<TransportNodeId>& transport_node_ids,
       const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void SetNodeBounds(TransportNodeId node_id,
+                             const Rect& bounds,
+                             const Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const Node* node,

@@ -81,6 +81,16 @@ View* RootNodeManager::GetView(const ViewId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
 
+void RootNodeManager::ProcessNodeBoundsChanged(const Node* node,
+                                               const gfx::Rect& old_bounds,
+                                               const gfx::Rect& new_bounds) {
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    i->second->ProcessNodeBoundsChanged(node, old_bounds, new_bounds,
+                                        IsChangeSource(i->first));
+  }
+}
+
 void RootNodeManager::ProcessNodeHierarchyChanged(const Node* node,
                                                   const Node* new_parent,
                                                   const Node* old_parent) {
