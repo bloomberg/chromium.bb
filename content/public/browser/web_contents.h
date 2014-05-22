@@ -255,25 +255,30 @@ class WebContents : public PageNavigator,
   // returns the current SiteInstance.
   virtual SiteInstance* GetPendingSiteInstance() const = 0;
 
-  // Return whether this WebContents is loading a resource.
+  // Returns whether this WebContents is loading a resource.
   virtual bool IsLoading() const = 0;
+
+  // Returns whether this WebContents is loading and and the load is to a
+  // different top-level document (rather than being a navigation within the
+  // same document). This being true implies that IsLoading() is also true.
+  virtual bool IsLoadingToDifferentDocument() const = 0;
 
   // Returns whether this WebContents is waiting for a first-response for the
   // main resource of the page.
   virtual bool IsWaitingForResponse() const = 0;
 
-  // Return the current load state and the URL associated with it.
+  // Returns the current load state and the URL associated with it.
   virtual const net::LoadStateWithParam& GetLoadState() const = 0;
   virtual const base::string16& GetLoadStateHost() const = 0;
 
-  // Return the upload progress.
+  // Returns the upload progress.
   virtual uint64 GetUploadSize() const = 0;
   virtual uint64 GetUploadPosition() const = 0;
 
   // Returns a set of the site URLs currently committed in this tab.
   virtual std::set<GURL> GetSitesInTab() const = 0;
 
-  // Return the character encoding of the page.
+  // Returns the character encoding of the page.
   virtual const std::string& GetEncoding() const = 0;
 
   // True if this is a secure page which displayed insecure content.

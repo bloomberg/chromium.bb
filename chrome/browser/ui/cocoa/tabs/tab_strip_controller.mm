@@ -1579,7 +1579,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   } else if (contents->IsWaitingForResponse()) {
     newState = kTabWaiting;
     throbberImage = throbberWaitingImage;
-  } else if (contents->IsLoading()) {
+  } else if (contents->IsLoadingToDifferentDocument()) {
     newState = kTabLoading;
     throbberImage = throbberLoadingImage;
   }

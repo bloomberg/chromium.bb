@@ -334,6 +334,7 @@ WebContentsImpl::WebContentsImpl(
       frame_tree_(new NavigatorImpl(&controller_, this),
                   this, this, this, this),
       is_loading_(false),
+      is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
       waiting_for_response_(false),
@@ -834,8 +835,12 @@ bool WebContentsImpl::IsLoading() const {
   return is_loading_;
 }
 
+bool WebContentsImpl::IsLoadingToDifferentDocument() const {
+  return is_loading_ && is_load_to_different_document_;
+}
+
 bool WebContentsImpl::IsWaitingForResponse() const {
-  return waiting_for_response_;
+  return waiting_for_response_ && is_load_to_different_document_;
 }
 
 const net::LoadStateWithParam& WebContentsImpl::GetLoadState() const {
@@ -2980,6 +2985,7 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
 
   is_loading_ = is_loading;
   waiting_for_response_ = is_loading;
+  is_load_to_different_document_ = to_different_document;
 
   if (delegate_)
     delegate_->LoadingStateChanged(this, to_different_document);

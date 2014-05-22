@@ -52,7 +52,7 @@ namespace {
 
 TabRendererData::NetworkState TabContentsNetworkState(
     WebContents* contents) {
-  if (!contents || !contents->IsLoading())
+  if (!contents || !contents->IsLoadingToDifferentDocument())
     return TabRendererData::NETWORK_STATE_NONE;
   if (contents->IsWaitingForResponse())
     return TabRendererData::NETWORK_STATE_WAITING;
