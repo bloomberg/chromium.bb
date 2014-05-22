@@ -56,7 +56,7 @@ class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIA
 public:
     virtual ~MIDIAccess();
     // Returns a promise object that will be resolved with this MIDIAccess.
-    static ScriptPromise request(const MIDIOptions&, ExecutionContext*);
+    static ScriptPromise request(const MIDIOptions&, ScriptState*);
 
     MIDIInputVector inputs() const { return m_inputs; }
     MIDIOutputVector outputs() const { return m_outputs; }
@@ -95,7 +95,7 @@ private:
     };
 
     MIDIAccess(const MIDIOptions&, ExecutionContext*);
-    ScriptPromise startRequest();
+    ScriptPromise startRequest(ScriptState*);
 
     void permissionDenied();
 

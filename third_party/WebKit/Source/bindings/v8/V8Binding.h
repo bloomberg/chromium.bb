@@ -821,13 +821,6 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate*, v8::Handle<v8::Value>, int);
 // Each specialized implementation will be generated.
 template<typename T>
 v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-template<typename T>
-v8::Handle<v8::Value> toV8NoInline(T* impl, ExecutionContext* context)
-{
-    v8::Isolate* isolate = toIsolate(context);
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(isolate));
-    return toV8NoInline(impl, v8Context->Global(), isolate);
-}
 
 // ToV8Value<U, Context> is a class that converts a C++ object to a
 // v8 value. U has to be a class having a static method getCreationContext

@@ -81,7 +81,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, cons
         return promise;
     }
 
-    return MIDIAccess::request(MIDIOptions(options), frame()->document());
+    return MIDIAccess::request(MIDIOptions(options), scriptState);
 }
 
 } // namespace WebCore

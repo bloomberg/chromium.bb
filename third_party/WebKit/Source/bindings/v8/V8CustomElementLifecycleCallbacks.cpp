@@ -163,7 +163,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Handle<v8::Context> context = m_scriptState->context();
-    v8::Handle<v8::Object> receiver = DOMDataStore::current(isolate).get<V8Element>(element, isolate);
+    v8::Handle<v8::Object> receiver = m_scriptState->world().domDataStore().get<V8Element>(element, isolate);
     if (!receiver.IsEmpty()) {
         // Swizzle the prototype of the existing wrapper. We don't need to
         // worry about non-existent wrappers; they will get the right

@@ -65,15 +65,15 @@ private:
     State m_state;
 };
 
-ScriptPromise MIDIAccess::request(const MIDIOptions& options, ExecutionContext* context)
+ScriptPromise MIDIAccess::request(const MIDIOptions& options, ScriptState* scriptState)
 {
-    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(options, context)));
+    RefPtrWillBeRawPtr<MIDIAccess> midiAccess(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccess(options, scriptState->executionContext())));
     midiAccess->suspendIfNeeded();
     // Create a wrapper to expose this object to the V8 GC so that
     // hasPendingActivity takes effect.
-    toV8NoInline(midiAccess.get(), context);
+    toV8NoInline(midiAccess.get(), scriptState->context()->Global(), scriptState->isolate());
     // Now this object is retained because m_state equals to Requesting.
-    return midiAccess->startRequest();
+    return midiAccess->startRequest(scriptState);
 }
 
 MIDIAccess::~MIDIAccess()
@@ -191,12 +191,12 @@ void MIDIAccess::permissionDenied()
     m_resolver->reject(DOMError::create("SecurityError"));
 }
 
-ScriptPromise MIDIAccess::startRequest()
+ScriptPromise MIDIAccess::startRequest(ScriptState* scriptState)
 {
-    m_resolver = ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(executionContext())));
+    m_resolver = ScriptPromiseResolverWithContext::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
-    promise.then(PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Resolved),
-        PostAction::create(toIsolate(executionContext()), m_weakPtrFactory.createWeakPtr(), Stopped));
+    promise.then(PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Resolved),
+        PostAction::create(scriptState->isolate(), m_weakPtrFactory.createWeakPtr(), Stopped));
 
     if (!m_options.sysex) {
         m_accessor->startSession();
