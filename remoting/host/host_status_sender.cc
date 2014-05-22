@@ -9,8 +9,9 @@
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
-#include "remoting/host/server_log_entry.h"
+#include "remoting/host/server_log_entry_host.h"
 #include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
@@ -123,8 +124,8 @@ scoped_ptr<XmlElement> HostStatusSender::CreateHostStatusMessage(
   // Append log message (which isn't signed).
   scoped_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
   scoped_ptr<ServerLogEntry> log_entry(
-      ServerLogEntry::MakeForHostStatus(status, exit_code));
-  log_entry->AddHostFields();
+      MakeLogEntryForHostStatus(status, exit_code));
+  AddHostFieldsToLogEntry(log_entry.get());
   log->AddElement(log_entry->ToStanza().release());
   host_status->AddElement(log.release());
   return host_status.Pass();

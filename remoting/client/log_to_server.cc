@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "remoting/base/constants.h"
 #include "remoting/client/chromoting_stats.h"
+#include "remoting/client/server_log_entry_client.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -69,8 +70,8 @@ void LogToServer::LogSessionStateChange(
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeForSessionStateChange(state, error));
-  entry->AddClientFields();
+      MakeLogEntryForSessionStateChange(state, error));
+  AddClientFieldsToLogEntry(entry.get());
   entry->AddModeField(mode_);
 
   MaybeExpireSessionId();
@@ -85,12 +86,13 @@ void LogToServer::LogSessionStateChange(
   }
 
   if (!session_id_.empty()) {
-    entry->AddSessionId(session_id_);
+    AddSessionIdToLogEntry(entry.get(), session_id_);
   }
 
   // Maybe clear the session start time and log the session duration.
   if (ShouldAddDuration(state) && !session_start_time_.is_null()) {
-    entry->AddSessionDuration(base::TimeTicks::Now() - session_start_time_);
+    AddSessionDurationToLogEntry(entry.get(),
+                                 base::TimeTicks::Now() - session_start_time_);
   }
 
   if (IsEndOfSession(state)) {
@@ -106,11 +108,10 @@ void LogToServer::LogStatistics(ChromotingStats* statistics) {
 
   MaybeExpireSessionId();
 
-  scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeForStatistics(statistics));
-  entry->AddClientFields();
+  scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(statistics));
+  AddClientFieldsToLogEntry(entry.get());
   entry->AddModeField(mode_);
-  entry->AddSessionId(session_id_);
+  AddSessionIdToLogEntry(entry.get(), session_id_);
   Log(*entry.get());
 }
 
@@ -174,8 +175,7 @@ void LogToServer::MaybeExpireSessionId() {
   base::TimeDelta max_age = base::TimeDelta::FromDays(kMaxSessionIdAgeDays);
   if (base::TimeTicks::Now() - session_id_generation_time_ > max_age) {
     // Log the old session ID.
-    scoped_ptr<ServerLogEntry> entry(
-        ServerLogEntry::MakeForSessionIdOld(session_id_));
+    scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionIdOld(session_id_));
     entry->AddModeField(mode_);
     Log(*entry.get());
 
@@ -183,7 +183,7 @@ void LogToServer::MaybeExpireSessionId() {
     GenerateSessionId();
 
     // Log the new session ID.
-    entry = ServerLogEntry::MakeForSessionIdNew(session_id_);
+    entry = MakeLogEntryForSessionIdNew(session_id_);
     entry->AddModeField(mode_);
     Log(*entry.get());
   }

@@ -13,11 +13,11 @@
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/log_to_server.h"
-#include "remoting/client/server_log_entry.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 
@@ -336,7 +336,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
-  log_to_server_.reset(new client::LogToServer(client::ServerLogEntry::ME2ME,
+  log_to_server_.reset(new client::LogToServer(ServerLogEntry::ME2ME,
                                                signaling_.get(),
                                                "remoting@bot.talk.google.com"));
 

@@ -18,12 +18,13 @@ class DictionaryValue;
 
 namespace remoting {
 
-class RegisterSupportHostRequest;
-class HostNPScriptObject;
-class DesktopEnvironmentFactory;
-class HostEventLogger;
 class ChromotingHost;
 class ChromotingHostContext;
+class DesktopEnvironmentFactory;
+class HostEventLogger;
+class HostNPScriptObject;
+class RegisterSupportHostRequest;
+class RsaKeyPair;
 
 namespace policy_hack {
 

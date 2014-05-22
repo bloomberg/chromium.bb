@@ -21,6 +21,7 @@
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 namespace remoting {

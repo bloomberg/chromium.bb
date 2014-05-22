@@ -14,8 +14,9 @@
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
-#include "remoting/host/server_log_entry.h"
+#include "remoting/host/server_log_entry_host.h"
 #include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
@@ -255,8 +256,8 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   heartbeat->AddElement(version_tag.release());
   // Append log message (which isn't signed).
   scoped_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
-  scoped_ptr<ServerLogEntry> log_entry(ServerLogEntry::MakeForHeartbeat());
-  log_entry->AddHostFields();
+  scoped_ptr<ServerLogEntry> log_entry(MakeLogEntryForHeartbeat());
+  AddHostFieldsToLogEntry(log_entry.get());
   log->AddElement(log_entry->ToStanza().release());
   heartbeat->AddElement(log.release());
   return heartbeat.Pass();

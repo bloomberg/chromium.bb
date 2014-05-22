@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/server_log_entry.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/transport.h"
 

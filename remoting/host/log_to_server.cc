@@ -8,8 +8,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_status_monitor.h"
-#include "remoting/host/server_log_entry.h"
+#include "remoting/host/server_log_entry_host.h"
 #include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -43,13 +44,13 @@ void LogToServer::LogSessionStateChange(const std::string& jid,
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeForSessionStateChange(connected));
-  entry->AddHostFields();
+      MakeLogEntryForSessionStateChange(connected));
+  AddHostFieldsToLogEntry(entry.get());
   entry->AddModeField(mode_);
 
   if (connected) {
     DCHECK(connection_route_type_.count(jid) == 1);
-    entry->AddConnectionTypeField(connection_route_type_[jid]);
+    AddConnectionTypeToLogEntry(entry.get(), connection_route_type_[jid]);
   }
   Log(*entry.get());
 }

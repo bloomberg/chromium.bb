@@ -13,6 +13,7 @@
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/resources.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/usage_stats_consent.h"
