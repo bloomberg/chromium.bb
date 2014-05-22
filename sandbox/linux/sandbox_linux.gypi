@@ -66,6 +66,7 @@
         '../..',
       ],
       'sources': [
+        'tests/sandbox_test_runner.cc',
         'tests/sandbox_test_runner.h',
         'tests/sandbox_test_runner_function_pointer.cc',
         'tests/sandbox_test_runner_function_pointer.h',

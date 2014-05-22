@@ -12,9 +12,14 @@ namespace sandbox {
 // A simple "runner" class to implement tests.
 class SandboxTestRunner {
  public:
-  SandboxTestRunner() {}
-  virtual ~SandboxTestRunner() {}
+  SandboxTestRunner();
+  virtual ~SandboxTestRunner();
+
   virtual void Run() = 0;
+
+  // Override to decide whether or not to check for leaks with LSAN
+  // (if built with LSAN and LSAN is enabled).
+  virtual bool ShouldCheckForLeaks() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxTestRunner);

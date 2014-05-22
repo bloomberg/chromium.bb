@@ -11,6 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/debug/leak_annotations.h"
 #include "base/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/third_party/valgrind/valgrind.h"
@@ -165,6 +166,11 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
     setrlimit(RLIMIT_CORE, &no_core);
 
     test_runner->Run();
+    if (test_runner->ShouldCheckForLeaks()) {
+#if defined(LEAK_SANITIZER)
+      __lsan_do_leak_check();
+#endif
+    }
     _exit(kExpectedValue);
   }
 

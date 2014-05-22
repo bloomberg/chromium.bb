@@ -79,48 +79,44 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(CallSupportsTwice)) {
 // setting up the sandbox. But it wouldn't hurt to have at least one test
 // that explicitly walks through all these steps.
 
-intptr_t FakeGetPid(const struct arch_seccomp_data& args, void* aux) {
+intptr_t IncreaseCounter(const struct arch_seccomp_data& args, void* aux) {
   BPF_ASSERT(aux);
-  pid_t* pid_ptr = static_cast<pid_t*>(aux);
-  return (*pid_ptr)++;
+  int* counter = static_cast<int*>(aux);
+  return (*counter)++;
 }
 
 class VerboseAPITestingPolicy : public SandboxBPFPolicy {
  public:
-  VerboseAPITestingPolicy(pid_t* pid_ptr) : pid_ptr_(pid_ptr) {}
+  VerboseAPITestingPolicy(int* counter_ptr) : counter_ptr_(counter_ptr) {}
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
                                     int sysno) const OVERRIDE {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
-    if (sysno == __NR_getpid) {
-      return sandbox->Trap(FakeGetPid, pid_ptr_);
+    if (sysno == __NR_uname) {
+      return sandbox->Trap(IncreaseCounter, counter_ptr_);
     }
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
  private:
-  pid_t* pid_ptr_;
+  int* counter_ptr_;
   DISALLOW_COPY_AND_ASSIGN(VerboseAPITestingPolicy);
 };
 
 SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
   if (SandboxBPF::SupportsSeccompSandbox(-1) ==
       sandbox::SandboxBPF::STATUS_AVAILABLE) {
-    pid_t pid = 0;
+    static int counter = 0;
 
     SandboxBPF sandbox;
-    sandbox.SetSandboxPolicy(new VerboseAPITestingPolicy(&pid));
+    sandbox.SetSandboxPolicy(new VerboseAPITestingPolicy(&counter));
     BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 
-    BPF_ASSERT_EQ(0, pid);
-    BPF_ASSERT_EQ(0, syscall(__NR_getpid));
-    BPF_ASSERT_EQ(1, pid);
-    BPF_ASSERT_EQ(1, syscall(__NR_getpid));
-    BPF_ASSERT_EQ(2, pid);
-
-    // N.B.: Any future call to getpid() would corrupt the stack.
-    //       This is OK. The SANDBOX_TEST() macro is guaranteed to
-    //       only ever call _exit() after the test completes.
+    BPF_ASSERT_EQ(0, counter);
+    BPF_ASSERT_EQ(0, syscall(__NR_uname, 0));
+    BPF_ASSERT_EQ(1, counter);
+    BPF_ASSERT_EQ(1, syscall(__NR_uname, 0));
+    BPF_ASSERT_EQ(2, counter);
   }
 }
 

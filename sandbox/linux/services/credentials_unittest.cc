@@ -202,7 +202,7 @@ TEST(Credentials, CanDetectRoot) {
   ASSERT_TRUE(WorkingDirectoryIsRoot());
 }
 
-SANDBOX_TEST(Credentials, DropFileSystemAccessIsSafe) {
+SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(DropFileSystemAccessIsSafe)) {
   Credentials creds;
   CHECK(creds.DropAllCapabilities());
   // Probably missing kernel support.
@@ -217,7 +217,7 @@ SANDBOX_TEST(Credentials, DropFileSystemAccessIsSafe) {
 
 // Check that after dropping filesystem access and dropping privileges
 // it is not possible to regain capabilities.
-SANDBOX_TEST(Credentials, CannotRegainPrivileges) {
+SANDBOX_TEST(Credentials, DISABLE_ON_LSAN(CannotRegainPrivileges)) {
   Credentials creds;
   CHECK(creds.DropAllCapabilities());
   // Probably missing kernel support.

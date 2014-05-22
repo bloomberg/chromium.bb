@@ -26,6 +26,12 @@ bool IsRunningOnValgrind();
 #define DISABLE_ON_ASAN(test_name) test_name
 #endif  // defined(ADDRESS_SANITIZER)
 
+#if defined(LEAK_SANITIZER)
+#define DISABLE_ON_LSAN(test_name) DISABLED_##test_name
+#else
+#define DISABLE_ON_LSAN(test_name) test_name
+#endif
+
 #if defined(THREAD_SANITIZER)
 #define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
 #else

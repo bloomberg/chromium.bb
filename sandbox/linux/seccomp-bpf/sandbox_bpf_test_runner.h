@@ -47,6 +47,8 @@ class SandboxBPFTestRunner : public SandboxTestRunner {
 
   virtual void Run() OVERRIDE;
 
+  virtual bool ShouldCheckForLeaks() const OVERRIDE;
+
  private:
   scoped_ptr<BPFTesterDelegate> bpf_tester_delegate_;
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFTestRunner);

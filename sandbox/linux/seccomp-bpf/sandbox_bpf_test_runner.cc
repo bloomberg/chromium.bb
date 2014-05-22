@@ -67,4 +67,10 @@ void SandboxBPFTestRunner::Run() {
   }
 }
 
+bool SandboxBPFTestRunner::ShouldCheckForLeaks() const {
+  // LSAN requires being able to use ptrace() and other system calls that could
+  // be denied.
+  return false;
+}
+
 }  // namespace sandbox
