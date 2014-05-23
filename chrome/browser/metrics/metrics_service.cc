@@ -191,9 +191,7 @@
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
-#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
@@ -548,7 +546,7 @@ void MetricsService::EnableRecording() {
   recording_active_ = true;
 
   state_manager_->ForceClientIdCreation();
-  crash_keys::SetClientID(state_manager_->client_id());
+  client_->SetClientID(state_manager_->client_id());
   if (!log_manager_.current_log())
     OpenNewLog();
 
@@ -1764,7 +1762,7 @@ bool MetricsService::ShouldLogEvents() {
   // We simply don't log events to UMA if there is a single incognito
   // session visible. The problem is that we always notify using the orginal
   // profile in order to simplify notification processing.
-  return !chrome::IsOffTheRecordSessionActive();
+  return !client_->IsOffTheRecordSessionActive();
 }
 
 void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
