@@ -601,6 +601,13 @@ function tableRow(testObject)
             row += resultLink(testPrefix, '-actual.txt', 'result');
     }
 
+    if (actual.indexOf('CRASH') != -1) {
+        row += resultLink(testPrefix, '-crash-log.txt', 'crash log');
+        row += resultLink(testPrefix, '-sample.txt', 'sample');
+        if (testObject.has_stderr)
+            row += resultLink(testPrefix, '-stderr.txt', 'stderr');
+    }
+
     var actualTokens = actual.split(/\s+/);
     var cell = imageResultsCell(testObject, testPrefix, actualTokens[0]);
     if (!cell && actualTokens.length > 1)
