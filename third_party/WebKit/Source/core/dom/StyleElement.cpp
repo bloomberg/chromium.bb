@@ -91,7 +91,7 @@ void StyleElement::removedFromDocument(Document& document, Element* element, Con
     if (m_sheet)
         clearSheet(element);
     if (removedSheet)
-        document.removedStyleSheet(removedSheet.get(), RecalcStyleDeferred, AnalyzedStyleUpdate);
+        document.removedStyleSheet(removedSheet.get(), AnalyzedStyleUpdate);
 }
 
 void StyleElement::clearDocumentData(Document& document, Element* element)

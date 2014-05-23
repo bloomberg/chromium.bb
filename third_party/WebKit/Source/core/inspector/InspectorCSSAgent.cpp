@@ -512,7 +512,7 @@ void InspectorCSSAgent::didMutateRules(CSSStyleSheet* styleSheet)
     if (!styleSheetEditInProgress()) {
         Document* owner = styleSheet->ownerDocument();
         if (owner)
-            owner->modifiedStyleSheet(styleSheet, RecalcStyleDeferred, FullStyleUpdate);
+            owner->modifiedStyleSheet(styleSheet, FullStyleUpdate);
     }
 }
 
@@ -529,7 +529,7 @@ void InspectorCSSAgent::didMutateStyle(CSSStyleDeclaration* style, bool isInline
         CSSStyleSheet* parentSheet = style->parentStyleSheet();
         Document* owner = parentSheet ? parentSheet->ownerDocument() : 0;
         if (owner)
-            owner->modifiedStyleSheet(parentSheet, RecalcStyleDeferred, FullStyleUpdate);
+            owner->modifiedStyleSheet(parentSheet, FullStyleUpdate);
     }
 }
 

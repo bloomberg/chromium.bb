@@ -766,7 +766,7 @@ void FrameView::performPreLayoutTasks()
 
     // Viewport-dependent media queries may cause us to need completely different style information.
     if (!document->styleResolver() || document->styleResolver()->mediaQueryAffectedByViewportChange()) {
-        document->styleResolverChanged(RecalcStyleDeferred);
+        document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
 
         // FIXME: This instrumentation event is not strictly accurate since cached media query results

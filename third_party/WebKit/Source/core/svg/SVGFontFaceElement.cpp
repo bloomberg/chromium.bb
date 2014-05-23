@@ -304,7 +304,7 @@ void SVGFontFaceElement::rebuildFontFace()
         }
     }
 
-    document().styleResolverChanged(RecalcStyleDeferred);
+    document().styleResolverChanged();
 }
 
 Node::InsertionNotificationRequest SVGFontFaceElement::insertedInto(ContainerNode* rootParent)
@@ -336,7 +336,7 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
             document().accessSVGExtensions().registerPendingSVGFontFaceElementsForRemoval(this);
         }
         m_fontFaceRule->mutableProperties().clear();
-        document().styleResolverChanged(RecalcStyleDeferred);
+        document().styleResolverChanged();
     } else
         ASSERT(!m_fontElement);
 }

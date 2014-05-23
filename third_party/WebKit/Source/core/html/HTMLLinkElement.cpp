@@ -576,7 +576,7 @@ void LinkStyle::removePendingSheet()
         // Document::removePendingSheet() triggers the style selector recalc for blocking sheets.
         // FIXME: We don't have enough knowledge at this point to know if we're adding or removing a sheet
         // so we can't call addedStyleSheet() or removedStyleSheet().
-        m_owner->document().styleResolverChanged(RecalcStyleDeferred);
+        m_owner->document().styleResolverChanged();
         return;
     }
 
@@ -620,7 +620,7 @@ void LinkStyle::setDisabledState(bool disabled)
                 process();
         } else {
             // FIXME: We don't have enough knowledge here to know if we should call addedStyleSheet() or removedStyleSheet().
-            m_owner->document().styleResolverChanged(RecalcStyleDeferred);
+            m_owner->document().styleResolverChanged();
         }
     }
 }

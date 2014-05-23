@@ -1157,7 +1157,7 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
 
     Document* document = mainFrame()->document();
     if (document) {
-        document->styleResolverChanged(RecalcStyleDeferred);
+        document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
     }
     InspectorInstrumentation::mediaQueryResultChanged(document);
@@ -1224,7 +1224,7 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         document = m_page->mainFrame()->document();
     if (document) {
         document->mediaQueryAffectingValueChanged();
-        document->styleResolverChanged(RecalcStyleDeferred);
+        document->styleResolverChanged();
         document->updateLayout();
     }
 }

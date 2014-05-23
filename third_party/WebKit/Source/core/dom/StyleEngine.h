@@ -179,7 +179,7 @@ public:
 
     void didDetach();
     bool shouldClearResolver() const;
-    StyleResolverChange resolverChanged(RecalcStyleTime, StyleResolverUpdateMode);
+    StyleResolverChange resolverChanged(StyleResolverUpdateMode);
     unsigned resolverAccessCount() const;
 
     void markDocumentDirty();

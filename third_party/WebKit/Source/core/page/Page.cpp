@@ -229,7 +229,7 @@ void Page::scheduleForcedStyleRecalcForAllPages()
 void Page::setNeedsRecalcStyleInAllFrames()
 {
     for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->document()->styleResolverChanged(RecalcStyleDeferred);
+        frame->document()->styleResolverChanged();
 }
 
 void Page::setNeedsLayoutInAllFrames()

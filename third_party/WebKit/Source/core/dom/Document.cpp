@@ -2010,7 +2010,7 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
         HTMLElement* bodyElement = body();
         if (bodyElement && !bodyElement->renderer() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
             m_pendingSheetLayout = DidLayoutWithPendingSheets;
-            styleResolverChanged(RecalcStyleDeferred);
+            styleResolverChanged();
         } else if (m_hasNodesWithPlaceholderStyle) {
             // If new nodes have been added or style recalc has been done with style sheets still
             // pending, some nodes may not have had their real style calculated yet. Normally this
@@ -3079,7 +3079,7 @@ void Document::processHttpEquivDefaultStyle(const AtomicString& content)
     // -dwh
     m_styleEngine->setSelectedStylesheetSetName(content);
     m_styleEngine->setPreferredStylesheetSetName(content);
-    styleResolverChanged(RecalcStyleDeferred);
+    styleResolverChanged();
 }
 
 void Document::processHttpEquivRefresh(const AtomicString& content)
@@ -3407,7 +3407,7 @@ String Document::selectedStylesheetSet() const
 void Document::setSelectedStylesheetSet(const String& aString)
 {
     m_styleEngine->setSelectedStylesheetSetName(aString);
-    styleResolverChanged(RecalcStyleDeferred);
+    styleResolverChanged();
 }
 
 void Document::evaluateMediaQueryListIfNeeded()
@@ -3432,14 +3432,14 @@ void Document::notifyResizeForViewportUnits()
     setNeedsStyleRecalcForViewportUnits();
 }
 
-void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpdateMode updateMode)
+void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
 {
     // styleResolverChanged() can be invoked during Document destruction.
     // We just skip that case.
     if (!m_styleEngine)
         return;
 
-    StyleResolverChange change = m_styleEngine->resolverChanged(updateTime, updateMode);
+    StyleResolverChange change = m_styleEngine->resolverChanged(updateMode);
     if (change.needsRepaint()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
@@ -3452,14 +3452,11 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 
     m_evaluateMediaQueriesOnStyleRecalc = true;
     setNeedsStyleRecalc(SubtreeStyleChange);
-
-    if (updateTime == RecalcStyleImmediately)
-        updateRenderTreeIfNeeded();
 }
 
 void Document::styleResolverMayHaveChanged()
 {
-    styleResolverChanged(RecalcStyleDeferred, hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
+    styleResolverChanged(hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 }
 
 void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
@@ -5600,24 +5597,24 @@ DocumentLifecycleNotifier& Document::lifecycleNotifier()
     return static_cast<DocumentLifecycleNotifier&>(LifecycleContext<Document>::lifecycleNotifier());
 }
 
-void Document::removedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
+void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.
     // styleResolverChanged() is needed even when the document is inactive so that
     // imported docuements (which is inactive) notifies the change to the master document.
     if (isActive())
         styleEngine()->modifiedStyleSheet(sheet);
-    styleResolverChanged(when, updateMode);
+    styleResolverChanged(updateMode);
 }
 
-void Document::modifiedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
+void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.
     // styleResolverChanged() is needed even when the document is inactive so that
     // imported docuements (which is inactive) notifies the change to the master document.
     if (isActive())
         styleEngine()->modifiedStyleSheet(sheet);
-    styleResolverChanged(when, updateMode);
+    styleResolverChanged(updateMode);
 }
 
 TextAutosizer* Document::textAutosizer()

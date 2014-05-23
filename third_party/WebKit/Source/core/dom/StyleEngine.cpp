@@ -229,13 +229,13 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
     markDocumentDirty();
     // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
     // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
-    document().styleResolverChanged(RecalcStyleDeferred);
+    document().styleResolverChanged();
 }
 
 void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
-    document().addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleDeferred);
+    document().addedStyleSheet(m_authorStyleSheets.last().get());
     markDocumentDirty();
 }
 
@@ -493,13 +493,13 @@ bool StyleEngine::shouldClearResolver() const
     return !m_didCalculateResolver && !haveStylesheetsLoaded();
 }
 
-StyleResolverChange StyleEngine::resolverChanged(RecalcStyleTime time, StyleResolverUpdateMode mode)
+StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
     StyleResolverChange change;
 
     if (!isMaster()) {
         if (Document* master = this->master())
-            master->styleResolverChanged(time, mode);
+            master->styleResolverChanged(mode);
         return change;
     }
 

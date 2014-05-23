@@ -175,11 +175,6 @@ struct AnnotatedRegionValue;
 
 typedef int ExceptionCode;
 
-enum RecalcStyleTime {
-    RecalcStyleImmediately, // synchronous
-    RecalcStyleDeferred // asynchronous
-};
-
 enum StyleResolverUpdateMode {
     // Discards the StyleResolver and rebuilds it.
     FullStyleUpdate,
@@ -441,15 +436,15 @@ public:
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
 
     // Called when one or more stylesheets in the document may have been added, removed, or changed.
-    void styleResolverChanged(RecalcStyleTime, StyleResolverUpdateMode = FullStyleUpdate);
+    void styleResolverChanged(StyleResolverUpdateMode = FullStyleUpdate);
     void styleResolverMayHaveChanged();
 
     // FIXME: Switch all callers of styleResolverChanged to these or better ones and then make them
     // do something smarter.
-    void removedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred, StyleResolverUpdateMode = FullStyleUpdate);
-    void addedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred) { styleResolverChanged(when); }
-    void modifiedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred, StyleResolverUpdateMode = FullStyleUpdate);
-    void changedSelectorWatch() { styleResolverChanged(RecalcStyleDeferred); }
+    void removedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
+    void addedStyleSheet(StyleSheet*) { styleResolverChanged(); }
+    void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
+    void changedSelectorWatch() { styleResolverChanged(); }
 
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
