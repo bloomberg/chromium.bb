@@ -320,8 +320,6 @@
         'common/channel_init.h',
         'common/common_type_converters.cc',
         'common/common_type_converters.h',
-        'common/environment_data.cc',
-        'common/environment_data.h',
         'common/handle_watcher.cc',
         'common/handle_watcher.h',
         'common/message_pump_mojo.cc',
