@@ -7,6 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/async_file_util.h"
@@ -119,6 +120,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       fileapi::FileSystemContext* context);
 
  private:
+  class MediaPathFilterWrapper;
+
   // Use Create() to get an instance of DeviceMediaAsyncFileUtil.
   DeviceMediaAsyncFileUtil(const base::FilePath& profile_path,
                            MediaFileValidationType validation_type);
@@ -126,8 +129,11 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // Called when GetFileInfo method call succeeds. |file_info| contains the
   // file details of the requested url. |callback| is invoked to complete the
   // GetFileInfo request.
-  void OnDidGetFileInfo(const GetFileInfoCallback& callback,
-                        const base::File::Info& file_info);
+  void OnDidGetFileInfo(
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      const base::FilePath& path,
+      const GetFileInfoCallback& callback,
+      const base::File::Info& file_info);
 
   // Called when ReadDirectory method call succeeds. |callback| is invoked to
   // complete the ReadDirectory request.
@@ -141,6 +147,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // in any two calls are disjoint), and |has_more| will be true, except for
   // the last chunk.
   void OnDidReadDirectory(
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const ReadDirectoryCallback& callback,
       const EntryList& file_list,
       bool has_more);
@@ -150,7 +157,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // Profile path.
   const base::FilePath profile_path_;
 
-  const MediaFileValidationType validation_type_;
+  scoped_refptr<MediaPathFilterWrapper> media_path_filter_wrapper_;
 
   // For callbacks that may run after destruction.
   base::WeakPtrFactory<DeviceMediaAsyncFileUtil> weak_ptr_factory_;

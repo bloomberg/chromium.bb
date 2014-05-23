@@ -46,6 +46,30 @@ void OnGetFileInfoError(const AsyncFileUtil::GetFileInfoCallback& callback,
   callback.Run(error, base::File::Info());
 }
 
+// Called after OnDidGetFileInfo finishes media check.
+// |callback| is invoked to complete the GetFileInfo request.
+void OnDidCheckMediaForGetFileInfo(
+    const AsyncFileUtil::GetFileInfoCallback& callback,
+    const base::File::Info& file_info,
+    bool is_valid_file) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!is_valid_file) {
+    OnGetFileInfoError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  callback.Run(base::File::FILE_OK, file_info);
+}
+
+// Called after OnDidReadDirectory finishes media check.
+// |callback| is invoked to complete the ReadDirectory request.
+void OnDidCheckMediaForReadDirectory(
+    const AsyncFileUtil::ReadDirectoryCallback& callback,
+    bool has_more,
+    const AsyncFileUtil::EntryList& file_list) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(base::File::FILE_OK, file_list, has_more);
+}
+
 // Called when ReadDirectory method call failed to enumerate the directory
 // objects. |callback| is invoked to notify the caller about the |error|
 // that occured while reading the directory objects.
@@ -164,6 +188,55 @@ void OnSnapshotFileCreatedRunTask(
 
 }  // namespace
 
+class DeviceMediaAsyncFileUtil::MediaPathFilterWrapper
+    : public base::RefCountedThreadSafe<MediaPathFilterWrapper> {
+ public:
+  MediaPathFilterWrapper();
+
+  // Check if entries in |file_list| look like media files.
+  // Append the ones that look like media files to |results|.
+  // Should run on a media task runner.
+  AsyncFileUtil::EntryList FilterMediaEntries(
+      const AsyncFileUtil::EntryList& file_list);
+
+  // Check if |path| looks like a media file.
+  bool CheckFilePath(const base::FilePath& path);
+
+ private:
+  friend class base::RefCountedThreadSafe<MediaPathFilterWrapper>;
+
+  virtual ~MediaPathFilterWrapper();
+
+  scoped_ptr<MediaPathFilter> media_path_filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaPathFilterWrapper);
+};
+
+DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::MediaPathFilterWrapper()
+    : media_path_filter_(new MediaPathFilter) {
+}
+
+DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::~MediaPathFilterWrapper() {
+}
+
+AsyncFileUtil::EntryList
+DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::FilterMediaEntries(
+    const AsyncFileUtil::EntryList& file_list) {
+  AsyncFileUtil::EntryList results;
+  for (size_t i = 0; i < file_list.size(); ++i) {
+    const fileapi::DirectoryEntry& entry = file_list[i];
+    if (entry.is_directory || CheckFilePath(base::FilePath(entry.name))) {
+      results.push_back(entry);
+    }
+  }
+  return results;
+}
+
+bool DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::CheckFilePath(
+    const base::FilePath& path) {
+  return media_path_filter_->Match(path);
+}
+
 DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 }
 
@@ -241,6 +314,8 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
                  weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&context),
+                 url.path(),
                  callback),
       base::Bind(&OnGetFileInfoError, callback));
 }
@@ -259,6 +334,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidReadDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&context),
                  callback),
       base::Bind(&OnReadDirectoryError, callback));
 }
@@ -390,25 +466,52 @@ DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
     const base::FilePath& profile_path,
     MediaFileValidationType validation_type)
     : profile_path_(profile_path),
-      validation_type_(validation_type),
       weak_ptr_factory_(this) {
+  if (validation_type == APPLY_MEDIA_FILE_VALIDATION) {
+    media_path_filter_wrapper_ = new MediaPathFilterWrapper;
+  }
 }
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
-    const GetFileInfoCallback& callback,
+    scoped_ptr<FileSystemOperationContext> context,
+    const base::FilePath& path,
+    const AsyncFileUtil::GetFileInfoCallback& callback,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(base::File::FILE_OK, file_info);
+  if (file_info.is_directory || !validate_media_files()) {
+    OnDidCheckMediaForGetFileInfo(callback, file_info, true /* valid */);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      context->task_runner(),
+      FROM_HERE,
+      base::Bind(&MediaPathFilterWrapper::CheckFilePath,
+                 media_path_filter_wrapper_,
+                 path),
+      base::Bind(&OnDidCheckMediaForGetFileInfo, callback, file_info));
 }
 
 void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
-    const ReadDirectoryCallback& callback,
-    const EntryList& file_list,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const AsyncFileUtil::ReadDirectoryCallback& callback,
+    const AsyncFileUtil::EntryList& file_list,
     bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(base::File::FILE_OK, file_list, has_more);
+  if (!validate_media_files()) {
+    OnDidCheckMediaForReadDirectory(callback, has_more, file_list);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      context->task_runner(),
+      FROM_HERE,
+      base::Bind(&MediaPathFilterWrapper::FilterMediaEntries,
+                 media_path_filter_wrapper_,
+                 file_list),
+      base::Bind(&OnDidCheckMediaForReadDirectory, callback, has_more));
 }
 
 bool DeviceMediaAsyncFileUtil::validate_media_files() const {
-  return validation_type_ == APPLY_MEDIA_FILE_VALIDATION;
+  return media_path_filter_wrapper_.get() != NULL;
 }
