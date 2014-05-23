@@ -40,11 +40,11 @@ GIT_REVISIONS = {
         'upstream-base': '237df3fa4a1d939e6fd1af0c3e5029a25a137310',
         },
     'gcc': {
-        'rev': 'a2e4a3140c035233409598487c56b76108f8c74d',
+        'rev': 'faa3cdd0473b7fb82be937e32fd2b474fa0299e6',
         'upstream-branch': 'upstream/gcc-4_8-branch',
-        'upstream-name': 'gcc-4.8.2',
-         # Upstream tag gcc-4_8_2-release:
-        'upstream-base': '9bcca88e24e64d4e23636aafa3404088b13bcb0e',
+        'upstream-name': 'gcc-4.8.3',
+         # Upstream tag gcc-4_8_3-release:
+        'upstream-base': '6bbf0dec66c0e719b06cd2fe67559fda6df09000',
         },
     'newlib': {
         'rev': 'a9ae3c60b36dea3d8a10e18b1b6db952d21268c2',
