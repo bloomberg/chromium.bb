@@ -10,6 +10,8 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
+#include "base/containers/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -64,15 +66,47 @@ const uint8 kWidevineUuid[16] = {
     0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
     0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 
-static std::vector<uint8> GetUUID(const std::string& key_system) {
-  // For security reasons, we only do exact string comparisons here - we don't
-  // try to parse the |key_system| in any way.
-  if (key_system == kWidevineKeySystem) {
-    return std::vector<uint8>(kWidevineUuid,
-                              kWidevineUuid + arraysize(kWidevineUuid));
-  }
-  return std::vector<uint8>();
+typedef std::vector<uint8> UUID;
+
+class KeySystemUuidManager {
+ public:
+  KeySystemUuidManager();
+  UUID GetUUID(const std::string& key_system);
+  void AddMapping(const std::string& key_system, const UUID& uuid);
+
+ private:
+  typedef base::hash_map<std::string, UUID> KeySystemUuidMap;
+
+  KeySystemUuidMap key_system_uuid_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeySystemUuidManager);
+};
+
+KeySystemUuidManager::KeySystemUuidManager() {
+  // Widevine is always supported in Android.
+  key_system_uuid_map_[kWidevineKeySystem] =
+      UUID(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
 }
+
+UUID KeySystemUuidManager::GetUUID(const std::string& key_system) {
+  KeySystemUuidMap::iterator it = key_system_uuid_map_.find(key_system);
+  if (it == key_system_uuid_map_.end())
+    return UUID();
+  return it->second;
+}
+
+void KeySystemUuidManager::AddMapping(const std::string& key_system,
+                                      const UUID& uuid) {
+  KeySystemUuidMap::iterator it = key_system_uuid_map_.find(key_system);
+  DCHECK(it == key_system_uuid_map_.end())
+      << "Shouldn't overwrite an existing key system.";
+  if (it != key_system_uuid_map_.end())
+    return;
+  key_system_uuid_map_[key_system] = uuid;
+}
+
+base::LazyInstance<KeySystemUuidManager>::Leaky g_key_system_uuid_manager =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Tries to find a PSSH box whose "SystemId" is |uuid| in |data|, parses the
 // "Data" of the box and put it in |pssh_data|. Returns true if such a box is
@@ -82,7 +116,7 @@ static std::vector<uint8> GetUUID(const std::string& key_system) {
 // will be set in |pssh_data|.
 // 2, Only PSSH and TENC boxes are allowed in |data|. TENC boxes are skipped.
 static bool GetPsshData(const uint8* data, int data_size,
-                        const std::vector<uint8>& uuid,
+                        const UUID& uuid,
                         std::vector<uint8>* pssh_data) {
   const uint8* cur = data;
   const uint8* data_end = data + data_size;
@@ -192,7 +226,7 @@ static bool IsKeySystemSupportedWithTypeImpl(
   if (!MediaDrmBridge::IsAvailable())
     return false;
 
-  std::vector<uint8> scheme_uuid = GetUUID(key_system);
+  UUID scheme_uuid = g_key_system_uuid_manager.Get().GetUUID(key_system);
   if (scheme_uuid.empty())
     return false;
 
@@ -228,6 +262,12 @@ bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
     return false;
 
   return media_drm_bridge->SetSecurityLevel(security_level);
+}
+
+//static
+void MediaDrmBridge::AddKeySystemUuidMapping(const std::string& key_system,
+                                             const std::vector<uint8>& uuid) {
+  g_key_system_uuid_manager.Get().AddMapping(key_system, uuid);
 }
 
 // static
@@ -287,7 +327,7 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
   if (!IsAvailable())
     return media_drm_bridge.Pass();
 
-  std::vector<uint8> scheme_uuid = GetUUID(key_system);
+  UUID scheme_uuid = g_key_system_uuid_manager.Get().GetUUID(key_system);
   if (scheme_uuid.empty())
     return media_drm_bridge.Pass();
 

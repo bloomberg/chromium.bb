@@ -47,6 +47,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Checks whether |key_system| is supported.
   static bool IsKeySystemSupported(const std::string& key_system);
 
+  // Adds a new |key_system| with the associated |uuid|.
+  // This is used for other platforms to have a chance to register their
+  // own UUID mapping.
+  static void AddKeySystemUuidMapping(const std::string& key_system,
+                                      const std::vector<uint8>& uuid);
+
   // Checks whether |key_system| is supported with |container_mime_type|.
   // |container_mime_type| must not be empty.
   static bool IsKeySystemSupportedWithType(

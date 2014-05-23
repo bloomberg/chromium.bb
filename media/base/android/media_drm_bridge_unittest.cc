@@ -26,6 +26,10 @@ const char kVideoMp4[] = "video/mp4";
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
 const char kInvalidKeySystem[] = "invalid.keysystem";
+const char kFooKeySystem[] = "com.foo.keysystem";
+const uint8 kWidevineUuid[16] = {
+    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
+    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED };
 const MediaDrmBridge::SecurityLevel kLNone =
     MediaDrmBridge::SECURITY_LEVEL_NONE;
 const MediaDrmBridge::SecurityLevel kL1 = MediaDrmBridge::SECURITY_LEVEL_1;
@@ -91,6 +95,35 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
   EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "unknown"));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "video/avi"));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kInvalidKeySystem, "audio/mp3"));
+}
+
+TEST(MediaDrmBridgeTest, AddNewKeySystemMapping) {
+  EXPECT_FALSE(IsKeySystemSupported(kFooKeySystem));
+
+  // Use WV UUID for foo, because it is the only key system we can guarentee
+  // that it is installed in the test device.
+  std::vector<uint8> foo_uuid(kWidevineUuid,
+                              kWidevineUuid + arraysize(kWidevineUuid));
+  MediaDrmBridge::AddKeySystemUuidMapping(kFooKeySystem, foo_uuid);
+
+  EXPECT_TRUE_IF_AVAILABLE(IsKeySystemSupported(kFooKeySystem));
+  EXPECT_TRUE_IF_AVAILABLE(
+      IsKeySystemSupportedWithType(kFooKeySystem, kVideoMp4));
+}
+
+TEST(MediaDrmBridgeTest, ShouldNotOverwriteExistingKeySystem) {
+  EXPECT_TRUE_IF_AVAILABLE(IsKeySystemSupported(kWidevineKeySystem));
+  std::vector<uint8> invalid_uuid = std::vector<uint8>(16, 99);
+#if DCHECK_IS_ON
+  ASSERT_DEATH({
+    MediaDrmBridge::AddKeySystemUuidMapping(kWidevineKeySystem, invalid_uuid);
+  }, "");
+#else
+  // Try to add WV keysystem with the invalid UUID.
+  MediaDrmBridge::AddKeySystemUuidMapping(kWidevineKeySystem, invalid_uuid);
+
+  EXPECT_TRUE_IF_AVAILABLE(IsKeySystemSupported(kWidevineKeySystem));
+#endif
 }
 
 }  // namespace media
