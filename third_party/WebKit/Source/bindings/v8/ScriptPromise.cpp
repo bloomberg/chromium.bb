@@ -33,10 +33,23 @@
 
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/DOMException.h"
 
 #include <v8.h>
 
 namespace WebCore {
+
+namespace {
+
+struct WithScriptState {
+    // Used by ToV8Value<WithScriptState, ScriptState*>.
+    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
+    {
+        return scriptState->context()->Global();
+    }
+};
+
+} // namespace
 
 ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> value)
     : m_scriptState(scriptState)
@@ -112,6 +125,12 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Val
     ScriptPromise promise = resolver->promise();
     resolver->reject(value);
     return promise;
+}
+
+ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, PassRefPtrWillBeRawPtr<DOMException> exception)
+{
+    ASSERT(scriptState->isolate()->InContext());
+    return reject(scriptState, ToV8Value<WithScriptState, ScriptState*>::toV8Value(exception, scriptState, scriptState->isolate()));
 }
 
 } // namespace WebCore

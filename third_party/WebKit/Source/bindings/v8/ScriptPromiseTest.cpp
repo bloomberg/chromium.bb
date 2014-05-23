@@ -35,6 +35,8 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 
 #include <gtest/gtest.h>
 #include <v8.h>
@@ -81,8 +83,8 @@ public:
         isolate()->RunMicrotasks();
     }
 
-    ScriptState* scriptState() { return m_scope->scriptState(); }
-    v8::Isolate* isolate() { return m_scope->isolate(); }
+    ScriptState* scriptState() const { return m_scope->scriptState(); }
+    v8::Isolate* isolate() const { return m_scope->isolate(); }
 
 protected:
     OwnPtr<V8ExecutionScope> m_scope;
@@ -235,6 +237,22 @@ TEST_F(ScriptPromiseTest, reject)
 
     EXPECT_EQ(String(), onFulfilled);
     EXPECT_EQ("hello", onRejected);
+}
+
+TEST_F(ScriptPromiseTest, rejectWithExceptionState)
+{
+    String onFulfilled, onRejected;
+    ScriptPromise promise = ScriptPromise::rejectWithDOMException(scriptState(), DOMException::create(SyntaxError, "some syntax error"));
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+
+    ASSERT_FALSE(promise.isEmpty());
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ("SyntaxError: some syntax error", onRejected);
 }
 
 } // namespace
