@@ -48,6 +48,10 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
 // incognito profiles.
 bool IsRegularOrGuestSession(Browser* browser);
 
+// If the --google-profile-info flag is turned on, starts an update for a new
+// version of the Gaia profile picture.
+void UpdateGaiaProfilePhotoIfNeeded(Profile* profile);
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

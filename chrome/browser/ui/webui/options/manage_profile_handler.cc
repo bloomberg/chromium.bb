@@ -182,6 +182,9 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removeProfileShortcut",
       base::Bind(&ManageProfileHandler::RemoveProfileShortcut,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("refreshGaiaPicture",
+      base::Bind(&ManageProfileHandler::RefreshGaiaPicture,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Uninitialize() {
@@ -518,6 +521,10 @@ void ManageProfileHandler::RemoveProfileShortcut(const base::ListValue* args) {
 
   // Update the UI buttons.
   OnHasProfileShortcuts(false);
+}
+
+void ManageProfileHandler::RefreshGaiaPicture(const base::ListValue* args) {
+  profiles::UpdateGaiaProfilePhotoIfNeeded(Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace options

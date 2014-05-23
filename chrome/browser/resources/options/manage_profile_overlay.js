@@ -501,6 +501,7 @@ cr.define('options', function() {
      * @private
      */
     prepareForManageDialog_: function() {
+      chrome.send('refreshGaiaPicture');
       var profileInfo = BrowserOptions.getCurrentProfile();
       ManageProfileOverlay.setProfileInfo(profileInfo, 'manage');
       $('manage-profile-overlay-create').hidden = true;

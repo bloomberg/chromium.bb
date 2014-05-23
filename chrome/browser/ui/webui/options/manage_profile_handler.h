@@ -122,6 +122,10 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   // shortcut" button. Removes the desktop shortcut for the profile.
   void RemoveProfileShortcut(const base::ListValue* args);
 
+  // Callback for the "refreshGaiaPicture" message, which is called when the
+  // user is editing an existing profile.
+  void RefreshGaiaPicture(const base::ListValue* args);
+
   // URL for the current profile's GAIA picture.
   std::string gaia_picture_url_;
 

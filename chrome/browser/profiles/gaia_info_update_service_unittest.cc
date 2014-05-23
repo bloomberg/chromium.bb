@@ -117,8 +117,6 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_EQ(name, GetCache()->GetNameOfProfileAtIndex(index));
   EXPECT_EQ(name, GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(
-      image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
-  EXPECT_TRUE(gfx::test::IsEqual(
       image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
 }
