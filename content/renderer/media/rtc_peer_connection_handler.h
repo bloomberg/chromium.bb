@@ -88,9 +88,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       PeerConnectionDependencyFactory* dependency_factory);
   virtual ~RTCPeerConnectionHandler();
 
-  // Destroy all existing RTCPeerConnectionHandler objects.
-  static void DestructAllHandlers();
-
   void associateWithFrame(blink::WebFrame* frame);
 
   // Initialize method only used for unit test.

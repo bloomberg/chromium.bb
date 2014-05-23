@@ -79,7 +79,6 @@
 #include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
-#include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -535,8 +534,6 @@ void RenderThreadImpl::Shutdown() {
   audio_message_filter_ = NULL;
 
 #if defined(ENABLE_WEBRTC)
-  RTCPeerConnectionHandler::DestructAllHandlers();
-
   peer_connection_factory_.reset();
 #endif
   RemoveFilter(vc_manager_->video_capture_message_filter());
