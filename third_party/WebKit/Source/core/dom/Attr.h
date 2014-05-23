@@ -63,6 +63,8 @@ public:
     virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
     const AtomicString& prefix() const { return m_name.prefix(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     Attr(Element&, const QualifiedName&);
     Attr(Document&, const QualifiedName&, const AtomicString& value);
@@ -87,7 +89,7 @@ private:
 
     // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
     // Note that m_name is always set, but m_element/m_standaloneValue may be null.
-    Element* m_element;
+    RawPtrWillBeMember<Element> m_element;
     QualifiedName m_name;
     AtomicString m_standaloneValue;
     unsigned m_ignoreChildrenChanged;
