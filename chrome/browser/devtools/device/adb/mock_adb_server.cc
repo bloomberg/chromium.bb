@@ -26,7 +26,6 @@ const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kListProcessesCommand[] = "shell:ps";
-const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
 
 const char kSerialOnline[] = "01498B321301A00A";
 const char kSerialOffline[] = "01498B2B0D01300E";
@@ -66,13 +65,6 @@ const char kSampleListProcesses[] =
     "u0_a76 1001 124  111111 222222 ffffffff 00000000 S com.android.chrome\r\n"
     "u0_a77 1002 125  111111 222222 ffffffff 00000000 S com.chrome.beta\r\n"
     "u0_a78 1003 126  111111 222222 ffffffff 00000000 S com.noprocess.app\r\n";
-
-const char kSampleListPackages[] =
-    "package:com.sample.feed\r\n"
-    "package:com.android.nfc\r\n"
-    "package:com.android.chrome\r\n"
-    "package:com.chrome.beta\r\n"
-    "package:com.google.android.apps.chrome\r\n";
 
 const char kSampleDumpsys[] =
     "WINDOW MANAGER POLICY STATE (dumpsys window policy)\r\n"
@@ -480,8 +472,6 @@ class MockAdbServer : SingleConnectionServer::Parser,
       SendResponse(kSampleDumpsys);
     } else if (command == kListProcessesCommand) {
       SendResponse(kSampleListProcesses);
-    } else if (command == kInstalledChromePackagesCommand) {
-      SendResponse(kSampleListPackages);
     } else if (command.find(kLocalAbstractPrefix) == 0) {
       selected_socket_ = command.substr(strlen(kLocalAbstractPrefix));
       SendResponse("");

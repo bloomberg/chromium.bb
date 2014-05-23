@@ -39,19 +39,14 @@ class AdbDeviceInfoQuery : public base::NonThreadSafe {
 
   void ParseScreenSize(const std::string& str);
 
-  void ReceivedPackages(int result, const std::string& response);
-
-  void ReceivedProcesses(const std::string& packages_response,
-                         int result,
+  void ReceivedProcesses(int result,
                          const std::string& processes_response);
 
-  void ReceivedSockets(const std::string& packages_response,
-                       const std::string& processes_response,
+  void ReceivedSockets(const std::string& processes_response,
                        int result,
                        const std::string& sockets_response);
 
-  void ParseBrowserInfo(const std::string& packages_response,
-                        const std::string& processes_response,
+  void ParseBrowserInfo(const std::string& processes_response,
                         const std::string& sockets_response);
 
   void Respond();

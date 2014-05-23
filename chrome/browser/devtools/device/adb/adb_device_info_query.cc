@@ -12,7 +12,6 @@ namespace {
 
 
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
-const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
 const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kListProcessesCommand[] = "shell:ps";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
@@ -81,31 +80,6 @@ const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
     if (kBrowserDescriptors[i].package == package)
       return &kBrowserDescriptors[i];
   return NULL;
-}
-
-typedef std::map<std::string, const BrowserDescriptor*> DescriptorMap;
-
-static DescriptorMap FindInstalledBrowserPackages(const std::string& response) {
-  // Parse 'pm list packages' output which on Android looks like this:
-  //
-  // package:com.android.chrome
-  // package:com.chrome.beta
-  // package:com.example.app
-  //
-  DescriptorMap package_to_descriptor;
-  const std::string package_prefix = "package:";
-  std::vector<std::string> entries;
-  Tokenize(response, "'\r\n", &entries);
-  for (size_t i = 0; i < entries.size(); ++i) {
-    if (entries[i].find(package_prefix) != 0)
-      continue;
-    std::string package = entries[i].substr(package_prefix.size());
-    const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-    if (!descriptor)
-      continue;
-    package_to_descriptor[descriptor->package] = descriptor;
-  }
-  return package_to_descriptor;
 }
 
 typedef std::map<std::string, std::string> StringMap;
@@ -247,8 +221,8 @@ void AdbDeviceInfoQuery::ReceivedDumpsys(int result,
     ParseDumpsysResponse(response);
 
   command_callback_.Run(
-      kInstalledChromePackagesCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedPackages,
+      kListProcessesCommand,
+      base::Bind(&AdbDeviceInfoQuery::ReceivedProcesses,
                  base::Unretained(this)));
 }
 
@@ -285,22 +259,7 @@ void AdbDeviceInfoQuery::ParseScreenSize(const std::string& str) {
 }
 
 
-void AdbDeviceInfoQuery::ReceivedPackages(
-    int result,
-    const std::string& packages_response) {
-  DCHECK(CalledOnValidThread());
-  if (result < 0) {
-    Respond();
-    return;
-  }
-  command_callback_.Run(
-      kListProcessesCommand,
-      base::Bind(&AdbDeviceInfoQuery::ReceivedProcesses,
-                 base::Unretained(this), packages_response));
-}
-
 void AdbDeviceInfoQuery::ReceivedProcesses(
-    const std::string& packages_response,
     int result,
     const std::string& processes_response) {
   DCHECK(CalledOnValidThread());
@@ -312,28 +271,23 @@ void AdbDeviceInfoQuery::ReceivedProcesses(
       kOpenedUnixSocketsCommand,
       base::Bind(&AdbDeviceInfoQuery::ReceivedSockets,
                  base::Unretained(this),
-                 packages_response,
                  processes_response));
 }
 
 void AdbDeviceInfoQuery::ReceivedSockets(
-    const std::string& packages_response,
     const std::string& processes_response,
     int result,
     const std::string& sockets_response) {
   DCHECK(CalledOnValidThread());
   if (result >= 0)
-    ParseBrowserInfo(packages_response, processes_response, sockets_response);
+    ParseBrowserInfo(processes_response, sockets_response);
   Respond();
 }
 
 void AdbDeviceInfoQuery::ParseBrowserInfo(
-    const std::string& packages_response,
     const std::string& processes_response,
     const std::string& sockets_response) {
   DCHECK(CalledOnValidThread());
-  DescriptorMap package_to_descriptor =
-      FindInstalledBrowserPackages(packages_response);
   StringMap pid_to_package;
   StringMap package_to_pid;
   MapProcessesToPackages(processes_response, pid_to_package, package_to_pid);
@@ -366,42 +320,6 @@ void AdbDeviceInfoQuery::ParseBrowserInfo(
     browser_info.type = GetBrowserType(socket);
     browser_info.display_name = GetDisplayName(socket, package);
     device_info_.browser_info.push_back(browser_info);
-  }
-
-  // Find installed packages not mapped to browsers.
-  typedef std::multimap<std::string, const BrowserDescriptor*>
-      DescriptorMultimap;
-  DescriptorMultimap socket_to_descriptor;
-  for (DescriptorMap::iterator it = package_to_descriptor.begin();
-      it != package_to_descriptor.end(); ++it) {
-    std::string package = it->first;
-    const BrowserDescriptor* descriptor = it->second;
-
-    if (packages_for_running_browsers.count(package))
-      continue;  // This package is already mapped to a browser.
-
-    if (package_to_pid.find(package) != package_to_pid.end()) {
-      // This package is running but not mapped to a browser.
-      socket_to_descriptor.insert(
-          DescriptorMultimap::value_type(descriptor->socket, descriptor));
-      continue;
-    }
-  }
-
-  // Try naming remaining unnamed browsers.
-  for (DescriptorMultimap::iterator it = socket_to_descriptor.begin();
-      it != socket_to_descriptor.end(); ++it) {
-    std::string socket = it->first;
-    const BrowserDescriptor* descriptor = it->second;
-
-    if (socket_to_descriptor.count(socket) != 1)
-      continue;  // No definitive match.
-
-    BrowserMap::iterator bit = socket_to_unnamed_browser_index.find(socket);
-    if (bit != socket_to_unnamed_browser_index.end()) {
-      device_info_.browser_info[bit->second].display_name =
-          descriptor->display_name;
-    }
   }
 }
 
