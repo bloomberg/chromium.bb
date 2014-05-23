@@ -37,7 +37,7 @@ GPUTestConfig::OS GetCurrentOS() {
     return GPUTestConfig::kOsWinVista;
   if (major_version == 6 && minor_version == 1)
     return GPUTestConfig::kOsWin7;
-  if (major_version == 6 && minor_version == 2)
+  if (major_version == 6 && (minor_version == 2 || minor_version == 3))
     return GPUTestConfig::kOsWin8;
 #elif defined(OS_MACOSX)
   int32 major_version = 0;
@@ -237,6 +237,7 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
     result = CollectGpuID(&my_gpu_info.gpu.vendor_id,
                           &my_gpu_info.gpu.device_id);
     if (result == kGpuIDNotSupported) {
+      LOG(ERROR) << "Fail to identify GPU";
       DisableGPUInfoValidation();
       rt = true;
     } else {
@@ -246,8 +247,10 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
     rt = SetGPUInfo(*gpu_info);
   }
   set_os(GetCurrentOS());
-  if (os() == kOsUnknown)
+  if (os() == kOsUnknown) {
+    LOG(ERROR) << "Unknown OS";
     rt = false;
+  }
 #if defined(NDEBUG)
   set_build_type(kBuildTypeRelease);
 #else

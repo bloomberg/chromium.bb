@@ -545,7 +545,8 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
     base::HexStringToInt(base::UTF16ToASCII(device_string), &device);
     *vendor_id = vendor;
     *device_id = device;
-    return kGpuIDSuccess;
+    if (*vendor_id != 0 && *device_id != 0)
+      return kGpuIDSuccess;
   }
   return kGpuIDFailure;
 }

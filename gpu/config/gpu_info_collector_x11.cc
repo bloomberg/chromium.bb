@@ -208,7 +208,8 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   if (CollectPCIVideoCardInfo(&gpu_info)) {
     *vendor_id = gpu_info.gpu.vendor_id;
     *device_id = gpu_info.gpu.device_id;
-    return kGpuIDSuccess;
+    if (*vendor_id != 0 && *device_id != 0)
+      return kGpuIDSuccess;
   }
   return kGpuIDFailure;
 }
