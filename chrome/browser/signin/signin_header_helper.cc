@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -30,6 +31,9 @@ namespace {
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 const char kGaiaSignoutOptionsIncognito[] = "SIGNOUTOPTIONS_INCOGNITO";
+const char kGaiaIdAttrName[] = "id";
+const char kProfileModeAttrName[] = "mode";
+const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
 
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
@@ -100,9 +104,10 @@ void AppendMirrorRequestHeaderIfPossible(
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
+  bool is_new_profile_management = switches::IsNewProfileManagement();
   bool is_google_url =
       !switches::IsEnableWebBasedSignin() &&
-      switches::IsNewProfileManagement() &&
+      is_new_profile_management &&
       google_util::IsGoogleDomainUrl(
           url,
           google_util::ALLOW_SUBDOMAIN,
@@ -119,8 +124,12 @@ void AppendMirrorRequestHeaderIfPossible(
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  std::string header_value =
-      account_id + ":" + base::IntToString(profile_mode_mask);
+  // TODO(guohui): needs to make a new flag for enabling account consistency.
+  std::string header_value(base::StringPrintf("%s=%s,%s=%s,%s=%s",
+      kGaiaIdAttrName, account_id.c_str(),
+      kProfileModeAttrName, base::IntToString(profile_mode_mask).c_str(),
+      kEnableAccountConsistencyAttrName,
+      is_new_profile_management ? "true" : "false"));
   request->SetExtraRequestHeaderByName(
       kChromeConnectedHeader, header_value, false);
 }
