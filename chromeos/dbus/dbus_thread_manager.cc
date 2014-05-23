@@ -63,14 +63,7 @@ static DBusThreadManager* g_dbus_thread_manager_for_testing = NULL;
 class DBusClientBundle {
  public:
   DBusClientBundle() {
-    DBusClientImplementationType client_type = REAL_DBUS_CLIENT_IMPLEMENTATION;
-    DBusClientImplementationType client_type_override = client_type;
-    // If --dbus-stub was requested, pass STUB to specific components;
-    // Many components like login are not useful with a stub implementation.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kDbusStub)) {
-      client_type_override = STUB_DBUS_CLIENT_IMPLEMENTATION;
-    }
+    const DBusClientImplementationType type = REAL_DBUS_CLIENT_IMPLEMENTATION;
 
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
     bluetooth_agent_manager_client_.reset(
@@ -86,7 +79,7 @@ class DBusClientBundle {
     bluetooth_profile_manager_client_.reset(
         BluetoothProfileManagerClient::Create());
     cras_audio_client_.reset(CrasAudioClient::Create());
-    cros_disks_client_.reset(CrosDisksClient::Create(client_type));
+    cros_disks_client_.reset(CrosDisksClient::Create(type));
     cryptohome_client_.reset(CryptohomeClient::Create());
     debug_daemon_client_.reset(DebugDaemonClient::Create());
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
@@ -109,12 +102,11 @@ class DBusClientBundle {
     nfc_record_client_.reset(NfcRecordClient::Create(nfc_device_client_.get(),
                                                     nfc_tag_client_.get()));
     permission_broker_client_.reset(PermissionBrokerClient::Create());
-    power_manager_client_.reset(
-        PowerManagerClient::Create(client_type_override));
-    session_manager_client_.reset(SessionManagerClient::Create(client_type));
+    power_manager_client_.reset(PowerManagerClient::Create(type));
+    session_manager_client_.reset(SessionManagerClient::Create(type));
     sms_client_.reset(SMSClient::Create());
     system_clock_client_.reset(SystemClockClient::Create());
-    update_engine_client_.reset(UpdateEngineClient::Create(client_type));
+    update_engine_client_.reset(UpdateEngineClient::Create(type));
   }
 
   BluetoothAdapterClient* bluetooth_adapter_client() {
@@ -489,13 +481,16 @@ void DBusThreadManager::Initialize() {
     VLOG(1) << "DBusThreadManager initialized with test implementation";
     return;
   }
+
   // Determine whether we use stub or real client implementations.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (!base::SysInfo::IsRunningOnChromeOS() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDbusStub)) {
+    InitializeWithStub();
+  } else {
     g_dbus_thread_manager = new DBusThreadManagerImpl;
     InitializeClients();
-    VLOG(1) << "DBusThreadManager initialized for ChromeOS";
-  } else {
-    InitializeWithStub();
+    VLOG(1) << "DBusThreadManager initialized for Chrome OS";
   }
 }
 
