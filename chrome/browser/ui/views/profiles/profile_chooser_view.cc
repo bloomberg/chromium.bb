@@ -253,8 +253,10 @@ class EditableProfileName : public views::LabelButton,
     SetFontList(medium_font_list);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-    if (!is_editing_allowed)
+    if (!is_editing_allowed) {
+      SetBorder(views::Border::CreateEmptyBorder(2, 0, 2, 0));
       return;
+    }
 
     // Show an "edit" pencil icon when hovering over. In the default state,
     // we need to create an empty placeholder of the correct size, so that
