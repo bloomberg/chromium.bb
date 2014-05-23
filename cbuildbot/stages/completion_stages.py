@@ -134,7 +134,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveSyncStage.sub_manager:
         sync_stages.MasterSlaveSyncStage.sub_manager.PromoteCandidate()
 
-  def HandleFailure(self, failing, inflight):
+  def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure.
 
     This function is called whenever the cbuildbot run fails.
@@ -144,25 +144,28 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     Args:
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
+      no_stat: Set of builder names of slave builders that had status None.
     """
+    if failing or inflight or no_stat:
+      cros_build_lib.PrintBuildbotStepWarnings()
+
     if failing:
-      self.HandleValidationFailure(failing)
-    elif inflight:
-      self.HandleValidationTimeout(inflight)
+      cros_build_lib.Warning('\n'.join([
+          'The following builders failed with this manifest:',
+          ', '.join(sorted(failing)),
+          'Please check the logs of the failing builders for details.']))
 
-  def HandleValidationFailure(self, failing):
-    cros_build_lib.PrintBuildbotStepWarnings()
-    cros_build_lib.Warning('\n'.join([
-        'The following builders failed with this manifest:',
-        ', '.join(sorted(failing)),
-        'Please check the logs of the failing builders for details.']))
+    if inflight:
+      cros_build_lib.Warning('\n'.join([
+          'The following builders took too long to finish:',
+          ', '.join(sorted(inflight)),
+          'Please check the logs of these builders for details.']))
 
-  def HandleValidationTimeout(self, inflight_statuses):
-    cros_build_lib.PrintBuildbotStepWarnings()
-    cros_build_lib.Warning('\n'.join([
-        'The following builders took too long to finish:',
-        ', '.join(sorted(inflight_statuses)),
-        'Please check the logs of these builders for details.']))
+    if no_stat:
+      cros_build_lib.Warning('\n'.join([
+          'The following builders did not start or failed prematurely:',
+          ', '.join(sorted(no_stat)),
+          'Please check the logs of these builders for details.']))
 
   def PerformStage(self):
     # Upload our pass/fail status to Google Storage.
@@ -185,7 +188,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     if fatal:
       self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
-      self.HandleFailure(failing, inflight)
+      self.HandleFailure(failing, inflight, no_stat)
       raise ImportantBuilderFailedException()
     else:
       self.HandleSuccess()
@@ -292,7 +295,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       # and returns changes that were not submitted.
       return self.sync_stage.pool.SubmitPartialPool(tracebacks)
 
-  def HandleFailure(self, failing, inflight):
+  def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.
 
     This function performs any tasks that need to happen when the Commit Queue
@@ -306,9 +309,11 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     Args:
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
     """
     # Print out the status about what builds failed or not.
-    MasterSlaveSyncCompletionStage.HandleFailure(self, failing, inflight)
+    MasterSlaveSyncCompletionStage.HandleFailure(
+        self, failing, inflight, no_stat)
 
     # Abort hardware tests to save time if we have already seen a failure,
     # except in the case where the only failure is a hardware test failure.
@@ -321,9 +326,20 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         self._AbortCQHWTests()
 
     if self._run.config.master:
-      self.CQMasterHandleFailure(failing, inflight)
+      self.CQMasterHandleFailure(failing, inflight, no_stat)
 
-  def CQMasterHandleFailure(self, failing, inflight):
+  def _GetFailedMessages(self, failing):
+    """Gathers the ValidationFailedMessages from the |failing| builders.
+
+    Args:
+      failing: Names of the builders that failed.
+
+    Returns:
+      A list of ValidationFailedMessage or NoneType objects.
+    """
+    return [self._slave_statuses[x].message for x in failing]
+
+  def CQMasterHandleFailure(self, failing, inflight, no_stat):
     """Handle changes in the validation pool upon build failure or timeout.
 
     This function determines whether to reject CLs and what CLs to
@@ -333,9 +349,9 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     Args:
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
     """
-    # messages is a list of ValidationFailedMessage or NoneType objects.
-    messages = [self._slave_statuses[x].message for x in failing]
+    messages = self._GetFailedMessages(failing)
     # Start with all the changes in the validation pool.
     changes = self.sync_stage.pool.changes
 
@@ -354,53 +370,21 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       # in ToT or broken infrastructure. In any of those cases, we
       # should not reject any changes.
       logging.warning('Detected that a sanity-check builder failed. '
-                      'Will not reject any patches.')
-      if failing:
-        self.sync_stage.pool.HandleValidationFailure(
-            messages, sanity=tot_sanity, changes=changes)
-      elif inflight:
-        self.sync_stage.pool.HandleValidationTimeout(
-            sanity=tot_sanity, changes=changes)
-      return
+                      'Will not reject any changes.')
 
-    # ToT was sane.
-
-    if inflight and not failing:
-      # No slave failed, but some slave(s) timed out due to an unknown
-      # cause. We don't have any more information, so reject all changes.
+    if inflight:
+      # Some slave(s) timed out due to unknown causes. We don't have
+      # any more information, so reject all changes.
+      # TODO: We should revise on how to handle timeouts.
       self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
                                                    changes=changes)
       return
 
-    # Some slave(s) failed. Further analyze the failures to decide
+    # Some builder failed, or some builder did not report stats, or
+    # the intersection of both. Let HandleValidationFailure decide
     # what changes to reject.
-    only_lab_failures = self._AllMatchFailureType(
-        messages, failures_lib.TestLabFailure)
-    only_infra_failures = self._AllMatchFailureType(
-        messages, failures_lib.InfrastructureFailure)
-
-    # For non-chromite changes, the build was not sane if it
-    # failed purely due to infrastructure errors.
-    sanity = not only_infra_failures
-
-    if only_infra_failures and not only_lab_failures:
-      # The non-lab infrastructure errors might have been caused
-      # by chromite changes.
-      logging.warning(
-          'Detected that the build failed due to non-lab infrastructure '
-          'issue(s). Will only reject chromite changes')
-      chromite_changes = validation_pool.ValidationPool.FilterChromiteChanges(
-          changes)
-      self.sync_stage.pool.HandleValidationFailure(
-          messages, sanity=True, changes=chromite_changes)
-      # Remove chromite changes from the list.
-      changes = [x for x in changes if x not in chromite_changes]
-    elif only_lab_failures:
-      logging.warning('Detected that the build failed purely due to HW '
-                      'Test Lab failure(s). Will not reject any changes')
-
-    self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity,
-                                                 changes=changes)
+    self.sync_stage.pool.HandleValidationFailure(
+        messages, sanity=tot_sanity, changes=changes, no_stat=no_stat)
 
   def ShouldDisableAlerts(self):
     """Return whether alerts should be disabled due to debug mode.
@@ -409,6 +393,19 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     """
     return self._run.debug
 
+  def _GetInfraFailMessages(self, failing):
+    """Returns a list of messages containing infra failures.
+
+    Args:
+      failing: The names of the failing builders.
+
+    Returns:
+      A list of ValidationFailedMessage objects.
+    """
+    msgs = self._GetFailedMessages(failing)
+    return [x for x in msgs if
+            x.HasFailureType(failures_lib.InfrastructureFailure)]
+
   def SendInfraAlertIfNeeded(self, failing, inflight):
     """Send infra alerts if needed.
 
@@ -416,9 +413,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
     """
-    msgs = [self._slave_statuses[x].message for x in failing]
-    msgs = [str(msg) for msg in msgs if
-            msg.HasFailureType(failures_lib.InfrastructureFailure)]
+    msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
     msgs += ['%s timed out' % x for x in inflight]
     if msgs:
       builder_name = self._run.config.name
@@ -432,20 +427,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                          message=msg,
                          smtp_server=constants.GOLO_SMTP_SERVER,
                          extra_fields={'X-cbuildbot-alert': 'cq-infra-alert'})
-
-  @staticmethod
-  def _AllMatchFailureType(messages, cls):
-    """Returns true if all failures are instances of |cls|.
-
-    Args:
-      messages: A list of ValidationFailedMessage or NoneType objects
-        from the failed slaves.
-
-    Returns:
-      True if all objects in |messages| are non-None and all failures are
-      instances of |cls|.
-    """
-    return all(messages) and all([x.MatchesFailureType(cls) for x in messages])
 
   @staticmethod
   def _ToTSanity(sanity_check_slaves, slave_statuses):

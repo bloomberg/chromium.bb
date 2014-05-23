@@ -1210,7 +1210,62 @@ class CalculateSuspects(object):
     return suspects
 
   @classmethod
-  def FindSuspects(cls, changes, messages):
+  def FilterChromiteChanges(cls, changes):
+    """Returns a list of chromite changes in |changes|."""
+    return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
+
+  @classmethod
+  def _AllMatchFailureType(cls, messages, fail_type):
+    """Returns True if all failures are instances of |fail_type|.
+
+    Args:
+      messages: A list of ValidationFailedMessage or NoneType objects
+        from the failed slaves.
+      fail_type: The exception class to look for.
+
+    Returns:
+      True if all objects in |messages| are non-None and all failures are
+      instances of |fail_type|.
+    """
+    return (all(messages) and
+            all([x.MatchesFailureType(fail_type) for x in messages]))
+
+  @classmethod
+  def OnlyLabFailures(cls, messages, no_stat):
+    """Determine if the cause of build failure was lab failure.
+
+    Args:
+      messages: A list of ValidationFailedMessage or NoneType objects
+        from the failed slaves.
+      no_stat: A list of builders which failed prematurely without reporting
+        status.
+
+    Returns:
+      True if the build failed purely due to lab failures.
+    """
+    # If any builder failed prematuely, lab failure was not the only cause.
+    return (not no_stat and
+            cls._AllMatchFailureType(messages, failures_lib.TestLabFailure))
+
+  @classmethod
+  def OnlyInfraFailures(cls, messages, no_stat):
+    """Determine if the cause of build failure was infrastructure failure.
+
+    Args:
+      messages: A list of ValidationFailedMessage or NoneType objects
+        from the failed slaves.
+      no_stat: A list of builders which failed prematurely without reporting
+        status.
+
+    Returns:
+      True if the build failed purely due to infrastructure failures.
+    """
+    return ((not messages and no_stat) or
+            cls._AllMatchFailureType(
+                messages, failures_lib.InfrastructureFailure))
+
+  @classmethod
+  def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False):
     """Find out what changes probably caused our failure.
 
     In cases where there were no internal failures, we can assume that the
@@ -1221,10 +1276,28 @@ class CalculateSuspects(object):
     Args:
         changes: A list of cros_patch.GerritPatch instances to consider.
         messages: A list of build failure messages, of type
-                  ValidationFailedMessage or of type NoneType.
-    """
-    suspects = set()
+          ValidationFailedMessage or of type NoneType.
+        infra_fail: The build failed purely due to infrastructure failures.
+        lab_fail: The build failed purely due to test lab infrastructure
+          failures.
 
+    Returns:
+       A set of changes as suspects.
+    """
+    if lab_fail:
+      logging.warning('Detected that the build failed purely due to HW '
+                      'Test Lab failure(s). Will not reject any changes')
+      return set()
+
+    if not lab_fail and infra_fail:
+      # The non-lab infrastructure errors might have been caused
+      # by chromite changes.
+      logging.warning(
+          'Detected that the build failed due to non-lab infrastructure '
+          'issue(s). Will only reject chromite changes')
+      return set(cls.FilterChromiteChanges(changes))
+
+    suspects = set()
     # If there were no internal failures, only kick out external changes.
     # Treat None messages as external for this purpose.
     if any(message and message.internal for message in messages):
@@ -1416,11 +1489,6 @@ class ValidationPool(object):
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier,
             self.pre_cq))
-
-  @classmethod
-  def FilterChromiteChanges(cls, changes):
-    """Returns a list of chromite changes in |changes|."""
-    return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
 
   @classmethod
   def FilterDraftChanges(cls, changes):
@@ -2361,7 +2429,8 @@ class ValidationPool(object):
 
   @staticmethod
   def _CreateValidationFailureMessage(pre_cq, change, suspects, messages,
-                                      sanity=True):
+                                      sanity=True, infra_fail=False,
+                                      lab_fail=False, no_stat=None):
     """Create a message explaining why a validation failure occurred.
 
     Args:
@@ -2371,15 +2440,25 @@ class ValidationPool(object):
       messages: A list of build failure messages from supporting builders.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
+      infra_fail: The build failed purely due to infrastructure failures.
+      lab_fail: The build failed purely due to test lab infrastructure failures.
+      no_stat: A list of builders which failed prematurely without reporting
+        status.
     """
-    # Build a list of error messages. We don't want to build a ridiculously
-    # long comment, as Gerrit will reject it. See http://crbug.com/236831
-    max_error_len = 20000 / max(1, len(messages))
-    msg = ['The following build(s) failed:']
-    for message in map(str, messages):
-      if len(message) > max_error_len:
-        message = message[:max_error_len] + '... (truncated)'
-      msg.append(message)
+    msg = []
+    if no_stat:
+      msg.append('The following build(s) did not start or failed prematurely:')
+      msg.append(', '.join(no_stat))
+
+    if messages:
+      # Build a list of error messages. We don't want to build a ridiculously
+      # long comment, as Gerrit will reject it. See http://crbug.com/236831
+      max_error_len = 20000 / max(1, len(messages))
+      msg.append('The following build(s) failed:')
+      for message in map(str, messages):
+        if len(message) > max_error_len:
+          message = message[:max_error_len] + '... (truncated)'
+        msg.append(message)
 
     # Create a list of changes other than this one that might be guilty.
     # Limit the number of suspects to 20 so that the list of suspects isn't
@@ -2395,29 +2474,38 @@ class ValidationPool(object):
 
     will_retry_automatically = False
     if not sanity:
-      msg.append('The build was consider not sane, meaning that either '
-                 'ToT or the build infrastructure itself was broken. Your '
-                 'change will not be blamed for the failure.')
+      msg.append('The build was consider not sane because the sanity check '
+                 'builder(s) failed. Your change will not be blamed for the '
+                 'failure.')
       will_retry_automatically = True
-    elif change in suspects:
-      if other_suspects_str:
-        msg.append('Your change may have caused this failure. There are '
-                   'also other changes that may be at fault: %s'
-                   % other_suspects_str)
-      else:
-        msg.append('This failure was probably caused by your change.')
-
-      msg.append('Please check whether the failure is your fault. If your '
-                 'change is not at fault, you may mark it as ready again.')
+    elif lab_fail:
+      msg.append('The build encountered Chrome OS Lab infrastructure issues. '
+                 ' Your change will not be blamed for the failure.')
+      will_retry_automatically = True
     else:
-      if len(suspects) == 1:
-        msg.append('This failure was probably caused by %s'
-                   % other_suspects_str)
-      elif len(suspects) > 0:
-        msg.append('One of the following changes is probably at fault: %s'
-                   % other_suspects_str)
+      if infra_fail:
+        msg.append('The build failure may have been caused by infrastructure '
+                   'issues and/or bad chromite changes.')
 
-      will_retry_automatically = not pre_cq
+      if change in suspects:
+        if other_suspects_str:
+          msg.append('Your change may have caused this failure. There are '
+                     'also other changes that may be at fault: %s'
+                     % other_suspects_str)
+        else:
+          msg.append('This failure was probably caused by your change.')
+
+          msg.append('Please check whether the failure is your fault. If your '
+                     'change is not at fault, you may mark it as ready again.')
+      else:
+        if len(suspects) == 1:
+          msg.append('This failure was probably caused by %s'
+                     % other_suspects_str)
+        elif len(suspects) > 0:
+          msg.append('One of the following changes is probably at fault: %s'
+                     % other_suspects_str)
+
+        will_retry_automatically = not pre_cq
 
     if will_retry_automatically:
       msg.insert(
@@ -2425,7 +2513,8 @@ class ValidationPool(object):
 
     return '\n\n'.join(msg)
 
-  def _ChangeFailedValidation(self, change, messages, suspects, sanity):
+  def _ChangeFailedValidation(self, change, messages, suspects, sanity,
+                              infra_fail, lab_fail, no_stat):
     """Handles a validation failure for an individual change.
 
     Args:
@@ -2435,9 +2524,14 @@ class ValidationPool(object):
       suspects: The list of changes that are suspected of breaking the build.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
+      infra_fail: The build failed purely due to infrastructure failures.
+      lab_fail: The build failed purely due to test lab infrastructure failures.
+      no_stat: A list of builders which failed prematurely without reporting
+        status.
     """
-    msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
-                                               messages, sanity)
+    msg = self._CreateValidationFailureMessage(
+        self.pre_cq, change, suspects, messages,
+        sanity, infra_fail, lab_fail, no_stat)
     self.SendNotification(change, '%(details)s', details=msg)
     if sanity:
       if change in suspects:
@@ -2448,7 +2542,8 @@ class ValidationPool(object):
       self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
                           dry_run=self.dryrun)
 
-  def HandleValidationFailure(self, messages, changes=None, sanity=True):
+  def HandleValidationFailure(self, messages, changes=None, sanity=True,
+                              no_stat=None):
     """Handles a list of validation failure messages from slave builders.
 
     This handler parses a list of failure messages from our list of builders
@@ -2463,25 +2558,31 @@ class ValidationPool(object):
         By default, mark all of the changes as failed.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
+      no_stat: A list of builders which failed prematurely without reporting
+        status. If not None, this implies there were infrastructure issues.
     """
     if changes is None:
       changes = self.changes
 
     candidates = []
     for change in changes:
-      # Ignore changes that were already verified.
+      # Pre-CQ ignores changes that were already verified.
       if self.pre_cq and self.GetCLStatus(PRE_CQ, change) == self.STATUS_PASSED:
         continue
       candidates.append(change)
 
     suspects = set()
+    infra_fail = lab_fail = False
     if sanity:
-      # If the build was sane, calculate which changes are likely at
-      # fault for the failure.
-      suspects = CalculateSuspects.FindSuspects(candidates, messages)
-
+      # If the build was sane, determine the cause of the failures and
+      # the changes that are likely at fault for the failure.
+      lab_fail = CalculateSuspects.OnlyLabFailures(messages, no_stat)
+      infra_fail = CalculateSuspects.OnlyInfraFailures(messages, no_stat)
+      suspects = CalculateSuspects.FindSuspects(
+          candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail)
     # Send out failure notifications for each change.
-    inputs = [[change, messages, suspects, sanity] for change in candidates]
+    inputs = [[change, messages, suspects, sanity, infra_fail,
+               lab_fail, no_stat] for change in candidates]
     parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
 
   def GetValidationFailedMessage(self):

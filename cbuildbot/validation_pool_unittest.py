@@ -722,10 +722,14 @@ class ValidationFailureOrTimeout(MoxBase):
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
     self.PatchObject(validation_pool.ValidationPool, 'UpdateCLStatus')
+    self.PatchObject(validation_pool.CalculateSuspects, 'OnlyLabFailures',
+                     return_value=False)
+    self.PatchObject(validation_pool.CalculateSuspects, 'OnlyInfraFailures',
+                     return_value=False)
     self.StartPatcher(parallel_unittest.ParallelMock())
 
-
   def testPatchesWereRejectedByFailure(self):
+    """Tests that all patches are rejected by failure."""
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(
         len(self._patches), self._pool.RemoveCommitReady.call_count)
@@ -736,9 +740,9 @@ class ValidationFailureOrTimeout(MoxBase):
         len(self._patches), self._pool.RemoveCommitReady.call_count)
 
   def testNoSuspectsWithFailure(self):
-    self.PatchObject(
-        validation_pool.CalculateSuspects, 'FindSuspects',
-        return_value=[])
+    """Tests no change is blamed when there is no suspect."""
+    self.PatchObject(validation_pool.CalculateSuspects, 'FindSuspects',
+                     return_value=[])
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
 
@@ -1134,6 +1138,8 @@ class TestFindSuspects(MoxBase):
   def setUp(self):
     overlay = 'chromiumos/overlays/chromiumos-overlay'
     self.overlay_patch = self.GetPatches(project=overlay)
+    chromite = 'chromiumos/chromite'
+    self.chromite_patch = self.GetPatches(project=chromite)
     self.power_manager = 'chromiumos/platform/power_manager'
     self.power_manager_pkg = 'chromeos-base/power_manager'
     self.power_manager_patch = self.GetPatches(project=self.power_manager)
@@ -1154,8 +1160,18 @@ class TestFindSuspects(MoxBase):
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
+  def _GetFailedMessage(self, exceptions, stage='Build', internal=False):
+    """Returns a ValidationFailedMessage object."""
+    tracebacks = []
+    for ex in exceptions:
+      tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
+                                                      str(ex)))
+    reason = 'failure reason string'
+    return validation_pool.ValidationFailedMessage(
+        'Stage %s failed' % stage, tracebacks, internal, reason)
+
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
-                      internal=False):
+                      internal=False, infra_fail=False, lab_fail=False):
     """Run _FindSuspects and verify its output.
 
     Args:
@@ -1164,15 +1180,13 @@ class TestFindSuspects(MoxBase):
       pkgs: List of packages that failed with exceptions in the build.
       exceptions: List of other exceptions that occurred during the build.
       internal: Whether the failures occurred on an internal bot.
+      infra_fail: Whether the build failed due to infrastructure issues.
+      lab_fail: Whether the build failed due to lab infrastructure issues.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
-    tracebacks = []
-    for ex in all_exceptions:
-      tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
-                                                      str(ex)))
-    message = validation_pool.ValidationFailedMessage(
-        'foo bar %r' % tracebacks, tracebacks, internal, '%r' % tracebacks)
-    results = validation_pool.CalculateSuspects.FindSuspects(patches, [message])
+    message = self._GetFailedMessage(all_exceptions, internal=internal)
+    results = validation_pool.CalculateSuspects.FindSuspects(
+        patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
     self.assertEquals(set(suspects), results)
 
   def testFailSameProject(self):
@@ -1221,6 +1235,70 @@ class TestFindSuspects(MoxBase):
     changes = suspects + [self.secret_patch]
     self._AssertSuspects(changes, suspects)
 
+  def testLabFail(self):
+    """If there are only lab failures, no suspect is chosen."""
+    suspects = []
+    changes = [self.kernel_patch, self.power_manager_patch]
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True)
+
+  def testInfraFail(self):
+    """If there are only non-lab infra faliures, pick chromite changes."""
+    suspects = [self.chromite_patch]
+    changes = [self.kernel_patch, self.power_manager_patch] + suspects
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
+
+  def _GetMessages(self, lab_fail=0, infra_fail=0, other_fail=0):
+    """Returns a list of ValidationFailedMessage objects."""
+    messages = []
+    messages.extend(
+        [self._GetFailedMessage([failures_lib.TestLabFailure()])
+         for _ in range(lab_fail)])
+    messages.extend(
+        [self._GetFailedMessage([failures_lib.InfrastructureFailure()])
+         for _ in range(infra_fail)])
+    messages.extend(
+        [self._GetFailedMessage(Exception())
+         for _ in range(other_fail)])
+    return messages
+
+  def testOnlyLabFailures(self):
+    """Tests the OnlyLabFailures function."""
+    messages = self._GetMessages(lab_fail=2)
+    no_stat = []
+    self.assertTrue(
+        validation_pool.CalculateSuspects.OnlyLabFailures(messages, no_stat))
+
+    no_stat = ['foo', 'bar']
+    # Some builders did not start. This is not a lab failure.
+    self.assertFalse(
+        validation_pool.CalculateSuspects.OnlyLabFailures(messages, no_stat))
+
+    messages = self._GetMessages(lab_fail=1, infra_fail=1)
+    no_stat = []
+    # Non-lab infrastructure failures are present.
+    self.assertFalse(
+        validation_pool.CalculateSuspects.OnlyLabFailures(messages, no_stat))
+
+
+  def testOnlyInfraFailures(self):
+    """Tests the OnlyInfraFailures function."""
+    messages = self._GetMessages(infra_fail=2)
+    no_stat = []
+    self.assertTrue(
+        validation_pool.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
+    messages = self._GetMessages(lab_fail=2)
+    no_stat = []
+    # Lab failures are infrastructure failures.
+    self.assertTrue(
+        validation_pool.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
+    no_stat = ['orange']
+    messages = []
+    # 'Builders failed to report statuses' belong to infrastructure failures.
+    self.assertTrue(
+        validation_pool.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
 
 class TestCLStatus(MoxBase):
   """Tests methods that get the CL status."""
@@ -1244,17 +1322,22 @@ class TestCLStatus(MoxBase):
 class TestCreateValidationFailureMessage(Base):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
-  def _AssertMessage(self, change, suspects, messages, sanity=True):
+  def _AssertMessage(self, change, suspects, messages, sanity=True,
+                     infra_fail=False, lab_fail=False, no_stat=None):
     """Call the _CreateValidationFailureMessage method.
 
     Args:
       change: The change we are commenting on.
       suspects: List of suspected changes.
-      messages: List of messages to include in comment.
+      messages: List of messages should appear in the failure message.
       sanity: Bool indicating sanity of build, default: True.
+      infra_fail: True if build failed due to infrastructure issues.
+      lab_fail: True if build failed due to lab infrastructure issues.
+      no_stat: List of builders that did not start.
     """
     msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
-      False, change, set(suspects), messages, sanity=sanity)
+      False, change, set(suspects), [], sanity=sanity,
+      infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat)
     for x in messages:
       self.assertTrue(x in msg)
     return msg
@@ -1262,28 +1345,26 @@ class TestCreateValidationFailureMessage(Base):
   def testSuspectChange(self):
     """Test case where 1 is the only change and is suspect."""
     patch = self.GetPatches(1)
-    self._AssertMessage(patch, [patch], ['%s failed' % patch])
+    self._AssertMessage(patch, [patch], ['probably caused by your change'])
 
   def testInnocentChange(self):
     """Test case where 1 is innocent."""
     patch1, patch2 = self.GetPatches(2)
-    self._AssertMessage(patch1, [patch2], ['%s failed' % patch2])
+    self._AssertMessage(patch1, [patch2],
+                        ['This failure was probably caused by',
+                         'retry your change automatically'])
 
   def testSuspectChanges(self):
     """Test case where 1 is suspected, but so is 2."""
     patches = self.GetPatches(2)
     self._AssertMessage(patches[0], patches,
-                        ['%s and %s failed' % tuple(patches)])
+                        ['may have caused this failure'])
 
   def testInnocentChangeWithMultipleSuspects(self):
     """Test case where 2 and 3 are suspected."""
     patches = self.GetPatches(3)
     self._AssertMessage(patches[0], patches[1:],
-                        ['%s and %s failed' % tuple(patches[1:])])
-
-  def testNoSuspects(self):
-    """Test case where there are no suspects."""
-    self._AssertMessage(self.GetPatches(1), [], ['Internal error'])
+                        ['One of the following changes is probably'])
 
   def testNoMessages(self):
     """Test case where there are no messages."""
@@ -1291,11 +1372,34 @@ class TestCreateValidationFailureMessage(Base):
     self._AssertMessage(patch1, [patch1], [])
 
   def testInsaneBuild(self):
+    """Test case where the build was not sane."""
     patches = self.GetPatches(3)
     self._AssertMessage(
-        patches[0], patches, ['sanity check builder',
+        patches[0], patches, ['The build was consider not sane',
                               'retry your change automatically'],
         sanity=False)
+
+  def testLabFailMessage(self):
+    """Test case where the build failed due to lab failures."""
+    patches = self.GetPatches(3)
+    self._AssertMessage(
+        patches[0], patches, ['Lab infrastructure',
+                              'retry your change automatically'],
+        lab_fail=True)
+
+  def testInfraFailMessage(self):
+    """Test case where the build failed due to infrastructure failures."""
+    patches = self.GetPatches(2)
+    self._AssertMessage(
+        patches[0], [patches[0]],
+        ['may have been caused by infrastructure',
+         'This failure was probably caused by your change'],
+        infra_fail=True)
+    self._AssertMessage(
+        patches[1], [patches[0]], ['may have been caused by infrastructure',
+                                   'retry your change automatically'],
+        infra_fail=True)
+
 
 class TestCreateDisjointTransactions(Base):
   """Test the CreateDisjointTransactions function."""
