@@ -4,6 +4,8 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
+#include <vector>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
@@ -38,6 +40,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/views/window/window_button_order_provider.h"
 
 namespace ash {
 namespace test {
@@ -138,6 +141,20 @@ class SystemGestureEventFilterTest
 
   // Overridden from AshTestBase:
   virtual void SetUp() OVERRIDE {
+    // TODO(jonross): TwoFingerDragDelayed() and ThreeFingerGestureStopsDrag()
+    // both use hardcoded touch points, assuming that they target empty header
+    // space. Window control order now reflects configuration files and can
+    // change. The tests should be improved to dynamically decide touch points.
+    // To address this we specify the originally expected window control
+    // positions to be consistent across tests.
+    std::vector<views::FrameButton> leading;
+    std::vector<views::FrameButton> trailing;
+    trailing.push_back(views::FRAME_BUTTON_MINIMIZE);
+    trailing.push_back(views::FRAME_BUTTON_MAXIMIZE);
+    trailing.push_back(views::FRAME_BUTTON_CLOSE);
+    views::WindowButtonOrderProvider::GetInstance()->
+        SetWindowButtonOrder(leading, trailing);
+
     if (!docked_enabled_) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
           ash::switches::kAshDisableDockedWindows);
@@ -437,7 +454,7 @@ TEST_P(SystemGestureEventFilterTest,
 }
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
-  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
@@ -472,7 +489,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
 }
 
 TEST_P(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
-  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
