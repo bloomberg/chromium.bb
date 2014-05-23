@@ -44,6 +44,7 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorController.h"
+#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
@@ -580,6 +581,9 @@ void WebDevToolsAgentImpl::processGPUEvent(const GPUEvent& event)
 
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
+    if (!m_webViewImpl->page()->focusController().isFocused())
+        m_webViewImpl->setFocus(true);
+
     m_generatingEvent = true;
     WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
     if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
@@ -590,6 +594,9 @@ void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 
 void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
 {
+    if (!m_webViewImpl->page()->focusController().isFocused())
+        m_webViewImpl->setFocus(true);
+
     m_generatingEvent = true;
     WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
     m_webViewImpl->handleInputEvent(webEvent);

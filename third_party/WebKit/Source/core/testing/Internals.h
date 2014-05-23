@@ -317,6 +317,8 @@ public:
 
     String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);
 
+    void setFocused(bool);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

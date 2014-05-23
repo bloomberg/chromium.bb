@@ -105,6 +105,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
+#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
@@ -2332,6 +2333,11 @@ String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long ma
     blink::WebPoint point(x, y);
     SurroundingText surroundingText(VisiblePosition(node->renderer()->positionForPoint(static_cast<IntPoint>(point))), maxLength);
     return surroundingText.content();
+}
+
+void Internals::setFocused(bool focused)
+{
+    frame()->page()->focusController().setFocused(focused);
 }
 
 }
