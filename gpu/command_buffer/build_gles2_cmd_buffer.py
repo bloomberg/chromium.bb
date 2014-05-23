@@ -2540,8 +2540,8 @@ _FUNCTION_INFO = {
     'extension_flag': 'ext_discard_framebuffer',
   },
   'LoseContextCHROMIUM': {
-    'type': 'Manual',
-    'impl_func': True,
+    'decoder_func': 'DoLoseContextCHROMIUM',
+    'unit_test': False,
     'extension': True,
     'chromium': True,
   },

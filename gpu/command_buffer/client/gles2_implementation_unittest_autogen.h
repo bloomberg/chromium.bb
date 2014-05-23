@@ -1852,9 +1852,10 @@ TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
     cmds::LoseContextCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2);
+  expected.cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_GUILTY_CONTEXT_RESET_ARB);
 
-  gl_->LoseContextCHROMIUM(1, 2);
+  gl_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                           GL_GUILTY_CONTEXT_RESET_ARB);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for InsertSyncPointCHROMIUM

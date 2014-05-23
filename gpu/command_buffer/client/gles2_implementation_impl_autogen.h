@@ -2064,8 +2064,8 @@ void GLES2Implementation::DiscardFramebufferEXT(GLenum target,
 void GLES2Implementation::LoseContextCHROMIUM(GLenum current, GLenum other) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glLoseContextCHROMIUM("
-                     << GLES2Util::GetStringEnum(current) << ", "
-                     << GLES2Util::GetStringEnum(other) << ")");
+                     << GLES2Util::GetStringResetStatus(current) << ", "
+                     << GLES2Util::GetStringResetStatus(other) << ")");
   helper_->LoseContextCHROMIUM(current, other);
   CheckGLError();
 }

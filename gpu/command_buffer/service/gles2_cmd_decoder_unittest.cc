@@ -1257,6 +1257,33 @@ TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, LoseContextCHROMIUMValidArgs) {
+  EXPECT_CALL(*mock_decoder_, LoseContext(GL_GUILTY_CONTEXT_RESET_ARB))
+      .Times(1);
+  cmds::LoseContextCHROMIUM cmd;
+  cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_GUILTY_CONTEXT_RESET_ARB);
+  EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, LoseContextCHROMIUMInvalidArgs0_0) {
+  EXPECT_CALL(*mock_decoder_, LoseContext(_))
+      .Times(0);
+  cmds::LoseContextCHROMIUM cmd;
+  cmd.Init(GL_NONE, GL_GUILTY_CONTEXT_RESET_ARB);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, LoseContextCHROMIUMInvalidArgs1_0) {
+  EXPECT_CALL(*mock_decoder_, LoseContext(_))
+      .Times(0);
+  cmds::LoseContextCHROMIUM cmd;
+  cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_NONE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());

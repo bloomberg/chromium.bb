@@ -59,7 +59,6 @@
 // TODO(gman): DiscardFramebufferEXT
 // TODO(gman): DiscardFramebufferEXTImmediate
 // TODO(gman): LoseContextCHROMIUM
-
 // TODO(gman): InsertSyncPointCHROMIUM
 
 // TODO(gman): WaitSyncPointCHROMIUM

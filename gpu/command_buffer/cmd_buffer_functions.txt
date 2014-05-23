@@ -215,7 +215,7 @@ GL_APICALL void         GL_APIENTRY glAsyncTexImage2DCHROMIUM (GLenumTextureTarg
 GL_APICALL void         GL_APIENTRY glWaitAsyncTexImage2DCHROMIUM (GLenumTextureTarget target);
 GL_APICALL void         GL_APIENTRY glWaitAllAsyncTexImage2DCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glDiscardFramebufferEXT (GLenum target, GLsizei count, const GLenum* attachments);
-GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenum current, GLenum other);
+GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenumResetStatus current, GLenumResetStatus other);
 GL_APICALL GLuint       GL_APIENTRY glInsertSyncPointCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glWaitSyncPointCHROMIUM (GLuint sync_point);
 GL_APICALL void         GL_APIENTRY glDrawBuffersEXT (GLsizei count, const GLenum* bufs);

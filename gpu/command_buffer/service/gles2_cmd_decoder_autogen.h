@@ -3398,6 +3398,24 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleLoseContextCHROMIUM(
+    uint32_t immediate_data_size,
+    const gles2::cmds::LoseContextCHROMIUM& c) {
+  GLenum current = static_cast<GLenum>(c.current);
+  GLenum other = static_cast<GLenum>(c.other);
+  if (!validators_->reset_status.IsValid(current)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glLoseContextCHROMIUM", current, "current");
+    return error::kNoError;
+  }
+  if (!validators_->reset_status.IsValid(other)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glLoseContextCHROMIUM", other, "other");
+    return error::kNoError;
+  }
+  DoLoseContextCHROMIUM(current, other);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleDrawBuffersEXT(
     uint32_t immediate_data_size,
     const gles2::cmds::DrawBuffersEXT& c) {
