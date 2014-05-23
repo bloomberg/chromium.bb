@@ -193,7 +193,7 @@ static bool blockIsRowOfLinks(const RenderBlock* block)
     //  4. It should contain only inline elements unless they are containers,
     //     children of link elements or children of sub-containers.
     int linkCount = 0;
-    RenderObject* renderer = block->nextInPreOrder(block);
+    RenderObject* renderer = block->firstChild();
     float matchingFontSize = -1;
 
     while (renderer) {
@@ -445,7 +445,7 @@ void FastTextAutosizer::inflate(RenderBlock* block)
 {
     Cluster* cluster = currentCluster();
     float multiplier = 0;
-    RenderObject* descendant = block->nextInPreOrder();
+    RenderObject* descendant = block->firstChild();
     while (descendant) {
         // Skip block descendants because they will be inflate()'d on their own.
         if (descendant->isRenderBlock()) {
@@ -609,7 +609,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     float minimumTextLengthToAutosize = widthFromBlock(widthProvider) * 4;
 
     float length = 0;
-    RenderObject* descendant = root->nextInPreOrder(root);
+    RenderObject* descendant = root->firstChild();
     while (descendant) {
         if (descendant->isRenderBlock()) {
             if (classifyBlock(descendant, INDEPENDENT | SUPPRESSING)) {
