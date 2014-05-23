@@ -60,9 +60,14 @@ public:
     explicit ImageLoader(Element*);
     virtual ~ImageLoader();
 
+    enum LoadType {
+        LoadNormally,
+        ForceLoadImmediately
+    };
+
     // This function should be called when the element is attached to a document; starts
     // loading if a load hasn't already been started.
-    void updateFromElement();
+    void updateFromElement(LoadType = LoadNormally);
 
     // This function should be called whenever the 'src' attribute is set, even if its value
     // doesn't change; starts new load unconditionally (matches Firefox and Opera behavior).

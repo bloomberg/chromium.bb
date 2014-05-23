@@ -4,10 +4,10 @@ main frame - img requested 'not-existing.png'
 main frame - css requested 'gw432047.ttf'
 main frame - css requested 'greenbox-hotspot35-4.cur'
 main frame - css requested 'lenna.png'
+main frame - img requested 'png_per_row_alpha.png'
 main frame - script requested 'empty-script.js'
 main frame - img requested 'mu.png'
 main frame - img requested 'oval.png'
-main frame - img requested 'png_per_row_alpha.png'
 main frame - css requested 'palatted-color-png-gamma-one-color-profile.png'
 This test checks that the correct callbacks for resource requests are invoked. It passes if you see the callbacks for 11 resources.
 

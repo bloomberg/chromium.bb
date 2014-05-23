@@ -261,7 +261,7 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
     updatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement()
+void ImageLoader::updateFromElement(LoadType loadType)
 {
     AtomicString attr = m_element->imageSourceURL();
 
@@ -276,7 +276,7 @@ void ImageLoader::updateFromElement()
             m_pendingTask->clearLoader();
             m_pendingTask.clear();
         }
-        bool loadImmediately = shouldLoadImmediately(url);
+        bool loadImmediately = shouldLoadImmediately(url) || (loadType == ForceLoadImmediately);
         if (loadImmediately) {
             doUpdateFromElement(false);
         } else {

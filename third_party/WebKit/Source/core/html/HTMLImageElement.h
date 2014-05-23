@@ -38,7 +38,7 @@ class ImageCandidate;
 class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
 public:
     static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&);
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
+    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
@@ -95,7 +95,7 @@ public:
     virtual FloatSize defaultDestinationSize() const OVERRIDE;
 
 protected:
-    explicit HTMLImageElement(Document&, HTMLFormElement* = 0);
+    explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);
 
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
@@ -139,6 +139,7 @@ private:
     AtomicString m_currentSrc;
     float m_imageDevicePixelRatio;
     bool m_formWasSetByParser;
+    bool m_elementCreatedByParser;
 };
 
 } //namespace

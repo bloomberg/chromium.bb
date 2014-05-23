@@ -49,12 +49,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
+HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLElement(imgTag, document)
     , m_imageLoader(this)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
+    , m_elementCreatedByParser(createdByParser)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
@@ -74,9 +75,9 @@ PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& docu
     return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document));
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form)
+PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document, form));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLImageElement(document, form, createdByParser));
 }
 
 HTMLImageElement::~HTMLImageElement()
@@ -100,6 +101,7 @@ PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructo
         image->setWidth(width);
     if (height)
         image->setHeight(height);
+    image->m_elementCreatedByParser = false;
     return image.release();
 }
 
@@ -321,7 +323,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
     // If we have been inserted from a renderer-less document,
     // our loader may have not fetched the image, so do it now.
     if ((insertionPoint->inDocument() && !m_imageLoader.image()) || imageWasModified)
-        m_imageLoader.updateFromElement();
+        m_imageLoader.updateFromElement(m_elementCreatedByParser ? ImageLoader::ForceLoadImmediately : ImageLoader::LoadNormally);
 
     return HTMLElement::insertedInto(insertionPoint);
 }
