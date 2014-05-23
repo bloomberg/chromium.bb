@@ -472,7 +472,9 @@ bool ManagementSetEnabledFunction::RunAsync() {
 
   extension_id_ = params->id;
 
-  const Extension* extension = service()->GetInstalledExtension(extension_id_);
+  const Extension* extension =
+      ExtensionRegistry::Get(GetProfile())
+          ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   if (!extension || ui_util::ShouldNotBeVisible(extension, browser_context())) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);

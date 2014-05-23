@@ -12,12 +12,11 @@
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -83,9 +82,9 @@ class ShowPageAction : public ContentAction {
  private:
   static ExtensionAction* GetPageAction(Profile* profile,
                                         const std::string& extension_id) {
-    ExtensionService* service =
-        ExtensionSystem::Get(profile)->extension_service();
-    const Extension* extension = service->GetInstalledExtension(extension_id);
+    const Extension* extension =
+        ExtensionRegistry::Get(profile)
+            ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
     if (!extension)
       return NULL;
     return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
