@@ -179,46 +179,63 @@ TEST(KURLTest, Setters)
     // can't set setting the http port to "80" (or even "0").
     //
     // We also can't test clearing the query.
-    //
-    // The format is every other row is a test, and the row that follows it is the
-    // expected result.
     struct ExpectedComponentCase {
         const char* url;
-        const char* protocol;
-        const char* host;
-        const int port;
-        const char* user;
-        const char* pass;
-        const char* path;
-        const char* query;
 
-        // The full expected URL with the given "set" applied.
+        const char* protocol;
         const char* expectedProtocol;
+
+        const char* host;
         const char* expectedHost;
+
+        const int port;
         const char* expectedPort;
+
+        const char* user;
         const char* expectedUser;
+
+        const char* pass;
         const char* expectedPass;
+
+        const char* path;
         const char* expectedPath;
+
+        const char* query;
         const char* expectedQuery;
     } cases[] = {
-        // url                                    protocol      host               port  user  pass    path            query
-        {"http://www.google.com/",                "https",      "news.google.com", 8888, "me", "pass", "/foo",         "?q=asdf",
-                                                  "https://www.google.com/",
-                                                                "https://news.google.com/",
-                                                                                   "https://news.google.com:8888/",
-                                                                                         "https://me@news.google.com:8888/",
-                                                                                               "https://me:pass@news.google.com:8888/",
-                                                                                                       "https://me:pass@news.google.com:8888/foo",
-                                                                                                                       "https://me:pass@news.google.com:8888/foo?q=asdf"},
-
-        {"https://me:pass@google.com:88/a?f#b",   "http",       "goo.com",         92,   "",   "",     "/",            0,
-                                                  "http://me:pass@google.com:88/a?f#b",
-                                                                "http://me:pass@goo.com:88/a?f#b",
-                                                                                   "http://me:pass@goo.com:92/a?f#b",
-                                                                                         "http://:pass@goo.com:92/a?f#b",
-                                                                                               "http://goo.com:92/a?f#b",
-                                                                                                        "http://goo.com:92/?f#b",
-                                                                                                                       "http://goo.com:92/#b"},
+        {
+            "http://www.google.com/",
+            // protocol
+            "https", "https://www.google.com/",
+            // host
+            "news.google.com", "https://news.google.com/",
+            // port
+            8888, "https://news.google.com:8888/",
+            // user
+            "me", "https://me@news.google.com:8888/",
+            // pass
+            "pass", "https://me:pass@news.google.com:8888/",
+            // path
+            "/foo", "https://me:pass@news.google.com:8888/foo",
+            // query
+            "?q=asdf", "https://me:pass@news.google.com:8888/foo?q=asdf"
+        }, {
+            "https://me:pass@google.com:88/a?f#b",
+            // protocol
+            "http", "http://me:pass@google.com:88/a?f#b",
+            // host
+            "goo.com", "http://me:pass@goo.com:88/a?f#b",
+            // port
+            92, "http://me:pass@goo.com:92/a?f#b",
+            // user
+            "", "http://:pass@goo.com:92/a?f#b",
+            // pass
+            "", "http://goo.com:92/a?f#b",
+            // path
+            "/", "http://goo.com:92/?f#b",
+            // query
+            0, "http://goo.com:92/#b"
+        },
     };
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
