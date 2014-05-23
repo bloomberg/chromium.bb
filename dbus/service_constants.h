@@ -378,6 +378,7 @@ const char kConnectedProperty[] = "Connected";
 const char kUIDataProperty[] = "UIData";
 const char kConnectionIdProperty[] = "ConnectionId";
 const char kVisibleProperty[] = "Visible";
+const char kDnsAutoFallbackProperty[] = "DNSAutoFallback";
 
 // Flimflam provider property names.
 const char kProviderHostProperty[] = "Provider.Host";
