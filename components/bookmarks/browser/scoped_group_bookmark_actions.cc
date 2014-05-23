@@ -6,6 +6,8 @@
 
 #include "components/bookmarks/browser/bookmark_model.h"
 
+namespace bookmarks {
+
 ScopedGroupBookmarkActions::ScopedGroupBookmarkActions(BookmarkModel* model)
     : model_(model) {
   if (model_)
@@ -16,3 +18,5 @@ ScopedGroupBookmarkActions::~ScopedGroupBookmarkActions() {
   if (model_)
     model_->EndGroupedChanges();
 }
+
+}  // namespace bookmarks

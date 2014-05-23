@@ -9,6 +9,8 @@
 
 class BookmarkModel;
 
+namespace bookmarks {
+
 // Scopes the grouping of a set of changes into one undoable action.
 class ScopedGroupBookmarkActions {
  public:
@@ -20,5 +22,7 @@ class ScopedGroupBookmarkActions {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedGroupBookmarkActions);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_SCOPED_GROUP_BOOKMARK_ACTIONS_H_

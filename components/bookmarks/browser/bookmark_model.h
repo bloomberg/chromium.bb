@@ -37,6 +37,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace bookmarks {
+class ScopedGroupBookmarkActions;
+}
+
 namespace favicon_base {
 struct FaviconImageResult;
 }
@@ -282,7 +286,7 @@ class BookmarkModel : public BookmarkService {
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;
   friend class BookmarkStorage;
-  friend class ScopedGroupBookmarkActions;
+  friend class bookmarks::ScopedGroupBookmarkActions;
   friend class test::TestBookmarkClient;
 
   // Used to order BookmarkNodes by URL.

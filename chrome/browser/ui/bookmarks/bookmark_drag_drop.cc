@@ -22,7 +22,7 @@ int DropBookmarks(Profile* profile,
                   int index) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
 #if !defined(OS_ANDROID)
-  ScopedGroupBookmarkActions group_drops(model);
+  bookmarks::ScopedGroupBookmarkActions group_drops(model);
 #endif
   if (data.IsFromProfilePath(profile->GetPath())) {
     const std::vector<const BookmarkNode*> dragged_nodes =

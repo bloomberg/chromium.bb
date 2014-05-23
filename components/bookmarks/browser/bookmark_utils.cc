@@ -178,7 +178,7 @@ void CopyToClipboard(BookmarkModel* model,
       WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   if (remove_nodes) {
-    ScopedGroupBookmarkActions group_cut(model);
+    bookmarks::ScopedGroupBookmarkActions group_cut(model);
     for (size_t i = 0; i < filtered_nodes.size(); ++i) {
       int index = filtered_nodes[i]->parent()->GetIndexOf(filtered_nodes[i]);
       if (index > -1)
@@ -199,7 +199,7 @@ void PasteFromClipboard(BookmarkModel* model,
 
   if (index == -1)
     index = parent->child_count();
-  ScopedGroupBookmarkActions group_paste(model);
+  bookmarks::ScopedGroupBookmarkActions group_paste(model);
   CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }
 

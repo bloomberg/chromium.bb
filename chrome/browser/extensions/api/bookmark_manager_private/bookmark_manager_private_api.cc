@@ -732,7 +732,7 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
 #if !defined(OS_ANDROID)
-  ScopedGroupBookmarkActions group_deletes(model);
+  bookmarks::ScopedGroupBookmarkActions group_deletes(model);
 #endif
   int64 id;
   for (size_t i = 0; i < params->id_list.size(); ++i) {
