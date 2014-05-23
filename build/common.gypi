@@ -5231,7 +5231,7 @@
     ['gcc_version>=48 and android_webview_build==1 and host_os=="mac"', {
       'target_defaults': {
         'target_conditions': [
-          ['_toolset=="target"', {
+          ['_toolset=="host"', {
             'cflags!': [
               '-Wno-unused-local-typedefs',
             ],
