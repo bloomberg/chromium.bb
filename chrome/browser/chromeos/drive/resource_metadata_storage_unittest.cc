@@ -402,6 +402,48 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, storage_->GetEntry(key1, &entry));
 }
 
+TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
+  leveldb::WriteBatch batch;
+
+  // Put an ID entry with a corresponding ResourceEntry.
+  ResourceEntry entry;
+  entry.set_local_id("id1");
+  entry.set_resource_id("resource_id1");
+
+  std::string serialized_entry;
+  EXPECT_TRUE(entry.SerializeToString(&serialized_entry));
+  batch.Put("id1", serialized_entry);
+  batch.Put('\0' + std::string("ID") + '\0' + "resource_id1", "id1");
+
+  // Put an ID entry with a corresponding FileCacheEntry.
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(cache_entry.SerializeToString(&serialized_entry));
+  batch.Put(std::string("id2") + '\0' + "CACHE", serialized_entry);
+  batch.Put('\0' + std::string("ID") + '\0' + "resource_id2", "id2");
+
+  // Put an ID entry without any corresponding entries.
+  batch.Put('\0' + std::string("ID") + '\0' + "resource_id3", "id3");
+
+  EXPECT_TRUE(resource_map()->Write(leveldb::WriteOptions(), &batch).ok());
+
+  // Upgrade and reopen.
+  storage_.reset();
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
+      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // Only the unused entry is deleted.
+  std::string id;
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId("resource_id1", &id));
+  EXPECT_EQ("id1", id);
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId("resource_id2", &id));
+  EXPECT_EQ("id2", id);
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            storage_->GetIdByResourceId("resource_id3", &id));
+}
+
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
   // Create a file.
   base::FilePath path;
