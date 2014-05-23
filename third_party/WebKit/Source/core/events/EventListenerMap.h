@@ -34,7 +34,6 @@
 #define EventListenerMap_h
 
 #include "core/events/RegisteredEventListener.h"
-#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 

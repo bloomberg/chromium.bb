@@ -6,7 +6,6 @@
 #define ApplicationCacheErrorEvent_h
 
 #include "core/events/Event.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
 

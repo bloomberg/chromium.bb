@@ -36,7 +36,6 @@ namespace WebCore {
 class EventTarget;
 class EventDispatcher;
 class ExecutionContext;
-class HTMLIFrameElement;
 
 struct EventInit {
     STACK_ALLOCATED();

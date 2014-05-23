@@ -35,26 +35,16 @@
 #include "core/events/EventListenerMap.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
 
 namespace WebCore {
 
-class ApplicationCache;
 class DOMWindow;
-class DedicatedWorkerGlobalScope;
 class Event;
-class EventListener;
-class EventSource;
 class ExceptionState;
-class FileReader;
-class MediaController;
 class MessagePort;
 class Node;
-class SharedWorker;
-class SharedWorkerGlobalScope;
 class TextTrack;
 class TextTrackCue;
-class Worker;
 class XMLHttpRequest;
 class XMLHttpRequestUpload;
 

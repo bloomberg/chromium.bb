@@ -28,7 +28,6 @@
 #define DOMWindowEventQueue_h
 
 #include "core/events/EventQueue.h"
-#include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
