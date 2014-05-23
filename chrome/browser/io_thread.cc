@@ -1111,24 +1111,7 @@ bool IOThread::ShouldEnableQuicPortSelection(
   if (command_line.HasSwitch(switches::kEnableQuicPortSelection))
     return true;
 
-#if defined(OS_WIN)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  // Avoid picking ports (which might induce a security dialog) when we have a
-  // beta or stable release.  Allow in all other cases, including when we do a
-  // developer build (CHANNEL_UNKNOWN).
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    // TODO(grt) bug=329255: Detect presence of rule on Windows that allows us
-    // to do port selection without inducing a dialog.
-    // When we have an API to see if the administrative security manager will
-    // allow port selection without a security dialog, we may return true if
-    // we're sure there will be no security dialog.
-    return false;
-  }
-  return true;
-#else
-  return true;
-#endif
+  return false;  // Default to disabling port selection on all channels.
 }
 
 bool IOThread::ShouldEnableQuicPacing(const CommandLine& command_line,
