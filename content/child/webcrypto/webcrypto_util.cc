@@ -179,6 +179,11 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
+  return alg_id == blink::WebCryptoAlgorithmIdRsaOaep ||
+         alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

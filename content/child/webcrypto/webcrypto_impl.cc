@@ -137,9 +137,7 @@ void CompleteWithKeyOrError(const Status& status,
 bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
   // TODO(padolph): include all other asymmetric algorithms once they are
   // defined, e.g. EC and DH.
-  return (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
-          algorithm.id() == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-          algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep);
+  return webcrypto::IsAlgorithmRsa(algorithm.id());
 }
 
 // Gets a task runner for the current thread. The current thread is either:

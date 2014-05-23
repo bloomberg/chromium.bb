@@ -71,6 +71,8 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned int keylen_bytes,
                               blink::WebCryptoKeyAlgorithm* key_algorithm);
 
+bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id);
+
 }  // namespace webcrypto
 
 }  // namespace content

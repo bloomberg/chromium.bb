@@ -110,7 +110,6 @@
 //   +--------------+-------------------------------------------------------|
 //   | Key Management Algorithm                                             |
 //   +--------------+-------------------------------------------------------+
-//   | "RSA1_5"     | RSAES-PKCS1-V1_5 [RFC3447]                            |
 //   | "RSA-OAEP"   | RSAES using Optimal Asymmetric Encryption Padding     |
 //   |              | (OAEP) [RFC3447], with the default parameters         |
 //   |              | specified by RFC3447 in Section A.2.1                 |
@@ -307,9 +306,6 @@ class JwkAlgorithmRegistry {
     alg_to_info_["RS512"] =
         JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaSsaImportAlgorithm,
                                           blink::WebCryptoAlgorithmIdSha512>);
-    alg_to_info_["RSA1_5"] = JwkAlgorithmInfo(
-        &BindAlgorithmId<CreateAlgorithm,
-                         blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5>);
     alg_to_info_["RSA-OAEP"] =
         JwkAlgorithmInfo(&BindAlgorithmId<CreateRsaOaepImportAlgorithm,
                                           blink::WebCryptoAlgorithmIdSha1>);
@@ -664,16 +660,6 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
       }
       break;
     }
-    case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
-      switch (algorithm.id()) {
-        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-          jwk_dict->SetString("alg", "RSA1_5");
-          break;
-        default:
-          NOTREACHED();
-          return Status::ErrorUnexpected();
-      }
-      break;
     case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
       switch (algorithm.id()) {
         case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
@@ -729,8 +715,7 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
 
 bool IsRsaKey(const blink::WebCryptoKey& key) {
   const blink::WebCryptoAlgorithmId algorithm_id = key.algorithm().id();
-  return algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+  return algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
          algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep;
 }
 

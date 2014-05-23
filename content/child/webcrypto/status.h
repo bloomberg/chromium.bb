@@ -140,9 +140,7 @@ class CONTENT_EXPORT Status {
 
   // The data provided to an encrypt/decrypt/sign/verify operation was too
   // large. This can either represent an internal limitation (for instance
-  // representing buffer lengths as uints), or an algorithm restriction (for
-  // instance RSAES can operation on messages relative to the length of the
-  // key's modulus).
+  // representing buffer lengths as uints).
   static Status ErrorDataTooLarge();
 
   // The data provided to an encrypt/decrypt/sign/verify operation was too

@@ -303,7 +303,6 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           blink::WebCryptoKeyUsageMask usage_mask,
                           unsigned int modulus_length_bits,
                           const CryptoData& public_exponent,
-                          const blink::WebCryptoAlgorithm& hash,
                           blink::WebCryptoKey* public_key,
                           blink::WebCryptoKey* private_key) {
   // TODO(padolph): Placeholder for OpenSSL implementation.
@@ -404,21 +403,6 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             const CryptoData& additional_data,
                             unsigned int tag_length_bits,
                             std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-// Guaranteed that key is valid.
-Status EncryptRsaEsPkcs1v1_5(PublicKey* key,
-                             const CryptoData& data,
-                             std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-Status DecryptRsaEsPkcs1v1_5(PrivateKey* key,
-                             const CryptoData& data,
-                             std::vector<uint8>* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
@@ -529,23 +513,6 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 Status DecryptAesKw(SymKey* key,
                     const CryptoData& data,
                     std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-Status WrapSymKeyRsaEs(SymKey* key,
-                       PublicKey* wrapping_key,
-                       std::vector<uint8>* buffer) {
-  // TODO(eroman): http://crbug.com/267888
-  return Status::ErrorUnsupported();
-}
-
-Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
-                         PrivateKey* wrapping_key,
-                         const blink::WebCryptoAlgorithm& algorithm,
-                         bool extractable,
-                         blink::WebCryptoKeyUsageMask usage_mask,
-                         blink::WebCryptoKey* key) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
 }
