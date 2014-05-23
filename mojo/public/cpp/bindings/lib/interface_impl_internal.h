@@ -29,7 +29,6 @@ class InterfaceImplState : public ErrorHandler {
 
   explicit InterfaceImplState(InterfaceImplBase<Interface>* instance)
       : router_(NULL),
-        client_(NULL),
         proxy_(NULL) {
     assert(instance);
     stub_.set_sink(instance);
@@ -66,14 +65,11 @@ class InterfaceImplState : public ErrorHandler {
 
     proxy_ = new typename Client::Proxy_(router_);
 
-    instance()->SetClient(proxy_);
     instance()->OnConnectionEstablished();
   }
 
   Router* router() { return router_; }
-
-  void set_client(Client* client) { client_ = client; }
-  Client* client() { return client_; }
+  Client* client() { return proxy_; }
 
  private:
   InterfaceImplBase<Interface>* instance() {
@@ -85,7 +81,6 @@ class InterfaceImplState : public ErrorHandler {
   }
 
   Router* router_;
-  Client* client_;
   typename Client::Proxy_* proxy_;
   typename Interface::Stub_ stub_;
 

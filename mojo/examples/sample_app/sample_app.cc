@@ -33,7 +33,7 @@ class SampleApp : public Application, public NativeViewportClient {
  public:
   explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
-    viewport_->SetClient(this);
+    viewport_.set_client(this);
 
     AllocationScope scope;
 

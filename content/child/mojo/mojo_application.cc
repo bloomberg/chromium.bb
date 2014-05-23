@@ -39,7 +39,7 @@ void MojoApplication::OnActivate(
   DCHECK(message_pipe.is_valid());
 
   shell_.Bind(message_pipe.Pass());
-  shell_->SetClient(shell_client_);
+  shell_.set_client(shell_client_);
 }
 
 }  // namespace content

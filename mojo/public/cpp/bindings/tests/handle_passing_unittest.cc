@@ -141,7 +141,7 @@ TEST_F(HandlePassingTest, Basic) {
   SampleFactoryClientImpl factory_client;
   factory_client.set_expected_text_reply(kText1);
 
-  factory->SetClient(&factory_client);
+  factory.set_client(&factory_client);
 
   ScopedMessagePipeHandle pipe0, pipe1;
   CreateMessagePipe(&pipe0, &pipe1);
@@ -173,7 +173,7 @@ TEST_F(HandlePassingTest, PassInvalid) {
   BindToProxy(new SampleFactoryImpl(), &factory);
 
   SampleFactoryClientImpl factory_client;
-  factory->SetClient(&factory_client);
+  factory.set_client(&factory_client);
 
   {
     AllocationScope scope;
@@ -195,7 +195,7 @@ TEST_F(HandlePassingTest, DataPipe) {
   BindToProxy(new SampleFactoryImpl(), &factory);
 
   SampleFactoryClientImpl factory_client;
-  factory->SetClient(&factory_client);
+  factory.set_client(&factory_client);
 
   // Writes a string to a data pipe and passes the data pipe (consumer) to the
   // factory.
@@ -233,7 +233,7 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
   BindToProxy(new SampleFactoryImpl(), &factory);
 
   SampleFactoryClientImpl factory_client;
-  factory->SetClient(&factory_client);
+  factory.set_client(&factory_client);
 
   MessagePipe extra_pipe;
 

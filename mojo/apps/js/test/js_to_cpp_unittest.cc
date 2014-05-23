@@ -398,7 +398,7 @@ class JsToCppTest : public testing::Test {
     MessagePipe pipe;
     js_to_cpp::JsSidePtr js_side =
         MakeProxy<js_to_cpp::JsSide>(pipe.handle0.Pass());
-    js_side->SetClient(cpp_side);
+    js_side.set_client(cpp_side);
 
     js_side.internal_state()->router()->
         set_enforce_errors_from_incoming_receiver(false);

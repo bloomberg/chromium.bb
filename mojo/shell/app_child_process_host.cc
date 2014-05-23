@@ -36,7 +36,7 @@ void AppChildProcessHost::WillStart() {
       base::MessageLoop::current()->message_loop_proxy()));
 
   controller_.Bind(handle.Pass());
-  controller_->SetClient(controller_client_);
+  controller_.set_client(controller_client_);
 }
 
 void AppChildProcessHost::DidStart(bool success) {

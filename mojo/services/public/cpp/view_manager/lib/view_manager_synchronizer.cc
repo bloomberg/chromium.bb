@@ -413,7 +413,7 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       init_loop_(NULL) {
   ConnectTo(ViewManagerPrivate(view_manager_).shell(), "mojo:mojo_view_manager",
             &service_);
-  service_->SetClient(this);
+  service_.set_client(this);
 
   // Start a runloop. This loop is quit when the server tells us about the
   // connection (OnConnectionEstablished()).

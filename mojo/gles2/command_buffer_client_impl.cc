@@ -60,7 +60,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       initialize_result_(false),
       async_waiter_(async_waiter) {
   command_buffer_.set_error_handler(this);
-  command_buffer_->SetClient(this);
+  command_buffer_.set_client(this);
 }
 
 CommandBufferClientImpl::~CommandBufferClientImpl() {}

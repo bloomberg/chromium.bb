@@ -80,7 +80,7 @@ void ShellTestHelper::OnShellStarted() {
   DCHECK(state_);
   shell_client_.reset(new TestShellClient);
   shell_.Bind(state_->shell_handle.Pass());
-  shell_->SetClient(shell_client_.get());
+  shell_.set_client(shell_client_.get());
   run_loop_->Quit();
 }
 

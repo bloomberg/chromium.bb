@@ -36,7 +36,7 @@ class SampleApp : public Application, public NativeViewportClient {
     AllocationScope scope;
 
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
-    viewport_->SetClient(this);
+    viewport_.set_client(this);
 
     viewport_->Create(gfx::Rect(10, 10, 800, 600));
     viewport_->Show();

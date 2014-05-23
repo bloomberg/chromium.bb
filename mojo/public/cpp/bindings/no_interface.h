@@ -27,7 +27,6 @@ class NoInterface {
   typedef PassThroughFilter ResponseValidator_;
   typedef NoInterface Client;
   virtual ~NoInterface() {}
-  virtual void SetClient(NoInterface* client) {}
 };
 
 class NoInterfaceProxy : public NoInterface {

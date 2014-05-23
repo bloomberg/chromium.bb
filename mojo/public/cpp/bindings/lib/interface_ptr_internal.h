@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_INTERNAL_H_
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
@@ -17,28 +18,28 @@ namespace internal {
 template <typename Interface>
 class InterfacePtrState {
  public:
-  InterfacePtrState() : instance_(NULL), router_(NULL) {}
+  InterfacePtrState() : proxy_(NULL), router_(NULL) {}
 
   ~InterfacePtrState() {
-    // Destruction order matters here. We delete |instance_| first, even though
+    // Destruction order matters here. We delete |proxy_| first, even though
     // |router_| may have a reference to it, so that |~Interface| may have a
     // shot at generating new outbound messages (ie, invoking client methods).
-    delete instance_;
+    delete proxy_;
     delete router_;
   }
 
-  Interface* instance() const { return instance_; }
+  Interface* instance() const { return proxy_; }
 
   Router* router() const { return router_; }
 
   void Swap(InterfacePtrState* other) {
-    std::swap(other->instance_, instance_);
+    std::swap(other->proxy_, proxy_);
     std::swap(other->router_, router_);
   }
 
   void ConfigureProxy(ScopedMessagePipeHandle handle,
                       MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
-    assert(!instance_);
+    assert(!proxy_);
     assert(!router_);
 
     FilterChain filters;
@@ -50,7 +51,12 @@ class InterfacePtrState {
     ProxyWithStub* proxy = new ProxyWithStub(router_);
     router_->set_incoming_receiver(&proxy->stub);
 
-    instance_ = proxy;
+    proxy_ = proxy;
+  }
+
+  void set_client(typename Interface::Client* client) {
+    assert(proxy_);
+    proxy_->stub.set_sink(client);
   }
 
  private:
@@ -59,15 +65,12 @@ class InterfacePtrState {
     explicit ProxyWithStub(MessageReceiver* receiver)
         : Interface::Proxy_(receiver) {
     }
-    virtual void SetClient(typename Interface::Client* client) MOJO_OVERRIDE {
-      stub.set_sink(client);
-    }
     typename Interface::Client::Stub_ stub;
    private:
     MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyWithStub);
   };
 
-  Interface* instance_;
+  ProxyWithStub* proxy_;
   Router* router_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);

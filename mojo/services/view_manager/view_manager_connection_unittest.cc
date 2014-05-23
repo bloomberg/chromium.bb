@@ -377,7 +377,7 @@ class ViewManagerConnectionTest : public testing::Test {
     test_helper_.Init();
 
     ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager_);
-    view_manager_->SetClient(&client_);
+    view_manager_.set_client(&client_);
 
     client_.WaitForId();
     client_.GetAndClearChanges();
@@ -387,7 +387,7 @@ class ViewManagerConnectionTest : public testing::Test {
   // Creates a second connection to the viewmanager.
   void EstablishSecondConnection() {
     ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager2_);
-    view_manager2_->SetClient(&client2_);
+    view_manager2_.set_client(&client2_);
 
     client2_.WaitForId();
     client2_.GetAndClearChanges();

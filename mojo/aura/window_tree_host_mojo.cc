@@ -32,7 +32,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(
     : native_viewport_(viewport.Pass()),
       compositor_created_callback_(compositor_created_callback),
       bounds_(bounds) {
-  native_viewport_->SetClient(this);
+  native_viewport_.set_client(this);
 
   AllocationScope scope;
   native_viewport_->Create(bounds);

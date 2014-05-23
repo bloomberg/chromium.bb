@@ -60,6 +60,11 @@ class InterfacePtr {
     internal_state_.ConfigureProxy(handle.Pass(), waiter);
   }
 
+  // The client interface may only be set after this InterfacePtr<..> is bound.
+  void set_client(typename Interface::Client* client) {
+    internal_state_.set_client(client);
+  }
+
   // This method may be called to query if the underlying pipe has encountered
   // an error. If true, this means method calls made on this interface will be
   // dropped (and may have already been dropped) on the floor.
@@ -99,8 +104,8 @@ class InterfacePtr {
 // Takes a handle to the proxy end-point of a pipe. On the other end is
 // presumed to be an interface implementation of type |Interface|. Returns a
 // generated proxy to that interface, which may be used on the current thread.
-// It is valid to call SetClient on the returned Interface to set an instance
-// of Interface::Client.
+// It is valid to call set_client on the returned InterfacePtr<..> to set an
+// instance of Interface::Client.
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     ScopedMessagePipeHandle handle,

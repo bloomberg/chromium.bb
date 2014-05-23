@@ -57,9 +57,9 @@ class BrowserTargetImpl : public BrowserTarget {
  public:
   BrowserTargetImpl(mojo::ScopedMessagePipeHandle handle,
                     base::RunLoop* run_loop)
-      : renderer_(mojo::MakeProxy<RendererTarget>(handle.Pass())),
-        run_loop_(run_loop) {
-    renderer_->SetClient(this);
+      : run_loop_(run_loop) {
+    renderer_.Bind(handle.Pass());
+    renderer_.set_client(this);
   }
 
   virtual ~BrowserTargetImpl() {}

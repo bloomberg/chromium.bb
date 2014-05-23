@@ -41,9 +41,6 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
   }
 
  private:
-  virtual void SetClient(Client* client) MOJO_OVERRIDE {
-    internal_state_.set_client(client);
-  }
   internal::InterfaceImplState<Interface> internal_state_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfaceImpl);
 };
@@ -57,8 +54,7 @@ class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
 // called on the current thread, and if the current thread exits, then it will
 // also be deleted, and along with it, its end point of the pipe will be closed.
 //
-// Before returning, the instance will receive a SetClient call, providing it
-// with a proxy to the client on the other end of the pipe.
+// Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl>
 Impl* BindToPipe(Impl* instance,
                  ScopedMessagePipeHandle handle,
@@ -76,8 +72,7 @@ Impl* BindToPipe(Impl* instance,
 // called on the current thread, and if the current thread exits, then it will
 // also be deleted, and along with it, its end point of the pipe will be closed.
 //
-// Before returning, the instance will receive a SetClient call, providing it
-// with a proxy to the client on the other end of the pipe.
+// Before returning, the instance's OnConnectionEstablished method is called.
 template <typename Impl, typename Interface>
 Impl* BindToProxy(Impl* instance,
                   InterfacePtr<Interface>* ptr,

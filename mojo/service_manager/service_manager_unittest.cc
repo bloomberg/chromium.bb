@@ -49,7 +49,7 @@ class TestClientImpl : public TestClient {
   explicit TestClientImpl(TestServicePtr service)
       : service_(service.Pass()),
         quit_after_ack_(false) {
-    service_->SetClient(this);
+    service_.set_client(this);
   }
 
   virtual ~TestClientImpl() {}

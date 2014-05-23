@@ -45,7 +45,7 @@ class PepperContainerApp: public Application,
     mojo::AllocationScope scope;
 
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
-    viewport_->SetClient(this);
+    viewport_.set_client(this);
 
     Rect::Builder rect;
     Point::Builder point;

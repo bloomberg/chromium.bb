@@ -73,7 +73,7 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
   explicit MathCalculatorUIImpl(math::CalculatorPtr calculator)
       : calculator_(calculator.Pass()),
         output_(0.0) {
-    calculator_->SetClient(this);
+    calculator_.set_client(this);
   }
 
   bool encountered_error() const {
