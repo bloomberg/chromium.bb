@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -317,6 +318,8 @@ void LocalRTCStatsResponse::addStatistic(size_t report,
   impl_.addStatistic(report, name, value);
 }
 
+namespace {
+
 class PeerConnectionUMAObserver : public webrtc::UMAObserver {
  public:
   PeerConnectionUMAObserver() {}
@@ -351,6 +354,11 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
   }
 };
 
+base::LazyInstance<std::set<RTCPeerConnectionHandler*> >::Leaky
+    g_peer_connection_handlers = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory)
@@ -359,15 +367,29 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       frame_(NULL),
       peer_connection_tracker_(NULL),
       num_data_channels_created_(0) {
+  g_peer_connection_handlers.Get().insert(this);
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
+  g_peer_connection_handlers.Get().erase(this);
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
   STLDeleteValues(&remote_streams_);
 
   UMA_HISTOGRAM_COUNTS_10000(
       "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);
+}
+
+// static
+void RTCPeerConnectionHandler::DestructAllHandlers() {
+  std::set<RTCPeerConnectionHandler*> handlers(
+      g_peer_connection_handlers.Get().begin(),
+      g_peer_connection_handlers.Get().end());
+  for (std::set<RTCPeerConnectionHandler*>::iterator handler = handlers.begin();
+       handler != handlers.end();
+       ++handler) {
+    (*handler)->client_->releasePeerConnectionHandler();
+  }
 }
 
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebFrame* frame) {
