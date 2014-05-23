@@ -12,6 +12,7 @@
     sudo apt-get install python-tornado
     sudo apt-get install python-pip
     sudo pip install google-api-python-client
+    sudo pip install ecdsa
 """
 
 import atexit
@@ -743,7 +744,10 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
   @post_provisioning
   @get_only
   def do_info(self, request, unused_response_func):
-    specific_info = {'x-privet-token': 'sample'}
+    specific_info = {
+        'x-privet-token': 'sample',
+        'api': sorted(self.handlers.keys())
+    }
     info = dict(self.get_common_info().items() + specific_info.items())
     self.real_send_response(request, 200, info)
     return True
