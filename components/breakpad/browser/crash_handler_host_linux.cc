@@ -300,14 +300,6 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   process_type_str[info->process_type_length] = '\0';
   info->process_type = process_type_str;
 
-  std::string distro = base::GetLinuxDistro();
-  info->distro_length = distro.length();
-  // Freed in CrashDumpTask().
-  char* distro_str = new char[info->distro_length + 1];
-  distro.copy(distro_str, info->distro_length);
-  distro_str[info->distro_length] = '\0';
-  info->distro = distro_str;
-
   // Memory released from scoped_ptrs below are also freed in CrashDumpTask().
   info->crash_keys = crash_keys.release();
 #if defined(ADDRESS_SANITIZER)
@@ -343,6 +335,16 @@ void CrashHandlerHostLinux::WriteDumpFile(scoped_ptr<BreakpadInfo> info,
                                           int signal_fd) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       worker_pool_token_));
+
+  // Set |info->distro| here because base::GetLinuxDistro() needs to run on a
+  // blocking thread.
+  std::string distro = base::GetLinuxDistro();
+  info->distro_length = distro.length();
+  // Freed in CrashDumpTask().
+  char* distro_str = new char[info->distro_length + 1];
+  distro.copy(distro_str, info->distro_length);
+  distro_str[info->distro_length] = '\0';
+  info->distro = distro_str;
 
   base::FilePath dumps_path("/tmp");
   PathService::Get(base::DIR_TEMP, &dumps_path);
