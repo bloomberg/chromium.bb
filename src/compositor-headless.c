@@ -128,7 +128,7 @@ headless_compositor_create_output(struct headless_compositor *c,
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 	output->mode.width = param->width;
 	output->mode.height = param->height;
-	output->mode.refresh = 60;
+	output->mode.refresh = 60000;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
