@@ -45,6 +45,11 @@ std::string TestMetricsServiceClient::GetVersionString() {
 void TestMetricsServiceClient::OnLogUploadComplete() {
 }
 
+void TestMetricsServiceClient::StartGatheringMetrics(
+    const base::Closure& done_callback) {
+  done_callback.Run();
+}
+
 void TestMetricsServiceClient::CollectFinalMetrics(
     const base::Closure& done_callback) {
   done_callback.Run();

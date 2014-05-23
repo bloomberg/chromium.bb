@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -281,4 +282,10 @@ void ChromeMetricsServiceClient::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void ChromeMetricsServiceClient::StartGatheringMetrics(
+    const base::Closure& done_callback) {
+  // TODO(blundell): Move metrics gathering tasks from MetricsService to here.
+  done_callback.Run();
 }

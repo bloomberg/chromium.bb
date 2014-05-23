@@ -943,6 +943,11 @@ void MetricsService::OpenNewLog() {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
 
+    // TODO(blundell): Change the callback to be
+    // FinishedReceivingProfilerData() when the initial metrics gathering is
+    // moved to ChromeMetricsServiceClient.
+    client_->StartGatheringMetrics(base::Bind(&base::DoNothing));
+
     // Schedules a task on the file thread for execution of slower
     // initialization steps (such as plugin list generation) necessary
     // for sending the initial log.  This avoids blocking the main UI

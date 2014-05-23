@@ -34,6 +34,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   virtual metrics::SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
   virtual void OnLogUploadComplete() OVERRIDE;
+  virtual void StartGatheringMetrics(
+      const base::Closure& done_callback) OVERRIDE;
   virtual void CollectFinalMetrics(const base::Closure& done_callback)
       OVERRIDE;
 

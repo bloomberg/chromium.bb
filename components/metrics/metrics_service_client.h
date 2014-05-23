@@ -42,6 +42,10 @@ class MetricsServiceClient {
   // Called by the metrics service when a log has been uploaded.
   virtual void OnLogUploadComplete() = 0;
 
+  // Starts gathering metrics, calling |done_callback| when initial metrics
+  // gathering is complete.
+  virtual void StartGatheringMetrics(const base::Closure& done_callback) = 0;
+
   // Called prior to a metrics log being closed, allowing the client to collect
   // extra histograms that will go in that log. Asynchronous API - the client
   // implementation should call |done_callback| when complete.
