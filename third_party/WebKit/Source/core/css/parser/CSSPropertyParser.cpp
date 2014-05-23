@@ -667,6 +667,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
                 return false;
             value = m_valueList->next(); // comma
         }
+        if (value && m_context.useCounter()) {
+            if (value->id == CSSValueWebkitZoomIn)
+                m_context.useCounter()->count(UseCounter::PrefixedCursorZoomIn);
+            else if (value->id == CSSValueWebkitZoomOut)
+                m_context.useCounter()->count(UseCounter::PrefixedCursorZoomOut);
+        }
         if (list) {
             if (!value)
                 return false;
