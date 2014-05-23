@@ -8,6 +8,9 @@
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window_tree_host.h"
@@ -27,6 +30,8 @@
 #include "ui/wm/core/shadow_types.h"
 
 using content::DesktopMediaID;
+using web_modal::WebContentsModalDialogManager;
+using web_modal::WebContentsModalDialogManagerDelegate;
 
 namespace {
 
@@ -147,7 +152,8 @@ class DesktopMediaListView : public views::View,
 // Dialog view used for DesktopMediaPickerViews.
 class DesktopMediaPickerDialogView : public views::DialogDelegateView {
  public:
-  DesktopMediaPickerDialogView(gfx::NativeWindow context,
+  DesktopMediaPickerDialogView(content::WebContents* parent_web_contents,
+                               gfx::NativeWindow context,
                                gfx::NativeWindow parent_window,
                                DesktopMediaPickerViews* parent,
                                const base::string16& app_name,
@@ -194,7 +200,8 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   void NotifyDialogResult(DesktopMediaID source);
 
   // DesktopMediaPicker overrides.
-  virtual void Show(gfx::NativeWindow context,
+  virtual void Show(content::WebContents* web_contents,
+                    gfx::NativeWindow context,
                     gfx::NativeWindow parent,
                     const base::string16& app_name,
                     const base::string16& target_name,
@@ -485,6 +492,7 @@ void DesktopMediaListView::OnSourceThumbnailChanged(int index) {
 }
 
 DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
+    content::WebContents* parent_web_contents,
     gfx::NativeWindow context,
     gfx::NativeWindow parent_window,
     DesktopMediaPickerViews* parent,
@@ -510,7 +518,15 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   scroll_view_->SetContents(list_view_);
   AddChildView(scroll_view_);
 
-  DialogDelegate::CreateDialogWidget(this, context, parent_window);
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(parent_web_contents);
+  DCHECK(web_contents_modal_dialog_manager);
+  WebContentsModalDialogManagerDelegate* delegate =
+      web_contents_modal_dialog_manager->delegate();
+  DCHECK(delegate);
+  views::Widget::CreateWindowAsFramelessChild(
+      this,
+      delegate->GetWebContentsModalDialogHost()->GetHostView());
 
   // DesktopMediaList needs to know the ID of the picker window which
   // matches the ID it gets from the OS. Depending on the OS and configuration
@@ -531,7 +547,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   list_view_->StartUpdating(dialog_window_id);
 
-  GetWidget()->Show();
+  web_contents_modal_dialog_manager->ShowModalDialog(
+      GetWidget()->GetNativeView());
 }
 
 DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {}
@@ -619,7 +636,8 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
   }
 }
 
-void DesktopMediaPickerViews::Show(gfx::NativeWindow context,
+void DesktopMediaPickerViews::Show(content::WebContents* web_contents,
+                                   gfx::NativeWindow context,
                                    gfx::NativeWindow parent,
                                    const base::string16& app_name,
                                    const base::string16& target_name,
@@ -627,7 +645,8 @@ void DesktopMediaPickerViews::Show(gfx::NativeWindow context,
                                    const DoneCallback& done_callback) {
   callback_ = done_callback;
   dialog_ = new DesktopMediaPickerDialogView(
-      context, parent, this, app_name, target_name, media_list.Pass());
+      web_contents, context, parent, this, app_name, target_name,
+      media_list.Pass());
 }
 
 void DesktopMediaPickerViews::NotifyDialogResult(

@@ -14,6 +14,10 @@
 
 class DesktopMediaList;
 
+namespace content {
+class WebContents;
+}
+
 // Abstract interface for desktop media picker UI. It's used by Desktop Media
 // API to let user choose a desktop media source.
 class DesktopMediaPicker {
@@ -30,7 +34,8 @@ class DesktopMediaPicker {
   // Shows dialog with list of desktop media sources (screens, windows, tabs)
   // provided by |list| and calls |done_callback| when user chooses one of the
   // sources or closes the dialog.
-  virtual void Show(gfx::NativeWindow context,
+  virtual void Show(content::WebContents* web_contents,
+                    gfx::NativeWindow context,
                     gfx::NativeWindow parent,
                     const base::string16& app_name,
                     const base::string16& target_name,

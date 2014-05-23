@@ -208,7 +208,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   DesktopMediaPicker::DoneCallback callback = base::Bind(
       &DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults, this);
 
-  picker_->Show(parent_window, parent_window,
+  picker_->Show(web_contents(),
+                parent_window, parent_window,
                 base::UTF8ToUTF16(GetExtension()->name()),
                 target_name,
                 media_list.Pass(), callback);

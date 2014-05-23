@@ -12,7 +12,8 @@ DesktopMediaPickerCocoa::DesktopMediaPickerCocoa() {
 DesktopMediaPickerCocoa::~DesktopMediaPickerCocoa() {
 }
 
-void DesktopMediaPickerCocoa::Show(gfx::NativeWindow context,
+void DesktopMediaPickerCocoa::Show(content::WebContents* web_contents,
+                                   gfx::NativeWindow context,
                                    gfx::NativeWindow parent,
                                    const base::string16& app_name,
                                    const base::string16& target_name,
