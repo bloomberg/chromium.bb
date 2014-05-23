@@ -23,6 +23,7 @@ var charId = 'char_id0';
 var badCharId = 'char_id1';
 
 var characteristic = null;
+
 var bytes = [0x43, 0x68, 0x72, 0x6F, 0x6D, 0x65];
 var writeValue = new ArrayBuffer(bytes.length);
 var valueBytes = new Uint8Array(writeValue);
@@ -31,7 +32,7 @@ valueBytes.set(bytes);
 // 1. Unknown characteristic instanceId.
 writeCharacteristicValue(badCharId, writeValue, function (result) {
   if (result || !chrome.runtime.lastError) {
-    chrome.test.fail('badCharId did not cause failure');
+    chrome.test.fail('\'badCharId\' did not cause failure');
   }
 
   // 2. Known characteristic instanceId, but call failure.

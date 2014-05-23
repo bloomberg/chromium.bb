@@ -37,6 +37,8 @@ const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
 const char kErrorWriteCharacteristicValueFailedFormat[] =
     "Failed to write value of characteristic with ID \"%s\".";
+const char kErrorWriteDescriptorValueFailedFormat[] =
+    "Failed to write value of descriptor with ID \"%s\".";
 
 extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
     BrowserContext* context) {
@@ -550,10 +552,53 @@ void BluetoothLowEnergyReadDescriptorValueFunction::ErrorCallback() {
 }
 
 bool BluetoothLowEnergyWriteDescriptorValueFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::WriteDescriptorValue::Params> params(
+      apibtle::WriteDescriptorValue::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  instance_id_ = params->descriptor_id;
+  std::vector<uint8> value(params->value.begin(), params->value.end());
+
+  if (!event_router->WriteDescriptorValue(
+          instance_id_,
+          value,
+          base::Bind(
+              &BluetoothLowEnergyWriteDescriptorValueFunction::SuccessCallback,
+              this),
+          base::Bind(
+              &BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback,
+              this))) {
+    SetError(base::StringPrintf(kErrorDescriptorNotFoundFormat,
+                                instance_id_.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  return true;
+}
+
+void BluetoothLowEnergyWriteDescriptorValueFunction::SuccessCallback() {
+  results_ = apibtle::WriteDescriptorValue::Results::Create();
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback() {
+  SetError(base::StringPrintf(kErrorWriteDescriptorValueFailedFormat,
+                              instance_id_.c_str()));
   SendResponse(false);
-  return false;
 }
 
 }  // namespace api

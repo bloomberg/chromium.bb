@@ -903,4 +903,53 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
   event_router()->DeviceRemoved(mock_adapter_, device_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+  event_router()->GattDescriptorAdded(chrc0_.get(), desc0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .Times(3)
+      .WillRepeatedly(Return(device_.get()));
+
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(3)
+      .WillRepeatedly(Return(service0_.get()));
+
+  EXPECT_CALL(*service0_, GetCharacteristic(kTestCharacteristicId0))
+      .Times(3)
+      .WillRepeatedly(Return(chrc0_.get()));
+
+  EXPECT_CALL(*chrc0_, GetDescriptor(kTestDescriptorId0))
+      .Times(3)
+      .WillRepeatedly(Return(desc0_.get()));
+
+  std::vector<uint8> write_value;
+  EXPECT_CALL(*desc0_, WriteRemoteDescriptor(_, _, _))
+      .Times(2)
+      .WillOnce(Invoke(&WriteValueErrorCallback))
+      .WillOnce(
+          DoAll(SaveArg<0>(&write_value), Invoke(&WriteValueSuccessCallback)));
+
+  EXPECT_CALL(*desc0_, GetValue()).Times(1).WillOnce(ReturnRef(write_value));
+
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/write_descriptor_value")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->GattDescriptorRemoved(chrc0_.get(), desc0_.get());
+  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
 }  // namespace

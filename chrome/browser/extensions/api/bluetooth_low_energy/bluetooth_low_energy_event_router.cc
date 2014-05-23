@@ -465,6 +465,27 @@ bool BluetoothLowEnergyEventRouter::ReadDescriptorValue(
   return true;
 }
 
+bool BluetoothLowEnergyEventRouter::WriteDescriptorValue(
+    const std::string& instance_id,
+    const std::vector<uint8>& value,
+    const base::Closure& callback,
+    const base::Closure& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    return false;
+  }
+
+  BluetoothGattDescriptor* descriptor = FindDescriptorById(instance_id);
+  if (!descriptor) {
+    VLOG(1) << "Descriptor not found: " << instance_id;
+    return false;
+  }
+
+  descriptor->WriteRemoteDescriptor(value, callback, error_callback);
+  return true;
+}
+
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
     device::BluetoothAdapter* adapter) {
   adapter_ = adapter;

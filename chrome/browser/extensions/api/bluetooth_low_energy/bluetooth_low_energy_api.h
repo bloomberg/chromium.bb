@@ -241,6 +241,15 @@ class BluetoothLowEnergyWriteDescriptorValueFunction
 
   // BluetoothLowEnergyExtensionFunction override.
   virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::WriteDescriptorValue.
+  void SuccessCallback();
+  void ErrorCallback();
+
+  // The instance ID of the requested descriptor.
+  std::string instance_id_;
 };
 
 }  // namespace api
