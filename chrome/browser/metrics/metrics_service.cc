@@ -186,6 +186,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/compression_utils.h"
+#include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
@@ -415,6 +416,8 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
   RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new GPUMetricsProvider()));
 
 #if defined(OS_WIN)
   google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;

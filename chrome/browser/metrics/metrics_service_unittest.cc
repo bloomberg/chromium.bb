@@ -18,7 +18,6 @@
 #include "components/variations/metrics_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/metrics_log_chromeos.h"
@@ -70,18 +69,6 @@ class TestMetricsLog : public MetricsLog {
   virtual ~TestMetricsLog() {}
 
  private:
-  virtual gfx::Size GetScreenSize() const OVERRIDE {
-    return gfx::Size(1024, 768);
-  }
-
-  virtual float GetScreenDeviceScaleFactor() const OVERRIDE {
-    return 1.0f;
-  }
-
-  virtual int GetScreenCount() const OVERRIDE {
-    return 1;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 

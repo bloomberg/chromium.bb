@@ -33,7 +33,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -80,10 +79,6 @@ const int64 kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
 const int64 kEnabledDate = 1373001211;
 const int64 kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
 const int kSessionId = 127;
-const int kScreenWidth = 1024;
-const int kScreenHeight = 768;
-const int kScreenCount = 3;
-const float kScreenScaleFactor = 2;
 const variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
@@ -172,18 +167,6 @@ class TestMetricsLog : public MetricsLog {
     }
   }
 
-  virtual gfx::Size GetScreenSize() const OVERRIDE {
-    return gfx::Size(kScreenWidth, kScreenHeight);
-  }
-
-  virtual float GetScreenDeviceScaleFactor() const OVERRIDE {
-    return kScreenScaleFactor;
-  }
-
-  virtual int GetScreenCount() const OVERRIDE {
-    return kScreenCount;
-  }
-
   // Scoped PrefsService, which may not be used if |prefs_ != &scoped_prefs|.
   TestingPrefServiceSimple scoped_prefs_;
   // Weak pointer to the PrefsService used by this log.
@@ -265,10 +248,6 @@ class MetricsLogTest : public testing::Test {
 
     const metrics::SystemProfileProto::Hardware& hardware =
         system_profile.hardware();
-    EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
-    EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
-    EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
-    EXPECT_EQ(kScreenCount, hardware.screen_count());
 
     EXPECT_TRUE(hardware.has_cpu());
     EXPECT_TRUE(hardware.cpu().has_vendor_name());
