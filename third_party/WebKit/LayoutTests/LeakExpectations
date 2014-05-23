@@ -26,9 +26,9 @@ crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [
 # FIXME: html imports tests are flaky from extra navigation from leak detector
 crbug.com/366477 http/tests/htmlimports/redirect.html [ Failure Pass ]
 
-crbug.com/371264 inspector/sources/debugger/callstack-placards-discarded.html [ Timeout ]
 crbug.com/371264 virtual/deferred/inspector/timeline/timeline-window-filter.html [ Timeout ]
 crbug.com/371264 virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Timeout ]
+# crbug.com/371264 also includes inspector/sources/debugger/callstack-placards-discarded.html as a test which times out, but now this is listed as crbug.com/376188.
 
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
@@ -206,7 +206,7 @@ crbug.com/376188 inspector/sources/debugger/async-callstack-mutation-observer.ht
 crbug.com/376188 inspector/sources/debugger/async-callstack-scopes.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/async-callstack-xhrs.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/async-callstack.html [ Leak ]
-crbug.com/376188 inspector/sources/debugger/callstack-placards-discarded.html [ Leak ]
+crbug.com/376188 inspector/sources/debugger/callstack-placards-discarded.html [ Leak Timeout ]
 crbug.com/376188 inspector/sources/debugger/copy-stack-trace.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/custom-element-lifecycle-events.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/debug-console-command.html [ Leak ]
