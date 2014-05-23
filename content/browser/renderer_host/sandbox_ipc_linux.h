@@ -12,24 +12,21 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
+#include "base/threading/simple_thread.h"
 #include "content/child/blink_platform_impl.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace content {
 
-class SandboxIPCProcess {
+class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
  public:
-  // lifeline_fd: this is the read end of a pipe which the browser process
-  //   holds the other end of. If the browser process dies, its descriptors are
-  //   closed and we will noticed an EOF on the pipe. That's our signal to exit.
-  // browser_socket: the browser's end of the sandbox IPC socketpair. From the
-  //   point of view of the renderer, it's talking to the browser but this
-  //   object actually services the requests.
-  // sandbox_cmd: the path of the sandbox executable.
-  SandboxIPCProcess(int lifeline_fd, int browser_socket);
-  ~SandboxIPCProcess();
+  // lifeline_fd: the read end of a pipe which the main thread holds
+  // the other end of.
+  // browser_socket: the browser's end of the sandbox IPC socketpair.
+  SandboxIPCHandler(int lifeline_fd, int browser_socket);
+  virtual ~SandboxIPCHandler();
 
-  void Run();
+  virtual void Run() OVERRIDE;
 
  private:
   void EnsureWebKitInitialized();
@@ -82,7 +79,7 @@ class SandboxIPCProcess {
   scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
   SkTDArray<SkString*> paths_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxIPCProcess);
+  DISALLOW_COPY_AND_ASSIGN(SandboxIPCHandler);
 };
 
 }  // namespace content
