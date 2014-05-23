@@ -1,0 +1,43 @@
+To make a release follow these steps.
+
+  1.  Update configure.ac to intended version, commit.
+
+  2.  make distcheck (for weston I do make distcheck TESTS= to avoid
+      running the tests... most of the tests pass, but the xwayland one
+      is flaky)
+
+  3.  git tag -am 1.5.0 1.5.0
+
+  4.  scp tarballs to /srv/wayland.freedesktop.org/www/releases on
+      people.freedesktop.org
+
+  5.  Put SHA1 for tarballs and tagged commits in release announcement
+
+  6.  Push configure.ac commits and tags.
+
+  7.  Send out release announcement.
+
+  8.  Get the release email URL from
+      http://lists.freedesktop.org/archives/wayland-devel/
+
+  9.  Update releases.html in wayland-web with links to tarballs and
+      release email.
+
+  10. Update topic in #wayland to point to release announcement
+
+For x.y.0 releases, also create the x.y branch.  The x.y branch is for
+bug fixes and conservetive changes to the x.y.0 release, and is where
+we release x.y.z releases from.  Creating the x.y branch opens up
+master for new development and lets new development move on.  We've
+done this both after the x.y.0 release (to focus development on bug
+fixing for the x.y.1 release for a little longer) or before the x.y.0
+release (like we did with the 1.5.0 release, to unblock master
+development early). 
+
+The master branch configure.ac version should always be (at least)
+x.y.90, with x.y being the most recent stable branch.  Stable branch
+configure version is just whatever was most recently released from
+that branch.
+
+For stable branches, we commit fixes to master first, then cherry-pick
+them back to the stable branch.
