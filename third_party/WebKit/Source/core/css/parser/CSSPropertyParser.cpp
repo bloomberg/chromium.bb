@@ -4253,12 +4253,10 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
     } else if (value->id == CSSValueTrue || value->id == CSSValueSafe) {
         overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
         value = m_valueList->next();
-        if (value) {
-            if (isItemPositionKeyword(value->id))
-                position = cssValuePool().createIdentifierValue(value->id);
-            else
-                return false;
-        }
+        if (value && isItemPositionKeyword(value->id))
+            position = cssValuePool().createIdentifierValue(value->id);
+        else
+            return false;
     } else {
         return false;
     }

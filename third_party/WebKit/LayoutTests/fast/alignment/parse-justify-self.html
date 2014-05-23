@@ -179,6 +179,9 @@ shouldBe("getComputedStyle(element, '').getPropertyValue('justify-self')", "'aut
 element.style.justifySelf = "true true";
 shouldBe("getComputedStyle(element, '').getPropertyValue('justify-self')", "'auto'");
 
+element.style.justifySelf = "true";
+shouldBe("getComputedStyle(element, '').getPropertyValue('justify-self')", "'auto'");
+
 element.style.justifySelf = "true safe";
 shouldBe("getComputedStyle(element, '').getPropertyValue('justify-self')", "'auto'");
 
