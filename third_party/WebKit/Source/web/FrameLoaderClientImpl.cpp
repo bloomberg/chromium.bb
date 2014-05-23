@@ -248,8 +248,7 @@ bool FrameLoaderClientImpl::hasWebView() const
 
 Frame* FrameLoaderClientImpl::opener() const
 {
-    WebLocalFrameImpl* opener = toWebLocalFrameImpl(m_webFrame->opener());
-    return opener ? opener->frame() : 0;
+    return toWebCoreFrame(m_webFrame->opener());
 }
 
 void FrameLoaderClientImpl::setOpener(Frame* opener)
@@ -260,38 +259,32 @@ void FrameLoaderClientImpl::setOpener(Frame* opener)
 
 Frame* FrameLoaderClientImpl::parent() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->parent());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->parent());
 }
 
 Frame* FrameLoaderClientImpl::top() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->top());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->top());
 }
 
 Frame* FrameLoaderClientImpl::previousSibling() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->previousSibling());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->previousSibling());
 }
 
 Frame* FrameLoaderClientImpl::nextSibling() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->nextSibling());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->nextSibling());
 }
 
 Frame* FrameLoaderClientImpl::firstChild() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->firstChild());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->firstChild());
 }
 
 Frame* FrameLoaderClientImpl::lastChild() const
 {
-    WebLocalFrameImpl* frame = toWebLocalFrameImpl(m_webFrame->lastChild());
-    return frame ? frame->frame() : 0;
+    return toWebCoreFrame(m_webFrame->lastChild());
 }
 
 void FrameLoaderClientImpl::detachedFromParent()

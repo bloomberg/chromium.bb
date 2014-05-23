@@ -41,6 +41,7 @@ namespace WebCore {
 
 class DOMWindow;
 class ChromeClient;
+class FrameClient;
 class FrameDestructionObserver;
 class FrameHost;
 class HTMLFrameOwnerElement;
@@ -60,6 +61,9 @@ public:
 
     virtual void willDetachFrameHost();
     virtual void detachFromFrameHost();
+
+    FrameClient* client() const { return m_client; }
+    void clearClient() { m_client = 0; }
 
     // NOTE: Page is moving out of Blink up into the browser process as
     // part of the site-isolation (out of process iframes) work.
@@ -95,7 +99,7 @@ public:
     bool isRemoteFrameTemporary() const { return m_remotePlatformLayer; }
 
 protected:
-    Frame(FrameHost*, HTMLFrameOwnerElement*);
+    Frame(FrameClient*, FrameHost*, HTMLFrameOwnerElement*);
 
     FrameHost* m_host;
     HTMLFrameOwnerElement* m_ownerElement;
@@ -103,7 +107,7 @@ protected:
     RefPtrWillBePersistent<DOMWindow> m_domWindow;
 
 private:
-
+    FrameClient* m_client;
     HashSet<FrameDestructionObserver*> m_destructionObservers;
 
     blink::WebLayer* m_remotePlatformLayer;

@@ -77,6 +77,8 @@
       'PopupMenuChromium.h',
       'PrerendererClientImpl.cpp',
       'PrerendererClientImpl.h',
+      'RemoteFrameClient.cpp',
+      'RemoteFrameClient.h',
       'ScrollbarGroup.cpp',
       'ScrollbarGroup.h',
       'ServiceWorkerGlobalScopeClientImpl.cpp',

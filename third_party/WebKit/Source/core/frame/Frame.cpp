@@ -56,9 +56,10 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
-Frame::Frame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+Frame::Frame(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
     : m_host(host)
     , m_ownerElement(ownerElement)
+    , m_client(client)
     , m_remotePlatformLayer(0)
 {
     ASSERT(page());

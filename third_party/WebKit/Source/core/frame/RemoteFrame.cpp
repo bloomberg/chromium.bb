@@ -10,14 +10,14 @@
 
 namespace WebCore {
 
-inline RemoteFrame::RemoteFrame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
-    : Frame(host, ownerElement)
+inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+    : Frame(client, host, ownerElement)
 {
 }
 
-PassRefPtr<RemoteFrame> RemoteFrame::create(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
+PassRefPtr<RemoteFrame> RemoteFrame::create(FrameClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
 {
-    RefPtr<RemoteFrame> frame = adoptRef(new RemoteFrame(host, ownerElement));
+    RefPtr<RemoteFrame> frame = adoptRef(new RemoteFrame(client, host, ownerElement));
     return frame.release();
 }
 

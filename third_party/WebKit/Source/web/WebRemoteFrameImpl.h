@@ -6,7 +6,10 @@
 #define WebRemoteFrameImpl_h
 
 #include "public/web/WebRemoteFrame.h"
+#include "web/RemoteFrameClient.h"
 #include "wtf/RefCounted.h"
+
+namespace WebCore { class RemoteFrame; }
 
 namespace blink {
 
@@ -166,7 +169,16 @@ public:
 
     virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const OVERRIDE;
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const OVERRIDE;
+
+    WebCore::RemoteFrame* frame() const { return m_frame.get(); }
+
+private:
+    RemoteFrameClient m_frameClient;
+    RefPtr<WebCore::RemoteFrame> m_frame;
 };
+
+DEFINE_TYPE_CASTS(WebRemoteFrameImpl, WebFrame, frame, frame->isWebRemoteFrame(), frame.isWebRemoteFrame());
+
 
 } // namespace blink
 

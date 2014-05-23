@@ -22,9 +22,9 @@
 #include "core/page/FrameTree.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Page.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -66,10 +66,10 @@ void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackNa
 
 LocalFrame* FrameTree::parent() const
 {
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return 0;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_thisFrame->loader().client()->parent());
+    return toLocalFrame(m_thisFrame->client()->parent());
 }
 
 LocalFrame* FrameTree::top() const
@@ -77,43 +77,43 @@ LocalFrame* FrameTree::top() const
     // FIXME: top() should never return null, so here are some hacks to deal
     // with EmptyFrameLoaderClient and cases where the frame is detached
     // already...
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return m_thisFrame;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    LocalFrame* candidate = toLocalFrame(m_thisFrame->loader().client()->top());
+    LocalFrame* candidate = toLocalFrame(m_thisFrame->client()->top());
     return candidate ? candidate : m_thisFrame;
 }
 
 LocalFrame* FrameTree::previousSibling() const
 {
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return 0;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_thisFrame->loader().client()->previousSibling());
+    return toLocalFrame(m_thisFrame->client()->previousSibling());
 }
 
 LocalFrame* FrameTree::nextSibling() const
 {
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return 0;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_thisFrame->loader().client()->nextSibling());
+    return toLocalFrame(m_thisFrame->client()->nextSibling());
 }
 
 LocalFrame* FrameTree::firstChild() const
 {
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return 0;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_thisFrame->loader().client()->firstChild());
+    return toLocalFrame(m_thisFrame->client()->firstChild());
 }
 
 LocalFrame* FrameTree::lastChild() const
 {
-    if (!m_thisFrame->loader().client())
+    if (!m_thisFrame->client())
         return 0;
     // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return toLocalFrame(m_thisFrame->loader().client()->lastChild());
+    return toLocalFrame(m_thisFrame->client()->lastChild());
 }
 
 bool FrameTree::uniqueNameExists(const AtomicString& name) const

@@ -75,7 +75,7 @@ bool isBackForwardLoadType(FrameLoadType);
 class FrameLoader {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
 public:
-    FrameLoader(LocalFrame*, FrameLoaderClient*);
+    FrameLoader(LocalFrame*);
     ~FrameLoader();
 
     void init();
@@ -133,7 +133,7 @@ public:
 
     static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
 
-    FrameLoaderClient* client() const { return m_client; }
+    FrameLoaderClient* client() const;
 
     void setDefersLoading(bool);
 
@@ -226,7 +226,6 @@ private:
     void startCheckCompleteTimer();
 
     LocalFrame* m_frame;
-    FrameLoaderClient* m_client;
 
     // FIXME: These should be OwnPtr<T> to reduce build times and simplify
     // header dependencies unless performance testing proves otherwise.

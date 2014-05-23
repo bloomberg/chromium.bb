@@ -45,6 +45,10 @@
 
 struct NPObject;
 
+#if BLINK_IMPLEMENTATION
+namespace WebCore { class Frame; }
+#endif
+
 namespace v8 {
 class Context;
 class Function;
@@ -687,6 +691,10 @@ private:
     WebFrame* m_opener;
     WebPrivateOwnPtr<OpenedFrameTracker> m_openedFrameTracker;
 };
+
+#if BLINK_IMPLEMENTATION
+WebCore::Frame* toWebCoreFrame(WebFrame*);
+#endif
 
 } // namespace blink
 

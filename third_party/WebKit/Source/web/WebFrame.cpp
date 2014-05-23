@@ -5,11 +5,24 @@
 #include "config.h"
 #include "public/web/WebFrame.h"
 
+#include "core/frame/RemoteFrame.h"
 #include "web/OpenedFrameTracker.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include <algorithm>
 
 
 namespace blink {
+
+WebCore::Frame* toWebCoreFrame(WebFrame* frame)
+{
+    if (!frame)
+        return 0;
+
+    return frame->isWebLocalFrame()
+        ? static_cast<WebCore::Frame*>(toWebLocalFrameImpl(frame)->frame())
+        : toWebRemoteFrameImpl(frame)->frame();
+}
 
 void WebFrame::swap(WebFrame* frame)
 {

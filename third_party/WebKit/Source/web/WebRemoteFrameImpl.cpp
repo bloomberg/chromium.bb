@@ -5,6 +5,7 @@
 #include "config.h"
 #include "web/WebRemoteFrameImpl.h"
 
+#include "core/frame/RemoteFrame.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/web/WebDocument.h"
@@ -20,6 +21,7 @@ WebRemoteFrame* WebRemoteFrame::create(WebFrameClient*)
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl()
+    : m_frameClient(this)
 {
 }
 
