@@ -725,8 +725,10 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
 
 void InspectorPageAgent::clearDeviceMetricsOverride(ErrorString*)
 {
-    m_state->setBoolean(PageAgentState::deviceMetricsOverrideEnabled, false);
-    updateViewMetricsFromState();
+    if (m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled)) {
+        m_state->setBoolean(PageAgentState::deviceMetricsOverrideEnabled, false);
+        updateViewMetricsFromState();
+    }
 }
 
 bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing)
