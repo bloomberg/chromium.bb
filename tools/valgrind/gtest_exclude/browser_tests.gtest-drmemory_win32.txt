@@ -42,12 +42,12 @@ K*
 L*
 M*
 N*
-# O*
-# P*
-Q*
-R*
-S*
-T*
+O*
+P*
+# Q*
+# R*
+# S*
+# T*
 # U*: ~20  tests
 U*
 # DrM-i#1052-c#53
@@ -55,7 +55,7 @@ U*
 # V*: 5    tests
 V*
 # W*: ~150 tests
-W*
+# W*
 # X*: 0    tests
 X*
 # Y*: 0    tests
