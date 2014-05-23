@@ -1211,6 +1211,8 @@
         'browser/metrics/metrics_log_chromeos.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
+        'browser/metrics/metrics_service_accessor.cc',
+        'browser/metrics/metrics_service_accessor.h',
         'browser/metrics/metrics_services_manager.cc',
         'browser/metrics/metrics_services_manager.h',
         'browser/metrics/metrics_state_manager.cc',

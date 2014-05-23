@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/pref_names.h"
-#include "components/metrics/metrics_service_observer.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -46,18 +45,4 @@ bool ChromeMetricsServiceAccessor::IsCrashReportingEnabled() {
 #else
   return false;
 #endif
-}
-
-void ChromeMetricsServiceAccessor::AddMetricsServiceObserver(
-    MetricsServiceObserver* observer) {
-  MetricsService* metrics_service = g_browser_process->metrics_service();
-  if (metrics_service)
-    metrics_service->AddObserver(observer);
-}
-
-void ChromeMetricsServiceAccessor::RemoveMetricsServiceObserver(
-    MetricsServiceObserver* observer) {
-  MetricsService* metrics_service = g_browser_process->metrics_service();
-  if (metrics_service)
-    metrics_service->RemoveObserver(observer);
 }

@@ -522,7 +522,7 @@ class MetricsService
   // Confirms single-threaded access to |observers_| in debug builds.
   base::ThreadChecker thread_checker_;
 
-  friend class ChromeMetricsServiceAccessor;
+  friend class MetricsServiceAccessor;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsServiceObserver);

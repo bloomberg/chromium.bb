@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/metrics/metrics_service_accessor.h"
 
 class ChromeBrowserMetricsServiceObserver;
-class MetricsServiceObserver;
 class Profile;
 
 namespace {
@@ -34,7 +34,7 @@ class ChromeInternalLogSource;
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
-class ChromeMetricsServiceAccessor {
+class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class ::ChromeBrowserMetricsServiceObserver;
@@ -61,11 +61,6 @@ class ChromeMetricsServiceAccessor {
   // level for Android and ChromeOS, and otherwise is the same as
   // IsMetricsReportingEnabled for desktop Chrome.
   static bool IsCrashReportingEnabled();
-
-  // Registers/unregisters |observer| to receive MetricsLog notifications
-  // from metrics service.
-  static void AddMetricsServiceObserver(MetricsServiceObserver* observer);
-  static void RemoveMetricsServiceObserver(MetricsServiceObserver* observer);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };
