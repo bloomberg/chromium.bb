@@ -236,6 +236,13 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
+    bool attached = InvokeHelper(bindings, args);
+    BOOLEAN_TO_NPVARIANT(attached, *result);
+    return true;
+  }
+
+ private:
+  bool InvokeHelper(BrowserPluginBindings* bindings, const NPVariant* args) {
     if (!bindings->instance()->render_view())
       return false;
 
@@ -259,8 +266,6 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
     bindings->instance()->Attach(instance_id, extra_params.Pass());
     return true;
   }
-
- private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttach);
 };
 

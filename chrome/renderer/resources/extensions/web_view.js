@@ -706,9 +706,7 @@ WebViewInternal.prototype.handleDialogEvent =
   };
 
   var self = this;
-  var browserPluginNode = this.browserPluginNode;
   var webviewNode = this.webviewNode;
-
   var requestId = event.requestId;
   var actionTaken = false;
 
@@ -823,7 +821,6 @@ WebViewInternal.prototype.handleNewWindowEvent =
   };
 
   var self = this;
-  var browserPluginNode = this.browserPluginNode;
   var webviewNode = this.webviewNode;
 
   var requestId = event.requestId;
@@ -929,9 +926,7 @@ WebViewInternal.prototype.handlePermissionEvent =
     return;
   }
 
-  var browserPluginNode = this.browserPluginNode;
   var webviewNode = this.webviewNode;
-
   var decisionMade = false;
 
   var validateCall = function() {
@@ -1078,9 +1073,7 @@ WebViewInternal.prototype.attachWindowAndSetUpEvents = function(instanceId) {
     this.setupEvent(eventName, events[eventName]);
   }
 
-  this.browserPluginNode['-internal-attach'](this.instanceId, params);
-
-  return true;
+  return this.browserPluginNode['-internal-attach'](this.instanceId, params);
 };
 
 // Registers browser plugin <object> custom element.
