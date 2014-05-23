@@ -509,12 +509,6 @@ Status GetOptionalJwkBool(base::DictionaryValue* dict,
   return Status::Success();
 }
 
-// Returns true if the set bits in b make up a subset of the set bits in a.
-bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
-                       blink::WebCryptoKeyUsageMask b) {
-  return (a & b) == b;
-}
-
 // Writes a secret/symmetric key to a JWK dictionary.
 void WriteSecretKey(const std::vector<uint8>& raw_key,
                     base::DictionaryValue* jwk_dict) {
@@ -714,9 +708,7 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
 }
 
 bool IsRsaKey(const blink::WebCryptoKey& key) {
-  const blink::WebCryptoAlgorithmId algorithm_id = key.algorithm().id();
-  return algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep;
+  return IsAlgorithmRsa(key.algorithm().id());
 }
 
 Status ImportRsaKey(base::DictionaryValue* dict,
@@ -738,7 +730,19 @@ Status ImportRsaKey(base::DictionaryValue* dict,
   if (status.IsError())
     return status;
 
-  if (!dict->HasKey("d")) {
+  bool is_public_key = !dict->HasKey("d");
+
+  // Now that the key type is known, do an additional check on the usages to
+  // make sure they are all applicable for this algorithm + key type.
+  status = CheckKeyUsages(algorithm.id(),
+                          is_public_key ? blink::WebCryptoKeyTypePublic
+                                        : blink::WebCryptoKeyTypePrivate,
+                          usage_mask);
+
+  if (status.IsError())
+    return status;
+
+  if (is_public_key) {
     return platform::ImportRsaPublicKey(algorithm,
                                         extractable,
                                         usage_mask,

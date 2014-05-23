@@ -438,12 +438,13 @@ Status UnwrapKeyDecryptAndImport(
       wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
   if (status.IsError())
     return status;
-  status = ImportKey(
+  // NOTE that returning the details of ImportKey() failures may leak
+  // information about the plaintext of the encrypted key (for instance the JWK
+  // key_ops). As long as the ImportKey error messages don't describe actual
+  // key bytes however this should be OK. For more discussion see
+  // http://crubg.com/372040
+  return ImportKey(
       format, CryptoData(buffer), algorithm, extractable, usage_mask, key);
-  // NOTE! Returning the details of any ImportKey() failure here would leak
-  // information about the plaintext internals of the encrypted key. Instead,
-  // collapse any error into the generic Status::OperationError().
-  return status.IsError() ? Status::OperationError() : Status::Success();
 }
 
 Status WrapKeyExportAndEncrypt(
@@ -473,6 +474,131 @@ unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
       NOTREACHED();
       return 0;
   }
+}
+
+// Returns the mask of all key usages that are possible for |algorithm| and
+// |key_type|. If the combination of |algorithm| and |key_type| doesn't make
+// sense, then returns 0 (no usages).
+blink::WebCryptoKeyUsageMask GetValidKeyUsagesForKeyType(
+    blink::WebCryptoAlgorithmId algorithm,
+    blink::WebCryptoKeyType key_type) {
+  if (IsAlgorithmAsymmetric(algorithm) ==
+      (key_type == blink::WebCryptoKeyTypeSecret))
+    return 0;
+
+  switch (algorithm) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+    case blink::WebCryptoAlgorithmIdAesCtr:
+      return blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
+             blink::WebCryptoKeyUsageWrapKey |
+             blink::WebCryptoKeyUsageUnwrapKey;
+    case blink::WebCryptoAlgorithmIdAesKw:
+      return blink::WebCryptoKeyUsageWrapKey |
+             blink::WebCryptoKeyUsageUnwrapKey;
+    case blink::WebCryptoAlgorithmIdHmac:
+      return blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      switch (key_type) {
+        case blink::WebCryptoKeyTypePublic:
+          return blink::WebCryptoKeyUsageVerify;
+        case blink::WebCryptoKeyTypePrivate:
+          return blink::WebCryptoKeyUsageSign;
+        default:
+          return 0;
+      }
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+      switch (key_type) {
+        case blink::WebCryptoKeyTypePublic:
+          return blink::WebCryptoKeyUsageEncrypt |
+                 blink::WebCryptoKeyUsageWrapKey;
+        case blink::WebCryptoKeyTypePrivate:
+          return blink::WebCryptoKeyUsageDecrypt |
+                 blink::WebCryptoKeyUsageUnwrapKey;
+        default:
+          return 0;
+      }
+    default:
+      return 0;
+  }
+}
+
+// Returns Status::Success() if |usages| is a valid set of key usages for
+// |algorithm| and |key_type|. Otherwise returns an error.
+// In the case of JWK format the check is incomplete for asymmetric algorithms.
+Status BestEffortCheckKeyUsagesForImport(blink::WebCryptoAlgorithmId algorithm,
+                                         blink::WebCryptoKeyFormat format,
+                                         blink::WebCryptoKeyUsageMask usages) {
+  if (!IsAlgorithmAsymmetric(algorithm))
+    return CheckKeyUsages(algorithm, blink::WebCryptoKeyTypeSecret, usages);
+
+  // Try to infer the key type given the import format.
+  blink::WebCryptoKeyType key_type;
+  bool key_type_known = false;
+
+  switch (format) {
+    case blink::WebCryptoKeyFormatRaw:
+      // TODO(eroman): The spec defines Diffie-Hellman raw import for public
+      // keys, so this will need to be updated in the future when DH is
+      // implemented.
+      return Status::ErrorUnexpected();
+    case blink::WebCryptoKeyFormatSpki:
+      key_type = blink::WebCryptoKeyTypePublic;
+      key_type_known = true;
+      break;
+    case blink::WebCryptoKeyFormatPkcs8:
+      key_type = blink::WebCryptoKeyTypePrivate;
+      key_type_known = true;
+      break;
+    case blink::WebCryptoKeyFormatJwk:
+      key_type_known = false;
+      break;
+    default:
+      return Status::ErrorUnexpected();
+  }
+
+  if (key_type_known)
+    return CheckKeyUsages(algorithm, key_type, usages);
+
+  // If the key type is not known, then the algorithm is asymmetric. Whether the
+  // key data describes a public or private key isn't known yet. But it must at
+  // least be ONE of those two.
+  DCHECK(IsAlgorithmAsymmetric(algorithm));
+
+  if (CheckKeyUsages(algorithm, blink::WebCryptoKeyTypePublic, usages)
+          .IsError() &&
+      CheckKeyUsages(algorithm, blink::WebCryptoKeyTypePrivate, usages)
+          .IsError()) {
+    return Status::ErrorCreateKeyBadUsages();
+  }
+
+  return Status::Success();
+}
+
+// Returns an error if |combined_usage_mask| is invalid for generating a key
+// pair for |algorithm|. Otherwise returns Status::Success(), and fills
+// |public_key_usages| with the usages for the public key, and
+// |private_key_usages| with those for the private key.
+Status CheckKeyUsagesForGenerateKeyPair(
+    blink::WebCryptoAlgorithmId algorithm,
+    blink::WebCryptoKeyUsageMask combined_usage_mask,
+    blink::WebCryptoKeyUsageMask* public_key_usages,
+    blink::WebCryptoKeyUsageMask* private_key_usages) {
+  DCHECK(IsAlgorithmAsymmetric(algorithm));
+
+  blink::WebCryptoKeyUsageMask all_public_key_usages =
+      GetValidKeyUsagesForKeyType(algorithm, blink::WebCryptoKeyTypePublic);
+  blink::WebCryptoKeyUsageMask all_private_key_usages =
+      GetValidKeyUsagesForKeyType(algorithm, blink::WebCryptoKeyTypePrivate);
+
+  if (!ContainsKeyUsages(all_public_key_usages | all_private_key_usages,
+                         combined_usage_mask))
+    return Status::ErrorCreateKeyBadUsages();
+
+  *public_key_usages = combined_usage_mask & all_public_key_usages;
+  *private_key_usages = combined_usage_mask & all_private_key_usages;
+
+  return Status::Success();
 }
 
 }  // namespace
@@ -520,6 +646,11 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
                          blink::WebCryptoKey* key) {
+  Status status =
+      CheckKeyUsages(algorithm.id(), blink::WebCryptoKeyTypeSecret, usage_mask);
+  if (status.IsError())
+    return status;
+
   unsigned int keylen_bytes = 0;
 
   // Get the secret key length in bytes from generation parameters.
@@ -564,9 +695,19 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
 
 Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                        bool extractable,
-                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKeyUsageMask combined_usage_mask,
                        blink::WebCryptoKey* public_key,
                        blink::WebCryptoKey* private_key) {
+  blink::WebCryptoKeyUsageMask public_key_usage_mask = 0;
+  blink::WebCryptoKeyUsageMask private_key_usage_mask = 0;
+
+  Status status = CheckKeyUsagesForGenerateKeyPair(algorithm.id(),
+                                                   combined_usage_mask,
+                                                   &public_key_usage_mask,
+                                                   &private_key_usage_mask);
+  if (status.IsError())
+    return status;
+
   // TODO(padolph): Handle other asymmetric algorithm key generation.
   switch (algorithm.paramsType()) {
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams: {
@@ -582,7 +723,8 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
 
       return platform::GenerateRsaKeyPair(algorithm,
                                           extractable,
-                                          usage_mask,
+                                          public_key_usage_mask,
+                                          private_key_usage_mask,
                                           params->modulusLengthBits(),
                                           publicExponent,
                                           public_key,
@@ -600,6 +742,14 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usage_mask,
                  blink::WebCryptoKey* key) {
+  // This is "best effort" because it is incomplete for JWK (for which the key
+  // type is not yet known). ImportKeyJwk() does extra checks on key usage once
+  // the key type has been determined.
+  Status status =
+      BestEffortCheckKeyUsagesForImport(algorithm.id(), format, usage_mask);
+  if (status.IsError())
+    return status;
+
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
       return ImportKeyRaw(key_data, algorithm, extractable, usage_mask, key);
@@ -750,6 +900,14 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
 
+  // Fail-fast if the key usages don't make sense. This avoids decrypting the
+  // key only to then have import fail. It is "best effort" because when
+  // unwrapping JWK for asymmetric algorithms the key type isn't known yet.
+  Status status =
+      BestEffortCheckKeyUsagesForImport(algorithm.id(), format, usage_mask);
+  if (status.IsError())
+    return status;
+
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
       if (wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
@@ -843,6 +1001,18 @@ Status ToPlatformPrivateKey(const blink::WebCryptoKey& key,
   *out = static_cast<platform::Key*>(key.handle())->AsPrivateKey();
   if (!*out)
     return Status::ErrorUnexpectedKeyType();
+  return Status::Success();
+}
+
+// Returns Status::Success() if |usages| is a valid set of key usages for
+// |algorithm| and |key_type|. Otherwise returns an error.
+Status CheckKeyUsages(blink::WebCryptoAlgorithmId algorithm,
+                      blink::WebCryptoKeyType key_type,
+                      blink::WebCryptoKeyUsageMask usages) {
+  if (!ContainsKeyUsages(GetValidKeyUsagesForKeyType(algorithm, key_type),
+                         usages))
+    return Status::ErrorCreateKeyBadUsages();
+
   return Status::Success();
 }
 

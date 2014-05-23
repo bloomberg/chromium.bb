@@ -198,6 +198,11 @@ Status Status::ErrorGenerateKeyLength() {
                 "bits");
 }
 
+Status Status::ErrorCreateKeyBadUsages() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "Cannot create a key using the specified key usages.");
+}
+
 Status::Status(blink::WebCryptoErrorType error_type,
                const std::string& error_details_utf8)
     : type_(TYPE_ERROR),

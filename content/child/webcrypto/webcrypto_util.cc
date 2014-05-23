@@ -179,9 +179,20 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
+                       blink::WebCryptoKeyUsageMask b) {
+  return (a & b) == b;
+}
+
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
   return alg_id == blink::WebCryptoAlgorithmIdRsaOaep ||
          alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+}
+
+bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id) {
+  // TODO(padolph): include all other asymmetric algorithms once they are
+  // defined, e.g. EC and DH.
+  return IsAlgorithmRsa(alg_id);
 }
 
 }  // namespace webcrypto

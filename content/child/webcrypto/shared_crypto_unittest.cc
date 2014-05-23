@@ -457,7 +457,8 @@ void ImportRsaKeyPair(const std::vector<uint8>& spki_der,
                       const std::vector<uint8>& pkcs8_der,
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
-                      blink::WebCryptoKeyUsageMask usage_mask,
+                      blink::WebCryptoKeyUsageMask public_key_usage_mask,
+                      blink::WebCryptoKeyUsageMask private_key_usage_mask,
                       blink::WebCryptoKey* public_key,
                       blink::WebCryptoKey* private_key) {
   ASSERT_EQ(Status::Success(),
@@ -465,28 +466,28 @@ void ImportRsaKeyPair(const std::vector<uint8>& spki_der,
                       CryptoData(spki_der),
                       algorithm,
                       true,
-                      usage_mask,
+                      public_key_usage_mask,
                       public_key));
   EXPECT_FALSE(public_key->isNull());
   EXPECT_TRUE(public_key->handle());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key->type());
   EXPECT_EQ(algorithm.id(), public_key->algorithm().id());
-  EXPECT_EQ(extractable, extractable);
-  EXPECT_EQ(usage_mask, public_key->usages());
+  EXPECT_TRUE(public_key->extractable());
+  EXPECT_EQ(public_key_usage_mask, public_key->usages());
 
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
                       CryptoData(pkcs8_der),
                       algorithm,
                       extractable,
-                      usage_mask,
+                      private_key_usage_mask,
                       private_key));
   EXPECT_FALSE(private_key->isNull());
   EXPECT_TRUE(private_key->handle());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key->type());
   EXPECT_EQ(algorithm.id(), private_key->algorithm().id());
-  EXPECT_EQ(extractable, extractable);
-  EXPECT_EQ(usage_mask, private_key->usages());
+  EXPECT_EQ(extractable, private_key->extractable());
+  EXPECT_EQ(private_key_usage_mask, private_key->usages());
 }
 
 Status AesGcmEncrypt(const blink::WebCryptoKey& key,
@@ -1216,9 +1217,7 @@ TEST_F(SharedCryptoTest, ImportJwkKeyUsage) {
       {"verify", "HS256", hmac_algorithm, blink::WebCryptoKeyUsageVerify},
       {"wrapKey", "A128KW", aes_kw_algorithm, blink::WebCryptoKeyUsageWrapKey},
       {"unwrapKey", "A128KW", aes_kw_algorithm,
-       blink::WebCryptoKeyUsageUnwrapKey},
-      {"deriveKey", "HS256", hmac_algorithm,
-       blink::WebCryptoKeyUsageDeriveKey}};
+       blink::WebCryptoKeyUsageUnwrapKey}};
   for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(test_case);
        ++test_index) {
     SCOPED_TRACE(test_index);
@@ -1309,13 +1308,11 @@ TEST_F(SharedCryptoTest, ImportJwkKeyUsage) {
                                  blink::WebCryptoKeyUsageDecrypt |
                                      blink::WebCryptoKeyUsageEncrypt |
                                      blink::WebCryptoKeyUsageWrapKey |
-                                     blink::WebCryptoKeyUsageUnwrapKey |
-                                     blink::WebCryptoKeyUsageDeriveKey,
+                                     blink::WebCryptoKeyUsageUnwrapKey,
                                  &key));
   EXPECT_EQ(blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageEncrypt |
                 blink::WebCryptoKeyUsageWrapKey |
-                blink::WebCryptoKeyUsageUnwrapKey |
-                blink::WebCryptoKeyUsageDeriveKey,
+                blink::WebCryptoKeyUsageUnwrapKey,
             key.usages());
 }
 
@@ -1476,22 +1473,22 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
       {CreateRsaHashedImportAlgorithm(
            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
            blink::WebCryptoAlgorithmIdSha1),
-       blink::WebCryptoKeyUsageSign, "RS1"},
+       blink::WebCryptoKeyUsageVerify, "RS1"},
       // RSASSA-PKCS1-v1_5 SHA-256
       {CreateRsaHashedImportAlgorithm(
            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
            blink::WebCryptoAlgorithmIdSha256),
-       blink::WebCryptoKeyUsageSign, "RS256"},
+       blink::WebCryptoKeyUsageVerify, "RS256"},
       // RSASSA-PKCS1-v1_5 SHA-384
       {CreateRsaHashedImportAlgorithm(
            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
            blink::WebCryptoAlgorithmIdSha384),
-       blink::WebCryptoKeyUsageSign, "RS384"},
+       blink::WebCryptoKeyUsageVerify, "RS384"},
       // RSASSA-PKCS1-v1_5 SHA-512
       {CreateRsaHashedImportAlgorithm(
            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
            blink::WebCryptoAlgorithmIdSha512),
-       blink::WebCryptoKeyUsageSign, "RS512"},
+       blink::WebCryptoKeyUsageVerify, "RS512"},
       // RSA-OAEP with SHA-1 and MGF-1 / SHA-1
       {CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep,
                                       blink::WebCryptoAlgorithmIdSha1),
@@ -1546,7 +1543,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkRsaPublicKey)) {
             CryptoData(jwk), test.algorithm, true, test.usage, &public_key2));
     ASSERT_TRUE(public_key2.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key2.type());
-    EXPECT_EQ(true, public_key2.extractable());
+    EXPECT_TRUE(public_key2.extractable());
     EXPECT_EQ(test.algorithm.id(), public_key2.algorithm().id());
 
     // Only perform SPKI consistency test for RSA-SSA as its
@@ -1679,7 +1676,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
             ImportKeyJwk(CryptoData(json_vec),
                          CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                          extractable,
-                         usage_mask,
+                         blink::WebCryptoKeyUsageEncrypt,
                          &key));
 
   // Fail: Input algorithm (HMAC SHA1) is inconsistent with JWK value
@@ -1705,8 +1702,8 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   dict.SetString("alg", "HS256");
 
   // Fail: Input usage_mask (encrypt) is not a subset of the JWK value
-  // (sign|verify)
-  EXPECT_EQ(Status::ErrorJwkUseInconsistent(),
+  // (sign|verify). Moreover "encrypt" is not a valid usage for HMAC.
+  EXPECT_EQ(Status::ErrorCreateKeyBadUsages(),
             ImportKeyJwk(CryptoData(json_vec),
                          algorithm,
                          extractable,
@@ -1714,11 +1711,11 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
                          &key));
 
   // Fail: Input usage_mask (encrypt|sign|verify) is not a subset of the JWK
-  // value (sign|verify)
+  // value (sign|verify). Moreover "encrypt" is not a valid usage for HMAC.
   usage_mask = blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageSign |
                blink::WebCryptoKeyUsageVerify;
   EXPECT_EQ(
-      Status::ErrorJwkUseInconsistent(),
+      Status::ErrorCreateKeyBadUsages(),
       ImportKeyJwk(
           CryptoData(json_vec), algorithm, extractable, usage_mask, &key));
 
@@ -2078,8 +2075,11 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
                 blink::WebCryptoKeyUsageSign,
                 &key));
 
-  // Failing case: Import RSA key but provide an inconsistent input algorithm.
-  EXPECT_EQ(Status::DataError(),
+  // Failing case: Import RSA key but provide an inconsistent input algorithm
+  // and usage. Several issues here:
+  //   * AES-CBC doesn't support PKCS8 key format
+  //   * AES-CBC doesn't support "sign" usage
+  EXPECT_EQ(Status::ErrorCreateKeyBadUsages(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
                       CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
                       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -2414,8 +2414,6 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
 
 TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   // Import a key pair.
-  blink::WebCryptoKeyUsageMask usage_mask =
-      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
   blink::WebCryptoAlgorithm importAlgorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha1);
@@ -2426,7 +2424,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
                        HexStringToBytes(kPrivateKeyPkcs8DerHex),
                        importAlgorithm,
                        false,
-                       usage_mask,
+                       blink::WebCryptoKeyUsageVerify,
+                       blink::WebCryptoKeyUsageSign,
                        &public_key,
                        &private_key));
 
@@ -2483,18 +2482,6 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
                             &signature_match));
   EXPECT_FALSE(signature_match);
 
-  // Ensure that verifying using a private key, rather than a public key, fails.
-  EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
-            VerifySignature(algorithm,
-                            private_key,
-                            CryptoData(signature),
-                            CryptoData(data),
-                            &signature_match));
-
-  // Ensure that signing using a public key, rather than a private key, fails.
-  EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
-            Sign(algorithm, public_key, CryptoData(data), &signature));
-
   // Ensure that signing and verifying with an incompatible algorithm fails.
   algorithm = CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep);
 
@@ -2531,7 +2518,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
                           blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                           blink::WebCryptoAlgorithmIdSha256),
                       true,
-                      usage_mask,
+                      blink::WebCryptoKeyUsageVerify,
                       &public_key_256));
 
   // Now verify using an algorithm whose inner hash is SHA-256, not SHA-1. The
@@ -2565,14 +2552,15 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
                                      blink::WebCryptoAlgorithmIdSha1);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-  ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
-      HexStringToBytes(kPublicKeySpkiDerHex),
-      HexStringToBytes(kPrivateKeyPkcs8DerHex),
-      importAlgorithm,
-      false,
-      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
-      &public_key,
-      &private_key));
+  ASSERT_NO_FATAL_FAILURE(
+      ImportRsaKeyPair(HexStringToBytes(kPublicKeySpkiDerHex),
+                       HexStringToBytes(kPrivateKeyPkcs8DerHex),
+                       importAlgorithm,
+                       false,
+                       blink::WebCryptoKeyUsageVerify,
+                       blink::WebCryptoKeyUsageSign,
+                       &public_key,
+                       &private_key));
 
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5);
@@ -2704,22 +2692,7 @@ TEST_F(SharedCryptoTest, MAYBE(UnwrapFailures)) {
   const std::vector<uint8> test_ciphertext =
       GetBytesFromHexString(test, "ciphertext");
 
-  // Using a key that does not have unwrapKey usage should fail.
-  blink::WebCryptoKey bad_wrapping_key = ImportSecretKeyFromRaw(
-      test_kek,
-      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
-      blink::WebCryptoKeyUsageDecrypt);  // <-- should be UnwrapKey
   blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
-  EXPECT_EQ(
-      Status::ErrorUnexpected(),
-      UnwrapKey(blink::WebCryptoKeyFormatRaw,
-                CryptoData(test_ciphertext),
-                bad_wrapping_key,
-                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
-                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
-                true,
-                blink::WebCryptoKeyUsageEncrypt,
-                &unwrapped_key));
 
   // Using a wrapping algorithm that does not match the wrapping key algorithm
   // should fail.
@@ -3315,14 +3288,14 @@ TEST_F(SharedCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
     blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
     blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
 
-    ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
-        public_key_der,
-        private_key_der,
-        import_algorithm,
-        false,
-        blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
-        &public_key,
-        &private_key));
+    ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(public_key_der,
+                                             private_key_der,
+                                             import_algorithm,
+                                             false,
+                                             blink::WebCryptoKeyUsageEncrypt,
+                                             blink::WebCryptoKeyUsageDecrypt,
+                                             &public_key,
+                                             &private_key));
 
     blink::WebCryptoAlgorithm op_algorithm = CreateRsaOaepAlgorithm(label);
     std::vector<uint8> decrypted_data;
@@ -3497,8 +3470,8 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapRawKey) {
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       import_algorithm,
       false,
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
-          blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
       &public_key,
       &private_key));
 
@@ -3615,8 +3588,8 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
       HexStringToBytes(kPrivateKey2048Pkcs8DerHex),
       import_algorithm,
       false,
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
-          blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
       &public_key,
       &private_key));
 
@@ -3669,6 +3642,322 @@ TEST_F(SharedCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
   EXPECT_BYTES_EQ_HEX(key_hex, raw_key);
+}
+
+// Try importing an RSA-SSA public key with unsupported key usages using SPKI
+// format. RSA-SSA public keys only support the 'verify' usage.
+TEST_F(SharedCryptoTest, MAYBE(ImportRsaSsaPublicKeyBadUsage_SPKI)) {
+  const blink::WebCryptoAlgorithm algorithm =
+      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageSign,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+      blink::WebCryptoKeyUsageEncrypt,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+  };
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              ImportKey(blink::WebCryptoKeyFormatSpki,
+                        CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
+                        algorithm,
+                        false,
+                        bad_usages[i],
+                        &public_key));
+  }
+}
+
+// Try importing an RSA-SSA public key with unsupported key usages using JWK
+// format. RSA-SSA public keys only support the 'verify' usage.
+TEST_F(SharedCryptoTest, MAYBE(ImportRsaSsaPublicKeyBadUsage_JWK)) {
+  const blink::WebCryptoAlgorithm algorithm =
+      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageSign,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+      blink::WebCryptoKeyUsageEncrypt,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+  };
+
+  base::DictionaryValue dict;
+  RestoreJwkRsaDictionary(&dict);
+  dict.Remove("use", NULL);
+  dict.SetString("alg", "RS256");
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              ImportKeyJwkFromDict(
+                  dict, algorithm, false, bad_usages[i], &public_key));
+  }
+}
+
+// Try importing an AES-CBC key with unsupported key usages using raw
+// format. AES-CBC keys support the following usages:
+//   'encrypt', 'decrypt', 'wrapKey', 'unwrapKey'
+TEST_F(SharedCryptoTest, MAYBE(ImportAesCbcKeyBadUsage_Raw)) {
+  const blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageSign,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageDeriveBits,
+      blink::WebCryptoKeyUsageUnwrapKey | blink::WebCryptoKeyUsageVerify,
+  };
+
+  std::vector<uint8> key_bytes(16);
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              ImportKey(blink::WebCryptoKeyFormatRaw,
+                        CryptoData(key_bytes),
+                        algorithm,
+                        true,
+                        bad_usages[i],
+                        &key));
+  }
+}
+
+// Try importing an AES-KW key with unsupported key usages using raw
+// format. AES-KW keys support the following usages:
+//   'wrapKey', 'unwrapKey'
+TEST_F(SharedCryptoTest, MAYBE(ImportAesKwKeyBadUsage_Raw)) {
+  const blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageEncrypt,
+      blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageSign,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageUnwrapKey,
+      blink::WebCryptoKeyUsageDeriveBits,
+      blink::WebCryptoKeyUsageUnwrapKey | blink::WebCryptoKeyUsageVerify,
+  };
+
+  std::vector<uint8> key_bytes(16);
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              ImportKey(blink::WebCryptoKeyFormatRaw,
+                        CryptoData(key_bytes),
+                        algorithm,
+                        true,
+                        bad_usages[i],
+                        &key));
+  }
+}
+
+// Try unwrapping an HMAC key with unsupported usages using JWK format and
+// AES-KW. HMAC keys support the following usages:
+//   'sign', 'verify'
+TEST_F(SharedCryptoTest, MAYBE(UnwrapHmacKeyBadUsage_JWK)) {
+  const blink::WebCryptoAlgorithm unwrap_algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageEncrypt,
+      blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageWrapKey,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageWrapKey,
+      blink::WebCryptoKeyUsageVerify | blink::WebCryptoKeyUsageDeriveKey,
+  };
+
+  // Import the wrapping key.
+  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatRaw,
+                      CryptoData(std::vector<uint8>(16)),
+                      unwrap_algorithm,
+                      true,
+                      blink::WebCryptoKeyUsageUnwrapKey,
+                      &wrapping_key));
+
+  // The JWK plain text is:
+  //   {   "kty": "oct","alg": "HS256","k": "GADWrMRHwQfoNaXU5fZvTg=="}
+  const char* kWrappedJwk =
+      "0AA245F17064FFB2A7A094436A39BEBFC962C627303D1327EA750CE9F917688C2782A943"
+      "7AE7586547AC490E8AE7D5B02D63868D5C3BB57D36C4C8C5BF3962ACEC6F42E767E5706"
+      "4";
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              UnwrapKey(blink::WebCryptoKeyFormatJwk,
+                        CryptoData(HexStringToBytes(kWrappedJwk)),
+                        wrapping_key,
+                        unwrap_algorithm,
+                        webcrypto::CreateHmacImportAlgorithm(
+                            blink::WebCryptoAlgorithmIdSha256),
+                        true,
+                        bad_usages[i],
+                        &key));
+  }
+}
+
+// Try unwrapping an RSA-SSA public key with unsupported usages using JWK format
+// and AES-KW. RSA-SSA public keys support the following usages:
+//   'verify'
+TEST_F(SharedCryptoTest, MAYBE(UnwrapRsaSsaPublicKeyBadUsage_JWK)) {
+  const blink::WebCryptoAlgorithm unwrap_algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageEncrypt,
+      blink::WebCryptoKeyUsageSign,
+      blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageWrapKey,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageWrapKey,
+  };
+
+  // Import the wrapping key.
+  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            ImportKey(blink::WebCryptoKeyFormatRaw,
+                      CryptoData(std::vector<uint8>(16)),
+                      unwrap_algorithm,
+                      true,
+                      blink::WebCryptoKeyUsageUnwrapKey,
+                      &wrapping_key));
+
+  // The JWK plaintext is:
+  // {    "kty": "RSA","alg": "RS256","n": "...","e": "AQAB"}
+
+  const char* kWrappedJwk =
+      "CE8DAEF99E977EE58958B8C4494755C846E883B2ECA575C5366622839AF71AB30875F152"
+      "E8E33E15A7817A3A2874EB53EFE05C774D98BC936BA9BA29BEB8BB3F3C3CE2323CB3359D"
+      "E3F426605CF95CCF0E01E870ABD7E35F62E030B5FB6E520A5885514D1D850FB64B57806D"
+      "1ADA57C6E27DF345D8292D80F6B074F1BE51C4CF3D76ECC8886218551308681B44FAC60B"
+      "8CF6EA439BC63239103D0AE81ADB96F908680586C6169284E32EB7DD09D31103EBDAC0C2"
+      "40C72DCF0AEA454113CC47457B13305B25507CBEAB9BDC8D8E0F867F9167F9DCEF0D9F9B"
+      "30F2EE83CEDFD51136852C8A5939B768";
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              UnwrapKey(blink::WebCryptoKeyFormatJwk,
+                        CryptoData(HexStringToBytes(kWrappedJwk)),
+                        wrapping_key,
+                        unwrap_algorithm,
+                        webcrypto::CreateRsaHashedImportAlgorithm(
+                            blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                            blink::WebCryptoAlgorithmIdSha256),
+                        true,
+                        bad_usages[i],
+                        &key));
+  }
+}
+
+// Generate an AES-CBC key with invalid usages. AES-CBC supports:
+//   'encrypt', 'decrypt', 'wrapKey', 'unwrapKey'
+TEST_F(SharedCryptoTest, MAYBE(GenerateAesKeyBadUsages)) {
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageSign, blink::WebCryptoKeyUsageVerify,
+      blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageVerify,
+  };
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              GenerateSecretKey(
+                  CreateAesCbcKeyGenAlgorithm(128), true, bad_usages[i], &key));
+  }
+}
+
+// Generate an RSA-SSA key pair with invalid usages. RSA-SSA supports:
+//   'sign', 'verify'
+TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaBadUsages)) {
+  blink::WebCryptoKeyUsageMask bad_usages[] = {
+      blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageVerify | blink::WebCryptoKeyUsageDecrypt,
+      blink::WebCryptoKeyUsageWrapKey,
+  };
+
+  const unsigned int modulus_length = 256;
+  const std::vector<uint8> public_exponent = HexStringToBytes("010001");
+
+  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+    SCOPED_TRACE(i);
+
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
+    ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
+              GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
+                                  blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                  blink::WebCryptoAlgorithmIdSha256,
+                                  modulus_length,
+                                  public_exponent),
+                              true,
+                              bad_usages[i],
+                              &public_key,
+                              &private_key));
+  }
+}
+
+// Generate an RSA-SSA key pair. The public and private keys should select the
+// key usages which are applicable, and not have the exact same usages as was
+// specified to GenerateKey
+TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaKeyPairIntersectUsages)) {
+  const unsigned int modulus_length = 256;
+  const std::vector<uint8> public_exponent = HexStringToBytes("010001");
+
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
+  ASSERT_EQ(Status::Success(),
+            GenerateKeyPair(
+                CreateRsaHashedKeyGenAlgorithm(
+                    blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                    blink::WebCryptoAlgorithmIdSha256,
+                    modulus_length,
+                    public_exponent),
+                true,
+                blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+                &public_key,
+                &private_key));
+
+  EXPECT_EQ(blink::WebCryptoKeyUsageVerify, public_key.usages());
+  EXPECT_EQ(blink::WebCryptoKeyUsageSign, private_key.usages());
+
+  // Try again but this time without the Verify usages.
+  ASSERT_EQ(Status::Success(),
+            GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
+                                blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                blink::WebCryptoAlgorithmIdSha256,
+                                modulus_length,
+                                public_exponent),
+                            true,
+                            blink::WebCryptoKeyUsageSign,
+                            &public_key,
+                            &private_key));
+
+  EXPECT_EQ(0, public_key.usages());
+  EXPECT_EQ(blink::WebCryptoKeyUsageSign, private_key.usages());
 }
 
 }  // namespace webcrypto

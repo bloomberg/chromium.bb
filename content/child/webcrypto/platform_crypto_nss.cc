@@ -1440,7 +1440,8 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
 
 Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           bool extractable,
-                          blink::WebCryptoKeyUsageMask usage_mask,
+                          blink::WebCryptoKeyUsageMask public_key_usage_mask,
+                          blink::WebCryptoKeyUsageMask private_key_usage_mask,
                           unsigned int modulus_length_bits,
                           const CryptoData& public_exponent,
                           blink::WebCryptoKey* public_key,
@@ -1523,12 +1524,12 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                                             blink::WebCryptoKeyTypePublic,
                                             true,
                                             key_algorithm,
-                                            usage_mask);
+                                            public_key_usage_mask);
   *private_key = blink::WebCryptoKey::create(private_key_handle.release(),
                                              blink::WebCryptoKeyTypePrivate,
                                              extractable,
                                              key_algorithm,
-                                             usage_mask);
+                                             private_key_usage_mask);
 
   return Status::Success();
 }

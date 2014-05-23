@@ -174,6 +174,12 @@ Status ToPlatformPublicKey(const blink::WebCryptoKey& key,
 Status ToPlatformPrivateKey(const blink::WebCryptoKey& key,
                             platform::PrivateKey** out);
 
+// Returns Staus::Success() if |usages| is valid for |key_type| and |algorithm|.
+// Otherwise returns a failure
+Status CheckKeyUsages(blink::WebCryptoAlgorithmId algorithm,
+                      blink::WebCryptoKeyType key_type,
+                      blink::WebCryptoKeyUsageMask usages);
+
 }  // namespace webcrypto
 
 }  // namespace content

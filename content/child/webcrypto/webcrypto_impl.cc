@@ -134,12 +134,6 @@ void CompleteWithKeyOrError(const Status& status,
   }
 }
 
-bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
-  // TODO(padolph): include all other asymmetric algorithms once they are
-  // defined, e.g. EC and DH.
-  return webcrypto::IsAlgorithmRsa(algorithm.id());
-}
-
 // Gets a task runner for the current thread. The current thread is either:
 //
 //   * The main Blink thread
@@ -405,7 +399,8 @@ void DoGenerateKeyReply(scoped_ptr<GenerateKeyState> state) {
 
 void DoGenerateKey(scoped_ptr<GenerateKeyState> passed_state) {
   GenerateKeyState* state = passed_state.get();
-  state->is_asymmetric = IsAlgorithmAsymmetric(state->algorithm);
+  state->is_asymmetric =
+      webcrypto::IsAlgorithmAsymmetric(state->algorithm.id());
   if (state->is_asymmetric) {
     state->status = webcrypto::GenerateKeyPair(state->algorithm,
                                                state->extractable,
@@ -420,8 +415,6 @@ void DoGenerateKey(scoped_ptr<GenerateKeyState> passed_state) {
       DCHECK_EQ(state->algorithm.id(), state->private_key.algorithm().id());
       DCHECK_EQ(true, state->public_key.extractable());
       DCHECK_EQ(state->extractable, state->private_key.extractable());
-      DCHECK_EQ(state->usage_mask, state->public_key.usages());
-      DCHECK_EQ(state->usage_mask, state->private_key.usages());
     }
   } else {
     blink::WebCryptoKey* key = &state->public_key;

@@ -158,6 +158,7 @@ Status VerifyRsaSsaPkcs1v1_5(PublicKey* key,
 //  * algorithm.id() is for a symmetric key algorithm.
 //  * keylen_bytes is non-zero (TODO(eroman): revisit this).
 //  * For AES algorithms |keylen_bytes| is either 16, 24, or 32 bytes long.
+//  * usage_mask makes sense for the algorithm.
 Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
@@ -170,9 +171,11 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
 //    is in algorithm. They are split out for convenience.
 //  * modulus_length_bits is not 0
 //  * public_exponent is not empty.
+//  * {public|private}_key_usage_mask make sense for the algorithm.
 Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           bool extractable,
-                          blink::WebCryptoKeyUsageMask usage_mask,
+                          blink::WebCryptoKeyUsageMask public_key_usage_mask,
+                          blink::WebCryptoKeyUsageMask private_key_usage_mask,
                           unsigned int modulus_length_bits,
                           const CryptoData& public_exponent,
                           blink::WebCryptoKey* public_key,
@@ -182,6 +185,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
 //  * |key| is non-null.
 //  * |algorithm.id()| is for a symmetric key algorithm.
 //  * For AES algorithms |key_data| is either 16, 24, or 32 bytes long.
+//  * usage_mask makes sense for the algorithm.
 // Note that this may be called from target Blink thread.
 Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
                     const CryptoData& key_data,
@@ -191,6 +195,7 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
 
 // Preconditions:
 //  * algorithm.id() is for an RSA algorithm.
+//  * usage_mask makes sense for the algorithm.
 Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
                           bool extractable,
                           blink::WebCryptoKeyUsageMask usage_mask,
@@ -203,6 +208,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 //  * modulus, public_exponent, and private_exponent will be non-empty. The
 //    others will either all be specified (non-empty), or all be unspecified
 //    (empty).
+//  * usage_mask makes sense for the algorithm.
 Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
                            bool extractable,
                            blink::WebCryptoKeyUsageMask usage_mask,
@@ -217,6 +223,8 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
                            blink::WebCryptoKey* key);
 
 // Note that this may be called from target Blink thread.
+// Preconditions:
+//  * usage_mask makes sense for the algorithm.
 Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      const CryptoData& key_data,
                      bool extractable,
@@ -224,6 +232,8 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm,
                      blink::WebCryptoKey* key);
 
 // Note that this may be called from target Blink thread.
+// Preconditions:
+//  * usage_mask makes sense for the algorithm.
 Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm,
                       const CryptoData& key_data,
                       bool extractable,
@@ -278,6 +288,7 @@ Status WrapSymKeyAesKw(SymKey* key,
 //  * |key| is non-null
 //  * |wrapped_key_data| is at least 24 bytes and a multiple of 8 bytes
 //  * |algorithm.id()| is for a symmetric key algorithm.
+//  * usage_mask makes sense for the algorithm.
 Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
                          SymKey* wrapping_key,
                          const blink::WebCryptoAlgorithm& algorithm,

@@ -71,7 +71,12 @@ bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned int keylen_bytes,
                               blink::WebCryptoKeyAlgorithm* key_algorithm);
 
+// Returns true if the set bits in b make up a subset of the set bits in a.
+bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
+                       blink::WebCryptoKeyUsageMask b);
+
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id);
+bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id);
 
 }  // namespace webcrypto
 
