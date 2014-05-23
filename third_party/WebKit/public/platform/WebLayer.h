@@ -30,6 +30,7 @@
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebFloatPoint3D.h"
 #include "WebPoint.h"
 #include "WebRect.h"
 #include "WebSize.h"
@@ -100,6 +101,9 @@ public:
 
     virtual void setTransform(const SkMatrix44&) = 0;
     virtual SkMatrix44 transform() const = 0;
+
+    virtual void setTransformOrigin(const WebFloatPoint3D&) { }
+    virtual WebFloatPoint3D transformOrigin() const { return WebFloatPoint3D(); }
 
     // Sets whether the layer draws its content when compositing.
     virtual void setDrawsContent(bool) = 0;

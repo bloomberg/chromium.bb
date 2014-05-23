@@ -660,9 +660,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     IntRect relativeCompositingBounds;
     LayoutPoint offsetFromCompositedAncestor;
     IntPoint snappedOffsetFromCompositedAncestor;
-    {
-        computeBoundsOfOwningLayer(compositingContainer, localCompositingBounds, relativeCompositingBounds, offsetFromCompositedAncestor, snappedOffsetFromCompositedAncestor);
-    }
+    computeBoundsOfOwningLayer(compositingContainer, localCompositingBounds, relativeCompositingBounds, offsetFromCompositedAncestor, snappedOffsetFromCompositedAncestor);
 
     IntPoint graphicsLayerParentLocation;
     if (compositingContainer && compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
@@ -750,10 +748,20 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
         // Update properties that depend on layer dimensions
         FloatPoint3D transformOrigin = computeTransformOrigin(IntRect(IntPoint(), layerBounds.size()));
+
+        // |transformOrigin| is in the local space of this layer. layerBounds - relativeCompositingBounds converts to the space of the
+        // compositing bounds relative to the composited ancestor. This does not apply to the z direction, since the page is 2D.
+        FloatPoint3D compositedTransformOrigin(
+            layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x(),
+            layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y(),
+            transformOrigin.z());
+        m_graphicsLayer->setTransformOrigin(transformOrigin);
+
         // Compute the anchor point, which is in the center of the renderer box unless transform-origin is set.
+        // FIXME: get rid of anchor once transformOrigin is plumbed.
         FloatPoint3D anchor(
-            relativeCompositingBounds.width() ? (layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x()) / relativeCompositingBounds.width()  : 0.5f,
-            relativeCompositingBounds.height() ? (layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y()) / relativeCompositingBounds.height() : 0.5f,
+            relativeCompositingBounds.width() ? compositedTransformOrigin.x() / relativeCompositingBounds.width()  : 0.5f,
+            relativeCompositingBounds.height() ? compositedTransformOrigin.y() / relativeCompositingBounds.height() : 0.5f,
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
     } else {

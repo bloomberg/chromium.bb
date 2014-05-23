@@ -152,8 +152,12 @@ public:
 
     // Anchor point: (0, 0) is top left, (1, 1) is bottom right. The anchor point
     // affects the origin of the transforms.
+    // DEPRECATED, to be removed soon.
     const FloatPoint3D& anchorPoint() const { return m_anchorPoint; }
     void setAnchorPoint(const FloatPoint3D&);
+
+    const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
+    void setTransformOrigin(const FloatPoint3D&);
 
     // The size of the layer.
     const FloatSize& size() const { return m_size; }
@@ -344,6 +348,7 @@ private:
     FloatPoint m_boundsOrigin;
 
     TransformationMatrix m_transform;
+    FloatPoint3D m_transformOrigin;
 
     Color m_backgroundColor;
     float m_opacity;

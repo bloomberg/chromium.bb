@@ -835,6 +835,12 @@ void GraphicsLayer::setTransform(const TransformationMatrix& transform)
     platformLayer()->setTransform(TransformationMatrix::toSkMatrix44(m_transform));
 }
 
+void GraphicsLayer::setTransformOrigin(const FloatPoint3D& transformOrigin)
+{
+    m_transformOrigin = transformOrigin;
+    platformLayer()->setTransformOrigin(transformOrigin);
+}
+
 void GraphicsLayer::setShouldFlattenTransform(bool shouldFlatten)
 {
     if (shouldFlatten == m_shouldFlattenTransform)
