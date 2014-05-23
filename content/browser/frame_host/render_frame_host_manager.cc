@@ -553,6 +553,10 @@ void RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance(
     pending_delete_hosts_.erase(site_instance_id);
 }
 
+void RenderFrameHostManager::ResetProxyHosts() {
+  STLDeleteValues(&proxy_hosts_);
+}
+
 void RenderFrameHostManager::Observe(
     int type,
     const NotificationSource& source,
@@ -905,6 +909,7 @@ int RenderFrameHostManager::CreateRenderFrame(
   DCHECK(!swapped_out || hidden); // Swapped out views should always be hidden.
 
   scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
+  RenderFrameHostImpl* frame_to_announce = NULL;
   int routing_id = MSG_ROUTING_NONE;
 
   // We are creating a pending or swapped out RFH here.  We should never create
@@ -958,6 +963,7 @@ int RenderFrameHostManager::CreateRenderFrame(
     RenderViewHostImpl* render_view_host =
         new_render_frame_host->render_view_host();
     int proxy_routing_id = MSG_ROUTING_NONE;
+    frame_to_announce = new_render_frame_host.get();
 
     // Prevent the process from exiting while we're trying to navigate in it.
     // Otherwise, if the new RFH is swapped out already, store it.
@@ -986,6 +992,10 @@ int RenderFrameHostManager::CreateRenderFrame(
   // Use this as our new pending RFH if it isn't swapped out.
   if (!swapped_out)
     pending_render_frame_host_ = new_render_frame_host.Pass();
+
+  // If a brand new RFH was created, announce it to observers.
+  if (frame_to_announce)
+    render_frame_delegate_->RenderFrameCreated(frame_to_announce);
 
   return routing_id;
 }

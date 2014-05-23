@@ -211,28 +211,10 @@ bool ForEachFrameInternal(
   return true;
 }
 
-bool ForEachPendingFrameInternal(
-    const base::Callback<void(RenderFrameHost*)>& on_frame,
-    FrameTreeNode* node) {
-  RenderFrameHost* pending_frame_host =
-      node->render_manager()->pending_frame_host();
-  if (pending_frame_host)
-    on_frame.Run(pending_frame_host);
-  return true;
-}
-
 void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
   IPC::Message* message_copy = new IPC::Message(*message);
   message_copy->set_routing_id(rfh->GetRoutingID());
   rfh->Send(message_copy);
-}
-
-void RunRenderFrameDeleted(
-    ObserverList<WebContentsObserver>* observer_list,
-    RenderFrameHost* render_frame_host) {
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    *observer_list,
-                    RenderFrameDeleted(render_frame_host));
 }
 
 }  // namespace
@@ -401,23 +383,30 @@ WebContentsImpl::~WebContentsImpl() {
       Source<WebContents>(this),
       NotificationService::NoDetails());
 
-  base::Callback<void(RenderFrameHost*)> run_render_frame_deleted_callback =
-      base::Bind(&RunRenderFrameDeleted, base::Unretained(&observers_));
-  frame_tree_.ForEach(base::Bind(&ForEachPendingFrameInternal,
-                                 run_render_frame_deleted_callback));
+  // Destroy all frame tree nodes except for the root; this notifies observers.
+  frame_tree_.ResetForMainFrameSwap();
+  GetRenderManager()->ResetProxyHosts();
 
-  RenderViewHost* pending_rvh = GetRenderManager()->pending_render_view_host();
-  if (pending_rvh) {
+  // Manually call the observer methods for the root frame tree node.
+  RenderFrameHostManager* root = GetRenderManager();
+  if (root->pending_frame_host()) {
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
-                      RenderViewDeleted(pending_rvh));
+                      RenderFrameDeleted(root->pending_frame_host()));
   }
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    RenderFrameDeleted(root->current_frame_host()));
 
-  ForEachFrame(run_render_frame_deleted_callback);
+  if (root->pending_render_view_host()) {
+    FOR_EACH_OBSERVER(WebContentsObserver,
+                      observers_,
+                      RenderViewDeleted(root->pending_render_view_host()));
+  }
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    RenderViewDeleted(GetRenderManager()->current_host()));
+                    RenderViewDeleted(root->current_host()));
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,

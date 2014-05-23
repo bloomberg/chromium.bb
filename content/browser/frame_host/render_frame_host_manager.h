@@ -231,6 +231,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Helper method to create and initialize a RenderFrameHost.  If |swapped_out|
   // is true, it will be initially placed on the swapped out hosts list.
   // Otherwise, it will be used for a pending cross-site navigation.
+  // Returns the routing id of the *view* associated with the frame.
   int CreateRenderFrame(SiteInstance* instance,
                         int opener_route_id,
                         bool swapped_out,
@@ -280,6 +281,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Deletes a RenderFrameHost that was pending shutdown.
   void ClearPendingShutdownRFHForSiteInstance(int32 site_instance_id,
                                               RenderFrameHostImpl* rfh);
+
+  // Deletes any proxy hosts associated with this node. Used during destruction
+  // of WebContentsImpl.
+  void ResetProxyHosts();
 
  private:
   friend class RenderFrameHostManagerTest;
