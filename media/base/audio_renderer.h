@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -21,6 +22,9 @@ class MEDIA_EXPORT AudioRenderer {
   // Second parameter is the maximum time value that the clock cannot exceed.
   typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
 
+  // Used to indicate changes in the buffering state of this audio renderer.
+  typedef base::Callback<void(BufferingState)> BufferingStateCB;
+
   AudioRenderer();
   virtual ~AudioRenderer();
 
@@ -29,12 +33,10 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |statistics_cb| is executed periodically with audio rendering stats.
   //
-  // |underflow_cb| is executed when the renderer runs out of data to pass to
-  // the audio card during playback. ResumeAfterUnderflow() must be called
-  // to resume playback. Pause(), Preroll(), or Stop() cancels the underflow
-  // condition.
-  //
   // |time_cb| is executed whenever time has advanced by way of audio rendering.
+  //
+  // |buffering_state_cb| is executed when audio rendering has either ran out of
+  // data or has enough data to continue playback.
   //
   // |ended_cb| is executed when audio rendering has reached the end of stream.
   //
@@ -42,8 +44,8 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
-                          const base::Closure& underflow_cb,
                           const TimeCB& time_cb,
+                          const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) = 0;
 
@@ -56,14 +58,16 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void StopRendering() = 0;
 
   // Discard any audio data, executing |callback| when completed.
+  //
+  // Clients should expect |buffering_state_cb| to be called with
+  // BUFFERING_HAVE_NOTHING while flushing is in progress.
   virtual void Flush(const base::Closure& callback) = 0;
 
-  // Start prerolling audio data for samples starting at |time|, executing
-  // |callback| when completed.
+  // Starts playback by reading from |stream| and decoding and rendering audio.
+  // |timestamp| is the media timestamp playback should start rendering from.
   //
   // Only valid to call after a successful Initialize() or Flush().
-  virtual void Preroll(base::TimeDelta time,
-                       const PipelineStatusCB& callback) = 0;
+  virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
 
   // Stop all operations in preparation for being deleted, executing |callback|
   // when complete.
@@ -74,9 +78,6 @@ class MEDIA_EXPORT AudioRenderer {
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
-
-  // Resumes playback after underflow occurs.
-  virtual void ResumeAfterUnderflow() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRenderer);

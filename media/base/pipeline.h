@@ -309,8 +309,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void DoStop(const PipelineStatusCB& done_cb);
   void OnStopCompleted(PipelineStatus status);
 
-  void OnAudioUnderflow();
-
   // Collection of callback methods and helpers for tracking changes in
   // buffering state and transition from paused/underflow states and playing
   // states.
@@ -319,11 +317,11 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //   - A waiting to non-waiting transition indicates preroll has completed
   //     and StartPlayback() should be called
   //   - A non-waiting to waiting transition indicates underflow has occurred
-  //     and StartWaitingForEnoughData() should be called
+  //     and PausePlayback() should be called
   void BufferingStateChanged(BufferingState* buffering_state,
                              BufferingState new_buffering_state);
   bool WaitingForEnoughData() const;
-  void StartWaitingForEnoughData();
+  void PausePlayback();
   void StartPlayback();
 
   void PauseClockAndStopRendering_Locked();

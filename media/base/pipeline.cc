@@ -414,6 +414,10 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       PlaybackRateChangedTask(GetPlaybackRate());
       VolumeChangedTask(GetVolume());
 
+      // Handle renderers that immediately signal they have enough data.
+      if (!WaitingForEnoughData())
+        StartPlayback();
+
       // We enter this state from either kInitPrerolling or kSeeking. As of now
       // both those states call Preroll(), which means by time we enter this
       // state we've already buffered enough data. Forcefully update the
@@ -422,11 +426,10 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       //
       // TODO(scherkus): Remove after renderers are taught to fire buffering
       // state callbacks http://crbug.com/144683
-      DCHECK(WaitingForEnoughData());
-      if (audio_renderer_)
-        BufferingStateChanged(&audio_buffering_state_, BUFFERING_HAVE_ENOUGH);
-      if (video_renderer_)
+      if (video_renderer_) {
+        DCHECK(WaitingForEnoughData());
         BufferingStateChanged(&video_buffering_state_, BUFFERING_HAVE_ENOUGH);
+      }
       return;
 
     case kStopping:
@@ -453,9 +456,9 @@ void Pipeline::DoInitialPreroll(const PipelineStatusCB& done_cb) {
 
   // Preroll renderers.
   if (audio_renderer_) {
-    bound_fns.Push(base::Bind(
-        &AudioRenderer::Preroll, base::Unretained(audio_renderer_.get()),
-        seek_timestamp));
+    bound_fns.Push(base::Bind(&AudioRenderer::StartPlayingFrom,
+                              base::Unretained(audio_renderer_.get()),
+                              seek_timestamp));
   }
 
   if (video_renderer_) {
@@ -477,6 +480,14 @@ void Pipeline::DoInitialPreroll(const PipelineStatusCB& done_cb) {
   pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
+#if DCHECK_IS_ON
+static void VerifyBufferingStates(BufferingState* audio_buffering_state,
+                                  BufferingState* video_buffering_state) {
+  DCHECK_EQ(*audio_buffering_state, BUFFERING_HAVE_NOTHING);
+  DCHECK_EQ(*video_buffering_state, BUFFERING_HAVE_NOTHING);
+}
+#endif
+
 void Pipeline::DoSeek(
     base::TimeDelta seek_timestamp,
     const PipelineStatusCB& done_cb) {
@@ -494,14 +505,8 @@ void Pipeline::DoSeek(
   if (audio_renderer_) {
     bound_fns.Push(base::Bind(
         &AudioRenderer::Flush, base::Unretained(audio_renderer_.get())));
-
-    // TODO(scherkus): Remove after AudioRenderer is taught to fire buffering
-    // state callbacks http://crbug.com/144683
-    bound_fns.Push(base::Bind(&Pipeline::BufferingStateChanged,
-                              base::Unretained(this),
-                              &audio_buffering_state_,
-                              BUFFERING_HAVE_NOTHING));
   }
+
   if (video_renderer_) {
     bound_fns.Push(base::Bind(
         &VideoRenderer::Flush, base::Unretained(video_renderer_.get())));
@@ -513,6 +518,14 @@ void Pipeline::DoSeek(
                               &video_buffering_state_,
                               BUFFERING_HAVE_NOTHING));
   }
+
+#if DCHECK_IS_ON
+  // Verify renderers reset their buffering states.
+  bound_fns.Push(base::Bind(&VerifyBufferingStates,
+                            &audio_buffering_state_,
+                            &video_buffering_state_));
+#endif
+
   if (text_renderer_) {
     bound_fns.Push(base::Bind(
         &TextRenderer::Flush, base::Unretained(text_renderer_.get())));
@@ -524,9 +537,9 @@ void Pipeline::DoSeek(
 
   // Preroll renderers.
   if (audio_renderer_) {
-    bound_fns.Push(base::Bind(
-        &AudioRenderer::Preroll, base::Unretained(audio_renderer_.get()),
-        seek_timestamp));
+    bound_fns.Push(base::Bind(&AudioRenderer::StartPlayingFrom,
+                              base::Unretained(audio_renderer_.get()),
+                              seek_timestamp));
   }
 
   if (video_renderer_) {
@@ -856,8 +869,9 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
       demuxer_->GetStream(DemuxerStream::AUDIO),
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, base::Unretained(this)),
-      base::Bind(&Pipeline::OnAudioUnderflow, base::Unretained(this)),
       base::Bind(&Pipeline::OnAudioTimeUpdate, base::Unretained(this)),
+      base::Bind(&Pipeline::BufferingStateChanged, base::Unretained(this),
+                 &audio_buffering_state_),
       base::Bind(&Pipeline::OnAudioRendererEnded, base::Unretained(this)),
       base::Bind(&Pipeline::SetError, base::Unretained(this)));
 }
@@ -878,20 +892,6 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::GetMediaDuration, base::Unretained(this)));
 }
 
-void Pipeline::OnAudioUnderflow() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &Pipeline::OnAudioUnderflow, base::Unretained(this)));
-    return;
-  }
-
-  if (state_ != kPlaying)
-    return;
-
-  if (audio_renderer_)
-    audio_renderer_->ResumeAfterUnderflow();
-}
-
 void Pipeline::BufferingStateChanged(BufferingState* buffering_state,
                                      BufferingState new_buffering_state) {
   DVLOG(1) << __FUNCTION__ << "(" << *buffering_state << ", "
@@ -903,7 +903,7 @@ void Pipeline::BufferingStateChanged(BufferingState* buffering_state,
 
   // Renderer underflowed.
   if (!was_waiting_for_enough_data && WaitingForEnoughData()) {
-    StartWaitingForEnoughData();
+    PausePlayback();
     return;
   }
 
@@ -925,10 +925,11 @@ bool Pipeline::WaitingForEnoughData() const {
   return false;
 }
 
-void Pipeline::StartWaitingForEnoughData() {
+void Pipeline::PausePlayback() {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, kPlaying);
   DCHECK(WaitingForEnoughData());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   PauseClockAndStopRendering_Locked();
@@ -939,6 +940,7 @@ void Pipeline::StartPlayback() {
   DCHECK_EQ(state_, kPlaying);
   DCHECK_EQ(clock_state_, CLOCK_PAUSED);
   DCHECK(!WaitingForEnoughData());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_) {
     // We use audio stream to update the clock. So if there is such a
