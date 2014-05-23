@@ -186,7 +186,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
         CString data = message.utf8();
         InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, data.data(), data.length());
     }
-    m_messages.append(Message(message));
+    m_messages.append(adoptPtr(new Message(message)));
     sendInternal();
     return SendSuccess;
 }
@@ -202,7 +202,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
         // affect actual behavior.
         InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, "", 0);
     }
-    m_messages.append(Message(blobDataHandle));
+    m_messages.append(adoptPtr(new Message(blobDataHandle)));
     sendInternal();
     return SendSuccess;
 }
@@ -216,7 +216,22 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& bu
         InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, static_cast<const char*>(buffer.data()) + byteOffset, byteLength);
     }
     // buffer.slice copies its contents.
-    m_messages.append(buffer.slice(byteOffset, byteOffset + byteLength));
+    // FIXME: Reduce copy by sending the data immediately when we don't need to
+    // queue the data.
+    m_messages.append(adoptPtr(new Message(buffer.slice(byteOffset, byteOffset + byteLength))));
+    sendInternal();
+    return SendSuccess;
+}
+
+WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassOwnPtr<Vector<char> > data)
+{
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, data->data(), data->size());
+    }
+    m_messages.append(adoptPtr(new Message(data)));
     sendInternal();
     return SendSuccess;
 }
@@ -290,34 +305,48 @@ NewWebSocketChannelImpl::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
     : type(MessageTypeArrayBuffer)
     , arrayBuffer(arrayBuffer) { }
 
+NewWebSocketChannelImpl::Message::Message(PassOwnPtr<Vector<char> > vectorData)
+    : type(MessageTypeVector)
+    , vectorData(vectorData) { }
+
 void NewWebSocketChannelImpl::sendInternal()
 {
     ASSERT(m_handle);
     unsigned long bufferedAmount = m_bufferedAmount;
     while (!m_messages.isEmpty() && m_sendingQuota > 0 && !m_blobLoader) {
         bool final = false;
-        const Message& message = m_messages.first();
-        switch (message.type) {
+        Message* message = m_messages.first().get();
+        switch (message->type) {
         case MessageTypeText: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeText;
-            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.text.length() - m_sentSizeOfTopMessage);
-            final = (m_sentSizeOfTopMessage + size == message.text.length());
-            m_handle->send(final, type, message.text.data() + m_sentSizeOfTopMessage, size);
+            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->text.length() - m_sentSizeOfTopMessage);
+            final = (m_sentSizeOfTopMessage + size == message->text.length());
+            m_handle->send(final, type, message->text.data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             break;
         }
         case MessageTypeBlob:
             ASSERT(!m_blobLoader);
-            m_blobLoader = adoptPtrWillBeNoop(new BlobLoader(message.blobDataHandle, this));
+            m_blobLoader = adoptPtrWillBeNoop(new BlobLoader(message->blobDataHandle, this));
             break;
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
-            final = (m_sentSizeOfTopMessage + size == message.arrayBuffer->byteLength());
-            m_handle->send(final, type, static_cast<const char*>(message.arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
+            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
+            final = (m_sentSizeOfTopMessage + size == message->arrayBuffer->byteLength());
+            m_handle->send(final, type, static_cast<const char*>(message->arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
+            m_sentSizeOfTopMessage += size;
+            m_sendingQuota -= size;
+            break;
+        }
+        case MessageTypeVector: {
+            WebSocketHandle::MessageType type =
+                m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
+            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->vectorData->size() - m_sentSizeOfTopMessage);
+            final = (m_sentSizeOfTopMessage + size == message->vectorData->size());
+            m_handle->send(final, type, message->vectorData->data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             break;
@@ -510,9 +539,9 @@ void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffe
     m_blobLoader.clear();
     ASSERT(m_handle);
     // The loaded blob is always placed on m_messages[0].
-    ASSERT(m_messages.size() > 0 && m_messages.first().type == MessageTypeBlob);
+    ASSERT(m_messages.size() > 0 && m_messages.first()->type == MessageTypeBlob);
     // We replace it with the loaded blob.
-    m_messages.first() = Message(buffer);
+    m_messages.first() = adoptPtr(new Message(buffer));
     sendInternal();
 }
 

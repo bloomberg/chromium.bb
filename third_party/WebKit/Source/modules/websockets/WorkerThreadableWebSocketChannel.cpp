@@ -297,14 +297,7 @@ void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<c
     if (!m_mainWebSocketChannel) {
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
-        RefPtr<ArrayBuffer> binaryData = ArrayBuffer::create(data->data(), data->size());
-        if (!binaryData) {
-            // Failed to allocate an ArrayBuffer. We need to crash the renderer
-            // since there's no way defined in the spec to tell this to the
-            // user.
-            CRASH();
-        }
-        WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(*binaryData, 0, binaryData->byteLength());
+        WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(data);
         m_syncHelper->setSendRequestResult(sendRequestResult);
     }
     m_syncHelper->signalWorkerThread();

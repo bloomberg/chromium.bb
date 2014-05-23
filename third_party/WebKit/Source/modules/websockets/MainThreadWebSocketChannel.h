@@ -69,8 +69,6 @@ public:
     }
     virtual ~MainThreadWebSocketChannel();
 
-    bool send(const char* data, int length);
-
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) OVERRIDE;
     virtual String subprotocol() OVERRIDE;
@@ -78,6 +76,7 @@ public:
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> > data) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
@@ -149,6 +148,7 @@ private:
     };
     void enqueueTextFrame(const CString&);
     void enqueueRawFrame(WebSocketFrame::OpCode, const char* data, size_t dataLength);
+    void enqueueVector(WebSocketFrame::OpCode, PassOwnPtr<Vector<char> >);
     void enqueueBlobFrame(WebSocketFrame::OpCode, PassRefPtr<BlobDataHandle>);
 
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }

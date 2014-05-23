@@ -43,6 +43,7 @@
 #include "wtf/Deque.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -82,6 +83,7 @@ public:
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
     virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(PassOwnPtr<Vector<char> > data) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
@@ -100,16 +102,21 @@ private:
         MessageTypeText,
         MessageTypeBlob,
         MessageTypeArrayBuffer,
+        MessageTypeVector,
     };
 
     struct Message {
         explicit Message(const String&);
         explicit Message(PassRefPtr<BlobDataHandle>);
         explicit Message(PassRefPtr<ArrayBuffer>);
+        explicit Message(PassOwnPtr<Vector<char> >);
+
         MessageType type;
+
         CString text;
         RefPtr<BlobDataHandle> blobDataHandle;
         RefPtr<ArrayBuffer> arrayBuffer;
+        OwnPtr<Vector<char> > vectorData;
     };
 
     struct ReceivedMessage {
@@ -156,7 +163,7 @@ private:
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;
     OwnPtrWillBeMember<BlobLoader> m_blobLoader;
-    Deque<Message> m_messages;
+    Deque<OwnPtr<Message> > m_messages;
     Vector<char> m_receivingMessageData;
 
     bool m_receivingMessageTypeIsText;

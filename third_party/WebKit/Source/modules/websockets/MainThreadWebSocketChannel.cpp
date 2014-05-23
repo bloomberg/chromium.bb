@@ -167,12 +167,12 @@ WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassRefPtr<BlobDat
     return WebSocketChannel::SendSuccess;
 }
 
-bool MainThreadWebSocketChannel::send(const char* data, int length)
+WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassOwnPtr<Vector<char> > data)
 {
-    WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending char* data=%p length=%d", this, data, length);
-    enqueueRawFrame(WebSocketFrame::OpCodeBinary, data, length);
+    WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending Vector %p", this, data.get());
+    enqueueVector(WebSocketFrame::OpCodeBinary, data);
     processOutgoingFrameQueue();
-    return true;
+    return WebSocketChannel::SendSuccess;
 }
 
 unsigned long MainThreadWebSocketChannel::bufferedAmount() const
@@ -732,6 +732,7 @@ bool MainThreadWebSocketChannel::processFrame()
 void MainThreadWebSocketChannel::enqueueTextFrame(const CString& string)
 {
     ASSERT(m_outgoingFrameQueueStatus == OutgoingFrameQueueOpen);
+
     OwnPtr<QueuedFrame> frame = adoptPtr(new QueuedFrame);
     frame->opCode = WebSocketFrame::OpCodeText;
     frame->frameType = QueuedFrameTypeString;
@@ -742,6 +743,7 @@ void MainThreadWebSocketChannel::enqueueTextFrame(const CString& string)
 void MainThreadWebSocketChannel::enqueueRawFrame(WebSocketFrame::OpCode opCode, const char* data, size_t dataLength)
 {
     ASSERT(m_outgoingFrameQueueStatus == OutgoingFrameQueueOpen);
+
     OwnPtr<QueuedFrame> frame = adoptPtr(new QueuedFrame);
     frame->opCode = opCode;
     frame->frameType = QueuedFrameTypeVector;
@@ -751,9 +753,21 @@ void MainThreadWebSocketChannel::enqueueRawFrame(WebSocketFrame::OpCode opCode, 
     m_outgoingFrameQueue.append(frame.release());
 }
 
+void MainThreadWebSocketChannel::enqueueVector(WebSocketFrame::OpCode opCode, PassOwnPtr<Vector<char> > data)
+{
+    ASSERT(m_outgoingFrameQueueStatus == OutgoingFrameQueueOpen);
+
+    OwnPtr<QueuedFrame> frame = adoptPtr(new QueuedFrame);
+    frame->opCode = opCode;
+    frame->frameType = QueuedFrameTypeVector;
+    frame->vectorData.swap(*data);
+    m_outgoingFrameQueue.append(frame.release());
+}
+
 void MainThreadWebSocketChannel::enqueueBlobFrame(WebSocketFrame::OpCode opCode, PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(m_outgoingFrameQueueStatus == OutgoingFrameQueueOpen);
+
     OwnPtr<QueuedFrame> frame = adoptPtr(new QueuedFrame);
     frame->opCode = opCode;
     frame->frameType = QueuedFrameTypeBlob;
