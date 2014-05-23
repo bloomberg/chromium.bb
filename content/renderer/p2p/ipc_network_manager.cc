@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
 #include "base/sys_byteorder.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
@@ -76,8 +75,6 @@ void IpcNetworkManager::OnNetworkListChanged(
   // talk_base::Network uses these prefix_length to compare network
   // interfaces discovered.
   std::vector<talk_base::Network*> networks;
-  int ipv4_interfaces = 0;
-  int ipv6_interfaces = 0;
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     if (it->address.size() == net::kIPv4AddressSize) {
@@ -89,7 +86,6 @@ void IpcNetworkManager::OnNetworkListChanged(
           ConvertConnectionTypeToAdapterType(it->type));
       network->AddIP(talk_base::IPAddress(address));
       networks.push_back(network);
-      ++ipv4_interfaces;
     } else if (it->address.size() == net::kIPv6AddressSize) {
       in6_addr address;
       memcpy(&address, &it->address[0], sizeof(in6_addr));
@@ -100,19 +96,8 @@ void IpcNetworkManager::OnNetworkListChanged(
             ConvertConnectionTypeToAdapterType(it->type));
         network->AddIP(ip6_addr);
         networks.push_back(network);
-        ++ipv6_interfaces;
       }
     }
-  }
-
-  if (ipv4_interfaces > 0) {
-    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv4Interfaces",
-                             ipv4_interfaces);
-  }
-
-  if (ipv6_interfaces > 0) {
-    UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
-                             ipv6_interfaces);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
