@@ -13,6 +13,9 @@ import file_tools
 import log_tools
 import platform
 
+class InvalidRepoException(Exception):
+  def __init__(self, msg, *args):
+    Exception.__init__(self, msg % args)
 
 def GitCmd():
   """Return the git command to execute for the host platform."""
@@ -67,7 +70,7 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False):
       logging.error('Invalid git repo: %s', directory)
 
     if not clobber_mismatch:
-      raise Exception('Invalid local git repo: %s' % directory)
+      raise InvalidRepoException('Invalid local git repo: %s', directory)
     else:
       logging.debug('Clobbering invalid git repo %s' % directory)
       file_tools.RemoveDirectoryIfPresent(directory)
@@ -94,7 +97,8 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
     if not IsURLInRemoteRepoList(url, destination, include_fetch=True,
                                  include_push=False):
       logging.error('Git Repo (%s) does not track URL: %s', destination, url)
-      raise Exception('Could not sync local git repo: %s' % destination)
+      raise InvalidRepoException('Could not sync local git repo: %s',
+                                 destination)
 
   if reclone:
     logging.debug('Clobbering source directory %s' % destination)

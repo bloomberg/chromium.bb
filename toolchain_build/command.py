@@ -325,8 +325,24 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                                       clobber_mismatch=True)
 
   def sync(subst, url, dest, revision, reclone, clean, pathspec):
-    pynacl.repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
-                                  reclone, clean, pathspec)
+    abs_dest = subst.SubstituteAbsPaths(dest)
+    try:
+      pynacl.repo_tools.SyncGitRepo(url, abs_dest, revision, reclone, clean,
+                                    pathspec)
+    except pynacl.repo_tools.InvalidRepoException, e:
+      logging.error('Invalid Git Repo: %s' % e)
+      remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest))
+      tracked_url = remote_repos.get('origin', 'None')
+      logging.error('Destination Directory: %s', abs_dest)
+      logging.error('Currently Tracked Repo: %s', tracked_url)
+      logging.error('Expected Repo: %s', url)
+      logging.warn('Possible solutions:')
+      logging.warn('  1. The simplest way if you have no local changes is to'
+                   ' simply delete the directory and let the tool resync.')
+      logging.warn('  2. If the tracked repo is merely a mirror, simply go to'
+                   ' the directory and run "git remote set-url origin %s"',
+                   url)
+      raise Exception('Could not validate local git repository.')
 
   def ClobberInvalidRepoCondition(cmd_opts):
     # Check if caller passed their own run_cond
