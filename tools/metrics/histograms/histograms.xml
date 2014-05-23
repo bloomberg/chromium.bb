@@ -13581,6 +13581,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.MaxReordering">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The maximum packet sequence number reordering observed by a QUIC connection.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.MaxReorderingTime" units="percent">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The ratio of the maximum reordering time of a QUIC packet to the min rtt.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.MaxReorderingTimeLongRtt" units="percent">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The ratio of the maximum reordering time of a QUIC packet to the min rtt,
+    only for those sessions with a min rtt larger than 100 ms.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.NumOpenStreams">
   <owner>rch@chromium.org</owner>
   <summary>
