@@ -875,6 +875,11 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
   default_search_manager_.ClearUserSelectedDefaultSearchEngine();
 
   if (!default_search_provider_) {
+    // If the default search provider came from a user pref we would have been
+    // notified of the new (fallback-provided) value in
+    // ClearUserSelectedDefaultSearchEngine() above. Since we are here, the
+    // value was presumably originally a fallback value (which may have been
+    // repaired).
     DefaultSearchManager::Source source;
     const TemplateURLData* new_dse =
         default_search_manager_.GetDefaultSearchEngine(&source);
@@ -1677,9 +1682,10 @@ void TemplateURLService::ChangeToLoadedState() {
   loaded_ = true;
 
   // This will cause a call to NotifyObservers().
-  ApplyDefaultSearchChange(initial_default_search_provider_ ?
-                               &initial_default_search_provider_->data() : NULL,
-                           default_search_provider_source_);
+  ApplyDefaultSearchChangeNoMetrics(
+      initial_default_search_provider_ ?
+          &initial_default_search_provider_->data() : NULL,
+      default_search_provider_source_);
   initial_default_search_provider_.reset();
   on_loaded_callbacks_.Notify();
 }
@@ -1941,15 +1947,35 @@ void TemplateURLService::OnDefaultSearchChange(
 void TemplateURLService::ApplyDefaultSearchChange(
     const TemplateURLData* data,
     DefaultSearchManager::Source source) {
+  if (!ApplyDefaultSearchChangeNoMetrics(data, source))
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Search.DefaultSearchChangeOrigin", dsp_change_origin_, DSP_CHANGE_MAX);
+
+  if (GetDefaultSearchProvider() &&
+      GetDefaultSearchProvider()->HasGoogleBaseURLs()) {
+#if defined(ENABLE_RLZ)
+    RLZTracker::RecordProductEvent(
+        rlz_lib::CHROME, RLZTracker::ChromeOmnibox(), rlz_lib::SET_TO_GOOGLE);
+#endif
+  }
+}
+
+bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
+    const TemplateURLData* data,
+    DefaultSearchManager::Source source) {
   if (!loaded_) {
     // Set |initial_default_search_provider_| from the preferences. This is
     // mainly so we can hold ownership until we get to the point where the list
     // of keywords from Web Data is the owner of everything including the
     // default.
+    bool changed =
+        TemplateURL::MatchesData(initial_default_search_provider_.get(), data);
     initial_default_search_provider_.reset(
         data ? new TemplateURL(profile_, *data) : NULL);
     default_search_provider_source_ = source;
-    return;
+    return changed;
   }
 
   // Prevent recursion if we update the value stored in default_search_manager_.
@@ -1958,10 +1984,11 @@ void TemplateURLService::ApplyDefaultSearchChange(
   // NULL due to policy. We'll never actually get recursion with data == NULL.
   if (source == default_search_provider_source_ && data != NULL &&
       TemplateURL::MatchesData(default_search_provider_, data))
-    return;
+    return false;
 
-  UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchChangeOrigin",
-                            dsp_change_origin_, DSP_CHANGE_MAX);
+  // This may be deleted later. Use exclusively for pointer comparison to detect
+  // a change.
+  TemplateURL* previous_default_search_engine = default_search_provider_;
 
   WebDataService::KeywordBatchModeScoper keyword_scoper(service_.get());
   if (default_search_provider_source_ == DefaultSearchManager::FROM_POLICY ||
@@ -1975,17 +2002,10 @@ void TemplateURLService::ApplyDefaultSearchChange(
 
   if (!data) {
     default_search_provider_ = NULL;
-    default_search_provider_source_ = source;
-    NotifyObservers();
-    return;
-  }
-
-  if (source == DefaultSearchManager::FROM_EXTENSION) {
+  } else if (source == DefaultSearchManager::FROM_EXTENSION) {
     default_search_provider_ = FindMatchingExtensionTemplateURL(
         *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  }
-
-  if (source == DefaultSearchManager::FROM_FALLBACK) {
+  } else if (source == DefaultSearchManager::FROM_FALLBACK) {
     default_search_provider_ =
         FindPrepopulatedTemplateURL(data->prepopulate_id);
     if (default_search_provider_) {
@@ -2011,8 +2031,7 @@ void TemplateURLService::ApplyDefaultSearchChange(
       if (AddNoNotify(new_dse, true))
         default_search_provider_ = new_dse;
     }
-  }
-  if (source == DefaultSearchManager::FROM_USER) {
+  } else if (source == DefaultSearchManager::FROM_USER) {
     default_search_provider_ = GetTemplateURLForGUID(data->sync_guid);
     if (!default_search_provider_ && data->prepopulate_id) {
       default_search_provider_ =
@@ -2042,18 +2061,15 @@ void TemplateURLService::ApplyDefaultSearchChange(
 
   default_search_provider_source_ = source;
 
-  if (default_search_provider_ &&
-      default_search_provider_->HasGoogleBaseURLs()) {
-    if (profile_)
-      GoogleURLTracker::RequestServerCheck(profile_, false);
-#if defined(ENABLE_RLZ)
-    RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                   RLZTracker::ChromeOmnibox(),
-                                   rlz_lib::SET_TO_GOOGLE);
-#endif
-  }
+  bool changed = default_search_provider_ != previous_default_search_engine;
+
+  if (profile_ && changed && default_search_provider_ &&
+      default_search_provider_->HasGoogleBaseURLs())
+    GoogleURLTracker::RequestServerCheck(profile_, false);
 
   NotifyObservers();
+
+  return changed;
 }
 
 bool TemplateURLService::AddNoNotify(TemplateURL* template_url,

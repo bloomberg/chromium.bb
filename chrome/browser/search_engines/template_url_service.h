@@ -496,10 +496,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   void OnDefaultSearchChange(const TemplateURLData* new_dse_data,
                              DefaultSearchManager::Source source);
 
-  // Applies a DSE change. May be called at startup or after transitioning to
-  // the loaded state.
+  // Applies a DSE change and reports metrics if appropriate.
   void ApplyDefaultSearchChange(const TemplateURLData* new_dse_data,
                                 DefaultSearchManager::Source source);
+
+
+  // Applies a DSE change. May be called at startup or after transitioning to
+  // the loaded state. Returns true if a change actually occurred.
+  bool ApplyDefaultSearchChangeNoMetrics(const TemplateURLData* new_dse_data,
+                                         DefaultSearchManager::Source source);
 
   // Returns true if there is no TemplateURL that has a search url with the
   // specified host, or the only TemplateURLs matching the specified host can
