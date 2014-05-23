@@ -18,5 +18,5 @@
  */
 
 interface HTMLHeadElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString, MeasureAs=HTMLHeadElementProfile] attribute DOMString profile;
+    [Reflect, TreatNullAs=NullString, DeprecateAs=HTMLHeadElementProfile] attribute DOMString profile;
 };

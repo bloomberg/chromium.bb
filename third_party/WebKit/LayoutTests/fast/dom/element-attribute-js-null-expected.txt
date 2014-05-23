@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.
 This test setting various attributes of a elements to JavaScript null.
 
 TEST SUCCEEDED: The value was null. [tested Node.nodeValue]

@@ -728,6 +728,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case OverflowChangedEvent:
         return "The 'overflowchanged' event is deprecated and may be removed. Please do not use it.";
 
+    case HTMLHeadElementProfile:
+        return "'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
