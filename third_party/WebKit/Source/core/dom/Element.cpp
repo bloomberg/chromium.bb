@@ -3194,7 +3194,7 @@ bool Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSPropertyID ide
     return true;
 }
 
-bool Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitTypes unit, bool important)
+bool Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit, bool important)
 {
     ASSERT(isStyledElement());
     ensureMutableInlineStyle().setProperty(propertyID, cssValuePool().createValue(value, unit), important);
@@ -3246,7 +3246,7 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
     style->setProperty(propertyID, cssValuePool().createIdentifierValue(identifier));
 }
 
-void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitTypes unit)
+void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit)
 {
     ASSERT(isStyledElement());
     style->setProperty(propertyID, cssValuePool().createValue(value, unit));

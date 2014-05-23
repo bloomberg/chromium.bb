@@ -14,7 +14,7 @@ namespace WebCore {
 
 struct TestCase {
     double value;
-    CSSPrimitiveValue::UnitTypes type;
+    CSSPrimitiveValue::UnitType type;
     unsigned fontSize;
     unsigned viewportWidth;
     unsigned viewportHeight;

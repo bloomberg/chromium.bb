@@ -66,7 +66,7 @@ public:
     NumericValueType numericValueType() const;
     double numericValue() const;
     BlockType blockType() const { return m_blockType; }
-    CSSPrimitiveValue::UnitTypes unitType() const { return m_unit; }
+    CSSPrimitiveValue::UnitType unitType() const { return m_unit; }
 
 private:
     MediaQueryTokenType m_type;
@@ -76,7 +76,7 @@ private:
 
     NumericValueType m_numericValueType;
     double m_numericValue;
-    CSSPrimitiveValue::UnitTypes m_unit;
+    CSSPrimitiveValue::UnitType m_unit;
 
     BlockType m_blockType;
 };

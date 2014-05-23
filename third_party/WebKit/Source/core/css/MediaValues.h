@@ -36,9 +36,9 @@ public:
     virtual PassRefPtr<MediaValues> copy() const = 0;
     virtual bool isSafeToSendToAnotherThread() const = 0;
 
-    static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitTypes, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result);
+    static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result);
     template<typename T>
-    static bool computeLength(double value, CSSPrimitiveValue::UnitTypes type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, T& result)
+    static bool computeLength(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, T& result)
     {
         double tempResult;
         if (!computeLengthImpl(value, type, defaultFontSize, viewportWidth, viewportHeight, tempResult))
@@ -46,8 +46,8 @@ public:
         result = roundForImpreciseConversion<T>(tempResult);
         return true;
     }
-    virtual bool computeLength(double value, CSSPrimitiveValue::UnitTypes, int& result) const = 0;
-    virtual bool computeLength(double value, CSSPrimitiveValue::UnitTypes, double& result) const = 0;
+    virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const = 0;
+    virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const = 0;
 
     virtual int viewportWidth() const = 0;
     virtual int viewportHeight() const = 0;

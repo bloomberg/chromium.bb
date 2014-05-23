@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
     if (unit >= CSSParserValue::Q_EMS)
         return CSSPrimitiveValue::createAllowingMarginQuirk(fValue, CSSPrimitiveValue::CSS_EMS);
 
-    CSSPrimitiveValue::UnitTypes primitiveUnit = static_cast<CSSPrimitiveValue::UnitTypes>(unit);
+    CSSPrimitiveValue::UnitType primitiveUnit = static_cast<CSSPrimitiveValue::UnitType>(unit);
     switch (primitiveUnit) {
     case CSSPrimitiveValue::CSS_IDENT:
     case CSSPrimitiveValue::CSS_PROPERTY_ID:

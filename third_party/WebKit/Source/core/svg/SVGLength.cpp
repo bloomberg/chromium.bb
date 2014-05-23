@@ -307,7 +307,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRef
 {
     RefPtr<SVGLength> length = passLength;
 
-    CSSPrimitiveValue::UnitTypes cssType = CSSPrimitiveValue::CSS_UNKNOWN;
+    CSSPrimitiveValue::UnitType cssType = CSSPrimitiveValue::CSS_UNKNOWN;
     switch (length->unitType()) {
     case LengthTypeUnknown:
         break;

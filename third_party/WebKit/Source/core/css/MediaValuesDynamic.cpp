@@ -29,7 +29,7 @@ PassRefPtr<MediaValues> MediaValuesDynamic::copy() const
     return adoptRef(new MediaValuesDynamic(m_frame));
 }
 
-bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitTypes type, int& result) const
+bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType type, int& result) const
 {
     return MediaValues::computeLength(value,
         type,
@@ -39,7 +39,7 @@ bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType
         result);
 }
 
-bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitTypes type, double& result) const
+bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType type, double& result) const
 {
     return MediaValues::computeLength(value,
         type,

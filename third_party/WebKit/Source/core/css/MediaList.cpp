@@ -253,7 +253,7 @@ void MediaList::trace(Visitor* visitor)
     visitor->trace(m_parentRule);
 }
 
-static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, CSSPrimitiveValue::UnitTypes type)
+static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, CSSPrimitiveValue::UnitType type)
 {
     ASSERT(document);
 
@@ -294,7 +294,7 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
     if (!queryCount)
         return;
 
-    CSSPrimitiveValue::UnitTypes suspiciousType = CSSPrimitiveValue::CSS_UNKNOWN;
+    CSSPrimitiveValue::UnitType suspiciousType = CSSPrimitiveValue::CSS_UNKNOWN;
     bool dotsPerPixelUsed = false;
     for (size_t i = 0; i < queryCount; ++i) {
         const MediaQuery* query = mediaQueries[i].get();

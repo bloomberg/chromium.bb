@@ -42,9 +42,9 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInte
 
 namespace {
 
-static CSSPrimitiveValue::UnitTypes toUnitType(int lengthUnitType)
+static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
 {
-    return static_cast<CSSPrimitiveValue::UnitTypes>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
+    return static_cast<CSSPrimitiveValue::UnitType>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
 }
 
 static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> previous, InterpolableList* list, size_t position)

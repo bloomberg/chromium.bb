@@ -81,7 +81,7 @@ public:
     virtual Type type() const = 0;
 
     CalculationCategory category() const { return m_category; }
-    virtual CSSPrimitiveValue::UnitTypes primitiveType() const = 0;
+    virtual CSSPrimitiveValue::UnitType primitiveType() const = 0;
     bool isInteger() const { return m_isInteger; }
 
     virtual void trace(Visitor*) { }

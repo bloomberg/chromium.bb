@@ -42,7 +42,7 @@ class CSSParserValueList;
 struct MediaQueryExpValue {
     CSSValueID id;
     double value;
-    CSSPrimitiveValue::UnitTypes unit;
+    CSSPrimitiveValue::UnitType unit;
     unsigned numerator;
     unsigned denominator;
 

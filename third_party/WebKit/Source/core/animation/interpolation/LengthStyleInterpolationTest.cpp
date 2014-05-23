@@ -29,7 +29,7 @@ protected:
         return interpolableValueToLength(lengthToInterpolableValue(value.get()).get(), ValueRangeAll);
     }
 
-    static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, CSSPrimitiveValue::UnitTypes unitType)
+    static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, CSSPrimitiveValue::UnitType unitType)
     {
         EXPECT_TRUE(value->isPrimitiveValue());
         EXPECT_EQ(doubleValue, toCSSPrimitiveValue(value.get())->getDoubleValue());

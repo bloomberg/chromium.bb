@@ -138,7 +138,7 @@ MediaValues::PointerDeviceType MediaValues::calculateLeastCapablePrimaryPointerD
     return MediaValues::UnknownPointer;
 }
 
-bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitTypes type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result)
+bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result)
 {
     // The logic in this function is duplicated from CSSPrimitiveValue::computeLengthDouble
     // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make

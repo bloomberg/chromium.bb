@@ -217,7 +217,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
                 // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm,
                 // or Media features that must have non-negative <length> or number value.
                 expValue.value = value->fValue;
-                expValue.unit = (CSSPrimitiveValue::UnitTypes)value->unit;
+                expValue.unit = (CSSPrimitiveValue::UnitType)value->unit;
                 expValue.isValue = true;
                 expValue.isInteger = value->isInt;
             } else if (featureWithPositiveInteger(lowerMediaFeature, value)
