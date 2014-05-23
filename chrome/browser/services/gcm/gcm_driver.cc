@@ -475,6 +475,10 @@ void GCMDriver::RemoveAppHandler(const std::string& app_id) {
   DCHECK(!app_id.empty());
 
   app_handlers_.erase(app_id);
+
+  // Stops the GCM service when no app intends to consume it.
+  if (app_handlers_.empty())
+    Stop();
 }
 
 void GCMDriver::Register(const std::string& app_id,
@@ -680,6 +684,10 @@ GCMClient::Result GCMDriver::EnsureStarted() {
 
   if (!gcm_enabled_)
     return GCMClient::GCM_DISABLED;
+
+  // Have any app requested the service?
+  if (app_handlers_.empty())
+    return GCMClient::UNKNOWN_ERROR;
 
   // Is the user signed in?
   const std::string account_id = identity_provider_->GetActiveAccountId();

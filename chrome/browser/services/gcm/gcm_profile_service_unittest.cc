@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/services/gcm/fake_gcm_app_handler.h"
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/fake_signin_manager.h"
@@ -54,6 +55,7 @@ class GCMProfileServiceTest : public testing::Test {
 
   // testing::Test:
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   FakeGCMClient* GetGCMClient() const;
 
@@ -83,6 +85,7 @@ class GCMProfileServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   GCMProfileService* gcm_profile_service_;
+  scoped_ptr<FakeGCMAppHandler> gcm_app_handler_;
 
   std::string registration_id_;
   GCMClient::Result registration_result_;
@@ -95,6 +98,7 @@ class GCMProfileServiceTest : public testing::Test {
 
 GCMProfileServiceTest::GCMProfileServiceTest()
     : gcm_profile_service_(NULL),
+      gcm_app_handler_(new FakeGCMAppHandler),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR) {
 }
@@ -117,11 +121,17 @@ void GCMProfileServiceTest::SetUp() {
       GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(),
           &BuildGCMProfileService));
+  gcm_profile_service_->driver()->AddAppHandler(
+      kTestAppID, gcm_app_handler_.get());
 
   FakeSigninManager* signin_manager = static_cast<FakeSigninManager*>(
       SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
   signin_manager->SignIn(kTestAccountID);
   base::RunLoop().RunUntilIdle();
+}
+
+void GCMProfileServiceTest::TearDown() {
+  gcm_profile_service_->driver()->RemoveAppHandler(kTestAppID);
 }
 
 void GCMProfileServiceTest::RegisterAndWaitForCompletion(

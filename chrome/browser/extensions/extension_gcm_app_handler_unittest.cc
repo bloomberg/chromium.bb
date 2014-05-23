@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/fake_gcm_app_handler.h"
 #include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/fake_signin_manager.h"
@@ -381,11 +382,19 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS, registration_result());
 
+  // Add another app handler in order to prevent the GCM service from being
+  // stopped when the extension is uninstalled. This is needed because otherwise
+  // we are not able to receive the unregistration result.
+  GetGCMDriver()->AddAppHandler("Foo", gcm_app_handler());
+
   // Unregistration should be triggered when the extension is uninstalled.
   UninstallExtension(extension);
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS,
             gcm_app_handler()->unregistration_result());
+
+  // Clean up.
+  GetGCMDriver()->RemoveAppHandler("Foo");
 }
 
 }  // namespace extensions

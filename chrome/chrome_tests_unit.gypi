@@ -1266,6 +1266,8 @@
         'browser/search_engines/template_url_prepopulate_data_unittest.cc',
         'browser/search_engines/template_url_scraper_unittest.cc',
         'browser/search_engines/template_url_unittest.cc',
+        'browser/services/gcm/fake_gcm_app_handler.cc',
+        'browser/services/gcm/fake_gcm_app_handler.h',
         'browser/services/gcm/fake_gcm_client_factory.cc',
         'browser/services/gcm/fake_gcm_client_factory.h',
         'browser/services/gcm/fake_signin_manager.cc',
