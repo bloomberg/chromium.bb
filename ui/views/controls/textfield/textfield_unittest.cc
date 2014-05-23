@@ -31,6 +31,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -197,6 +198,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
+    test_api_.reset(new TextfieldTestApi(textfield_));
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield();
@@ -204,7 +206,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       textfield->set_id(i + 1);
     }
 
-    model_ = textfield_->model_.get();
+    model_ = test_api_->model();
     model_->ClearEditHistory();
 
     input_method_ = new MockInputMethod();
@@ -216,12 +218,8 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   }
 
   ui::MenuModel* GetContextMenuModel() {
-    textfield_->UpdateContextMenu();
-    return textfield_->context_menu_contents_.get();
-  }
-
-  ui::TouchSelectionController* GetTouchSelectionController() {
-    return textfield_->touch_selection_controller_.get();
+    test_api_->UpdateContextMenu();
+    return test_api_->context_menu_contents();
   }
 
  protected:
@@ -264,22 +262,22 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   }
 
   int GetCursorPositionX(int cursor_pos) {
-    return textfield_->GetRenderText()->GetCursorBounds(
+    return test_api_->GetRenderText()->GetCursorBounds(
         gfx::SelectionModel(cursor_pos, gfx::CURSOR_FORWARD), false).x();
   }
 
   // Get the current cursor bounds.
   gfx::Rect GetCursorBounds() {
-    return textfield_->GetRenderText()->GetUpdatedCursorBounds();
+    return test_api_->GetRenderText()->GetUpdatedCursorBounds();
   }
 
   // Get the cursor bounds of |sel|.
   gfx::Rect GetCursorBounds(const gfx::SelectionModel& sel) {
-    return textfield_->GetRenderText()->GetCursorBounds(sel, true);
+    return test_api_->GetRenderText()->GetCursorBounds(sel, true);
   }
 
   gfx::Rect GetDisplayRect() {
-    return textfield_->GetRenderText()->display_rect();
+    return test_api_->GetRenderText()->display_rect();
   }
 
   // Mouse click on the point whose x-axis is |bound|'s x plus |x_offset| and
@@ -324,6 +322,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   Widget* widget_;
 
   TestTextfield* textfield_;
+  scoped_ptr<TextfieldTestApi> test_api_;
   TextfieldModel* model_;
 
   // The string from Controller::ContentsChanged callback.
@@ -1903,7 +1902,7 @@ TEST_F(TextfieldTest, SelectionClipboard) {
 TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  EXPECT_FALSE(GetTouchSelectionController());
+  EXPECT_FALSE(test_api_->touch_selection_controller());
   const int x = GetCursorPositionX(2);
   GestureEventForTest tap(ui::ET_GESTURE_TAP, x, 0, 1.0f, 0.0f);
   GestureEventForTest tap_down(ui::ET_GESTURE_TAP_DOWN, x, 0, 0.0f, 0.0f);
@@ -1912,18 +1911,18 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
 
   // Tapping on the textfield should turn on the TouchSelectionController.
   textfield_->OnGestureEvent(&tap);
-  EXPECT_TRUE(GetTouchSelectionController());
+  EXPECT_TRUE(test_api_->touch_selection_controller());
 
   // Un-focusing the textfield should reset the TouchSelectionController
   textfield_->GetFocusManager()->ClearFocus();
-  EXPECT_FALSE(GetTouchSelectionController());
+  EXPECT_FALSE(test_api_->touch_selection_controller());
 
   // With touch editing enabled, long press should not show context menu.
   // Instead, select word and invoke TouchSelectionController.
   textfield_->OnGestureEvent(&tap_down);
   textfield_->OnGestureEvent(&long_press);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
-  EXPECT_TRUE(GetTouchSelectionController());
+  EXPECT_TRUE(test_api_->touch_selection_controller());
 
   // With touch drag drop enabled, long pressing in the selected region should
   // start a drag and remove TouchSelectionController.
@@ -1931,7 +1930,7 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   textfield_->OnGestureEvent(&tap_down);
   textfield_->OnGestureEvent(&long_press);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
-  EXPECT_FALSE(GetTouchSelectionController());
+  EXPECT_FALSE(test_api_->touch_selection_controller());
 
   // After disabling touch drag drop, long pressing again in the selection
   // region should not do anything.
@@ -1941,14 +1940,14 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   textfield_->OnGestureEvent(&tap_down);
   textfield_->OnGestureEvent(&long_press);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
-  EXPECT_TRUE(GetTouchSelectionController());
+  EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_TRUE(long_press.handled());
 }
 
 TEST_F(TextfieldTest, TouchScrubbingSelection) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  EXPECT_FALSE(GetTouchSelectionController());
+  EXPECT_FALSE(test_api_->touch_selection_controller());
 
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
 
@@ -1982,7 +1981,7 @@ TEST_F(TextfieldTest, TouchScrubbingSelection) {
   // In the end, part of text should have been selected and handles should have
   // appeared.
   EXPECT_STR_EQ("ello ", textfield_->GetSelectedText());
-  EXPECT_TRUE(GetTouchSelectionController());
+  EXPECT_TRUE(test_api_->touch_selection_controller());
 }
 #endif
 

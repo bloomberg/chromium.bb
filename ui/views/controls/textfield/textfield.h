@@ -30,10 +30,6 @@
 
 namespace views {
 
-namespace test {
-class WidgetTestInteractive;
-}
-
 class MenuRunner;
 class Painter;
 class TextfieldController;
@@ -297,9 +293,7 @@ class VIEWS_EXPORT Textfield : public View,
   virtual base::string16 GetSelectionClipboardText() const;
 
  private:
-  friend class TextfieldTest;
-  friend class TouchSelectionControllerImplTest;
-  friend class test::WidgetTestInteractive;
+  friend class TextfieldTestApi;
 
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers

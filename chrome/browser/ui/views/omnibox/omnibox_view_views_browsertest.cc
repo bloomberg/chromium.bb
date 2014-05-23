@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,7 +22,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
  protected:
@@ -288,4 +291,36 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackgroundIsOpaque) {
   OmniboxViewViews* view = window->GetLocationBarView()->omnibox_view();
   ASSERT_TRUE(view);
   EXPECT_FALSE(view->GetRenderText()->background_is_transparent());
+}
+
+// Tests if executing a command hides touch editing handles.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
+                       DeactivateTouchEditingOnExecuteCommand) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
+
+  OmniboxView* view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
+  views::TextfieldTestApi textfield_test_api(omnibox_view_views);
+
+  // Put a URL on the clipboard. It is written to the clipboard upon destruction
+  // of the writer.
+  {
+    ui::ScopedClipboardWriter clipboard_writer(
+        ui::Clipboard::GetForCurrentThread(),
+        ui::CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
+  }
+
+  // Tap to activate touch editing.
+  gfx::Point omnibox_center =
+      omnibox_view_views->GetBoundsInScreen().CenterPoint();
+  Tap(omnibox_center, omnibox_center);
+  EXPECT_TRUE(textfield_test_api.touch_selection_controller());
+
+  // Execute a command and check if it deactivate touch editing. Paste & Go is
+  // chosen since it is specific to Omnibox and its execution wouldn't be
+  // delgated to the base Textfield class.
+  omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
+  EXPECT_FALSE(textfield_test_api.touch_selection_controller());
 }

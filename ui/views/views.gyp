@@ -555,6 +555,8 @@
         '..',
       ],
       'sources': [
+        'controls/textfield/textfield_test_api.cc',
+        'controls/textfield/textfield_test_api.h',
         'corewm/tooltip_controller_test_helper.cc',
         'corewm/tooltip_controller_test_helper.h',
         'test/capture_tracking_view.cc',

@@ -16,6 +16,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
@@ -97,6 +98,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->Show();
 
     textfield_->RequestFocus();
+
+    textfield_test_api_.reset(new TextfieldTestApi(textfield_));
   }
 
   void CreateWidget() {
@@ -116,7 +119,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
   gfx::Rect GetCursorRect(const gfx::SelectionModel& sel) {
-    return textfield_->GetRenderText()->GetCursorBounds(sel, true);
+    return textfield_test_api_->GetRenderText()->GetCursorBounds(sel, true);
   }
 
   gfx::Point GetCursorPosition(const gfx::SelectionModel& sel) {
@@ -126,15 +129,15 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   TouchSelectionControllerImpl* GetSelectionController() {
     return static_cast<TouchSelectionControllerImpl*>(
-        textfield_->touch_selection_controller_.get());
+        textfield_test_api_->touch_selection_controller());
   }
 
   void StartTouchEditing() {
-    textfield_->CreateTouchSelectionControllerAndNotifyIt();
+    textfield_test_api_->CreateTouchSelectionControllerAndNotifyIt();
   }
 
   void EndTouchEditing() {
-    textfield_->touch_selection_controller_.reset();
+    textfield_test_api_->ResetTouchSelectionController();
   }
 
   void SimulateSelectionHandleDrag(gfx::Point p, int selection_handle) {
@@ -183,7 +186,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
   gfx::RenderText* GetRenderText() {
-    return textfield_->GetRenderText();
+    return textfield_test_api_->GetRenderText();
   }
 
   gfx::Point GetCursorHandleDragPoint() {
@@ -199,6 +202,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   Widget* widget_;
 
   Textfield* textfield_;
+  scoped_ptr<TextfieldTestApi> textfield_test_api_;
   scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
 
  private:

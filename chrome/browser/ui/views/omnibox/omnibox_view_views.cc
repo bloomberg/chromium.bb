@@ -335,6 +335,10 @@ void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
+  // In the base class, touch text selection is deactivated when a command is
+  // executed. Since we are not always calling the base class implementation
+  // here, we need to deactivate touch text selection here, too.
+  DestroyTouchSelection();
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
     case IDS_PASTE_AND_GO:

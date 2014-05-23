@@ -21,6 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
@@ -170,24 +171,17 @@ class WidgetTestInteractive : public WidgetTest {
   }
 
  protected:
-  void ShowTouchSelectionQuickMenuImmediately(Textfield* textfield) {
-    DCHECK(textfield);
-    DCHECK(textfield->touch_selection_controller_);
-    TouchSelectionControllerImpl* controller =
-        static_cast<TouchSelectionControllerImpl*>(
-            textfield->touch_selection_controller_.get());
+  static void ShowQuickMenuImmediately(
+      TouchSelectionControllerImpl* controller) {
+    DCHECK(controller);
     if (controller->context_menu_timer_.IsRunning()) {
       controller->context_menu_timer_.Stop();
       controller->ContextMenuTimerFired();
     }
   }
 
-  bool TouchSelectionQuickMenuIsVisible(Textfield* textfield) {
-    DCHECK(textfield);
-    DCHECK(textfield->touch_selection_controller_);
-    TouchSelectionControllerImpl* controller =
-        static_cast<TouchSelectionControllerImpl*>(
-            textfield->touch_selection_controller_.get());
+  static bool IsQuickMenuVisible(TouchSelectionControllerImpl* controller) {
+    DCHECK(controller);
     return controller->context_menu_ && controller->context_menu_->visible();
   }
 };
@@ -768,16 +762,19 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   widget.Show();
   textfield->RequestFocus();
   textfield->SelectAll(true);
+  TextfieldTestApi textfield_test_api(textfield);
 
   RunPendingMessages();
 
   aura::test::EventGenerator generator(widget.GetNativeView()->GetRootWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
-  ShowTouchSelectionQuickMenuImmediately(textfield);
+  ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
+      textfield_test_api.touch_selection_controller()));
 
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_TRUE(widget.IsActive());
-  EXPECT_TRUE(TouchSelectionQuickMenuIsVisible(textfield));
+  EXPECT_TRUE(IsQuickMenuVisible(static_cast<TouchSelectionControllerImpl*>(
+      textfield_test_api.touch_selection_controller())));
 }
 
 namespace {
