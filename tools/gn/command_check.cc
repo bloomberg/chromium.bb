@@ -20,7 +20,6 @@ const char kCheck_Help[] =
     "\n"
     "  See \"gn help\" for the common command-line switches.\n";
 
-// Note: partially duplicated in command_gyp.cc.
 int RunCheck(const std::vector<std::string>& args) {
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup = new Setup();
