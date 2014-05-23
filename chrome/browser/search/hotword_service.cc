@@ -7,17 +7,24 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // The whole file relies on the extension systems but this file is built on
@@ -65,7 +72,20 @@ enum HotwordExtensionAvailability {
   NUM_HOTWORD_EXTENSION_AVAILABILITY_METRICS
 };
 
-void RecordAvailabilityMetrics(
+// Enum describing the types of errors that can arise when determining
+// if hotwording can be used. NO_ERROR is used so it can be seen how often
+// errors arise relative to when they do not.
+// This is used for UMA stats -- do not reorder or delete items; only add to
+// the end.
+enum HotwordError {
+  NO_HOTWORD_ERROR = 0,
+  GENERIC_HOTWORD_ERROR,
+  NACL_HOTWORD_ERROR,
+  MICROPHONE_HOTWORD_ERROR,
+  NUM_HOTWORD_ERROR_METRICS
+};
+
+void RecordExtensionAvailabilityMetrics(
     ExtensionService* service,
     const extensions::Extension* extension) {
   HotwordExtensionAvailability availability_state = UNAVAILABLE;
@@ -93,6 +113,24 @@ void RecordLoggingMetrics(Profile* profile) {
   UMA_HISTOGRAM_BOOLEAN(
       "Hotword.HotwordAudioLogging",
       profile->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled));
+}
+
+void RecordErrorMetrics(int error_message) {
+  HotwordError error = NO_HOTWORD_ERROR;
+  switch (error_message) {
+    case IDS_HOTWORD_GENERIC_ERROR_MESSAGE:
+      error = GENERIC_HOTWORD_ERROR;
+      break;
+    case IDS_HOTWORD_NACL_DISABLED_ERROR_MESSAGE:
+      error = NACL_HOTWORD_ERROR;
+      break;
+    default:
+      error = NO_HOTWORD_ERROR;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Hotword.HotwordError",
+                            error,
+                            NUM_HOTWORD_ERROR_METRICS);
 }
 
 ExtensionService* GetExtensionService(Profile* profile) {
@@ -136,7 +174,8 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile),
-      client_(NULL) {
+      client_(NULL),
+      error_message_(0) {
   // This will be called during profile initialization which is a good time
   // to check the user's hotword state.
   HotwordEnabled enabled_state = UNSET;
@@ -226,6 +265,9 @@ void HotwordService::ShowOptInPopup() {
 }
 
 bool HotwordService::IsServiceAvailable() {
+  error_message_ = 0;
+
+  // Determine if the extension is available.
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile_);
   ExtensionService* service = system->extension_service();
@@ -233,11 +275,32 @@ bool HotwordService::IsServiceAvailable() {
   // if the user opted out.
   const extensions::Extension* extension =
       service->GetExtensionById(extension_misc::kHotwordExtensionId, true);
+  if (!extension)
+    error_message_ = IDS_HOTWORD_GENERIC_ERROR_MESSAGE;
 
-  RecordAvailabilityMetrics(service, extension);
+  RecordExtensionAvailabilityMetrics(service, extension);
   RecordLoggingMetrics(profile_);
 
-  return extension && IsHotwordAllowed();
+  // NaCl and its associated functions are not available on most mobile
+  // platforms. ENABLE_EXTENSIONS covers those platforms and hey would not
+  // allow Hotwording anyways since it is an extension.
+#if defined(ENABLE_EXTENSIONS)
+  // Determine if NaCl is available.
+  bool nacl_enabled = false;
+  base::FilePath path;
+  if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+    content::WebPluginInfo info;
+    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_).get();
+    if (content::PluginService::GetInstance()->GetPluginInfoByPath(path, &info))
+      nacl_enabled = plugin_prefs->IsPluginEnabled(info);
+  }
+  if (!nacl_enabled)
+    error_message_ = IDS_HOTWORD_NACL_DISABLED_ERROR_MESSAGE;
+#endif
+
+  RecordErrorMetrics(error_message_);
+
+  return (error_message_ == 0) && IsHotwordAllowed();
 }
 
 bool HotwordService::IsHotwordAllowed() {
@@ -253,15 +316,6 @@ bool HotwordService::IsOptedIntoAudioLogging() {
   return
       profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAudioLoggingEnabled) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
-}
-
-bool HotwordService::RetryHotwordExtension() {
-  ExtensionService* extension_service = GetExtensionService(profile_);
-  if (!extension_service)
-    return false;
-
-  extension_service->ReloadExtension(extension_misc::kHotwordExtensionId);
-  return true;
 }
 
 void HotwordService::EnableHotwordExtension(

@@ -59,12 +59,6 @@ class HotwordService : public content::NotificationObserver,
   // is opted in, false otherwise..
   bool IsOptedIntoAudioLogging();
 
-  // Used in the case of an error with the current hotword extension. Tries
-  // to reload the extension or in the case of failure, tries to re-download it.
-  // Returns true upon successful attempt at reload or if the extension has
-  // already loaded successfully by some other means.
-  virtual bool RetryHotwordExtension();
-
   // Control the state of the hotword extension.
   void EnableHotwordExtension(ExtensionService* extension_service);
   void DisableHotwordExtension(ExtensionService* extension_service);
@@ -78,6 +72,10 @@ class HotwordService : public content::NotificationObserver,
   void StopHotwordSession(HotwordClient* client);
   HotwordClient* client() { return client_; }
 
+  // Returns the current error message id. A value of 0 indicates
+  // no error.
+  int error_message() { return error_message_; }
+
  private:
   Profile* profile_;
 
@@ -86,6 +84,7 @@ class HotwordService : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
 
   HotwordClient* client_;
+  int error_message_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordService);
 };

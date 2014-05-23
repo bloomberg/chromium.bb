@@ -7990,6 +7990,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Hotword.AudioLoggingEnabled" enum="BooleanEnabled">
+  <owner>rlp@chromium.org</owner>
   <summary>
     The state of the hotword audio logging preference. This value is emitted
     each time the hotword availability is requested by the extension if the user
@@ -8013,6 +8014,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     download, disabled, etc.). This value is emitted each time the hotword
     availability is requested by the extension which typically happens each time
     a hotword search is initiated.
+  </summary>
+</histogram>
+
+<histogram name="Hotword.HotwordError" enum="HotwordError">
+  <owner>rlp@chromium.org</owner>
+  <summary>
+    Errors reported by the hotword service when determining if hotwording is
+    available. Non-errors are also reported so that errors can be seen as a
+    percentage of total requests.
   </summary>
 </histogram>
 
@@ -36428,6 +36438,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Available"/>
   <int value="2" label="Pending download"/>
   <int value="3" label="Disabled"/>
+</enum>
+
+<enum name="HotwordError" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Generic error"/>
+  <int value="2" label="NaCl error"/>
+  <int value="3" label="Microphone error"/>
 </enum>
 
 <enum name="HotwordPrefState" type="int">

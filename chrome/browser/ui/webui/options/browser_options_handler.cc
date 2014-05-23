@@ -266,7 +266,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
     { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
-    { "hotwordRetryDownloadButton", IDS_HOTWORD_RETRY_DOWNLOAD_BUTTON },
     { "hotwordAudioLoggingEnable", IDS_HOTWORD_AUDIO_LOGGING_ENABLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
@@ -711,11 +710,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestHotwordAvailable",
       base::Bind(&BrowserOptionsHandler::HandleRequestHotwordAvailable,
-                 base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "requestHotwordSetupRetry",
-      base::Bind(&BrowserOptionsHandler::HandleRequestHotwordSetupRetry,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -1533,21 +1527,24 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
   if (group != "" && group != "Disabled") {
-    if (HotwordServiceFactory::IsServiceAvailable(profile))
+    if (HotwordServiceFactory::IsServiceAvailable(profile)) {
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+    } else if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
+      base::StringValue error_message(l10n_util::GetStringUTF16(
+          HotwordServiceFactory::GetCurrentError(profile)));
+      base::string16 hotword_help_url =
+          base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
+      base::StringValue help_link(l10n_util::GetStringFUTF16(
+          IDS_HOTWORD_HELP_LINK, hotword_help_url));
+      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
+                                       error_message, help_link);
+    }
   }
 }
 
 void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(
     const base::ListValue* args) {
   easy_unlock::LaunchEasyUnlockSetup(Profile::FromWebUI(web_ui()));
-}
-
-void BrowserOptionsHandler::HandleRequestHotwordSetupRetry(
-    const base::ListValue* args) {
-  // TODO(joshtrask): invoke BrowserOptions.showHotwordSection again, passing
-  // the new error message if any.
-  HotwordServiceFactory::RetryHotwordExtension(Profile::FromWebUI(web_ui()));
 }
 
 void BrowserOptionsHandler::HandleRefreshExtensionControlIndicators(

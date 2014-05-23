@@ -61,6 +61,14 @@ cr.define('options', function() {
     },
 
     /**
+     * Assigns a value to the help link variable.
+     * @param {string} helpLink The text that links to a troubleshooting page.
+     */
+    set helpLink(helpLinkText) {
+      this.helpLink_ = helpLinkText;
+    },
+
+    /**
      * Toggles showing and hiding the error message bubble. An empty
      * |errorText_| indicates that there is no error message. So the bubble
      * only be shown if |errorText_| has a value.
@@ -76,43 +84,27 @@ cr.define('options', function() {
 
       var self = this;
       // Create the DOM tree for the bubble content.
-      var action = document.createElement('button');
-      action.classList.add('default-button');
-      action.classList.add('controlled-setting-bubble-action');
-      action.textContent = loadTimeData.getString('hotwordRetryDownloadButton');
-      action.addEventListener('click', function(event) {
-        self.retryDownload_();
-      });
-
-      var buttonStrip = document.createElement('div');
-      buttonStrip.classList.add('button-strip');
-      buttonStrip.reversed = true;
-      buttonStrip.appendChild(action);
-
-      var actionContainer = document.createElement('div');
-      actionContainer.classList.add('action-area');
-      actionContainer.appendChild(buttonStrip);
-
       var closeButton = document.createElement('div');
       closeButton.classList.add('close-button');
 
       var text = document.createElement('p');
-      text.textContent = this.errorText_;
+      text.innerHTML = this.errorText_;
+
+      var help = document.createElement('p');
+      help.innerHTML = this.helpLink_;
+
+      var textDiv = document.createElement('div');
+      textDiv.appendChild(text);
+      textDiv.appendChild(help);
 
       var container = document.createElement('div');
       container.appendChild(closeButton);
-      container.appendChild(text);
-      container.appendChild(actionContainer);
+      container.appendChild(textDiv);
 
       var content = document.createElement('div');
       content.appendChild(container);
 
       OptionsPage.showBubble(content, this.image, this, this.location);
-    },
-
-    retryDownload_: function() {
-      chrome.send('requestHotwordSetupRetry');
-      OptionsPage.hideBubble();
     },
   };
 

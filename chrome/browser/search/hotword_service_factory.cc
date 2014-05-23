@@ -44,9 +44,11 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 }
 
 // static
-bool HotwordServiceFactory::RetryHotwordExtension(Profile* profile) {
-  HotwordService* hotword_service = GetForProfile(profile);
-  return hotword_service && hotword_service->RetryHotwordExtension();
+int HotwordServiceFactory::GetCurrentError(BrowserContext* context) {
+  HotwordService* hotword_service = GetForProfile(context);
+  if (!hotword_service)
+    return 0;
+  return hotword_service->error_message();
 }
 
 HotwordServiceFactory::HotwordServiceFactory()
