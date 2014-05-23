@@ -319,14 +319,36 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
     FloatRect absoluteStickyBoxRect(absContainerFrame.location() + stickyLocation, flippedStickyBoxRect.size());
     constraints.setAbsoluteStickyBoxRect(absoluteStickyBoxRect);
 
-    if (!style()->left().isAuto()) {
+    float horizontalOffsets = constraints.rightOffset() + constraints.leftOffset();
+    bool skipRight = false;
+    bool skipLeft = false;
+    if (!style()->left().isAuto() && !style()->right().isAuto()) {
+        if (horizontalOffsets > containerContentRect.width().toFloat()
+            || horizontalOffsets + containerContentRect.width().toFloat() > constrainingRect.width()) {
+            skipRight = style()->isLeftToRightDirection();
+            skipLeft = !skipRight;
+        }
+    }
+
+    if (!style()->left().isAuto() && !skipLeft) {
         constraints.setLeftOffset(floatValueForLength(style()->left(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
     }
 
-    if (!style()->right().isAuto()) {
+    if (!style()->right().isAuto() && !skipRight) {
         constraints.setRightOffset(floatValueForLength(style()->right(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeRight);
+    }
+
+    bool skipBottom = false;
+    // FIXME(ostap): Exclude top or bottom edge offset depending on the writing mode when related
+    // sections are fixed in spec: http://lists.w3.org/Archives/Public/www-style/2014May/0286.html
+    float verticalOffsets = constraints.topOffset() + constraints.bottomOffset();
+    if (!style()->top().isAuto() && !style()->bottom().isAuto()) {
+        if (verticalOffsets > containerContentRect.height().toFloat()
+            || verticalOffsets + containerContentRect.height().toFloat() > constrainingRect.height()) {
+            skipBottom = true;
+        }
     }
 
     if (!style()->top().isAuto()) {
@@ -334,8 +356,8 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
     }
 
-    if (!style()->bottom().isAuto()) {
-        constraints.setBottomOffset(floatValueForLength(style()->bottom(), constrainingRect.height() ));
+    if (!style()->bottom().isAuto() && !skipBottom) {
+        constraints.setBottomOffset(floatValueForLength(style()->bottom(), constrainingRect.height()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeBottom);
     }
 }
