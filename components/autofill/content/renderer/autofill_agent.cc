@@ -254,8 +254,11 @@ void AutofillAgent::DidChangeScrollOffset(WebLocalFrame*) {
 void AutofillAgent::didRequestAutocomplete(
     const WebFormElement& form,
     const blink::WebAutocompleteParams& details) {
-  // TODO(estade): honor |details|.
+  didRequestAutocomplete(form);
+}
 
+void AutofillAgent::didRequestAutocomplete(
+    const WebFormElement& form) {
   // Disallow the dialog over non-https or broken https, except when the
   // ignore SSL flag is passed. See http://crbug.com/272512.
   // TODO(palmer): this should be moved to the browser process after frames
