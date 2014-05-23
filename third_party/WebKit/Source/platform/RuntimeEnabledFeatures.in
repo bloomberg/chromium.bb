@@ -141,7 +141,6 @@ Touch status=stable
 
 TouchIconLoading
 UserSelectAll status=experimental
-ScriptPromiseOnV8Promise status=stable
 WebAnimationsSVG
 WebAnimationsElementAnimate status=stable
 WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate

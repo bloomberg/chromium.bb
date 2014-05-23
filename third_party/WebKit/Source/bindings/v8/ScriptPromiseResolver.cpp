@@ -31,11 +31,9 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include <v8.h>
 
@@ -47,11 +45,7 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     v8::Isolate* isolate = m_scriptState->isolate();
     ASSERT(!m_scriptState->contextIsEmpty());
     ASSERT(isolate->InContext());
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
-        m_resolver = ScriptValue(scriptState, v8::Promise::Resolver::New(isolate));
-    } else {
-        m_promise = ScriptPromise(scriptState, V8PromiseCustom::createPromise(m_scriptState->context()->Global(), isolate));
-    }
+    m_resolver = ScriptValue(scriptState, v8::Promise::Resolver::New(isolate));
 }
 
 ScriptPromiseResolver::~ScriptPromiseResolver()
@@ -59,7 +53,6 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
     // We don't call "reject" here because it requires a caller
     // to be in a v8 context.
 
-    m_promise.clear();
     m_resolver.clear();
 }
 
@@ -71,7 +64,7 @@ ScriptPromise ScriptPromiseResolver::promise()
         v8::Local<v8::Promise::Resolver> v8Resolver = m_resolver.v8Value().As<v8::Promise::Resolver>();
         return ScriptPromise(m_scriptState.get(), v8Resolver->GetPromise());
     }
-    return m_promise;
+    return ScriptPromise();
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptState* scriptState)
@@ -85,12 +78,7 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
     ASSERT(m_scriptState->isolate()->InContext());
     if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
-    } else if (!m_promise.isEmpty()) {
-        v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-        ASSERT(V8PromiseCustom::isPromise(promise, m_scriptState->isolate()));
-        V8PromiseCustom::resolve(promise, value, m_scriptState->isolate());
     }
-    m_promise.clear();
     m_resolver.clear();
 }
 
@@ -99,12 +87,7 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
     ASSERT(m_scriptState->isolate()->InContext());
     if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
-    } else if (!m_promise.isEmpty()) {
-        v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-        ASSERT(V8PromiseCustom::isPromise(promise, m_scriptState->isolate()));
-        V8PromiseCustom::reject(promise, value, m_scriptState->isolate());
     }
-    m_promise.clear();
     m_resolver.clear();
 }
 

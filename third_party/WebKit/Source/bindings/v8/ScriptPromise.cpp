@@ -31,11 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include <v8.h>
 
@@ -47,7 +44,7 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> val
     if (value.IsEmpty())
         return;
 
-    if (!V8PromiseCustom::isPromise(value, scriptState->isolate()) && !value->IsPromise()) {
+    if (!value->IsPromise()) {
         m_promise = ScriptValue(scriptState, v8::Handle<v8::Value>());
         V8ThrowException::throwTypeError("the given value is not a Promise", scriptState->isolate());
         return;
@@ -63,9 +60,6 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
     v8::Local<v8::Function> v8OnFulfilled = ScriptFunction::adoptByGarbageCollector(onFulfilled);
     v8::Local<v8::Function> v8OnRejected = ScriptFunction::adoptByGarbageCollector(onRejected);
-
-    if (V8PromiseCustom::isPromise(promise, m_scriptState->isolate()))
-        return ScriptPromise(m_scriptState.get(), V8PromiseCustom::then(promise, v8OnFulfilled, v8OnRejected, m_scriptState->isolate()));
 
     ASSERT(promise->IsPromise());
     // Return this Promise if no handlers are given.
@@ -96,8 +90,7 @@ ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Handle<v8::Value
 {
     if (value.IsEmpty())
         return ScriptPromise();
-    v8::Isolate* isolate = scriptState->isolate();
-    if (V8PromiseCustom::isPromise(value, isolate) || value->IsPromise()) {
+    if (value->IsPromise()) {
         return ScriptPromise(scriptState, value);
     }
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

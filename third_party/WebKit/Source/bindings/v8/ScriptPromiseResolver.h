@@ -153,9 +153,6 @@ private:
 
     // FIXME: Remove this once ScriptValue::scriptState() becomes available.
     RefPtr<ScriptState> m_scriptState;
-    // Used when scriptPromiseOnV8Promise is disabled.
-    ScriptPromise m_promise;
-    // Used when scriptPromiseOnV8Promise is enabled.
     ScriptValue m_resolver;
 };
 

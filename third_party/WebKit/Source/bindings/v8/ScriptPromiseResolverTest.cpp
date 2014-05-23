@@ -31,11 +31,8 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 
-#include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8PromiseCustom.h"
 
 #include <gtest/gtest.h>
 #include <v8.h>
@@ -44,123 +41,145 @@ namespace WebCore {
 
 namespace {
 
+class Function : public ScriptFunction {
+public:
+    static PassOwnPtr<Function> create(v8::Isolate* isolate, String* value)
+    {
+        return adoptPtr(new Function(isolate, value));
+    }
+
+    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    {
+        ASSERT(!value.isEmpty());
+        *m_value = toCoreString(value.v8Value()->ToString());
+        return value;
+    }
+
+private:
+    Function(v8::Isolate* isolate, String* value) : ScriptFunction(isolate), m_value(value) { }
+
+    String* m_value;
+};
+
 class ScriptPromiseResolverTest : public testing::Test {
 public:
     ScriptPromiseResolverTest()
-        : m_isolate(v8::Isolate::GetCurrent())
+        : m_scope(V8ExecutionScope::create(v8::Isolate::GetCurrent()))
     {
-    }
-
-    void SetUp()
-    {
-        m_scope = V8ExecutionScope::create(m_isolate);
         m_resolver = ScriptPromiseResolver::create(m_scope->scriptState());
-        m_promise = m_resolver->promise();
     }
 
-    void TearDown()
+    virtual ~ScriptPromiseResolverTest()
     {
-        m_resolver = nullptr;
-        m_promise.clear();
-        m_scope.clear();
+        // Run all pending microtasks here.
+        isolate()->RunMicrotasks();
     }
 
-    V8PromiseCustom::PromiseState state()
-    {
-        return V8PromiseCustom::getState(V8PromiseCustom::getInternal(promise()));
-    }
-
-    v8::Local<v8::Value> result()
-    {
-        return V8PromiseCustom::getInternal(promise())->GetInternalField(V8PromiseCustom::InternalResultIndex);
-    }
-
-    v8::Local<v8::Object> promise()
-    {
-        ASSERT(!m_promise.isEmpty());
-        return m_promise.v8Value().As<v8::Object>();
-    }
+    v8::Isolate* isolate() { return m_scope->isolate(); }
 
 protected:
-    v8::Isolate* m_isolate;
     RefPtr<ScriptPromiseResolver> m_resolver;
-    ScriptPromise m_promise;
-private:
     OwnPtr<V8ExecutionScope> m_scope;
 };
 
 TEST_F(ScriptPromiseResolverTest, initialState)
 {
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
-        return;
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
+    ScriptPromise promise = m_resolver->promise();
+    ASSERT_FALSE(promise.isEmpty());
+    String onFulfilled, onRejected;
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 }
 
 TEST_F(ScriptPromiseResolverTest, resolve)
 {
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
-        return;
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
+    ScriptPromise promise = m_resolver->promise();
+    ASSERT_FALSE(promise.isEmpty());
+    String onFulfilled, onRejected;
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
-    m_resolver->resolve(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 3)));
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    m_resolver->resolve("hello");
+    EXPECT_TRUE(m_resolver->promise().isEmpty());
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ("hello", onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 }
 
 TEST_F(ScriptPromiseResolverTest, reject)
 {
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
-        return;
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
+    ScriptPromise promise = m_resolver->promise();
+    ASSERT_FALSE(promise.isEmpty());
+    String onFulfilled, onRejected;
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
-    m_resolver->reject(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 3)));
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
-    EXPECT_EQ(V8PromiseCustom::Rejected, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    m_resolver->reject("hello");
+    EXPECT_TRUE(m_resolver->promise().isEmpty());
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ("hello", onRejected);
 }
 
 TEST_F(ScriptPromiseResolverTest, resolveOverResolve)
 {
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
-        return;
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
+    ScriptPromise promise = m_resolver->promise();
+    ASSERT_FALSE(promise.isEmpty());
+    String onFulfilled, onRejected;
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
-    m_resolver->resolve(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 3)));
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    m_resolver->resolve("hello");
+    EXPECT_TRUE(m_resolver->promise().isEmpty());
+    isolate()->RunMicrotasks();
 
-    m_resolver->resolve(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 4)));
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    EXPECT_EQ("hello", onFulfilled);
+    EXPECT_EQ(String(), onRejected);
+
+    m_resolver->resolve("world");
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ("hello", onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 }
 
 TEST_F(ScriptPromiseResolverTest, rejectOverResolve)
 {
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
-        return;
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
+    ScriptPromise promise = m_resolver->promise();
+    ASSERT_FALSE(promise.isEmpty());
+    String onFulfilled, onRejected;
+    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
 
-    m_resolver->resolve(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 3)));
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    m_resolver->resolve("hello");
+    EXPECT_TRUE(m_resolver->promise().isEmpty());
+    isolate()->RunMicrotasks();
 
-    m_resolver->reject(ScriptValue(ScriptState::current(m_isolate), v8::Integer::New(m_isolate, 4)));
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
+    EXPECT_EQ("hello", onFulfilled);
+    EXPECT_EQ(String(), onRejected);
+
+    m_resolver->reject("world");
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ("hello", onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 }
 
 } // namespace
