@@ -13,12 +13,16 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/notification_button.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
 
 /* Test fixture ***************************************************************/
 
-class NotificationViewTest : public testing::Test,
+class NotificationViewTest : public views::ViewsTestBase,
                              public MessageCenterController {
  public:
   NotificationViewTest();
@@ -27,6 +31,7 @@ class NotificationViewTest : public testing::Test,
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  views::Widget* widget() { return notification_view_->GetWidget(); }
   NotificationView* notification_view() { return notification_view_.get(); }
   Notification* notification() { return notification_.get(); }
   RichNotificationData* data() { return data_.get(); }
@@ -55,6 +60,12 @@ class NotificationViewTest : public testing::Test,
     return bitmap;
   }
 
+  std::vector<ButtonInfo> CreateButtons(int number) {
+    ButtonInfo info(base::ASCIIToUTF16("Test button title."));
+    info.icon = CreateTestImage(4, 4);
+    return std::vector<ButtonInfo>(number, info);
+  }
+
  private:
   scoped_ptr<RichNotificationData> data_;
   scoped_ptr<Notification> notification_;
@@ -70,6 +81,7 @@ NotificationViewTest::~NotificationViewTest() {
 }
 
 void NotificationViewTest::SetUp() {
+  views::ViewsTestBase::SetUp();
   // Create a dummy notification.
   SkBitmap bitmap;
   data_.reset(new RichNotificationData());
@@ -89,10 +101,20 @@ void NotificationViewTest::SetUp() {
   // Then create a new NotificationView with that single notification.
   notification_view_.reset(
       NotificationView::Create(this, *notification_, true));
+  notification_view_->set_owned_by_client();
+
+  views::Widget::InitParams init_params(
+      CreateParams(views::Widget::InitParams::TYPE_POPUP));
+  views::Widget* widget = new views::Widget();
+  widget->Init(init_params);
+  widget->SetContentsView(notification_view_.get());
+  widget->SetSize(notification_view_->GetPreferredSize());
 }
 
 void NotificationViewTest::TearDown() {
+  widget()->Close();
   notification_view_.reset();
+  views::ViewsTestBase::TearDown();
 }
 
 void NotificationViewTest::ClickOnNotification(
@@ -173,6 +195,86 @@ TEST_F(NotificationViewTest, TestLineLimits) {
   EXPECT_EQ(1, notification_view()->GetMessageLineLimit(0, 360));
   EXPECT_EQ(1, notification_view()->GetMessageLineLimit(1, 360));
   EXPECT_EQ(0, notification_view()->GetMessageLineLimit(2, 360));
+}
+
+TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
+  notification()->set_buttons(CreateButtons(2));
+  notification_view()->CreateOrUpdateViews(*notification());
+  widget()->Show();
+
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[0]->background());
+
+  // Now construct a mouse move event 1 pixel inside the boundary of the action
+  // button.
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToWidget(notification_view()->action_buttons_[0],
+                                    &cursor_location);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                      cursor_location,
+                      cursor_location,
+                      ui::EF_NONE,
+                      ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+
+  EXPECT_TRUE(NULL != notification_view()->action_buttons_[0]->background());
+
+  notification_view()->CreateOrUpdateViews(*notification());
+
+  EXPECT_TRUE(NULL != notification_view()->action_buttons_[0]->background());
+
+  // Now construct a mouse move event 1 pixel outside the boundary of the
+  // widget.
+  cursor_location = gfx::Point(-1, -1);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED,
+                        cursor_location,
+                        cursor_location,
+                        ui::EF_NONE,
+                        ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[0]->background());
+}
+
+TEST_F(NotificationViewTest, UpdateButtonCountTest) {
+  notification()->set_buttons(CreateButtons(2));
+  notification_view()->CreateOrUpdateViews(*notification());
+  widget()->Show();
+
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[0]->background());
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[1]->background());
+
+  // Now construct a mouse move event 1 pixel inside the boundary of the action
+  // button.
+  gfx::Point cursor_location(1, 1);
+  views::View::ConvertPointToWidget(notification_view()->action_buttons_[0],
+                                    &cursor_location);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                      cursor_location,
+                      cursor_location,
+                      ui::EF_NONE,
+                      ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+
+  EXPECT_TRUE(NULL != notification_view()->action_buttons_[0]->background());
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[1]->background());
+
+  notification()->set_buttons(CreateButtons(1));
+  notification_view()->CreateOrUpdateViews(*notification());
+
+  EXPECT_TRUE(NULL != notification_view()->action_buttons_[0]->background());
+  EXPECT_EQ(1u, notification_view()->action_buttons_.size());
+
+  // Now construct a mouse move event 1 pixel outside the boundary of the
+  // widget.
+  cursor_location = gfx::Point(-1, -1);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED,
+                        cursor_location,
+                        cursor_location,
+                        ui::EF_NONE,
+                        ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+
+  EXPECT_TRUE(NULL == notification_view()->action_buttons_[0]->background());
 }
 
 }  // namespace message_center

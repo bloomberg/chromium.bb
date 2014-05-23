@@ -98,6 +98,14 @@ void NotificationButton::OnBlur() {
   SchedulePaint();
 }
 
+void NotificationButton::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  // We disable view hierarchy change detection in the parent
+  // because it resets the hoverstate, which we do not want
+  // when we update the view to contain a new label or image.
+  views::View::ViewHierarchyChanged(details);
+}
+
 void NotificationButton::StateChanged() {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     set_background(views::Background::CreateSolidBackground(

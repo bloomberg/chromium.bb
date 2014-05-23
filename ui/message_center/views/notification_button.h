@@ -32,6 +32,8 @@ class NotificationButton : public views::CustomButton {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // Overridden from views::CustomButton:
   virtual void StateChanged() OVERRIDE;

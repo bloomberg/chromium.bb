@@ -5,6 +5,7 @@
 #include "ui/message_center/views/notification_view.h"
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
@@ -447,7 +448,8 @@ views::View* NotificationView::GetEventHandlerForRect(const gfx::Rect& rect) {
 
   // Want to return this for underlying views, otherwise GetCursor is not
   // called. But buttons are exceptions, they'll have their own event handlings.
-  std::vector<views::View*> buttons(action_buttons_);
+  std::vector<views::View*> buttons(action_buttons_.begin(),
+                                    action_buttons_.end());
   buttons.push_back(close_button());
 
   for (size_t i = 0; i < buttons.size(); ++i) {
@@ -698,29 +700,45 @@ void NotificationView::CreateOrUpdateImageView(
 
 void NotificationView::CreateOrUpdateActionButtonViews(
     const Notification& notification) {
-  for (size_t i = 0; i < separators_.size(); ++i)
-    delete separators_[i];
-  separators_.clear();
+  std::vector<ButtonInfo> buttons = notification.buttons();
+  bool new_buttons = action_buttons_.size() != buttons.size();
 
-  for (size_t i = 0; i < action_buttons_.size(); ++i)
-    delete action_buttons_[i];
-  action_buttons_.clear();
+  if (new_buttons || buttons.size() == 0) {
+    // STLDeleteElements also clears the container.
+    STLDeleteElements(&separators_);
+    STLDeleteElements(&action_buttons_);
+  }
 
   DCHECK(bottom_view_);
   DCHECK_EQ(this, bottom_view_->parent());
 
-  std::vector<ButtonInfo> buttons = notification.buttons();
   for (size_t i = 0; i < buttons.size(); ++i) {
-    views::View* separator = new views::ImageView();
-    separator->SetBorder(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
-    separators_.push_back(separator);
-    bottom_view_->AddChildView(separator);
-    NotificationButton* button = new NotificationButton(this);
     ButtonInfo button_info = buttons[i];
-    button->SetTitle(button_info.title);
-    button->SetIcon(button_info.icon.AsImageSkia());
-    action_buttons_.push_back(button);
-    bottom_view_->AddChildView(button);
+    if (new_buttons) {
+      views::View* separator = new views::ImageView();
+      separator->SetBorder(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
+      separators_.push_back(separator);
+      bottom_view_->AddChildView(separator);
+      NotificationButton* button = new NotificationButton(this);
+      button->SetTitle(button_info.title);
+      button->SetIcon(button_info.icon.AsImageSkia());
+      action_buttons_.push_back(button);
+      bottom_view_->AddChildView(button);
+    } else {
+      action_buttons_[i]->SetTitle(button_info.title);
+      action_buttons_[i]->SetIcon(button_info.icon.AsImageSkia());
+      action_buttons_[i]->SchedulePaint();
+      action_buttons_[i]->Layout();
+    }
+  }
+
+  if (new_buttons) {
+    Layout();
+    views::Widget* widget = GetWidget();
+    if (widget != NULL) {
+      widget->SetSize(widget->GetContentsView()->GetPreferredSize());
+      GetWidget()->SynthesizeMouseMoveEvent();
+    }
   }
 }
 

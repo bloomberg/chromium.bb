@@ -19,6 +19,7 @@ namespace message_center {
 class BoundedLabel;
 class MessageCenter;
 class MessageCenterController;
+class NotificationButton;
 class NotificationView;
 class PaddedButton;
 
@@ -72,6 +73,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestLineLimits);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonsStateTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonCountTest);
 
   void CreateOrUpdateViews(const Notification& notification);
   void SetAccessibleName(const Notification& notification);
@@ -103,7 +106,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   views::View* bottom_view_;
   views::View* image_view_;
   views::ProgressBar* progress_bar_view_;
-  std::vector<views::View*> action_buttons_;
+  std::vector<NotificationButton*> action_buttons_;
   std::vector<views::View*> separators_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
