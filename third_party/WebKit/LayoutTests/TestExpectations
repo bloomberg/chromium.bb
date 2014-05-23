@@ -1002,10 +1002,3 @@ crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/376534 http/tests/inspector/network/network-xhr-redirect-body.html [ Pass Failure ]
 crbug.com/376534 http/tests/inspector/network/network-xhr-redirect-method.html [ Pass Failure ]
-
-crbug.com/171639 fast/canvas/canvas-text-space-characters.html [ NeedsRebaseline ]
-crbug.com/171639 virtual/gpu/fast/canvas/canvas-text-space-characters.html [ NeedsRebaseline ]
-crbug.com/171639 fast/canvas/canvas-text-ideographic-space.html [ NeedsRebaseline ]
-crbug.com/171639 virtual/gpu/fast/canvas/canvas-text-ideographic-space.html [ NeedsRebaseline ]
-crbug.com/171639 canvas/philip/tests/2d.text.measure.width.space.html [ NeedsRebaseline ]
-crbug.com/171639 virtual/gpu/canvas/philip/tests/2d.text.measure.width.space.html [ NeedsRebaseline ]
