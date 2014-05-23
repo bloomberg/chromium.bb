@@ -5,42 +5,46 @@
 #ifndef CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_H_
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_H_
 
-#include "base/macros.h"
-
 class GoogleURLTracker;
+class InfoBarService;
+class Profile;
+
+namespace content {
+class NavigationController;
+}
 
 // A helper class for GoogleURLTracker that abstracts the details of listening
 // for various navigation events.
 class GoogleURLTrackerNavigationHelper {
  public:
-  explicit GoogleURLTrackerNavigationHelper(
-      GoogleURLTracker* google_url_tracker);
-  virtual ~GoogleURLTrackerNavigationHelper();
+  virtual ~GoogleURLTrackerNavigationHelper() {}
 
-  // Enables or disables listening for navigation commits.
-  // OnNavigationCommitted will be called for each navigation commit if
+  // Sets the GoogleURLTracker that is associated with this object.
+  virtual void SetGoogleURLTracker(GoogleURLTracker* tracker) = 0;
+
+  // Enables or disables listening for navigation commits for the given
+  // NavigationController. OnNavigationCommitted will be called for each
+  // navigation commit if listening is enabled.
+  virtual void SetListeningForNavigationCommit(
+      const content::NavigationController* nav_controller,
+      bool listen) = 0;
+
+  // Returns whether or not the observer is currently listening for navigation
+  // commits for the given NavigationController.
+  virtual bool IsListeningForNavigationCommit(
+      const content::NavigationController* nav_controller) = 0;
+
+  // Enables or disables listening for tab destruction for the given
+  // NavigationController. OnTabClosed will be called on tab destruction if
   // listening is enabled.
-  virtual void SetListeningForNavigationCommit(bool listen) = 0;
+  virtual void SetListeningForTabDestruction(
+      const content::NavigationController* nav_controller,
+      bool listen) = 0;
 
-  // Returns whether or not this object is currently listening for navigation
-  // commits.
-  virtual bool IsListeningForNavigationCommit() = 0;
-
-  // Enables or disables listening for tab destruction. OnTabClosed will be
-  // called on tab destruction if listening is enabled.
-  virtual void SetListeningForTabDestruction(bool listen) = 0;
-
-  // Returns whether or not this object is currently listening for tab
-  // destruction.
-  virtual bool IsListeningForTabDestruction() = 0;
-
- protected:
-  GoogleURLTracker* google_url_tracker() { return google_url_tracker_; }
-
- private:
-  GoogleURLTracker* google_url_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerNavigationHelper);
+  // Returns whether or not the observer is currently listening for tab
+  // destruction for the given NavigationController.
+  virtual bool IsListeningForTabDestruction(
+      const content::NavigationController* nav_controller) = 0;
 };
 
 #endif  // CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_NAVIGATION_HELPER_H_

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -49,13 +48,12 @@ void ChromeGoogleURLTrackerClient::Observe(
       content::Source<content::NavigationController>(source).ptr();
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(controller->GetWebContents());
-  // Because we're listening to all sources, there may be no InfoBarService for
-  // some notifications, e.g. navigations in bubbles/balloons etc.
+  // Because we're listening to all sources, there may be no
+  // InfoBarService for some notifications, e.g. navigations in
+  // bubbles/balloons etc.
   if (infobar_service) {
     google_url_tracker()->OnNavigationPending(
-        scoped_ptr<GoogleURLTrackerNavigationHelper>(
-            new GoogleURLTrackerNavigationHelperImpl(
-                controller->GetWebContents(), google_url_tracker())),
+        controller,
         infobar_service,
         controller->GetPendingEntry()->GetUniqueID());
   }
