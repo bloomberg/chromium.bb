@@ -78,7 +78,6 @@ private:
     void scheduleShadowTreeRecreation();
     virtual bool haveLoadedRequiredResources() OVERRIDE { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
 
-    virtual void finishParsingChildren() OVERRIDE;
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
     // Instance tree handling

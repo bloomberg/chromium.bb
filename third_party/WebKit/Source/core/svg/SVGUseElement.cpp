@@ -897,11 +897,6 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
     return false;
 }
 
-void SVGUseElement::finishParsingChildren()
-{
-    SVGGraphicsElement::finishParsingChildren();
-}
-
 void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
 {
     if (m_resource == resource)
