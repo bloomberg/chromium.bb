@@ -40,6 +40,8 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 
 namespace net {
 
@@ -844,6 +846,34 @@ void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
 SpdyMajorVersion SpdySession::GetProtocolVersion() const {
   DCHECK(buffered_spdy_framer_.get());
   return buffered_spdy_framer_->protocol_version();
+}
+
+bool SpdySession::HasAcceptableTransportSecurity() const {
+  // If we're not even using TLS, we have no standards to meet.
+  if (!is_secure_) {
+    return true;
+  }
+
+  // We don't enforce transport security standards for older SPDY versions.
+  if (GetProtocolVersion() < SPDY4) {
+    return true;
+  }
+
+  SSLInfo ssl_info;
+  CHECK(connection_->socket()->GetSSLInfo(&ssl_info));
+
+  // HTTP/2 requires TLS 1.2+
+  if (SSLConnectionStatusToVersion(ssl_info.connection_status) <
+      SSL_CONNECTION_VERSION_TLS1_2) {
+    return false;
+  }
+
+  if (!IsSecureTLSCipherSuite(
+          SSLConnectionStatusToCipherSuite(ssl_info.connection_status))) {
+    return false;
+  }
+
+  return true;
 }
 
 base::WeakPtr<SpdySession> SpdySession::GetWeakPtr() {

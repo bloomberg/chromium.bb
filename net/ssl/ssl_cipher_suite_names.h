@@ -46,6 +46,17 @@ NET_EXPORT void SSLVersionToString(const char** name, int ssl_version);
 NET_EXPORT bool ParseSSLCipherString(const std::string& cipher_string,
                                      uint16* cipher_suite);
 
+// |cipher_suite| is the IANA id for the cipher suite. What a "secure"
+// cipher suite is arbitrarily determined here. The intent is to indicate what
+// cipher suites meet modern security standards when backwards compatibility can
+// be ignored. Notably, HTTP/2 requires/encourages this sort of validation of
+// cipher suites: https://http2.github.io/http2-spec/#TLSUsage.
+//
+// Currently, this function follows these criteria:
+// 1) Only uses forward secure key exchanges
+// 2) Only uses AEADs
+NET_EXPORT_PRIVATE bool IsSecureTLSCipherSuite(uint16 cipher_suite);
+
 }  // namespace net
 
 #endif  // NET_SSL_SSL_CIPHER_SUITE_NAMES_H_

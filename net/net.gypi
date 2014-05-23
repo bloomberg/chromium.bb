@@ -1617,6 +1617,7 @@
       'ssl/ssl_cipher_suite_names_unittest.cc',
       'ssl/ssl_client_auth_cache_unittest.cc',
       'ssl/ssl_config_service_unittest.cc',
+      'ssl/ssl_connection_status_flags_unittest.cc',
       'test/gtest_util.h',
       'test/embedded_test_server/embedded_test_server_unittest.cc',
       'test/embedded_test_server/http_request_unittest.cc',

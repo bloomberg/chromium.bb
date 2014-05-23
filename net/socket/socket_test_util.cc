@@ -24,6 +24,7 @@
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -275,7 +276,12 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
       protocol_negotiated(kProtoUnknown),
       client_cert_sent(false),
       cert_request_info(NULL),
-      channel_id_sent(false) {
+      channel_id_sent(false),
+      connection_status(0) {
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
+                                &connection_status);
+  // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+  SSLConnectionStatusSetCipherSuite(0xcc14, &connection_status);
 }
 
 SSLSocketDataProvider::~SSLSocketDataProvider() {
@@ -1377,6 +1383,7 @@ bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->cert = data_->cert;
   ssl_info->client_cert_sent = data_->client_cert_sent;
   ssl_info->channel_id_sent = data_->channel_id_sent;
+  ssl_info->connection_status = data_->connection_status;
   return true;
 }
 

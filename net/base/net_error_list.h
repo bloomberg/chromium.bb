@@ -594,6 +594,9 @@ NET_ERROR(QUIC_HANDSHAKE_FAILED, -358)
 // An https resource was requested over an insecure QUIC connection.
 NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
 
+// Transport security is inadequate for the SPDY version.
+NET_ERROR(SPDY_INADEQUATE_TRANSPORT_SECURITY, -360)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

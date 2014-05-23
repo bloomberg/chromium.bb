@@ -5,6 +5,9 @@
 #ifndef NET_SSL_SSL_CONNECTION_STATUS_FLAGS_H_
 #define NET_SSL_SSL_CONNECTION_STATUS_FLAGS_H_
 
+#include "base/logging.h"
+#include "base/macros.h"
+
 namespace net {
 
 // Status flags for SSLInfo::connection_status.
@@ -58,6 +61,28 @@ inline int SSLConnectionStatusToCipherSuite(int connection_status) {
 inline int SSLConnectionStatusToVersion(int connection_status) {
   return (connection_status >> SSL_CONNECTION_VERSION_SHIFT) &
          SSL_CONNECTION_VERSION_MASK;
+}
+
+inline void SSLConnectionStatusSetCipherSuite(int cipher_suite,
+                                              int* connection_status) {
+  // Clear out the old ciphersuite.
+  *connection_status &=
+      ~(SSL_CONNECTION_CIPHERSUITE_MASK << SSL_CONNECTION_CIPHERSUITE_SHIFT);
+  // Set the new ciphersuite.
+  *connection_status |= ((cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK)
+                         << SSL_CONNECTION_CIPHERSUITE_SHIFT);
+}
+
+inline void SSLConnectionStatusSetVersion(int version, int* connection_status) {
+  DCHECK_GT(version, 0);
+  DCHECK_LT(version, SSL_CONNECTION_VERSION_MAX);
+
+  // Clear out the old version.
+  *connection_status &=
+      ~(SSL_CONNECTION_VERSION_MASK << SSL_CONNECTION_VERSION_SHIFT);
+  // Set the new version.
+  *connection_status |=
+      ((version & SSL_CONNECTION_VERSION_MASK) << SSL_CONNECTION_VERSION_SHIFT);
 }
 
 }  // namespace net

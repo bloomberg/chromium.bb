@@ -56,6 +56,22 @@ TEST(CipherSuiteNamesTest, ParseSSLCipherStringFails) {
   }
 }
 
+TEST(CipherSuiteNamesTest, SecureCipherSuites) {
+  // Picked some random cipher suites.
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0x0));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0x39));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc5));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc00f));
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0xc083));
+
+  // Non-existent cipher suite.
+  EXPECT_FALSE(IsSecureTLSCipherSuite(0xffff)) << "Doesn't exist!";
+
+  // Secure ones.
+  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc13));
+  EXPECT_TRUE(IsSecureTLSCipherSuite(0xcc14));
+}
+
 }  // anonymous namespace
 
 }  // namespace net

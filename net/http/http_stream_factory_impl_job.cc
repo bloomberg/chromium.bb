@@ -1129,18 +1129,25 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     SpdySessionPool* spdy_pool = session_->spdy_session_pool();
     spdy_session = spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
     if (!spdy_session) {
-      new_spdy_session_ =
+      base::WeakPtr<SpdySession> new_spdy_session =
           spdy_pool->CreateAvailableSessionFromSocket(spdy_session_key,
                                                       connection_.Pass(),
                                                       net_log_,
                                                       spdy_certificate_error_,
                                                       using_ssl_);
+      if (!new_spdy_session->HasAcceptableTransportSecurity()) {
+        new_spdy_session->CloseSessionOnError(
+            ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, "");
+        return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
+      }
+
+      new_spdy_session_ = new_spdy_session;
+      spdy_session_direct_ = direct;
       const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
       base::WeakPtr<HttpServerProperties> http_server_properties =
           session_->http_server_properties();
       if (http_server_properties)
         http_server_properties->SetSupportsSpdy(host_port_pair, true);
-      spdy_session_direct_ = direct;
 
       // Create a SpdyHttpStream attached to the session;
       // OnNewSpdySessionReadyCallback is not called until an event loop

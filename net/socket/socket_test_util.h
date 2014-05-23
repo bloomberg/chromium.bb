@@ -334,6 +334,7 @@ struct SSLSocketDataProvider {
   scoped_refptr<X509Certificate> cert;
   bool channel_id_sent;
   ServerBoundCertService* server_bound_cert_service;
+  int connection_status;
 };
 
 // A DataProvider where the client must write a request before the reads (e.g.

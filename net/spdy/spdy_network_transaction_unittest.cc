@@ -33,6 +33,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_utils.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -217,7 +218,7 @@ class SpdyNetworkTransactionTest
     }
 
     bool StartDefaultTest() {
-      output_.rv = trans_->Start(&request_, callback.callback(), log_);
+      output_.rv = trans_->Start(&request_, callback_.callback(), log_);
 
       // We expect an IO Pending or some sort of error.
       EXPECT_LT(output_.rv, 0);
@@ -225,7 +226,7 @@ class SpdyNetworkTransactionTest
     }
 
     void FinishDefaultTest() {
-      output_.rv = callback.WaitForResult();
+      output_.rv = callback_.WaitForResult();
       if (output_.rv != OK) {
         session_->spdy_session_pool()->CloseCurrentSessions(net::ERR_ABORTED);
         return;
@@ -305,17 +306,35 @@ class SpdyNetworkTransactionTest
       VerifyDataConsumed();
     }
 
+    void RunToCompletionWithSSLData(
+        StaticSocketDataProvider* data,
+        scoped_ptr<SSLSocketDataProvider> ssl_provider) {
+      RunPreTestSetup();
+      AddDataWithSSLSocketDataProvider(data, ssl_provider.Pass());
+      RunDefaultTest();
+      VerifyDataConsumed();
+    }
+
     void AddData(StaticSocketDataProvider* data) {
+      scoped_ptr<SSLSocketDataProvider> ssl_provider(
+          new SSLSocketDataProvider(ASYNC, OK));
+      AddDataWithSSLSocketDataProvider(data, ssl_provider.Pass());
+    }
+
+    void AddDataWithSSLSocketDataProvider(
+        StaticSocketDataProvider* data,
+        scoped_ptr<SSLSocketDataProvider> ssl_provider) {
       DCHECK(!deterministic_);
       data_vector_.push_back(data);
-      SSLSocketDataProvider* ssl_provider =
-          new SSLSocketDataProvider(ASYNC, OK);
       if (test_params_.ssl_type == SPDYNPN)
         ssl_provider->SetNextProto(test_params_.protocol);
 
-      ssl_vector_.push_back(ssl_provider);
-      if (test_params_.ssl_type == SPDYNPN || test_params_.ssl_type == SPDYSSL)
-        session_deps_->socket_factory->AddSSLSocketDataProvider(ssl_provider);
+      if (test_params_.ssl_type == SPDYNPN ||
+          test_params_.ssl_type == SPDYSSL) {
+        session_deps_->socket_factory->AddSSLSocketDataProvider(
+            ssl_provider.get());
+      }
+      ssl_vector_.push_back(ssl_provider.release());
 
       session_deps_->socket_factory->AddSocketDataProvider(data);
       if (test_params_.ssl_type == SPDYNPN) {
@@ -388,7 +407,7 @@ class SpdyNetworkTransactionTest
     TransactionHelperResult output_;
     scoped_ptr<StaticSocketDataProvider> first_transaction_;
     SSLVector ssl_vector_;
-    TestCompletionCallback callback;
+    TestCompletionCallback callback_;
     scoped_ptr<HttpNetworkTransaction> trans_;
     scoped_ptr<HttpNetworkTransaction> trans_http_;
     DataVector data_vector_;
@@ -6577,6 +6596,115 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   data.RunFor((GetParam().protocol >= kProtoSPDY31) ? 9 : 8);
   rv = callback.WaitForResult();
   helper.VerifyDataConsumed();
+}
+
+class SpdyNetworkTransactionNoTLSUsageCheckTest
+    : public SpdyNetworkTransactionTest {
+ protected:
+  void RunNoTLSUsageCheckTest(scoped_ptr<SSLSocketDataProvider> ssl_provider) {
+    // Construct the request.
+    scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyGet(
+        "https://www.google.com/", false, 1, LOWEST));
+    MockWrite writes[] = {CreateMockWrite(*req)};
+
+    scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+    scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+    MockRead reads[] = {
+        CreateMockRead(*resp), CreateMockRead(*body),
+        MockRead(ASYNC, 0, 0)  // EOF
+    };
+
+    DelayedSocketData data(
+        1, reads, arraysize(reads), writes, arraysize(writes));
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("https://www.google.com/");
+    NormalSpdyTransactionHelper helper(
+        request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
+    helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
+    TransactionHelperResult out = helper.output();
+    EXPECT_EQ(OK, out.rv);
+    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("hello!", out.response_data);
+  }
+};
+
+//-----------------------------------------------------------------------------
+// All tests are run with three different connection types: SPDY after NPN
+// negotiation, SPDY without SSL, and SPDY with SSL.
+//
+// TODO(akalin): Use ::testing::Combine() when we are able to use
+// <tr1/tuple>.
+INSTANTIATE_TEST_CASE_P(
+    Spdy,
+    SpdyNetworkTransactionNoTLSUsageCheckTest,
+    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoDeprecatedSPDY2,
+                                                       SPDYNPN),
+                      SpdyNetworkTransactionTestParams(kProtoSPDY3, SPDYNPN),
+                      SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN)));
+
+TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSVersionTooOld) {
+  scoped_ptr<SSLSocketDataProvider> ssl_provider(
+      new SSLSocketDataProvider(ASYNC, OK));
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
+                                &ssl_provider->connection_status);
+
+  RunNoTLSUsageCheckTest(ssl_provider.Pass());
+}
+
+TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSCipherSuiteSucky) {
+  scoped_ptr<SSLSocketDataProvider> ssl_provider(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Set to TLS_RSA_WITH_NULL_MD5
+  SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
+
+  RunNoTLSUsageCheckTest(ssl_provider.Pass());
+}
+
+class SpdyNetworkTransactionTLSUsageCheckTest
+    : public SpdyNetworkTransactionTest {
+ protected:
+  void RunTLSUsageCheckTest(scoped_ptr<SSLSocketDataProvider> ssl_provider) {
+    // TODO(willchan): Fix crbug.com/375033 to send GOAWAYs.
+    // scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway());
+    // MockWrite writes[] = {
+    //   CreateMockWrite(*goaway)
+    // };
+
+    // DelayedSocketData data(1, NULL, 0, writes, arraysize(writes));
+    DelayedSocketData data(1, NULL, 0, NULL, 0);
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("https://www.google.com/");
+    NormalSpdyTransactionHelper helper(
+        request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
+    helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
+    TransactionHelperResult out = helper.output();
+    EXPECT_EQ(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, out.rv);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(
+    Spdy,
+    SpdyNetworkTransactionTLSUsageCheckTest,
+    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
+
+TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
+  scoped_ptr<SSLSocketDataProvider> ssl_provider(
+      new SSLSocketDataProvider(ASYNC, OK));
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
+                                &ssl_provider->connection_status);
+
+  RunTLSUsageCheckTest(ssl_provider.Pass());
+}
+
+TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSCipherSuiteSucky) {
+  scoped_ptr<SSLSocketDataProvider> ssl_provider(
+      new SSLSocketDataProvider(ASYNC, OK));
+  // Set to TLS_RSA_WITH_NULL_MD5
+  SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
+
+  RunTLSUsageCheckTest(ssl_provider.Pass());
 }
 
 }  // namespace net

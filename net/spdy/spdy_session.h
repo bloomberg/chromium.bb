@@ -469,6 +469,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return buffered_spdy_framer_->GetDataFrameMaximumPayload();
   }
 
+  // https://http2.github.io/http2-spec/#TLSUsage mandates minimum security
+  // standards for TLS.
+  bool HasAcceptableTransportSecurity() const;
+
   // Must be used only by |pool_|.
   base::WeakPtr<SpdySession> GetWeakPtr();
 
