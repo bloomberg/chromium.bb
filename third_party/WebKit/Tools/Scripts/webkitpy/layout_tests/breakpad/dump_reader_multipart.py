@@ -43,6 +43,7 @@ class DumpReaderMultipart(DumpReader):
         super(DumpReaderMultipart, self).__init__(host, build_dir)
         self._webkit_finder = WebKitFinder(host.filesystem)
         self._breakpad_tools_available = None
+        self._generated_symbols = False
 
     def check_is_functional(self):
         return self._check_breakpad_tools_available()
@@ -122,6 +123,10 @@ class DumpReaderMultipart(DumpReader):
         return self._host.filesystem.join(self._build_dir, 'content_shell.syms')
 
     def _generate_breakpad_symbols_if_necessary(self):
+        if self._generated_symbols:
+            return
+        self._generated_symbols = True
+
         _log.debug("Generating breakpad symbols")
         for binary in self._binaries_to_symbolize():
             full_path = self._host.filesystem.join(self._build_dir, binary)
