@@ -150,24 +150,6 @@ private:
     const unsigned m_optionalLengthBits;
 };
 
-class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
-public:
-    WebCryptoRsaKeyGenParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
-        : m_modulusLengthBits(modulusLengthBits)
-        , m_publicExponent(publicExponent, publicExponentSize)
-    {
-    }
-
-    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaKeyGenParams; }
-
-    unsigned modulusLengthBits() const { return m_modulusLengthBits; }
-    const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
-
-private:
-    const unsigned m_modulusLengthBits;
-    const WebVector<unsigned char> m_publicExponent;
-};
-
 class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
 public:
     WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLengthBits, unsigned char tagLengthBits)
@@ -209,10 +191,11 @@ public:
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaHashedImportParams; }
 };
 
-class WebCryptoRsaHashedKeyGenParams : public WebCryptoRsaKeyGenParams {
+class WebCryptoRsaHashedKeyGenParams : public WebCryptoAlgorithmParams {
 public:
     explicit WebCryptoRsaHashedKeyGenParams(const WebCryptoAlgorithm& hash, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
-        : WebCryptoRsaKeyGenParams(modulusLengthBits, publicExponent, publicExponentSize)
+        : m_modulusLengthBits(modulusLengthBits)
+        , m_publicExponent(publicExponent, publicExponentSize)
         , m_hash(hash)
     {
         BLINK_ASSERT(!hash.isNull());
@@ -220,9 +203,13 @@ public:
 
     virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams; }
 
+    unsigned modulusLengthBits() const { return m_modulusLengthBits; }
+    const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
     const WebCryptoAlgorithm& hash() const { return m_hash; }
 
 private:
+    const unsigned m_modulusLengthBits;
+    const WebVector<unsigned char> m_publicExponent;
     const WebCryptoAlgorithm m_hash;
 };
 

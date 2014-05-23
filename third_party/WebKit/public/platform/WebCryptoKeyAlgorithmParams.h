@@ -41,7 +41,6 @@ enum WebCryptoKeyAlgorithmParamsType {
     WebCryptoKeyAlgorithmParamsTypeNone,
     WebCryptoKeyAlgorithmParamsTypeHmac,
     WebCryptoKeyAlgorithmParamsTypeAes,
-    WebCryptoKeyAlgorithmParamsTypeRsa,
     WebCryptoKeyAlgorithmParamsTypeRsaHashed
 };
 
@@ -103,11 +102,12 @@ private:
     unsigned m_lengthBits;
 };
 
-class WebCryptoRsaKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
+class WebCryptoRsaHashedKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
 public:
-    WebCryptoRsaKeyAlgorithmParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
+    WebCryptoRsaHashedKeyAlgorithmParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, const WebCryptoAlgorithm& hash)
         : m_modulusLengthBits(modulusLengthBits)
         , m_publicExponent(publicExponent, publicExponentSize)
+        , m_hash(hash)
     {
     }
 
@@ -121,24 +121,6 @@ public:
         return m_publicExponent;
     }
 
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeRsa;
-    }
-
-private:
-    unsigned m_modulusLengthBits;
-    WebVector<unsigned char> m_publicExponent;
-};
-
-class WebCryptoRsaHashedKeyAlgorithmParams : public WebCryptoRsaKeyAlgorithmParams {
-public:
-    WebCryptoRsaHashedKeyAlgorithmParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, const WebCryptoAlgorithm& hash)
-        : WebCryptoRsaKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize)
-        , m_hash(hash)
-    {
-    }
-
     const WebCryptoAlgorithm& hash() const
     {
         return m_hash;
@@ -150,6 +132,8 @@ public:
     }
 
 private:
+    unsigned m_modulusLengthBits;
+    WebVector<unsigned char> m_publicExponent;
     WebCryptoAlgorithm m_hash;
 };
 

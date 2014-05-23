@@ -221,10 +221,8 @@ enum SerializationTag {
                         //       props = keyLengthBytes:uint32_t, algorithmId:uint32_t
                         //   If subtag=HmacKeyTag:
                         //       props = keyLengthBytes:uint32_t, hashId:uint32_t
-                        //   If subtag=RsaKeyTag:
-                        //       props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength]
                         //   If subtag=RsaHashedKeyTag:
-                        //       props = <same as for RsaKeyTag>, hashId:uint32_t
+                        //       props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength], hashId:uint32_t
     ObjectReferenceTag = '^', // ref:uint32_t -> reference table[ref]
     GenerateFreshObjectTag = 'o', // -> empty object allocated an object ID and pushed onto the open stack (ref)
     GenerateFreshSparseArrayTag = 'a', // length:uint32_t -> empty array[length] allocated an object ID and pushed onto the open stack (ref)
@@ -253,7 +251,7 @@ enum ArrayBufferViewSubTag {
 enum CryptoKeySubTag {
     AesKeyTag = 1,
     HmacKeyTag = 2,
-    RsaKeyTag = 3,
+    // ID 3 was used by RsaKeyTag, while still behind experimental flag.
     RsaHashedKeyTag = 4,
     // Maximum allowed value is 255
 };
@@ -268,7 +266,7 @@ enum CryptoKeyAlgorithmTag {
     AesCbcTag = 1,
     HmacTag = 2,
     RsaSsaPkcs1v1_5Tag = 3,
-    RsaEsPkcs1v1_5Tag = 4,
+    // ID 4 was used by RsaEs, while still behind experimental flag.
     Sha1Tag = 5,
     Sha256Tag = 6,
     Sha384Tag = 7,
@@ -517,9 +515,8 @@ public:
         case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
             doWriteHmacKey(key);
             break;
-        case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
         case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
-            doWriteRsaKey(key);
+            doWriteRsaHashedKey(key);
             break;
         case blink::WebCryptoKeyAlgorithmParamsTypeNone:
             ASSERT_NOT_REACHED();
@@ -730,12 +727,10 @@ private:
         doWriteUint32(key.algorithm().aesParams()->lengthBits() / 8);
     }
 
-    void doWriteRsaKey(const blink::WebCryptoKey& key)
+    void doWriteRsaHashedKey(const blink::WebCryptoKey& key)
     {
-        if (key.algorithm().rsaHashedParams())
-            append(static_cast<uint8_t>(RsaHashedKeyTag));
-        else
-            append(static_cast<uint8_t>(RsaKeyTag));
+        ASSERT(key.algorithm().rsaHashedParams());
+        append(static_cast<uint8_t>(RsaHashedKeyTag));
 
         doWriteAlgorithmId(key.algorithm().id());
 
@@ -750,13 +745,11 @@ private:
             ASSERT_NOT_REACHED();
         }
 
-        const blink::WebCryptoRsaKeyAlgorithmParams* params = key.algorithm().rsaParams();
+        const blink::WebCryptoRsaHashedKeyAlgorithmParams* params = key.algorithm().rsaHashedParams();
         doWriteUint32(params->modulusLengthBits());
         doWriteUint32(params->publicExponent().size());
         append(params->publicExponent().data(), params->publicExponent().size());
-
-        if (key.algorithm().rsaHashedParams())
-            doWriteAlgorithmId(key.algorithm().rsaHashedParams()->hash().id());
+        doWriteAlgorithmId(key.algorithm().rsaHashedParams()->hash().id());
     }
 
     void doWriteAlgorithmId(blink::WebCryptoAlgorithmId id)
@@ -768,8 +761,6 @@ private:
             return doWriteUint32(HmacTag);
         case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
             return doWriteUint32(RsaSsaPkcs1v1_5Tag);
-        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-            return doWriteUint32(RsaEsPkcs1v1_5Tag);
         case blink::WebCryptoAlgorithmIdSha1:
             return doWriteUint32(Sha1Tag);
         case blink::WebCryptoAlgorithmIdSha256:
@@ -2254,12 +2245,8 @@ private:
             if (!doReadHmacKey(algorithm, type))
                 return false;
             break;
-        case RsaKeyTag:
-            if (!doReadRsaKey(false, algorithm, type))
-                return false;
-            break;
         case RsaHashedKeyTag:
-            if (!doReadRsaKey(true, algorithm, type))
+            if (!doReadRsaHashedKey(algorithm, type))
                 return false;
             break;
         default:
@@ -2419,7 +2406,7 @@ private:
         return !algorithm.isNull();
     }
 
-    bool doReadRsaKey(bool hasHash, blink::WebCryptoKeyAlgorithm& algorithm, blink::WebCryptoKeyType& type)
+    bool doReadRsaHashedKey(blink::WebCryptoKeyAlgorithm& algorithm, blink::WebCryptoKeyType& type)
     {
         blink::WebCryptoAlgorithmId id;
         if (!doReadAlgorithmId(id))
@@ -2454,14 +2441,10 @@ private:
         const uint8_t* publicExponent = m_buffer + m_position;
         m_position += publicExponentSize;
 
-        if (hasHash) {
-            blink::WebCryptoAlgorithmId hash;
-            if (!doReadAlgorithmId(hash))
-                return false;
-            algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(id, modulusLengthBits, publicExponent, publicExponentSize, hash);
-        } else {
-            algorithm = blink::WebCryptoKeyAlgorithm::createRsa(id, modulusLengthBits, publicExponent, publicExponentSize);
-        }
+        blink::WebCryptoAlgorithmId hash;
+        if (!doReadAlgorithmId(hash))
+            return false;
+        algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(id, modulusLengthBits, publicExponent, publicExponentSize, hash);
 
         return !algorithm.isNull();
     }
@@ -2481,9 +2464,6 @@ private:
             return true;
         case RsaSsaPkcs1v1_5Tag:
             id = blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
-            return true;
-        case RsaEsPkcs1v1_5Tag:
-            id = blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5;
             return true;
         case Sha1Tag:
             id = blink::WebCryptoAlgorithmIdSha1;
