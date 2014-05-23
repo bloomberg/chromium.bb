@@ -25,7 +25,7 @@ class AndroidMetricsProvider : public metrics::MetricsProvider {
 
   // metrics::MetricsDataProvider:
   virtual void ProvideStabilityMetrics(
-      metrics::SystemProfileProto_Stability* stability_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);

@@ -14,13 +14,11 @@
 #include "base/basictypes.h"
 #include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/common/variations/variations_util.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_log_base.h"
 #include "ui/gfx/size.h"
 
 class HashedExtensionMetrics;
 class PrefService;
-class PrefRegistrySimple;
 
 #if defined(OS_CHROMEOS)
 class MetricsLogChromeOS;
@@ -62,8 +60,6 @@ class MetricsLog : public metrics::MetricsLogBase {
              metrics::MetricsServiceClient* client);
   virtual ~MetricsLog();
 
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Records the current operating environment, including metrics provided by
   // the specified set of |metrics_providers|.  Takes the list of installed
   // plugins, Google Update statistics, and synthetic trial IDs as parameters
@@ -73,7 +69,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // is determined by the pref value.
   void RecordEnvironment(
       const std::vector<metrics::MetricsProvider*>& metrics_providers,
-      const std::vector<content::WebPluginInfo>& plugin_list,
       const std::vector<variations::ActiveGroupId>& synthetic_trials);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
@@ -145,9 +140,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // call to RecordStabilityMetrics().
   bool HasStabilityMetrics() const;
 
-  // Within stability group, write plugin crash stats.
-  void WritePluginStabilityElements(PrefService* pref);
-
   // Within the stability group, write required attributes.
   void WriteRequiredStabilityAttributes(PrefService* pref);
 
@@ -158,9 +150,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   void WriteRealtimeStabilityAttributes(PrefService* pref,
                                         base::TimeDelta incremental_uptime,
                                         base::TimeDelta uptime);
-
-  // Writes the list of installed plugins.
-  void WritePluginList(const std::vector<content::WebPluginInfo>& plugin_list);
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.

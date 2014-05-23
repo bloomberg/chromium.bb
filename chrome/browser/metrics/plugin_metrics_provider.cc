@@ -1,0 +1,350 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/metrics/plugin_metrics_provider.h"
+
+#include <string>
+
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/metrics/proto/system_profile.pb.h"
+#include "content/public/browser/child_process_data.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
+
+namespace {
+
+// Returns the plugin preferences corresponding for this user, if available.
+// If multiple user profiles are loaded, returns the preferences corresponding
+// to an arbitrary one of the profiles.
+PluginPrefs* GetPluginPrefs() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  if (!profile_manager) {
+    // The profile manager can be NULL when testing.
+    return NULL;
+  }
+
+  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+  if (profiles.empty())
+    return NULL;
+
+  return PluginPrefs::GetForProfile(profiles.front()).get();
+}
+
+// Fills |plugin| with the info contained in |plugin_info| and |plugin_prefs|.
+void SetPluginInfo(const content::WebPluginInfo& plugin_info,
+                   const PluginPrefs* plugin_prefs,
+                   metrics::SystemProfileProto::Plugin* plugin) {
+  plugin->set_name(base::UTF16ToUTF8(plugin_info.name));
+  plugin->set_filename(plugin_info.path.BaseName().AsUTF8Unsafe());
+  plugin->set_version(base::UTF16ToUTF8(plugin_info.version));
+  plugin->set_is_pepper(plugin_info.is_pepper_plugin());
+  if (plugin_prefs)
+    plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
+}
+
+}  // namespace
+
+// This is used to quickly log stats from child process related notifications in
+// PluginMetricsProvider::child_stats_buffer_.  The buffer's contents are
+// transferred out when Local State is periodically saved.  The information is
+// then reported to the UMA server on next launch.
+struct PluginMetricsProvider::ChildProcessStats {
+ public:
+  explicit ChildProcessStats(int process_type)
+      : process_launches(0),
+        process_crashes(0),
+        instances(0),
+        loading_errors(0),
+        process_type(process_type) {}
+
+  // This constructor is only used by the map to return some default value for
+  // an index for which no value has been assigned.
+  ChildProcessStats()
+      : process_launches(0),
+        process_crashes(0),
+        instances(0),
+        loading_errors(0),
+        process_type(content::PROCESS_TYPE_UNKNOWN) {}
+
+  // The number of times that the given child process has been launched
+  int process_launches;
+
+  // The number of times that the given child process has crashed
+  int process_crashes;
+
+  // The number of instances of this child process that have been created.
+  // An instance is a DOM object rendered by this child process during a page
+  // load.
+  int instances;
+
+  // The number of times there was an error loading an instance of this child
+  // process.
+  int loading_errors;
+
+  int process_type;
+};
+
+PluginMetricsProvider::PluginMetricsProvider(PrefService* local_state)
+    : local_state_(local_state),
+      weak_ptr_factory_(this) {
+  DCHECK(local_state_);
+
+  BrowserChildProcessObserver::Add(this);
+}
+
+PluginMetricsProvider::~PluginMetricsProvider() {
+  BrowserChildProcessObserver::Remove(this);
+}
+
+void PluginMetricsProvider::GetPluginInformation(
+    const base::Closure& done_callback) {
+  content::PluginService::GetInstance()->GetPlugins(
+      base::Bind(&PluginMetricsProvider::OnGotPlugins,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 done_callback));
+}
+
+void PluginMetricsProvider::ProvideSystemProfileMetrics(
+    metrics::SystemProfileProto* system_profile_proto) {
+  PluginPrefs* plugin_prefs = GetPluginPrefs();
+  for (size_t i = 0; i < plugins_.size(); ++i) {
+    SetPluginInfo(plugins_[i], plugin_prefs,
+                  system_profile_proto->add_plugin());
+  }
+}
+
+void PluginMetricsProvider::ProvideStabilityMetrics(
+    metrics::SystemProfileProto* system_profile_proto) {
+  const base::ListValue* plugin_stats_list = local_state_->GetList(
+      prefs::kStabilityPluginStats);
+  if (!plugin_stats_list)
+    return;
+
+  metrics::SystemProfileProto::Stability* stability =
+      system_profile_proto->mutable_stability();
+  for (base::ListValue::const_iterator iter = plugin_stats_list->begin();
+       iter != plugin_stats_list->end(); ++iter) {
+    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+      NOTREACHED();
+      continue;
+    }
+    base::DictionaryValue* plugin_dict =
+        static_cast<base::DictionaryValue*>(*iter);
+
+    // Note that this search is potentially a quadratic operation, but given the
+    // low number of plugins installed on a "reasonable" setup, this should be
+    // fine.
+    // TODO(isherman): Verify that this does not show up as a hotspot in
+    // profiler runs.
+    const metrics::SystemProfileProto::Plugin* system_profile_plugin = NULL;
+    std::string plugin_name;
+    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
+    for (int i = 0; i < system_profile_proto->plugin_size(); ++i) {
+      if (system_profile_proto->plugin(i).name() == plugin_name) {
+        system_profile_plugin = &system_profile_proto->plugin(i);
+        break;
+      }
+    }
+
+    if (!system_profile_plugin) {
+      NOTREACHED();
+      continue;
+    }
+
+    metrics::SystemProfileProto::Stability::PluginStability* plugin_stability =
+        stability->add_plugin_stability();
+    *plugin_stability->mutable_plugin() = *system_profile_plugin;
+
+    int launches = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
+    if (launches > 0)
+      plugin_stability->set_launch_count(launches);
+
+    int instances = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
+    if (instances > 0)
+      plugin_stability->set_instance_count(instances);
+
+    int crashes = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
+    if (crashes > 0)
+      plugin_stability->set_crash_count(crashes);
+
+    int loading_errors = 0;
+    plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
+                            &loading_errors);
+    if (loading_errors > 0)
+      plugin_stability->set_loading_error_count(loading_errors);
+  }
+
+  local_state_->ClearPref(prefs::kStabilityPluginStats);
+}
+
+void PluginMetricsProvider::RecordPluginChanges() {
+  ListPrefUpdate update(local_state_, prefs::kStabilityPluginStats);
+  base::ListValue* plugins = update.Get();
+  DCHECK(plugins);
+
+  for (base::ListValue::iterator value_iter = plugins->begin();
+       value_iter != plugins->end(); ++value_iter) {
+    if (!(*value_iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+      NOTREACHED();
+      continue;
+    }
+
+    base::DictionaryValue* plugin_dict =
+        static_cast<base::DictionaryValue*>(*value_iter);
+    std::string plugin_name;
+    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
+    if (plugin_name.empty()) {
+      NOTREACHED();
+      continue;
+    }
+
+    // TODO(viettrungluu): remove conversions
+    base::string16 name16 = base::UTF8ToUTF16(plugin_name);
+    if (child_process_stats_buffer_.find(name16) ==
+        child_process_stats_buffer_.end()) {
+      continue;
+    }
+
+    ChildProcessStats stats = child_process_stats_buffer_[name16];
+    if (stats.process_launches) {
+      int launches = 0;
+      plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
+      launches += stats.process_launches;
+      plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, launches);
+    }
+    if (stats.process_crashes) {
+      int crashes = 0;
+      plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
+      crashes += stats.process_crashes;
+      plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, crashes);
+    }
+    if (stats.instances) {
+      int instances = 0;
+      plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
+      instances += stats.instances;
+      plugin_dict->SetInteger(prefs::kStabilityPluginInstances, instances);
+    }
+    if (stats.loading_errors) {
+      int loading_errors = 0;
+      plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
+                              &loading_errors);
+      loading_errors += stats.loading_errors;
+      plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
+                              loading_errors);
+    }
+
+    child_process_stats_buffer_.erase(name16);
+  }
+
+  // Now go through and add dictionaries for plugins that didn't already have
+  // reports in Local State.
+  for (std::map<base::string16, ChildProcessStats>::iterator cache_iter =
+           child_process_stats_buffer_.begin();
+       cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
+    ChildProcessStats stats = cache_iter->second;
+
+    // Insert only plugins information into the plugins list.
+    if (!IsPluginProcess(stats.process_type))
+      continue;
+
+    // TODO(viettrungluu): remove conversion
+    std::string plugin_name = base::UTF16ToUTF8(cache_iter->first);
+
+    base::DictionaryValue* plugin_dict = new base::DictionaryValue;
+
+    plugin_dict->SetString(prefs::kStabilityPluginName, plugin_name);
+    plugin_dict->SetInteger(prefs::kStabilityPluginLaunches,
+                            stats.process_launches);
+    plugin_dict->SetInteger(prefs::kStabilityPluginCrashes,
+                            stats.process_crashes);
+    plugin_dict->SetInteger(prefs::kStabilityPluginInstances,
+                            stats.instances);
+    plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
+                            stats.loading_errors);
+    plugins->Append(plugin_dict);
+  }
+  child_process_stats_buffer_.clear();
+}
+
+void PluginMetricsProvider::LogPluginLoadingError(
+    const base::FilePath& plugin_path) {
+  content::WebPluginInfo plugin;
+  bool success =
+      content::PluginService::GetInstance()->GetPluginInfoByPath(plugin_path,
+                                                                 &plugin);
+  DCHECK(success);
+  ChildProcessStats& stats = child_process_stats_buffer_[plugin.name];
+  // Initialize the type if this entry is new.
+  if (stats.process_type == content::PROCESS_TYPE_UNKNOWN) {
+    // The plug-in process might not actually be of type PLUGIN (which means
+    // NPAPI), but we only care that it is *a* plug-in process.
+    stats.process_type = content::PROCESS_TYPE_PLUGIN;
+  } else {
+    DCHECK(IsPluginProcess(stats.process_type));
+  }
+  stats.loading_errors++;
+}
+
+void PluginMetricsProvider::SetPluginsForTesting(
+    const std::vector<content::WebPluginInfo>& plugins) {
+  plugins_ = plugins;
+}
+
+// static
+bool PluginMetricsProvider::IsPluginProcess(int process_type) {
+  return (process_type == content::PROCESS_TYPE_PLUGIN ||
+          process_type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
+          process_type == content::PROCESS_TYPE_PPAPI_BROKER);
+}
+
+// static
+void PluginMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kStabilityPluginStats);
+}
+
+void PluginMetricsProvider::OnGotPlugins(
+    const base::Closure& done_callback,
+    const std::vector<content::WebPluginInfo>& plugins) {
+  plugins_ = plugins;
+  done_callback.Run();
+}
+
+PluginMetricsProvider::ChildProcessStats&
+PluginMetricsProvider::GetChildProcessStats(
+    const content::ChildProcessData& data) {
+  const base::string16& child_name = data.name;
+  if (!ContainsKey(child_process_stats_buffer_, child_name)) {
+    child_process_stats_buffer_[child_name] =
+        ChildProcessStats(data.process_type);
+  }
+  return child_process_stats_buffer_[child_name];
+}
+
+void PluginMetricsProvider::BrowserChildProcessHostConnected(
+    const content::ChildProcessData& data) {
+  GetChildProcessStats(data).process_launches++;
+}
+
+void PluginMetricsProvider::BrowserChildProcessCrashed(
+    const content::ChildProcessData& data) {
+  GetChildProcessStats(data).process_crashes++;
+}
+
+void PluginMetricsProvider::BrowserChildProcessInstanceCreated(
+    const content::ChildProcessData& data) {
+  GetChildProcessStats(data).instances++;
+}

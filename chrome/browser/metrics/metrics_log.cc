@@ -26,8 +26,6 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/extension_metrics.h"
-#include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
@@ -37,7 +35,6 @@
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gfx/screen.h"
 #include "url/gurl.h"
@@ -115,38 +112,6 @@ std::string ComputeSHA1(const std::string& data) {
   const std::string sha1 = base::SHA1HashString(data);
   return base::HexEncode(sha1.data(), sha1.size());
 }
-
-#if defined(ENABLE_PLUGINS)
-// Returns the plugin preferences corresponding for this user, if available.
-// If multiple user profiles are loaded, returns the preferences corresponding
-// to an arbitrary one of the profiles.
-PluginPrefs* GetPluginPrefs() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  if (!profile_manager) {
-    // The profile manager can be NULL when testing.
-    return NULL;
-  }
-
-  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-  if (profiles.empty())
-    return NULL;
-
-  return PluginPrefs::GetForProfile(profiles.front()).get();
-}
-
-// Fills |plugin| with the info contained in |plugin_info| and |plugin_prefs|.
-void SetPluginInfo(const content::WebPluginInfo& plugin_info,
-                   const PluginPrefs* plugin_prefs,
-                   SystemProfileProto::Plugin* plugin) {
-  plugin->set_name(base::UTF16ToUTF8(plugin_info.name));
-  plugin->set_filename(plugin_info.path.BaseName().AsUTF8Unsafe());
-  plugin->set_version(base::UTF16ToUTF8(plugin_info.version));
-  plugin->set_is_pepper(plugin_info.is_pepper_plugin());
-  if (plugin_prefs)
-    plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
-}
-#endif  // defined(ENABLE_PLUGINS)
 
 void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
                       SystemProfileProto* system_profile) {
@@ -280,11 +245,6 @@ MetricsLog::MetricsLog(const std::string& client_id,
 
 MetricsLog::~MetricsLog() {}
 
-// static
-void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kStabilityPluginStats);
-}
-
 void MetricsLog::RecordStabilityMetrics(
     const std::vector<metrics::MetricsProvider*>& metrics_providers,
     base::TimeDelta incremental_uptime,
@@ -301,7 +261,6 @@ void MetricsLog::RecordStabilityMetrics(
   //       sent, but that's true for all the metrics.
 
   WriteRequiredStabilityAttributes(pref);
-  WritePluginStabilityElements(pref);
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
@@ -309,10 +268,9 @@ void MetricsLog::RecordStabilityMetrics(
   // uma log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
 
-  SystemProfileProto::Stability* stability =
-      uma_proto()->mutable_system_profile()->mutable_stability();
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   for (size_t i = 0; i < metrics_providers.size(); ++i)
-    metrics_providers[i]->ProvideStabilityMetrics(stability);
+    metrics_providers[i]->ProvideStabilityMetrics(system_profile);
 
   // Omit some stats unless this is the initial stability log.
   if (log_type() != INITIAL_STABILITY_LOG)
@@ -336,6 +294,8 @@ void MetricsLog::RecordStabilityMetrics(
 
   // TODO(jar): The following are all optional, so we *could* optimize them for
   // values of zero (and not include them).
+  SystemProfileProto::Stability* stability =
+      system_profile->mutable_stability();
   stability->set_incomplete_shutdown_count(incomplete_shutdown_count);
   stability->set_breakpad_registration_success_count(
       breakpad_registration_success_count);
@@ -380,76 +340,6 @@ bool MetricsLog::HasEnvironment() const {
 
 bool MetricsLog::HasStabilityMetrics() const {
   return uma_proto()->system_profile().stability().has_launch_count();
-}
-
-void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
-  // Now log plugin stability info.
-  const base::ListValue* plugin_stats_list = pref->GetList(
-      prefs::kStabilityPluginStats);
-  if (!plugin_stats_list)
-    return;
-
-#if defined(ENABLE_PLUGINS)
-  SystemProfileProto::Stability* stability =
-      uma_proto()->mutable_system_profile()->mutable_stability();
-  for (base::ListValue::const_iterator iter = plugin_stats_list->begin();
-       iter != plugin_stats_list->end(); ++iter) {
-    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
-      NOTREACHED();
-      continue;
-    }
-    base::DictionaryValue* plugin_dict =
-        static_cast<base::DictionaryValue*>(*iter);
-
-    // Note that this search is potentially a quadratic operation, but given the
-    // low number of plugins installed on a "reasonable" setup, this should be
-    // fine.
-    // TODO(isherman): Verify that this does not show up as a hotspot in
-    // profiler runs.
-    const SystemProfileProto::Plugin* system_profile_plugin = NULL;
-    std::string plugin_name;
-    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
-    const SystemProfileProto& system_profile = uma_proto()->system_profile();
-    for (int i = 0; i < system_profile.plugin_size(); ++i) {
-      if (system_profile.plugin(i).name() == plugin_name) {
-        system_profile_plugin = &system_profile.plugin(i);
-        break;
-      }
-    }
-
-    if (!system_profile_plugin) {
-      NOTREACHED();
-      continue;
-    }
-
-    SystemProfileProto::Stability::PluginStability* plugin_stability =
-        stability->add_plugin_stability();
-    *plugin_stability->mutable_plugin() = *system_profile_plugin;
-
-    int launches = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
-    if (launches > 0)
-      plugin_stability->set_launch_count(launches);
-
-    int instances = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
-    if (instances > 0)
-      plugin_stability->set_instance_count(instances);
-
-    int crashes = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
-    if (crashes > 0)
-      plugin_stability->set_crash_count(crashes);
-
-    int loading_errors = 0;
-    plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
-                            &loading_errors);
-    if (loading_errors > 0)
-      plugin_stability->set_loading_error_count(loading_errors);
-  }
-#endif  // defined(ENABLE_PLUGINS)
-
-  pref->ClearPref(prefs::kStabilityPluginStats);
 }
 
 // The server refuses data that doesn't have certain values.  crashcount and
@@ -497,25 +387,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
     stability->set_uptime_sec(uptime_sec);
 }
 
-void MetricsLog::WritePluginList(
-    const std::vector<content::WebPluginInfo>& plugin_list) {
-  DCHECK(!locked());
-
-#if defined(ENABLE_PLUGINS)
-  PluginPrefs* plugin_prefs = GetPluginPrefs();
-  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  for (std::vector<content::WebPluginInfo>::const_iterator iter =
-           plugin_list.begin();
-       iter != plugin_list.end(); ++iter) {
-    SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
-    SetPluginInfo(*iter, plugin_prefs, plugin);
-  }
-#endif  // defined(ENABLE_PLUGINS)
-}
-
 void MetricsLog::RecordEnvironment(
     const std::vector<metrics::MetricsProvider*>& metrics_providers,
-    const std::vector<content::WebPluginInfo>& plugin_list,
     const std::vector<variations::ActiveGroupId>& synthetic_trials) {
   DCHECK(!HasEnvironment());
 
@@ -595,7 +468,6 @@ void MetricsLog::RecordEnvironment(
   WriteScreenDPIInformationProto(hardware);
 #endif
 
-  WritePluginList(plugin_list);
   extension_metrics_.WriteExtensionList(uma_proto()->mutable_system_profile());
 
   std::vector<ActiveGroupId> field_trial_ids;

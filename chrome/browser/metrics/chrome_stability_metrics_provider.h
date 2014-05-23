@@ -29,7 +29,7 @@ class ChromeStabilityMetricsProvider : public metrics::MetricsProvider,
   virtual void OnRecordingEnabled() OVERRIDE;
   virtual void OnRecordingDisabled() OVERRIDE;
   virtual void ProvideStabilityMetrics(
-      metrics::SystemProfileProto_Stability* stability_proto) OVERRIDE;
+      metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
 
  private:
   // content::NotificationObserver:

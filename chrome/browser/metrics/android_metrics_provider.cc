@@ -39,7 +39,7 @@ AndroidMetricsProvider::~AndroidMetricsProvider() {
 
 
 void AndroidMetricsProvider::ProvideStabilityMetrics(
-    metrics::SystemProfileProto_Stability* stability_proto) {
+    metrics::SystemProfileProto* system_profile_proto) {
   ConvertStabilityPrefsToHistograms();
 }
 

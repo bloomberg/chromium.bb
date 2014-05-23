@@ -34,7 +34,7 @@ class MetricsProvider {
   // directly into |stability_proto| fields or by logging stability histograms
   // via the UMA_STABILITY_HISTOGRAM_ENUMERATION() macro.
   virtual void ProvideStabilityMetrics(
-      SystemProfileProto_Stability* stability_proto) {}
+      SystemProfileProto* system_profile_proto) {}
 
   // Provides general metrics that are neither system profile nor stability
   // metrics.

@@ -1087,6 +1087,7 @@
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/metrics_state_manager_unittest.cc',
+        'browser/metrics/plugin_metrics_provider_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/thread_watcher_android_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',
@@ -2247,7 +2248,7 @@
             ['exclude', '^browser/plugins/'],
           ],
           'sources!': [
-            'browser/plugins/plugin_info_message_filter_unittest.cc',
+            'browser/metrics/plugin_metrics_provider_unittest.cc',
           ],
         }],
         ['enable_printing!=1', {

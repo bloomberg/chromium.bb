@@ -174,7 +174,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -201,15 +200,16 @@
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/variations/entropy_provider.h"
-#include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/process_type.h"
-#include "content/public/common/webplugininfo.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+
+#if defined(ENABLE_PLUGINS)
+// TODO(asvitkine): Move this out of MetricsService.
+#include "chrome/browser/metrics/plugin_metrics_provider.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -229,8 +229,6 @@
 
 using base::Time;
 using content::BrowserThread;
-using content::ChildProcessData;
-using content::PluginService;
 using metrics::MetricsLogManager;
 
 namespace {
@@ -321,46 +319,6 @@ MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
 MetricsService::ExecutionPhase MetricsService::execution_phase_ =
     MetricsService::UNINITIALIZED_PHASE;
 
-// This is used to quickly log stats from child process related notifications in
-// MetricsService::child_stats_buffer_.  The buffer's contents are transferred
-// out when Local State is periodically saved.  The information is then
-// reported to the UMA server on next launch.
-struct MetricsService::ChildProcessStats {
- public:
-  explicit ChildProcessStats(int process_type)
-      : process_launches(0),
-        process_crashes(0),
-        instances(0),
-        loading_errors(0),
-        process_type(process_type) {}
-
-  // This constructor is only used by the map to return some default value for
-  // an index for which no value has been assigned.
-  ChildProcessStats()
-      : process_launches(0),
-        process_crashes(0),
-        instances(0),
-        loading_errors(0),
-        process_type(content::PROCESS_TYPE_UNKNOWN) {}
-
-  // The number of times that the given child process has been launched
-  int process_launches;
-
-  // The number of times that the given child process has crashed
-  int process_crashes;
-
-  // The number of instances of this child process that have been created.
-  // An instance is a DOM object rendered by this child process during a page
-  // load.
-  int instances;
-
-  // The number of times there was an error loading an instance of this child
-  // process.
-  int loading_errors;
-
-  int process_type;
-};
-
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
@@ -414,6 +372,11 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // TODO(asvitkine): Move this out of here.
   AndroidMetricsProvider::RegisterPrefs(registry);
 #endif  // defined(OS_ANDROID)
+
+#if defined(ENABLE_PLUGINS)
+  // TODO(asvitkine): Move this out of here.
+  PluginMetricsProvider::RegisterPrefs(registry);
+#endif
 }
 
 MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
@@ -458,6 +421,14 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
       google_update_metrics_provider_));
 #endif
+
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_ = new PluginMetricsProvider(
+      g_browser_process->local_state());
+  RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
+      plugin_metrics_provider_));
+#endif
+
   BrowserChildProcessObserver::Add(this);
 }
 
@@ -592,23 +563,17 @@ void MetricsService::InconsistencyDetectedInLoggedCount(int amount) {
                        std::abs(amount));
 }
 
-void MetricsService::BrowserChildProcessHostConnected(
-    const content::ChildProcessData& data) {
-  GetChildProcessStats(data).process_launches++;
-}
-
 void MetricsService::BrowserChildProcessCrashed(
     const content::ChildProcessData& data) {
-  GetChildProcessStats(data).process_crashes++;
+  // TODO(asvitkine): Move this into ChromeStabilityStatsProvider.
+#if defined(ENABLE_PLUGINS)
   // Exclude plugin crashes from the count below because we report them via
   // a separate UMA metric.
-  if (!IsPluginProcess(data.process_type))
-    IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
-}
+  if (PluginMetricsProvider::IsPluginProcess(data.process_type))
+    return;
+#endif
 
-void MetricsService::BrowserChildProcessInstanceCreated(
-    const content::ChildProcessData& data) {
-  GetChildProcessStats(data).instances++;
+  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -838,21 +803,19 @@ void MetricsService::OnInitTaskGotHardwareClass(
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   hardware_class_ = hardware_class;
 
-#if defined(ENABLE_PLUGINS)
-  // Start the next part of the init task: loading plugin information.
-  PluginService::GetInstance()->GetPlugins(
+  const base::Closure got_plugin_info_callback =
       base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
-          self_ptr_factory_.GetWeakPtr()));
+                 self_ptr_factory_.GetWeakPtr());
+
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_->GetPluginInformation(got_plugin_info_callback);
 #else
-  std::vector<content::WebPluginInfo> plugin_list_empty;
-  OnInitTaskGotPluginInfo(plugin_list_empty);
-#endif  // defined(ENABLE_PLUGINS)
+  got_plugin_info_callback.Run();
+#endif
 }
 
-void MetricsService::OnInitTaskGotPluginInfo(
-    const std::vector<content::WebPluginInfo>& plugins) {
+void MetricsService::OnInitTaskGotPluginInfo() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-  plugins_ = plugins;
 
   const base::Closure got_metrics_callback =
       base::Bind(&MetricsService::OnInitTaskGotGoogleUpdateData,
@@ -1019,8 +982,7 @@ void MetricsService::CloseCurrentLog() {
   DCHECK(current_log);
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  current_log->RecordEnvironment(metrics_providers_.get(), plugins_,
-                                 synthetic_trials);
+  current_log->RecordEnvironment(metrics_providers_.get(), synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
@@ -1238,7 +1200,7 @@ void MetricsService::PrepareInitialMetricsLog() {
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  initial_metrics_log_->RecordEnvironment(metrics_providers_.get(), plugins_,
+  initial_metrics_log_->RecordEnvironment(metrics_providers_.get(),
                                           synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   base::TimeDelta incremental_uptime;
@@ -1532,120 +1494,10 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 #endif  // OS_CHROMEOS
 
 void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
-  content::WebPluginInfo plugin;
-  bool success =
-      content::PluginService::GetInstance()->GetPluginInfoByPath(plugin_path,
-                                                                 &plugin);
-  DCHECK(success);
-  ChildProcessStats& stats = child_process_stats_buffer_[plugin.name];
-  // Initialize the type if this entry is new.
-  if (stats.process_type == content::PROCESS_TYPE_UNKNOWN) {
-    // The plug-in process might not actually of type PLUGIN (which means
-    // NPAPI), but we only care that it is *a* plug-in process.
-    stats.process_type = content::PROCESS_TYPE_PLUGIN;
-  } else {
-    DCHECK(IsPluginProcess(stats.process_type));
-  }
-  stats.loading_errors++;
-}
-
-MetricsService::ChildProcessStats& MetricsService::GetChildProcessStats(
-    const content::ChildProcessData& data) {
-  const base::string16& child_name = data.name;
-  if (!ContainsKey(child_process_stats_buffer_, child_name)) {
-    child_process_stats_buffer_[child_name] =
-        ChildProcessStats(data.process_type);
-  }
-  return child_process_stats_buffer_[child_name];
-}
-
-void MetricsService::RecordPluginChanges(PrefService* pref) {
-  ListPrefUpdate update(pref, prefs::kStabilityPluginStats);
-  base::ListValue* plugins = update.Get();
-  DCHECK(plugins);
-
-  for (base::ListValue::iterator value_iter = plugins->begin();
-       value_iter != plugins->end(); ++value_iter) {
-    if (!(*value_iter)->IsType(base::Value::TYPE_DICTIONARY)) {
-      NOTREACHED();
-      continue;
-    }
-
-    base::DictionaryValue* plugin_dict =
-        static_cast<base::DictionaryValue*>(*value_iter);
-    std::string plugin_name;
-    plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
-    if (plugin_name.empty()) {
-      NOTREACHED();
-      continue;
-    }
-
-    // TODO(viettrungluu): remove conversions
-    base::string16 name16 = base::UTF8ToUTF16(plugin_name);
-    if (child_process_stats_buffer_.find(name16) ==
-        child_process_stats_buffer_.end()) {
-      continue;
-    }
-
-    ChildProcessStats stats = child_process_stats_buffer_[name16];
-    if (stats.process_launches) {
-      int launches = 0;
-      plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
-      launches += stats.process_launches;
-      plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, launches);
-    }
-    if (stats.process_crashes) {
-      int crashes = 0;
-      plugin_dict->GetInteger(prefs::kStabilityPluginCrashes, &crashes);
-      crashes += stats.process_crashes;
-      plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, crashes);
-    }
-    if (stats.instances) {
-      int instances = 0;
-      plugin_dict->GetInteger(prefs::kStabilityPluginInstances, &instances);
-      instances += stats.instances;
-      plugin_dict->SetInteger(prefs::kStabilityPluginInstances, instances);
-    }
-    if (stats.loading_errors) {
-      int loading_errors = 0;
-      plugin_dict->GetInteger(prefs::kStabilityPluginLoadingErrors,
-                              &loading_errors);
-      loading_errors += stats.loading_errors;
-      plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
-                              loading_errors);
-    }
-
-    child_process_stats_buffer_.erase(name16);
-  }
-
-  // Now go through and add dictionaries for plugins that didn't already have
-  // reports in Local State.
-  for (std::map<base::string16, ChildProcessStats>::iterator cache_iter =
-           child_process_stats_buffer_.begin();
-       cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
-    ChildProcessStats stats = cache_iter->second;
-
-    // Insert only plugins information into the plugins list.
-    if (!IsPluginProcess(stats.process_type))
-      continue;
-
-    // TODO(viettrungluu): remove conversion
-    std::string plugin_name = base::UTF16ToUTF8(cache_iter->first);
-
-    base::DictionaryValue* plugin_dict = new base::DictionaryValue;
-
-    plugin_dict->SetString(prefs::kStabilityPluginName, plugin_name);
-    plugin_dict->SetInteger(prefs::kStabilityPluginLaunches,
-                            stats.process_launches);
-    plugin_dict->SetInteger(prefs::kStabilityPluginCrashes,
-                            stats.process_crashes);
-    plugin_dict->SetInteger(prefs::kStabilityPluginInstances,
-                            stats.instances);
-    plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
-                            stats.loading_errors);
-    plugins->Append(plugin_dict);
-  }
-  child_process_stats_buffer_.clear();
+#if defined(ENABLE_PLUGINS)
+  // TODO(asvitkine): Move this out of here.
+  plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
+#endif
 }
 
 bool MetricsService::ShouldLogEvents() {
@@ -1668,12 +1520,8 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec, Time::Now().ToTimeT());
 
-  RecordPluginChanges(pref);
+#if defined(ENABLE_PLUGINS)
+  plugin_metrics_provider_->RecordPluginChanges();
+#endif
 }
 
-// static
-bool MetricsService::IsPluginProcess(int process_type) {
-  return (process_type == content::PROCESS_TYPE_PLUGIN ||
-          process_type == content::PROCESS_TYPE_PPAPI_PLUGIN ||
-          process_type == content::PROCESS_TYPE_PPAPI_BROKER);
-}

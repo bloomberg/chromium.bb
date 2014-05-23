@@ -39,6 +39,7 @@ class GoogleUpdateMetricsProviderWin;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
+class PluginMetricsProvider;
 
 namespace base {
 class DictionaryValue;
@@ -51,7 +52,6 @@ struct ActiveGroupId;
 }
 
 namespace content {
-struct WebPluginInfo;
 }
 
 namespace metrics {
@@ -171,11 +171,7 @@ class MetricsService
   virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
 
   // Implementation of content::BrowserChildProcessObserver
-  virtual void BrowserChildProcessHostConnected(
-      const content::ChildProcessData& data) OVERRIDE;
   virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
-  virtual void BrowserChildProcessInstanceCreated(
       const content::ChildProcessData& data) OVERRIDE;
 
   // This should be called when the application is not idle, i.e. the user seems
@@ -274,8 +270,6 @@ class MetricsService
     NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
 
-  struct ChildProcessStats;
-
   typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 
   // First part of the init task. Called on the FILE thread to load hardware
@@ -287,10 +281,9 @@ class MetricsService
   // loading plugin information.
   void OnInitTaskGotHardwareClass(const std::string& hardware_class);
 
-  // Callback from PluginService::GetPlugins() that continues the init task by
-  // launching a task to gather Google Update statistics.
-  void OnInitTaskGotPluginInfo(
-      const std::vector<content::WebPluginInfo>& plugins);
+  // Called after the Plugin init task has been completed that continues the
+  // init task by launching a task to gather Google Update statistics.
+  void OnInitTaskGotPluginInfo();
 
   // Called after GoogleUpdate init task has been completed that continues the
   // init task by loading profiler data.
@@ -400,14 +393,6 @@ class MetricsService
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown();
 
-  // Returns reference to ChildProcessStats corresponding to |data|.
-  ChildProcessStats& GetChildProcessStats(
-      const content::ChildProcessData& data);
-
-  // Saves plugin-related updates from the in-object buffer to Local State
-  // for retrieval next time we send a Profile log (generally next launch).
-  void RecordPluginChanges(PrefService* pref);
-
   // Records state that should be periodically saved, like uptime and
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
@@ -417,10 +402,6 @@ class MetricsService
 
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
-
-  // Returns true if process of type |type| should be counted as a plugin
-  // process, and false otherwise.
-  static bool IsPluginProcess(int process_type);
 
   // Returns a list of synthetic field trials that were active for the entire
   // duration of the current log.
@@ -480,8 +461,9 @@ class MetricsService
   // empty string.
   std::string hardware_class_;
 
-  // The list of plugins which was retrieved on the file thread.
-  std::vector<content::WebPluginInfo> plugins_;
+#if defined(ENABLE_PLUGINS)
+  PluginMetricsProvider* plugin_metrics_provider_;
+#endif
 
 #if defined(OS_WIN)
   GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
@@ -508,9 +490,6 @@ class MetricsService
   typedef std::map<uintptr_t, int> WindowMap;
   WindowMap window_map_;
   int next_window_id_;
-
-  // Buffer of child process notifications for quick access.
-  std::map<base::string16, ChildProcessStats> child_process_stats_buffer_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.

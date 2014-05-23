@@ -16,8 +16,6 @@
 #include "components/metrics/metrics_service_observer.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
-#include "content/public/common/process_type.h"
-#include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
@@ -172,15 +170,6 @@ class TestMetricsServiceObserver : public MetricsServiceObserver {
 
 }  // namespace
 
-TEST_F(MetricsServiceTest, IsPluginProcess) {
-  EXPECT_TRUE(
-      MetricsService::IsPluginProcess(content::PROCESS_TYPE_PLUGIN));
-  EXPECT_TRUE(
-      MetricsService::IsPluginProcess(content::PROCESS_TYPE_PPAPI_PLUGIN));
-  EXPECT_FALSE(
-      MetricsService::IsPluginProcess(content::PROCESS_TYPE_GPU));
-}
-
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
@@ -204,7 +193,6 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
 
   // Record stability build time and version from previous session, so that

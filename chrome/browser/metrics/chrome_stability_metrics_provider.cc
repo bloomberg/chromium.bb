@@ -79,8 +79,10 @@ void ChromeStabilityMetricsProvider::OnRecordingDisabled() {
 }
 
 void ChromeStabilityMetricsProvider::ProvideStabilityMetrics(
-    metrics::SystemProfileProto_Stability* stability_proto) {
+    metrics::SystemProfileProto* system_profile_proto) {
   PrefService* pref = g_browser_process->local_state();
+  metrics::SystemProfileProto_Stability* stability_proto =
+      system_profile_proto->mutable_stability();
 
   int count = pref->GetInteger(prefs::kStabilityPageLoadCount);
   if (count) {

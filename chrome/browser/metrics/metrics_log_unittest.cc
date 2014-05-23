@@ -11,12 +11,10 @@
 #include "base/command_line.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
@@ -24,17 +22,14 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/active_field_trials.h"
-#include "components/variations/metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,24 +93,6 @@ const variations::ActiveGroupId kSyntheticTrials[] = {
   {55, 15},
   {66, 16}
 };
-
-#if defined(ENABLE_PLUGINS)
-content::WebPluginInfo CreateFakePluginInfo(
-    const std::string& name,
-    const base::FilePath::CharType* path,
-    const std::string& version,
-    bool is_pepper) {
-  content::WebPluginInfo plugin(base::UTF8ToUTF16(name),
-                                base::FilePath(path),
-                                base::UTF8ToUTF16(version),
-                                base::string16());
-  if (is_pepper)
-    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
-  else
-    plugin.type = content::WebPluginInfo::PLUGIN_TYPE_NPAPI;
-  return plugin;
-}
-#endif  // defined(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
 class TestMetricsLogChromeOS : public MetricsLogChromeOS {
@@ -317,14 +294,13 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
 
-  std::vector<content::WebPluginInfo> plugins;
   std::vector<variations::ActiveGroupId> synthetic_trials;
   // Add two synthetic trials.
   synthetic_trials.push_back(kSyntheticTrials[0]);
   synthetic_trials.push_back(kSyntheticTrials[1]);
 
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        plugins, synthetic_trials);
+                        synthetic_trials);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -361,7 +337,6 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
     log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                          std::vector<content::WebPluginInfo>(),
                           std::vector<variations::ActiveGroupId>());
     EXPECT_FALSE(prefs.GetString(kSystemProfilePref).empty());
     EXPECT_FALSE(prefs.GetString(kSystemProfileHashPref).empty());
@@ -385,7 +360,6 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                          std::vector<content::WebPluginInfo>(),
                           std::vector<variations::ActiveGroupId>());
   }
 
@@ -407,7 +381,6 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
       kClientId, kSessionId, MetricsLog::INITIAL_STABILITY_LOG, &client);
   std::vector<metrics::MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
@@ -429,7 +402,6 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
   std::vector<metrics::MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
@@ -445,59 +417,6 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   EXPECT_FALSE(stability.has_debugger_present_count());
   EXPECT_FALSE(stability.has_debugger_not_present_count());
 }
-
-#if defined(ENABLE_PLUGINS)
-TEST_F(MetricsLogTest, Plugins) {
-  metrics::TestMetricsServiceClient client;
-  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
-
-  std::vector<metrics::MetricsProvider*> metrics_providers;
-  std::vector<content::WebPluginInfo> plugins;
-  plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
-                                         "1.5", true));
-  plugins.push_back(CreateFakePluginInfo("p2", FILE_PATH_LITERAL("p2.plugin"),
-                                         "2.0", false));
-  log.RecordEnvironment(metrics_providers, plugins,
-                        std::vector<variations::ActiveGroupId>());
-
-  const metrics::SystemProfileProto& system_profile = log.system_profile();
-  ASSERT_EQ(2, system_profile.plugin_size());
-  EXPECT_EQ("p1", system_profile.plugin(0).name());
-  EXPECT_EQ("p1.plugin", system_profile.plugin(0).filename());
-  EXPECT_EQ("1.5", system_profile.plugin(0).version());
-  EXPECT_TRUE(system_profile.plugin(0).is_pepper());
-  EXPECT_EQ("p2", system_profile.plugin(1).name());
-  EXPECT_EQ("p2.plugin", system_profile.plugin(1).filename());
-  EXPECT_EQ("2.0", system_profile.plugin(1).version());
-  EXPECT_FALSE(system_profile.plugin(1).is_pepper());
-
-  // Now set some plugin stability stats for p2 and verify they're recorded.
-  scoped_ptr<base::DictionaryValue> plugin_dict(new base::DictionaryValue);
-  plugin_dict->SetString(prefs::kStabilityPluginName, "p2");
-  plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, 1);
-  plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, 2);
-  plugin_dict->SetInteger(prefs::kStabilityPluginInstances, 3);
-  plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors, 4);
-  {
-    ListPrefUpdate update(log.GetPrefService(), prefs::kStabilityPluginStats);
-    update.Get()->Append(plugin_dict.release());
-  }
-
-  log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
-                             base::TimeDelta());
-  const metrics::SystemProfileProto_Stability& stability =
-      log.system_profile().stability();
-  ASSERT_EQ(1, stability.plugin_stability_size());
-  EXPECT_EQ("p2", stability.plugin_stability(0).plugin().name());
-  EXPECT_EQ("p2.plugin", stability.plugin_stability(0).plugin().filename());
-  EXPECT_EQ("2.0", stability.plugin_stability(0).plugin().version());
-  EXPECT_FALSE(stability.plugin_stability(0).plugin().is_pepper());
-  EXPECT_EQ(1, stability.plugin_stability(0).launch_count());
-  EXPECT_EQ(2, stability.plugin_stability(0).crash_count());
-  EXPECT_EQ(3, stability.plugin_stability(0).instance_count());
-  EXPECT_EQ(4, stability.plugin_stability(0).loading_error_count());
-}
-#endif  // defined(ENABLE_PLUGINS)
 
 // Test that we properly write profiler data to the log.
 TEST_F(MetricsLogTest, RecordProfilerData) {
@@ -694,9 +613,8 @@ TEST_F(MetricsLogTest, MultiProfileUserCount) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
   std::vector<metrics::MetricsProvider*> metrics_providers;
-  std::vector<content::WebPluginInfo> plugins;
   std::vector<variations::ActiveGroupId> synthetic_trials;
-  log.RecordEnvironment(metrics_providers, plugins, synthetic_trials);
+  log.RecordEnvironment(metrics_providers, synthetic_trials);
   EXPECT_EQ(2u, log.system_profile().multi_profile_user_count());
 }
 
@@ -721,9 +639,7 @@ TEST_F(MetricsLogTest, MultiProfileCountInvalidated) {
   user_manager->LoginUser(user2);
   std::vector<metrics::MetricsProvider*> metrics_providers;
   std::vector<variations::ActiveGroupId> synthetic_trials;
-  log.RecordEnvironment(metrics_providers,
-                        std::vector<content::WebPluginInfo>(),
-                        synthetic_trials);
+  log.RecordEnvironment(metrics_providers, synthetic_trials);
   EXPECT_EQ(0u, log.system_profile().multi_profile_user_count());
 }
 
@@ -731,7 +647,6 @@ TEST_F(MetricsLogTest, BluetoothHardwareDisabled) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
 
   EXPECT_TRUE(log.system_profile().has_hardware());
@@ -750,7 +665,6 @@ TEST_F(MetricsLogTest, BluetoothHardwareEnabled) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
 
   EXPECT_TRUE(log.system_profile().has_hardware());
@@ -781,7 +695,6 @@ TEST_F(MetricsLogTest, BluetoothPairedDevices) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        std::vector<content::WebPluginInfo>(),
                         std::vector<variations::ActiveGroupId>());
 
   ASSERT_TRUE(log.system_profile().has_hardware());

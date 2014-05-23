@@ -1218,6 +1218,8 @@
         'browser/metrics/omnibox_metrics_provider.h',
         'browser/metrics/perf_provider_chromeos.cc',
         'browser/metrics/perf_provider_chromeos.h',
+        'browser/metrics/plugin_metrics_provider.cc',
+        'browser/metrics/plugin_metrics_provider.h',
         'browser/metrics/thread_watcher.cc',
         'browser/metrics/thread_watcher.h',
         'browser/metrics/thread_watcher_android.cc',
@@ -2863,6 +2865,7 @@
         }, {  # enable_plugins==0
           'sources/': [
             ['exclude', '^browser/guest_view/web_view/plugin_permission_helper'],
+            ['exclude', '^browser/metrics/plugin_metrics_provider'],
             ['exclude', '^browser/pepper_'],
             ['exclude', '^browser/plugins/'],
             ['exclude', '^browser/renderer_host/pepper/'],
