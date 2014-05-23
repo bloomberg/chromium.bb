@@ -26,12 +26,12 @@ class RegistryKeyBackup {
   // Recursively reads |key_path| into this instance.  Backing up a non-existent
   // key is valid.  Returns true if the backup was successful; false otherwise,
   // in which case the state of this instance is not modified.
-  bool Initialize(HKEY root, const wchar_t* key_path);
+  bool Initialize(HKEY root, const wchar_t* key_path, REGSAM wow64_acccess);
 
   // Writes the contents of this instance into |key|.  The contents of
   // |key_path| are not modified If this instance is uninitialized or was
   // initialized from a non-existent key.
-  bool WriteTo(HKEY root, const wchar_t* key_path) const;
+  bool WriteTo(HKEY root, const wchar_t* key_path, REGSAM wow64_acccess) const;
 
   void swap(RegistryKeyBackup& other) {
     key_data_.swap(other.key_data_);

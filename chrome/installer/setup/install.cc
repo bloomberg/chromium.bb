@@ -136,7 +136,7 @@ void AddChromeToMediaPlayerList() {
   reg_path.append(installer::kChromeExe);
   VLOG(1) << "Adding Chrome to Media player list at " << reg_path;
   scoped_ptr<WorkItem> work_item(WorkItem::CreateCreateRegKeyWorkItem(
-      HKEY_LOCAL_MACHINE, reg_path));
+      HKEY_LOCAL_MACHINE, reg_path, WorkItem::kWow64Default));
 
   // if the operation fails we log the error but still continue
   if (!work_item.get()->Do())

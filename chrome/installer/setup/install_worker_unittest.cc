@@ -438,10 +438,11 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   const HKEY kRegRoot = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   static const wchar_t kRegKeyPath[] = L"Software\\Chromium\\test";
   scoped_ptr<CreateRegKeyWorkItem> create_reg_key_work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(kRegRoot, kRegKeyPath));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          kRegRoot, kRegKeyPath, WorkItem::kWow64Default));
   scoped_ptr<SetRegValueWorkItem> set_reg_value_work_item(
-      WorkItem::CreateSetRegValueWorkItem(kRegRoot, kRegKeyPath, L"", L"",
-                                          false));
+      WorkItem::CreateSetRegValueWorkItem(
+          kRegRoot, kRegKeyPath, WorkItem::kWow64Default, L"", L"", false));
 
   scoped_ptr<InstallationState> installation_state(
       BuildChromeInstallationState(system_level, multi_install));
@@ -683,8 +684,8 @@ class QuickEnableAbsentTest : public InstallWorkerTest {
   virtual void SetUp() {
     InstallWorkerTest::SetUp();
     root_key_ = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    delete_reg_key_item_.reset(
-        WorkItem::CreateDeleteRegKeyWorkItem(root_key_, kRegKeyPath));
+    delete_reg_key_item_.reset(WorkItem::CreateDeleteRegKeyWorkItem(
+        root_key_, kRegKeyPath, WorkItem::kWow64Default));
     machine_state_.reset(new MockInstallationState());
     EXPECT_CALL(work_item_list_,
                 AddDeleteRegKeyWorkItem(Eq(root_key_), StrCaseEq(kRegKeyPath)))

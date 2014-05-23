@@ -44,16 +44,23 @@ class SetRegValueWorkItem : public WorkItem {
 
   SetRegValueWorkItem(HKEY predefined_root,
                       const std::wstring& key_path,
+                      REGSAM wow64_access,
                       const std::wstring& value_name,
                       const std::wstring& value_data,
                       bool overwrite);
 
-  SetRegValueWorkItem(HKEY predefined_root, const std::wstring& key_path,
-                      const std::wstring& value_name, DWORD value_data,
+  SetRegValueWorkItem(HKEY predefined_root,
+                      const std::wstring& key_path,
+                      REGSAM wow64_access,
+                      const std::wstring& value_name,
+                      DWORD value_data,
                       bool overwrite);
 
-  SetRegValueWorkItem(HKEY predefined_root, const std::wstring& key_path,
-                      const std::wstring& value_name, int64 value_data,
+  SetRegValueWorkItem(HKEY predefined_root,
+                      const std::wstring& key_path,
+                      REGSAM wow64_access,
+                      const std::wstring& value_name,
+                      int64 value_data,
                       bool overwrite);
 
   // Root key of the target key under which the value is set. The root key can
@@ -68,6 +75,9 @@ class SetRegValueWorkItem : public WorkItem {
 
   // Whether to overwrite the existing value under the target key.
   bool overwrite_;
+
+  // Whether to force 32-bit or 64-bit view of the target key.
+  REGSAM wow64_access_;
 
   // Type of data to store
   DWORD type_;

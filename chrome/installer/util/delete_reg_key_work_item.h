@@ -30,7 +30,9 @@ class DeleteRegKeyWorkItem : public WorkItem {
  private:
   friend class WorkItem;
 
-  DeleteRegKeyWorkItem(HKEY predefined_root, const std::wstring& path);
+  DeleteRegKeyWorkItem(HKEY predefined_root,
+                       const std::wstring& path,
+                       REGSAM wow64_access);
 
   // Root key from which we delete the key. The root key can only be
   // one of the predefined keys on Windows.
@@ -38,6 +40,9 @@ class DeleteRegKeyWorkItem : public WorkItem {
 
   // Path of the key to be deleted.
   std::wstring path_;
+
+  // Whether to force 32-bit or 64-bit view of the target key.
+  REGSAM wow64_access_;
 
   // Backup of the deleted key.
   RegistryKeyBackup backup_;

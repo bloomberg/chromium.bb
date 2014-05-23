@@ -25,7 +25,9 @@ class CreateRegKeyWorkItem : public WorkItem {
  private:
   friend class WorkItem;
 
-  CreateRegKeyWorkItem(HKEY predefined_root, const std::wstring& path);
+  CreateRegKeyWorkItem(HKEY predefined_root,
+                       const std::wstring& path,
+                       REGSAM wow64_access);
 
   // Initialize key_list_ by adding all paths of keys from predefined_root_
   // to path_. Returns true if key_list_ is non empty.
@@ -37,6 +39,9 @@ class CreateRegKeyWorkItem : public WorkItem {
 
   // Path of the key to be created.
   std::wstring path_;
+
+  // Whether to force 32-bit or 64-bit view of the target key.
+  REGSAM wow64_access_;
 
   // List of paths to all keys that need to be created from predefined_root_
   // to path_.

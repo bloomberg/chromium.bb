@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/installer/util/callback_work_item.h"
-#include "chrome/installer/util/copy_reg_key_work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -81,17 +80,6 @@ WorkItem* WorkItemList::AddCallbackWorkItem(
   return item;
 }
 
-WorkItem* WorkItemList::AddCopyRegKeyWorkItem(
-    HKEY predefined_root,
-    const std::wstring& source_key_path,
-    const std::wstring& dest_key_path,
-    CopyOverWriteOption overwrite_option) {
-  WorkItem* item = WorkItem::CreateCopyRegKeyWorkItem(
-      predefined_root, source_key_path, dest_key_path, overwrite_option);
-  AddWorkItem(item);
-  return item;
-}
-
 WorkItem* WorkItemList::AddCopyTreeWorkItem(
     const std::wstring& source_path,
     const std::wstring& dest_path,
@@ -115,15 +103,19 @@ WorkItem* WorkItemList::AddCreateDirWorkItem(const base::FilePath& path) {
 }
 
 WorkItem* WorkItemList::AddCreateRegKeyWorkItem(HKEY predefined_root,
-                                                const std::wstring& path) {
-  WorkItem* item = WorkItem::CreateCreateRegKeyWorkItem(predefined_root, path);
+                                                const std::wstring& path,
+                                                REGSAM wow64_access) {
+  WorkItem* item =
+      WorkItem::CreateCreateRegKeyWorkItem(predefined_root, path, wow64_access);
   AddWorkItem(item);
   return item;
 }
 
 WorkItem* WorkItemList::AddDeleteRegKeyWorkItem(HKEY predefined_root,
-                                                const std::wstring& path) {
-  WorkItem* item = WorkItem::CreateDeleteRegKeyWorkItem(predefined_root, path);
+                                                const std::wstring& path,
+                                                REGSAM wow64_access) {
+  WorkItem* item =
+      WorkItem::CreateDeleteRegKeyWorkItem(predefined_root, path, wow64_access);
   AddWorkItem(item);
   return item;
 }
@@ -131,9 +123,10 @@ WorkItem* WorkItemList::AddDeleteRegKeyWorkItem(HKEY predefined_root,
 WorkItem* WorkItemList::AddDeleteRegValueWorkItem(
     HKEY predefined_root,
     const std::wstring& key_path,
+    REGSAM wow64_access,
     const std::wstring& value_name) {
-  WorkItem* item = WorkItem::CreateDeleteRegValueWorkItem(predefined_root,
-                                                          key_path, value_name);
+  WorkItem* item = WorkItem::CreateDeleteRegValueWorkItem(
+      predefined_root, key_path, wow64_access, value_name);
   AddWorkItem(item);
   return item;
 }
@@ -166,14 +159,15 @@ WorkItem* WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,
   return item;
 }
 
-WorkItem* WorkItemList::AddSetRegValueWorkItem(
-    HKEY predefined_root,
-    const std::wstring& key_path,
-    const std::wstring& value_name,
-    const std::wstring& value_data,
-    bool overwrite) {
+WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
+                                               const std::wstring& key_path,
+                                               REGSAM wow64_access,
+                                               const std::wstring& value_name,
+                                               const std::wstring& value_data,
+                                               bool overwrite) {
   WorkItem* item = WorkItem::CreateSetRegValueWorkItem(predefined_root,
                                                        key_path,
+                                                       wow64_access,
                                                        value_name,
                                                        value_data,
                                                        overwrite);
@@ -183,11 +177,13 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(
 
 WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,
+                                               REGSAM wow64_access,
                                                const std::wstring& value_name,
                                                DWORD value_data,
                                                bool overwrite) {
   WorkItem* item = WorkItem::CreateSetRegValueWorkItem(predefined_root,
                                                        key_path,
+                                                       wow64_access,
                                                        value_name,
                                                        value_data,
                                                        overwrite);
@@ -197,12 +193,17 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
 
 WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,
+                                               REGSAM wow64_access,
                                                const std::wstring& value_name,
                                                int64 value_data,
                                                bool overwrite) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(predefined_root, key_path, value_name,
-                                          value_data, overwrite));
+      WorkItem::CreateSetRegValueWorkItem(predefined_root,
+                                          key_path,
+                                          wow64_access,
+                                          value_name,
+                                          value_data,
+                                          overwrite));
   AddWorkItem(item);
   return item;
 }

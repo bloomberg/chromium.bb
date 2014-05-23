@@ -33,7 +33,9 @@ class RegistryKeyBackupTest : public testing::Test {
 TEST_F(RegistryKeyBackupTest, Uninitialized) {
   RegistryKeyBackup backup;
 
-  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(), destination_path_.c_str()));
+  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(),
+                             destination_path_.c_str(),
+                             WorkItem::kWow64Default));
   EXPECT_FALSE(RegKey(test_data_.root_key(), destination_path_.c_str(),
                       KEY_READ).Valid());
 }
@@ -45,8 +47,11 @@ TEST_F(RegistryKeyBackupTest, MissingKey) {
   RegistryKeyBackup backup;
 
   EXPECT_TRUE(backup.Initialize(test_data_.root_key(),
-                                non_existent_key_path.c_str()));
-  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(), destination_path_.c_str()));
+                                non_existent_key_path.c_str(),
+                                WorkItem::kWow64Default));
+  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(),
+                             destination_path_.c_str(),
+                             WorkItem::kWow64Default));
   EXPECT_FALSE(RegKey(test_data_.root_key(), destination_path_.c_str(),
                       KEY_READ).Valid());
 }
@@ -56,8 +61,11 @@ TEST_F(RegistryKeyBackupTest, ReadWrite) {
   RegistryKeyBackup backup;
 
   EXPECT_TRUE(backup.Initialize(test_data_.root_key(),
-                                test_data_.non_empty_key_path().c_str()));
-  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(), destination_path_.c_str()));
+                                test_data_.non_empty_key_path().c_str(),
+                                WorkItem::kWow64Default));
+  EXPECT_TRUE(backup.WriteTo(test_data_.root_key(),
+                             destination_path_.c_str(),
+                             WorkItem::kWow64Default));
   test_data_.ExpectMatchesNonEmptyKey(test_data_.root_key(),
                                       destination_path_.c_str());
 }
@@ -69,17 +77,20 @@ TEST_F(RegistryKeyBackupTest, Swap) {
   RegistryKeyBackup other_backup;
 
   EXPECT_TRUE(backup.Initialize(test_data_.root_key(),
-                                test_data_.non_empty_key_path().c_str()));
+                                test_data_.non_empty_key_path().c_str(),
+                                WorkItem::kWow64Default));
   backup.swap(other_backup);
   EXPECT_TRUE(other_backup.WriteTo(test_data_.root_key(),
-                                   destination_path_.c_str()));
+                                   destination_path_.c_str(),
+                                   WorkItem::kWow64Default));
 
   // Now make sure the one we started with is truly empty.
   EXPECT_EQ(ERROR_SUCCESS,
             RegKey(test_data_.root_key(), L"", KEY_QUERY_VALUE)
                 .DeleteKey(destination_path_.c_str()));
   EXPECT_TRUE(backup.WriteTo(test_data_.root_key(),
-                             destination_path_.c_str()));
+                             destination_path_.c_str(),
+                             WorkItem::kWow64Default));
   EXPECT_FALSE(RegKey(test_data_.root_key(), destination_path_.c_str(),
                       KEY_READ).Valid());
 }

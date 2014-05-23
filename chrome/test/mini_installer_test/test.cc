@@ -241,7 +241,7 @@ TEST_F(MiniInstallTest, RepairRegistryOnFullUser) {
                          content::RESULT_CODE_HUNG, NULL);
   ASSERT_TRUE(installer_test::DeleteRegistryKey(
       false, // system level
-      InstallationValidator::CHROME_SINGLE));
+      InstallationValidator::CHROME_SINGLE, 0)); // no WOW64
   ASSERT_TRUE(
       installer_test::Install(full_installer_, SwitchBuilder().AddChrome()));
   ASSERT_TRUE(installer_test::ValidateInstall(false,
@@ -255,7 +255,7 @@ TEST_F(MiniInstallTest, RepairRegistryOnFullSys) {
       InstallationValidator::CHROME_SINGLE, provider_->GetCurrentBuild()));
   ASSERT_TRUE(installer_test::DeleteRegistryKey(
       true, // system level
-      InstallationValidator::CHROME_SINGLE));
+      InstallationValidator::CHROME_SINGLE, 0)); // no WOW64
   ASSERT_TRUE(installer_test::Install(full_installer_,
       SwitchBuilder().AddChrome().AddSystemInstall()));
   ASSERT_TRUE(installer_test::ValidateInstall(true,

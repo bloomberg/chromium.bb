@@ -38,7 +38,9 @@ class DeleteRegValueWorkItem : public WorkItem {
     VALUE_UNCHANGED
   };
 
-  DeleteRegValueWorkItem(HKEY predefined_root, const std::wstring& key_path,
+  DeleteRegValueWorkItem(HKEY predefined_root,
+                         const std::wstring& key_path,
+                         REGSAM wow64_acccess,
                          const std::wstring& value_name);
 
   // Root key of the target key under which the value is set. The root key can
@@ -50,6 +52,9 @@ class DeleteRegValueWorkItem : public WorkItem {
 
   // Name of the value to be set.
   std::wstring value_name_;
+
+  // Whether to force 32-bit or 64-bit view of the target key.
+  REGSAM wow64_access_;
 
   DeletionStatus status_;
 

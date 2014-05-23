@@ -271,14 +271,19 @@ RegistryKeyBackup::RegistryKeyBackup() {
 RegistryKeyBackup::~RegistryKeyBackup() {
 }
 
-bool RegistryKeyBackup::Initialize(HKEY root, const wchar_t* key_path) {
+bool RegistryKeyBackup::Initialize(HKEY root,
+                                   const wchar_t* key_path,
+                                   REGSAM wow64_access) {
   DCHECK(key_path);
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
 
   RegKey key;
   scoped_ptr<KeyData> key_data;
 
   // Does the key exist?
-  LONG result = key.Open(root, key_path, kKeyReadNoNotify);
+  LONG result = key.Open(root, key_path, kKeyReadNoNotify | wow64_access);
   if (result == ERROR_SUCCESS) {
     key_data.reset(new KeyData());
     if (!key_data->Initialize(key)) {
@@ -295,14 +300,19 @@ bool RegistryKeyBackup::Initialize(HKEY root, const wchar_t* key_path) {
   return true;
 }
 
-bool RegistryKeyBackup::WriteTo(HKEY root, const wchar_t* key_path) const {
+bool RegistryKeyBackup::WriteTo(HKEY root,
+                                const wchar_t* key_path,
+                                REGSAM wow64_access) const {
   DCHECK(key_path);
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
 
   bool success = false;
 
   if (key_data_.get() != NULL) {
     RegKey dest_key;
-    LONG result = dest_key.Create(root, key_path, KEY_WRITE);
+    LONG result = dest_key.Create(root, key_path, KEY_WRITE | wow64_access);
     if (result != ERROR_SUCCESS) {
       LOG(ERROR) << "Failed to create destination key at " << key_path
                  << " to write backup, result: " << result;

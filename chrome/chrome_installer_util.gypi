@@ -33,8 +33,6 @@
           'installer/util/chromium_binaries_distribution.h',
           'installer/util/conditional_work_item_list.cc',
           'installer/util/conditional_work_item_list.h',
-          'installer/util/copy_reg_key_work_item.cc',
-          'installer/util/copy_reg_key_work_item.h',
           'installer/util/copy_tree_work_item.cc',
           'installer/util/copy_tree_work_item.h',
           'installer/util/create_dir_work_item.cc',

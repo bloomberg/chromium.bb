@@ -43,12 +43,6 @@ class WorkItemList : public WorkItem {
   virtual WorkItem* AddCallbackWorkItem(
       base::Callback<bool(const CallbackWorkItem&)> callback);
 
-  // Add a CopyRegKeyWorkItem that recursively copies a given registry key.
-  virtual WorkItem* AddCopyRegKeyWorkItem(HKEY predefined_root,
-                                          const std::wstring& source_key_path,
-                                          const std::wstring& dest_key_path,
-                                          CopyOverWriteOption overwrite_option);
-
   // Add a CopyTreeWorkItem to the list of work items.
   // See the NOTE in the documentation for the CopyTreeWorkItem class for
   // special considerations regarding |temp_dir|.
@@ -65,17 +59,20 @@ class WorkItemList : public WorkItem {
   // Add a CreateRegKeyWorkItem that creates a registry key at the given
   // path.
   virtual WorkItem* AddCreateRegKeyWorkItem(HKEY predefined_root,
-                                            const std::wstring& path);
+                                            const std::wstring& path,
+                                            REGSAM wow64_access);
 
   // Add a DeleteRegKeyWorkItem that deletes a registry key from the given
   // path.
   virtual WorkItem* AddDeleteRegKeyWorkItem(HKEY predefined_root,
-                                            const std::wstring& path);
+                                            const std::wstring& path,
+                                            REGSAM wow64_access);
 
   // Add a DeleteRegValueWorkItem that deletes registry value of type REG_SZ
   // or REG_DWORD.
   virtual WorkItem* AddDeleteRegValueWorkItem(HKEY predefined_root,
                                               const std::wstring& key_path,
+                                              REGSAM wow64_access,
                                               const std::wstring& value_name);
 
   // Add a DeleteTreeWorkItem that recursively deletes a file system
@@ -100,6 +97,7 @@ class WorkItemList : public WorkItem {
   // at the key with specified path.
   virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
                                            const std::wstring& key_path,
+                                           REGSAM wow64_access,
                                            const std::wstring& value_name,
                                            const std::wstring& value_data,
                                            bool overwrite);
@@ -108,6 +106,7 @@ class WorkItemList : public WorkItem {
   // at the key with specified path.
   virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
                                            const std::wstring& key_path,
+                                           REGSAM wow64_access,
                                            const std::wstring& value_name,
                                            DWORD value_data,
                                            bool overwrite);
@@ -116,6 +115,7 @@ class WorkItemList : public WorkItem {
   // at the key with specified path.
   virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
                                            const std::wstring& key_path,
+                                           REGSAM wow64_access,
                                            const std::wstring& value_name,
                                            int64 value_data,
                                            bool overwrite);

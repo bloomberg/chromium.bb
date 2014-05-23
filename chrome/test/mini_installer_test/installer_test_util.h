@@ -33,7 +33,8 @@ bool DeleteInstallDirectory(
 // Returns true if successful, otherwise false.
 bool DeleteRegistryKey(
     bool system_level,
-    installer::InstallationValidator::InstallationType type);
+    installer::InstallationValidator::InstallationType type,
+    REGSAM wow64_access);
 
 // Locates the Chrome installation directory based on the
 // provided |system_level|. Returns true if successful, otherwise false.
@@ -81,7 +82,7 @@ bool ValidateInstall(
 // Returns true if successful, otherwise false.
 bool RunAndWaitForCommandToFinish(base::CommandLine command);
 
-}  // namespace
+}  // namespace installer_test
 
 #endif  // CHROME_TEST_MINI_INSTALLER_TEST_INSTALLER_TEST_UTIL_H_
 

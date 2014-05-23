@@ -286,21 +286,37 @@ void InstallUtil::AddInstallerResultItems(
   DCHECK(install_list);
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
-  install_list->AddCreateRegKeyWorkItem(root, state_key);
-  install_list->AddSetRegValueWorkItem(root, state_key,
+  install_list->AddCreateRegKeyWorkItem(
+      root, state_key, WorkItem::kWow64Default);
+  install_list->AddSetRegValueWorkItem(root,
+                                       state_key,
+                                       WorkItem::kWow64Default,
                                        installer::kInstallerResult,
-                                       installer_result, true);
-  install_list->AddSetRegValueWorkItem(root, state_key,
+                                       installer_result,
+                                       true);
+  install_list->AddSetRegValueWorkItem(root,
+                                       state_key,
+                                       WorkItem::kWow64Default,
                                        installer::kInstallerError,
-                                       static_cast<DWORD>(status), true);
+                                       static_cast<DWORD>(status),
+                                       true);
   if (string_resource_id != 0) {
     base::string16 msg = installer::GetLocalizedString(string_resource_id);
-    install_list->AddSetRegValueWorkItem(root, state_key,
-        installer::kInstallerResultUIString, msg, true);
+    install_list->AddSetRegValueWorkItem(root,
+                                         state_key,
+                                         WorkItem::kWow64Default,
+                                         installer::kInstallerResultUIString,
+                                         msg,
+                                         true);
   }
   if (launch_cmd != NULL && !launch_cmd->empty()) {
-    install_list->AddSetRegValueWorkItem(root, state_key,
-        installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
+    install_list->AddSetRegValueWorkItem(
+        root,
+        state_key,
+        WorkItem::kWow64Default,
+        installer::kInstallerSuccessLaunchCmdLine,
+        *launch_cmd,
+        true);
   }
 }
 
@@ -421,10 +437,20 @@ bool InstallUtil::GetEULASentinelFilePath(base::FilePath* path) {
 // in case of failure. It returns true if deletion is successful (or the key did
 // not exist), otherwise false.
 bool InstallUtil::DeleteRegistryKey(HKEY root_key,
-                                    const base::string16& key_path) {
+                                    const base::string16& key_path,
+                                    REGSAM wow64_access) {
   VLOG(1) << "Deleting registry key " << key_path;
-  LONG result = ::SHDeleteKey(root_key, key_path.c_str());
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+  RegKey target_key;
+  LONG result = target_key.Open(root_key, key_path.c_str(),
+                                KEY_READ | KEY_WRITE | wow64_access);
+
+  if (result == ERROR_FILE_NOT_FOUND)
+    return true;
+
+  if (result == ERROR_SUCCESS)
+    result = target_key.DeleteKey(L"");
+
+  if (result != ERROR_SUCCESS) {
     LOG(ERROR) << "Failed to delete registry key: " << key_path
                << " error: " << result;
     return false;
@@ -437,9 +463,11 @@ bool InstallUtil::DeleteRegistryKey(HKEY root_key,
 // not exist), otherwise false.
 bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       const base::string16& key_path,
+                                      REGSAM wow64_access,
                                       const base::string16& value_name) {
   RegKey key;
-  LONG result = key.Open(reg_root, key_path.c_str(), KEY_SET_VALUE);
+  LONG result = key.Open(reg_root, key_path.c_str(),
+                         KEY_SET_VALUE | wow64_access);
   if (result == ERROR_SUCCESS)
     result = key.DeleteValue(value_name.c_str());
   if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
@@ -455,6 +483,7 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
     HKEY root_key,
     const base::string16& key_to_delete_path,
     const base::string16& key_to_test_path,
+    const REGSAM wow64_access,
     const wchar_t* value_name,
     const RegistryValuePredicate& predicate) {
   DCHECK(root_key);
@@ -462,11 +491,13 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
   RegKey key;
   base::string16 actual_value;
   if (key.Open(root_key, key_to_test_path.c_str(),
-               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+               KEY_QUERY_VALUE | wow64_access) == ERROR_SUCCESS &&
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
       predicate.Evaluate(actual_value)) {
     key.Close();
-    delete_result = DeleteRegistryKey(root_key, key_to_delete_path)
+    delete_result = DeleteRegistryKey(root_key,
+                                      key_to_delete_path,
+                                      wow64_access)
         ? DELETED : DELETE_FAILED;
   }
   return delete_result;
@@ -476,6 +507,7 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
 InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
     HKEY root_key,
     const wchar_t* key_path,
+    REGSAM wow64_access,
     const wchar_t* value_name,
     const RegistryValuePredicate& predicate) {
   DCHECK(root_key);
@@ -484,7 +516,8 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
   RegKey key;
   base::string16 actual_value;
   if (key.Open(root_key, key_path,
-               KEY_QUERY_VALUE | KEY_SET_VALUE) == ERROR_SUCCESS &&
+               KEY_QUERY_VALUE | KEY_SET_VALUE | wow64_access)
+          == ERROR_SUCCESS &&
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
       predicate.Evaluate(actual_value)) {
     LONG result = key.DeleteValue(value_name);

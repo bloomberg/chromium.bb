@@ -54,8 +54,8 @@ TEST_F(CreateRegKeyWorkItemTest, CreateKey) {
   key_to_create = key_to_create.AppendASCII("d");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create.value()));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -80,8 +80,8 @@ TEST_F(CreateRegKeyWorkItemTest, CreateExistingKey) {
       key.Create(HKEY_CURRENT_USER, key_to_create.value().c_str(), KEY_READ));
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create.value()));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -108,8 +108,8 @@ TEST_F(CreateRegKeyWorkItemTest, CreateSharedKey) {
   key_to_create_3 = key_to_create_3.AppendASCII("ccc");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create_3.value()));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create_3.value(), WorkItem::kWow64Default));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -147,8 +147,8 @@ TEST_F(CreateRegKeyWorkItemTest, RollbackWithMissingKey) {
   key_to_create_3 = key_to_create_3.AppendASCII("cccc");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create_3.value()));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create_3.value(), WorkItem::kWow64Default));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -177,8 +177,8 @@ TEST_F(CreateRegKeyWorkItemTest, RollbackWithSetValue) {
   key_to_create = key_to_create.AppendASCII("aaaaa");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create.value()));
+      WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 
   EXPECT_TRUE(work_item->Do());
 

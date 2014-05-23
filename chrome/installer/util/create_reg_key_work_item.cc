@@ -34,10 +34,15 @@ CreateRegKeyWorkItem::~CreateRegKeyWorkItem() {
 }
 
 CreateRegKeyWorkItem::CreateRegKeyWorkItem(HKEY predefined_root,
-                                           const std::wstring& path)
+                                           const std::wstring& path,
+                                           REGSAM wow64_access)
     : predefined_root_(predefined_root),
       path_(path),
+      wow64_access_(wow64_access),
       key_created_(false) {
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
 }
 
 bool CreateRegKeyWorkItem::Do() {
@@ -55,8 +60,10 @@ bool CreateRegKeyWorkItem::Do() {
     DWORD disposition;
     key_path.assign(key_list_[i - 1]);
 
-    if (key.CreateWithDisposition(predefined_root_, key_path.c_str(),
-                                  &disposition, KEY_READ) == ERROR_SUCCESS) {
+    if (key.CreateWithDisposition(predefined_root_,
+                                  key_path.c_str(),
+                                  &disposition,
+                                  KEY_READ | wow64_access_) == ERROR_SUCCESS) {
       if (disposition == REG_OPENED_EXISTING_KEY) {
         if (key_created_) {
           // This should not happen. Someone created a subkey under the key
@@ -91,8 +98,8 @@ void CreateRegKeyWorkItem::Rollback() {
   std::vector<std::wstring>::iterator itr;
   for (itr = key_list_.begin(); itr != key_list_.end(); ++itr) {
     key_path.assign(*itr);
-    if (SHDeleteEmptyKey(predefined_root_, key_path.c_str()) ==
-        ERROR_SUCCESS) {
+    RegKey key(predefined_root_, L"", KEY_WRITE | wow64_access_);
+    if (key.DeleteEmptyKey(key_path.c_str()) == ERROR_SUCCESS) {
       VLOG(1) << "rollback: delete " << key_path;
     } else {
       VLOG(1) << "rollback: can not delete " << key_path;

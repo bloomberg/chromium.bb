@@ -13,12 +13,17 @@ using base::win::RegKey;
 
 DeleteRegValueWorkItem::DeleteRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,
+                                               REGSAM wow64_access,
                                                const std::wstring& value_name)
     : predefined_root_(predefined_root),
       key_path_(key_path),
       value_name_(value_name),
+      wow64_access_(wow64_access),
       previous_type_(0),
       status_(DELETE_VALUE) {
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
 }
 
 DeleteRegValueWorkItem::~DeleteRegValueWorkItem() {
@@ -36,8 +41,9 @@ bool DeleteRegValueWorkItem::Do() {
   RegKey key;
   DWORD type = 0;
   DWORD size = 0;
-  LONG result = key.Open(predefined_root_, key_path_.c_str(),
-                         KEY_READ | KEY_WRITE);
+  LONG result = key.Open(predefined_root_,
+                         key_path_.c_str(),
+                         KEY_READ | KEY_WRITE | wow64_access_);
   if (result == ERROR_SUCCESS)
     result = key.ReadValue(value_name_.c_str(), NULL, &size, &type);
 
@@ -83,8 +89,9 @@ void DeleteRegValueWorkItem::Rollback() {
 
   // At this point only possible state is VALUE_DELETED.
   RegKey key;
-  LONG result = key.Open(predefined_root_, key_path_.c_str(),
-                         KEY_READ | KEY_WRITE);
+  LONG result = key.Open(predefined_root_,
+                         key_path_.c_str(),
+                         KEY_READ | KEY_WRITE | wow64_access_);
   if (result == ERROR_SUCCESS) {
     // try to restore the previous value
     DWORD previous_size = static_cast<DWORD>(previous_value_.size());

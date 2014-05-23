@@ -62,14 +62,14 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
                                          REG_SZ, NULL, 0));
 
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
-      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_str));
+      WorkItem::CreateDeleteRegValueWorkItem(
+          HKEY_CURRENT_USER, parent_key, WorkItem::kWow64Default, name_str));
   scoped_ptr<DeleteRegValueWorkItem> work_item2(
-      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_dword));
+      WorkItem::CreateDeleteRegValueWorkItem(
+          HKEY_CURRENT_USER, parent_key, WorkItem::kWow64Default, name_dword));
   scoped_ptr<DeleteRegValueWorkItem> work_item3(
-      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_empty));
+      WorkItem::CreateDeleteRegValueWorkItem(
+          HKEY_CURRENT_USER, parent_key, WorkItem::kWow64Default, name_empty));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
@@ -113,11 +113,11 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteNonExistentValue) {
   EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
-      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_str));
+      WorkItem::CreateDeleteRegValueWorkItem(
+          HKEY_CURRENT_USER, parent_key, WorkItem::kWow64Default, name_str));
   scoped_ptr<DeleteRegValueWorkItem> work_item2(
-      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_dword));
+      WorkItem::CreateDeleteRegValueWorkItem(
+          HKEY_CURRENT_USER, parent_key, WorkItem::kWow64Default, name_dword));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());

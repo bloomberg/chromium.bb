@@ -65,14 +65,15 @@ bool DeleteInstallDirectory(bool system_level,
 }
 
 bool DeleteRegistryKey(bool system_level,
-                       InstallationValidator::InstallationType type) {
+                       InstallationValidator::InstallationType type,
+                       REGSAM wow64_access) {
   BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
       ToBrowserDistributionType(type));
   base::FilePath::StringType key(google_update::kRegPathClients);
   key.push_back(base::FilePath::kSeparators[0]);
   key.append(dist->GetAppGuid());
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  return InstallUtil::DeleteRegistryKey(root, key);
+  return InstallUtil::DeleteRegistryKey(root, key, wow64_access);
 }
 
 bool GetChromeInstallDirectory(bool system_level, base::FilePath* path) {
@@ -296,4 +297,4 @@ bool RunAndWaitForCommandToFinish(CommandLine command) {
   return true;
 }
 
-}  // namespace
+}  // namespace installer_test

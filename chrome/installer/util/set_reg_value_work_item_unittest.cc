@@ -58,13 +58,21 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
   std::wstring name_str(kNameStr);
   std::wstring data_str(kDataStr1);
   scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name_str, data_str, false));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name_str,
+                                          data_str,
+                                          false));
 
   std::wstring name_dword(kNameDword);
   scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name_dword, dword1, false));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name_dword,
+                                          dword1,
+                                          false));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
@@ -97,13 +105,21 @@ TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
   std::wstring name_str(kNameStr);
   std::wstring data_str(kDataStr1);
   scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name_str, data_str, true));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name_str,
+                                          data_str,
+                                          true));
 
   std::wstring name_dword(kNameDword);
   scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name_dword, dword1, true));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name_dword,
+                                          dword1,
+                                          true));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
@@ -142,8 +158,12 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
 
   std::wstring data(kDataStr2);
   scoped_ptr<SetRegValueWorkItem> work_item(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name, data, false));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false));
   EXPECT_TRUE(work_item->Do());
 
   std::wstring read_out;
@@ -160,7 +180,11 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   name.assign(kNameDword);
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), dword1));
   work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-      parent_key, name, dword2, false));
+                                                      parent_key,
+                                                      WorkItem::kWow64Default,
+                                                      name,
+                                                      dword2,
+                                                      false));
   EXPECT_TRUE(work_item->Do());
 
   DWORD read_dword;
@@ -196,11 +220,19 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
 
   std::wstring data(kDataStr2);
   scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name, data, true));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          true));
   scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name_empty, data, true));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name_empty,
+                                          data,
+                                          true));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
@@ -231,8 +263,12 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   name.assign(kNameDword);
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), dword1));
   scoped_ptr<SetRegValueWorkItem> work_item3(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key, name,
-                                          dword2, true));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          dword2,
+                                          true));
   EXPECT_TRUE(work_item3->Do());
 
   DWORD read_dword;
@@ -256,11 +292,19 @@ TEST_F(SetRegValueWorkItemTest, WriteNonExistingKey) {
   std::wstring name(L"name");
   std::wstring data(kDataStr1);
   scoped_ptr<SetRegValueWorkItem> work_item(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                          name, data, false));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          parent_key,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false));
   EXPECT_FALSE(work_item->Do());
 
   work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-      parent_key, name, dword1, false));
+                                                      parent_key,
+                                                      WorkItem::kWow64Default,
+                                                      name,
+                                                      dword1,
+                                                      false));
   EXPECT_FALSE(work_item->Do());
 }

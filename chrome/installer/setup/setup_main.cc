@@ -264,11 +264,14 @@ installer::InstallStatus RenameChromeExecutables(
        ++it) {
     version_key = (*it)->distribution()->GetVersionKey();
     install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, google_update::kRegOldVersionField);
+        reg_root, version_key, WorkItem::kWow64Default,
+        google_update::kRegOldVersionField);
     install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, google_update::kRegCriticalVersionField);
+        reg_root, version_key, WorkItem::kWow64Default,
+        google_update::kRegCriticalVersionField);
     install_list->AddDeleteRegValueWorkItem(
-        reg_root, version_key, google_update::kRegRenameCmdField);
+        reg_root, version_key, WorkItem::kWow64Default,
+        google_update::kRegRenameCmdField);
   }
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {

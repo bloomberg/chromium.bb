@@ -14,6 +14,7 @@ SetRegValueWorkItem::~SetRegValueWorkItem() {
 
 SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
                                          const std::wstring& key_path,
+                                         REGSAM wow64_access,
                                          const std::wstring& value_name,
                                          const std::wstring& value_data,
                                          bool overwrite)
@@ -21,15 +22,20 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       key_path_(key_path),
       value_name_(value_name),
       overwrite_(overwrite),
+      wow64_access_(wow64_access),
       status_(SET_VALUE),
       type_(REG_SZ),
       previous_type_(0) {
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
   const uint8* data = reinterpret_cast<const uint8*>(value_data.c_str());
   value_.assign(data, data + (value_data.length() + 1) * sizeof(wchar_t));
 }
 
 SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
                                          const std::wstring& key_path,
+                                         REGSAM wow64_access,
                                          const std::wstring& value_name,
                                          DWORD value_data,
                                          bool overwrite)
@@ -37,15 +43,20 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       key_path_(key_path),
       value_name_(value_name),
       overwrite_(overwrite),
+      wow64_access_(wow64_access),
       status_(SET_VALUE),
       type_(REG_DWORD),
       previous_type_(0) {
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
   const uint8* data = reinterpret_cast<const uint8*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
 }
 
 SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
                                          const std::wstring& key_path,
+                                         REGSAM wow64_access,
                                          const std::wstring& value_name,
                                          int64 value_data,
                                          bool overwrite)
@@ -53,9 +64,13 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       key_path_(key_path),
       value_name_(value_name),
       overwrite_(overwrite),
+      wow64_access_(wow64_access),
       status_(SET_VALUE),
       type_(REG_QWORD),
       previous_type_(0) {
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
   const uint8* data = reinterpret_cast<const uint8*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
 }
@@ -71,8 +86,9 @@ bool SetRegValueWorkItem::Do() {
   }
 
   status_ = VALUE_UNCHANGED;
-  result = key.Open(predefined_root_, key_path_.c_str(),
-                    KEY_READ | KEY_SET_VALUE);
+  result = key.Open(predefined_root_,
+                    key_path_.c_str(),
+                    KEY_READ | KEY_SET_VALUE | wow64_access_);
   if (result != ERROR_SUCCESS) {
     VLOG(1) << "can not open " << key_path_ << " error: " << result;
     return ignore_failure_;
@@ -127,7 +143,8 @@ void SetRegValueWorkItem::Rollback() {
   }
 
   base::win::RegKey key;
-  LONG result = key.Open(predefined_root_, key_path_.c_str(), KEY_SET_VALUE);
+  LONG result = key.Open(
+      predefined_root_, key_path_.c_str(), KEY_SET_VALUE | wow64_access_);
   if (result != ERROR_SUCCESS) {
     VLOG(1) << "rollback: can not open " << key_path_ << " error: " << result;
     return;

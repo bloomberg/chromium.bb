@@ -113,11 +113,14 @@ class InstallUtil {
   static bool GetEULASentinelFilePath(base::FilePath* path);
 
   // Deletes the registry key at path key_path under the key given by root_key.
-  static bool DeleteRegistryKey(HKEY root_key, const base::string16& key_path);
+  static bool DeleteRegistryKey(HKEY root_key,
+                                const base::string16& key_path,
+                                REGSAM wow64_access);
 
   // Deletes the registry value named value_name at path key_path under the key
   // given by reg_root.
   static bool DeleteRegistryValue(HKEY reg_root, const base::string16& key_path,
+                                  REGSAM wow64_access,
                                   const base::string16& value_name);
 
   // An interface to a predicate function for use by DeleteRegistryKeyIf and
@@ -143,6 +146,7 @@ class InstallUtil {
       HKEY root_key,
       const base::string16& key_to_delete_path,
       const base::string16& key_to_test_path,
+      REGSAM wow64_access,
       const wchar_t* value_name,
       const RegistryValuePredicate& predicate);
 
@@ -152,6 +156,7 @@ class InstallUtil {
   static ConditionalDeleteResult DeleteRegistryValueIf(
       HKEY root_key,
       const wchar_t* key_path,
+      REGSAM wow64_access,
       const wchar_t* value_name,
       const RegistryValuePredicate& predicate);
 

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/win/registry.h"
+#include "chrome/installer/util/install_util.h"
 
 using base::win::RegKey;
 
@@ -15,12 +16,17 @@ DeleteRegKeyWorkItem::~DeleteRegKeyWorkItem() {
 }
 
 DeleteRegKeyWorkItem::DeleteRegKeyWorkItem(HKEY predefined_root,
-                                           const std::wstring& path)
+                                           const std::wstring& path,
+                                           REGSAM wow64_access)
     : predefined_root_(predefined_root),
-      path_(path) {
+      path_(path),
+      wow64_access_(wow64_access) {
   DCHECK(predefined_root);
   // It's a safe bet that we don't want to delete one of the root trees.
   DCHECK(!path.empty());
+  DCHECK(wow64_access == 0 ||
+         wow64_access == KEY_WOW64_32KEY ||
+         wow64_access == KEY_WOW64_64KEY);
 }
 
 bool DeleteRegKeyWorkItem::Do() {
@@ -31,17 +37,15 @@ bool DeleteRegKeyWorkItem::Do() {
 
   // Only try to make a backup if we're not configured to ignore failures.
   if (!ignore_failure_) {
-    if (!backup.Initialize(predefined_root_, path_.c_str())) {
+    if (!backup.Initialize(predefined_root_, path_.c_str(), wow64_access_)) {
       LOG(ERROR) << "Failed to backup destination for registry key copy.";
       return false;
     }
   }
 
   // Delete the key.
-  LONG result = SHDeleteKey(predefined_root_, path_.c_str());
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    LOG(ERROR) << "Failed to delete key at " << path_ << ", result: "
-               << result;
+  if (!InstallUtil::DeleteRegistryKey(
+          predefined_root_, path_.c_str(), wow64_access_)) {
     return ignore_failure_;
   }
 
@@ -57,14 +61,12 @@ void DeleteRegKeyWorkItem::Rollback() {
 
   // Delete anything in the key before restoring the backup in case someone else
   // put new data in the key after Do().
-  LONG result = SHDeleteKey(predefined_root_, path_.c_str());
-  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-    LOG(ERROR) << "Failed to delete key at " << path_ << " in rollback, "
-                  "result: " << result;
-  }
+  InstallUtil::DeleteRegistryKey(predefined_root_,
+                                 path_.c_str(),
+                                 wow64_access_);
 
   // Restore the old contents.  The restoration takes on its default security
   // attributes; any custom attributes are lost.
-  if (!backup_.WriteTo(predefined_root_, path_.c_str()))
+  if (!backup_.WriteTo(predefined_root_, path_.c_str(), wow64_access_))
     LOG(ERROR) << "Failed to restore key in rollback.";
 }

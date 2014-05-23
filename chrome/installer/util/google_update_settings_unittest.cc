@@ -163,9 +163,14 @@ class GoogleUpdateSettingsTest : public testing::Test {
   bool CreateApKey(WorkItemList* work_item_list, const std::wstring& value) {
     HKEY reg_root = HKEY_CURRENT_USER;
     std::wstring reg_key = GetApKeyPath();
-    work_item_list->AddCreateRegKeyWorkItem(reg_root, reg_key);
-    work_item_list->AddSetRegValueWorkItem(reg_root, reg_key,
-        google_update::kRegApField, value.c_str(), true);
+    work_item_list->AddCreateRegKeyWorkItem(
+        reg_root, reg_key, WorkItem::kWow64Default);
+    work_item_list->AddSetRegValueWorkItem(reg_root,
+                                           reg_key,
+                                           WorkItem::kWow64Default,
+                                           google_update::kRegApField,
+                                           value.c_str(),
+                                           true);
     if (!work_item_list->Do()) {
       work_item_list->Rollback();
       return false;
@@ -467,7 +472,8 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
   RegKey key;
   if (key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS) !=
       ERROR_SUCCESS) {
-    work_item_list->AddCreateRegKeyWorkItem(reg_root, reg_key);
+    work_item_list->AddCreateRegKeyWorkItem(
+        reg_root, reg_key, WorkItem::kWow64Default);
     ASSERT_TRUE(work_item_list->Do()) << "Failed to create ClientState key.";
   } else if (key.DeleteValue(google_update::kRegApField) == ERROR_SUCCESS) {
     ap_key_deleted = true;

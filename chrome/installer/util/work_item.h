@@ -18,7 +18,6 @@
 #include "base/callback_forward.h"
 
 class CallbackWorkItem;
-class CopyRegKeyWorkItem;
 class CopyTreeWorkItem;
 class CreateDirWorkItem;
 class CreateRegKeyWorkItem;
@@ -38,6 +37,15 @@ class FilePath;
 // sequence of actions during install/update/uninstall.
 class WorkItem {
  public:
+  // All registry operations can be instructed to operate on a specific view
+  // of the registry by specifying a REGSAM value to the wow64_access parameter.
+  // The wow64_access parameter can be one of:
+  // KEY_WOW64_32KEY - Operate on the 32-bit view.
+  // KEY_WOW64_64KEY - Operate on the 64-bit view.
+  // kWow64Default   - Operate on the default view (e.g. 32-bit on 32-bit
+  //                   systems, and 64-bit on 64-bit systems).
+  // See http://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx
+  static const REGSAM kWow64Default = 0;
   // Possible states
   enum CopyOverWriteOption {
     ALWAYS,  // Always overwrite regardless of what existed before.
@@ -67,13 +75,6 @@ class WorkItem {
   static CallbackWorkItem* CreateCallbackWorkItem(
       base::Callback<bool(const CallbackWorkItem&)> callback);
 
-  // Create a CopyRegKeyWorkItem that recursively copies a given registry key.
-  static CopyRegKeyWorkItem* CreateCopyRegKeyWorkItem(
-      HKEY predefined_root,
-      const std::wstring& source_key_path,
-      const std::wstring& dest_key_path,
-      CopyOverWriteOption overwrite_option);
-
   // Create a CopyTreeWorkItem that recursively copies a file system hierarchy
   // from source path to destination path.
   // * If overwrite_option is ALWAYS, the created CopyTreeWorkItem always
@@ -93,17 +94,22 @@ class WorkItem {
   // Create a CreateRegKeyWorkItem that creates a registry key at the given
   // path.
   static CreateRegKeyWorkItem* CreateCreateRegKeyWorkItem(
-      HKEY predefined_root, const std::wstring& path);
+      HKEY predefined_root,
+      const std::wstring& path,
+      REGSAM wow64_access);
 
   // Create a DeleteRegKeyWorkItem that deletes a registry key at the given
   // path.
   static DeleteRegKeyWorkItem* CreateDeleteRegKeyWorkItem(
-      HKEY predefined_root, const std::wstring& path);
+      HKEY predefined_root,
+      const std::wstring& path,
+      REGSAM wow64_access);
 
   // Create a DeleteRegValueWorkItem that deletes a registry value
   static DeleteRegValueWorkItem* CreateDeleteRegValueWorkItem(
       HKEY predefined_root,
       const std::wstring& key_path,
+      REGSAM wow64_access,
       const std::wstring& value_name);
 
   // Create a DeleteTreeWorkItem that recursively deletes a file system
@@ -127,6 +133,7 @@ class WorkItem {
   static SetRegValueWorkItem* CreateSetRegValueWorkItem(
       HKEY predefined_root,
       const std::wstring& key_path,
+      REGSAM wow64_access,
       const std::wstring& value_name,
       const std::wstring& value_data,
       bool overwrite);
@@ -136,16 +143,20 @@ class WorkItem {
   static SetRegValueWorkItem* CreateSetRegValueWorkItem(
       HKEY predefined_root,
       const std::wstring& key_path,
+      REGSAM wow64_access,
       const std::wstring& value_name,
-      DWORD value_data, bool overwrite);
+      DWORD value_data,
+      bool overwrite);
 
   // Create a SetRegValueWorkItem that sets a registry value with REG_QWORD type
   // at the key with specified path.
   static SetRegValueWorkItem* CreateSetRegValueWorkItem(
       HKEY predefined_root,
       const std::wstring& key_path,
+      REGSAM wow64_access,
       const std::wstring& value_name,
-      int64 value_data, bool overwrite);
+      int64 value_data,
+      bool overwrite);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path.

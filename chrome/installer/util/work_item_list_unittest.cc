@@ -69,15 +69,20 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
   key_to_create.push_back(base::FilePath::kSeparators[0]);
   key_to_create.append(L"ExecutionSuccess");
 
-  work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
+  work_item.reset(
+      reinterpret_cast<WorkItem*>(WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create, WorkItem::kWow64Default)));
   work_item_list->AddWorkItem(work_item.release());
 
   std::wstring name(kName);
   std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
-                                          name, data, false)));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          key_to_create,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false)));
   work_item_list->AddWorkItem(work_item.release());
 
   EXPECT_TRUE(work_item_list->Do());
@@ -121,8 +126,9 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
   key_to_create.push_back(base::FilePath::kSeparators[0]);
   key_to_create.append(L"ExecutionFail");
 
-  work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
+  work_item.reset(
+      reinterpret_cast<WorkItem*>(WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create, WorkItem::kWow64Default)));
   work_item_list->AddWorkItem(work_item.release());
 
   std::wstring not_created_key(kTestRoot);
@@ -131,14 +137,18 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
   std::wstring name(kName);
   std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, not_created_key,
-                                          name, data, false)));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          not_created_key,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false)));
   work_item_list->AddWorkItem(work_item.release());
 
   // This one will not be executed because we will fail early.
-  work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           not_created_key)));
+  work_item.reset(
+      reinterpret_cast<WorkItem*>(WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, not_created_key, WorkItem::kWow64Default)));
   work_item_list->AddWorkItem(work_item.release());
 
   EXPECT_FALSE(work_item_list->Do());
@@ -182,15 +192,20 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
   std::wstring key_to_create(kTestRoot);
   key_to_create.push_back(base::FilePath::kSeparators[0]);
   key_to_create.append(L"ExecutionSuccess");
-  work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
+  work_item.reset(
+      reinterpret_cast<WorkItem*>(WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create, WorkItem::kWow64Default)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
   std::wstring name(kName);
   std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
-                                          name, data, false)));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          key_to_create,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
   work_item_list->AddWorkItem(conditional_work_item_list.release());
@@ -238,15 +253,20 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
   std::wstring key_to_create(kTestRoot);
   key_to_create.push_back(base::FilePath::kSeparators[0]);
   key_to_create.append(L"ExecutionSuccess");
-  work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
+  work_item.reset(
+      reinterpret_cast<WorkItem*>(WorkItem::CreateCreateRegKeyWorkItem(
+          HKEY_CURRENT_USER, key_to_create, WorkItem::kWow64Default)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
   std::wstring name(kName);
   std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
-                                          name, data, false)));
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
+                                          key_to_create,
+                                          WorkItem::kWow64Default,
+                                          name,
+                                          data,
+                                          false)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
   work_item_list->AddWorkItem(conditional_work_item_list.release());
