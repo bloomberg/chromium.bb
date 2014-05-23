@@ -423,17 +423,10 @@ ColorChooser* BrowserPluginGuest::OpenColorChooser(
 }
 
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
-  if (delegate_) {
-    WebContentsViewGuest* view_guest =
-        static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    ContextMenuParams context_menu_params =
-        view_guest->ConvertContextMenuParams(params);
+  if (!delegate_)
+    return false;
 
-    return delegate_->HandleContextMenu(context_menu_params);
-  }
-
-  // Will be handled by WebContentsViewGuest.
-  return false;
+  return delegate_->HandleContextMenu(params);
 }
 
 void BrowserPluginGuest::HandleKeyboardEvent(
