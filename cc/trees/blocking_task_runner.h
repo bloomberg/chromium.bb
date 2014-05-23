@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -62,9 +63,7 @@ class CC_EXPORT BlockingTaskRunner
 
   // True if tasks posted to the BlockingTaskRunner will run on the current
   // thread.
-  bool BelongsToCurrentThread() {
-    return task_runner_->BelongsToCurrentThread();
-  }
+  bool BelongsToCurrentThread();
 
   // Posts a task using the contained SingleThreadTaskRunner unless |capture_|
   // is true. When |capture_| is true, tasks posted will be caught and stored
@@ -82,6 +81,7 @@ class CC_EXPORT BlockingTaskRunner
 
   void SetCapture(bool capture);
 
+  base::PlatformThreadId thread_id_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::Lock lock_;

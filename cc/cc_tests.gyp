@@ -105,6 +105,7 @@
       'trees/layer_tree_host_unittest_damage.cc',
       'trees/layer_tree_host_unittest_delegated.cc',
       'trees/layer_tree_host_unittest_occlusion.cc',
+      'trees/layer_tree_host_unittest_no_message_loop.cc',
       'trees/layer_tree_host_unittest_picture.cc',
       'trees/layer_tree_host_unittest_proxy.cc',
       'trees/layer_tree_host_unittest_scroll.cc',

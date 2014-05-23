@@ -21,10 +21,14 @@ base::SingleThreadTaskRunner* Proxy::ImplThreadTaskRunner() const {
 
 bool Proxy::IsMainThread() const {
 #if DCHECK_IS_ON
-  DCHECK(main_task_runner_.get());
   if (impl_thread_is_overridden_)
     return false;
-  return main_task_runner_->BelongsToCurrentThread();
+
+  bool is_main_thread = base::PlatformThread::CurrentId() == main_thread_id_;
+  if (is_main_thread && main_task_runner_.get()) {
+    DCHECK(main_task_runner_->BelongsToCurrentThread());
+  }
+  return is_main_thread;
 #else
   return true;
 #endif
@@ -68,6 +72,7 @@ Proxy::Proxy(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
       impl_task_runner_(impl_task_runner) {
 #else
       impl_task_runner_(impl_task_runner),
+      main_thread_id_(base::PlatformThread::CurrentId()),
       impl_thread_is_overridden_(false),
       is_main_thread_blocked_(false) {
 #endif

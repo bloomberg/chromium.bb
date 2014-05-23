@@ -12,16 +12,13 @@
 
 namespace cc {
 
-typedef std::pair<base::SingleThreadTaskRunner*,
-                  scoped_refptr<BlockingTaskRunner> > TaskRunnerPair;
-
 struct TaskRunnerPairs {
   static TaskRunnerPairs* GetInstance() {
     return Singleton<TaskRunnerPairs>::get();
   }
 
   base::Lock lock;
-  std::vector<TaskRunnerPair> pairs;
+  std::vector<scoped_refptr<BlockingTaskRunner> > runners;
 
  private:
   friend struct DefaultSingletonTraits<TaskRunnerPairs>;
@@ -30,43 +27,47 @@ struct TaskRunnerPairs {
 // static
 scoped_refptr<BlockingTaskRunner> BlockingTaskRunner::current() {
   TaskRunnerPairs* task_runners = TaskRunnerPairs::GetInstance();
+  base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
 
   base::AutoLock lock(task_runners->lock);
 
-  for (size_t i = 0; i < task_runners->pairs.size(); ++i) {
-    if (task_runners->pairs[i].first->HasOneRef()) {
-      // The SingleThreadTaskRunner is kept alive by its MessageLoop, and we
-      // hold a second reference in the TaskRunnerPairs array. If the
-      // SingleThreadTaskRunner has one ref, then it is being held alive only
-      // by the BlockingTaskRunner and the MessageLoop is gone, so drop the
-      // BlockingTaskRunner from the TaskRunnerPairs array along with the
-      // SingleThreadTaskRunner.
-      task_runners->pairs.erase(task_runners->pairs.begin() + i);
-      --i;
+  scoped_refptr<BlockingTaskRunner> current_task_runner;
+
+  for (size_t i = 0; i < task_runners->runners.size(); ++i) {
+    if (task_runners->runners[i]->thread_id_ == thread_id) {
+      current_task_runner = task_runners->runners[i];
+    } else if (task_runners->runners[i]->HasOneRef()) {
+      task_runners->runners.erase(task_runners->runners.begin() + i);
+      i--;
     }
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> current =
-      base::MessageLoopProxy::current();
-  for (size_t i = 0; i < task_runners->pairs.size(); ++i) {
-    if (task_runners->pairs[i].first == current.get())
-      return task_runners->pairs[i].second.get();
-  }
+  if (current_task_runner)
+    return current_task_runner;
 
-  scoped_refptr<BlockingTaskRunner> runner = new BlockingTaskRunner(current);
-  task_runners->pairs.push_back(TaskRunnerPair(current, runner));
+  scoped_refptr<BlockingTaskRunner> runner =
+      new BlockingTaskRunner(base::MessageLoopProxy::current());
+  task_runners->runners.push_back(runner);
   return runner;
 }
 
 BlockingTaskRunner::BlockingTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner), capture_(0) {}
+    : thread_id_(base::PlatformThread::CurrentId()),
+      task_runner_(task_runner),
+      capture_(0) {
+}
 
 BlockingTaskRunner::~BlockingTaskRunner() {}
+
+bool BlockingTaskRunner::BelongsToCurrentThread() {
+  return base::PlatformThread::CurrentId() == thread_id_;
+}
 
 bool BlockingTaskRunner::PostTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task) {
   base::AutoLock lock(lock_);
+  DCHECK(task_runner_.get() || capture_);
   if (!capture_)
     return task_runner_->PostTask(from_here, task);
   captured_tasks_.push_back(task);

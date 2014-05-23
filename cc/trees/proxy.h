@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
@@ -107,6 +108,7 @@ class CC_EXPORT Proxy {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
 #if DCHECK_IS_ON
+  const base::PlatformThreadId main_thread_id_;
   bool impl_thread_is_overridden_;
   bool is_main_thread_blocked_;
 #endif
