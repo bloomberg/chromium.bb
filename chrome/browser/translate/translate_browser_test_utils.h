@@ -11,12 +11,11 @@ namespace test {
 
 // A utility class that sets up CLD dynamic data upon calling Init() and cleans
 // it up when destroyed.
+// Test data lives under: src/chrome/test/data/cld2_component
 //
 // This class is intended to be instantiated within IN_PROC_BROWSER_TEST_F
 // test fixtures; it uses ASSERT macros for correctness, so that tests will
 // fail gracefully in error conditions. Sample use:
-//
-//   #include "chrome/browser/translate/translate_browser_test_utils.h"
 //
 //   IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 //     test::ScopedCLDDynamicDataHarness dynamic_data_scope;
@@ -26,9 +25,19 @@ namespace test {
 //
 // If you have a lot of tests that need language translation features, you can
 // add an instance of the ScopedCLDDynamicDataHarness to your test class'
-// private member variables and add the call to Init() into your Setup method.
+// private member variables and add the call to Init() into SetUpOnMainThread.
+// Sample use:
 //
-// NB: Test data lives under src/chrome/test/data/cld2_component
+//   class MyTestClass : public InProcessBrowserTest {
+//    public:
+//     virtual void SetUpOnMainThread() OVERRIDE {
+//       dynamic_data_scope.Init();
+//       InProcessBrowserTest::SetUpOnMainThread();
+//     }
+//    private:
+//     test::ScopedCLDDynamicDataHarness dynamic_data_scope;
+//   };
+//
 class ScopedCLDDynamicDataHarness {
  public:
   // Constructs the object, but does nothing. Call Init() to prepare the
