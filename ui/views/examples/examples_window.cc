@@ -131,6 +131,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     instance_ = this;
     combobox_->set_listener(this);
     combobox_model_.SetExamples(examples.Pass());
+    combobox_->ModelChanged();
 
     set_background(Background::CreateStandardPanelBackground());
     GridLayout* layout = new GridLayout(this);
