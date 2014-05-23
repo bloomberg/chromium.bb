@@ -592,30 +592,33 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
     return;
   }
 
-  const CommandLine* current_command_line = CommandLine::ForCurrentProcess();
-  const CommandLine::SwitchMap& switches = current_command_line->GetSwitches();
-  CommandLine::StringVector args = current_command_line->GetArgs();
+  const base::CommandLine* current_command_line =
+      base::CommandLine::ForCurrentProcess();
+  const base::CommandLine::SwitchMap& switches =
+      current_command_line->GetSwitches();
+  base::CommandLine::StringVector args = current_command_line->GetArgs();
 
   // Create the child process command line by copying switches from the current
   // command line.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(kElevatingSwitchName);
   command_line.AppendSwitchASCII(kInputSwitchName, input_pipe_name);
   command_line.AppendSwitchASCII(kOutputSwitchName, output_pipe_name);
 
   DCHECK(!current_command_line->HasSwitch(kElevatingSwitchName));
-  for (CommandLine::SwitchMap::const_iterator i = switches.begin();
+  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
        i != switches.end(); ++i) {
       command_line.AppendSwitchNative(i->first, i->second);
   }
-  for (CommandLine::StringVector::const_iterator i = args.begin();
+  for (base::CommandLine::StringVector::const_iterator i = args.begin();
        i != args.end(); ++i) {
     command_line.AppendArgNative(*i);
   }
 
   // Get the name of the binary to launch.
   base::FilePath binary = current_command_line->GetProgram();
-  CommandLine::StringType parameters = command_line.GetCommandLineString();
+  base::CommandLine::StringType parameters =
+      command_line.GetCommandLineString();
 
   // Launch the child process requesting elevation.
   SHELLEXECUTEINFO info;

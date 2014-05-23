@@ -33,7 +33,7 @@ ServiceUrls::ServiceUrls()
     directory_bot_jid_(kDirectoryBotJid) {
 #if !defined(NDEBUG)
   // Allow debug builds to override urls via command line.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   CHECK(command_line);
   if (command_line->HasSwitch(kDirectoryBaseUrlSwitch)) {
     directory_base_url_ = command_line->GetSwitchValueASCII(

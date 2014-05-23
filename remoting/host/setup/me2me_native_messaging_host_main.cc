@@ -93,7 +93,8 @@ int StartMe2MeNativeMessagingHost() {
 
   // Pass handle of the native view to the controller so that the UAC prompts
   // are focused properly.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   int64 native_view_handle = 0;
   if (command_line->HasSwitch(kParentWindowSwitchName)) {
     std::string native_view =
@@ -254,7 +255,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).
   base::AtExitManager exit_manager;
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
   return StartMe2MeNativeMessagingHost();

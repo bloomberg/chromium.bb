@@ -348,7 +348,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   DCHECK(!pipe_.IsValid());
   DCHECK(!worker_process_.IsValid());
 
-  CommandLine command_line(target_command_->argv());
+  base::CommandLine command_line(target_command_->argv());
   if (launch_elevated_) {
     // The job object is not ready. Retry starting the host process later.
     if (!job_.IsValid()) {
@@ -564,4 +564,4 @@ void WtsSessionProcessDelegate::KillProcess() {
   core_->KillProcess();
 }
 
-} // namespace remoting
+}  // namespace remoting

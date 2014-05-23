@@ -291,7 +291,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
         "%d", reinterpret_cast<ULONG_PTR>(client.Get()));
 
     // Pass the IPC channel via the command line.
-    CommandLine command_line(target_command_->argv());
+    base::CommandLine command_line(target_command_->argv());
     command_line.AppendSwitchASCII(kDaemonPipeSwitchName, pipe_handle);
 
     // Create our own window station and desktop accessible by |logon_sid|.
@@ -418,4 +418,4 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
   event_handler_->OnProcessLaunched(limited_handle.Pass());
 }
 
-} // namespace remoting
+}  // namespace remoting

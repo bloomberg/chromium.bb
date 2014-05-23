@@ -287,7 +287,7 @@ bool ReceiveCreateProcessResponse(
 bool SendCreateProcessRequest(
     HANDLE pipe,
     const base::FilePath::StringType& application_name,
-    const CommandLine::StringType& command_line,
+    const base::CommandLine::StringType& command_line,
     DWORD creation_flags,
     const base::char16* desktop_name) {
   // |CreateProcessRequest| structure passes the same parameters to
@@ -370,11 +370,10 @@ bool SendCreateProcessRequest(
 bool CreateRemoteSessionProcess(
     uint32 session_id,
     const base::FilePath::StringType& application_name,
-    const CommandLine::StringType& command_line,
+    const base::CommandLine::StringType& command_line,
     DWORD creation_flags,
     const base::char16* desktop_name,
-    PROCESS_INFORMATION* process_information_out)
-{
+    PROCESS_INFORMATION* process_information_out) {
   DCHECK_LT(base::win::GetVersion(), base::win::VERSION_VISTA);
 
   base::win::ScopedHandle pipe;
@@ -399,7 +398,7 @@ bool CreateRemoteSessionProcess(
   return true;
 }
 
-} // namespace
+}  // namespace
 
 namespace remoting {
 
@@ -448,7 +447,7 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
 }
 
 bool LaunchProcessWithToken(const base::FilePath& binary,
-                            const CommandLine::StringType& command_line,
+                            const base::CommandLine::StringType& command_line,
                             HANDLE user_token,
                             SECURITY_ATTRIBUTES* process_attributes,
                             SECURITY_ATTRIBUTES* thread_attributes,
@@ -521,4 +520,4 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
   return true;
 }
 
-} // namespace remoting
+}  // namespace remoting

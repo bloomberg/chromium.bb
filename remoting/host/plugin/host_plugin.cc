@@ -371,7 +371,7 @@ void InitializePlugin() {
   g_at_exit_manager = new base::AtExitManager;
 
   // Init an empty command line for common objects that use it.
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   if (remoting::LoadResources("")) {
     g_ui_name = new std::string(
@@ -449,7 +449,7 @@ NPError GetValue(NPP instance, NPPVariable variable, void* value) {
   // NP_GetValue() can be called before NP_Initialize().
   InitializePlugin();
 
-  switch(variable) {
+  switch (variable) {
   default:
     VLOG(2) << "GetValue - default " << variable;
     return NPERR_GENERIC_ERROR;
@@ -533,10 +533,10 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
   VLOG(2) << "NP_Initialize";
   InitializePlugin();
 
-  if(npnetscape_funcs == NULL)
+  if (npnetscape_funcs == NULL)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 
-  if(((npnetscape_funcs->version & 0xff00) >> 8) > NP_VERSION_MAJOR)
+  if (((npnetscape_funcs->version & 0xff00) >> 8) > NP_VERSION_MAJOR)
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
 
   g_npnetscape_funcs = npnetscape_funcs;

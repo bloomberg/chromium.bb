@@ -86,8 +86,9 @@ void OnDone(HostStarter::Result result) {
 
 int main(int argc, char** argv) {
   // google_apis::GetOAuth2ClientID/Secret need a static CommandLine.
-  CommandLine::Init(argc, argv);
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
   std::string host_name = command_line->GetSwitchValueASCII("name");
   std::string host_pin = command_line->GetSwitchValueASCII("pin");

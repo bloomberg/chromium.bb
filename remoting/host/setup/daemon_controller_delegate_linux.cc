@@ -85,7 +85,7 @@ bool RunHostScriptWithTimeout(
     LOG(ERROR) << "GetScriptPath() failed.";
     return false;
   }
-  CommandLine command_line(script_path);
+  base::CommandLine command_line(script_path);
   for (unsigned int i = 0; i < args.size(); ++i) {
     command_line.AppendArg(args[i]);
   }
@@ -132,7 +132,7 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
   if (!GetScriptPath(&script_path)) {
     return DaemonController::STATE_NOT_IMPLEMENTED;
   }
-  CommandLine command_line(script_path);
+  base::CommandLine command_line(script_path);
   command_line.AppendArg("--get-status");
 
   std::string status;
@@ -182,7 +182,7 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
         result->SetString(kXmppLoginConfigPath, value);
       }
     } else {
-      result.reset(); // Return NULL in case of error.
+      result.reset();  // Return NULL in case of error.
     }
   }
 
@@ -282,7 +282,7 @@ std::string DaemonControllerDelegateLinux::GetVersion() {
   if (!GetScriptPath(&script_path)) {
     return std::string();
   }
-  CommandLine command_line(script_path);
+  base::CommandLine command_line(script_path);
   command_line.AppendArg("--host-version");
 
   std::string version;

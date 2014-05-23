@@ -259,7 +259,8 @@ void DaemonProcess::CrashNetworkProcess(
 void DaemonProcess::Initialize() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   // Get the name of the host configuration file.
   base::FilePath default_config_dir = remoting::GetConfigDir();
   base::FilePath config_path = default_config_dir.Append(

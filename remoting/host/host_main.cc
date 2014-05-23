@@ -86,27 +86,30 @@ void Usage(const base::FilePath& program_name) {
 
 // Runs the binary specified by the command line, elevated.
 int RunElevated() {
-  const CommandLine::SwitchMap& switches =
-      CommandLine::ForCurrentProcess()->GetSwitches();
-  CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
+  const base::CommandLine::SwitchMap& switches =
+      base::CommandLine::ForCurrentProcess()->GetSwitches();
+  base::CommandLine::StringVector args =
+      base::CommandLine::ForCurrentProcess()->GetArgs();
 
   // Create the child process command line by copying switches from the current
   // command line.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  for (CommandLine::SwitchMap::const_iterator i = switches.begin();
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  for (base::CommandLine::SwitchMap::const_iterator i = switches.begin();
        i != switches.end(); ++i) {
     if (i->first != kElevateSwitchName)
       command_line.AppendSwitchNative(i->first, i->second);
   }
-  for (CommandLine::StringVector::const_iterator i = args.begin();
+  for (base::CommandLine::StringVector::const_iterator i = args.begin();
        i != args.end(); ++i) {
     command_line.AppendArgNative(*i);
   }
 
   // Get the name of the binary to launch.
   base::FilePath binary =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(kElevateSwitchName);
-  CommandLine::StringType parameters = command_line.GetCommandLineString();
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kElevateSwitchName);
+  base::CommandLine::StringType parameters =
+      command_line.GetCommandLineString();
 
   // Launch the child process requesting elevation.
   SHELLEXECUTEINFO info;
@@ -157,7 +160,7 @@ int HostMain(int argc, char** argv) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   // Initialize Breakpad as early as possible. On Mac the command-line needs to
   // be initialized first, so that the preference for crash-reporting can be
@@ -184,7 +187,8 @@ int HostMain(int argc, char** argv) {
 #endif  // defined(OS_WIN)
 
   // Parse the command line.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHelpSwitchName) ||
       command_line->HasSwitch(kQuestionSwitchName)) {
     Usage(command_line->GetProgram());

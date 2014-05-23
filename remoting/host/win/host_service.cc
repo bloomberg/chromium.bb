@@ -65,8 +65,8 @@ HostService* HostService::GetInstance() {
   return Singleton<HostService>::get();
 }
 
-bool HostService::InitWithCommandLine(const CommandLine* command_line) {
-  CommandLine::StringVector args = command_line->GetArgs();
+bool HostService::InitWithCommandLine(const base::CommandLine* command_line) {
+  base::CommandLine::StringVector args = command_line->GetArgs();
   if (!args.empty()) {
     LOG(ERROR) << "No positional parameters expected.";
     return false;
@@ -433,11 +433,11 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 
 int DaemonProcessMain() {
   HostService* service = HostService::GetInstance();
-  if (!service->InitWithCommandLine(CommandLine::ForCurrentProcess())) {
+  if (!service->InitWithCommandLine(base::CommandLine::ForCurrentProcess())) {
     return kUsageExitCode;
   }
 
   return service->Run();
 }
 
-} // namespace remoting
+}  // namespace remoting

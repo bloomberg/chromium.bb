@@ -160,9 +160,9 @@ DesktopResizerLinux::DesktopResizerLinux()
     : display_(XOpenDisplay(NULL)),
       screen_(DefaultScreen(display_)),
       root_(RootWindow(display_, screen_)),
-      exact_resize_(CommandLine::ForCurrentProcess()->
+      exact_resize_(base::CommandLine::ForCurrentProcess()->
                     HasSwitch("server-supports-exact-resize")) {
-  XRRSelectInput (display_, root_, RRScreenChangeNotifyMask);
+  XRRSelectInput(display_, root_, RRScreenChangeNotifyMask);
 }
 
 DesktopResizerLinux::~DesktopResizerLinux() {

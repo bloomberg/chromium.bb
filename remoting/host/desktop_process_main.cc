@@ -23,7 +23,8 @@
 namespace remoting {
 
 int DesktopProcessMain() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   std::string channel_name =
       command_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
 

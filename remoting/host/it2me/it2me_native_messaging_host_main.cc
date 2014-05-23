@@ -131,7 +131,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).
   base::AtExitManager exit_manager;
 
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
   return StartIt2MeNativeMessagingHost();

@@ -209,7 +209,7 @@ class HostProcess
 
   // Initializes IPC control channel and config file path from |cmd_line|.
   // Called on the UI thread.
-  bool InitWithCommandLine(const CommandLine* cmd_line);
+  bool InitWithCommandLine(const base::CommandLine* cmd_line);
 
   // Called on the UI thread to start monitoring the configuration file.
   void StartWatchingConfigChanges();
@@ -361,7 +361,7 @@ HostProcess::~HostProcess() {
   task_runner->DeleteSoon(FROM_HERE, context_.release());
 }
 
-bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
+bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #if defined(REMOTING_MULTI_PROCESS)
   // Parse the handle value and convert it to a handle/file descriptor.
   std::string channel_name =
@@ -631,7 +631,7 @@ void HostProcess::OnChannelError() {
 void HostProcess::StartOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
-  if (!InitWithCommandLine(CommandLine::ForCurrentProcess())) {
+  if (!InitWithCommandLine(base::CommandLine::ForCurrentProcess())) {
     // Shutdown the host if the command line is invalid.
     context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&HostProcess::ShutdownHost, this,
@@ -642,14 +642,14 @@ void HostProcess::StartOnUiThread() {
 #if defined(OS_LINUX)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
-  base::FilePath audio_pipe_name = CommandLine::ForCurrentProcess()->
+  base::FilePath audio_pipe_name = base::CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(kAudioPipeSwitchName);
   if (!audio_pipe_name.empty()) {
     remoting::AudioCapturerLinux::InitializePipeReader(
         context_->audio_task_runner(), audio_pipe_name);
   }
 
-  base::FilePath gnubby_socket_name = CommandLine::ForCurrentProcess()->
+  base::FilePath gnubby_socket_name = base::CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(kAuthSocknameSwitchName);
   if (!gnubby_socket_name.empty())
     remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);

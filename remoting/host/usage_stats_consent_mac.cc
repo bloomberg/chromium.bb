@@ -21,7 +21,7 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   // Normally, the ConfigFileWatcher class would be used for retrieving config
   // settings, but this code needs to execute before Breakpad is initialised,
   // which itself should happen as early as possible during startup.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
     base::FilePath config_file_path =
         command_line->GetSwitchValuePath(kHostConfigSwitchName);

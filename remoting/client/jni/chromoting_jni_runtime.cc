@@ -46,7 +46,7 @@ static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
   // runtime API keys have been specified by the environment. Unfortunately, we
   // neither launch Chromium nor have a command line, so we need to prevent
   // them from DCHECKing out when they go looking.
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
 
   // Create the singleton now so that the Chromoting threads will be set up.
   remoting::ChromotingJniRuntime::GetInstance();
