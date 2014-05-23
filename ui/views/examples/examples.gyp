@@ -117,25 +117,13 @@
       'type': '<(component)',
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../base/base.gyp:base_i18n',
         '../../../content/content.gyp:content',
         '../../../skia/skia.gyp:skia',
-        '../../../third_party/icu/icu.gyp:icui18n',
-        '../../../third_party/icu/icu.gyp:icuuc',
         '../../../url/url.gyp:url_lib',
-        '../../aura/aura.gyp:aura',
-        '../../base/ui_base.gyp:ui_base',
         '../../events/events.gyp:events',
-        '../../gfx/gfx.gyp:gfx',
-        '../../gfx/gfx.gyp:gfx_geometry',
-        '../../resources/ui_resources.gyp:ui_resources',
-        '../../resources/ui_resources.gyp:ui_test_pak',
         '../controls/webview/webview.gyp:webview',
         '../views.gyp:views',
         'views_examples_lib',
-      ],
-      'include_dirs': [
-        '../../..',
       ],
       'defines': [
         'VIEWS_EXAMPLES_WITH_CONTENT_IMPLEMENTATION',
@@ -147,53 +135,19 @@
         'webview_example.cc',
         'webview_example.h',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'include_dirs': [
-            '../../../third_party/wtl/include',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        }],
-      ],
     },  # target_name: views_examples_with_content_lib
     {
       'target_name': 'views_examples_with_content_exe',
       'type': 'executable',
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../base/base.gyp:base_i18n',
         '../../../content/content.gyp:content',
-        '../../../content/content_shell_and_tests.gyp:content_shell_lib',
-        '../../../content/content_shell_and_tests.gyp:test_support_content',
-        '../../../skia/skia.gyp:skia',
-        '../../../third_party/icu/icu.gyp:icui18n',
-        '../../../third_party/icu/icu.gyp:icuuc',
-        '../../aura/aura.gyp:aura',
-        '../../base/ui_base.gyp:ui_base',
-        '../../compositor/compositor.gyp:compositor',
-        '../../events/events.gyp:events',
-        '../../gfx/gfx.gyp:gfx',
-        '../../gfx/gfx.gyp:gfx_geometry',
-        '../../resources/ui_resources.gyp:ui_resources',
-        '../../resources/ui_resources.gyp:ui_test_pak',
-        '../../wm/wm.gyp:wm_test_support',
-        '../views.gyp:views',
-        '../views.gyp:views_test_support',
+        '../../views_content_client/views_content_client.gyp:views_content_client',
         'views_examples_with_content_lib',
-      ],
-      'include_dirs': [
-        '../../..',
       ],
       'sources': [
         '../../../content/app/startup_helper_win.cc',
-        'content_client/examples_browser_main_parts.cc',
-        'content_client/examples_browser_main_parts.h',
-        'content_client/examples_content_browser_client.cc',
-        'content_client/examples_content_browser_client.h',
-        'content_client/examples_main_delegate.cc',
-        'content_client/examples_main_delegate.h',
-        'content_client/examples_main.cc',
+        'examples_with_content_main_exe.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -215,13 +169,6 @@
           },
           'dependencies': [
             '../../../sandbox/sandbox.gyp:sandbox',
-          ],
-        }],
-        ['OS=="win"', {
-          'sources/': [
-            # This is needed because the aura rule strips it from the default
-            # sources list.
-            ['include', '^../../../content/app/startup_helper_win.cc'],
           ],
         }],
       ],

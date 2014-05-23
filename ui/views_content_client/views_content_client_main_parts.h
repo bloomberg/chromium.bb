@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
-#define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
+#define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,21 +14,25 @@ class ShellBrowserContext;
 struct MainFunctionParams;
 }
 
+namespace views {
+class ViewsDelegate;
+}
+
 namespace wm {
 class WMState;
 class WMTestHelper;
 }
 
-namespace views {
-class ViewsDelegate;
+namespace ui {
 
-namespace examples {
+class ViewsContentClient;
 
-class ExamplesBrowserMainParts : public content::BrowserMainParts {
+class ViewsContentClientMainParts : public content::BrowserMainParts {
  public:
-  explicit ExamplesBrowserMainParts(
-      const content::MainFunctionParams& parameters);
-  virtual ~ExamplesBrowserMainParts();
+  ViewsContentClientMainParts(
+      const content::MainFunctionParams& content_params,
+      ViewsContentClient* views_content_client);
+  virtual ~ViewsContentClientMainParts();
 
   // content::BrowserMainParts:
   virtual void ToolkitInitialized() OVERRIDE;
@@ -43,7 +47,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
-  scoped_ptr<ViewsDelegate> views_delegate_;
+  scoped_ptr<views::ViewsDelegate> views_delegate_;
 
 #if defined(OS_CHROMEOS)
   // Enable a minimal set of views::corewm to be initialized.
@@ -52,10 +56,11 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
 
   scoped_ptr<wm::WMState> wm_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
+  ViewsContentClient* views_content_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainParts);
 };
 
-}  // namespace examples
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#endif  // UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
