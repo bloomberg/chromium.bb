@@ -65,9 +65,25 @@ MediaSourceVideoRenderer::VideoWriter::VideoWriter(
           .InMicroseconds() *
       base::Time::kNanosecondsPerMicrosecond);
 
-  segment_->AddVideoTrack(frame_size_.width(), frame_size_.height(), 1);
+  uint64 crop_right = 0;
+  int width = frame_size_.width();
+  if (width % 2 == 1) {
+    ++width;
+    crop_right = 1;
+  }
+
+  uint64 crop_bottom = 0;
+  int height = frame_size_.height();
+  if (height % 2 == 1) {
+    ++height;
+    crop_bottom = 1;
+  }
+
+  segment_->AddVideoTrack(width, height, 1);
   mkvmuxer::VideoTrack* video_track =
       reinterpret_cast<mkvmuxer::VideoTrack*>(segment_->GetTrackByNumber(1));
+  video_track->set_crop_right(crop_right);
+  video_track->set_crop_bottom(crop_bottom);
   video_track->set_frame_rate(base::Time::kNanosecondsPerSecond /
                               kFrameIntervalNs);
   video_track->set_default_duration(base::Time::kNanosecondsPerSecond);
