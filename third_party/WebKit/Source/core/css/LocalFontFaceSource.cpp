@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/LocalFontFaceSource.h"
 
+#include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -14,13 +15,13 @@ namespace WebCore {
 
 bool LocalFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescription)
 {
-    return FontCache::fontCache()->isPlatformFontAvailable(fontDescription, m_fontName);
+    return FontCache::fontCache()->isPlatformFontAvailable(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(m_fontName));
 }
 
 PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(const FontDescription& fontDescription)
 {
     // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
-    RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(fontDescription, m_fontName, true);
+    RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(m_fontName), true);
     m_histograms.record(fontData);
     return fontData.release();
 }

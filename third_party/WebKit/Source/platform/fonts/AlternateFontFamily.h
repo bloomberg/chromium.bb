@@ -59,10 +59,12 @@ inline const AtomicString& adjustFamilyNameToAvoidUnsupportedFonts(const AtomicS
         return microsoftSans;
 
     // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
+    // Alias 'Times' -> 'Times New Roman' (truetype font).
     // There's no 'Microsoft Sans Serif-equivalent' for Serif.
     DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, times, ("Times", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, msSerif))
+    if (equalIgnoringCase(familyName, msSerif) || equalIgnoringCase(familyName, times))
         return timesNewRoman;
 #endif
 
