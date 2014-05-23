@@ -15,8 +15,8 @@ ChromeSigninClientFactory::ChromeSigninClientFactory()
 ChromeSigninClientFactory::~ChromeSigninClientFactory() {}
 
 // static
-ChromeSigninClient* ChromeSigninClientFactory::GetForProfile(Profile* profile) {
-  return static_cast<ChromeSigninClient*>(
+SigninClient* ChromeSigninClientFactory::GetForProfile(Profile* profile) {
+  return static_cast<SigninClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 

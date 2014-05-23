@@ -59,6 +59,12 @@ class TestSigninClient : public SigninClient {
   ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
 #endif
 
+  // SigninClient overrides:
+  virtual void SetSigninProcess(int host_id) OVERRIDE;
+  virtual void ClearSigninProcess() OVERRIDE;
+  virtual bool IsSigninProcess(int host_id) const OVERRIDE;
+  virtual bool HasSigninProcess() const OVERRIDE;
+
  private:
   // Loads the token database.
   void LoadDatabase();
@@ -66,6 +72,7 @@ class TestSigninClient : public SigninClient {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
+  int signin_host_id_;
 
 #if defined(OS_IOS)
   scoped_ptr<ios::FakeProfileOAuth2TokenServiceIOSProvider> iosProvider_;

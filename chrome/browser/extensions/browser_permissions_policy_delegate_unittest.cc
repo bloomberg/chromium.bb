@@ -64,7 +64,7 @@ TEST_F(BrowserPermissionsPolicyDelegateTest, CanExecuteScriptOnPage) {
 
   content::MockRenderProcessHost signin_process(profile_);
   content::MockRenderProcessHost normal_process(profile_);
-  ChromeSigninClient* signin_client =
+  SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(profile_);
   ASSERT_TRUE(signin_client);
   signin_client->SetSigninProcess(signin_process.GetID());

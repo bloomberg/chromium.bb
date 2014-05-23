@@ -48,7 +48,7 @@ bool BrowserPermissionsPolicyDelegate::CanExecuteScriptOnPage(
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::iterator profile = profiles.begin();
        profile != profiles.end(); ++profile) {
-    ChromeSigninClient* signin_client =
+    SigninClient* signin_client =
         ChromeSigninClientFactory::GetForProfile(*profile);
     if (signin_client && signin_client->IsSigninProcess(process_id)) {
       if (error)

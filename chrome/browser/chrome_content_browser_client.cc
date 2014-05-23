@@ -1185,7 +1185,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   }
 
 #if !defined(OS_CHROMEOS)
-  ChromeSigninClient* signin_client =
+  SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(profile);
   if (signin_client && signin_client->IsSigninProcess(process_host->GetID()))
     return SigninManager::IsWebBasedSigninFlowURL(site_url);
@@ -1310,7 +1310,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   // for signin URLs. The signin process will be cleared from SigninManager
   // when the renderer is destroyed.
   if (SigninManager::IsWebBasedSigninFlowURL(site_instance->GetSiteURL())) {
-    ChromeSigninClient* signin_client =
+    SigninClient* signin_client =
         ChromeSigninClientFactory::GetForProfile(profile);
     if (signin_client)
       signin_client->SetSigninProcess(site_instance->GetProcess()->GetID());
@@ -1565,7 +1565,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kInstantProcess);
 
 #if !defined(OS_CHROMEOS)
-      ChromeSigninClient* signin_client =
+      SigninClient* signin_client =
           ChromeSigninClientFactory::GetForProfile(profile);
       if (signin_client && signin_client->IsSigninProcess(process->GetID()))
         command_line->AppendSwitch(switches::kSigninProcess);

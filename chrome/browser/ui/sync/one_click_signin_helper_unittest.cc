@@ -279,7 +279,7 @@ void OneClickSigninHelperTest::SetTrustedSigninProcessID(int id) {
 }
 
 void OneClickSigninHelperTest::SetUpSigninManager(const std::string& username) {
-  ChromeSigninClient* signin_client =
+  SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(profile());
   if (signin_client)
     signin_client->SetSigninProcess(trusted_signin_process_id_);

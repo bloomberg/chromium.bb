@@ -107,7 +107,7 @@ const bool kOneClickSigninEnabled = false;
 #define MAYBE_ProcessIsolation ProcessIsolation
 #endif
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
-  ChromeSigninClient* signin =
+  SigninClient* signin =
       ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_NotTrustedAfterRedirect) {
-  ChromeSigninClient* signin =
+  SigninClient* signin =
       ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, false);
   GURL skip_url = signin::GetLandingURL("ntp", 1);
 
-  ChromeSigninClient* signin =
+  SigninClient* signin =
       ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 

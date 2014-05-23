@@ -1105,7 +1105,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   // show a modal dialog asking the user to confirm.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ChromeSigninClient* signin_client =
+  SigninClient* signin_client =
       profile ? ChromeSigninClientFactory::GetForProfile(profile) : NULL;
   helper->untrusted_confirmation_required_ |=
       (signin_client && !signin_client->IsSigninProcess(child_id));
@@ -1306,7 +1306,7 @@ void OneClickSigninHelper::DidNavigateMainFrame(
     // sign-in process when a navigation to a non-sign-in URL occurs.
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    ChromeSigninClient* signin_client =
+    SigninClient* signin_client =
         profile ? ChromeSigninClientFactory::GetForProfile(profile) : NULL;
     int process_id = web_contents()->GetRenderProcessHost()->GetID();
     if (signin_client && signin_client->IsSigninProcess(process_id))

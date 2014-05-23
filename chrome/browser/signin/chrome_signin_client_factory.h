@@ -15,10 +15,10 @@ class Profile;
 // Profiles.
 class ChromeSigninClientFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the instance of ChromeSigninClient associated with this profile
+  // Returns the instance of SigninClient associated with this profile
   // (creating one if none exists). Returns NULL if this profile cannot have an
-  // ChromeSigninClient (for example, if |profile| is incognito).
-  static ChromeSigninClient* GetForProfile(Profile* profile);
+  // SigninClient (for example, if |profile| is incognito).
+  static SigninClient* GetForProfile(Profile* profile);
 
   // Returns an instance of the factory singleton.
   static ChromeSigninClientFactory* GetInstance();

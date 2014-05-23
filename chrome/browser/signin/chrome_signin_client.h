@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -17,7 +16,6 @@ class CookieSettings;
 class Profile;
 
 class ChromeSigninClient : public SigninClient,
-                           public KeyedService,
                            public content::NotificationObserver,
                            public content::RenderProcessHostObserver {
  public:
@@ -36,10 +34,10 @@ class ChromeSigninClient : public SigninClient,
   // N.B. This is the id returned by RenderProcessHost::GetID().
   // TODO(guohui): Eliminate these APIs once the web-based signin flow is
   // replaced by a native flow. crbug.com/347247
-  void SetSigninProcess(int host_id);
-  void ClearSigninProcess();
-  bool IsSigninProcess(int host_id) const;
-  bool HasSigninProcess() const;
+  virtual void SetSigninProcess(int host_id) OVERRIDE;
+  virtual void ClearSigninProcess() OVERRIDE;
+  virtual bool IsSigninProcess(int host_id) const OVERRIDE;
+  virtual bool HasSigninProcess() const OVERRIDE;
 
   // content::RenderProcessHostObserver implementation.
   virtual void RenderProcessHostDestroyed(content::RenderProcessHost* host)

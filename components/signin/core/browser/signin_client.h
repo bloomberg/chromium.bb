@@ -6,6 +6,7 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 
 #include "base/callback.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
 class PrefService;
@@ -27,7 +28,7 @@ class ProfileOAuth2TokenServiceIOSProvider;
 
 // An interface that needs to be supplied to the Signin component by its
 // embedder.
-class SigninClient {
+class SigninClient : public KeyedService {
  public:
   typedef base::Callback<void(const net::CanonicalCookie* cookie)>
       CookieChangedCallback;
@@ -65,6 +66,12 @@ class SigninClient {
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) {}
+
+  virtual void SetSigninProcess(int host_id) = 0;
+  virtual void ClearSigninProcess() = 0;
+  virtual bool IsSigninProcess(int host_id) const = 0;
+  virtual bool HasSigninProcess() const = 0;
+
 
 #if defined(OS_IOS)
   // TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from
