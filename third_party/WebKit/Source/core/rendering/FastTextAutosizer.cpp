@@ -244,7 +244,7 @@ static bool blockOrImmediateChildrenAreFormControls(const RenderBlock* block)
 {
     if (isNonTextAreaFormControl(block))
         return true;
-    const RenderObject* renderer = block->slowFirstChild();
+    const RenderObject* renderer = block->firstChild();
     while (renderer) {
         if (isNonTextAreaFormControl(renderer))
             return true;

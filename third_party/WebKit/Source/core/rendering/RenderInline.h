@@ -41,6 +41,10 @@ public:
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
+    // If you have a RenderInline, use firstChild or lastChild instead.
+    RenderObject* slowFirstChild() const WTF_DELETED_FUNCTION;
+    RenderObject* slowLastChild() const WTF_DELETED_FUNCTION;
+
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
     Element* node() const { return toElement(RenderBoxModelObject::node()); }
