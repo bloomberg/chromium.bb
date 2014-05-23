@@ -11,7 +11,7 @@ def _RunMakeDafsaTests(input_api, output_api):
   files = ('net/tools/tld_cleanup/make_dafsa.py',
            'net/tools/tld_cleanup/make_dafsa_unittest.py')
   if not any(f in input_api.LocalPaths() for f in files):
-    return
+    return []
   test_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                      'make_dafsa_unittest.py')
   cmd_name = 'make_dafsa_unittest'
