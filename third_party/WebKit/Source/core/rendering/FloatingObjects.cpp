@@ -273,8 +273,9 @@ void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
 void FloatingObjects::moveAllToFloatInfoMap(RendererToFloatInfoMap& map)
 {
     while (!m_set.isEmpty()) {
-        FloatingObject* floatingObject = m_set.takeFirst().leakPtr();
-        map.add(floatingObject->renderer(), floatingObject);
+        OwnPtr<FloatingObject> floatingObject = m_set.takeFirst();
+        RenderBox* renderer = floatingObject->renderer();
+        map.add(renderer, floatingObject.release());
     }
     clear();
 }

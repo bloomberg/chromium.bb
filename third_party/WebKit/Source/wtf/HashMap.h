@@ -466,24 +466,6 @@ namespace WTF {
         return !(a == b);
     }
 
-    template<typename T, typename U, typename V, typename W, typename X, typename Y>
-    inline void deleteAllValues(const HashMap<T, U, V, W, X, Y>& collection)
-    {
-        typedef typename HashMap<T, U, V, W, X, Y>::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete it->value;
-    }
-
-    template<typename T, typename U, typename V, typename W, typename X, typename Y>
-    inline void deleteAllKeys(const HashMap<T, U, V, W, X, Y>& collection)
-    {
-        typedef typename HashMap<T, U, V, W, X, Y>::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete it->key;
-    }
-
     template<typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
     inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vector)
     {

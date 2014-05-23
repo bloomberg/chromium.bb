@@ -843,12 +843,12 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
                         }
                     }
 
-                    floatMap.remove(floatingObject->renderer());
                     if (oldFloatingObject->originatingLine() && !selfNeedsLayout()) {
                         ASSERT(oldFloatingObject->originatingLine()->renderer() == this);
                         oldFloatingObject->originatingLine()->markDirty();
                     }
-                    delete oldFloatingObject;
+
+                    floatMap.remove(floatingObject->renderer());
                 } else {
                     changeLogicalTop = 0;
                     changeLogicalBottom = max(changeLogicalBottom, logicalBottom);
@@ -858,13 +858,12 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
 
         RendererToFloatInfoMap::iterator end = floatMap.end();
         for (RendererToFloatInfoMap::iterator it = floatMap.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = (*it).value;
+            OwnPtr<FloatingObject>& floatingObject = it->value;
             if (!floatingObject->isDescendant()) {
                 changeLogicalTop = 0;
-                changeLogicalBottom = max(changeLogicalBottom, logicalBottomForFloat(floatingObject));
+                changeLogicalBottom = max(changeLogicalBottom, logicalBottomForFloat(floatingObject.get()));
             }
         }
-        deleteAllValues(floatMap);
 
         markLinesDirtyInBlockRange(changeLogicalTop, changeLogicalBottom);
     } else if (!oldIntrudingFloatSet.isEmpty()) {
