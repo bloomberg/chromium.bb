@@ -17,9 +17,9 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
-  # The current NaCl build library.  When a NaCl toolchain is referenced the
-  # toolchain will override this value.
-  nacl_libc = "newlib"
+  # The current NaCl libc and preps stage, none for trusted toolchains.
+  nacl_libc = "none"
+  nacl_prep = "none"
 
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
@@ -90,10 +90,40 @@ if (os == "win") {
   is_linux = false
 }
 
-# =============================================================================
-# HOST TOOLCHAIN NAME
-# =============================================================================
+# ==============================================================================
+# TOOLCHAIN SETUP
+# ==============================================================================
+#
+# Here we set the default toolchain, as well as the variable host_toolchain
+# which will identify the toolchain corresponding to the local system when
+# doing cross-compiles. When not cross-compiling, this will be the same as the
+# default toolchain.
+
 host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
+if (is_win) {
+  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
+  # to eliminate these conditionals.
+  if (build_cpu_arch == "x64") {
+    host_toolchain = "//native_client/build/toolchain/win:64"
+  } else if (build_cpu_arch == "x86") {
+    host_toolchain = "//native_client/build/toolchain/win:32"
+  }
+
+  if (cpu_arch == "x64") {
+    set_default_toolchain("//native_client/build/toolchain/win:64")
+  } else if (cpu_arch == "x86") {
+    set_default_toolchain("//native_client/build/toolchain/win:32")
+  }
+} else if (is_linux) {
+  host_toolchain = "//native_client/build/toolchain/linux:$build_cpu_arch"
+  set_default_toolchain("//native_client/build/toolchain/linux:$cpu_arch")
+} else if (is_mac) {
+  host_toolchain = "//native_client/build/toolchain/mac:clang"
+  set_default_toolchain(host_toolchain)
+} else if (is_ios) {
+  host_toolchain = "//native_client/build/toolchain/mac:host_clang"
+  set_default_toolchain("//native_client/build/toolchain/mac:clang")
+}
 
 
 # We do not use assignment filters
@@ -117,6 +147,14 @@ if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
 # The values configured here will be automatically set on the scope of the
 # corresponding target. Target definitions can add or remove to the settings
 # here as needed.
+
+#
+# For NaCl targets, we inject a dependency on prepping the library for cooked
+# toolchain targets.  For raw targets we inject a dependency on untarring.
+#
+nacl_compiler_configs = [
+  "//native_client/build/config:nacl_defines",
+]
 
 # Holds all configs used for making native executables and libraries, to avoid
 # duplication in each target below.
@@ -160,7 +198,6 @@ if (is_clang && is_linux) {
 }
 native_compiler_configs += [ default_symbols_config ]
 
-
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
   windows_linker_configs = [
@@ -186,12 +223,17 @@ set_defaults("executable") {
   #    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
     }
   } else {
+    configs = nacl_compiler_configs
     if (cpu_arch == "arm") {
       arch = "arm"
     } else {
       arch = "x86"
     }
-    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    if (nacl_prep != "raw") {
+      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    } else {
+      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
+    }
   }
 }
 
@@ -200,12 +242,17 @@ set_defaults("static_library") {
   if (os != "nacl") {
     configs += native_compiler_configs
   } else {
+    configs += nacl_compiler_configs
     if (cpu_arch == "arm") {
       arch = "arm"
     } else {
       arch = "x86"
     }
-    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    if (nacl_prep != "raw") {
+      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    } else {
+      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
+    }
   }
 }
 
@@ -221,12 +268,17 @@ set_defaults("shared_library") {
       configs += [ "//native_client/build/config/mac:mac_dynamic_flags" ]
     }
   } else {
+    configs = nacl_compiler_configs
     if (cpu_arch == "arm") {
       arch = "arm"
     } else {
       arch = "x86"
     }
-    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    if (nacl_prep != "raw") {
+      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    } else {
+      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
+    }
   }
 }
 
@@ -235,46 +287,18 @@ set_defaults("source_set") {
   if (os != "nacl") {
     configs = native_compiler_configs
   } else {
+    configs = nacl_compiler_configs
     if (cpu_arch == "arm") {
       arch = "arm"
     } else {
       arch = "x86"
     }
-    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    if (nacl_prep != "raw") {
+      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+    } else {
+      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
+    }
   }
 }
 
-# ==============================================================================
-# TOOLCHAIN SETUP
-# ==============================================================================
-#
-# Here we set the default toolchain, as well as the variable host_toolchain
-# which will identify the toolchain corresponding to the local system when
-# doing cross-compiles. When not cross-compiling, this will be the same as the
-# default toolchain.
-
-if (is_win) {
-  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
-  # to eliminate these conditionals.
-  if (build_cpu_arch == "x64") {
-    host_toolchain = "//native_client/build/toolchain/win:64"
-  } else if (build_cpu_arch == "x86") {
-    host_toolchain = "//native_client/build/toolchain/win:32"
-  }
-
-  if (cpu_arch == "x64") {
-    set_default_toolchain("//native_client/build/toolchain/win:64")
-  } else if (cpu_arch == "x86") {
-    set_default_toolchain("//native_client/build/toolchain/win:32")
-  }
-} else if (is_linux) {
-  host_toolchain = "//native_client/build/toolchain/linux:$build_cpu_arch"
-  set_default_toolchain("//native_client/build/toolchain/linux:$cpu_arch")
-} else if (is_mac) {
-  host_toolchain = "//native_client/build/toolchain/mac:clang"
-  set_default_toolchain(host_toolchain)
-} else if (is_ios) {
-  host_toolchain = "//native_client/build/toolchain/mac:host_clang"
-  set_default_toolchain("//native_client/build/toolchain/mac:clang")
-}
 

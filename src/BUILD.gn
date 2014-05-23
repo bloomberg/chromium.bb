@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 group("trusted_targets") {
- deps = [
-   "//native_client/src/trusted/cpu_features:all_cpu_features",
-   "//native_client/src/trusted/desc:all_desc",
- ]
+  deps = [
+    "//native_client/src/trusted/cpu_features:all_cpu_features",
+    "//native_client/src/trusted/desc:all_desc",
+  ]
 }
 
 group("untrusted_targets") {
   deps = [
-   "//native_client/tests/hello_world:hello_world",
+  "//native_client/tests/hello_world:hello_world",
   ]
 }

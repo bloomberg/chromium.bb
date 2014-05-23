@@ -1,0 +1,51 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This template builds and installs both dyanmic and static versions of a
+# libraty into the appropriate toolchain.
+
+
+template("NaClDualLibrary") {
+  static_library(target_name) {
+    output_name = target_name
+    sources = invoker.sources
+    if (defined(invoker.cflags)) {
+        cflags = invoker.cflags
+    }
+    if (defined(invoker.cflags_c)) {
+        cflags_c = invoker.cflags_c
+    }
+    if (defined(invoker.cflags_cc)) {
+        cflags_cc = invoker.cflags_cc
+    }
+    if (defined(invoker.include_dirs)) {
+        include_dirs = invoker.include_dirs
+    }
+    if (defined(invoker.ldflags)) {
+        ldflags = invoker.ldflags
+    }
+  }
+
+  if (nacl_libc == "glibc") {
+    shared_library(target_name) {
+      output_name = target_name
+      sources =  invoker.sources
+      if (defined(invoker.cflags)) {
+          cflags = invoker.cflags
+      }
+      if (defined(invoker.cflags_c)) {
+          cflags_c = invoker.cflags_c
+      }
+      if (defined(invoker.cflags_cc)) {
+          cflags_cc = invoker.cflags_cc
+      }
+      if (defined(invoker.include_dirs)) {
+          include_dirs = invoker.include_dirs
+      }
+      if (defined(invoker.ldflags)) {
+          ldflags = invoker.ldflags
+      }
+    }
+  }
+}

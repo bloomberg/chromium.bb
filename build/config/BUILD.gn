@@ -68,6 +68,8 @@ config("nacl_defines") {
       "NACL_BUILD_SUBARCH=64"
     ]
   }
+
+  include_dirs = ["//."]
 }
 
 config("debug") {

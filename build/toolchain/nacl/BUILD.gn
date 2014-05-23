@@ -24,3 +24,13 @@ nacl_toolchain("newlib_x64") {
   ld = cxx
   nacl_libc = "newlib"
 }
+
+nacl_toolchain("newlib_arm") {
+  toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
+  toolchain_cpu_arch = "arm"
+  cc = "gcc"
+  cxx = "g++"
+  ar = "ar"
+  ld = cxx
+  nacl_libc = "newlib"
+}

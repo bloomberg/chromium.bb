@@ -13,23 +13,23 @@
 # Here we declare the meta targets which pull in the various architecture
 # combinations of the real targets.
 #
+
 group("trusted") {
- deps = [
-   "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
-   "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
- ]
+  deps = [
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
+  ]
 }
 
 
 # This is the root untrusted target which will build all trusted components
 group("untrusted") {
   deps = []
-
   if (use_newlib) {
     deps += [
-#      "//native_client:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
       "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)",
       "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)",
+      "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
     ]
   }
 }
