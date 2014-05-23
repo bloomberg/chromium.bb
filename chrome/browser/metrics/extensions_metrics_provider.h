@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_EXTENSION_METRICS_H_
-#define CHROME_BROWSER_METRICS_EXTENSION_METRICS_H_
+#ifndef CHROME_BROWSER_METRICS_EXTENSIONS_METRICS_PROVIDER_H_
+#define CHROME_BROWSER_METRICS_EXTENSIONS_METRICS_PROVIDER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/metrics/metrics_provider.h"
 
 class Profile;
 
@@ -17,30 +18,39 @@ class ExtensionSet;
 }
 
 namespace metrics {
+class MetricsStateManager;
 class SystemProfileProto;
 }
 
-// HashedExtensionMetrics groups various constants and functions used for
+// ExtensionsMetricsProvider groups various constants and functions used for
 // reporting extension IDs with UMA reports (after hashing the extension IDs
 // for privacy).
-class HashedExtensionMetrics {
+class ExtensionsMetricsProvider : public metrics::MetricsProvider {
  public:
-  explicit HashedExtensionMetrics(uint64 client_id);
-  virtual ~HashedExtensionMetrics();
+  // Holds on to |metrics_state_manager|, which must outlive this object, as a
+  // weak pointer.
+  explicit ExtensionsMetricsProvider(
+      metrics::MetricsStateManager* metrics_state_manager);
+  virtual ~ExtensionsMetricsProvider();
+
+  // metrics::MetricsProvider:
 
   // Writes the hashed list of installed extensions into the specified
   // SystemProfileProto object.
-  void WriteExtensionList(metrics::SystemProfileProto* system_profile);
+  virtual void ProvideSystemProfileMetrics(
+      metrics::SystemProfileProto* system_profile) OVERRIDE;
 
  protected:
-  // Retrieves the set of extensions installed in the current profile.  The
-  // default implementation should be fine, but this can be overridden for
-  // testing.
-  //
+  // Exposed for the sake of mocking in test code.
+
+  // Retrieves the set of extensions installed in the current profile.
   // TODO(mvrable): If metrics are ever converted to being per-profile, then
   // this should be updated to return extensions installed in a specified
   // profile.
   virtual scoped_ptr<extensions::ExtensionSet> GetInstalledExtensions();
+
+  // Retrieves the client ID.
+  virtual uint64 GetClientID();
 
   // Hashes the extension extension ID using the provided client key (which
   // must be less than kExtensionListClientKeys) and to produce an output value
@@ -53,15 +63,15 @@ class HashedExtensionMetrics {
   // same value so that reported extensions are consistent.
   Profile* GetMetricsProfile();
 
-  // The key used when hashing extension identifiers, derived from client_id.
-  const int client_key_;
+  // The MetricsStateManager from which the client ID is obtained.
+  metrics::MetricsStateManager* metrics_state_manager_;
 
   // The profile for which extensions are gathered.  Once a profile is found
   // its value is cached here so that GetMetricsProfile() can return a
   // consistent value.
   Profile* cached_profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(HashedExtensionMetrics);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_EXTENSION_METRICS_H_
+#endif  // CHROME_BROWSER_METRICS_EXTENSIONS_METRICS_PROVIDER_H_

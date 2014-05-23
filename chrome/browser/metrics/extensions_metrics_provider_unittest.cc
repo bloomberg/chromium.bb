@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/extension_metrics.h"
+#include "chrome/browser/metrics/extensions_metrics_provider.h"
 
 #include <string>
 
+#include "base/prefs/testing_pref_service.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -14,13 +16,18 @@
 
 namespace {
 
-class TestHashedExtensionMetrics : public HashedExtensionMetrics {
+bool IsMetricsReportingEnabled() {
+  return true;
+}
+
+class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
  public:
-  explicit TestHashedExtensionMetrics(uint64 client_id)
-      : HashedExtensionMetrics(client_id) {}
+  explicit TestExtensionsMetricsProvider(
+      metrics::MetricsStateManager* metrics_state_manager)
+      : ExtensionsMetricsProvider(metrics_state_manager) {}
 
   // Makes the protected HashExtension method available to testing code.
-  using HashedExtensionMetrics::HashExtension;
+  using ExtensionsMetricsProvider::HashExtension;
 
  protected:
   // Override the GetInstalledExtensions method to return a set of extensions
@@ -56,29 +63,42 @@ class TestHashedExtensionMetrics : public HashedExtensionMetrics {
     extensions->Insert(extension);
     return extensions.Pass();
   }
+
+  // Override GetClientID() to return a specific value on which test
+  // expectations are based.
+  virtual uint64 GetClientID() OVERRIDE { return 0x3f1bfee9; }
 };
 
 }  // namespace
 
 // Checks that the hash function used to hide precise extension IDs produces
 // the expected values.
-TEST(HashedExtensionMetrics, HashExtension) {
-  EXPECT_EQ(978, TestHashedExtensionMetrics::HashExtension(
-      "ahfgeienlihckogmohjhadlkjgocpleb", 0));
-  EXPECT_EQ(10, TestHashedExtensionMetrics::HashExtension(
-      "ahfgeienlihckogmohjhadlkjgocpleb", 3817));
-  EXPECT_EQ(1007, TestHashedExtensionMetrics::HashExtension(
-      "pknkgggnfecklokoggaggchhaebkajji", 3817));
-  EXPECT_EQ(10, TestHashedExtensionMetrics::HashExtension(
-      "mdhofdjgenpkhlmddfaegdjddcecipmo", 3817));
+TEST(ExtensionsMetricsProvider, HashExtension) {
+  EXPECT_EQ(978,
+            TestExtensionsMetricsProvider::HashExtension(
+                "ahfgeienlihckogmohjhadlkjgocpleb", 0));
+  EXPECT_EQ(10,
+            TestExtensionsMetricsProvider::HashExtension(
+                "ahfgeienlihckogmohjhadlkjgocpleb", 3817));
+  EXPECT_EQ(1007,
+            TestExtensionsMetricsProvider::HashExtension(
+                "pknkgggnfecklokoggaggchhaebkajji", 3817));
+  EXPECT_EQ(10,
+            TestExtensionsMetricsProvider::HashExtension(
+                "mdhofdjgenpkhlmddfaegdjddcecipmo", 3817));
 }
 
 // Checks that the fake set of extensions provided by
-// TestHashedExtensionMetrics is encoded properly.
-TEST(HashedExtensionMetrics, SystemProtoEncoding) {
+// TestExtensionsMetricsProvider is encoded properly.
+TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::SystemProfileProto system_profile;
-  TestHashedExtensionMetrics extension_metrics(0x3f1bfee9);
-  extension_metrics.WriteExtensionList(&system_profile);
+  TestingPrefServiceSimple local_state;
+  metrics::MetricsStateManager::RegisterPrefs(local_state.registry());
+  scoped_ptr<metrics::MetricsStateManager> metrics_state_manager(
+      metrics::MetricsStateManager::Create(&local_state,
+                base::Bind(&IsMetricsReportingEnabled)));
+  TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
+  extension_metrics.ProvideSystemProfileMetrics(&system_profile);
   ASSERT_EQ(2, system_profile.occupied_extension_bucket_size());
   EXPECT_EQ(10, system_profile.occupied_extension_bucket(0));
   EXPECT_EQ(1007, system_profile.occupied_extension_bucket(1));

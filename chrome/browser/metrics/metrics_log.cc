@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
@@ -192,8 +191,7 @@ MetricsLog::MetricsLog(const std::string& client_id,
                      log_type,
                      client->GetVersionString()),
       client_(client),
-      creation_time_(base::TimeTicks::Now()),
-      extension_metrics_(uma_proto()->client_id()) {
+      creation_time_(base::TimeTicks::Now()) {
   uma_proto()->mutable_system_profile()->set_channel(client_->GetChannel());
 
 #if defined(OS_CHROMEOS)
@@ -386,8 +384,6 @@ void MetricsLog::RecordEnvironment(
   SystemProfileProto::Hardware::CPU* cpu = hardware->mutable_cpu();
   cpu->set_vendor_name(cpu_info.vendor_name());
   cpu->set_signature(cpu_info.signature());
-
-  extension_metrics_.WriteExtensionList(uma_proto()->mutable_system_profile());
 
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);

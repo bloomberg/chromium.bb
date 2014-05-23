@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/extension_metrics.h"
+#include "chrome/browser/metrics/extensions_metrics_provider.h"
 
 #include <set>
 
@@ -10,7 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/metrics/metrics_log_base.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
@@ -29,14 +31,18 @@ const size_t kExtensionListBuckets = 1024;
 
 }  // namespace
 
-HashedExtensionMetrics::HashedExtensionMetrics(uint64 client_id)
-    : client_key_(client_id % kExtensionListClientKeys),
-      cached_profile_(NULL) {}
-HashedExtensionMetrics::~HashedExtensionMetrics() {}
+ExtensionsMetricsProvider::ExtensionsMetricsProvider(
+    metrics::MetricsStateManager* metrics_state_manager)
+    : metrics_state_manager_(metrics_state_manager), cached_profile_(NULL) {
+  DCHECK(metrics_state_manager_);
+}
+
+ExtensionsMetricsProvider::~ExtensionsMetricsProvider() {
+}
 
 // static
-int HashedExtensionMetrics::HashExtension(const std::string& extension_id,
-                                          uint32 client_key) {
+int ExtensionsMetricsProvider::HashExtension(const std::string& extension_id,
+                                             uint32 client_key) {
   DCHECK_LE(client_key, kExtensionListClientKeys);
   std::string message =
       base::StringPrintf("%u:%s", client_key, extension_id.c_str());
@@ -44,7 +50,7 @@ int HashedExtensionMetrics::HashExtension(const std::string& extension_id,
   return output % kExtensionListBuckets;
 }
 
-Profile* HashedExtensionMetrics::GetMetricsProfile() {
+Profile* ExtensionsMetricsProvider::GetMetricsProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
     return NULL;
@@ -68,7 +74,7 @@ Profile* HashedExtensionMetrics::GetMetricsProfile() {
 }
 
 scoped_ptr<extensions::ExtensionSet>
-HashedExtensionMetrics::GetInstalledExtensions() {
+ExtensionsMetricsProvider::GetInstalledExtensions() {
 #if defined(ENABLE_EXTENSIONS)
   // UMA reports do not support multiple profiles, but extensions are installed
   // per-profile.  We return the extensions installed in the primary profile.
@@ -83,20 +89,30 @@ HashedExtensionMetrics::GetInstalledExtensions() {
   return scoped_ptr<extensions::ExtensionSet>();
 }
 
-void HashedExtensionMetrics::WriteExtensionList(
+uint64 ExtensionsMetricsProvider::GetClientID() {
+  // TODO(blundell): Create a MetricsLogBase::ClientIDAsInt() API and call it
+  // here as well as in MetricsLogBases's population of the client_id field of
+  // the uma_proto.
+  return metrics::MetricsLogBase::Hash(metrics_state_manager_->client_id());
+}
+
+void ExtensionsMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile) {
   scoped_ptr<extensions::ExtensionSet> extensions(GetInstalledExtensions());
   if (!extensions)
     return;
 
+  const int client_key = GetClientID() % kExtensionListClientKeys;
+
   std::set<int> buckets;
   for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    buckets.insert(HashExtension((*it)->id(), client_key_));
+       it != extensions->end();
+       ++it) {
+    buckets.insert(HashExtension((*it)->id(), client_key));
   }
 
-  for (std::set<int>::const_iterator it = buckets.begin();
-       it != buckets.end(); ++it) {
+  for (std::set<int>::const_iterator it = buckets.begin(); it != buckets.end();
+       ++it) {
     system_profile->add_occupied_extension_bucket(*it);
   }
 }

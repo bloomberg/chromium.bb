@@ -12,12 +12,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
 #include "ui/gfx/size.h"
 
-class HashedExtensionMetrics;
 class PrefService;
 
 #if defined(OS_CHROMEOS)
@@ -148,9 +146,6 @@ class MetricsLog : public metrics::MetricsLogBase {
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
-
-  // For including information on which extensions are installed in reports.
-  HashedExtensionMetrics extension_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };
