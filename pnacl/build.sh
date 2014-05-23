@@ -96,11 +96,11 @@ readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
 readonly NACL_SRC_THIRD_PARTY_MOD="${NACL_ROOT}/src/third_party_mod"
 
 # Git sources
-readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
+readonly PNACL_GIT_ROOT="${NACL_ROOT}/toolchain_build/src"
 readonly TC_SRC_BINUTILS="${PNACL_GIT_ROOT}/binutils"
 readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
-readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
-readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
+readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/pnacl-gcc"
+readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/pnacl-newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/${LIB_STDCPP_NAME}-v3"
 readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
 readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"

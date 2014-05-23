@@ -73,12 +73,6 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   return executable + executable_args + sync_flag + extra_flags
 
 
-# Sync the git repos used by build.sh. This is only needed for the sandboxed
-# translator now.
-with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
-  buildbot_lib.Command(
-    context, ToolchainBuildCmd(extra_flags=['--legacy-repo-sync']))
-
 # Clean out any installed toolchain parts that were built by previous bot runs.
 with buildbot_lib.Step('Sync TC install dir', status):
   pynacl.file_tools.RemoveDirectoryIfPresent(toolchain_install_dir)
