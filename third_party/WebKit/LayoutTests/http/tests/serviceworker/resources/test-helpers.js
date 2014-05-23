@@ -3,19 +3,18 @@
 function service_worker_test(url, description) {
     var t = async_test(description);
     t.step(function() {
+        var scope = 'nonexistent';
+        service_worker_unregister_and_register(t, url, scope, onRegistered);
 
-        navigator.serviceWorker.register(url, {scope:'nonexistent'}).then(
-            t.step_func(function(worker) {
-                var messageChannel = new MessageChannel();
-                messageChannel.port1.onmessage = t.step_func(onMessage);
-                worker.postMessage({port:messageChannel.port2}, [messageChannel.port2]);
-            }),
-            unreached_rejection(t, 'Registration should succeed, but failed')
-        );
+        function onRegistered(worker) {
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = t.step_func(onMessage);
+            worker.postMessage({port:messageChannel.port2}, [messageChannel.port2]);
+        }
 
         function onMessage(e) {
             assert_equals(e.data, 'pass');
-            t.done();
+            service_worker_unregister_and_done(t, scope);
         }
     });
 }

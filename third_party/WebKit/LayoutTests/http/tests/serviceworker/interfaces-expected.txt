@@ -1,4 +1,4 @@
 
 PASS Interfaces and attributes of ServiceWorkerContainer 
-FAIL Interfaces and attributes in ServiceWorkerGlobalScope assert_unreached: Registration should succeed, but failed: NotSupportedError Reached unreachable code
+FAIL Interfaces and attributes in ServiceWorkerGlobalScope assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
 
