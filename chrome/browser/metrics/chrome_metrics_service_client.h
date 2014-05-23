@@ -64,6 +64,12 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+#if defined(OS_WIN)
+  // Counts (and removes) the browser crash dump attempt signals left behind by
+  // any previous browser processes which generated a crash dump.
+  void CountBrowserCrashDumpAttempts();
+#endif  // OS_WIN
+
   base::ThreadChecker thread_checker_;
 
   // The MetricsService that |this| is a client of. Weak pointer.

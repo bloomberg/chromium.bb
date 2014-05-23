@@ -192,7 +192,6 @@
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/metrics/metrics_log_base.h"
@@ -218,8 +217,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include <windows.h>  // Needed for STATUS_* codes
-#include "base/win/registry.h"
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #endif
 
@@ -658,58 +655,6 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
     IncrementPrefValue(prefs::kStabilityDebuggerPresent);
 }
 
-#if defined(OS_WIN)
-void MetricsService::CountBrowserCrashDumpAttempts() {
-  // Open the registry key for iteration.
-  base::win::RegKey regkey;
-  if (regkey.Open(HKEY_CURRENT_USER,
-                  chrome::kBrowserCrashDumpAttemptsRegistryPath,
-                  KEY_ALL_ACCESS) != ERROR_SUCCESS) {
-    return;
-  }
-
-  // The values we're interested in counting are all prefixed with the version.
-  base::string16 chrome_version(base::ASCIIToUTF16(chrome::kChromeVersion));
-
-  // Track a list of values to delete. We don't modify the registry key while
-  // we're iterating over its values.
-  typedef std::vector<base::string16> StringVector;
-  StringVector to_delete;
-
-  // Iterate over the values in the key counting dumps with and without crashes.
-  // We directly walk the values instead of using RegistryValueIterator in order
-  // to read all of the values as DWORDS instead of strings.
-  base::string16 name;
-  DWORD value = 0;
-  int dumps_with_crash = 0;
-  int dumps_with_no_crash = 0;
-  for (int i = regkey.GetValueCount() - 1; i >= 0; --i) {
-    if (regkey.GetValueNameAt(i, &name) == ERROR_SUCCESS &&
-        StartsWith(name, chrome_version, false) &&
-        regkey.ReadValueDW(name.c_str(), &value) == ERROR_SUCCESS) {
-      to_delete.push_back(name);
-      if (value == 0)
-        ++dumps_with_no_crash;
-      else
-        ++dumps_with_crash;
-    }
-  }
-
-  // Delete the registry keys we've just counted.
-  for (StringVector::iterator i = to_delete.begin(); i != to_delete.end(); ++i)
-    regkey.DeleteValue(i->c_str());
-
-  // Capture the histogram samples.
-  if (dumps_with_crash != 0)
-    UMA_HISTOGRAM_COUNTS("Chrome.BrowserDumpsWithCrash", dumps_with_crash);
-  if (dumps_with_no_crash != 0)
-    UMA_HISTOGRAM_COUNTS("Chrome.BrowserDumpsWithNoCrash", dumps_with_no_crash);
-  int total_dumps = dumps_with_crash + dumps_with_no_crash;
-  if (total_dumps != 0)
-    UMA_HISTOGRAM_COUNTS("Chrome.BrowserCrashDumpAttempts", total_dumps);
-}
-#endif  // defined(OS_WIN)
-
 //------------------------------------------------------------------------------
 // private methods
 //------------------------------------------------------------------------------
@@ -754,10 +699,6 @@ void MetricsService::InitializeMetricsState() {
 
   DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
   SetExecutionPhase(START_METRICS_RECORDING);
-
-#if defined(OS_WIN)
-  CountBrowserCrashDumpAttempts();
-#endif  // defined(OS_WIN)
 
   if (!pref->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);

@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -206,12 +207,6 @@ class MetricsService
   // Saves in the preferences if the browser is running under a debugger.
   // This count is eventually send via UMA logs.
   void RecordBreakpadHasDebugger(bool has_debugger);
-
-#if defined(OS_WIN)
-  // Counts (and removes) the browser crash dump attempt signals left behind by
-  // any previous browser processes which generated a crash dump.
-  void CountBrowserCrashDumpAttempts();
-#endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
   // Records a Chrome OS crash.
