@@ -442,162 +442,99 @@ uint16 GetCharacterFromXEvent(XEvent* xev) {
 }
 
 unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int hardware_code) {
-  // This function assumes that X11 is using evdev-based keycodes.
   static const unsigned int kHardwareKeycodeMap[] = {
-    // This table covers the core 105-key keyboard.
-    0,                       // 0x00:
-    0,                       // 0x01:
-    0,                       // 0x02:
-    0,                       // 0x03:
-    0,                       // 0x04:
-    0,                       // 0x05:
-    0,                       // 0x06:
-    0,                       // XKB   evdev (XKB - 8)      X KeySym
-    0,                       // ===   ===============      ======
-    XK_Escape,               // 0x09: KEY_ESC              Escape
-    XK_1,                    // 0x0A: KEY_1                1
-    XK_2,                    // 0x0B: KEY_2                2
-    XK_3,                    // 0x0C: KEY_3                3
-    XK_4,                    // 0x0D: KEY_4                4
-    XK_5,                    // 0x0E: KEY_5                5
-    XK_6,                    // 0x0F: KEY_6                6
-    XK_7,                    // 0x10: KEY_7                7
-    XK_8,                    // 0x11: KEY_8                8
-    XK_9,                    // 0x12: KEY_9                9
-    XK_0,                    // 0x13: KEY_0                0
-    XK_minus,                // 0x14: KEY_MINUS            minus
-    XK_equal,                // 0x15: KEY_EQUAL            equal
-    XK_BackSpace,            // 0x16: KEY_BACKSPACE        BackSpace
-    XK_Tab,                  // 0x17: KEY_TAB              Tab
-    XK_q,                    // 0x18: KEY_Q                q
-    XK_w,                    // 0x19: KEY_W                w
-    XK_e,                    // 0x1A: KEY_E                e
-    XK_r,                    // 0x1B: KEY_R                r
-    XK_t,                    // 0x1C: KEY_T                t
-    XK_y,                    // 0x1D: KEY_Y                y
-    XK_u,                    // 0x1E: KEY_U                u
-    XK_i,                    // 0x1F: KEY_I                i
-    XK_o,                    // 0x20: KEY_O                o
-    XK_p,                    // 0x21: KEY_P                p
-    XK_bracketleft,          // 0x22: KEY_LEFTBRACE        bracketleft
-    XK_bracketright,         // 0x23: KEY_RIGHTBRACE       bracketright
-    XK_Return,               // 0x24: KEY_ENTER            Return
-    XK_Control_L,            // 0x25: KEY_LEFTCTRL         Control_L
-    XK_a,                    // 0x26: KEY_A                a
-    XK_s,                    // 0x27: KEY_S                s
-    XK_d,                    // 0x28: KEY_D                d
-    XK_f,                    // 0x29: KEY_F                f
-    XK_g,                    // 0x2A: KEY_G                g
-    XK_h,                    // 0x2B: KEY_H                h
-    XK_j,                    // 0x2C: KEY_J                j
-    XK_k,                    // 0x2D: KEY_K                k
-    XK_l,                    // 0x2E: KEY_L                l
-    XK_semicolon,            // 0x2F: KEY_SEMICOLON        semicolon
-    XK_apostrophe,           // 0x30: KEY_APOSTROPHE       apostrophe
-    XK_grave,                // 0x31: KEY_GRAVE            grave
-    XK_Shift_L,              // 0x32: KEY_LEFTSHIFT        Shift_L
-    XK_backslash,            // 0x33: KEY_BACKSLASH        backslash
-    XK_z,                    // 0x34: KEY_Z                z
-    XK_x,                    // 0x35: KEY_X                x
-    XK_c,                    // 0x36: KEY_C                c
-    XK_v,                    // 0x37: KEY_V                v
-    XK_b,                    // 0x38: KEY_B                b
-    XK_n,                    // 0x39: KEY_N                n
-    XK_m,                    // 0x3A: KEY_M                m
-    XK_comma,                // 0x3B: KEY_COMMA            comma
-    XK_period,               // 0x3C: KEY_DOT              period
-    XK_slash,                // 0x3D: KEY_SLASH            slash
-    XK_Shift_R,              // 0x3E: KEY_RIGHTSHIFT       Shift_R
-    0,                       // 0x3F: KEY_KPASTERISK       KP_Multiply
-    XK_Alt_L,                // 0x40: KEY_LEFTALT          Alt_L
-    XK_space,                // 0x41: KEY_SPACE            space
-    XK_Caps_Lock,            // 0x42: KEY_CAPSLOCK         Caps_Lock
-    XK_F1,                   // 0x43: KEY_F1               F1
-    XK_F2,                   // 0x44: KEY_F2               F2
-    XK_F3,                   // 0x45: KEY_F3               F3
-    XK_F4,                   // 0x46: KEY_F4               F4
-    XK_F5,                   // 0x47: KEY_F5               F5
-    XK_F6,                   // 0x48: KEY_F6               F6
-    XK_F7,                   // 0x49: KEY_F7               F7
-    XK_F8,                   // 0x4A: KEY_F8               F8
-    XK_F9,                   // 0x4B: KEY_F9               F9
-    XK_F10,                  // 0x4C: KEY_F10              F10
-    XK_Num_Lock,             // 0x4D: KEY_NUMLOCK          Num_Lock
-    XK_Scroll_Lock,          // 0x4E: KEY_SCROLLLOCK       Scroll_Lock
-    XK_KP_7,                 // 0x4F: KEY_KP7              KP_7
-    XK_KP_8,                 // 0x50: KEY_KP8              KP_8
-    XK_KP_9,                 // 0x51: KEY_KP9              KP_9
-    XK_KP_Subtract,          // 0x52: KEY_KPMINUS          KP_Subtract
-    XK_KP_4,                 // 0x53: KEY_KP4              KP_4
-    XK_KP_5,                 // 0x54: KEY_KP5              KP_5
-    XK_KP_6,                 // 0x55: KEY_KP6              KP_6
-    XK_KP_Add,               // 0x56: KEY_KPPLUS           KP_Add
-    XK_KP_1,                 // 0x57: KEY_KP1              KP_1
-    XK_KP_2,                 // 0x58: KEY_KP2              KP_2
-    XK_KP_3,                 // 0x59: KEY_KP3              KP_3
-    XK_KP_0,                 // 0x5A: KEY_KP0              KP_0
-    XK_KP_Decimal,           // 0x5B: KEY_KPDOT            KP_Decimal
-    0,                       // 0x5C:
-    XK_Zenkaku_Hankaku,      // 0x5D: KEY_ZENKAKUHANKAKU   Zenkaku_Hankaku
-    XK_backslash,            // 0x5E: KEY_102ND            backslash
-    XK_F11,                  // 0x5F: KEY_F11              F11
-    XK_F12,                  // 0x60: KEY_F12              F12
-    XK_Romaji,               // 0x61: KEY_RO               Romaji
-    XK_Katakana,             // 0x62: KEY_KATAKANA         Katakana
-    XK_Hiragana,             // 0x63: KEY_HIRAGANA         Hiragana
-    XK_Henkan,               // 0x64: KEY_HENKAN           Henkan
-    XK_Hiragana_Katakana,    // 0x65: KEY_KATAKANAHIRAGANA Hiragana_Katakana
-    XK_Muhenkan,             // 0x66: KEY_MUHENKAN         Muhenkan
-    XK_KP_Separator,         // 0x67: KEY_KPJPCOMMA        KP_Separator
-    XK_KP_Enter,             // 0x68: KEY_KPENTER          KP_Enter
-    XK_Control_R,            // 0x69: KEY_RIGHTCTRL        Control_R
-    XK_KP_Divide,            // 0x6A: KEY_KPSLASH          KP_Divide
-    XK_Print,                // 0x6B: KEY_SYSRQ            Print
-    XK_Alt_R,                // 0x6C: KEY_RIGHTALT         Alt_R
-    XK_Linefeed,             // 0x6D: KEY_LINEFEED         Linefeed
-    XK_Home,                 // 0x6E: KEY_HOME             Home
-    XK_Up,                   // 0x6F: KEY_UP               Up
-    XK_Page_Up,              // 0x70: KEY_PAGEUP           Page_Up
-    XK_Left,                 // 0x71: KEY_LEFT             Left
-    XK_Right,                // 0x72: KEY_RIGHT            Right
-    XK_End,                  // 0x73: KEY_END              End
-    XK_Down,                 // 0x74: KEY_DOWN             Down
-    XK_Page_Down,            // 0x75: KEY_PAGEDOWN         Page_Down
-    XK_Insert,               // 0x76: KEY_INSERT           Insert
-    XK_Delete,               // 0x77: KEY_DELETE           Delete
-    0,                       // 0x78: KEY_MACRO
-    XF86XK_AudioMute,        // 0x79: KEY_MUTE             XF86AudioMute
-    XF86XK_AudioLowerVolume, // 0x7A: KEY_VOLUMEDOWN       XF86AudioLowerVolume
-    XF86XK_AudioRaiseVolume, // 0x7B: KEY_VOLUMEUP         XF86AudioRaiseVolume
-    XF86XK_PowerOff,         // 0x7C: KEY_POWER            XF86PowerOff
-    XK_KP_Equal,             // 0x7D: KEY_KPEQUAL          KP_Equal
-    XK_plusminus,            // 0x7E: KEY_KPPLUSMINUS      plusminus
-    XK_Pause,                // 0x7F: KEY_PAUSE            Pause
-    XF86XK_LaunchA,          // 0x80: KEY_SCALE            XF86LaunchA
-    XK_KP_Decimal,           // 0x81: KEY_KPCOMMA          KP_Decimal
-    XK_Hangul,               // 0x82: KEY_HANGUEL          Hangul
-    XK_Hangul_Hanja,         // 0x83: KEY_HANJA            Hangul_Hanja
-    XK_yen,                  // 0x84: KEY_YEN              yen
-    XK_Super_L,              // 0x85: KEY_LEFTMETA         Super_L
-    XK_Super_R,              // 0x86: KEY_RIGHTMETA        Super_R
-    XK_Menu,                 // 0x87: KEY_COMPOSE          Menu
+    0,                // 0x00:
+    0,                // 0x01:
+    0,                // 0x02:
+    0,                // 0x03:
+    0,                // 0x04:
+    0,                // 0x05:
+    0,                // 0x06:
+    0,                // 0x07:
+    0,                // 0x08:
+    XK_Escape,        // 0x09: XK_Escape
+    XK_1,             // 0x0A: XK_1
+    XK_2,             // 0x0B: XK_2
+    XK_3,             // 0x0C: XK_3
+    XK_4,             // 0x0D: XK_4
+    XK_5,             // 0x0E: XK_5
+    XK_6,             // 0x0F: XK_6
+    XK_7,             // 0x10: XK_7
+    XK_8,             // 0x11: XK_8
+    XK_9,             // 0x12: XK_9
+    XK_0,             // 0x13: XK_0
+    XK_minus,         // 0x14: XK_minus
+    XK_equal,         // 0x15: XK_equal
+    XK_BackSpace,     // 0x16: XK_BackSpace
+    XK_Tab,           // 0x17: XK_Tab
+    XK_q,             // 0x18: XK_q
+    XK_w,             // 0x19: XK_w
+    XK_e,             // 0x1A: XK_e
+    XK_r,             // 0x1B: XK_r
+    XK_t,             // 0x1C: XK_t
+    XK_y,             // 0x1D: XK_y
+    XK_u,             // 0x1E: XK_u
+    XK_i,             // 0x1F: XK_i
+    XK_o,             // 0x20: XK_o
+    XK_p,             // 0x21: XK_p
+    XK_bracketleft,   // 0x22: XK_bracketleft
+    XK_bracketright,  // 0x23: XK_bracketright
+    XK_Return,        // 0x24: XK_Return
+    XK_Control_L,     // 0x25: XK_Control_L
+    XK_a,             // 0x26: XK_a
+    XK_s,             // 0x27: XK_s
+    XK_d,             // 0x28: XK_d
+    XK_f,             // 0x29: XK_f
+    XK_g,             // 0x2A: XK_g
+    XK_h,             // 0x2B: XK_h
+    XK_j,             // 0x2C: XK_j
+    XK_k,             // 0x2D: XK_k
+    XK_l,             // 0x2E: XK_l
+    XK_semicolon,     // 0x2F: XK_semicolon
+    XK_apostrophe,    // 0x30: XK_apostrophe
+    XK_grave,         // 0x31: XK_grave
+    XK_Shift_L,       // 0x32: XK_Shift_L
+    XK_backslash,     // 0x33: XK_backslash
+    XK_z,             // 0x34: XK_z
+    XK_x,             // 0x35: XK_x
+    XK_c,             // 0x36: XK_c
+    XK_v,             // 0x37: XK_v
+    XK_b,             // 0x38: XK_b
+    XK_n,             // 0x39: XK_n
+    XK_m,             // 0x3A: XK_m
+    XK_comma,         // 0x3B: XK_comma
+    XK_period,        // 0x3C: XK_period
+    XK_slash,         // 0x3D: XK_slash
+    XK_Shift_R,       // 0x3E: XK_Shift_R
+    0,                // 0x3F: XK_KP_Multiply
+    XK_Alt_L,         // 0x40: XK_Alt_L
+    XK_space,         // 0x41: XK_space
+    XK_Caps_Lock,     // 0x42: XK_Caps_Lock
+    XK_F1,            // 0x43: XK_F1
+    XK_F2,            // 0x44: XK_F2
+    XK_F3,            // 0x45: XK_F3
+    XK_F4,            // 0x46: XK_F4
+    XK_F5,            // 0x47: XK_F5
+    XK_F6,            // 0x48: XK_F6
+    XK_F7,            // 0x49: XK_F7
+    XK_F8,            // 0x4A: XK_F8
+    XK_F9,            // 0x4B: XK_F9
+    XK_F10,           // 0x4C: XK_F10
+    XK_Num_Lock,      // 0x4D: XK_Num_Lock
+    XK_Scroll_Lock,   // 0x4E: XK_Scroll_Lock
   };
 
   if (hardware_code >= arraysize(kHardwareKeycodeMap)) {
-    // Additional keycodes used by the Chrome OS top row special function keys.
+    // Checks for arrow keys.
     switch (hardware_code) {
-      case 0xA6:  // KEY_BACK
-        return XF86XK_Back;
-      case 0xA7:  // KEY_FORWARD
-        return XF86XK_Forward;
-      case 0xB5:  // KEY_REFRESH
-        return XF86XK_Reload;
-      case 0xD4:  // KEY_DASHBOARD
-        return XF86XK_LaunchB;
-      case 0xE8:  // KEY_BRIGHTNESSDOWN
-        return XF86XK_MonBrightnessDown;
-      case 0xE9:  // KEY_BRIGHTNESSUP
-        return XF86XK_MonBrightnessUp;
+      case 0x6f:
+        return XK_Up;
+      case 0x71:
+        return XK_Left;
+      case 0x72:
+        return XK_Right;
+      case 0x74:
+        return XK_Down;
     }
     return 0;
   }
