@@ -1,6 +1,8 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import logging
+
 # pylint: disable=W0401,W0614
 from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
@@ -12,6 +14,12 @@ class ToughWebglCasesPage(page_module.Page):
   def __init__(self, url, page_set):
     super(ToughWebglCasesPage, self).__init__(url=url, page_set=page_set)
     self.archive_data_file = 'data/tough_webgl_cases.json'
+
+  def CanRunOnBrowser(self, browser_info):
+    if not browser_info.HasWebGLSupport():
+      logging.warning('Browser does not support webgl, skipping test')
+      return False
+    return True
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
