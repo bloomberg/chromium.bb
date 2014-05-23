@@ -8,6 +8,7 @@
 #if ENABLE(SVG_FONTS)
 
 #include "core/css/RemoteFontFaceSource.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -24,7 +25,7 @@ private:
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) OVERRIDE;
 
     String m_uri;
-    RefPtr<SVGFontElement> m_externalSVGFontElement;
+    RefPtrWillBePersistent<SVGFontElement> m_externalSVGFontElement;
 };
 
 } // namespace WebCore

@@ -80,12 +80,12 @@ DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElem
 DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), submit);
 DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(SVGElementInstance, correspondingElement(), unload);
 
-PassRefPtr<SVGElementInstance> SVGElementInstance::create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement)
+PassRefPtrWillBeRawPtr<SVGElementInstance> SVGElementInstance::create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement)
 {
-    return adoptRef(new SVGElementInstance(correspondingUseElement, directUseElement, originalElement));
+    return adoptRefWillBeRefCountedGarbageCollected(new SVGElementInstance(correspondingUseElement, directUseElement, originalElement));
 }
 
-SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement)
+SVGElementInstance::SVGElementInstance(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement)
     : m_parentInstance(nullptr)
     , m_correspondingUseElement(correspondingUseElement)
     , m_directUseElement(directUseElement)
@@ -160,7 +160,7 @@ void SVGElementInstance::setShadowTreeElement(SVGElement* element)
 
 }
 
-void SVGElementInstance::appendChild(PassRefPtr<SVGElementInstance> child)
+void SVGElementInstance::appendChild(PassRefPtrWillBeRawPtr<SVGElementInstance> child)
 {
     appendChildToContainer<SVGElementInstance, SVGElementInstance>(*child, *this);
 }

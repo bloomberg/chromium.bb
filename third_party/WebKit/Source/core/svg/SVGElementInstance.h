@@ -40,7 +40,7 @@ class SVGUseElement;
 class SVGElementInstance FINAL : public TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>, public EventTarget, public ScriptWrappable {
     DEFINE_EVENT_TARGET_REFCOUNTING(TreeSharedWillBeRefCountedGarbageCollected<SVGElementInstance>);
 public:
-    static PassRefPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement);
+    static PassRefPtrWillBeRawPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtrWillBeRawPtr<SVGElement> originalElement);
 
     virtual ~SVGElementInstance();
 
@@ -124,8 +124,7 @@ private:
     friend class SVGUseElement;
     friend class TreeShared<SVGElementInstance>;
 
-    SVGElementInstance(SVGUseElement*, SVGUseElement*, PassRefPtr<SVGElement> originalElement);
-
+    SVGElementInstance(SVGUseElement*, SVGUseElement*, PassRefPtrWillBeRawPtr<SVGElement> originalElement);
 
 #if !ENABLE(OILPAN)
     void removedLastRef();
@@ -135,7 +134,7 @@ private:
 
     virtual Node* toNode() OVERRIDE;
 
-    void appendChild(PassRefPtr<SVGElementInstance> child);
+    void appendChild(PassRefPtrWillBeRawPtr<SVGElementInstance> child);
     void setShadowTreeElement(SVGElement*);
 
     template<class GenericNode, class GenericNodeContainer>
