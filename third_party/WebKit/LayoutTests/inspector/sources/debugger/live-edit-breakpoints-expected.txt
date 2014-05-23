@@ -21,7 +21,7 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Undoing source editing:
@@ -61,7 +61,7 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Committing edited source:
@@ -101,21 +101,21 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Committing edited source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Editing source again so that live edit could succeed:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Committing edited source again:
@@ -155,21 +155,21 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Committing edited source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Undoing source editing:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network, project id: file://
 Committing edited source again:
@@ -202,21 +202,21 @@ Setting breakpoint:
     OriginalTextEditor.addBreakpoint(lineNumber = 2, disabled = false)
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Editing source:
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Undoing source editing:
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Finally removing breakpoint:
     OriginalTextEditor.removeBreakpoint(lineNumber = 2)
     Dumping breakpoint storage
@@ -234,21 +234,21 @@ Setting breakpoint:
     OriginalTextEditor.addBreakpoint(lineNumber = 2, disabled = false)
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Editing source:
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Undoing source editing:
     Dumping breakpoint storage
     Dumping breakpoint locations
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
     Dumping breakpoints
-        url: , lineNumber: 2, project type: debugger, project id: debugger:
+        url: , lineNumber: 2, project type: debugger, project id: debugger:1
 Finally removing breakpoint:
     OriginalTextEditor.removeBreakpoint(lineNumber = 2)
     Dumping breakpoint storage

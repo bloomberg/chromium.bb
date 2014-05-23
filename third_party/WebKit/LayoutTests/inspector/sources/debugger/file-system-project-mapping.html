@@ -136,13 +136,14 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
+                var target = WebInspector.targetManager.targets()[0];
                 dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Editing uiSourceCode:");
                 uiSourceCode.setWorkingCopy("<foo content edited>");
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 function setScriptSourceOverrideFailure(scriptId, newContent, callback)
@@ -154,23 +155,23 @@ function test()
                 InspectorTest.addResult("Committing uiSourceCode with live edit failure:");
                 uiSourceCode.commitWorkingCopy(function() { });
                 dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Reloading with saved but diverged uiSourceCode:");
                 unloadScript();
-                InspectorTest.assertTrue(!uiSourceCode.scriptFile(), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(!uiSourceCode.scriptFileForTarget(target), "UISourceCode should not have script file after unloading scripts.");
                 InspectorTest.assertTrue(!sourceFrame._muted, "Saved but diverged source frame should not be muted");
 
                 InspectorTest.addResult("Loading script.");
                 loadScript();
                 dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Editing uiSourceCode again:");
                 uiSourceCode.setWorkingCopy("<foo content edited again>");
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 function setScriptSourceOverrideSuccess(scriptId, newContent, callback)
@@ -183,26 +184,26 @@ function test()
                 InspectorTest.addResult("Committing uiSourceCode again (with live edit success now):");
                 uiSourceCode.commitWorkingCopy(function() { });
                 dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Reloading page:");
                 unloadScript();
-                InspectorTest.assertTrue(!uiSourceCode.scriptFile(), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(!uiSourceCode.scriptFileForTarget(target), "UISourceCode should not have script file after unloading scripts.");
                 InspectorTest.assertTrue(!sourceFrame._muted, "Saved and merged source frame should not be muted");
                 InspectorTest.addResult("Loading script.");
                 loadScript();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Editing uiSourceCode again and reloading while it is dirty:");
                 uiSourceCode.setWorkingCopy("<foo content edited and dirty>");
                 unloadScript();
-                InspectorTest.assertTrue(!uiSourceCode.scriptFile(), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(!uiSourceCode.scriptFileForTarget(target), "UISourceCode should not have script file after unloading scripts.");
                 InspectorTest.assertTrue(sourceFrame._muted, "Dirty source frame should be muted");
                 InspectorTest.addResult("Loading script.");
                 loadScript();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFile().hasDivergedFromVM());
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!uiSourceCode.scriptFileForTarget(target).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 unloadScript();

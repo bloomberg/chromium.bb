@@ -14,6 +14,7 @@ function test()
 
     var workspace = WebInspector.workspace;
     var snippetsProject = WebInspector.scriptSnippetModel.project();
+    var snippetScriptMapping = WebInspector.scriptSnippetModel.snippetScriptMapping(WebInspector.targetManager.targets()[0]);
     InspectorTest.runDebuggerTestSuite([
         function testCreateEditRenameRemove(next)
         {
@@ -129,7 +130,7 @@ function test()
                 InspectorTest.addSniffer(WebInspector.SnippetScriptMapping.prototype, "addScript", dumpScript);
                 InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", dumpResult);
                 WebInspector.scriptSnippetModel.evaluateScriptSnippet(WebInspector.context.flavor(WebInspector.ExecutionContext), uiSourceCode);
-                var evaluationSourceURL = WebInspector.scriptSnippetModel._evaluationSourceURL(uiSourceCode);
+                var evaluationSourceURL = snippetScriptMapping._evaluationSourceURL(uiSourceCode);
                 var snippetId = WebInspector.scriptSnippetModel._snippetIdForUISourceCode.get(uiSourceCode);
                 InspectorTest.addResult("Last evaluation source url for snippet: " + evaluationSourceURL);
                 InspectorTest.assertEquals(snippetId, WebInspector.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL), "Snippet can not be identified by its evaluation sourceURL.");
@@ -197,7 +198,7 @@ function test()
 
                 function snippetFinished(result, wasThrown)
                 {
-                    var script = WebInspector.scriptSnippetModel._scriptForUISourceCode.get(uiSourceCode);
+                    var script = snippetScriptMapping._scriptForUISourceCode.get(uiSourceCode);
                     InspectorTest.addResult("Snippet execution result: " + result.description);
 
                     InspectorTest.reloadPage(callback)
