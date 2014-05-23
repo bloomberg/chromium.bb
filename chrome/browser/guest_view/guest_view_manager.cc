@@ -60,8 +60,8 @@ class GuestWebContentsObserver
 };
 
 GuestViewManager::GuestViewManager(content::BrowserContext* context)
-    : current_instance_id_(0),
-      context_(context) {}
+    : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
+}
 
 GuestViewManager::~GuestViewManager() {}
 
@@ -190,8 +190,8 @@ bool GuestViewManager::ForEachGuest(WebContents* embedder_web_contents,
 
 void GuestViewManager::AddGuest(int guest_instance_id,
                                 WebContents* guest_web_contents) {
-  DCHECK(guest_web_contents_by_instance_id_.find(guest_instance_id) ==
-         guest_web_contents_by_instance_id_.end());
+  CHECK(!ContainsKey(guest_web_contents_by_instance_id_, guest_instance_id));
+  CHECK(CanUseGuestInstanceID(guest_instance_id));
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
   // This will add the RenderProcessHost ID when we get one.
   new GuestWebContentsObserver(guest_web_contents);
@@ -204,6 +204,29 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   render_process_host_id_multiset_.erase(
       it->second->GetRenderProcessHost()->GetID());
   guest_web_contents_by_instance_id_.erase(it);
+
+  // All the instance IDs that lie within [0, last_instance_id_removed_]
+  // are invalid.
+  // The remaining sparse invalid IDs are kept in |removed_instance_ids_| set.
+  // The following code compacts the set by incrementing
+  // |last_instance_id_removed_|.
+  if (guest_instance_id == last_instance_id_removed_ + 1) {
+    ++last_instance_id_removed_;
+    // Compact.
+    std::set<int>::iterator iter = removed_instance_ids_.begin();
+    while (iter != removed_instance_ids_.end()) {
+      int instance_id = *iter;
+      // The sparse invalid IDs must not lie within
+      // [0, last_instance_id_removed_]
+      DCHECK(instance_id > last_instance_id_removed_);
+      if (instance_id != last_instance_id_removed_ + 1)
+        break;
+      ++last_instance_id_removed_;
+      removed_instance_ids_.erase(iter++);
+    }
+  } else {
+    removed_instance_ids_.insert(guest_instance_id);
+  }
 }
 
 void GuestViewManager::AddRenderProcessHostID(int render_process_host_id) {
@@ -235,6 +258,12 @@ bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(
     return false;
   }
   return true;
+}
+
+bool GuestViewManager::CanUseGuestInstanceID(int guest_instance_id) {
+  if (guest_instance_id <= last_instance_id_removed_)
+    return false;
+  return !ContainsKey(removed_instance_ids_, guest_instance_id);
 }
 
 bool GuestViewManager::CanEmbedderAccessInstanceID(

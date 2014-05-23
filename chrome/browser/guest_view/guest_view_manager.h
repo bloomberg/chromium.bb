@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -56,6 +57,8 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
  private:
   friend class GuestViewBase;
   friend class GuestWebContentsObserver;
+  friend class TestGuestViewManager;
+  FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
 
   void AddGuest(int guest_instance_id,
                 content::WebContents* guest_web_contents);
@@ -78,6 +81,12 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   bool CanEmbedderAccessInstanceID(int embedder_render_process_id,
                                    int guest_instance_id);
 
+  // Returns true if |guest_instance_id| can be used to add a new guest to this
+  // manager.
+  // We disallow adding new guest with instance IDs that were previously removed
+  // from this manager using RemoveGuest.
+  bool CanUseGuestInstanceID(int guest_instance_id);
+
   static bool CanEmbedderAccessGuest(int embedder_render_process_id,
                                      GuestViewBase* guest);
 
@@ -89,6 +98,16 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   GuestInstanceMap guest_web_contents_by_instance_id_;
 
   int current_instance_id_;
+
+  // Any instance ID whose number not greater than this was removed via
+  // RemoveGuest.
+  // This is used so that we don't have store all removed instance IDs in
+  // |removed_instance_ids_|.
+  int last_instance_id_removed_;
+  // The remaining instance IDs that are greater than
+  // |last_instance_id_removed_| are kept here.
+  std::set<int> removed_instance_ids_;
+
   content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewManager);
