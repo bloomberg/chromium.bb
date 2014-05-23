@@ -569,7 +569,7 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/364614 [ Mac ] fast/scroll-behavior/sub-frame-scroll.html [ Failure ]
 
 # Complex text failures on XP (likely caused by r158845).
-#crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
+crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock-prefixed.html [ Crash Pass ]
@@ -740,8 +740,6 @@ crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html
 crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
-
-crbug.com/375454 [ Win ] fast/text/international/plane2.html [ NeedsManualRebaseline ]
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
