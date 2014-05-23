@@ -769,6 +769,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
   }
+
+  if (policy.has_system_settings()) {
+    const em::SystemSettingsProto& container(policy.system_settings());
+    if (container.has_block_devmode()) {
+      policies->Set(
+          key::kDeviceBlockDevmode,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          new base::FundamentalValue(container.block_devmode()),
+          NULL);
+    }
+  }
 }
 
 }  // namespace

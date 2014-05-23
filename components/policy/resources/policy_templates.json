@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 265
+#   For your editing convenience: highest ID currently used: 266
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4300,6 +4300,24 @@
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show a network configuration prompt.
 
       If this policy is set to False, an error message will be displayed instead of the network configuration prompt.'''
+    },
+    {
+      'name': 'DeviceBlockDevmode',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:37-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 266,
+      'caption': '''Block developer mode''',
+      'desc': '''Block developer mode.
+
+      If this policy is set to True, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
+
+      If this policy is unset or set to False, developer mode will remain available for the device.'''
     },
     {
       'name': 'BackgroundModeEnabled',

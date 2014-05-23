@@ -2224,6 +2224,9 @@
   "DeviceLocalAccountPromptForNetworkWhenOffline": {
   },
 
+  "DeviceBlockDevmode": {
+  },
+
   "DeviceLoginScreenPowerManagement": {
   },
 

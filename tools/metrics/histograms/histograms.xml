@@ -33442,8 +33442,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterprisePolicies" type="int">
-<!-- Generated from
-     ../../../components/policy/resources/policy_templates.json -->
+<!-- Generated from ../../../components/policy/resources/policy_templates.json -->
 
   <int value="1" label="Configure the home page URL"/>
   <int value="2" label="Use New Tab Page as homepage"/>
@@ -33570,8 +33569,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="111" label="Set media disk cache size in bytes"/>
   <int value="112" label="Enterprise web store URL (deprecated)"/>
   <int value="113" label="Enterprise web store name (deprecated)"/>
-  <int value="114" label="Enable TLS domain-bound certificates extension"/>
-  <int value="115" label="Enable reporting memory info (JS heap size) to page"/>
+  <int value="114"
+      label="Enable TLS domain-bound certificates extension (deprecated)"/>
+  <int value="115"
+      label="Enable reporting memory info (JS heap size) to page (deprecated)"/>
   <int value="116" label="Proxy settings"/>
   <int value="117" label="Disable Print Preview"/>
   <int value="118" label="Disable SSL record splitting"/>
@@ -33722,7 +33723,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
              battery power"/>
   <int value="223" label="Enable creation of supervised users"/>
   <int value="224" label="Report device network interfaces"/>
-  <int value="225" label="Power mangement on the login screen"/>
+  <int value="225" label="Power management on the login screen"/>
   <int value="226"
       label="Action to take when the idle delay is reached while running on
              AC power"/>
@@ -33753,17 +33754,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="245" label="Ephemeral profile"/>
   <int value="246"
       label="Selects the strategy used to free up disk space during automatic
-             clean-up"/>
-  <int value="247"
-      label="Specify whether power management delays and the session length
-             limit should only start running after initial user activity in a
-             session"/>
+             clean-up (deprecated)"/>
+  <int value="247" label="Wait for initial user activity"/>
   <int value="248" label="Report device users"/>
   <int value="249" label="User avatar image"/>
   <int value="250" label="Enable network configuration prompt when offline"/>
-  <int value="251" label="Native Messaging blacklist"/>
-  <int value="252" label="Native Messaging whitelist"/>
-  <int value="253" label="Allow user-level Native Messaging hosts"/>
+  <int value="251" label="Configure native messaging blacklist"/>
+  <int value="252" label="Configure native messaging whitelist"/>
+  <int value="253"
+      label="Allow user-level Native Messaging hosts (installed without admin
+             permissions)."/>
   <int value="254"
       label="Limit the time for which a user authenticated via SAML can log
              in offline"/>
@@ -33775,13 +33775,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Power management settings when the user becomes idle"/>
   <int value="259" label="Screen lock delays"/>
   <int value="260" label="Media keys default to function keys"/>
-  <int value="261" label="Enable WPAD quick check"/>
+  <int value="261" label="Enable WPAD optimization"/>
   <int value="262" label="Wallpaper image"/>
   <int value="263"
       label="Enable the use of relay servers by the remote access host"/>
   <int value="264"
       label="Restrict the UDP port range used by the remote access host"/>
-  <int value="265" label="Enables the old web-based signin flows"/>
+  <int value="265" label="Enables the old web-based signin"/>
+  <int value="266" label="Block developer mode"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
