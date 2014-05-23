@@ -33,51 +33,17 @@
 
 namespace WebCore {
 
-class ShadowRootVector : public WillBeHeapVector<RefPtrWillBeMember<ShadowRoot> > {
-public:
-    explicit ShadowRootVector(ElementShadow* tree)
-    {
-        for (ShadowRoot* root = tree->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            append(root);
-    }
-};
-
-void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoDocument(ContainerNode& node)
+void ChildNodeInsertionNotifier::notifyNodeInserted(Node& root)
 {
-    ChildNodesLazySnapshot snapshot(node);
-    while (RefPtr<Node> child = snapshot.nextNode()) {
-        // If we have been removed from the document during this loop, then
-        // we don't want to tell the rest of our children that they've been
-        // inserted into the document because they haven't.
-        if (node.inDocument() && child->parentNode() == node)
-            notifyNodeInsertedIntoDocument(*child);
-    }
-
-    if (!node.isElementNode())
-        return;
-
-    if (ElementShadow* shadow = toElement(node).shadow()) {
-        ShadowRootVector roots(shadow);
-        for (size_t i = 0; i < roots.size(); ++i) {
-            if (node.inDocument() && roots[i]->host() == node)
-                notifyNodeInsertedIntoDocument(*roots[i]);
-        }
-    }
-}
-
-void ChildNodeInsertionNotifier::notifyNodeInsertedIntoTree(ContainerNode& root)
-{
-    ASSERT(!m_insertionPoint.inDocument());
-
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         // As an optimization we don't notify leaf nodes when when inserting
         // into detached subtrees.
-        if (!node->isContainerNode())
+        if (!m_insertionPoint.inDocument() && !node->isContainerNode())
             continue;
         if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node->insertedInto(&m_insertionPoint))
             m_postInsertionNotificationTargets.append(node);
         for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-            notifyNodeInsertedIntoTree(*shadowRoot);
+            notifyNodeInserted(*shadowRoot);
     }
 }
 
@@ -88,11 +54,11 @@ void ChildNodeRemovalNotifier::notifyNodeRemoved(Node& root)
         // As an optimization we skip notifying Text nodes and other leaf nodes
         // of removal when they're not in the Document tree since the virtual
         // call to removedFrom is not needed.
-        if (node->inDocument() || node->isContainerNode()) {
-            if (document.cssTarget() == node)
-                document.setCSSTarget(0);
-            node->removedFrom(&m_insertionPoint);
-        }
+        if (!node->inDocument() && !node->isContainerNode())
+            continue;
+        if (document.cssTarget() == node)
+            document.setCSSTarget(0);
+        node->removedFrom(&m_insertionPoint);
         for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             notifyNodeRemoved(*shadowRoot);
     }

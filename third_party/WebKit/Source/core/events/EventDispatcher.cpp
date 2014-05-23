@@ -108,7 +108,6 @@ bool EventDispatcher::dispatch()
     ASSERT(!m_eventDispatched);
     m_eventDispatched = true;
 #endif
-    ChildNodesLazySnapshot::takeChildNodesLazySnapshot();
 
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());

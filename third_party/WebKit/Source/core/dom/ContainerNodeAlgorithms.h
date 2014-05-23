@@ -40,9 +40,7 @@ public:
     void notify(Node&);
 
 private:
-    void notifyDescendantInsertedIntoDocument(ContainerNode&);
-    void notifyNodeInsertedIntoDocument(Node&);
-    void notifyNodeInsertedIntoTree(ContainerNode&);
+    void notifyNodeInserted(Node&);
 
     ContainerNode& m_insertionPoint;
     Vector< RefPtr<Node> > m_postInsertionNotificationTargets;
@@ -187,16 +185,6 @@ namespace Private {
 
 } // namespace Private
 
-inline void ChildNodeInsertionNotifier::notifyNodeInsertedIntoDocument(Node& node)
-{
-    ASSERT(m_insertionPoint.inDocument());
-    RefPtr<Node> protect(node);
-    if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node.insertedInto(&m_insertionPoint))
-        m_postInsertionNotificationTargets.append(&node);
-    if (node.isContainerNode())
-        notifyDescendantInsertedIntoDocument(toContainerNode(node));
-}
-
 inline void ChildNodeInsertionNotifier::notify(Node& node)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
@@ -206,12 +194,10 @@ inline void ChildNodeInsertionNotifier::notify(Node& node)
     RefPtr<Document> protectDocument(node.document());
     RefPtr<Node> protectNode(node);
 
-    if (m_insertionPoint.inDocument()) {
-        notifyNodeInsertedIntoDocument(node);
-    } else if (node.isContainerNode()) {
+    {
         NoEventDispatchAssertion assertNoEventDispatch;
         ScriptForbiddenScope forbidScript;
-        notifyNodeInsertedIntoTree(toContainerNode(node));
+        notifyNodeInserted(node);
     }
 
     for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {

@@ -54,8 +54,6 @@ using namespace HTMLNames;
 static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
 
-ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
-
 #ifndef NDEBUG
 unsigned NoEventDispatchAssertion::s_count = 0;
 #endif
