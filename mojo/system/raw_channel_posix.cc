@@ -41,6 +41,10 @@ class RawChannelPosix : public RawChannel,
 
  private:
   // |RawChannel| protected methods:
+  // Actually override |EnqueueMessageNoLock()| so that we can send multiple
+  // messages with FDs if necessary.
+  virtual void EnqueueMessageNoLock(
+      scoped_ptr<MessageInTransit> message) OVERRIDE;
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
   virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
@@ -110,6 +114,13 @@ RawChannelPosix::~RawChannelPosix() {
 size_t RawChannelPosix::GetSerializedPlatformHandleSize() const {
   // We don't actually need any space on POSIX (since we just send FDs).
   return 0;
+}
+
+void RawChannelPosix::EnqueueMessageNoLock(
+    scoped_ptr<MessageInTransit> message) {
+  // TODO(vtl): Split any message with too many platform handles into multiple
+  // messages.
+  RawChannel::EnqueueMessageNoLock(message.Pass());
 }
 
 RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {

@@ -219,11 +219,11 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
     return false;
 
   if (!write_buffer_->message_queue_.empty()) {
-    write_buffer_->message_queue_.push_back(message.release());
+    EnqueueMessageNoLock(message.Pass());
     return true;
   }
 
-  write_buffer_->message_queue_.push_front(message.release());
+  EnqueueMessageNoLock(message.Pass());
   DCHECK_EQ(write_buffer_->data_offset_, 0u);
 
   size_t platform_handles_written = 0;
@@ -252,16 +252,6 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
 bool RawChannel::IsWriteBufferEmpty() {
   base::AutoLock locker(write_lock_);
   return write_buffer_->message_queue_.empty();
-}
-
-RawChannel::ReadBuffer* RawChannel::read_buffer() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
-  return read_buffer_.get();
-}
-
-RawChannel::WriteBuffer* RawChannel::write_buffer_no_lock() {
-  write_lock_.AssertAcquired();
-  return write_buffer_.get();
 }
 
 void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
@@ -421,6 +411,11 @@ void RawChannel::OnWriteCompleted(bool result,
 
   if (did_fail)
     CallOnFatalError(Delegate::FATAL_ERROR_FAILED_WRITE);
+}
+
+void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
+  write_lock_.AssertAcquired();
+  write_buffer_->message_queue_.push_back(message.release());
 }
 
 void RawChannel::CallOnFatalError(Delegate::FatalError fatal_error) {

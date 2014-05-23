@@ -185,14 +185,29 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   RawChannel();
 
+  // Must be called on the I/O thread WITHOUT |write_lock_| held.
+  void OnReadCompleted(bool result, size_t bytes_read);
+  // Must be called on the I/O thread WITHOUT |write_lock_| held.
+  void OnWriteCompleted(bool result,
+                        size_t platform_handles_written,
+                        size_t bytes_written);
+
   base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
   base::Lock& write_lock() { return write_lock_; }
 
-  // Only accessed on the I/O thread.
-  ReadBuffer* read_buffer();
+  // Should only be called on the I/O thread.
+  ReadBuffer* read_buffer() { return read_buffer_.get(); }
 
-  // Only accessed under |write_lock_|.
-  WriteBuffer* write_buffer_no_lock();
+  // Only called under |write_lock_|.
+  WriteBuffer* write_buffer_no_lock() {
+    write_lock_.AssertAcquired();
+    return write_buffer_.get();
+  }
+
+  // Adds |message| to the write message queue. Implementation subclasses may
+  // override this to add any additional "control" messages needed. This is
+  // called (on any thread) with |write_lock_| held.
+  virtual void EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message);
 
   // Reads into |read_buffer()|.
   // This class guarantees that:
@@ -248,13 +263,6 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual void OnShutdownNoLock(
       scoped_ptr<ReadBuffer> read_buffer,
       scoped_ptr<WriteBuffer> write_buffer) = 0;
-
-  // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  void OnReadCompleted(bool result, size_t bytes_read);
-  // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  void OnWriteCompleted(bool result,
-                        size_t platform_handles_written,
-                        size_t bytes_written);
 
  private:
   // Calls |delegate_->OnFatalError(fatal_error)|. Must be called on the I/O
