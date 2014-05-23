@@ -1,46 +1,46 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x522
-  RenderBlock {HTML} at (0,0) size 800x522
-    RenderBody {BODY} at (0,0) size 800x521
+layer at (0,0) size 800x582
+  RenderBlock {HTML} at (0,0) size 800x582
+    RenderBody {BODY} at (0,0) size 800x581
       RenderBlock {DIV} at (0,0) size 600x36
         RenderText {#text} at (0,0) size 284x14
           text run at (0,0) width 284: "Table autosizing tests - css-table-single-cell-lots-of-text.html"
         RenderBR {BR} at (284,0) size 0x14
         RenderText {#text} at (0,14) size 552x14
           text run at (0,14) width 552: "This test passes if there is a one cell with lots of text that's autosized, and five single-word cells that are not autosized."
-      RenderTable {DIV} at (1,37) size 798x484
-        RenderTableSection (anonymous) at (0,0) size 798x484
-          RenderTableRow {DIV} at (0,0) size 798x34
-            RenderTableCell {DIV} at (0,14) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+      RenderTable {DIV} at (1,37) size 798x544
+        RenderTableSection (anonymous) at (0,0) size 798x544
+          RenderTableRow {DIV} at (0,0) size 798x38
+            RenderTableCell {DIV} at (0,17) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 23x14
                 text run at (1,1) width 23: "hello"
-            RenderTableCell {DIV} at (25,0) size 748x34 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 59x32
+            RenderTableCell {DIV} at (25,0) size 748x38 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 59x36
                 text run at (1,1) width 59: "hello"
-            RenderTableCell {DIV} at (773,14) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+            RenderTableCell {DIV} at (773,17) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 23x14
                 text run at (1,1) width 23: "hello"
-          RenderTableRow {DIV} at (0,34) size 798x450
-            RenderTableCell {DIV} at (0,48) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+          RenderTableRow {DIV} at (0,38) size 798x506
+            RenderTableCell {DIV} at (0,55) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 23x14
                 text run at (1,1) width 23: "hello"
-            RenderTableCell {DIV} at (25,34) size 748x450 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
-              RenderText {#text} at (1,1) size 686x448
-                text run at (1,1) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,33) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,65) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,97) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,129) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,161) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,193) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,225) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,257) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,289) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,321) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,353) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,385) width 686: "hello hello hello hello hello hello hello hello hello hello hello"
-                text run at (1,417) width 560: "hello hello hello hello hello hello hello hello hello"
-            RenderTableCell {DIV} at (773,48) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+            RenderTableCell {DIV} at (25,38) size 748x506 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (1,1) size 729x504
+                text run at (1,1) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,37) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,73) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,109) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,145) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,181) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,217) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,253) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,289) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,325) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,361) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,397) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,433) width 729: "hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (1,469) width 595: "hello hello hello hello hello hello hello hello hello"
+            RenderTableCell {DIV} at (773,55) size 25x16 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
               RenderText {#text} at (1,1) size 23x14
                 text run at (1,1) width 23: "hello"
