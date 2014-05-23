@@ -829,6 +829,8 @@
             'css/FontFaceSet.cpp',
             'css/FontFaceSet.h',
             'css/FontFaceSetForEachCallback.h',
+            'css/FontLoader.cpp',
+            'css/FontLoader.h',
             'css/FontSize.cpp',
             'css/FontSize.h',
             'css/HashTools.h',

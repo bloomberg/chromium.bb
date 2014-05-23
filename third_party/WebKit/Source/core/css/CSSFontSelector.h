@@ -27,9 +27,7 @@
 #define CSSFontSelector_h
 
 #include "core/css/FontFaceCache.h"
-#include "core/fetch/ResourceLoader.h"
-#include "core/fetch/ResourcePtr.h"
-#include "platform/Timer.h"
+#include "core/css/FontLoader.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/heap/Handle.h"
@@ -45,33 +43,7 @@ class CSSFontSelectorClient;
 class CSSSegmentedFontFace;
 class Document;
 class FontDescription;
-class FontResource;
 class StyleRuleFontFace;
-
-class FontLoader {
-    DISALLOW_ALLOCATION();
-public:
-    explicit FontLoader(ResourceFetcher*);
-    ~FontLoader();
-
-    void addFontToBeginLoading(FontResource*);
-    void loadPendingFonts();
-
-#if !ENABLE(OILPAN)
-    void clearResourceFetcher();
-#endif
-
-    void trace(Visitor*);
-
-private:
-    void beginLoadTimerFired(Timer<FontLoader>*);
-
-    Timer<FontLoader> m_beginLoadingTimer;
-
-    typedef Vector<std::pair<ResourcePtr<FontResource>, ResourceLoader::RequestCountTracker> > FontsToLoadVector;
-    FontsToLoadVector m_fontsToBeginLoading;
-    RawPtrWillBeMember<ResourceFetcher> m_resourceFetcher;
-};
 
 class CSSFontSelector FINAL : public FontSelector {
 public:
@@ -102,12 +74,10 @@ public:
 
     Document* document() const { return m_document; }
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
+    FontLoader* fontLoader() { return m_fontLoader.get(); }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
     void updateGenericFontFamilySettings(Document&);
-
-    void beginLoadingFontSoon(FontResource*);
-    void loadPendingFonts();
 
     virtual void trace(Visitor*);
 
@@ -121,7 +91,7 @@ private:
     FontFaceCache m_fontFaceCache;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient> > m_clients;
 
-    FontLoader m_fontLoader;
+    RefPtrWillBeMember<FontLoader> m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;
 };
 

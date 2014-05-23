@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSource.h"
 
+#include "core/css/CSSFontFace.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -33,7 +34,7 @@
 namespace WebCore {
 
 CSSFontFaceSource::CSSFontFaceSource()
-    : m_face(0)
+    : m_face(nullptr)
 {
 }
 
@@ -60,6 +61,11 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     if (!fontData)
         fontData = createFontData(fontDescription);
     return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
+}
+
+void CSSFontFaceSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_face);
 }
 
 }

@@ -597,7 +597,7 @@ void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* elemen
 void StyleResolver::loadPendingResources(StyleResolverState& state)
 {
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
-    document().styleEngine()->fontSelector()->loadPendingFonts();
+    document().styleEngine()->fontSelector()->fontLoader()->loadPendingFonts();
 }
 
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,

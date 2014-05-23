@@ -11,9 +11,11 @@
 
 namespace WebCore {
 
+class FontLoader;
+
 class RemoteFontFaceSource : public CSSFontFaceSource, public FontResourceClient {
 public:
-    explicit RemoteFontFaceSource(FontResource*);
+    explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>);
     virtual ~RemoteFontFaceSource();
 
     virtual FontResource* resource() OVERRIDE { return m_font.get(); }
@@ -21,7 +23,7 @@ public:
     virtual bool isLoaded() const OVERRIDE;
     virtual bool isValid() const OVERRIDE;
 
-    void beginLoadIfNeeded();
+    void beginLoadIfNeeded() OVERRIDE;
     virtual bool ensureFontData();
 
 #if ENABLE(SVG_FONTS)
@@ -36,6 +38,8 @@ public:
     // For UMA reporting
     virtual bool hadBlankText() OVERRIDE { return m_histograms.hadBlankText(); }
     void paintRequested() { m_histograms.fallbackFontPainted(); }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) OVERRIDE;
@@ -60,6 +64,7 @@ private:
     };
 
     ResourcePtr<FontResource> m_font;
+    RefPtrWillBeMember<FontLoader> m_fontLoader;
     FontLoadHistograms m_histograms;
 };
 

@@ -26,6 +26,7 @@
 #ifndef CSSFontFaceSource_h
 #define CSSFontFaceSource_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {
@@ -35,7 +36,7 @@ class CSSFontFace;
 class FontDescription;
 class SimpleFontData;
 
-class CSSFontFaceSource {
+class CSSFontFaceSource : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFaceSource> {
 public:
     virtual ~CSSFontFaceSource();
 
@@ -50,9 +51,12 @@ public:
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 
     virtual bool isLocalFontAvailable(const FontDescription&) { return false; }
+    virtual void beginLoadIfNeeded() { }
 
     // For UMA reporting
     virtual bool hadBlankText() { return false; }
+
+    virtual void trace(Visitor*);
 
 protected:
     CSSFontFaceSource();
@@ -60,7 +64,7 @@ protected:
 
     typedef HashMap<unsigned, RefPtr<SimpleFontData> > FontDataTable; // The hash key is composed of size synthetic styles.
 
-    CSSFontFace* m_face; // Our owning font face.
+    RawPtrWillBeMember<CSSFontFace> m_face; // Our owning font face.
     FontDataTable m_fontDataTable;
 };
 

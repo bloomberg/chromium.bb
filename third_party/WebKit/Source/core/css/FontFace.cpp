@@ -418,9 +418,8 @@ void FontFace::loadInternal(ExecutionContext* context)
     if (m_status != Unloaded)
         return;
 
-    CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
-    m_cssFontFace->load(fontSelector);
-    fontSelector->loadPendingFonts();
+    m_cssFontFace->load();
+    toDocument(context)->styleEngine()->fontSelector()->fontLoader()->loadPendingFonts();
 }
 
 void FontFace::resolveReadyPromises()
@@ -552,7 +551,7 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
     for (int i = 0; i < srcLength; i++) {
         // An item in the list either specifies a string (local font name) or a URL (remote font to download).
         CSSFontFaceSrcValue* item = toCSSFontFaceSrcValue(srcList->itemWithoutBoundsCheck(i));
-        OwnPtr<CSSFontFaceSource> source;
+        OwnPtrWillBeRawPtr<CSSFontFaceSource> source = nullptr;
 
 #if ENABLE(SVG_FONTS)
         foundSVGFont = item->isSVGFontFaceSrc() || item->svgFontFaceElement();
@@ -563,13 +562,15 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
             if (allowDownloading && item->isSupportedFormat() && document) {
                 FontResource* fetched = item->fetch(document);
                 if (fetched) {
+                    FontLoader* fontLoader = document->styleEngine()->fontSelector()->fontLoader();
+
 #if ENABLE(SVG_FONTS)
                     if (foundSVGFont) {
-                        source = adoptPtr(new SVGRemoteFontFaceSource(item->resource(), fetched));
+                        source = adoptPtrWillBeNoop(new SVGRemoteFontFaceSource(item->resource(), fetched, fontLoader));
                     } else
 #endif
                     {
-                        source = adoptPtr(new RemoteFontFaceSource(fetched));
+                        source = adoptPtrWillBeNoop(new RemoteFontFaceSource(fetched, fontLoader));
                     }
                 }
             }
@@ -581,11 +582,11 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
                 // We put a RELEASE_ASSERT here as it will cause UAF if the assumption is false.
                 RELEASE_ASSERT(fontfaceElement->inDocument());
                 RELEASE_ASSERT(fontfaceElement->document() == document);
-                source = adoptPtr(new SVGFontFaceSource(fontfaceElement.get()));
+                source = adoptPtrWillBeNoop(new SVGFontFaceSource(fontfaceElement.get()));
             } else
 #endif
             {
-                source = adoptPtr(new LocalFontFaceSource(item->resource()));
+                source = adoptPtrWillBeNoop(new LocalFontFaceSource(item->resource()));
             }
         }
 
@@ -599,7 +600,7 @@ void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
     m_cssFontFace = createCSSFontFace(this, m_unicodeRange.get());
 
     RefPtr<SharedBuffer> buffer = SharedBuffer::create(data, size);
-    OwnPtr<BinaryDataFontFaceSource> source = adoptPtr(new BinaryDataFontFaceSource(buffer.get()));
+    OwnPtrWillBeRawPtr<BinaryDataFontFaceSource> source = adoptPtrWillBeNoop(new BinaryDataFontFaceSource(buffer.get()));
     if (source->isValid()) {
         m_status = Loaded;
     } else {

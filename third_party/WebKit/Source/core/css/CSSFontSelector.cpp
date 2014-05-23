@@ -33,8 +33,6 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/fetch/FontResource.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
@@ -46,80 +44,9 @@ using namespace std;
 
 namespace WebCore {
 
-FontLoader::FontLoader(ResourceFetcher* resourceFetcher)
-    : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
-    , m_resourceFetcher(resourceFetcher)
-{
-}
-
-FontLoader::~FontLoader()
-{
-#if ENABLE(OILPAN)
-    if (!m_resourceFetcher) {
-        ASSERT(m_fontsToBeginLoading.isEmpty());
-        return;
-    }
-    m_beginLoadingTimer.stop();
-
-    // When the m_fontsToBeginLoading vector is destroyed it will decrement the
-    // request counts on the ResourceFetcher for all the fonts that were pending
-    // at the time the FontLoader dies.
-#endif
-}
-
-void FontLoader::addFontToBeginLoading(FontResource* fontResource)
-{
-    if (!m_resourceFetcher || !fontResource->stillNeedsLoad())
-        return;
-
-    m_fontsToBeginLoading.append(
-        std::make_pair(fontResource, ResourceLoader::RequestCountTracker(m_resourceFetcher, fontResource)));
-    m_beginLoadingTimer.startOneShot(0, FROM_HERE);
-}
-
-void FontLoader::beginLoadTimerFired(Timer<WebCore::FontLoader>*)
-{
-    loadPendingFonts();
-}
-
-void FontLoader::loadPendingFonts()
-{
-    ASSERT(m_resourceFetcher);
-
-    FontsToLoadVector fontsToBeginLoading;
-    fontsToBeginLoading.swap(m_fontsToBeginLoading);
-    for (FontsToLoadVector::iterator it = fontsToBeginLoading.begin(); it != fontsToBeginLoading.end(); ++it) {
-        FontResource* fontResource = it->first.get();
-        fontResource->beginLoadIfNeeded(m_resourceFetcher);
-    }
-
-    // When the local fontsToBeginLoading vector goes out of scope it will
-    // decrement the request counts on the ResourceFetcher for all the fonts
-    // that were just loaded.
-}
-
-#if !ENABLE(OILPAN)
-void FontLoader::clearResourceFetcher()
-{
-    if (!m_resourceFetcher) {
-        ASSERT(m_fontsToBeginLoading.isEmpty());
-        return;
-    }
-
-    m_beginLoadingTimer.stop();
-    m_fontsToBeginLoading.clear();
-    m_resourceFetcher = nullptr;
-}
-#endif
-
-void FontLoader::trace(Visitor* visitor)
-{
-    visitor->trace(m_resourceFetcher);
-}
-
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
-    , m_fontLoader(document->fetcher())
+    , m_fontLoader(FontLoader::create(document->fetcher()))
     , m_genericFontFamilySettings(document->frame()->settings()->genericFontFamilySettings())
 {
     // FIXME: An old comment used to say there was no need to hold a reference to m_document
@@ -224,20 +151,10 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
 #if !ENABLE(OILPAN)
 void CSSFontSelector::clearDocument()
 {
-    m_fontLoader.clearResourceFetcher();
+    m_fontLoader->clearResourceFetcher();
     m_document = nullptr;
 }
 #endif
-
-void CSSFontSelector::beginLoadingFontSoon(FontResource* font)
-{
-    m_fontLoader.addFontToBeginLoading(font);
-}
-
-void CSSFontSelector::loadPendingFonts()
-{
-    m_fontLoader.loadPendingFonts();
-}
 
 void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 {

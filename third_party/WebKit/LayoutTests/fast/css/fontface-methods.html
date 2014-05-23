@@ -68,6 +68,15 @@ function testStep4() {
 
 function testStep5() {
     shouldBeEqualToString('face4.status', 'error');
+
+    face5 = new FontFace('Font5', 'url(data:font/truetype;base64,), url(../../resources/Ahem.ttf)', {});
+    shouldBeEqualToString('face5.status', 'unloaded');
+    face5.load().then(testStep6, fail('face5.load() rejected'));
+    shouldBeEqualToString('face5.status', 'loading');
+}
+
+function testStep6() {
+    shouldBeEqualToString('face5.status', 'loaded');
     finishJSTest();
 }
 

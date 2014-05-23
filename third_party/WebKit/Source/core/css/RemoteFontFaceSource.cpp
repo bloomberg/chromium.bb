@@ -18,8 +18,9 @@
 
 namespace WebCore {
 
-RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font)
+RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader)
     : m_font(font)
+    , m_fontLoader(fontLoader)
 {
     m_font->addClient(this);
 }
@@ -96,7 +97,7 @@ void RemoteFontFaceSource::corsFailed(FontResource*)
                 m_font->removeClient(this);
                 m_font = newFontResource;
                 m_font->addClient(this);
-                m_face->fontSelector()->beginLoadingFontSoon(m_font.get());
+                m_fontLoader->addFontToBeginLoading(m_font.get());
                 return;
             } else {
                 pruneTable();
@@ -138,13 +139,22 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(c
 
 void RemoteFontFaceSource::beginLoadIfNeeded()
 {
+    if (m_font->stillNeedsLoad())
+        m_fontLoader->addFontToBeginLoading(m_font.get());
+
     if (m_face)
-        m_face->beginLoadIfNeeded(this);
+        m_face->didBeginLoad();
 }
 
 bool RemoteFontFaceSource::ensureFontData()
 {
     return m_font->ensureCustomFontData();
+}
+
+void RemoteFontFaceSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_fontLoader);
+    CSSFontFaceSource::trace(visitor);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::loadStarted()

@@ -15,7 +15,7 @@ class SVGFontElement;
 
 class SVGRemoteFontFaceSource : public RemoteFontFaceSource {
 public:
-    SVGRemoteFontFaceSource(const String& uri, FontResource*);
+    SVGRemoteFontFaceSource(const String& uri, FontResource*, PassRefPtrWillBeRawPtr<FontLoader>);
     ~SVGRemoteFontFaceSource();
     virtual bool isSVGFontFaceSource() const OVERRIDE { return true; }
     virtual bool ensureFontData() OVERRIDE;
