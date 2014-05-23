@@ -187,8 +187,8 @@ bool ExecProcess(const CommandLine& cmdline,
         // Adding another element here? Remeber to increase the argument to
         // reserve(), above.
 
-        std::copy(fd_shuffle1.begin(), fd_shuffle1.end(),
-                  std::back_inserter(fd_shuffle2));
+        for (size_t i = 0; i < fd_shuffle1.size(); ++i)
+          fd_shuffle2.push_back(fd_shuffle1[i]);
 
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);
