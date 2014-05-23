@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
@@ -65,7 +66,8 @@ NSSCertDatabase* NSSCertDatabase::GetInstance() {
 }
 
 NSSCertDatabase::NSSCertDatabase()
-    : observer_list_(new ObserverListThreadSafe<Observer>) {
+    : observer_list_(new ObserverListThreadSafe<Observer>),
+      weak_factory_(this) {
   // This also makes sure that NSS has been initialized.
   CertDatabase::GetInstance()->ObserveNSSCertDatabase(this);
 
@@ -75,18 +77,34 @@ NSSCertDatabase::NSSCertDatabase()
 NSSCertDatabase::~NSSCertDatabase() {}
 
 void NSSCertDatabase::ListCertsSync(CertificateList* certs) {
-  ListCertsImpl(certs);
+  ListCertsImpl(crypto::ScopedPK11Slot(), certs);
 }
 
 void NSSCertDatabase::ListCerts(
     const base::Callback<void(scoped_ptr<CertificateList> certs)>& callback) {
   scoped_ptr<CertificateList> certs(new CertificateList());
 
-  // base::Pased will NULL out |certs|, so cache the underlying pointer here.
+  // base::Passed will NULL out |certs|, so cache the underlying pointer here.
   CertificateList* raw_certs = certs.get();
   GetSlowTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&NSSCertDatabase::ListCertsImpl,
+                 base::Passed(crypto::ScopedPK11Slot()),
+                 base::Unretained(raw_certs)),
+      base::Bind(callback, base::Passed(&certs)));
+}
+
+void NSSCertDatabase::ListCertsInSlot(const ListCertsCallback& callback,
+                                      PK11SlotInfo* slot) {
+  DCHECK(slot);
+  scoped_ptr<CertificateList> certs(new CertificateList());
+
+  // base::Passed will NULL out |certs|, so cache the underlying pointer here.
+  CertificateList* raw_certs = certs.get();
+  GetSlowTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&NSSCertDatabase::ListCertsImpl,
+                 base::Passed(crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot))),
                  base::Unretained(raw_certs)),
       base::Bind(callback, base::Passed(&certs)));
 }
@@ -313,29 +331,24 @@ bool NSSCertDatabase::SetCertTrust(const X509Certificate* cert,
   return success;
 }
 
-bool NSSCertDatabase::DeleteCertAndKey(const X509Certificate* cert) {
-  // For some reason, PK11_DeleteTokenCertAndKey only calls
-  // SEC_DeletePermCertificate if the private key is found.  So, we check
-  // whether a private key exists before deciding which function to call to
-  // delete the cert.
-  SECKEYPrivateKey *privKey = PK11_FindKeyByAnyCert(cert->os_cert_handle(),
-                                                    NULL);
-  if (privKey) {
-    SECKEY_DestroyPrivateKey(privKey);
-    if (PK11_DeleteTokenCertAndKey(cert->os_cert_handle(), NULL)) {
-      LOG(ERROR) << "PK11_DeleteTokenCertAndKey failed: " << PORT_GetError();
-      return false;
-    }
-  } else {
-    if (SEC_DeletePermCertificate(cert->os_cert_handle())) {
-      LOG(ERROR) << "SEC_DeletePermCertificate failed: " << PORT_GetError();
-      return false;
-    }
-  }
-
+bool NSSCertDatabase::DeleteCertAndKey(X509Certificate* cert) {
+  if (!DeleteCertAndKeyImpl(cert))
+    return false;
   NotifyObserversOfCertRemoved(cert);
-
   return true;
+}
+
+void NSSCertDatabase::DeleteCertAndKeyAsync(
+    const scoped_refptr<X509Certificate>& cert,
+    const DeleteCertCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      GetSlowTaskRunner().get(),
+      FROM_HERE,
+      base::Bind(&NSSCertDatabase::DeleteCertAndKeyImpl, cert),
+      base::Bind(&NSSCertDatabase::NotifyCertRemovalAndCallBack,
+                 weak_factory_.GetWeakPtr(),
+                 cert,
+                 callback));
 }
 
 bool NSSCertDatabase::IsReadOnly(const X509Certificate* cert) const {
@@ -362,13 +375,18 @@ void NSSCertDatabase::SetSlowTaskRunnerForTest(
 }
 
 // static
-void NSSCertDatabase::ListCertsImpl(CertificateList* certs) {
+void NSSCertDatabase::ListCertsImpl(crypto::ScopedPK11Slot slot,
+                                    CertificateList* certs) {
   certs->clear();
 
-  CERTCertList* cert_list = PK11_ListCerts(PK11CertListUnique, NULL);
+  CERTCertList* cert_list = NULL;
+  if (slot)
+    cert_list = PK11_ListCertsInSlot(slot.get());
+  else
+    cert_list = PK11_ListCerts(PK11CertListUnique, NULL);
+
   CERTCertListNode* node;
-  for (node = CERT_LIST_HEAD(cert_list);
-       !CERT_LIST_END(node, cert_list);
+  for (node = CERT_LIST_HEAD(cert_list); !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node)) {
     certs->push_back(X509Certificate::CreateFromHandle(
         node->cert, X509Certificate::OSCertHandles()));
@@ -380,6 +398,15 @@ scoped_refptr<base::TaskRunner> NSSCertDatabase::GetSlowTaskRunner() const {
   if (slow_task_runner_for_test_)
     return slow_task_runner_for_test_;
   return base::WorkerPool::GetTaskRunner(true /*task is slow*/);
+}
+
+void NSSCertDatabase::NotifyCertRemovalAndCallBack(
+    scoped_refptr<X509Certificate> cert,
+    const DeleteCertCallback& callback,
+    bool success) {
+  if (success)
+    NotifyObserversOfCertRemoved(cert);
+  callback.Run(success);
 }
 
 void NSSCertDatabase::NotifyObserversOfCertAdded(const X509Certificate* cert) {
@@ -395,6 +422,30 @@ void NSSCertDatabase::NotifyObserversOfCACertChanged(
     const X509Certificate* cert) {
   observer_list_->Notify(
       &Observer::OnCACertChanged, make_scoped_refptr(cert));
+}
+
+// static
+bool NSSCertDatabase::DeleteCertAndKeyImpl(
+    scoped_refptr<X509Certificate> cert) {
+  // For some reason, PK11_DeleteTokenCertAndKey only calls
+  // SEC_DeletePermCertificate if the private key is found.  So, we check
+  // whether a private key exists before deciding which function to call to
+  // delete the cert.
+  SECKEYPrivateKey* privKey =
+      PK11_FindKeyByAnyCert(cert->os_cert_handle(), NULL);
+  if (privKey) {
+    SECKEY_DestroyPrivateKey(privKey);
+    if (PK11_DeleteTokenCertAndKey(cert->os_cert_handle(), NULL)) {
+      LOG(ERROR) << "PK11_DeleteTokenCertAndKey failed: " << PORT_GetError();
+      return false;
+    }
+  } else {
+    if (SEC_DeletePermCertificate(cert->os_cert_handle())) {
+      LOG(ERROR) << "SEC_DeletePermCertificate failed: " << PORT_GetError();
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace net

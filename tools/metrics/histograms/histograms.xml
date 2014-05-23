@@ -34845,6 +34845,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="773" label="FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR"/>
   <int value="774" label="NETWORKINGPRIVATE_GETNETWORKS"/>
   <int value="775" label="WEBVIEW_SETNAME"/>
+  <int value="776" label="ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY"/>
+  <int value="777" label="ENTERPRISE_PLATFORMKEYSINTERNAL_SIGN"/>
+  <int value="778" label="ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS"/>
+  <int value="779" label="ENTERPRISE_PLATFORMKEYS_GETCERTIFICATES"/>
+  <int value="780" label="ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE"/>
+  <int value="781" label="ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

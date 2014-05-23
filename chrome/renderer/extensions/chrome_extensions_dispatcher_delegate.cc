@@ -166,6 +166,20 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("developerPrivate",
                              IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("downloads", IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("enterprise.platformKeys",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("enterprise.platformKeys.internalAPI",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_INTERNAL_API_JS);
+  source_map->RegisterSource("enterprise.platformKeys.Key",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_KEY_JS);
+  source_map->RegisterSource("enterprise.platformKeys.KeyPair",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_KEY_PAIR_JS);
+  source_map->RegisterSource("enterprise.platformKeys.SubtleCrypto",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
+  source_map->RegisterSource("enterprise.platformKeys.Token",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
+  source_map->RegisterSource("enterprise.platformKeys.utils",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_UTILS_JS);
   source_map->RegisterSource("feedbackPrivate",
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("fileBrowserHandler",

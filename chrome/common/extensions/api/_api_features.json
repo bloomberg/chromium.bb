@@ -305,6 +305,15 @@
     "dependencies": ["permission:echoPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.platformKeys": {
+    "dependencies": ["permission:enterprise.platformKeys"],
+    "contexts": ["blessed_extension"]
+  },
+  "enterprise.platformKeysInternal": {
+    "dependencies": ["permission:enterprise.platformKeys"],
+    "internal": true,
+    "contexts": ["blessed_extension"]
+  },
   "enterprise.platformKeysPrivate": {
     "platforms": ["chromeos"],
     "dependencies": ["permission:enterprise.platformKeysPrivate"],

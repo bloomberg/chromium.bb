@@ -752,6 +752,8 @@
         'browser/chromeos/ownership/owner_settings_service.h',
         'browser/chromeos/ownership/owner_settings_service_factory.cc',
         'browser/chromeos/ownership/owner_settings_service_factory.h',
+        'browser/chromeos/platform_keys/platform_keys.h',
+        'browser/chromeos/platform_keys/platform_keys_nss.cc',
         'browser/chromeos/policy/app_pack_updater.cc',
         'browser/chromeos/policy/app_pack_updater.h',
         'browser/chromeos/policy/auto_enrollment_client.cc',

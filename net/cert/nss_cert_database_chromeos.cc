@@ -75,7 +75,7 @@ void NSSCertDatabaseChromeOS::ListModules(CryptoModuleList* modules,
 void NSSCertDatabaseChromeOS::ListCertsImpl(
     const NSSProfileFilterChromeOS& profile_filter,
     CertificateList* certs) {
-  NSSCertDatabase::ListCertsImpl(certs);
+  NSSCertDatabase::ListCertsImpl(crypto::ScopedPK11Slot(), certs);
 
   size_t pre_size = certs->size();
   certs->erase(std::remove_if(

@@ -19,3 +19,4 @@ per-file web_view*.js=fsamuel@chromium.org
 per-file web_view*.js=lazyboy@chromium.org
 per-file ad_view*.js=fsamuel@chromium.org
 per-file ad_view*.js=lazyboy@chromium.org
+per-file enterprise_platform_keys*=pneubeck@chromium.org
