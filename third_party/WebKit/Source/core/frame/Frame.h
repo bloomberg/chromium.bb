@@ -82,8 +82,6 @@ public:
 
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
-    int64_t frameID() const { return m_frameID; }
-
     // FIXME: These should move to RemoteFrame when that is instantiated.
     void setRemotePlatformLayer(blink::WebLayer* remotePlatformLayer) { m_remotePlatformLayer = remotePlatformLayer; }
     blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
@@ -107,9 +105,6 @@ protected:
 private:
 
     HashSet<FrameDestructionObserver*> m_destructionObservers;
-
-    // Temporary hack for history.
-    int64_t m_frameID;
 
     blink::WebLayer* m_remotePlatformLayer;
 };

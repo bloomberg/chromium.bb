@@ -54,24 +54,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-namespace {
-
-int64_t generateFrameID()
-{
-    // Initialize to the current time to reduce the likelihood of generating
-    // identifiers that overlap with those from past/future browser sessions.
-    static int64_t next = static_cast<int64_t>(currentTime() * 1000000.0);
-    return ++next;
-}
-
-} // namespace
-
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
 Frame::Frame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
     : m_host(host)
     , m_ownerElement(ownerElement)
-    , m_frameID(generateFrameID())
     , m_remotePlatformLayer(0)
 {
     ASSERT(page());
