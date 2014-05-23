@@ -1209,6 +1209,8 @@ void RenderFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
 
 static LayoutUnit initialAlignContentOffset(LayoutUnit availableFreeSpace, EAlignContent alignContent, unsigned numberOfLines)
 {
+    if (numberOfLines <= 1)
+        return 0;
     if (alignContent == AlignContentFlexEnd)
         return availableFreeSpace;
     if (alignContent == AlignContentCenter)
