@@ -194,59 +194,40 @@ void ThreadProxy::UpdateBackgroundAnimateTicking() {
     impl().animations_frozen_until_next_draw = false;
 }
 
-void ThreadProxy::DidLoseOutputSurface() {
-  TRACE_EVENT0("cc", "ThreadProxy::DidLoseOutputSurface");
-  DCHECK(IsMainThread());
-  layer_tree_host()->DidLoseOutputSurface();
-
-  {
-    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-
-    // Return lost resources to their owners immediately.
-    BlockingTaskRunner::CapturePostTasks blocked;
-
-    CompletionEvent completion;
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::DeleteContentsTexturesOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &completion));
-    completion.Wait();
-  }
-}
-
-void ThreadProxy::CreateAndInitializeOutputSurface() {
+void ThreadProxy::DoCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "ThreadProxy::DoCreateAndInitializeOutputSurface");
   DCHECK(IsMainThread());
 
   scoped_ptr<OutputSurface> output_surface =
       layer_tree_host()->CreateOutputSurface();
 
-  if (output_surface) {
+  RendererCapabilities capabilities;
+  bool success = !!output_surface;
+  if (success) {
+    // Make a blocking call to InitializeOutputSurfaceOnImplThread. The results
+    // of that call are pushed into the success and capabilities local
+    // variables.
+    CompletionEvent completion;
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
                    impl_thread_weak_ptr_,
-                   base::Passed(&output_surface)));
-    return;
+                   &completion,
+                   base::Passed(&output_surface),
+                   &success,
+                   &capabilities));
+    completion.Wait();
   }
-
-  DidInitializeOutputSurface(false, RendererCapabilities());
-}
-
-void ThreadProxy::DidInitializeOutputSurface(
-    bool success,
-    const RendererCapabilities& capabilities) {
-  TRACE_EVENT0("cc", "ThreadProxy::DidInitializeOutputSurface");
-  DCHECK(IsMainThread());
   main().renderer_capabilities_main_thread_copy = capabilities;
   layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(success);
 
-  if (!success) {
+  if (success) {
+    main().output_surface_creation_callback.Cancel();
+  } else if (!main().output_surface_creation_callback.IsCancelled()) {
     Proxy::MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::CreateAndInitializeOutputSurface,
-                   main_thread_weak_ptr_));
+        FROM_HERE, main().output_surface_creation_callback.callback());
   }
 }
 
@@ -327,9 +308,6 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   DCHECK(IsImplThread());
   if (!impl().layer_tree_host_impl->IsContextLost())
     return;
-  Proxy::MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::DidLoseOutputSurface, main_thread_weak_ptr_));
   impl().scheduler->DidLoseOutputSurface();
 }
 
@@ -1213,6 +1191,42 @@ void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
   layer_tree_host()->SetAnimationEvents(events.Pass());
 }
 
+void ThreadProxy::CreateAndInitializeOutputSurface() {
+  TRACE_EVENT0("cc", "ThreadProxy::CreateAndInitializeOutputSurface");
+  DCHECK(IsMainThread());
+
+  // Check that output surface has not been recreated by CompositeAndReadback
+  // after this task is posted but before it is run.
+  bool has_initialized_output_surface = true;
+  {
+    CompletionEvent completion;
+    Proxy::ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ThreadProxy::HasInitializedOutputSurfaceOnImplThread,
+                   impl_thread_weak_ptr_,
+                   &completion,
+                   &has_initialized_output_surface));
+    completion.Wait();
+  }
+  if (has_initialized_output_surface)
+    return;
+
+  layer_tree_host()->DidLoseOutputSurface();
+  main().output_surface_creation_callback.Reset(
+      base::Bind(&ThreadProxy::DoCreateAndInitializeOutputSurface,
+                 base::Unretained(this)));
+  main().output_surface_creation_callback.callback().Run();
+}
+
+void ThreadProxy::HasInitializedOutputSurfaceOnImplThread(
+    CompletionEvent* completion,
+    bool* has_initialized_output_surface) {
+  DCHECK(IsImplThread());
+  *has_initialized_output_surface =
+      impl().scheduler->HasInitializedOutputSurface();
+  completion->Signal();
+}
+
 void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
@@ -1245,38 +1259,31 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::DeleteContentsTexturesOnImplThread(
-    CompletionEvent* completion) {
-  TRACE_EVENT0("cc", "ThreadProxy::DeleteContentsTexturesOnImplThread");
-  DCHECK(IsImplThread());
-  DCHECK(IsMainThreadBlocked());
-  layer_tree_host()->DeleteContentsTexturesOnImplThread(
-      impl().layer_tree_host_impl->resource_provider());
-  completion->Signal();
-}
-
 void ThreadProxy::InitializeOutputSurfaceOnImplThread(
-    scoped_ptr<OutputSurface> output_surface) {
+    CompletionEvent* completion,
+    scoped_ptr<OutputSurface> output_surface,
+    bool* success,
+    RendererCapabilities* capabilities) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeOutputSurfaceOnImplThread");
   DCHECK(IsImplThread());
+  DCHECK(IsMainThreadBlocked());
+  DCHECK(success);
+  DCHECK(capabilities);
 
-  LayerTreeHostImpl* host_impl = impl().layer_tree_host_impl.get();
-  bool success = host_impl->InitializeRenderer(output_surface.Pass());
-  RendererCapabilities capabilities;
-  if (success) {
-    capabilities =
-        host_impl->GetRendererCapabilities().MainThreadCapabilities();
+  layer_tree_host()->DeleteContentsTexturesOnImplThread(
+      impl().layer_tree_host_impl->resource_provider());
+
+  *success =
+      impl().layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
+
+  if (*success) {
+    *capabilities = impl()
+                        .layer_tree_host_impl->GetRendererCapabilities()
+                        .MainThreadCapabilities();
+    impl().scheduler->DidCreateAndInitializeOutputSurface();
   }
 
-  Proxy::MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::DidInitializeOutputSurface,
-                 main_thread_weak_ptr_,
-                 success,
-                 capabilities));
-
-  if (success)
-    impl().scheduler->DidCreateAndInitializeOutputSurface();
+  completion->Signal();
 }
 
 void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {
@@ -1290,7 +1297,6 @@ void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {
 void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::LayerTreeHostClosedOnImplThread");
   DCHECK(IsImplThread());
-  DCHECK(IsMainThreadBlocked());
   layer_tree_host()->DeleteContentsTexturesOnImplThread(
       impl().layer_tree_host_impl->resource_provider());
   impl().current_resource_update_controller.reset();

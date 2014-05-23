@@ -94,6 +94,9 @@ class CC_EXPORT Scheduler {
   void DidManageTiles();
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
+  bool HasInitializedOutputSurface() const {
+    return state_machine_.HasInitializedOutputSurface();
+  }
 
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
