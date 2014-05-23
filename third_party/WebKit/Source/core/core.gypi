@@ -1917,6 +1917,8 @@
             'dom/CDATASection.h',
             'dom/CSSSelectorWatch.cpp',
             'dom/CharacterData.cpp',
+            'dom/ChildFrameDisconnector.cpp',
+            'dom/ChildFrameDisconnector.h',
             'dom/ChildListMutationScope.cpp',
             'dom/ChildListMutationScope.h',
             'dom/ChildNodeList.cpp',

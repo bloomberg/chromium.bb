@@ -24,7 +24,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ScriptForbiddenScope.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/Assertions.h"
 
@@ -46,6 +45,28 @@ private:
     Vector< RefPtr<Node> > m_postInsertionNotificationTargets;
 };
 
+inline void ChildNodeInsertionNotifier::notify(Node& node)
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+
+    InspectorInstrumentation::didInsertDOMNode(&node);
+
+    RefPtr<Document> protectDocument(node.document());
+    RefPtr<Node> protectNode(node);
+
+    {
+        NoEventDispatchAssertion assertNoEventDispatch;
+        ScriptForbiddenScope forbidScript;
+        notifyNodeInserted(node);
+    }
+
+    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
+        Node* targetNode = m_postInsertionNotificationTargets[i].get();
+        if (targetNode->inDocument())
+            targetNode->didNotifySubtreeInsertionsToDocument();
+    }
+}
+
 class ChildNodeRemovalNotifier {
 public:
     explicit ChildNodeRemovalNotifier(ContainerNode& insertionPoint)
@@ -60,6 +81,13 @@ private:
 
     ContainerNode& m_insertionPoint;
 };
+
+inline void ChildNodeRemovalNotifier::notify(Node& node)
+{
+    ScriptForbiddenScope forbidScript;
+    NoEventDispatchAssertion assertNoEventDispatch;
+    notifyNodeRemoved(node);
+}
 
 namespace Private {
 
@@ -184,113 +212,6 @@ namespace Private {
     }
 
 } // namespace Private
-
-inline void ChildNodeInsertionNotifier::notify(Node& node)
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-
-    InspectorInstrumentation::didInsertDOMNode(&node);
-
-    RefPtr<Document> protectDocument(node.document());
-    RefPtr<Node> protectNode(node);
-
-    {
-        NoEventDispatchAssertion assertNoEventDispatch;
-        ScriptForbiddenScope forbidScript;
-        notifyNodeInserted(node);
-    }
-
-    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
-        Node* targetNode = m_postInsertionNotificationTargets[i].get();
-        if (targetNode->inDocument())
-            targetNode->didNotifySubtreeInsertionsToDocument();
-    }
-}
-
-inline void ChildNodeRemovalNotifier::notify(Node& node)
-{
-    ScriptForbiddenScope forbidScript;
-    NoEventDispatchAssertion assertNoEventDispatch;
-    notifyNodeRemoved(node);
-}
-
-class ChildFrameDisconnector {
-    STACK_ALLOCATED();
-public:
-    enum DisconnectPolicy {
-        RootAndDescendants,
-        DescendantsOnly
-    };
-
-    explicit ChildFrameDisconnector(Node& root)
-        : m_root(root)
-    {
-    }
-
-    void disconnect(DisconnectPolicy = RootAndDescendants);
-
-private:
-    void collectFrameOwners(Node& root);
-    void collectFrameOwners(ElementShadow&);
-    void disconnectCollectedFrameOwners();
-
-    WillBeHeapVector<RefPtrWillBeMember<HTMLFrameOwnerElement>, 10> m_frameOwners;
-    Node& m_root;
-};
-
-#ifndef NDEBUG
-unsigned assertConnectedSubrameCountIsConsistent(Node&);
-#endif
-
-inline void ChildFrameDisconnector::collectFrameOwners(Node& root)
-{
-    if (!root.connectedSubframeCount())
-        return;
-
-    if (root.isHTMLElement() && root.isFrameOwnerElement())
-        m_frameOwners.append(&toHTMLFrameOwnerElement(root));
-
-    for (Node* child = root.firstChild(); child; child = child->nextSibling())
-        collectFrameOwners(*child);
-
-    ElementShadow* shadow = root.isElementNode() ? toElement(root).shadow() : 0;
-    if (shadow)
-        collectFrameOwners(*shadow);
-}
-
-inline void ChildFrameDisconnector::disconnectCollectedFrameOwners()
-{
-    // Must disable frame loading in the subtree so an unload handler cannot
-    // insert more frames and create loaded frames in detached subtrees.
-    SubframeLoadingDisabler disabler(m_root);
-
-    for (unsigned i = 0; i < m_frameOwners.size(); ++i) {
-        HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
-        // Don't need to traverse up the tree for the first owner since no
-        // script could have moved it.
-        if (!i || m_root.containsIncludingShadowDOM(owner))
-            owner->disconnectContentFrame();
-    }
-}
-
-inline void ChildFrameDisconnector::disconnect(DisconnectPolicy policy)
-{
-#ifndef NDEBUG
-    assertConnectedSubrameCountIsConsistent(m_root);
-#endif
-
-    if (!m_root.connectedSubframeCount())
-        return;
-
-    if (policy == RootAndDescendants)
-        collectFrameOwners(m_root);
-    else {
-        for (Node* child = m_root.firstChild(); child; child = child->nextSibling())
-            collectFrameOwners(*child);
-    }
-
-    disconnectCollectedFrameOwners();
-}
 
 } // namespace WebCore
 

@@ -24,6 +24,7 @@
 #include "core/dom/ContainerNode.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
