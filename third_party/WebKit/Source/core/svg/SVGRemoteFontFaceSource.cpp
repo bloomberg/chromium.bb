@@ -63,6 +63,12 @@ PassRefPtr<SimpleFontData> SVGRemoteFontFaceSource::createFontData(const FontDes
     return nullptr;
 }
 
+void SVGRemoteFontFaceSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_externalSVGFontElement);
+    RemoteFontFaceSource::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(SVG_FONTS)
