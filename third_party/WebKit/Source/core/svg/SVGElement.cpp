@@ -892,15 +892,15 @@ static bool hasLoadListener(Element* element)
 
 void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
 {
-    RefPtr<SVGElement> currentTarget = this;
+    RefPtrWillBeRawPtr<SVGElement> currentTarget = this;
     while (currentTarget && currentTarget->haveLoadedRequiredResources()) {
-        RefPtr<Element> parent;
+        RefPtrWillBeRawPtr<Element> parent = nullptr;
         if (sendParentLoadEvents)
             parent = currentTarget->parentOrShadowHostElement(); // save the next parent to dispatch too incase dispatching the event changes the tree
         if (hasLoadListener(currentTarget.get())
             && (currentTarget->isStructurallyExternal() || isSVGSVGElement(*currentTarget)))
             currentTarget->dispatchEvent(Event::create(EventTypeNames::load));
-        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement>();
+        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : nullptr;
         SVGElement* element = currentTarget.get();
         if (!element || !element->isOutermostSVGSVGElement())
             continue;

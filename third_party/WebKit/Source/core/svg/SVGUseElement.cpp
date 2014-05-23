@@ -608,7 +608,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     if (isDisallowedElement(target))
         return;
 
-    RefPtr<Element> newChild = targetInstance->correspondingElement()->cloneElementWithChildren();
+    RefPtrWillBeRawPtr<Element> newChild = targetInstance->correspondingElement()->cloneElementWithChildren();
 
     // We don't walk the target tree element-by-element, and clone each element,
     // but instead use cloneElementWithChildren(). This is an optimization for the common
@@ -643,7 +643,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
 
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RefPtr<SVGGElement> cloneParent = SVGGElement::create(referencedScope()->document());
+        RefPtrWillBeRawPtr<SVGGElement> cloneParent = SVGGElement::create(referencedScope()->document());
         use->cloneChildNodes(cloneParent.get());
 
         // Spec: In the generated content, the 'use' will be replaced by 'g', where all attributes from the
@@ -651,7 +651,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         transferUseAttributesToReplacedElement(use, cloneParent.get());
 
         if (target && !isDisallowedElement(target)) {
-            RefPtr<Element> newChild = target->cloneElementWithChildren();
+            RefPtrWillBeRawPtr<Element> newChild = target->cloneElementWithChildren();
             ASSERT(newChild->isSVGElement());
             transferUseWidthAndHeightIfNeeded(*use, toSVGElement(newChild.get()), *target);
             cloneParent->appendChild(newChild.release());
