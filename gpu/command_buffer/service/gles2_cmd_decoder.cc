@@ -7164,6 +7164,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribDivisorANGLE", "function not available");
+    return error::kNoError;
   }
   GLuint index = c.index;
   GLuint divisor = c.divisor;
@@ -8389,6 +8390,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   if (texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glCopyTexImage2D", "texture is immutable");
+    return;
   }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {

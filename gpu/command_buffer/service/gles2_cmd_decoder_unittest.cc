@@ -35,6 +35,7 @@
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -1207,6 +1208,53 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
+}
+
+TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_RGBA;
+  const GLenum kSizedInternalFormat = GL_RGBA8;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 8;
+  const GLint kBorder = 0;
+  InitState init;
+  init.extensions = "GL_EXT_texture_storage";
+  init.gl_version = "3.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  // CopyTexImage2D will call arbitrary amount of GetErrors.
+  EXPECT_CALL(*gl_, GetError())
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(*gl_,
+              CopyTexImage2D(
+                  kTarget, kLevel, kInternalFormat, 0, 0, kWidth, kHeight,
+                  kBorder))
+      .Times(1);
+
+  EXPECT_CALL(*gl_,
+              TexStorage2DEXT(
+                  kTarget, kLevel, kSizedInternalFormat, kWidth, kHeight))
+      .Times(1);
+  CopyTexImage2D copy_cmd;
+  copy_cmd.Init(kTarget, kLevel, kInternalFormat, 0, 0, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  TexStorage2DEXT storage_cmd;
+  storage_cmd.Init(kTarget, kLevel, kSizedInternalFormat, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(storage_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // This should not invoke CopyTexImage2D.
+  copy_cmd.Init(kTarget, kLevel, kInternalFormat, 0, 0, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());

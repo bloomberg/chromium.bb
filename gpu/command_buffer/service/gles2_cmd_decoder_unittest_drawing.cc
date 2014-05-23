@@ -974,6 +974,22 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysInstancedANGLEFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderWithShaderTest, VertexAttribDivisorANGLEFails) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(_, _))
+      .Times(0)
+      .RetiresOnSaturation();
+
+  VertexAttribDivisorANGLE cmd;
+  cmd.Init(0, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 TEST_P(GLES2DecoderGeometryInstancingTest,
        DrawArraysInstancedANGLENoAttributesFails) {
   SetupTexture();
