@@ -28,7 +28,7 @@
 #include "HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/FrameSelection.h"
-#include "core/events/Event.h"
+#include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
 
@@ -138,9 +138,11 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
     static bool processingClick = false;
 
     if (evt->type() == EventTypeNames::click && !processingClick) {
-        // If text of label element is selected, do not pass
-        // the event to control element.
-        if (document().frame()->selection().selection().isRange())
+        // If the click is not simulated and the text of label element is
+        // selected, do not pass the event to control element.
+        // Note: a click event may be not a mouse event if created by
+        // document.createEvent().
+        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated() && document().frame()->selection().selection().isRange())
             return;
 
         RefPtrWillBeRawPtr<HTMLElement> element = control();
