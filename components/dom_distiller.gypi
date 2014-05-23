@@ -48,6 +48,7 @@
           ],
           'export_dependent_settings': [
             'distilled_page_proto',
+            '../third_party/dom_distiller_js/dom_distiller_js.gyp:dom_distiller_js_proto',
           ],
           'sources': [
             'dom_distiller/android/component_jni_registrar.cc',

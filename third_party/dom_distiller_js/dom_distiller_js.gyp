@@ -11,7 +11,7 @@
               'proto_in_dir': 'package/proto',
               'proto_out_dir': 'third_party/dom_distiller_js',
             },
-            'all_dependent_settings': {
+            'direct_dependent_settings': {
               'include_dirs': ['package/proto_gen'],
             },
             'includes': [ '../../build/protoc.gypi', ],

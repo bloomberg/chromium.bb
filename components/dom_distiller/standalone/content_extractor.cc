@@ -22,6 +22,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::ContentBrowserTest;
@@ -43,6 +44,8 @@ const char* kOutputFile = "output-file";
 // output.
 const char* kShouldOutputBinary = "output-binary";
 
+const char* kExtractTextOnly = "extract-text-only";
+
 scoped_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
     const base::FilePath& db_path) {
@@ -61,8 +64,13 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
       new DistillerPageWebContentsFactory(context));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(context->GetRequestContext()));
+
+  dom_distiller::proto::DomDistillerOptions options;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kExtractTextOnly)) {
+    options.set_extract_text_only(true);
+  }
   scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass()));
+      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
 
   return scoped_ptr<DomDistillerService>(new DomDistillerService(
       dom_distiller_store.PassAs<DomDistillerStoreInterface>(),

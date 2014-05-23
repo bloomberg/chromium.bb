@@ -56,19 +56,22 @@ class DistillerFactory {
 class DistillerFactoryImpl : public DistillerFactory {
  public:
   DistillerFactoryImpl(
-      scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory);
+      scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
+      const dom_distiller::proto::DomDistillerOptions& dom_distiller_options);
   virtual ~DistillerFactoryImpl();
   virtual scoped_ptr<Distiller> CreateDistiller() OVERRIDE;
 
  private:
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
+  dom_distiller::proto::DomDistillerOptions dom_distiller_options_;
 };
 
 // Distills a article from a page and associated pages.
 class DistillerImpl : public Distiller {
  public:
   DistillerImpl(
-      const DistillerURLFetcherFactory& distiller_url_fetcher_factory);
+      const DistillerURLFetcherFactory& distiller_url_fetcher_factory,
+      const dom_distiller::proto::DomDistillerOptions& dom_distiller_options);
   virtual ~DistillerImpl();
 
   virtual void DistillPage(
@@ -147,6 +150,8 @@ class DistillerImpl : public Distiller {
 
   const DistillerURLFetcherFactory& distiller_url_fetcher_factory_;
   scoped_ptr<DistillerPage> distiller_page_;
+
+  dom_distiller::proto::DomDistillerOptions dom_distiller_options_;
   DistillationFinishedCallback finished_cb_;
   DistillationUpdateCallback update_cb_;
 

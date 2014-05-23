@@ -36,6 +36,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     quit_closure_ = quit_closure;
     distiller_page_->DistillPage(
         embedded_test_server()->GetURL(url),
+        dom_distiller::proto::DomDistillerOptions(),
         base::Bind(&DistillerPageWebContentsTest::OnPageDistillationFinished,
                    this));
   }

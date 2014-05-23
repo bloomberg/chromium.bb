@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
@@ -25,12 +26,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "third_party/dom_distiller_js/dom_distiller_json_converter.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using std::vector;
 using std::string;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::_;
+
+using dom_distiller::proto::DomDistillerOptions;
+using dom_distiller::proto::DomDistillerResult;
 
 namespace {
 const char kTitle[] = "Title";
@@ -51,7 +56,7 @@ scoped_ptr<base::Value> CreateDistilledValueReturnedFromJS(
     const vector<int>& image_indices,
     const string& next_page_url,
     const string& prev_page_url = "") {
-  dom_distiller::proto::DomDistillerResult result;
+  DomDistillerResult result;
   result.set_title(title);
   result.mutable_distilled_content()->set_html(content);
   result.mutable_pagination_info()->set_next_page(next_page_url);
@@ -181,6 +186,15 @@ void VerifyArticleProtoMatchesMultipageData(
   }
 }
 
+void AddComponentsResources() {
+  base::FilePath pak_file;
+  base::FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+  pak_file = pak_dir.Append(FILE_PATH_LITERAL("components_resources.pak"));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_file, ui::SCALE_FACTOR_NONE);
+}
+
 }  // namespace
 
 namespace dom_distiller {
@@ -198,7 +212,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
 
   virtual void FetchURL(const string& url,
                         const URLFetcherCallback& callback) OVERRIDE {
-    DCHECK(callback_.is_null());
+    ASSERT_FALSE(callback.is_null());
     url_ = url;
     callback_ = callback;
     if (!delay_fetch_) {
@@ -208,6 +222,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
 
   void PostCallbackTask() {
     ASSERT_TRUE(base::MessageLoop::current());
+    ASSERT_FALSE(callback_.is_null());
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback_, responses_[url_]));
   }
@@ -240,6 +255,10 @@ class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 class DistillerTest : public testing::Test {
  public:
   virtual ~DistillerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    AddComponentsResources();
+  }
 
   void OnDistillArticleDone(scoped_ptr<DistilledArticleProto> proto) {
     article_proto_ = proto.Pass();
@@ -311,7 +330,8 @@ TEST_F(DistillerTest, DistillPage) {
   base::MessageLoopForUI loop;
   scoped_ptr<base::Value> result =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL, CreateMockDistillerPage(result.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -328,7 +348,8 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   image_indices.push_back(1);
   scoped_ptr<base::Value> result =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL, CreateMockDistillerPage(result.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -362,7 +383,8 @@ TEST_F(DistillerTest, DistillMultiplePages) {
     distiller_data->image_ids.push_back(image_indices);
   }
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(
       distiller_data->page_urls[0],
       CreateMockDistillerPages(distiller_data.get(), kNumPages, 0).Pass());
@@ -377,7 +399,8 @@ TEST_F(DistillerTest, DistillLinkLoop) {
   // happen if javascript misparses a next page link.
   scoped_ptr<base::Value> result =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), kURL);
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL, CreateMockDistillerPage(result.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kTitle, article_proto_->title());
@@ -404,7 +427,8 @@ TEST_F(DistillerTest, CheckMaxPageLimitExtraPage) {
   distiller_data->distilled_values.pop_back();
   distiller_data->distilled_values.push_back(last_page_data.release());
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
 
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
 
@@ -423,7 +447,8 @@ TEST_F(DistillerTest, CheckMaxPageLimitExactLimit) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kMaxPagesInArticle);
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
 
   // Check if distilling an article with exactly the page limit works.
   distiller_->SetMaxNumPagesInArticle(kMaxPagesInArticle);
@@ -441,7 +466,8 @@ TEST_F(DistillerTest, SinglePageDistillationFailure) {
   base::MessageLoopForUI loop;
   // To simulate failure return a null value.
   scoped_ptr<base::Value> nullValue(base::Value::CreateNullValue());
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL,
               CreateMockDistillerPage(nullValue.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
@@ -464,7 +490,8 @@ TEST_F(DistillerTest, MultiplePagesDistillationFailure) {
       distiller_data->distilled_values.begin() + failed_page_num,
       base::Value::CreateNullValue());
   // Expect only calls till the failed page number.
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(distiller_data->page_urls[0],
               CreateMockDistillerPages(
                   distiller_data.get(), failed_page_num + 1, 0).Pass());
@@ -483,7 +510,8 @@ TEST_F(DistillerTest, DistillPreviousPage) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(distiller_data->page_urls[start_page_num],
               CreateMockDistillerPages(
                   distiller_data.get(), kNumPages, start_page_num).Pass());
@@ -501,7 +529,8 @@ TEST_F(DistillerTest, IncrementalUpdates) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(distiller_data->page_urls[start_page_num],
               CreateMockDistillerPages(
                   distiller_data.get(), kNumPages, start_page_num).Pass());
@@ -521,7 +550,8 @@ TEST_F(DistillerTest, IncrementalUpdatesDoNotDeleteFinalArticle) {
   scoped_ptr<MultipageDistillerData> distiller_data =
       CreateMultipageDistillerDataWithoutImages(kNumPages);
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(distiller_data->page_urls[start_page_num],
               CreateMockDistillerPages(
                   distiller_data.get(), kNumPages, start_page_num).Pass());
@@ -543,7 +573,8 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
   // The page number of the article on which distillation starts.
   int start_page_num = 3;
 
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(distiller_data->page_urls[start_page_num],
               CreateMockDistillerPages(
                   distiller_data.get(), kNumPages, start_page_num).Pass());
@@ -565,10 +596,11 @@ TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
   scoped_ptr<base::Value> distilled_value =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
   TestDistillerURLFetcher* delayed_fetcher = new TestDistillerURLFetcher(true);
-  MockDistillerURLFetcherFactory url_fetcher_factory;
-  EXPECT_CALL(url_fetcher_factory, CreateDistillerURLFetcher())
+  MockDistillerURLFetcherFactory mock_url_fetcher_factory;
+  EXPECT_CALL(mock_url_fetcher_factory, CreateDistillerURLFetcher())
       .WillOnce(Return(delayed_fetcher));
-  distiller_.reset(new DistillerImpl(url_fetcher_factory));
+  distiller_.reset(
+      new DistillerImpl(mock_url_fetcher_factory, DomDistillerOptions()));
   DistillPage(
       kURL, CreateMockDistillerPage(distilled_value.get(), GURL(kURL)).Pass());
   base::MessageLoop::current()->RunUntilIdle();
@@ -585,7 +617,8 @@ TEST_F(DistillerTest, CancelWithDelayedJSCallback) {
   scoped_ptr<base::Value> distilled_value =
       CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
   MockDistillerPage* distiller_page = NULL;
-  distiller_.reset(new DistillerImpl(url_fetcher_factory_));
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
   DistillPage(kURL,
               CreateMockDistillerPageWithPendingJSCallback(&distiller_page,
                                                            GURL(kURL)));

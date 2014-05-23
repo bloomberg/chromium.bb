@@ -58,14 +58,15 @@ DistillerPage::DistillerPage() : ready_(true) {}
 
 DistillerPage::~DistillerPage() {}
 
-void DistillerPage::DistillPage(const GURL& gurl,
-                                const DistillerPageCallback& callback) {
+void DistillerPage::DistillPage(
+    const GURL& gurl,
+    const dom_distiller::proto::DomDistillerOptions options,
+    const DistillerPageCallback& callback) {
   DCHECK(ready_);
   // It is only possible to distill one page at a time. |ready_| is reset when
   // the callback to OnDistillationDone happens.
   ready_ = false;
   distiller_page_callback_ = callback;
-  dom_distiller::proto::DomDistillerOptions options;
   DistillPageImpl(gurl, GetDistillerScriptWithOptions(options));
 }
 

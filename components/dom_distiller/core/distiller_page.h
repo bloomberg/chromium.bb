@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -44,9 +45,11 @@ class DistillerPage {
 
   // Loads a URL. |OnDistillationDone| is called when the load completes or
   // fails. May be called when the distiller is idle. Callers can assume that,
-  // for a given |url|, any DistillerPage implementation will extract the same
-  // content.
-  void DistillPage(const GURL& url, const DistillerPageCallback& callback);
+  // for a given |url| and |options|, any DistillerPage implementation will
+  // extract the same content.
+  void DistillPage(const GURL& url,
+                   const dom_distiller::proto::DomDistillerOptions options,
+                   const DistillerPageCallback& callback);
 
   // Called when the JavaScript execution completes. |page_url| is the url of
   // the distilled page. |value| contains data returned by the script.

@@ -63,7 +63,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(profile->GetRequestContext()));
   scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass()));
+      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
+                               dom_distiller::proto::DomDistillerOptions()));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
