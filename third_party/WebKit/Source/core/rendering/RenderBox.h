@@ -265,12 +265,14 @@ public:
     // scrollLeft/Top return the current scroll position.  These methods are virtual so that objects like
     // textareas can scroll shadow content (but pretend that they are the objects that are
     // scrolling).
-    virtual int scrollLeft() const;
-    virtual int scrollTop() const;
-    virtual int scrollWidth() const;
-    virtual int scrollHeight() const;
-    virtual void setScrollLeft(int);
-    virtual void setScrollTop(int);
+    virtual LayoutUnit scrollLeft() const;
+    virtual LayoutUnit scrollTop() const;
+    virtual LayoutUnit scrollWidth() const;
+    virtual LayoutUnit scrollHeight() const;
+    int pixelSnappedScrollWidth() const;
+    int pixelSnappedScrollHeight() const;
+    virtual void setScrollLeft(LayoutUnit);
+    virtual void setScrollTop(LayoutUnit);
 
     void scrollToOffset(const IntSize&);
     void scrollByRecursively(const IntSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
@@ -482,8 +484,8 @@ public:
     bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OAUTO || style()->overflowX() == OOVERLAY); }
     bool scrollsOverflow() const { return scrollsOverflowX() || scrollsOverflowY(); }
 
-    bool hasScrollableOverflowX() const { return scrollsOverflowX() && scrollWidth() != clientWidth(); }
-    bool hasScrollableOverflowY() const { return scrollsOverflowY() && scrollHeight() != clientHeight(); }
+    bool hasScrollableOverflowX() const { return scrollsOverflowX() && pixelSnappedScrollWidth() != pixelSnappedClientWidth(); }
+    bool hasScrollableOverflowY() const { return scrollsOverflowY() && pixelSnappedScrollHeight() != pixelSnappedClientHeight(); }
     virtual bool scrollsOverflowX() const { return hasOverflowClip() && (style()->overflowX() == OSCROLL || hasAutoHorizontalScrollbar()); }
     virtual bool scrollsOverflowY() const { return hasOverflowClip() && (style()->overflowY() == OSCROLL || hasAutoVerticalScrollbar()); }
     bool usesCompositedScrolling() const;

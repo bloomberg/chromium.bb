@@ -141,8 +141,8 @@ public:
         return resizerCornerRect(bounds, ResizerForTouch);
     }
 
-    int scrollWidth() const;
-    int scrollHeight() const;
+    LayoutUnit scrollWidth() const;
+    LayoutUnit scrollHeight() const;
 
     int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;

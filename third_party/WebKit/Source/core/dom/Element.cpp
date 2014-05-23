@@ -602,7 +602,7 @@ double Element::clientLeft()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (RenderBox* renderer = renderBox())
-        return adjustForAbsoluteZoom(renderer->clientLeft(), renderer);
+        return adjustLayoutUnitForAbsoluteZoom(renderer->clientLeft(), *renderer);
     return 0;
 }
 
@@ -611,7 +611,7 @@ double Element::clientTop()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (RenderBox* renderer = renderBox())
-        return adjustForAbsoluteZoom(renderer->clientTop(), renderer);
+        return adjustLayoutUnitForAbsoluteZoom(renderer->clientTop(), *renderer);
     return 0;
 }
 
@@ -626,7 +626,7 @@ double Element::clientWidth()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->layoutSize().width(), renderView);
+                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().width(), *renderView);
         }
     }
 
@@ -647,7 +647,7 @@ double Element::clientHeight()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->layoutSize().height(), renderView);
+                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().height(), *renderView);
         }
     }
 
@@ -662,7 +662,7 @@ double Element::scrollLeft()
 
     if (document().documentElement() != this) {
         if (RenderBox* rend = renderBox())
-            return adjustForAbsoluteZoom(rend->scrollLeft(), rend);
+            return adjustDoubleForAbsoluteZoom(rend->scrollLeft(), *rend);
         return 0;
     }
 
@@ -672,7 +672,7 @@ double Element::scrollLeft()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->scrollX(), renderView);
+                return adjustDoubleForAbsoluteZoom(view->scrollX(), *renderView);
         }
     }
 
@@ -685,7 +685,7 @@ double Element::scrollTop()
 
     if (document().documentElement() != this) {
         if (RenderBox* rend = renderBox())
-            return adjustForAbsoluteZoom(rend->scrollTop(), rend);
+            return adjustLayoutUnitForAbsoluteZoom(rend->scrollTop(), *rend);
         return 0;
     }
 
@@ -695,7 +695,7 @@ double Element::scrollTop()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->scrollY(), renderView);
+                return adjustDoubleForAbsoluteZoom(view->scrollY(), *renderView);
         }
     }
 

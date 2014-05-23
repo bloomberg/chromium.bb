@@ -233,7 +233,7 @@ void TextFieldInputType::forwardEvent(Event* event)
                 // FIXME: This class has no need to know about RenderLayer!
                 if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
                     if (RenderLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
-                        IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth() : 0, 0);
+                        IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }
                 }

@@ -60,12 +60,12 @@ private:
     virtual void autoscroll(const IntPoint&) OVERRIDE FINAL;
 
     // Subclassed to forward to our inner div.
-    virtual int scrollLeft() const OVERRIDE FINAL;
-    virtual int scrollTop() const OVERRIDE FINAL;
-    virtual int scrollWidth() const OVERRIDE FINAL;
-    virtual int scrollHeight() const OVERRIDE FINAL;
-    virtual void setScrollLeft(int) OVERRIDE FINAL;
-    virtual void setScrollTop(int) OVERRIDE FINAL;
+    virtual LayoutUnit scrollLeft() const OVERRIDE FINAL;
+    virtual LayoutUnit scrollTop() const OVERRIDE FINAL;
+    virtual LayoutUnit scrollWidth() const OVERRIDE FINAL;
+    virtual LayoutUnit scrollHeight() const OVERRIDE FINAL;
+    virtual void setScrollLeft(LayoutUnit) OVERRIDE FINAL;
+    virtual void setScrollTop(LayoutUnit) OVERRIDE FINAL;
 
     int textBlockWidth() const;
     virtual float getAvgCharWidth(AtomicString family) OVERRIDE FINAL;

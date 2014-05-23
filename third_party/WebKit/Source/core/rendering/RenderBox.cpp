@@ -359,37 +359,51 @@ int RenderBox::pixelSnappedOffsetHeight() const
     return snapSizeToPixel(offsetHeight(), y() + clientTop());
 }
 
-int RenderBox::scrollWidth() const
+LayoutUnit RenderBox::scrollWidth() const
 {
     if (hasOverflowClip())
         return layer()->scrollableArea()->scrollWidth();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     if (style()->isLeftToRightDirection())
-        return snapSizeToPixel(max(clientWidth(), layoutOverflowRect().maxX() - borderLeft()), x() + clientLeft());
+        return max(clientWidth(), layoutOverflowRect().maxX() - borderLeft());
     return clientWidth() - min<LayoutUnit>(0, layoutOverflowRect().x() - borderLeft());
 }
 
-int RenderBox::scrollHeight() const
+LayoutUnit RenderBox::scrollHeight() const
 {
     if (hasOverflowClip())
         return layer()->scrollableArea()->scrollHeight();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
-    return snapSizeToPixel(max(clientHeight(), layoutOverflowRect().maxY() - borderTop()), y() + clientTop());
+    return max(clientHeight(), layoutOverflowRect().maxY() - borderTop());
 }
 
-int RenderBox::scrollLeft() const
+LayoutUnit RenderBox::scrollLeft() const
 {
     return hasOverflowClip() ? layer()->scrollableArea()->scrollXOffset() : 0;
 }
 
-int RenderBox::scrollTop() const
+LayoutUnit RenderBox::scrollTop() const
 {
     return hasOverflowClip() ? layer()->scrollableArea()->scrollYOffset() : 0;
 }
 
-void RenderBox::setScrollLeft(int newLeft)
+int RenderBox::pixelSnappedScrollWidth() const
+{
+    return snapSizeToPixel(scrollWidth(), x() + clientLeft());
+}
+
+int RenderBox::pixelSnappedScrollHeight() const
+{
+    if (hasOverflowClip())
+        return layer()->scrollableArea()->scrollHeight();
+    // For objects with visible overflow, this matches IE.
+    // FIXME: Need to work right with writing modes.
+    return snapSizeToPixel(scrollHeight(), y() + clientTop());
+}
+
+void RenderBox::setScrollLeft(LayoutUnit newLeft)
 {
     // This doesn't hit in any tests, but since the equivalent code in setScrollTop
     // does, presumably this code does as well.
@@ -399,7 +413,7 @@ void RenderBox::setScrollLeft(int newLeft)
         layer()->scrollableArea()->scrollToXOffset(newLeft, ScrollOffsetClamped);
 }
 
-void RenderBox::setScrollTop(int newTop)
+void RenderBox::setScrollTop(LayoutUnit newTop)
 {
     // Hits in compositing/overflow/do-not-assert-on-invisible-composited-layers.html
     DisableCompositingQueryAsserts disabler;
@@ -671,7 +685,7 @@ bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity,
 
 bool RenderBox::canBeScrolledAndHasScrollableArea() const
 {
-    return canBeProgramaticallyScrolled() && (scrollHeight() != clientHeight() || scrollWidth() != clientWidth());
+    return canBeProgramaticallyScrolled() && (pixelSnappedScrollHeight() != pixelSnappedClientHeight() || pixelSnappedScrollWidth() != pixelSnappedClientWidth());
 }
 
 bool RenderBox::canBeProgramaticallyScrolled() const

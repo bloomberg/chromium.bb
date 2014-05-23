@@ -554,18 +554,18 @@ RenderLayer* RenderLayerScrollableArea::layer() const
     return &m_layer;
 }
 
-int RenderLayerScrollableArea::scrollWidth() const
+LayoutUnit RenderLayerScrollableArea::scrollWidth() const
 {
     if (m_scrollDimensionsDirty)
         const_cast<RenderLayerScrollableArea*>(this)->computeScrollDimensions();
-    return snapSizeToPixel(m_overflowRect.width(), box().clientLeft() + box().x());
+    return m_overflowRect.width();
 }
 
-int RenderLayerScrollableArea::scrollHeight() const
+LayoutUnit RenderLayerScrollableArea::scrollHeight() const
 {
     if (m_scrollDimensionsDirty)
         const_cast<RenderLayerScrollableArea*>(this)->computeScrollDimensions();
-    return snapSizeToPixel(m_overflowRect.height(), box().clientTop() + box().y());
+    return m_overflowRect.height();
 }
 
 void RenderLayerScrollableArea::computeScrollDimensions()
@@ -695,14 +695,14 @@ bool RenderLayerScrollableArea::hasHorizontalOverflow() const
 {
     ASSERT(!m_scrollDimensionsDirty);
 
-    return scrollWidth() > box().pixelSnappedClientWidth();
+    return scrollWidth() > box().clientWidth();
 }
 
 bool RenderLayerScrollableArea::hasVerticalOverflow() const
 {
     ASSERT(!m_scrollDimensionsDirty);
 
-    return scrollHeight() > box().pixelSnappedClientHeight();
+    return scrollHeight() > box().clientHeight();
 }
 
 bool RenderLayerScrollableArea::hasScrollableHorizontalOverflow() const

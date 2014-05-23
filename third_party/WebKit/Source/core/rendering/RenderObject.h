@@ -1455,6 +1455,12 @@ inline int adjustForAbsoluteZoom(int value, RenderObject* renderer)
     return adjustForAbsoluteZoom(value, renderer->style());
 }
 
+inline double adjustDoubleForAbsoluteZoom(double value, RenderObject& renderer)
+{
+    ASSERT(renderer.style());
+    return adjustDoubleForAbsoluteZoom(value, *renderer.style());
+}
+
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, RenderObject& renderer)
 {
     ASSERT(renderer.style());

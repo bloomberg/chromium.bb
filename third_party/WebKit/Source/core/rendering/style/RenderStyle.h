@@ -1817,6 +1817,11 @@ inline float adjustFloatForAbsoluteZoom(float value, const RenderStyle& style)
     return value / style.effectiveZoom();
 }
 
+inline double adjustDoubleForAbsoluteZoom(double value, const RenderStyle& style)
+{
+    return value / style.effectiveZoom();
+}
+
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const RenderStyle& style)
 {
     return value / style.effectiveZoom();
