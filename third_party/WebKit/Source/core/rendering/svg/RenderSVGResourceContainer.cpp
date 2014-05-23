@@ -235,6 +235,23 @@ void RenderSVGResourceContainer::registerResource()
     }
 }
 
+static bool shouldTransformOnTextPainting(RenderObject* object, AffineTransform& resourceTransform)
+{
+    ASSERT(object);
+
+    // This method should only be called for RenderObjects that deal with text rendering. Cmp. RenderObject.h's is*() methods.
+    ASSERT(object->isSVGText() || object->isSVGTextPath() || object->isSVGInline());
+
+    // In text drawing, the scaling part of the graphics context CTM is removed, compare SVGInlineTextBox::paintTextWithShadows.
+    // So, we use that scaling factor here, too, and then push it down to pattern or gradient space
+    // in order to keep the pattern or gradient correctly scaled.
+    float scalingFactor = SVGRenderingContext::calculateScreenFontSizeScalingFactor(object);
+    if (scalingFactor == 1)
+        return false;
+    resourceTransform.scale(scalingFactor);
+    return true;
+}
+
 AffineTransform RenderSVGResourceContainer::computeResourceSpaceTransform(RenderObject* object, const AffineTransform& baseTransform, const SVGRenderStyle* svgStyle, unsigned short resourceMode)
 {
     AffineTransform computedSpaceTransform = baseTransform;
@@ -253,23 +270,6 @@ AffineTransform RenderSVGResourceContainer::computeResourceSpaceTransform(Render
             computedSpaceTransform = transformOnNonScalingStroke(object, computedSpaceTransform);
     }
     return computedSpaceTransform;
-}
-
-bool RenderSVGResourceContainer::shouldTransformOnTextPainting(RenderObject* object, AffineTransform& resourceTransform)
-{
-    ASSERT(object);
-
-    // This method should only be called for RenderObjects that deal with text rendering. Cmp. RenderObject.h's is*() methods.
-    ASSERT(object->isSVGText() || object->isSVGTextPath() || object->isSVGInline());
-
-    // In text drawing, the scaling part of the graphics context CTM is removed, compare SVGInlineTextBox::paintTextWithShadows.
-    // So, we use that scaling factor here, too, and then push it down to pattern or gradient space
-    // in order to keep the pattern or gradient correctly scaled.
-    float scalingFactor = SVGRenderingContext::calculateScreenFontSizeScalingFactor(object);
-    if (scalingFactor == 1)
-        return false;
-    resourceTransform.scale(scalingFactor);
-    return true;
 }
 
 // FIXME: This does not belong here.
