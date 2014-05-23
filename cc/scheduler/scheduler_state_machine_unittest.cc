@@ -1749,6 +1749,29 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyForSmoothness) {
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
 }
 
+TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyOnLostOutputSurface) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  state.SetNeedsCommit();
+
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+
+  state.DidLoseOutputSurface();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // The deadline should be triggered immediately when output surface is lost.
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+}
+
 TEST(SchedulerStateMachineTest, TestSetNeedsAnimate) {
   SchedulerSettings settings;
   settings.impl_side_painting = true;
