@@ -26,8 +26,10 @@
 #include "config.h"
 #include "core/page/NetworkStateNotifier.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/page/Page.h"
 #include "wtf/Assertions.h"
+#include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
@@ -55,4 +57,102 @@ void NetworkStateNotifier::setOnLine(bool onLine)
     Page::networkStateChanged(onLine);
 }
 
+void NetworkStateNotifier::setWebConnectionType(blink::WebConnectionType type)
+{
+    ASSERT(isMainThread());
+
+    MutexLocker locker(m_mutex);
+    if (m_type == type)
+        return;
+    m_type = type;
+
+    for (ObserverListMap::iterator it = m_observers.begin(); it != m_observers.end(); ++it) {
+        ExecutionContext* context = it->key;
+        context->postTask(bind(&NetworkStateNotifier::notifyObserversOnContext, this, context, type));
+    }
 }
+
+void NetworkStateNotifier::addObserver(NetworkStateObserver* observer, ExecutionContext* context)
+{
+    ASSERT(context->isContextThread());
+    ASSERT(observer);
+
+    MutexLocker locker(m_mutex);
+    ObserverListMap::AddResult result = m_observers.add(context, nullptr);
+    if (result.isNewEntry)
+        result.storedValue->value = adoptPtr(new ObserverList);
+
+    ASSERT(result.storedValue->value->observers.find(observer) == kNotFound);
+    result.storedValue->value->observers.append(observer);
+}
+
+void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer, ExecutionContext* context)
+{
+    ASSERT(context->isContextThread());
+    ASSERT(observer);
+
+    ObserverList* observerList = lockAndFindObserverList(context);
+    if (!observerList)
+        return;
+
+    Vector<NetworkStateObserver*>& observers = observerList->observers;
+    size_t index = observers.find(observer);
+    if (index != kNotFound) {
+        observers[index] = 0;
+        observerList->zeroedObservers.append(index);
+    }
+
+    if (!observerList->iterating && !observerList->zeroedObservers.isEmpty())
+        collectZeroedObservers(observerList, context);
+}
+
+void NetworkStateNotifier::notifyObserversOnContext(ExecutionContext* context, blink::WebConnectionType type)
+{
+    ObserverList* observerList = lockAndFindObserverList(context);
+
+    // The context could have been removed before the notification task got to run.
+    if (!observerList)
+        return;
+
+    ASSERT(context->isContextThread());
+
+    observerList->iterating = true;
+
+    for (size_t i = 0; i < observerList->observers.size(); ++i) {
+        // Observers removed during iteration are zeroed out, skip them.
+        if (observerList->observers[i])
+            observerList->observers[i]->connectionTypeChange(type);
+    }
+
+    observerList->iterating = false;
+
+    if (!observerList->zeroedObservers.isEmpty())
+        collectZeroedObservers(observerList, context);
+}
+
+NetworkStateNotifier::ObserverList* NetworkStateNotifier::lockAndFindObserverList(ExecutionContext* context)
+{
+    MutexLocker locker(m_mutex);
+    ObserverListMap::iterator it = m_observers.find(context);
+    return it == m_observers.end() ? 0 : it->value.get();
+}
+
+void NetworkStateNotifier::collectZeroedObservers(ObserverList* list, ExecutionContext* context)
+{
+    ASSERT(context->isContextThread());
+    ASSERT(!list->iterating);
+
+    // If any observers were removed during the iteration they will have
+    // 0 values, clean them up.
+    for (size_t i = 0; i < list->zeroedObservers.size(); ++i)
+        list->observers.remove(list->zeroedObservers[i]);
+
+    list->zeroedObservers.clear();
+
+    if (list->observers.isEmpty()) {
+        MutexLocker locker(m_mutex);
+        m_observers.remove(context); // deletes list
+    }
+}
+
+} // namespace WebCore

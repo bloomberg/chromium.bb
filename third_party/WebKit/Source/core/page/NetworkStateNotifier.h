@@ -26,17 +26,31 @@
 #ifndef NetworkStateNotifier_h
 #define NetworkStateNotifier_h
 
+#include "public/platform/WebConnectionType.h"
 #include "wtf/FastAllocBase.h"
+#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
+
+class ExecutionContext;
 
 class NetworkStateNotifier {
     WTF_MAKE_NONCOPYABLE(NetworkStateNotifier); WTF_MAKE_FAST_ALLOCATED;
 public:
+    class NetworkStateObserver {
+    public:
+        // Will be called on the thread of the context passed in addObserver.
+        virtual void connectionTypeChange(blink::WebConnectionType) = 0;
+    };
+
     NetworkStateNotifier()
-        : m_isOnLine(true) { }
+        : m_isOnLine(true)
+        , m_type(blink::ConnectionTypeOther)
+    {
+    }
 
     bool onLine() const
     {
@@ -46,13 +60,49 @@ public:
 
     void setOnLine(bool);
 
+    blink::WebConnectionType connectionType() const
+    {
+        MutexLocker locker(m_mutex);
+        return m_type;
+    }
+
+    void setWebConnectionType(blink::WebConnectionType);
+
+    // Must be called on the context's thread. An added observer must be
+    // removed before its ExecutionContext is deleted.
+    void addObserver(NetworkStateObserver*, ExecutionContext*);
+    void removeObserver(NetworkStateObserver*, ExecutionContext*);
+
 private:
+    struct ObserverList {
+        ObserverList()
+            : iterating(false)
+        {
+        }
+        bool iterating;
+        Vector<NetworkStateObserver*> observers;
+        Vector<size_t> zeroedObservers; // Indices in observers that are 0.
+    };
+
+    typedef HashMap<ExecutionContext*, OwnPtr<ObserverList> > ObserverListMap;
+
+    void notifyObserversOnContext(ExecutionContext*, blink::WebConnectionType);
+
+    ObserverList* lockAndFindObserverList(ExecutionContext*);
+
+    // Removed observers are nulled out in the list in case the list is being
+    // iterated over. Once done iterating, call this to clean up nulled
+    // observers.
+    void collectZeroedObservers(ObserverList*, ExecutionContext*);
+
     mutable Mutex m_mutex;
     bool m_isOnLine;
+    blink::WebConnectionType m_type;
+    ObserverListMap m_observers;
 };
 
 NetworkStateNotifier& networkStateNotifier();
 
-};
+} // namespace WebCore
 
 #endif // NetworkStateNotifier_h

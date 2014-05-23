@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,23 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/web/WebNetworkStateNotifier.h"
-
-#include "core/page/NetworkStateNotifier.h"
-
-using namespace WebCore;
+#ifndef WebConnectionType_h
+#define WebConnectionType_h
 
 namespace blink {
 
-void WebNetworkStateNotifier::setOnLine(bool onLine)
-{
-    networkStateNotifier().setOnLine(onLine);
-}
-
-void WebNetworkStateNotifier::setWebConnectionType(WebConnectionType type)
-{
-    networkStateNotifier().setWebConnectionType(type);
-}
+// Connection types from http://w3c.github.io/netinfo/.
+enum WebConnectionType {
+    ConnectionTypeCellular = 0,
+    ConnectionTypeBluetooth,
+    ConnectionTypeEthernet,
+    ConnectionTypeWifi,
+    ConnectionTypeOther,
+    ConnectionTypeNone,
+    ConnectionTypeLast = ConnectionTypeNone
+};
 
 } // namespace blink
+
+#endif // WebConnectionType_h

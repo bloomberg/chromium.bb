@@ -3386,6 +3386,7 @@
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
+            'page/NetworkStateNotifierTest.cpp',
             'rendering/RenderOverflowTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
             'testing/UnitTestHelpers.cpp',

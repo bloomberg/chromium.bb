@@ -32,12 +32,14 @@
 #define WebNetworkStateNotifier_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebConnectionType.h"
 
 namespace blink {
 
 class WebNetworkStateNotifier {
 public:
     BLINK_EXPORT static void setOnLine(bool);
+    BLINK_EXPORT static void setWebConnectionType(WebConnectionType);
 
 private:
     WebNetworkStateNotifier();
