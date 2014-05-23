@@ -339,15 +339,19 @@
                   '-fno-exceptions',
                   '-Wall',
                   '-fPIC',
-                  '--sysroot=<(sysroot)',
-                ],
-                'ldflags': [
-                  '--sysroot=<(sysroot)',
                 ],
                 # TODO(mcgrathr): This is copied from the arm section of
                 # chromium/src/build/common.gypi, but these details really
                 # should be more fully harmonized and shared.
                 'conditions': [
+                  ['sysroot!=""', {
+                    'cflags': [
+                      '--sysroot=<(sysroot)',
+                    ],
+                    'ldflags': [
+                      '--sysroot=<(sysroot)',
+                    ],
+                  }],
                   ['arm_thumb==1', {
                     'cflags': [
                       '-mthumb',
@@ -798,7 +802,7 @@
       'includes': [
         'android_settings.gypi',
       ],
-    }],  # OS=="android"
+    }],  # OS=="android" and nacl_standalone==1
   ],
   'xcode_settings': {
     # The Xcode generator will look for an xcode_settings section at the root
