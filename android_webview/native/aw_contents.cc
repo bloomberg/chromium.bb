@@ -326,7 +326,13 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
-  GLViewRendererManager::GetInstance()->DidDrawGL(renderer_manager_key_);
+  {
+    GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+    base::AutoLock lock(render_thread_lock_);
+    if (renderer_manager_key_ != manager->NullKey()) {
+      manager->DidDrawGL(renderer_manager_key_);
+    }
+  }
 
   ScopedAppGLStateRestore state_restore(
       draw_info->mode == AwDrawGLInfo::kModeDraw
@@ -334,15 +340,21 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
           : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
   ScopedAllowGL allow_gl;
 
-  for (base::Closure c = shared_renderer_state_.PopFrontClosure(); !c.is_null();
-       c = shared_renderer_state_.PopFrontClosure()) {
-    c.Run();
+  if (!shared_renderer_state_.IsHardwareAllowed()) {
+    hardware_renderer_.reset();
+    shared_renderer_state_.SetHardwareInitialized(false);
+    return;
   }
 
-  if (!hardware_renderer_)
+  if (draw_info->mode != AwDrawGLInfo::kModeDraw)
     return;
 
-  // TODO(boliu): Make this a task as well.
+  if (!hardware_renderer_) {
+    DCHECK(!shared_renderer_state_.IsHardwareInitialized());
+    hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+    shared_renderer_state_.SetHardwareInitialized(true);
+  }
+
   DrawGLResult result;
   if (hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
                                  state_restore.framebuffer_binding_ext(),
@@ -777,64 +789,53 @@ void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  shared_renderer_state_.SetHardwareAllowed(true);
   browser_view_renderer_.OnAttachedToWindow(w, h);
 }
 
 void AwContents::InitializeHardwareDrawIfNeeded() {
   GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+
+  base::AutoLock lock(render_thread_lock_);
   if (renderer_manager_key_ == manager->NullKey()) {
-    // Add task but don't schedule it. It will run when DrawGL is called for
-    // the first time.
-    shared_renderer_state_.AppendClosure(
-        base::Bind(&AwContents::InitializeHardwareDrawOnRenderThread,
-                   base::Unretained(this)));
     renderer_manager_key_ = manager->PushBack(&shared_renderer_state_);
     DeferredGpuCommandService::SetInstance();
   }
 }
 
-void AwContents::InitializeHardwareDrawOnRenderThread() {
-  DCHECK(!hardware_renderer_);
-  DCHECK(!shared_renderer_state_.IsHardwareInitialized());
-  hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
-  shared_renderer_state_.SetHardwareInitialized(true);
-}
-
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  shared_renderer_state_.SetHardwareAllowed(false);
 
-  shared_renderer_state_.ClearClosureQueue();
-  shared_renderer_state_.AppendClosure(base::Bind(
-      &AwContents::ReleaseHardwareDrawOnRenderThread, base::Unretained(this)));
-  bool draw_functor_succeeded = RequestDrawGL(NULL, true);
-  if (!draw_functor_succeeded &&
-      shared_renderer_state_.IsHardwareInitialized()) {
-    LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
-    // Calling release on wrong thread intentionally.
-    AwDrawGLInfo info;
-    info.mode = AwDrawGLInfo::kModeProcess;
-    DrawGL(&info);
-  } else {
-    shared_renderer_state_.ClearClosureQueue();
+  bool hardware_initialized = shared_renderer_state_.IsHardwareInitialized();
+  if (hardware_initialized) {
+    bool draw_functor_succeeded = RequestDrawGL(NULL, true);
+    if (!draw_functor_succeeded && hardware_initialized) {
+      LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
+      // Calling release on wrong thread intentionally.
+      AwDrawGLInfo info;
+      info.mode = AwDrawGLInfo::kModeProcess;
+      DrawGL(&info);
+    }
   }
 
+  DCHECK(!hardware_renderer_);
   browser_view_renderer_.OnDetachedFromWindow();
 
   GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
-  if (renderer_manager_key_ != manager->NullKey()) {
-    manager->Remove(renderer_manager_key_);
-    renderer_manager_key_ = manager->NullKey();
+
+  {
+    base::AutoLock lock(render_thread_lock_);
+    if (renderer_manager_key_ != manager->NullKey()) {
+      manager->Remove(renderer_manager_key_);
+      renderer_manager_key_ = manager->NullKey();
+    }
   }
-}
 
-void AwContents::ReleaseHardwareDrawOnRenderThread() {
-  // No point in running any other commands if we released hardware already.
-  shared_renderer_state_.ClearClosureQueue();
-  if (!shared_renderer_state_.IsHardwareInitialized())
-    return;
-
-  hardware_renderer_.reset();
-  shared_renderer_state_.SetHardwareInitialized(false);
+  if (hardware_initialized) {
+    // Flush any invoke functors that's caused by OnDetachedFromWindow.
+    RequestDrawGL(NULL, true);
+  }
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>

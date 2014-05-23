@@ -621,16 +621,17 @@ public class AwContents {
         if (wasWindowFocused) onWindowFocusChanged(false);
         if (wasViewVisible) setViewVisibilityInternal(false);
         if (wasWindowVisible) setWindowVisibilityInternal(false);
+        if (wasAttached) onDetachedFromWindow();
         if (!wasPaused) onPause();
-        // Not calling onDetachedFromWindow here because native code requires GL context to release
-        // GL resources. This case is properly handled when destroy is called while still attached
-        // to window.
 
         setNewAwContents(popupNativeAwContents);
 
         // Finally refresh all view state for mContentViewCore and mNativeAwContents.
         if (!wasPaused) onResume();
-        if (wasAttached) onAttachedToWindow();
+        if (wasAttached) {
+            onAttachedToWindow();
+            postInvalidateOnAnimation();
+        }
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
         if (wasWindowVisible) setWindowVisibilityInternal(true);
         if (wasViewVisible) setViewVisibilityInternal(true);

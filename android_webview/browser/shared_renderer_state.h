@@ -5,9 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 #define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 
-#include <queue>
-
-#include "base/callback.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -64,11 +61,11 @@ class SharedRendererState {
   void SetDrawGLInput(const DrawGLInput& input);
   DrawGLInput GetDrawGLInput() const;
 
-  void ClearClosureQueue();
-  void AppendClosure(const base::Closure& closure);
-  // Will return empty closure if queue empty.
-  base::Closure PopFrontClosure();
+  // Set by UI and read by RT.
+  void SetHardwareAllowed(bool allowed);
+  bool IsHardwareAllowed() const;
 
+  // Set by RT and read by UI.
   void SetHardwareInitialized(bool initialized);
   bool IsHardwareInitialized() const;
 
@@ -89,7 +86,7 @@ class SharedRendererState {
   // Set to false when memory policy is read and enforced to compositor.
   bool memory_policy_dirty_;
   DrawGLInput draw_gl_input_;
-  std::queue<base::Closure> closure_queue_;
+  bool hardware_allowed_;
   bool hardware_initialized_;
 };
 

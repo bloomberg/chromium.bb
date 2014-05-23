@@ -28,9 +28,7 @@ class GLViewRendererManager {
 
   static GLViewRendererManager* GetInstance();
 
-  Key NullKey() {
-    return mru_list_.end();
-  }
+  Key NullKey();
 
   Key PushBack(RendererType view);
 

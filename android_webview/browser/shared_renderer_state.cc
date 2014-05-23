@@ -23,6 +23,7 @@ SharedRendererState::SharedRendererState(
       ui_thread_weak_ptr_(weak_factory_on_ui_thread_.GetWeakPtr()),
       compositor_(NULL),
       memory_policy_dirty_(false),
+      hardware_allowed_(false),
       hardware_initialized_(false) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
@@ -86,27 +87,14 @@ DrawGLInput SharedRendererState::GetDrawGLInput() const {
   return draw_gl_input_;
 }
 
-void SharedRendererState::ClearClosureQueue() {
+void SharedRendererState::SetHardwareAllowed(bool allowed) {
   base::AutoLock lock(lock_);
-  std::queue<base::Closure> empty;
-  std::swap(closure_queue_, empty);
+  hardware_allowed_ = allowed;
 }
 
-void SharedRendererState::AppendClosure(const base::Closure& closure) {
+bool SharedRendererState::IsHardwareAllowed() const {
   base::AutoLock lock(lock_);
-  closure_queue_.push(closure);
-}
-
-base::Closure SharedRendererState::PopFrontClosure() {
-  base::Closure closure;
-
-  base::AutoLock lock(lock_);
-  if (!closure_queue_.empty()) {
-    closure = closure_queue_.front();
-    closure_queue_.pop();
-  }
-
-  return closure;
+  return hardware_allowed_;
 }
 
 void SharedRendererState::SetHardwareInitialized(bool initialized) {
