@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "content/common/gpu/devtools_gpu_agent.h"
@@ -71,8 +72,7 @@ const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
 // - it generates mailbox names for clients of the GPU process on the IO thread.
 class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
-  // Takes ownership of gpu_channel (see below).
-  GpuChannelMessageFilter(base::WeakPtr<GpuChannel>* gpu_channel,
+  GpuChannelMessageFilter(base::WeakPtr<GpuChannel> gpu_channel,
                           scoped_refptr<SyncPointManager> sync_point_manager,
                           scoped_refptr<base::MessageLoopProxy> message_loop)
       : preemption_state_(IDLE),
@@ -81,8 +81,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         sync_point_manager_(sync_point_manager),
         message_loop_(message_loop),
         messages_forwarded_to_channel_(0),
-        a_stub_is_descheduled_(false) {
-  }
+        a_stub_is_descheduled_(false) {}
 
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     DCHECK(!channel_);
@@ -153,10 +152,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~GpuChannelMessageFilter() {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &GpuChannelMessageFilter::DeleteWeakPtrOnMainThread, gpu_channel_));
-  }
+  virtual ~GpuChannelMessageFilter() {}
 
  private:
   enum PreemptionState {
@@ -337,7 +333,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   }
 
   static void InsertSyncPointOnMainThread(
-      base::WeakPtr<GpuChannel>* gpu_channel,
+      base::WeakPtr<GpuChannel> gpu_channel,
       scoped_refptr<SyncPointManager> manager,
       int32 routing_id,
       uint32 sync_point) {
@@ -346,30 +342,23 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     // with it, but if that fails for any reason (channel or stub already
     // deleted, invalid routing id), we need to retire the sync point
     // immediately.
-    if (gpu_channel->get()) {
-      GpuCommandBufferStub* stub = gpu_channel->get()->LookupCommandBuffer(
-          routing_id);
+    if (gpu_channel) {
+      GpuCommandBufferStub* stub = gpu_channel->LookupCommandBuffer(routing_id);
       if (stub) {
         stub->AddSyncPoint(sync_point);
         GpuCommandBufferMsg_RetireSyncPoint message(routing_id, sync_point);
-        gpu_channel->get()->OnMessageReceived(message);
+        gpu_channel->OnMessageReceived(message);
         return;
       } else {
-        gpu_channel->get()->MessageProcessed();
+        gpu_channel->MessageProcessed();
       }
     }
     manager->RetireSyncPoint(sync_point);
   }
 
-  static void DeleteWeakPtrOnMainThread(
-      base::WeakPtr<GpuChannel>* gpu_channel) {
-    delete gpu_channel;
-  }
-
-  // NOTE: this is a pointer to a weak pointer. It is never dereferenced on the
-  // IO thread, it's only passed through - therefore the WeakPtr assumptions are
-  // respected.
-  base::WeakPtr<GpuChannel>* gpu_channel_;
+  // NOTE: this weak pointer is never dereferenced on the IO thread, it's only
+  // passed through - therefore the WeakPtr assumptions are respected.
+  base::WeakPtr<GpuChannel> gpu_channel_;
   IPC::Channel* channel_;
   scoped_refptr<SyncPointManager> sync_point_manager_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -411,6 +400,11 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 }
 
+GpuChannel::~GpuChannel() {
+  STLDeleteElements(&deferred_messages_);
+  if (preempting_flag_.get())
+    preempting_flag_->Reset();
+}
 
 void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
@@ -425,13 +419,10 @@ void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       false,
       shutdown_event));
 
-  base::WeakPtr<GpuChannel>* weak_ptr(new base::WeakPtr<GpuChannel>(
-      weak_factory_.GetWeakPtr()));
-
-  filter_ = new GpuChannelMessageFilter(
-      weak_ptr,
-      gpu_channel_manager_->sync_point_manager(),
-      base::MessageLoopProxy::current());
+  filter_ =
+      new GpuChannelMessageFilter(weak_factory_.GetWeakPtr(),
+                                  gpu_channel_manager_->sync_point_manager(),
+                                  base::MessageLoopProxy::current());
   io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_.get());
 
@@ -632,11 +623,6 @@ void GpuChannel::MarkAllContextsLost() {
   }
 }
 
-void GpuChannel::DestroySoon() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
-}
-
 bool GpuChannel::AddRoute(int32 route_id, IPC::Listener* listener) {
   return router_.AddRoute(route_id, listener);
 }
@@ -664,11 +650,6 @@ void GpuChannel::SetPreemptByFlag(
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->SetPreemptByFlag(preempted_flag_);
   }
-}
-
-GpuChannel::~GpuChannel() {
-  if (preempting_flag_.get())
-    preempting_flag_->Reset();
 }
 
 void GpuChannel::OnDestroy() {

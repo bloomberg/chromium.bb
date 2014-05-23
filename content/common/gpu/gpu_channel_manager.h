@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -105,7 +105,7 @@ class GpuChannelManager : public IPC::Listener,
     int32 sync_point;
     base::Closure callback;
   };
-  typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
+  typedef base::ScopedPtrHashMap<int, GpuChannel> GpuChannelMap;
   typedef std::deque<ImageOperation*> ImageOperationQueue;
 
   // Message handlers.

@@ -98,7 +98,7 @@ GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
   if (iter == gpu_channels_.end())
     return NULL;
   else
-    return iter->second.get();
+    return iter->second;
 }
 
 bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
@@ -133,14 +133,9 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
     mailbox_manager = mailbox_manager_.get();
   }
 
-  scoped_refptr<GpuChannel> channel = new GpuChannel(this,
-                                                     watchdog_,
-                                                     share_group,
-                                                     mailbox_manager,
-                                                     client_id,
-                                                     false);
+  scoped_ptr<GpuChannel> channel(new GpuChannel(
+      this, watchdog_, share_group, mailbox_manager, client_id, false));
   channel->Init(io_message_loop_.get(), shutdown_event_);
-  gpu_channels_[client_id] = channel;
   channel_handle.name = channel->GetChannelName();
 
 #if defined(OS_POSIX)
@@ -150,6 +145,8 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
   DCHECK_NE(-1, renderer_fd);
   channel_handle.socket = base::FileDescriptor(renderer_fd, true);
 #endif
+
+  gpu_channels_.set(client_id, channel.Pass());
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }

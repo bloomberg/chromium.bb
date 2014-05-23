@@ -50,9 +50,7 @@ class GpuWatchdog;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
-class GpuChannel : public IPC::Listener,
-                   public IPC::Sender,
-                   public base::RefCountedThreadSafe<GpuChannel> {
+class GpuChannel : public IPC::Listener, public IPC::Sender {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -61,6 +59,7 @@ class GpuChannel : public IPC::Listener,
              gpu::gles2::MailboxManager* mailbox_manager,
              int client_id,
              bool software);
+  virtual ~GpuChannel();
 
   void Init(base::MessageLoopProxy* io_message_loop,
             base::WaitableEvent* shutdown_event);
@@ -127,9 +126,6 @@ class GpuChannel : public IPC::Listener,
   void LoseAllContexts();
   void MarkAllContextsLost();
 
-  // Destroy channel and all contained contexts.
-  void DestroySoon();
-
   // Called to add a listener for a particular message routing ID.
   // Returns true if succeeded.
   bool AddRoute(int32 route_id, IPC::Listener* listener);
@@ -154,11 +150,7 @@ class GpuChannel : public IPC::Listener,
 
   uint64 GetMemoryUsage();
 
- protected:
-  virtual ~GpuChannel();
-
  private:
-  friend class base::RefCountedThreadSafe<GpuChannel>;
   friend class GpuChannelMessageFilter;
 
   void OnDestroy();
