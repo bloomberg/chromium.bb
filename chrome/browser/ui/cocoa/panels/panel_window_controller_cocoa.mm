@@ -96,17 +96,6 @@ const double kWidthOfMouseResizeArea = 15.0;
   [[self windowController] minimizeButtonClicked:0];
 }
 
-// Ignore key events if window cannot become key window to fix problem
-// where keyboard input is still going into a minimized panel even though
-// the app has been deactivated in -[PanelWindowControllerCocoa deactivate:].
-- (void)sendEvent:(NSEvent*)anEvent {
-  NSEventType eventType = [anEvent type];
-  if ((eventType == NSKeyDown || eventType == NSKeyUp) &&
-      ![self canBecomeKeyWindow])
-    return;
-  [super sendEvent:anEvent];
-}
-
 - (void)mouseMoved:(NSEvent*)event {
   // Cocoa does not support letting the application determine the edges that
   // can trigger the user resizing. To work around this, we track the mouse
@@ -611,13 +600,6 @@ const double kWidthOfMouseResizeArea = 15.0;
     return;
 
   [self onWindowDidResignKey];
-
-  // Make the window not user-resizable when it loses the focus. This is to
-  // solve the problem that the bottom edge of the active panel does not
-  // trigger the user-resizing if this panel stacks with another inactive
-  // panel at the bottom.
-  [[self window] setStyleMask:
-      [[self window] styleMask] & ~NSResizableWindowMask];
 }
 
 - (void)windowWillStartLiveResize:(NSNotification*)notification {
@@ -723,10 +705,33 @@ const double kWidthOfMouseResizeArea = 15.0;
   if (![[self window] isMainWindow])
     return;
 
-  // Cocoa does not support deactivating a window, so we deactivate the app.
   [NSApp deactivate];
 
-  // Deactivating the app does not trigger windowDidResignKey. Do it manually.
+  // Cocoa does not support deactivating a NSWindow explicitly. To work around
+  // this, we call orderOut and orderFront to force the window to lose its key
+  // window state.
+
+  // Before doing this, we need to disable screen updates to prevent flickering.
+  NSDisableScreenUpdates();
+
+  // If a panel is in stacked mode, the window has a background parent window.
+  // We need to detach it from its parent window before applying the ordering
+  // change and then put it back because otherwise tha background parent window
+  // might show up.
+  NSWindow* parentWindow = [[self window] parentWindow];
+  if (parentWindow)
+    [parentWindow removeChildWindow:[self window]];
+
+  [[self window] orderOut:nil];
+  [[self window] orderFront:nil];
+
+  if (parentWindow)
+    [parentWindow addChildWindow:[self window] ordered:NSWindowAbove];
+
+  NSEnableScreenUpdates();
+
+  // Though the above workaround causes the window to lose its key window state,
+  // it does not trigger the system to call windowDidResignKey.
   [self onWindowDidResignKey];
 }
 
@@ -740,6 +745,13 @@ const double kWidthOfMouseResizeArea = 15.0;
   }
 
   windowShim_->panel()->OnActiveStateChanged(false);
+
+  // Make the window not user-resizable when it loses the focus. This is to
+  // solve the problem that the bottom edge of the active panel does not
+  // trigger the user-resizing if this panel stacks with another inactive
+  // panel at the bottom.
+  [[self window] setStyleMask:
+      [[self window] styleMask] & ~NSResizableWindowMask];
 }
 
 - (void)preventBecomingKeyWindow:(BOOL)prevent {
