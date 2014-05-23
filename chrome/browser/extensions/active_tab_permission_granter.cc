@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -83,6 +84,13 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
           tab_id_,
           extension->id(),
           new_hosts));
+      // If more things ever need to know about this, we should consider making
+      // an observer class.
+      // It's important that this comes after the IPC is sent to the renderer,
+      // so that any tasks executing in the renderer occur after it has the
+      // updated permissions.
+      ActiveScriptController::GetForWebContents(web_contents())
+          ->OnActiveTabPermissionGranted(extension);
     }
   }
 }

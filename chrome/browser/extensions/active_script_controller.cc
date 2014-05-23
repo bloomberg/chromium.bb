@@ -101,6 +101,11 @@ void ActiveScriptController::RequestScriptInjection(
     LocationBarController::NotifyChange(web_contents());
 }
 
+void ActiveScriptController::OnActiveTabPermissionGranted(
+    const Extension* extension) {
+  RunPendingForExtension(extension);
+}
+
 void ActiveScriptController::OnAdInjectionDetected(
     const std::vector<std::string> ad_injectors) {
   // We're only interested in data if there are ad injectors detected.
@@ -149,17 +154,31 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
 
 LocationBarController::Action ActiveScriptController::OnClicked(
     const Extension* extension) {
+  DCHECK(ContainsKey(pending_requests_, extension->id()));
+  RunPendingForExtension(extension);
+  return LocationBarController::ACTION_NONE;
+}
+
+void ActiveScriptController::OnNavigated() {
+  LogUMA();
+  permitted_extensions_.clear();
+  pending_requests_.clear();
+}
+
+void ActiveScriptController::RunPendingForExtension(
+    const Extension* extension) {
   DCHECK(extension);
   PendingRequestMap::iterator iter =
       pending_requests_.find(extension->id());
-  DCHECK(iter != pending_requests_.end());
+  if (iter == pending_requests_.end())
+    return;
 
   content::NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
   // Refuse to run if there's no visible entry, because we have no idea of
   // determining if it's the proper page. This should rarely, if ever, happen.
   if (!visible_entry)
-    return LocationBarController::ACTION_NONE;
+    return;
 
   int page_id = visible_entry->GetPageID();
 
@@ -173,6 +192,8 @@ LocationBarController::Action ActiveScriptController::OnClicked(
 
   // Clicking to run the extension counts as granting it permission to run on
   // the given tab.
+  // The extension may already have active tab at this point, but granting
+  // it twice is essentially a no-op.
   TabHelper::FromWebContents(web_contents())->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
@@ -187,14 +208,6 @@ LocationBarController::Action ActiveScriptController::OnClicked(
 
   // Inform the location bar that the action is now gone.
   LocationBarController::NotifyChange(web_contents());
-
-  return LocationBarController::ACTION_NONE;
-}
-
-void ActiveScriptController::OnNavigated() {
-  LogUMA();
-  permitted_extensions_.clear();
-  pending_requests_.clear();
 }
 
 void ActiveScriptController::OnNotifyExtensionScriptExecution(

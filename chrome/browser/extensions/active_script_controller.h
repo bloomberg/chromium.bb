@@ -56,6 +56,11 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
                               int page_id,
                               const base::Closure& callback);
 
+  // Notifies the ActiveScriptController that an extension has been granted
+  // active tab permissions. This will run any pending injections for that
+  // extension.
+  void OnActiveTabPermissionGranted(const Extension* extension);
+
   // Notifies the ActiveScriptController of detected ad injection.
   void OnAdInjectionDetected(const std::vector<std::string> ad_injectors);
 
@@ -79,6 +84,9 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   };
   typedef std::vector<PendingRequest> PendingRequestList;
   typedef std::map<std::string, PendingRequestList> PendingRequestMap;
+
+  // Runs any pending injections for the corresponding extension.
+  void RunPendingForExtension(const Extension* extension);
 
   // Handles the NotifyExtensionScriptExecution message.
   void OnNotifyExtensionScriptExecution(const std::string& extension_id,

@@ -276,11 +276,27 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
 
   // Since we have active tab permissions, we shouldn't need user consent
   // anymore.
-  EXPECT_FALSE(
-      controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
 
-  // TODO(rdevlin.cronin): We should also implement/test that granting active
-  // tab permissions automatically runs any pending injections.
+  // Also test that granting active tab runs any pending tasks.
+  NavigateAndCommit(GURL("https://www.google.com"));
+  // Navigating should mean we need permission again.
+  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+
+  controller()->RequestScriptInjection(
+      extension,
+      GetPageId(),
+      GetExecutionCallbackForExtension(extension->id()));
+  EXPECT_TRUE(controller()->GetActionForExtension(extension));
+  EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
+
+  // Grant active tab.
+  active_tab_permission_granter->GrantIfRequested(extension);
+
+  // The pending injections should have run since active tab permission was
+  // granted.
+  EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
+  EXPECT_FALSE(controller()->GetActionForExtension(extension));
 }
 
 }  // namespace extensions
