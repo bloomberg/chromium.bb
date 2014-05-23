@@ -73,9 +73,8 @@ def OverrideConfigForTrybot(build_config, options):
     if my_config['internal']:
       my_config['overlays'] = constants.BOTH_OVERLAYS
 
-    # Most users don't have access to the pdf repository so disable pdf along
-    # with all other official_chrome useflags, so that we use the external
-    # chromium prebuilts.
+    # Most users don't have access to the internal repositories so disable
+    # them so that we use the external chromium prebuilts.
     useflags = my_config['useflags']
     if not options.remote_trybot and useflags:
       for chrome_use in official_chrome['useflags']:
@@ -1007,7 +1006,7 @@ beaglebone = arm.derive(brillo_non_testable, rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = _config(
-  useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF],
+  useflags=[constants.USE_CHROME_INTERNAL],
 )
 
 # This sets chromeos_official.
@@ -1205,11 +1204,6 @@ chrome_info = chromium_info.derive(
   description='Informational Chrome Uprev & Build (internal)',
 )
 
-# Config with the official flags except pdf.
-chrome_info_no_pdf = chrome_info.derive(
-  useflags=[y for y in official['useflags'] if y != constants.USE_CHROME_PDF],
-)
-
 chrome_perf = chrome_info.derive(
   description='Chrome Performance test bot',
   vm_tests=[],
@@ -1274,13 +1268,13 @@ chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
 )
 
 # WebRTC configurations.
-chrome_info_no_pdf.add_config('alex-webrtc-chrome-pfq-informational',
+chrome_info.add_config('alex-webrtc-chrome-pfq-informational',
   boards=['x86-alex'],
 )
-chrome_info_no_pdf.add_config('lumpy-webrtc-chrome-pfq-informational',
+chrome_info.add_config('lumpy-webrtc-chrome-pfq-informational',
   boards=['lumpy'],
 )
-chrome_info_no_pdf.add_config('daisy-webrtc-chrome-pfq-informational',
+chrome_info.add_config('daisy-webrtc-chrome-pfq-informational',
   arm,
   boards=['daisy'],
 )

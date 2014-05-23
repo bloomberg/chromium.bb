@@ -167,7 +167,6 @@ CHROME_PGO_URL = ('gs://chromeos-prebuilt/pgo-job/canonicals/'
 
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'
-USE_CHROME_PDF = 'chrome_pdf'
 USE_PGO_GENERATE = 'pgo_generate'
 USE_PGO_USE = 'pgo_use'
 

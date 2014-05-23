@@ -87,8 +87,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -185,8 +184,7 @@
         "use_lkgm": true,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -860,7 +858,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -2002,7 +1999,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -2292,7 +2288,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -2490,8 +2485,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -2591,7 +2585,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -2710,7 +2703,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -2812,7 +2804,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -2898,7 +2889,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -2999,8 +2989,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -3100,7 +3089,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -3511,7 +3499,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -3619,7 +3606,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -3707,7 +3693,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -4217,7 +4202,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -4325,7 +4309,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -4429,7 +4412,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -4517,7 +4499,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -4619,7 +4600,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -5293,8 +5273,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -5485,7 +5464,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -5606,7 +5584,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -5714,7 +5691,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -5818,7 +5794,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -5922,7 +5897,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -6010,7 +5984,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -6109,8 +6082,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -6206,7 +6178,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -6400,8 +6371,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -6596,7 +6566,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -6987,7 +6956,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -7181,8 +7149,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -7377,7 +7344,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -7481,7 +7447,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -7673,7 +7638,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -7771,7 +7735,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -8439,8 +8402,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -8635,7 +8597,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -8756,7 +8717,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -8860,7 +8820,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -8964,7 +8923,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -9052,7 +9010,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -9175,7 +9132,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -9285,7 +9241,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -9379,7 +9334,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -9489,7 +9443,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -9599,7 +9552,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -9982,7 +9934,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -10274,7 +10225,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -10373,8 +10323,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -10470,7 +10419,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -10664,8 +10612,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -10853,8 +10800,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -10956,7 +10902,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -11053,8 +10998,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -11244,7 +11188,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -11532,7 +11475,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -11726,8 +11668,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -11922,7 +11863,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -12214,7 +12154,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -12408,8 +12347,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -12604,7 +12542,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -12707,8 +12644,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -12806,7 +12742,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -13000,8 +12935,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -13196,7 +13130,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -13494,7 +13427,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -13595,8 +13527,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -13787,7 +13718,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -13884,8 +13814,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -13982,7 +13911,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -14270,7 +14198,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -14464,8 +14391,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -14660,7 +14586,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -14952,7 +14877,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -15146,8 +15070,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -15342,7 +15265,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -15959,7 +15881,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -16067,7 +15988,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -16155,7 +16075,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -16447,7 +16366,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -16641,8 +16559,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -16837,7 +16754,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -17129,7 +17045,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -17323,8 +17238,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -17519,7 +17433,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -17811,7 +17724,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -18007,8 +17919,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -18203,7 +18114,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi",
             "highdpi"
@@ -18307,8 +18217,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -18406,7 +18315,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -18502,8 +18410,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -18601,7 +18508,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -18795,8 +18701,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -18893,8 +18798,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -19082,8 +18986,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -19185,7 +19088,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -19312,7 +19214,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -19422,7 +19323,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -19516,7 +19416,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -19626,7 +19525,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -19736,7 +19634,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -19837,8 +19734,7 @@
         "use_lkgm": true,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -20129,8 +20025,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -20422,7 +20317,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -20524,7 +20418,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -20718,8 +20611,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -20914,7 +20806,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -21491,8 +21382,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -21687,7 +21577,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -21808,7 +21697,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -21912,7 +21800,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -22016,7 +21903,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -22104,7 +21990,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -22396,7 +22281,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -22688,7 +22572,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -22786,7 +22669,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -22980,8 +22862,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -23176,7 +23057,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -23373,7 +23253,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -23470,7 +23349,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -23666,8 +23544,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -23855,8 +23732,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -23960,7 +23836,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -24085,7 +23960,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -24193,7 +24067,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -24281,7 +24154,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -24408,7 +24280,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -24518,7 +24389,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -24612,7 +24482,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -24722,7 +24591,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -24832,7 +24700,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -25130,7 +24997,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -25537,7 +25403,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -25641,7 +25506,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -25729,7 +25593,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -25827,7 +25690,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -26119,7 +25981,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -26217,7 +26078,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -26411,8 +26271,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -26607,7 +26466,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -26705,7 +26563,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -26899,8 +26756,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -27097,7 +26953,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -27797,7 +27652,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -27905,7 +27759,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -28009,7 +27862,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -28109,7 +27961,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -28209,7 +28060,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -28297,7 +28147,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -28415,8 +28264,7 @@
                 "use_lkgm": false,
                 "use_sdk": true,
                 "useflags": [
-                    "chrome_internal",
-                    "chrome_pdf"
+                    "chrome_internal"
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
@@ -28513,8 +28361,7 @@
                 "use_lkgm": false,
                 "use_sdk": true,
                 "useflags": [
-                    "chrome_internal",
-                    "chrome_pdf"
+                    "chrome_internal"
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
@@ -28609,8 +28456,7 @@
                 "use_lkgm": false,
                 "use_sdk": true,
                 "useflags": [
-                    "chrome_internal",
-                    "chrome_pdf"
+                    "chrome_internal"
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
@@ -28705,8 +28551,7 @@
                 "use_lkgm": false,
                 "use_sdk": true,
                 "useflags": [
-                    "chrome_internal",
-                    "chrome_pdf"
+                    "chrome_internal"
                 ],
                 "usepkg_build_packages": true,
                 "usepkg_setup_board": true,
@@ -28787,8 +28632,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -28885,8 +28729,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -29172,7 +29015,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -29366,8 +29208,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -29562,7 +29403,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -30167,7 +30007,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -30275,7 +30114,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -30379,7 +30217,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -30483,7 +30320,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -30571,7 +30407,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -31176,7 +31011,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -31284,7 +31118,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -31388,7 +31221,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -31492,7 +31324,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -31580,7 +31411,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -32090,7 +31920,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -32198,7 +32027,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -32302,7 +32130,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -32390,7 +32217,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -32682,7 +32508,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -32876,8 +32701,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -33065,8 +32889,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -33170,7 +32993,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -33558,7 +33380,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -33752,8 +33573,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -33948,7 +33768,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -35223,7 +35042,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35331,7 +35149,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35435,7 +35252,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35539,7 +35355,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35643,7 +35458,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35747,7 +35561,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -35835,7 +35648,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -35960,7 +35772,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -36068,7 +35879,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -36172,7 +35982,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -36276,7 +36085,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -36364,7 +36172,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -36466,7 +36273,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -37235,8 +37041,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -37431,7 +37236,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -37556,7 +37360,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -37664,7 +37467,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -37768,7 +37570,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -37872,7 +37673,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -37976,7 +37776,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -38064,7 +37863,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -38166,8 +37964,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -38357,7 +38154,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -38645,7 +38441,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -38839,8 +38634,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -39035,7 +38829,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -39137,7 +38930,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -39331,8 +39123,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -39529,7 +39320,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -39631,7 +39421,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -39827,8 +39616,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -40023,7 +39811,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -40221,8 +40008,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -40415,7 +40201,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -40703,7 +40488,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -40897,8 +40681,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -41093,7 +40876,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -41869,7 +41651,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -42161,7 +41942,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -42355,8 +42135,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -42551,7 +42330,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -42653,7 +42431,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -42847,8 +42624,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -43043,7 +42819,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -43623,8 +43398,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -43812,8 +43586,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -43917,7 +43690,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -44042,7 +43814,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -44146,7 +43917,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -44234,7 +44004,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -44361,7 +44130,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -44471,7 +44239,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -44565,7 +44332,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -44675,7 +44441,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -44785,7 +44550,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -45079,7 +44843,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -45658,7 +45421,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -46234,7 +45996,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -46336,7 +46097,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -46531,7 +46291,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug"
         ],
         "usepkg_build_packages": true,
@@ -46627,8 +46386,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -46825,7 +46583,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -47215,8 +46972,7 @@
         "use_lkgm": false,
         "use_sdk": true,
         "useflags": [
-            "chrome_internal",
-            "chrome_pdf"
+            "chrome_internal"
         ],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
@@ -47411,7 +47167,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -47536,7 +47291,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -47640,7 +47394,6 @@
                 "use_sdk": true,
                 "useflags": [
                     "chrome_internal",
-                    "chrome_pdf",
                     "-cros-debug",
                     "-highdpi"
                 ],
@@ -47728,7 +47481,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -48022,7 +47774,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -48310,7 +48061,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
@@ -48604,7 +48354,6 @@
         "use_sdk": true,
         "useflags": [
             "chrome_internal",
-            "chrome_pdf",
             "-cros-debug",
             "-highdpi"
         ],
