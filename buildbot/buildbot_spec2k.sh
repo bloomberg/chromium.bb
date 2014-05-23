@@ -64,14 +64,25 @@ handle-error() {
 # SCRIPT ACTION
 ######################################################################
 
-clobber() {
+clobber-scons() {
   if [ "${CLOBBER}" == "yes" ] ; then
     rm -rf scons-out
+  fi
+}
+
+clobber-harness() {
+  if [ "${CLOBBER}" == "yes" ] ; then
     rm -rf out
   fi
 }
 
+clobber() {
+  clobber-scons
+  clobber-harness
+}
+
 download-spec2k-harness() {
+  echo "@@@BUILD_STEP Download spec2k harness@@@"
   mkdir -p out
   ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
     gs://nativeclient-private/cpu2000.tar.bz2 out/cpu2000.tar.bz2
@@ -280,6 +291,7 @@ pnacl-trybot-arm-hw() {
 
 pnacl-trybot-x8632() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-32" "bitcode"
   build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
@@ -297,7 +309,11 @@ pnacl-trybot-x8632() {
 }
 
 pnacl-x86-64-zero-based-sandbox() {
-  clobber
+  # Clobber scons and rebuild sel_ldr with zero-based sandbox support.
+  # If sel_ldr was built to a different directory and the test
+  # runner knew where to find that separate sel_ldr, then we wouldn't
+  # need to clobber here.
+  clobber-scons
   export NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX=1
   build-prerequisites "x86-64" "bitcode" "x86_64_zero_based_sandbox=1"
   build-tests SetupPnaclX8664ZBSOpt \
@@ -308,6 +324,7 @@ pnacl-x86-64-zero-based-sandbox() {
 
 pnacl-trybot-x8664() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-64" "bitcode"
   build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
@@ -327,6 +344,7 @@ pnacl-trybot-x8664() {
 
 pnacl-arm-buildonly() {
   clobber
+  download-spec2k-harness
   build-prerequisites "arm" "bitcode"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_UPLOAD}" regular
   build-tests SetupPnaclPexeOpt all 0 1
@@ -355,6 +373,7 @@ pnacl-arm-hw() {
 
 pnacl-x8664() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-64" "bitcode"
   local setups="SetupPnaclX8664Opt \
                SetupPnaclTranslatorX8664Opt \
@@ -371,6 +390,7 @@ pnacl-x8664() {
 
 pnacl-x8632() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-32" "bitcode"
   local setups="SetupPnaclX8632Opt \
                 SetupPnaclTranslatorX8632Opt \
@@ -386,6 +406,7 @@ pnacl-x8632() {
 
 nacl-x8632() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-32" ""
   local setups="SetupNaclX8632 \
                 SetupNaclX8632Opt"
@@ -398,6 +419,7 @@ nacl-x8632() {
 
 nacl-x8664() {
   clobber
+  download-spec2k-harness
   build-prerequisites "x86-64" ""
   local setups="SetupNaclX8664 \
                 SetupNaclX8664Opt"
