@@ -2171,6 +2171,10 @@ gpu.dll!gpu::gles2::ShaderTranslator::GetStringForOptionsThatWouldEffectCompilat
 *!gpu::gles2::ShaderTranslatorTest_OptionsString_Test::TestBody
 
 UNINITIALIZED READ
-name=374410
+name=bug_374410
 *!ui::NativeThemeWin::PaintScrollbarTrack
 *!ui::NativeThemeWin::PaintDirect
+
+UNINITIALIZED READ
+name=bug_376814
+*!content::PepperPluginInstanceImpl::UpdateLayer
