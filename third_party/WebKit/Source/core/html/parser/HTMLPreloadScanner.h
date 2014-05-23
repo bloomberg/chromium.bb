@@ -90,6 +90,8 @@ private:
     const KURL m_documentURL;
     KURL m_predictedBaseElementURL;
     bool m_inStyle;
+    bool m_inPicture;
+    String m_pictureSourceURL;
     size_t m_templateCount;
     RefPtr<MediaValues> m_mediaValues;
 
