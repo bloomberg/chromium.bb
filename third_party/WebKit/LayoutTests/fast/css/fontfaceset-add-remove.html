@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<style>
+@font-face {
+    font-family: TestFont;
+    src: local(Arial);
+}
+@font-face {
+    font-family: Ahem;
+    src: url(../../resources/Ahem.ttf);
+}
+#test {
+    font-family: TestFont;
+}
+#arial {
+    font-family: Arial;
+}
+#ahem {
+    font-family: Ahem;
+}
+</style>
+<script>
+description('Tests that adding/removing a FontFace to/from FontFaceSet trigger font update.');
+
+window.jsTestIsAsync = true;
+
+function runTest() {
+    ahemFace = new FontFace('TestFont', 'url(../../resources/Ahem.ttf)', {});
+    ahemFace.load().then(verify);
+}
+
+function verify() {
+    testElement = document.getElementById('test');
+    arialElement = document.getElementById('arial');
+    ahemElement = document.getElementById('ahem');
+
+    shouldBe('testElement.offsetWidth', 'arialElement.offsetWidth');
+    document.fonts.add(ahemFace);
+    shouldBe('testElement.offsetWidth', 'ahemElement.offsetWidth');
+    document.fonts.delete(ahemFace);
+    shouldBe('testElement.offsetWidth', 'arialElement.offsetWidth');
+    document.fonts.add(ahemFace);
+    shouldBe('testElement.offsetWidth', 'ahemElement.offsetWidth');
+    document.fonts.clear();
+    shouldBe('testElement.offsetWidth', 'arialElement.offsetWidth');
+
+    finishJSTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<span id="test">abcdefg</span>
+<span id="arial">abcdefg</span>
+<span id="ahem">abcdefg</span>
+</body>
+</html>

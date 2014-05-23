@@ -87,7 +87,7 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
         clients[i]->fontsNeedUpdate(this);
 }
 
-void CSSFontSelector::fontLoaded()
+void CSSFontSelector::fontFaceInvalidated()
 {
     dispatchInvalidationCallbacks();
 }

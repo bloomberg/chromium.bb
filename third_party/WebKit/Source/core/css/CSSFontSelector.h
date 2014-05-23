@@ -62,7 +62,7 @@ public:
     void clearDocument();
 #endif
 
-    void fontLoaded();
+    void fontFaceInvalidated();
 
     // FontCacheClient implementation
     virtual void fontCacheInvalidated() OVERRIDE;

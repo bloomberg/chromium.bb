@@ -297,19 +297,22 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
     fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
     if (fontFace->loadStatus() == FontFace::Loading)
         addToLoadingFonts(fontFace);
+    fontSelector->fontFaceInvalidated();
 }
 
 void FontFaceSet::clear()
 {
-    if (!inActiveDocumentContext())
+    if (!inActiveDocumentContext() || m_nonCSSConnectedFaces.isEmpty())
         return;
-    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
     for (ListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it) {
         fontFaceCache->removeFontFace(it->get(), false);
         if ((*it)->loadStatus() == FontFace::Loading)
             removeFromLoadingFonts(*it);
     }
     m_nonCSSConnectedFaces.clear();
+    fontSelector->fontFaceInvalidated();
 }
 
 bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
@@ -323,9 +326,11 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
     ListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.find(fontFace);
     if (it != m_nonCSSConnectedFaces.end()) {
         m_nonCSSConnectedFaces.remove(it);
-        document()->styleEngine()->fontSelector()->fontFaceCache()->removeFontFace(fontFace, false);
+        CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+        fontSelector->fontFaceCache()->removeFontFace(fontFace, false);
         if (fontFace->loadStatus() == FontFace::Loading)
             removeFromLoadingFonts(fontFace);
+        fontSelector->fontFaceInvalidated();
         return true;
     }
     if (isCSSConnectedFontFace(fontFace))

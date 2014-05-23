@@ -78,7 +78,7 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 
 void CSSSegmentedFontFace::fontLoadWaitLimitExceeded(CSSFontFace*)
 {
-    m_fontSelector->fontLoaded();
+    m_fontSelector->fontFaceInvalidated();
     pruneTable();
 }
 
