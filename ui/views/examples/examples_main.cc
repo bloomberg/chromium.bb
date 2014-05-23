@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
   aura::Env::CreateInstance(true);
+  aura::Env::GetInstance()->set_context_factory(context_factory.get());
 
   ui::InitializeInputMethodForTesting();
 
