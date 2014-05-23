@@ -67,6 +67,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   struct ResourceRecord {
     int64 resource_id;
     GURL url;
+
+    ResourceRecord() {}
+    ResourceRecord(int64 id, GURL url) : resource_id(id), url(url) {}
   };
 
   // Reads next available ids from the database. Returns OK if they are
@@ -114,7 +117,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Returns OK they are successfully written. Otherwise, returns an error.
   Status WriteRegistration(
       const RegistrationData& registration,
-      const std::vector<ResourceRecord>& resources);
+      const std::vector<ResourceRecord>& resources,
+      std::vector<int64>* newly_purgeable_resources);
 
   // Updates a registration for |registration_id| to an active state. Returns OK
   // if it's successfully updated. Otherwise, returns an error.
@@ -134,7 +138,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // deleted or not found in the database. Otherwise, returns an error.
   Status DeleteRegistration(
       int64 registration_id,
-      const GURL& origin);
+      const GURL& origin,
+      std::vector<int64>* newly_purgeable_resources);
 
   // As new resources are put into the diskcache, they go into an uncommitted
   // list. When a registration is saved that refers to those ids, they're
@@ -171,7 +176,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // resource records. Resources are moved to the purgeable list. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,
   // returns an error.
-  Status DeleteAllDataForOrigin(const GURL& origin);
+  Status DeleteAllDataForOrigin(
+      const GURL& origin,
+      std::vector<int64>* newly_purgeable_resources);
 
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }
@@ -214,6 +221,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // returns an error.
   Status DeleteResourceRecords(
       int64 version_id,
+      std::vector<int64>* newly_purgeable_resources,
       leveldb::WriteBatch* batch);
 
   // Reads resource ids for |id_key_prefix| from the database. Returns OK if

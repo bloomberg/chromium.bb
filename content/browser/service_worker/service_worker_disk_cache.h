@@ -16,11 +16,11 @@ namespace content {
 // TODO(michaeln): If this reuse sticks, refactor/move the
 // resused classes to a more common location.
 
-class ServiceWorkerDiskCache
+class CONTENT_EXPORT ServiceWorkerDiskCache
     : public appcache::AppCacheDiskCache {
 };
 
-class ServiceWorkerResponseReader
+class CONTENT_EXPORT ServiceWorkerResponseReader
     : public appcache::AppCacheResponseReader {
  protected:
   // Should only be constructed by the storage class.
@@ -30,7 +30,7 @@ class ServiceWorkerResponseReader
       ServiceWorkerDiskCache* disk_cache);
 };
 
-class ServiceWorkerResponseWriter
+class CONTENT_EXPORT ServiceWorkerResponseWriter
     : public appcache::AppCacheResponseWriter {
  protected:
   // Should only be constructed by the storage class.
@@ -40,7 +40,7 @@ class ServiceWorkerResponseWriter
       ServiceWorkerDiskCache* disk_cache);
 };
 
-struct HttpResponseInfoIOBuffer
+struct CONTENT_EXPORT HttpResponseInfoIOBuffer
     : public appcache::HttpResponseInfoIOBuffer {
  public:
   HttpResponseInfoIOBuffer() : appcache::HttpResponseInfoIOBuffer() {}

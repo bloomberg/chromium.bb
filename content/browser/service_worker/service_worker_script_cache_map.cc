@@ -50,8 +50,8 @@ void ServiceWorkerScriptCacheMap::GetResources(
   DCHECK(resources->empty());
   for (ResourceIDMap::const_iterator it = resource_ids_.begin();
        it != resource_ids_.end(); ++it) {
-    ServiceWorkerDatabase::ResourceRecord record = { it->second, it->first };
-    resources->push_back(record);
+    resources->push_back(
+        ServiceWorkerDatabase::ResourceRecord(it->second, it->first));
   }
 }
 

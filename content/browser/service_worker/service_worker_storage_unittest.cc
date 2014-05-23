@@ -2,21 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_storage.h"
-
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::IOBuffer;
+using net::WrappedIOBuffer;
 
 namespace content {
 
 namespace {
+
+typedef ServiceWorkerDatabase::RegistrationData RegistrationData;
+typedef ServiceWorkerDatabase::ResourceRecord ResourceRecord;
 
 void StatusCallback(bool* was_called,
                     ServiceWorkerStatusCode* result,
@@ -63,6 +73,74 @@ ServiceWorkerStorage::GetAllRegistrationInfosCallback MakeGetAllCallback(
   return base::Bind(&GetAllCallback, was_called, all);
 }
 
+void OnIOComplete(int* rv_out, int rv) {
+  *rv_out = rv;
+}
+
+void WriteBasicResponse(ServiceWorkerStorage* storage, int64 id) {
+  scoped_ptr<ServiceWorkerResponseWriter> writer =
+      storage->CreateResponseWriter(id);
+
+  const char kHttpHeaders[] =
+      "HTTP/1.0 200 HONKYDORY\0Content-Length: 6\0\0";
+  const char kHttpBody[] = "Hello\0";
+  scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBody));
+  std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
+  scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+  info->request_time = base::Time::Now();
+  info->response_time = base::Time::Now();
+  info->was_cached = false;
+  info->headers = new net::HttpResponseHeaders(raw_headers);
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+      new HttpResponseInfoIOBuffer(info.release());
+
+  int rv = -1234;
+  writer->WriteInfo(info_buffer, base::Bind(&OnIOComplete, &rv));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(0, rv);
+
+  rv = -1234;
+  writer->WriteData(body, arraysize(kHttpBody),
+                    base::Bind(&OnIOComplete, &rv));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(static_cast<int>(arraysize(kHttpBody)), rv);
+}
+
+bool VerifyBasicResponse(ServiceWorkerStorage* storage, int64 id,
+                         bool expected_positive_result) {
+  const char kExpectedHttpBody[] = "Hello\0";
+  scoped_ptr<ServiceWorkerResponseReader> reader =
+      storage->CreateResponseReader(id);
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+      new HttpResponseInfoIOBuffer();
+  int rv = -1234;
+  reader->ReadInfo(info_buffer, base::Bind(&OnIOComplete, &rv));
+  base::RunLoop().RunUntilIdle();
+  if (expected_positive_result)
+    EXPECT_LT(0, rv);
+  if (rv <= 0)
+    return false;
+
+  const int kBigEnough = 512;
+  scoped_refptr<net::IOBuffer> buffer = new IOBuffer(kBigEnough);
+  rv = -1234;
+  reader->ReadData(buffer, kBigEnough, base::Bind(&OnIOComplete, &rv));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(static_cast<int>(arraysize(kExpectedHttpBody)), rv);
+  if (rv <= 0)
+    return false;
+
+  bool status_match =
+      std::string("HONKYDORY") ==
+          info_buffer->http_info->headers->GetStatusText();
+  bool data_match =
+      std::string(kExpectedHttpBody) == std::string(buffer->data());
+
+  EXPECT_TRUE(status_match);
+  EXPECT_TRUE(data_match);
+  return status_match && data_match;
+}
+
 }  // namespace
 
 class ServiceWorkerStorageTest : public testing::Test {
@@ -88,6 +166,19 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   ServiceWorkerStorage* storage() { return context_->storage(); }
 
+  // A static class method for friendliness.
+  static void VerifyPurgeableListStatusCallback(
+      ServiceWorkerDatabase* database,
+      std::set<int64> *purgeable_ids,
+      bool* was_called,
+      ServiceWorkerStatusCode* result,
+      ServiceWorkerStatusCode status) {
+    *was_called = true;
+    *result = status;
+    EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+              database->GetPurgeableResourceIds(purgeable_ids));
+  }
+
  protected:
   scoped_ptr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
@@ -95,9 +186,9 @@ class ServiceWorkerStorageTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
-  const GURL kScope("http://www.test.com/scope/*");
-  const GURL kScript("http://www.test.com/script.js");
-  const GURL kDocumentUrl("http://www.test.com/scope/document.html");
+  const GURL kScope("http://www.test.not/scope/*");
+  const GURL kScript("http://www.test.not/script.js");
+  const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64 kRegistrationId = 0;
   const int64 kVersionId = 0;
 
@@ -310,9 +401,9 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 }
 
 TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
-  const GURL kScope("http://www.test.com/scope/*");
-  const GURL kScript("http://www.test.com/script.js");
-  const GURL kDocumentUrl("http://www.test.com/scope/document.html");
+  const GURL kScope("http://www.test.not/scope/*");
+  const GURL kScript("http://www.test.not/script.js");
+  const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64 kRegistrationId = 0;
   const int64 kVersionId = 0;
 
@@ -440,6 +531,82 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   ASSERT_TRUE(was_called);
   EXPECT_TRUE(all_registrations.empty());
   was_called = false;
+}
+
+TEST_F(ServiceWorkerStorageTest, ResourceIdsAreStoredAndPurged) {
+  storage()->LazyInitialize(base::Bind(&base::DoNothing));
+  base::RunLoop().RunUntilIdle();
+  const GURL kScope("http://www.test.not/scope/*");
+  const GURL kScript("http://www.test.not/script.js");
+  const GURL kImport("http://www.test.not/import.js");
+  const GURL kDocumentUrl("http://www.test.not/scope/document.html");
+  const int64 kRegistrationId = storage()->NewRegistrationId();
+  const int64 kVersionId = storage()->NewVersionId();
+  const int64 kResourceId1 = storage()->NewResourceId();
+  const int64 kResourceId2 = storage()->NewResourceId();
+
+  // Cons up a new registration+version with two script resources.
+  RegistrationData data;
+  data.registration_id = kRegistrationId;
+  data.scope = kScope;
+  data.script = kScript;
+  data.version_id = kVersionId;
+  data.is_active = false;
+  std::vector<ResourceRecord> resources;
+  resources.push_back(ResourceRecord(kResourceId1, kScript));
+  resources.push_back(ResourceRecord(kResourceId2, kImport));
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      storage()->GetOrCreateRegistration(data, resources);
+  registration->pending_version()->SetStatus(ServiceWorkerVersion::NEW);
+
+  // Add the resources ids to the uncommitted list.
+  std::set<int64> resource_ids;
+  resource_ids.insert(kResourceId1);
+  resource_ids.insert(kResourceId2);
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->WriteUncommittedResourceIds(resource_ids));
+
+  // And dump something in the disk cache for them.
+  WriteBasicResponse(storage(), kResourceId1);
+  WriteBasicResponse(storage(), kResourceId2);
+  EXPECT_TRUE(VerifyBasicResponse(storage(), kResourceId1, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), kResourceId2, true));
+
+  // Storing the registration/version should take the resources ids out
+  // of the uncommitted list.
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+  storage()->StoreRegistration(registration, registration->pending_version(),
+                               MakeStatusCallback(&was_called, &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  std::set<int64> verify_ids;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetUncommittedResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
+
+  // Deleting it should result in the resources being added to the
+  // purgeable list and then doomed in the disk cache and removed from
+  // that list.
+  was_called = false;
+  verify_ids.clear();
+  storage()->DeleteRegistration(
+      registration->id(), kScope.GetOrigin(),
+      base::Bind(&VerifyPurgeableListStatusCallback,
+                 base::Unretained(storage()->database_.get()),
+                 &verify_ids, &was_called, &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
+
+  EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId1, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), kResourceId2, false));
 }
 
 }  // namespace content

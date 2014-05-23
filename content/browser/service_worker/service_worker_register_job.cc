@@ -89,7 +89,6 @@ void ServiceWorkerRegisterJob::set_registration(
 
 ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() {
   DCHECK(phase_ >= REGISTER) << phase_;
-  DCHECK(internal_.registration);
   return internal_.registration;
 }
 

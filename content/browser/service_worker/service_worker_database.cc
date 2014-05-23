@@ -412,7 +412,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     const RegistrationData& registration,
-    const std::vector<ResourceRecord>& resources) {
+    const std::vector<ResourceRecord>& resources,
+    std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Status status = LazyOpen(true);
   if (status != STATUS_OK)
@@ -441,7 +442,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     // suppported, so resource ids should not be overlapped between
     // |registration| and |old_registration|.
     // TODO(nhiroki): Add DCHECK to make sure the overlap does not exist.
-    status = DeleteResourceRecords(old_registration.version_id, &batch);
+    status = DeleteResourceRecords(
+        old_registration.version_id, newly_purgeable_resources, &batch);
     if (status != STATUS_OK)
       return status;
   }
@@ -519,7 +521,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
     int64 registration_id,
-    const GURL& origin) {
+    const GURL& origin,
+    std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
@@ -551,7 +554,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
   for (std::vector<RegistrationData>::const_iterator itr =
            registrations.begin(); itr != registrations.end(); ++itr) {
     if (itr->registration_id == registration_id) {
-      status = DeleteResourceRecords(itr->version_id, &batch);
+      status = DeleteResourceRecords(
+          itr->version_id, newly_purgeable_resources, &batch);
       if (status != STATUS_OK)
         return status;
       break;
@@ -592,7 +596,8 @@ ServiceWorkerDatabase::ClearPurgeableResourceIds(const std::set<int64>& ids) {
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
-    const GURL& origin) {
+    const GURL& origin,
+    std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
@@ -616,7 +621,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
   for (std::vector<RegistrationData>::const_iterator itr =
            registrations.begin(); itr != registrations.end(); ++itr) {
     batch.Delete(CreateRegistrationKey(itr->registration_id, origin));
-    status = DeleteResourceRecords(itr->version_id, &batch);
+    status = DeleteResourceRecords(
+        itr->version_id, newly_purgeable_resources, &batch);
     if (status != STATUS_OK)
       return status;
   }
@@ -768,6 +774,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
     int64 version_id,
+    std::vector<int64>* newly_purgeable_resources,
     leveldb::WriteBatch* batch) {
   DCHECK(batch);
 
@@ -796,6 +803,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
     // Currently resource sharing across versions and registrations is not
     // supported, so we can purge this without caring about it.
     PutPurgeableResourceIdToBatch(resource_id, batch);
+    newly_purgeable_resources->push_back(resource_id);
   }
   return STATUS_OK;
 }
