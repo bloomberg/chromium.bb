@@ -84,7 +84,9 @@ public:
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);
     // Update graphics layer position and bounds.
+
     void updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType, const RenderLayer* compositingContainer);
+
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
@@ -207,6 +209,19 @@ public:
 private:
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const RenderObject*,  const Vector<GraphicsLayerPaintInfo>& layers);
 
+    // Helper methods to updateGraphicsLayerGeometry:
+    void computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
+    void updateAncestorClippingLayerGeometry(const RenderLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
+    void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
+    void updateChildTransformLayerGeometry();
+    void updateMaskLayerGeometry();
+    void updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds);
+    void updateForegroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize, const IntRect& clippingBox);
+    void updateBackgroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize);
+    void updateReflectionLayerGeometry();
+    void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
+    void updateChildClippingMaskLayerGeometry();
+
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
 
@@ -271,7 +286,7 @@ private:
     void updateAfterWidgetResize();
     void updateCompositingReasons();
 
-    bool hasVisibleNonCompositingDescendantLayers() const;
+    static bool hasVisibleNonCompositingDescendant(RenderLayer* parent);
 
     void paintsIntoCompositedAncestorChanged();
 
