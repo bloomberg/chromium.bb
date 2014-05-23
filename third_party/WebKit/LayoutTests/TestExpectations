@@ -926,11 +926,6 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
-# Need rebaseline once all tests are in ForceCompositingMode.
-crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg-canvas.html [ ImageOnlyFailure ]
-crbug.com/361729 [ Mac ] virtual/gpu/fast/hidpi/image-srcset-svg.html [ ImageOnlyFailure ]
-crbug.com/361729 [ Mac ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure ]
-
 # Added in r171958 and timing out on some platforms ever since.
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Timeout ]
 crbug.com/308992 svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
