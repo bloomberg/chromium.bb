@@ -52,6 +52,7 @@ class GCMDriver : public IdentityProvider::Observer {
   GCMDriver(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
       scoped_ptr<IdentityProvider> identity_provider,
+      const GCMClient::ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,

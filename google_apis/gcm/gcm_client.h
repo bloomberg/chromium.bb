@@ -20,10 +20,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace checkin_proto {
-class ChromeBuildProto;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -56,6 +52,33 @@ class GCM_EXPORT GCMClient {
     TTL_EXCEEDED,
     // Other errors.
     UNKNOWN_ERROR
+  };
+
+  enum ChromePlatform {
+    PLATFORM_WIN,
+    PLATFORM_MAC,
+    PLATFORM_LINUX,
+    PLATFORM_CROS,
+    PLATFORM_IOS,
+    PLATFORM_ANDROID,
+    PLATFORM_UNKNOWN
+  };
+
+  enum ChromeChannel {
+    CHANNEL_STABLE,
+    CHANNEL_BETA,
+    CHANNEL_DEV,
+    CHANNEL_CANARY,
+    CHANNEL_UNKNOWN
+  };
+
+  struct GCM_EXPORT ChromeBuildInfo {
+    ChromeBuildInfo();
+    ~ChromeBuildInfo();
+
+    ChromePlatform platform;
+    ChromeChannel channel;
+    std::string version;
   };
 
   // Message data consisting of key-value pairs.
@@ -173,7 +196,7 @@ class GCM_EXPORT GCMClient {
 
   // Begins initialization of the GCM Client. This will not trigger a
   // connection.
-  // |chrome_build_proto|: chrome info, i.e., version, channel and etc.
+  // |chrome_build_info|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
   // |account_ids|: account IDs to be related to the device when checking in.
   // |blocking_task_runner|: for running blocking file tasks.
@@ -181,7 +204,7 @@ class GCM_EXPORT GCMClient {
   // |delegate|: the delegate whose methods will be called asynchronously in
   //             response to events and messages.
   virtual void Initialize(
-      const checkin_proto::ChromeBuildProto& chrome_build_proto,
+      const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const std::vector<std::string>& account_ids,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,

@@ -21,6 +21,7 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
@@ -115,6 +116,67 @@ GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
   return GCMClientImpl::UNKNOWN_ERROR;
 }
 
+void ToCheckinProtoVersion(
+    const GCMClient::ChromeBuildInfo& chrome_build_info,
+    checkin_proto::ChromeBuildProto* android_build_info) {
+  checkin_proto::ChromeBuildProto_Platform platform;
+  switch (chrome_build_info.platform) {
+    case GCMClient::PLATFORM_WIN:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_WIN;
+      break;
+    case GCMClient::PLATFORM_MAC:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_MAC;
+      break;
+    case GCMClient::PLATFORM_LINUX:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
+      break;
+    case GCMClient::PLATFORM_IOS:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_IOS;
+      break;
+    case GCMClient::PLATFORM_ANDROID:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_ANDROID;
+      break;
+    case GCMClient::PLATFORM_CROS:
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_CROS;
+      break;
+    case GCMClient::PLATFORM_UNKNOWN:
+      // For unknown platform, return as LINUX.
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
+      break;
+    default:
+      NOTREACHED();
+      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
+      break;
+  }
+  android_build_info->set_platform(platform);
+
+  checkin_proto::ChromeBuildProto_Channel channel;
+  switch (chrome_build_info.channel) {
+    case GCMClient::CHANNEL_STABLE:
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_STABLE;
+      break;
+    case GCMClient::CHANNEL_BETA:
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_BETA;
+      break;
+    case GCMClient::CHANNEL_DEV:
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_DEV;
+      break;
+    case GCMClient::CHANNEL_CANARY:
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_CANARY;
+      break;
+    case GCMClient::CHANNEL_UNKNOWN:
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
+      break;
+    default:
+      NOTREACHED();
+      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
+      break;
+  }
+  android_build_info->set_channel(channel);
+
+  android_build_info->set_chrome_version(chrome_build_info.version);
+}
+
 MessageType DecodeMessageType(const std::string& value) {
   if (kMessageTypeDeletedMessagesKey == value)
     return DELETED_MESSAGES;
@@ -201,7 +263,7 @@ GCMClientImpl::~GCMClientImpl() {
 }
 
 void GCMClientImpl::Initialize(
-    const checkin_proto::ChromeBuildProto& chrome_build_proto,
+    const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& path,
     const std::vector<std::string>& account_ids,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
@@ -220,7 +282,7 @@ void GCMClientImpl::Initialize(
   DCHECK(network_session_params);
   network_session_ = new net::HttpNetworkSession(*network_session_params);
 
-  chrome_build_proto_.CopyFrom(chrome_build_proto);
+  chrome_build_info_ = chrome_build_info;
   account_ids_ = account_ids;
 
   gcm_store_.reset(
@@ -280,7 +342,7 @@ void GCMClientImpl::InitializeMCSClient(
       net_log_.net_log(),
       &recorder_);
   mcs_client_ = internals_builder_->BuildMCSClient(
-      chrome_build_proto_.chrome_version(),
+      chrome_build_info_.version,
       clock_.get(),
       connection_factory_.get(),
       gcm_store_.get(),
@@ -333,11 +395,13 @@ void GCMClientImpl::StartCheckin() {
   if (checkin_request_.get())
     return;
 
+  checkin_proto::ChromeBuildProto chrome_build_proto;
+  ToCheckinProtoVersion(chrome_build_info_, &chrome_build_proto);
   CheckinRequest::RequestInfo request_info(device_checkin_info_.android_id,
                                            device_checkin_info_.secret,
                                            gservices_settings_.digest(),
                                            account_ids_,
-                                           chrome_build_proto_);
+                                           chrome_build_proto);
   checkin_request_.reset(
       new CheckinRequest(gservices_settings_.GetCheckinURL(),
                          request_info,

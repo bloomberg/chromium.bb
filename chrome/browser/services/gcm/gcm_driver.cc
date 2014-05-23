@@ -18,55 +18,9 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/system_encryptor.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace gcm {
-
-namespace {
-
-checkin_proto::ChromeBuildProto_Platform GetPlatform() {
-#if defined(OS_WIN)
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_WIN;
-#elif defined(OS_MACOSX)
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_MAC;
-#elif defined(OS_IOS)
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_IOS;
-#elif defined(OS_CHROMEOS)
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_CROS;
-#elif defined(OS_LINUX)
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
-#else
-  // For all other platforms, return as LINUX.
-  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
-#endif
-}
-
-std::string GetVersion() {
-  chrome::VersionInfo version_info;
-  return version_info.Version();
-}
-
-checkin_proto::ChromeBuildProto_Channel GetChannel() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_STABLE;
-    default:
-      NOTREACHED();
-      return checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
-  }
-}
-
-}  // namespace
 
 // Helper class to save tasks to run until we're ready to execute them.
 class GCMDriver::DelayedTaskController {
@@ -152,6 +106,7 @@ class GCMDriver::IOWorker : public GCMClient::Delegate {
   // Called on IO thread.
   void Initialize(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
+      const GCMClient::ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const std::vector<std::string>& account_ids,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -196,6 +151,7 @@ GCMDriver::IOWorker::~IOWorker() {
 
 void GCMDriver::IOWorker::Initialize(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
+    const GCMClient::ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const std::vector<std::string>& account_ids,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -204,12 +160,7 @@ void GCMDriver::IOWorker::Initialize(
 
   gcm_client_ = gcm_client_factory->BuildInstance();
 
-  checkin_proto::ChromeBuildProto chrome_build_proto;
-  chrome_build_proto.set_platform(GetPlatform());
-  chrome_build_proto.set_chrome_version(GetVersion());
-  chrome_build_proto.set_channel(GetChannel());
-
-  gcm_client_->Initialize(chrome_build_proto,
+  gcm_client_->Initialize(chrome_build_info,
                           store_path,
                           account_ids,
                           blocking_task_runner,
@@ -369,6 +320,7 @@ void GCMDriver::IOWorker::SetGCMRecording(bool recording) {
 GCMDriver::GCMDriver(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
     scoped_ptr<IdentityProvider> identity_provider,
+    const GCMClient::ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
@@ -394,6 +346,7 @@ GCMDriver::GCMDriver(
       base::Bind(&GCMDriver::IOWorker::Initialize,
                  base::Unretained(io_worker_.get()),
                  base::Passed(&gcm_client_factory),
+                 chrome_build_info,
                  store_path,
                  account_ids,
                  request_context,

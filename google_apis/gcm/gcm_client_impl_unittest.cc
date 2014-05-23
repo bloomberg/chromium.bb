@@ -444,8 +444,8 @@ void GCMClientImplTest::InitializeGCMClient() {
   clock()->Advance(base::TimeDelta::FromMilliseconds(1));
 
   // Actual initialization.
-  checkin_proto::ChromeBuildProto chrome_build_proto;
-  gcm_client_->Initialize(chrome_build_proto,
+  GCMClient::ChromeBuildInfo chrome_build_info;
+  gcm_client_->Initialize(chrome_build_info,
                           temp_directory_.path(),
                           std::vector<std::string>(),
                           message_loop_.message_loop_proxy(),

@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_driver.h"
+#include "chrome/browser/services/gcm/gcm_utils.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -101,6 +102,7 @@ GCMProfileService::GCMProfileService(
           SigninManagerFactory::GetForProfile(profile_),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
           login_ui_service)),
+      GetChromeBuildInfo(),
       profile_->GetPath().Append(chrome::kGCMStoreDirname),
       profile_->GetRequestContext(),
       content::BrowserThread::GetMessageLoopProxyForThread(

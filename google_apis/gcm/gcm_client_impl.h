@@ -81,7 +81,7 @@ class GCM_EXPORT GCMClientImpl
 
   // Overridden from GCMClient:
   virtual void Initialize(
-      const checkin_proto::ChromeBuildProto& chrome_build_proto,
+      const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const std::vector<std::string>& account_ids,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
@@ -249,7 +249,7 @@ class GCM_EXPORT GCMClientImpl
 
   // Information about the chrome build.
   // TODO(fgorski): Check if it can be passed in constructor and made const.
-  checkin_proto::ChromeBuildProto chrome_build_proto_;
+  ChromeBuildInfo chrome_build_info_;
 
   // Persistent data store for keeping device credentials, messages and user to
   // serial number mappings.

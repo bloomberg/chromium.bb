@@ -197,6 +197,7 @@ void GCMDriverTest::CreateDriver(
           base::MessageLoopProxy::current(),
           io_thread_.message_loop_proxy())).Pass(),
       identity_provider_owner_.PassAs<IdentityProvider>(),
+      GCMClient::ChromeBuildInfo(),
       temp_dir_.path(),
       request_context,
       base::MessageLoopProxy::current(),
