@@ -176,14 +176,14 @@ class URLPattern {
     if (a.match_all_urls_ && b.match_all_urls_)
       return false;
     return a.host_.compare(b.host_) < 0;
-  };
+  }
 
   // Used for origin comparisons in a std::set.
   class EffectiveHostCompareFunctor {
    public:
     bool operator()(const URLPattern& a, const URLPattern& b) const {
       return EffectiveHostCompare(a, b);
-    };
+    }
   };
 
   // Get an error string for a ParseResult.
