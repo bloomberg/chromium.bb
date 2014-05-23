@@ -85,12 +85,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     // generated bindings), but breaks legacy content. http://crbug.com/249598
     if (!listener)
         return false;
-    EventListener* eventListener = listener.get();
-    if (ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture)) {
-        InspectorInstrumentation::didAddEventListener(this, eventType, eventListener, useCapture);
-        return true;
-    }
-    return false;
+    return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
@@ -101,10 +96,8 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
 
     size_t indexOfRemovedListener;
 
-    RefPtr<EventListener> protect(listener);
     if (!d->eventListenerMap.remove(eventType, listener, useCapture, indexOfRemovedListener))
         return false;
-    InspectorInstrumentation::didRemoveEventListener(this, eventType, listener, useCapture);
 
     // Notify firing events planning to invoke the listener at 'index' that
     // they have one less listener to invoke.
@@ -365,7 +358,6 @@ void EventTarget::removeAllEventListeners()
     if (!d)
         return;
     d->eventListenerMap.clear();
-    InspectorInstrumentation::didRemoveAllEventListeners(this);
 
     // Notify firing events planning to invoke the listener at 'index' that
     // they have one less listener to invoke.

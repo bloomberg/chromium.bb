@@ -704,24 +704,6 @@ void InspectorDebuggerAgent::didFireAnimationFrame()
         m_asyncCallStackTracker.didFireAsyncCall();
 }
 
-void InspectorDebuggerAgent::didAddEventListener(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
-{
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didAddEventListener(eventTarget, eventType, listener, useCapture, scriptDebugServer().currentCallFramesForAsyncStack());
-}
-
-void InspectorDebuggerAgent::didRemoveEventListener(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
-{
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRemoveEventListener(eventTarget, eventType, listener, useCapture);
-}
-
-void InspectorDebuggerAgent::didRemoveAllEventListeners(EventTarget* eventTarget)
-{
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRemoveAllEventListeners(eventTarget);
-}
-
 void InspectorDebuggerAgent::willHandleEvent(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     if (m_asyncCallStackTracker.isEnabled())

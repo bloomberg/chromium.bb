@@ -4,49 +4,12 @@ Debugger was enabled.
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
-    0) onClick (async-callstack-middle-run.html:68)
-    1) clickedOnCapturing (async-callstack-middle-run.html:52)
-    2) onClick (async-callstack-middle-run.html:65)
-    3) clickedOffCapturing (async-callstack-middle-run.html:51)
-    4) onClick (async-callstack-middle-run.html:62)
-    5) clickedOnCapturing (async-callstack-middle-run.html:52)
-    6) onClick (async-callstack-middle-run.html:59)
-    7) clickedOffCapturing (async-callstack-middle-run.html:51)
-    8) timeoutOnCapturing (async-callstack-middle-run.html:45)
+    0) timeoutOffCapturing2 (async-callstack-middle-run.html:21)
+
+Call stack:
+    0) timeoutOnCapturing (async-callstack-middle-run.html:26)
     [setTimeout]
-    0) timeoutOffCapturing (async-callstack-middle-run.html:22)
-
-Call stack:
-    0) onClick (async-callstack-middle-run.html:68)
-    1) clickedOnCapturing (async-callstack-middle-run.html:52)
-    2) onClick (async-callstack-middle-run.html:65)
-    3) clickedOffCapturing (async-callstack-middle-run.html:51)
-    4) onClick (async-callstack-middle-run.html:62)
-    5) clickedOnCapturing (async-callstack-middle-run.html:52)
-    6) timeoutOnCapturing (async-callstack-middle-run.html:46)
-    [setTimeout]
-    0) timeoutOffCapturing (async-callstack-middle-run.html:22)
-
-Call stack:
-    0) onImageError (async-callstack-middle-run.html:89)
-    1) imageErrorOffCapturing (async-callstack-middle-run.html:73)
-
-Call stack:
-    0) onImageError (async-callstack-middle-run.html:92)
-    1) imageErrorOnCapturing (async-callstack-middle-run.html:74)
-    [Node.addEventListener("error")]
-    0) timeoutOnCapturing (async-callstack-middle-run.html:43)
-    [setTimeout]
-    0) timeoutOffCapturing (async-callstack-middle-run.html:22)
-
-Call stack:
-    0) shouldBeNoAsyncStack (async-callstack-middle-run.html:29)
-    1) timeoutOffCapturing2 (async-callstack-middle-run.html:34)
-
-Call stack:
-    0) timeoutOnCapturing (async-callstack-middle-run.html:39)
-    [setTimeout]
-    0) timeoutOffCapturing (async-callstack-middle-run.html:22)
+    0) timeoutOffCapturing (async-callstack-middle-run.html:16)
 
 Debugger was disabled.
 

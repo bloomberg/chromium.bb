@@ -148,9 +148,6 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     bool willFireAnimationFrame(Document*, int callbackId);
     void didFireAnimationFrame();
-    void didAddEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
-    void didRemoveEventListener(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
-    void didRemoveAllEventListeners(EventTarget*);
     void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
     void didHandleEvent();
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, FormData* body, const HTTPHeaderMap& headers, bool includeCrendentials);

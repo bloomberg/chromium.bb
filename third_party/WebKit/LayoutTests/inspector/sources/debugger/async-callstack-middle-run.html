@@ -4,8 +4,6 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-var images = [ document.createElement("img"), document.createElement("img"), document.createElement("img"), document.createElement("img") ];
-
 function testFunction()
 {
     setTimeout(timeoutOffCapturing, 0);
@@ -13,10 +11,6 @@ function testFunction()
 
 function timeoutOffCapturing()
 {
-    images[0].addEventListener("click", clickedOffCapturing, false);
-    images[2].addEventListener("click", clickedOffCapturing, false);
-    images[0].addEventListener("error", imageErrorOffCapturing, false);
-    images[2].addEventListener("error", imageErrorOffCapturing, false);
     setTimeout(timeoutOffCapturing2, 0);
     debugger; // Will start capturing async stacks from this point.
     setTimeout(timeoutOnCapturing, 0);
@@ -24,84 +18,17 @@ function timeoutOffCapturing()
 
 function timeoutOffCapturing2()
 {
-    function shouldBeNoAsyncStack()
-    {
-        debugger;
-    }
-
-    var node = document.createElement("div");
-    node.addEventListener("click", shouldBeNoAsyncStack, false);
-    node.click();
+    debugger;
 }
 
 function timeoutOnCapturing()
 {
     debugger;
-    images[1].addEventListener("click", clickedOnCapturing, false);
-    images[3].addEventListener("click", clickedOnCapturing, false);
-    images[1].addEventListener("error", imageErrorOnCapturing, false);
-    images[3].addEventListener("error", imageErrorOnCapturing, false);
-
-    images[0].click();
-    images[1].click();
-
-    setImageNonExistingSrc(0);
-}
-
-function clickedOffCapturing(e) { onClick(e.target); }
-function clickedOnCapturing(e) { onClick(e.target); }
-
-function onClick(img)
-{
-    var index = images.indexOf(img);
-    switch (index) {
-    case 0:
-        images[1].click();
-        break;
-    case 1:
-        images[2].click();
-        break;
-    case 2:
-        images[3].click();
-        break;
-    case 3:
-        debugger;
-        break;
-    }
-}
-
-function imageErrorOffCapturing(e) { onImageError(e.target); }
-function imageErrorOnCapturing(e) { onImageError(e.target); }
-
-var imageErrorsCount = 0;
-function onImageError(img)
-{
-    var index = images.indexOf(img);
-    switch (index) {
-    case 0:
-        setImageNonExistingSrc(1);
-        break;
-    case 1:
-        setImageNonExistingSrc(2);
-        break;
-    case 2:
-        setImageNonExistingSrc(3);
-        debugger;
-        break;
-    case 3:
-        debugger;
-        break;
-    }
-}
-
-function setImageNonExistingSrc(imgIndex)
-{
-    images[imgIndex].src = "/non_existing.png?count=" + (++imageErrorsCount) + "&now=" + Date.now();
 }
 
 var test = function()
 {
-    var totalDebuggerStatements = 7;
+    var totalDebuggerStatements = 3;
     var maxAsyncCallStackDepth = 4;
 
     InspectorTest.setQuiet(true);

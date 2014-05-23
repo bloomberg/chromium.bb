@@ -11,7 +11,6 @@ function testFunction()
         timeout1();
     }
     setTimeout(innerTestFunction, 0);
-    document.getElementById("image").addEventListener("error", imageErrorHandler, false);
 }
 
 function timeout1()
@@ -45,8 +44,6 @@ function timeout2()
 
 function animFrame2()
 {
-    document.getElementById("image").addEventListener("error", imageErrorHandler, true);
-    document.getElementById("image").addEventListener("click", imageClickHandlerSync, true);
     debugger;
     function longTail0()
     {
@@ -62,23 +59,11 @@ function animFrame2()
 function timeout3()
 {
     debugger;
-    image.src = "non_existing.png";
-    image.click();
-}
-
-function imageErrorHandler()
-{
-    debugger; // should hit 3 times with different async stacks
-}
-
-function imageClickHandlerSync()
-{
-    debugger; // synchronous call => should have same async call chain as for timeout3()
 }
 
 var test = function()
 {
-    var totalDebuggerStatements = 10;
+    var totalDebuggerStatements = 6;
     var maxAsyncCallStackDepth = 4;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }
@@ -90,7 +75,6 @@ var test = function()
 <p>
 Tests asynchronous call stacks in debugger.
 </p>
-<img id="image" onerror="imageErrorHandler()"></img>
 
 </body>
 </html>
