@@ -319,6 +319,8 @@ public:
 
     void setFocused(bool);
 
+    void setNetworkConnectionInfo(const String&, ExceptionState&);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

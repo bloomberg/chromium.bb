@@ -275,4 +275,6 @@
     DOMString textSurroundingNode(Node node, long x, long y, unsigned long maxLength);
 
     void setFocused(boolean focused);
+
+    [RaisesException] void setNetworkConnectionInfo(DOMString type);
 };

@@ -106,6 +106,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
+#include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
@@ -129,6 +130,7 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebConnectionType.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
@@ -2340,4 +2342,26 @@ void Internals::setFocused(bool focused)
     frame()->page()->focusController().setFocused(focused);
 }
 
+void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exceptionState)
+{
+    blink::WebConnectionType webtype;
+    if (type == "cellular") {
+        webtype = blink::ConnectionTypeCellular;
+    } else if (type == "bluetooth") {
+        webtype = blink::ConnectionTypeBluetooth;
+    } else if (type == "ethernet") {
+        webtype = blink::ConnectionTypeEthernet;
+    } else if (type == "wifi") {
+        webtype = blink::ConnectionTypeWifi;
+    } else if (type == "other") {
+        webtype = blink::ConnectionTypeOther;
+    } else if (type == "none") {
+        webtype = blink::ConnectionTypeNone;
+    } else {
+        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
+        return;
+    }
+    networkStateNotifier().setWebConnectionType(webtype);
 }
+
+} // namespace WebCore
