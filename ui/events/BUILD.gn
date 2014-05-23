@@ -186,8 +186,6 @@ component("gesture_detection") {
     "gesture_detection/gesture_event_data_packet.cc",
     "gesture_detection/gesture_event_data_packet.h",
     "gesture_detection/gesture_config_helper.h",
-    "gesture_detection/gesture_config_helper_aura.cc",
-    "gesture_detection/gesture_config_helper_android.cc",
     "gesture_detection/gesture_provider.cc",
     "gesture_detection/gesture_provider.h",
     "gesture_detection/motion_event.h",
@@ -216,8 +214,12 @@ component("gesture_detection") {
     deps += [ ":events" ]
   }
 
-  if (!use_aura && !is_android) {
-    sources -= [ "gesture_detection/gesture_config_helper_aura.cc" ]
+  if (is_android) {
+    sources += [ "gesture_detection/gesture_config_helper_android.cc" ]
+  } else if (use_aura) {
+    sources += [ "gesture_detection/gesture_config_helper_aura.cc" ]
+  } else {
+    sources += [ "gesture_detection/gesture_config_helper.cc" ]
   }
 }
 

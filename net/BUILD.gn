@@ -290,6 +290,14 @@ component("net") {
         "base/openssl_private_key_store_android.cc",
       ]
     }
+  } else if (is_android) {
+    # Android doesn't use these even when using OpenSSL.
+    sources -= [
+      "base/openssl_private_key_store_memory.cc",
+      "cert/cert_database_openssl.cc",
+      "cert/cert_verify_proc_openssl.cc",
+      "cert/test_root_certs_openssl.cc",
+    ]
   }
 
   if (use_glib) {

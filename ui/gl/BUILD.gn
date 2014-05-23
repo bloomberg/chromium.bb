@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 gl_binding_output_dir = target_gen_dir
 
@@ -222,6 +225,10 @@ component("gl") {
     ]
 
     libs = [ "android" ]
+
+    deps += [
+      ":gl_jni_headers",
+    ]
   }
   if (use_ozone) {
     sources += [
@@ -292,4 +299,14 @@ action("generate_gl_bindings") {
         rebase_path("//third_party/mesa/src/include", root_build_dir),
     rebase_path(gl_binding_output_dir, root_build_dir),
   ]
+}
+
+if (is_android) {
+  generate_jni("gl_jni_headers") {
+    sources = [
+      "../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
+      "../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
+    ]
+    jni_package = "ui/gl"
+  }
 }

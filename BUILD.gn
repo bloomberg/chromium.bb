@@ -69,6 +69,7 @@ group("root") {
     "//ui/base:ui_base",
     "//ui/events",
     "//ui/gfx",
+    "//ui/gl",
     "//ui/resources",
     "//ui/strings",
     "//ui/surface",
@@ -85,17 +86,16 @@ group("root") {
   if (is_android) {
     deps -= [
       "//content/public/common",
-      "//gpu/command_buffer/client",  # Needs some JNI stuff:
-      "//gpu/command_buffer/service",
-      "//net",
       "//third_party/libusb",
       #"//third_party/WebKit/Source/platform",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.
       "//tools/gn",
 
-      # ui_base doesn't work yet, and neither do things that depend on it.
-      "//ui/base:ui_base",
-      "//ui/events",
+      # This stuff all depends on ui/surface which requires some .class jni
+      # generators (ui/gl/gl.gyp:surface_jni_headers).
+      "//ui/gl",
+      "//gpu/command_buffer/client",
+      "//gpu/command_buffer/service",
       "//ui/surface",
     ]
   }

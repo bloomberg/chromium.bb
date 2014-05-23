@@ -302,12 +302,20 @@ component("ui_base") {
     sources -= [
       "cursor/cursor.cc",
       "cursor/cursor.h",
+      "dragdrop/drag_utils_aura.cc",
       "x/selection_owner.cc",
       "x/selection_owner.h",
       "x/selection_requestor.cc",
       "x/selection_requestor.h",
       "x/selection_utils.cc",
       "x/selection_utils.h",
+    ]
+  }
+  if (!use_x11) {
+    sources -= [
+      "x/x11_util.cc",
+      "x/x11_util.h",
+      "x/x11_util_internal.h",
     ]
   }
 
