@@ -1189,6 +1189,8 @@
         'browser/metrics/chrome_metrics_service_accessor.h',
         'browser/metrics/chrome_metrics_service_client.cc',
         'browser/metrics/chrome_metrics_service_client.h',
+        'browser/metrics/chrome_stability_metrics_provider.cc',
+        'browser/metrics/chrome_stability_metrics_provider.h',
         'browser/metrics/compression_utils.cc',
         'browser/metrics/compression_utils.h',
         'browser/metrics/extension_metrics.cc',

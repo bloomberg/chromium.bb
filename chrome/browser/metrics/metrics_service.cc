@@ -185,6 +185,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
@@ -202,15 +203,11 @@
 #include "components/variations/entropy_provider.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/load_notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
-#include "extensions/browser/process_map.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -233,7 +230,6 @@
 using base::Time;
 using content::BrowserThread;
 using content::ChildProcessData;
-using content::LoadNotificationDetails;
 using content::PluginService;
 using metrics::MetricsLogManager;
 
@@ -296,20 +292,6 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
     default:
       return UNKNOWN_FAILURE;
   }
-}
-
-// Converts an exit code into something that can be inserted into our
-// histograms (which expect non-negative numbers less than MAX_INT).
-int MapCrashExitCodeForHistogram(int exit_code) {
-#if defined(OS_WIN)
-  // Since |abs(STATUS_GUARD_PAGE_VIOLATION) == MAX_INT| it causes problems in
-  // histograms.cc. Solve this by remapping it to a smaller value, which
-  // hopefully doesn't conflict with other codes.
-  if (exit_code == STATUS_GUARD_PAGE_VIOLATION)
-    return 0x1FCF7EC3;  // Randomly picked number.
-#endif
-
-  return std::abs(exit_code);
 }
 
 void MarkAppCleanShutdownAndCommit() {
@@ -468,6 +450,8 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider));
   RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
 
 #if defined(OS_WIN)
   google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;
@@ -553,7 +537,6 @@ void MetricsService::EnableRecording() {
   for (size_t i = 0; i < metrics_providers_.size(); ++i)
     metrics_providers_[i]->OnRecordingEnabled();
 
-  SetUpNotifications(&registrar_, this);
   base::RemoveActionCallback(action_callback_);
   action_callback_ = base::Bind(&MetricsService::OnUserAction,
                                 base::Unretained(this));
@@ -568,7 +551,6 @@ void MetricsService::DisableRecording() {
   recording_active_ = false;
 
   base::RemoveActionCallback(action_callback_);
-  registrar_.RemoveAll();
 
   for (size_t i = 0; i < metrics_providers_.size(); ++i)
     metrics_providers_[i]->OnRecordingDisabled();
@@ -585,18 +567,6 @@ bool MetricsService::recording_active() const {
 bool MetricsService::reporting_active() const {
   DCHECK(IsSingleThreaded());
   return reporting_active_;
-}
-
-// static
-void MetricsService::SetUpNotifications(
-    content::NotificationRegistrar* registrar,
-    content::NotificationObserver* observer) {
-  registrar->Add(observer, content::NOTIFICATION_LOAD_START,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
-                 content::NotificationService::AllSources());
 }
 
 void MetricsService::RecordDelta(const base::HistogramBase& histogram,
@@ -639,42 +609,6 @@ void MetricsService::BrowserChildProcessCrashed(
 void MetricsService::BrowserChildProcessInstanceCreated(
     const content::ChildProcessData& data) {
   GetChildProcessStats(data).instances++;
-}
-
-void MetricsService::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK(log_manager_.current_log());
-  DCHECK(IsSingleThreaded());
-
-  switch (type) {
-    case content::NOTIFICATION_LOAD_START: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
-      content::WebContents* web_contents = controller->GetWebContents();
-      LogLoadStarted(web_contents);
-      break;
-    }
-
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      content::RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<
-              content::RenderProcessHost::RendererClosedDetails>(
-                  details).ptr();
-      content::RenderProcessHost* host =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      LogRendererCrash(
-          host, process_details->status, process_details->exit_code);
-      break;
-    }
-
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      LogRendererHang();
-      break;
-
-    default:
-      NOTREACHED();
-  }
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -1502,50 +1436,6 @@ void MetricsService::IncrementLongPrefsValue(const char* path) {
   DCHECK(pref);
   int64 value = pref->GetInt64(path);
   pref->SetInt64(path, value + 1);
-}
-
-void MetricsService::LogLoadStarted(content::WebContents* web_contents) {
-  content::RecordAction(base::UserMetricsAction("PageLoad"));
-  HISTOGRAM_ENUMERATION("Chrome.UmaPageloadCounter", 1, 2);
-  IncrementPrefValue(prefs::kStabilityPageLoadCount);
-  IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
-  // We need to save the prefs, as page load count is a critical stat, and it
-  // might be lost due to a crash :-(.
-}
-
-void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
-                                      base::TerminationStatus status,
-                                      int exit_code) {
-  bool was_extension_process =
-      extensions::ProcessMap::Get(host->GetBrowserContext())
-          ->Contains(host->GetID());
-  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    if (was_extension_process) {
-      IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
-
-      UMA_HISTOGRAM_SPARSE_SLOWLY("CrashExitCodes.Extension",
-                                  MapCrashExitCodeForHistogram(exit_code));
-    } else {
-      IncrementPrefValue(prefs::kStabilityRendererCrashCount);
-
-      UMA_HISTOGRAM_SPARSE_SLOWLY("CrashExitCodes.Renderer",
-                                  MapCrashExitCodeForHistogram(exit_code));
-    }
-
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
-                             was_extension_process ? 2 : 1);
-  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
-                             was_extension_process ? 2 : 1);
-  } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",
-                               was_extension_process ? 2 : 1);
-  }
-}
-
-void MetricsService::LogRendererHang() {
-  IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 
 bool MetricsService::UmaMetricsProperlyShutdown() {

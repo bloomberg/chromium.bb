@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -22,7 +23,6 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
-#include "base/process/kill.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -32,8 +32,6 @@
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -53,8 +51,6 @@ struct ActiveGroupId;
 }
 
 namespace content {
-class RenderProcessHost;
-class WebContents;
 struct WebPluginInfo;
 }
 
@@ -95,7 +91,6 @@ class MetricsService
     : public base::HistogramFlattener,
       public chrome_browser_metrics::TrackingSynchronizerObserver,
       public content::BrowserChildProcessObserver,
-      public content::NotificationObserver,
       public net::URLFetcherDelegate {
  public:
   // The execution phase of the browser.
@@ -166,12 +161,6 @@ class MetricsService
   // types we'll be using.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Set up notifications which indicate that a user is performing work. This is
-  // useful to allow some features to sleep, until the machine becomes active,
-  // such as precluding UMA uploads unless there was recent activity.
-  static void SetUpNotifications(content::NotificationRegistrar* registrar,
-                                 content::NotificationObserver* observer);
-
   // HistogramFlattener:
   virtual void RecordDelta(const base::HistogramBase& histogram,
                            const base::HistogramSamples& snapshot) OVERRIDE;
@@ -188,11 +177,6 @@ class MetricsService
       const content::ChildProcessData& data) OVERRIDE;
   virtual void BrowserChildProcessInstanceCreated(
       const content::ChildProcessData& data) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // This should be called when the application is not idle, i.e. the user seems
   // to be interacting with the application.
@@ -413,14 +397,6 @@ class MetricsService
   // stored as a string.
   void IncrementLongPrefsValue(const char* path);
 
-  // Records a renderer process crash.
-  void LogRendererCrash(content::RenderProcessHost* host,
-                        base::TerminationStatus status,
-                        int exit_code);
-
-  // Records a renderer process hang.
-  void LogRendererHang();
-
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown();
 
@@ -435,10 +411,6 @@ class MetricsService
   // Records state that should be periodically saved, like uptime and
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
-
-  // Logs the initiation of a page load and uses |web_contents| to do
-  // additional logging of the type of page loaded.
-  void LogLoadStarted(content::WebContents* web_contents);
 
   // Checks whether events should currently be logged.
   bool ShouldLogEvents();
@@ -484,8 +456,6 @@ class MetricsService
   ScopedVector<metrics::MetricsProvider> metrics_providers_;
 
   base::ActionCallback action_callback_;
-
-  content::NotificationRegistrar registrar_;
 
   // Indicate whether recording and reporting are currently happening.
   // These should not be set directly, but by calling SetRecording and

@@ -478,31 +478,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
-  int count = pref->GetInteger(prefs::kStabilityPageLoadCount);
-  if (count) {
-    stability->set_page_load_count(count);
-    pref->SetInteger(prefs::kStabilityPageLoadCount, 0);
-  }
 
-  count = pref->GetInteger(prefs::kStabilityRendererCrashCount);
-  if (count) {
-    stability->set_renderer_crash_count(count);
-    pref->SetInteger(prefs::kStabilityRendererCrashCount, 0);
-  }
-
-  count = pref->GetInteger(prefs::kStabilityExtensionRendererCrashCount);
-  if (count) {
-    stability->set_extension_renderer_crash_count(count);
-    pref->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
-  }
-
-  count = pref->GetInteger(prefs::kStabilityRendererHangCount);
-  if (count) {
-    stability->set_renderer_hang_count(count);
-    pref->SetInteger(prefs::kStabilityRendererHangCount, 0);
-  }
-
-  count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
+  int count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
   if (count) {
     stability->set_child_process_crash_count(count);
     pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
