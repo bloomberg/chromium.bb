@@ -7,7 +7,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
-#include "components/password_manager/core/browser/password_manager_logger.h"
+#include "components/password_manager/core/browser/log_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,7 @@ namespace {
 
 const char kTestText[] = "abcd1234";
 
-class MockLogReceiver : public password_manager::PasswordManagerLogger {
+class MockLogReceiver : public password_manager::LogReceiver {
  public:
   MockLogReceiver() {}
 

@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/log_router.h"
 
-#include "components/password_manager/core/browser/password_manager_logger.h"
+#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +17,7 @@ namespace {
 
 const char kTestText[] = "abcd1234";
 
-class MockLogReceiver : public PasswordManagerLogger {
+class MockLogReceiver : public LogReceiver {
  public:
   MockLogReceiver() {}
 

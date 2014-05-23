@@ -5,8 +5,8 @@
 #include "components/password_manager/core/browser/log_router.h"
 
 #include "base/stl_util.h"
+#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_logger.h"
 
 namespace password_manager {
 
@@ -22,7 +22,7 @@ void LogRouter::ProcessLog(const std::string& text) {
   DCHECK(receivers_.might_have_observers());
   accumulated_logs_.append(text);
   FOR_EACH_OBSERVER(
-      PasswordManagerLogger, receivers_, LogSavePasswordProgress(text));
+      LogReceiver, receivers_, LogSavePasswordProgress(text));
 }
 
 bool LogRouter::RegisterClient(PasswordManagerClient* client) {
@@ -36,7 +36,7 @@ void LogRouter::UnregisterClient(PasswordManagerClient* client) {
   clients_.RemoveObserver(client);
 }
 
-std::string LogRouter::RegisterReceiver(PasswordManagerLogger* receiver) {
+std::string LogRouter::RegisterReceiver(LogReceiver* receiver) {
   DCHECK(receiver);
   DCHECK(accumulated_logs_.empty() || receivers_.might_have_observers());
 
@@ -48,7 +48,7 @@ std::string LogRouter::RegisterReceiver(PasswordManagerLogger* receiver) {
   return accumulated_logs_;
 }
 
-void LogRouter::UnregisterReceiver(PasswordManagerLogger* receiver) {
+void LogRouter::UnregisterReceiver(LogReceiver* receiver) {
   DCHECK(receivers_.HasObserver(receiver));
   receivers_.RemoveObserver(receiver);
   if (!receivers_.might_have_observers()) {

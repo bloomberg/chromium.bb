@@ -23,6 +23,7 @@
       'sources': [
         'password_manager/core/browser/browser_save_password_progress_logger.cc',
         'password_manager/core/browser/browser_save_password_progress_logger.h',
+        'password_manager/core/browser/log_receiver.h',
         'password_manager/core/browser/log_router.cc',
         'password_manager/core/browser/log_router.h',
         'password_manager/core/browser/login_database.cc',
@@ -44,7 +45,6 @@
         'password_manager/core/browser/password_manager_driver.h',
         'password_manager/core/browser/password_manager_internals_service.cc',
         'password_manager/core/browser/password_manager_internals_service.h',
-        'password_manager/core/browser/password_manager_logger.h',
         'password_manager/core/browser/password_manager_metrics_util.cc',
         'password_manager/core/browser/password_manager_metrics_util.h',
         'password_manager/core/browser/password_store.cc',

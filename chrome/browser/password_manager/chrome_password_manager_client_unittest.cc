@@ -11,8 +11,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
-#include "components/password_manager/core/browser/password_manager_logger.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +27,7 @@ namespace {
 
 const char kTestText[] = "abcd1234";
 
-class MockLogReceiver : public password_manager::PasswordManagerLogger {
+class MockLogReceiver : public password_manager::LogReceiver {
  public:
   MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
 };

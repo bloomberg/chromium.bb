@@ -13,16 +13,13 @@
 
 namespace password_manager {
 
+class LogReceiver;
 class PasswordManagerClient;
-class PasswordManagerLogger;
 
 // The router stands between PasswordManagerClient instances and log receivers.
 // During the process of saving a password, the password manager code generates
 // the log strings, and passes them to the router. The router distributes the
 // logs to the receivers for displaying.
-//
-// TODO(vabr): The receivers are objects of type PasswordManagerLogger. That
-// type should be renamed to LogReceiver instead.
 class LogRouter {
  public:
   LogRouter();
@@ -46,16 +43,16 @@ class LogRouter {
   // RegisterReceiver adds |receiver| to the right observer list, and returns
   // the logs accumulated so far. (It returns by value, not const ref, to
   // provide a snapshot as opposed to a link to |accumulated_logs_|.)
-  std::string RegisterReceiver(PasswordManagerLogger* receiver);
+  std::string RegisterReceiver(LogReceiver* receiver);
   // Remove |receiver| from the observers list.
-  void UnregisterReceiver(PasswordManagerLogger* receiver);
+  void UnregisterReceiver(LogReceiver* receiver);
 
  private:
   // Observer lists for clients and receivers. The |true| in the template
   // specialisation means that they will check that all observers were removed
   // on destruction.
   ObserverList<PasswordManagerClient, true> clients_;
-  ObserverList<PasswordManagerLogger, true> receivers_;
+  ObserverList<LogReceiver, true> receivers_;
 
   // Logs accumulated since the first receiver was registered.
   std::string accumulated_logs_;
