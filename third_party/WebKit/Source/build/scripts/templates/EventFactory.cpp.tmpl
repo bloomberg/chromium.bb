@@ -4,12 +4,12 @@
 #include "config.h"
 #include "core/events/{{namespace}}Factory.h"
 
-#include "{{namespace}}Headers.h"
+#include "{{namespace}}{{suffix}}Headers.h"
 #include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}Factory::create(const String& type)
+PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(const String& type)
 {
     {% for event in events %}
     {% filter enable_conditional(event.Conditional) %}

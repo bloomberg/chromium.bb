@@ -5,12 +5,17 @@
 #include "config.h"
 #include "InitModules.h"
 
-#include "EventNames.h"
+#include "EventModulesNames.h"
 #include "EventTargetModulesNames.h"
-#include "EventTargetNames.h"
 #include "EventTypeNames.h"
 
 namespace WebCore {
+
+void ModulesInitializer::initEventNames()
+{
+    EventNames::init();
+    EventNames::initModules();
+}
 
 void ModulesInitializer::initEventTargetNames()
 {

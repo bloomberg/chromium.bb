@@ -258,6 +258,11 @@
     ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModules.cpp',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesHeaders.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.h',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.cpp',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.h',
       '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
       '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
       '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',

@@ -3910,6 +3910,9 @@ PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, Exc
     RefPtrWillBeRawPtr<Event> event = EventFactory::create(eventType);
     if (event)
         return event.release();
+    event = EventModulesFactory::create(eventType); // TODO: move this to modules http://crbug.com/358074
+    if (event)
+        return event.release();
 
     exceptionState.throwDOMException(NotSupportedError, "The provided event type ('" + eventType + "') is invalid.");
     return nullptr;

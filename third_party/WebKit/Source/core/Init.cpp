@@ -55,6 +55,11 @@
 
 namespace WebCore {
 
+void CoreInitializer::initEventNames()
+{
+    EventNames::init();
+}
+
 void CoreInitializer::initEventTargetNames()
 {
     EventTargetNames::init();
@@ -76,7 +81,7 @@ void CoreInitializer::init()
     XMLNSNames::init();
     XMLNames::init();
 
-    EventNames::init();
+    initEventNames();
     initEventTargetNames();
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();

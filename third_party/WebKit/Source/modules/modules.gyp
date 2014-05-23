@@ -56,6 +56,43 @@
     'msvs_disabled_warnings': [ 4267, 4334, ]
   },
   {
+    'target_name': 'modules_bindings_generated',
+    'type': 'none',
+    'actions': [
+      {
+        'action_name': 'event_interfaces',
+        'variables': {
+          'event_idl_files': [
+            '<@(modules_event_idl_files)',
+          ],
+          'event_idl_files_list':
+              '<|(event_idl_files_list.tmp <@(event_idl_files))',
+        },
+        'inputs': [
+          '../bindings/scripts/generate_event_interfaces.py',
+          '../bindings/scripts/utilities.py',
+          '<(event_idl_files_list)',
+          '<@(event_idl_files)',
+        ],
+        'outputs': [
+          '<(blink_output_dir)/EventModulesInterfaces.in',
+        ],
+        'action': [
+          'python',
+          '../bindings/scripts/generate_event_interfaces.py',
+          '--event-idl-files-list',
+          '<(event_idl_files_list)',
+          '--event-interfaces-file',
+          '<(blink_output_dir)/EventModulesInterfaces.in',
+          '--write-file-only-if-changed',
+          '<(write_file_only_if_changed)',
+          '--suffix',
+          'Modules',
+        ],
+      },
+    ],
+  },
+  {
     'target_name': 'modules_testing',
     'type': 'static_library',
     'dependencies': [
@@ -77,7 +114,8 @@
     'hard_dependency': 1,
     'dependencies': [
       #'generated_testing_idls',
-      '../bindings/core_bindings_generated.gyp:core_bindings_generated',
+      '../core/core_generated.gyp:core_bindings_generated',
+      'modules_bindings_generated',
       '../config.gyp:config',
     ],
     'sources': [
@@ -86,6 +124,43 @@
       '../core/xml/XPathGrammar.y',
     ],
     'actions': [
+      {
+        'action_name': 'EventModulesFactory',
+        'inputs': [
+          '<@(make_event_factory_files)',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModules.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesHeaders.h',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.h',
+        ],
+        'action': [
+          'python',
+          '../build/scripts/make_event_factory.py',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '--output_dir',
+          '<(SHARED_INTERMEDIATE_DIR)/blink',
+        ],
+      },
+      {
+        'action_name': 'EventModulesNames',
+        'inputs': [
+          '<@(make_names_files)',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.cpp',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesNames.h',
+        ],
+        'action': [
+          'python',
+          '../build/scripts/make_names.py',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/EventModulesInterfaces.in',
+          '--output_dir',
+          '<(SHARED_INTERMEDIATE_DIR)/blink',
+        ],
+      },
       {
         'action_name': 'EventTargetModulesFactory',
         'inputs': [

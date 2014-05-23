@@ -38,6 +38,41 @@
 
   'targets': [
     {
+      'target_name': 'core_bindings_generated',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'event_interfaces',
+          'variables': {
+            'event_idl_files': [
+              '<@(core_event_idl_files)',
+            ],
+            'event_idl_files_list':
+                '<|(event_idl_files_list.tmp <@(event_idl_files))',
+          },
+          'inputs': [
+            '../bindings/scripts/generate_event_interfaces.py',
+            '../bindings/scripts/utilities.py',
+            '<(event_idl_files_list)',
+            '<@(event_idl_files)',
+          ],
+          'outputs': [
+            '<(blink_output_dir)/EventInterfaces.in',
+          ],
+          'action': [
+            'python',
+            '../bindings/scripts/generate_event_interfaces.py',
+            '--event-idl-files-list',
+            '<(event_idl_files_list)',
+            '--event-interfaces-file',
+            '<(blink_output_dir)/EventInterfaces.in',
+            '--write-file-only-if-changed',
+            '<(write_file_only_if_changed)',
+          ],
+        },
+      ],
+    },
+    {
       'target_name': 'generated_testing_idls',
       'type': 'none',
       'actions': [
@@ -95,7 +130,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'generated_testing_idls',
-        '../bindings/core_bindings_generated.gyp:core_bindings_generated',
+        'core_bindings_generated',
         '../config.gyp:config',
       ],
       'sources': [

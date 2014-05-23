@@ -11,6 +11,7 @@ namespace WebCore {
 
 class ModulesInitializer : public CoreInitializer {
 public:
+    virtual void initEventNames() OVERRIDE;
     virtual void initEventTargetNames() OVERRIDE;
 };
 
