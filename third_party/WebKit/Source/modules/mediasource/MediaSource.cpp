@@ -48,11 +48,11 @@ using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-MediaSource* MediaSource::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<MediaSource> MediaSource::create(ExecutionContext* context)
 {
-    MediaSource* mediaSource(adoptRefCountedGarbageCollected(new MediaSource(context)));
+    RefPtrWillBeRawPtr<MediaSource> mediaSource(adoptRefWillBeRefCountedGarbageCollected(new MediaSource(context)));
     mediaSource->suspendIfNeeded();
-    return mediaSource;
+    return mediaSource.release();
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
@@ -108,17 +108,18 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
         return 0;
     }
 
-    SourceBuffer* buffer = SourceBuffer::create(webSourceBuffer.release(), this, asyncEventQueue());
+    RefPtrWillBeRawPtr<SourceBuffer> buffer = SourceBuffer::create(webSourceBuffer.release(), this, asyncEventQueue());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
     m_activeSourceBuffers->add(buffer);
     // 7. Return the new object to the caller.
-    return buffer;
+    return buffer.get();
 }
 
 void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "MediaSource::removeSourceBuffer() %p", this);
+    RefPtr<SourceBuffer> protect(buffer);
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
 

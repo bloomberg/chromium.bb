@@ -35,6 +35,7 @@
 #include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -42,7 +43,7 @@ class ExceptionState;
 
 class MediaSource FINAL : public MediaSourceBase, public ScriptWrappable {
 public:
-    static MediaSource* create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<MediaSource> create(ExecutionContext*);
     virtual ~MediaSource();
 
     // MediaSource.idl methods
@@ -57,6 +58,11 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+#if !ENABLE(OILPAN)
+    using RefCounted<MediaSourceBase>::ref;
+    using RefCounted<MediaSourceBase>::deref;
+#endif
+
 private:
     explicit MediaSource(ExecutionContext*);
 
@@ -65,8 +71,8 @@ private:
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const OVERRIDE;
     virtual bool isUpdating() const OVERRIDE;
 
-    Member<SourceBufferList> m_sourceBuffers;
-    Member<SourceBufferList> m_activeSourceBuffers;
+    RefPtrWillBeMember<SourceBufferList> m_sourceBuffers;
+    RefPtrWillBeMember<SourceBufferList> m_activeSourceBuffers;
 };
 
 } // namespace WebCore

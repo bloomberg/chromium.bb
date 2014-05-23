@@ -49,8 +49,8 @@ namespace WebCore {
 class ExceptionState;
 class GenericEventQueue;
 
-class MediaSourceBase : public RefCountedGarbageCollected<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<MediaSourceBase>);
+class MediaSourceBase : public RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();

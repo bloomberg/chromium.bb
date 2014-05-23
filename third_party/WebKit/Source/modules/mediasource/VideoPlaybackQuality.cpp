@@ -37,10 +37,10 @@
 
 namespace WebCore {
 
-VideoPlaybackQuality* VideoPlaybackQuality::create(
+PassRefPtrWillBeRawPtr<VideoPlaybackQuality> VideoPlaybackQuality::create(
     const Document& document, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames)
 {
-    return new VideoPlaybackQuality(document, totalVideoFrames, droppedVideoFrames, corruptedVideoFrames);
+    return adoptRefWillBeNoop(new VideoPlaybackQuality(document, totalVideoFrames, droppedVideoFrames, corruptedVideoFrames));
 }
 
 VideoPlaybackQuality::VideoPlaybackQuality(

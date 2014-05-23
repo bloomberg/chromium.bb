@@ -49,7 +49,7 @@ SourceBufferList::~SourceBufferList()
     ASSERT(m_list.isEmpty());
 }
 
-void SourceBufferList::add(SourceBuffer* buffer)
+void SourceBufferList::add(PassRefPtrWillBeRawPtr<SourceBuffer> buffer)
 {
     m_list.append(buffer);
     scheduleEvent(EventTypeNames::addsourcebuffer);
