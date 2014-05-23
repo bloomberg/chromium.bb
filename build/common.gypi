@@ -552,6 +552,7 @@
       'data_reduction_proxy_probe_url%' : '',
       'enable_mdns%' : 0,
       'enable_service_discovery%': 0,
+      'enable_wifi_bootstrapping%': 0,
       'enable_hangout_services_extension%': 0,
 
        # Enable the Syzygy optimization step.
@@ -918,6 +919,9 @@
           'data_reduction_dev_host%': 'http://proxy-dev.googlezip.net:80/',
           'data_reduction_fallback_host%': 'http://compress.googlezip.net:80/',
         }],
+        ['OS=="win" or OS=="mac"', {
+            'enable_wifi_bootstrapping%' : 1,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -1097,6 +1101,7 @@
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_service_discovery%' : '<(enable_service_discovery)',
+    'enable_wifi_bootstrapping%': '<(enable_wifi_bootstrapping)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
     'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
@@ -1977,6 +1982,9 @@
       ['notifications==1', {
         'grit_defines': ['-D', 'enable_notifications'],
       }],
+      ['enable_wifi_bootstrapping==1', {
+        'grit_defines': ['-D', 'enable_wifi_bootstrapping'],
+      }],
       ['enable_resource_whitelist_generation==1 and OS!="win"', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],
       }],
@@ -2694,6 +2702,9 @@
       }],
       ['enable_service_discovery==1', {
         'defines' : [ 'ENABLE_SERVICE_DISCOVERY=1' ],
+      }],
+      ['enable_wifi_bootstrapping==1', {
+        'defines' : [ 'ENABLE_WIFI_BOOTSTRAPPING=1' ],
       }],
       ['enable_hangout_services_extension==1', {
         'defines': ['ENABLE_HANGOUT_SERVICES_EXTENSION=1'],
