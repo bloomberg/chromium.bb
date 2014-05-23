@@ -565,7 +565,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     base::FieldTrial::EnableBenchmarking();
 
   // Ensure any field trials specified on the command line are initialized.
-  // Also stop the metrics service so that we don't pollute UMA.
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
     std::set<std::string> unforceable_field_trials;
 #if defined(OFFICIAL_BUILD)
