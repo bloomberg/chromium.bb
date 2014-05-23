@@ -68,41 +68,10 @@ bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
 }
 #endif
 
-bool CreateShortcutsWithInfoOnFileThread(
-    web_app::ShortcutCreationReason reason,
-    const web_app::ShortcutLocations& locations,
-    const web_app::ShortcutInfo& shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath shortcut_data_dir =
-      web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
-                                      shortcut_info.extension_id,
-                                      shortcut_info.url);
-  return web_app::internals::CreatePlatformShortcuts(
-      shortcut_data_dir, shortcut_info, file_handlers_info, locations, reason);
-}
-
-void DeleteShortcutsOnFileThread(
-    const web_app::ShortcutInfo& shortcut_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id, GURL());
-  return web_app::internals::DeletePlatformShortcuts(
-      shortcut_data_dir, shortcut_info);
-}
-
-void UpdateShortcutsOnFileThread(
-    const base::string16& old_app_title,
-    const web_app::ShortcutInfo& shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id, GURL());
-  return web_app::internals::UpdatePlatformShortcuts(
-      shortcut_data_dir, old_app_title, shortcut_info, file_handlers_info);
+base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
+  return web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
+                                         shortcut_info.extension_id,
+                                         shortcut_info.url);
 }
 
 void CreateShortcutsWithInfo(
@@ -116,8 +85,9 @@ void CreateShortcutsWithInfo(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          base::IgnoreResult(&CreateShortcutsWithInfoOnFileThread),
-          reason, locations, shortcut_info, file_handlers_info));
+          base::IgnoreResult(&web_app::internals::CreatePlatformShortcuts),
+          GetShortcutDataDir(shortcut_info),
+          shortcut_info, file_handlers_info, locations, reason));
 }
 
 void UpdateAllShortcutsForShortcutInfo(
@@ -127,7 +97,8 @@ void UpdateAllShortcutsForShortcutInfo(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&UpdateShortcutsOnFileThread,
+      base::Bind(&web_app::internals::UpdatePlatformShortcuts,
+                 GetShortcutDataDir(shortcut_info),
                  old_app_title, shortcut_info, file_handlers_info));
 }
 
@@ -247,8 +218,9 @@ bool CreateShortcutsOnFileThread(ShortcutCreationReason reason,
                                  const ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  return CreateShortcutsWithInfoOnFileThread(
-      reason, locations, shortcut_info, extensions::FileHandlersInfo());
+  return CreatePlatformShortcuts(
+      GetShortcutDataDir(shortcut_info),
+      shortcut_info, extensions::FileHandlersInfo(), locations, reason);
 }
 
 }  // namespace internals
@@ -356,11 +328,10 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 }
 
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
-  if (!shortcut_info.extension_id.empty()) {
+  if (!shortcut_info.extension_id.empty())
     return GenerateApplicationNameFromExtensionId(shortcut_info.extension_id);
-  } else {
+  else
     return GenerateApplicationNameFromURL(shortcut_info.url);
-  }
 }
 
 std::string GenerateApplicationNameFromURL(const GURL& url) {
@@ -411,11 +382,13 @@ void CreateShortcuts(ShortcutCreationReason reason,
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  ShortcutInfo shortcut_info =
+      ShortcutInfoForExtensionAndProfile(app, profile);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&DeleteShortcutsOnFileThread,
-                 ShortcutInfoForExtensionAndProfile(app, profile)));
+      base::Bind(&web_app::internals::DeletePlatformShortcuts,
+                 GetShortcutDataDir(shortcut_info), shortcut_info));
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,
