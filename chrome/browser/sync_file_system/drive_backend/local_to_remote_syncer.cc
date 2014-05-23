@@ -21,6 +21,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -74,18 +76,23 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
 LocalToRemoteSyncer::~LocalToRemoteSyncer() {
 }
 
-void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
+void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
+  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
+  blocking_factor->exclusive = true;
+  SyncTaskManager::UpdateBlockingFactor(
+      token.Pass(), blocking_factor.Pass(),
+      base::Bind(&LocalToRemoteSyncer::RunExclusive,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void LocalToRemoteSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Local -> Remote] Context not ready.");
     NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
-
-  SyncStatusCallback wrapped_callback = base::Bind(
-      &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-      callback);
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Local -> Remote] Start: %s on %s@%s %s",
@@ -98,7 +105,7 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
     // Stray file, we can just return.
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Local -> Remote]: Missing file for non-delete change");
-    callback.Run(SYNC_STATUS_OK);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
     return;
   }
 
@@ -113,7 +120,7 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
     // The app is disabled or not registered.
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Local -> Remote]: App is disabled or not registered");
-    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
+    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
   DCHECK(active_ancestor_tracker->active());
@@ -131,12 +138,10 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
   if (active_ancestor_path.empty()) {
     missing_entries = path;
   } else if (active_ancestor_path != path) {
-    bool should_success = active_ancestor_path.AppendRelativePath(
-        path, &missing_entries);
-    if (!should_success) {
+    if (!active_ancestor_path.AppendRelativePath(path, &missing_entries)) {
       NOTREACHED() << "[Local -> Remote]: Detected invalid ancestor: "
                    << active_ancestor_path.value();
-      callback.Run(SYNC_STATUS_FAILED);
+      SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
       return;
     }
   }
@@ -154,10 +159,14 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
 
       // Local file is deleted and remote file is missing, already deleted or
       // not yet synced.  There is nothing to do for the file.
-      callback.Run(SYNC_STATUS_OK);
+      SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
       return;
     }
   }
+
+  SyncStatusCallback callback = base::Bind(
+      &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(&token));
 
   if (missing_components.size() > 1) {
     // The original target doesn't have remote file and parent.
@@ -167,7 +176,7 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
       target_path_ = active_ancestor_path.Append(missing_components[0]);
       util::Log(logging::LOG_VERBOSE, FROM_HERE,
                 "[Local -> Remote]: Detected missing parent folder.");
-      CreateRemoteFolder(wrapped_callback);
+      CreateRemoteFolder(callback);
       return;
     }
 
@@ -181,8 +190,7 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
               "[Local -> Remote]: Detected non-folder file in its path.");
     DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                wrapped_callback));
-
+                                callback));
     return;
   }
 
@@ -200,12 +208,12 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
                 "[Local -> Remote]: Detected conflicting dirty tracker:%"
                 PRId64, remote_file_tracker_->tracker_id());
       // Both local and remote file has pending modification.
-      HandleConflict(wrapped_callback);
+      HandleConflict(callback);
       return;
     }
 
     // Non-conflicting file/folder update case.
-    HandleExistingRemoteFile(wrapped_callback);
+    HandleExistingRemoteFile(callback);
     return;
   }
 
@@ -220,15 +228,15 @@ void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
   if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Local -> Remote]: Detected a new file.");
-    UploadNewFile(wrapped_callback);
+    UploadNewFile(callback);
     return;
   }
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Local -> Remote]: Detected a new folder.");
-  CreateRemoteFolder(wrapped_callback);
+  CreateRemoteFolder(callback);
 }
 
-void LocalToRemoteSyncer::SyncCompleted(const SyncStatusCallback& callback,
+void LocalToRemoteSyncer::SyncCompleted(scoped_ptr<SyncTaskToken> token,
                                         SyncStatusCode status) {
   if (status == SYNC_STATUS_OK && target_path_ != url_.path())
     status = SYNC_STATUS_RETRY;
@@ -243,7 +251,7 @@ void LocalToRemoteSyncer::SyncCompleted(const SyncStatusCallback& callback,
             target_path_.AsUTF8Unsafe().c_str(),
             url_.origin().host().c_str());
 
-  callback.Run(status);
+  SyncTaskManager::NotifyTaskDone(token.Pass(), status);
 }
 
 void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
@@ -265,9 +273,8 @@ void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
   DCHECK(local_change_.IsDirectory());
   // Check if we can reuse the remote folder.
   FileMetadata remote_file_metadata;
-  bool should_success = metadata_database()->FindFileByFileID(
-      remote_file_tracker_->file_id(), &remote_file_metadata);
-  if (!should_success) {
+  if (!metadata_database()->FindFileByFileID(
+          remote_file_tracker_->file_id(), &remote_file_metadata)) {
     NOTREACHED();
     CreateRemoteFolder(callback);
     return;
@@ -463,9 +470,8 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
   }
 
   FileMetadata file;
-  bool should_success = metadata_database()->FindFileByFileID(
-      remote_file_tracker_->file_id(), &file);
-  if (!should_success) {
+  if (!metadata_database()->FindFileByFileID(
+          remote_file_tracker_->file_id(), &file)) {
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;

@@ -11,8 +11,19 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+const int64 SyncTaskToken::kTestingTaskTokenID = -1;
 const int64 SyncTaskToken::kForegroundTaskTokenID = 0;
 const int64 SyncTaskToken::kMinimumBackgroundTaskTokenID = 1;
+
+// static
+scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForTesting(
+    const SyncStatusCallback& callback) {
+  return make_scoped_ptr(new SyncTaskToken(
+      base::WeakPtr<SyncTaskManager>(),
+      kTestingTaskTokenID,
+      scoped_ptr<BlockingFactor>(),
+      callback));
+}
 
 // static
 scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForForegroundTask(
@@ -20,7 +31,8 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForForegroundTask(
   return make_scoped_ptr(new SyncTaskToken(
       manager,
       kForegroundTaskTokenID,
-      scoped_ptr<BlockingFactor>()));
+      scoped_ptr<BlockingFactor>(),
+      SyncStatusCallback()));
 }
 
 // static
@@ -31,7 +43,8 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForBackgroundTask(
   return make_scoped_ptr(new SyncTaskToken(
       manager,
       token_id,
-      blocking_factor.Pass()));
+      blocking_factor.Pass(),
+      SyncStatusCallback()));
 }
 
 void SyncTaskToken::UpdateTask(const tracked_objects::Location& location,
@@ -55,7 +68,8 @@ SyncTaskToken::~SyncTaskToken() {
     // Reinitializes the token.
     SyncTaskManager::NotifyTaskDone(
         make_scoped_ptr(new SyncTaskToken(
-            manager_, token_id_, blocking_factor_.Pass())),
+            manager_, token_id_, blocking_factor_.Pass(),
+            SyncStatusCallback())),
         SYNC_STATUS_OK);
   }
 }
@@ -81,9 +95,11 @@ void SyncTaskToken::clear_blocking_factor() {
 
 SyncTaskToken::SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                              int64 token_id,
-                             scoped_ptr<BlockingFactor> blocking_factor)
+                             scoped_ptr<BlockingFactor> blocking_factor,
+                             const SyncStatusCallback& callback)
     : manager_(manager),
       token_id_(token_id),
+      callback_(callback),
       blocking_factor_(blocking_factor.Pass()) {
 }
 

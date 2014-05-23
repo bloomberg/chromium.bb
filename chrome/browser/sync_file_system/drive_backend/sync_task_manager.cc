@@ -124,6 +124,14 @@ void SyncTaskManager::NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
   DCHECK(token);
 
   SyncTaskManager* manager = token->manager();
+  if (token->token_id() == SyncTaskToken::kTestingTaskTokenID) {
+    DCHECK(!manager);
+    SyncStatusCallback callback = token->callback();
+    token->clear_callback();
+    callback.Run(status);
+    return;
+  }
+
   if (manager)
     manager->NotifyTaskDoneBody(token.Pass(), status);
 }
@@ -136,6 +144,12 @@ void SyncTaskManager::UpdateBlockingFactor(
   DCHECK(current_task_token);
 
   SyncTaskManager* manager = current_task_token->manager();
+  if (current_task_token->token_id() == SyncTaskToken::kTestingTaskTokenID) {
+    DCHECK(!manager);
+    continuation.Run(current_task_token.Pass());
+    return;
+  }
+
   if (!manager)
     return;
 

@@ -21,9 +21,12 @@ struct BlockingFactor;
 // should run exclusively, and held by SyncTaskManager when no task is running.
 class SyncTaskToken {
  public:
+  static const int64 kTestingTaskTokenID;
   static const int64 kForegroundTaskTokenID;
   static const int64 kMinimumBackgroundTaskTokenID;
 
+  static scoped_ptr<SyncTaskToken> CreateForTesting(
+      const SyncStatusCallback& callback);
   static scoped_ptr<SyncTaskToken> CreateForForegroundTask(
       const base::WeakPtr<SyncTaskManager>& manager);
   static scoped_ptr<SyncTaskToken> CreateForBackgroundTask(
@@ -53,7 +56,8 @@ class SyncTaskToken {
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                 int64 token_id,
-                scoped_ptr<BlockingFactor> blocking_factor);
+                scoped_ptr<BlockingFactor> blocking_factor,
+                const SyncStatusCallback& callback);
 
   base::WeakPtr<SyncTaskManager> manager_;
   tracked_objects::Location location_;

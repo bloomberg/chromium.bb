@@ -38,7 +38,7 @@ class FolderCreator;
 class MetadataDatabase;
 class SyncEngineContext;
 
-class LocalToRemoteSyncer : public ExclusiveTask {
+class LocalToRemoteSyncer : public SyncTask {
  public:
   LocalToRemoteSyncer(SyncEngineContext* sync_context,
                       const SyncFileMetadata& local_metadata,
@@ -46,7 +46,8 @@ class LocalToRemoteSyncer : public ExclusiveTask {
                       const base::FilePath& local_path,
                       const fileapi::FileSystemURL& url);
   virtual ~LocalToRemoteSyncer();
-  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const fileapi::FileSystemURL& url() const { return url_; }
   const base::FilePath& target_path() const { return target_path_; }
@@ -56,7 +57,7 @@ class LocalToRemoteSyncer : public ExclusiveTask {
   }
 
  private:
-  void SyncCompleted(const SyncStatusCallback& callback,
+  void SyncCompleted(scoped_ptr<SyncTaskToken> token,
                      SyncStatusCode status);
 
   void HandleConflict(const SyncStatusCallback& callback);

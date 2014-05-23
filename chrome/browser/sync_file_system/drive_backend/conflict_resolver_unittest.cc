@@ -22,6 +22,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -202,7 +203,8 @@ class ConflictResolverTest : public testing::Test {
         context_.get(),
         SyncFileMetadata(file_change.file_type(), 0, base::Time()),
         file_change, local_path, url));
-    syncer->RunExclusive(CreateResultReceiver(&status));
+    syncer->RunPreflight(SyncTaskToken::CreateForTesting(
+        CreateResultReceiver(&status)));
     base::RunLoop().RunUntilIdle();
     if (status == SYNC_STATUS_OK)
       remote_change_processor_->ClearLocalChanges(url);
