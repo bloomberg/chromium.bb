@@ -35,7 +35,7 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
   RELEASE_TAG = ''
 
   def setUp(self):
-    for cmd in ((osutils, 'WriteFile'),
+    for cmd in ((osutils, 'ReadFile'), (osutils, 'WriteFile'),
                 (commands, 'UploadArchivedFile'),
                 (alerts, 'SendEmail')):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
