@@ -2461,13 +2461,7 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onRenderProcessSwap() {
-        attachImeAdapter();
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onWebContentsConnected() {
+    private void onRenderProcessChange() {
         attachImeAdapter();
     }
 

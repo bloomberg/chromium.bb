@@ -17,8 +17,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/rect.h"
@@ -37,7 +35,6 @@ struct MenuItem;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
-                            public NotificationObserver,
                             public WebContentsObserver {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
@@ -312,13 +309,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   friend class ContentViewUserData;
   virtual ~ContentViewCoreImpl();
 
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
   // WebContentsObserver implementation.
   virtual void RenderViewReady() OVERRIDE;
+  virtual void RenderViewHostChanged(RenderViewHost* old_host,
+                                     RenderViewHost* new_host) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 
   // --------------------------------------------------------------------------
@@ -350,8 +344,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
-
-  NotificationRegistrar notification_registrar_;
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.

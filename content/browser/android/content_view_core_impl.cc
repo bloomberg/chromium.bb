@@ -43,10 +43,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -262,9 +258,6 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
     Java_ContentViewCore_onNativeContentViewCoreDestroyed(
         env, j_obj.obj(), reinterpret_cast<intptr_t>(this));
   }
-  // Make sure nobody calls back into this object while we are tearing things
-  // down.
-  notification_registrar_.RemoveAll();
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -280,16 +273,6 @@ void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
 
 void ContentViewCoreImpl::InitWebContents() {
   DCHECK(web_contents_);
-  notification_registrar_.Add(
-      this, NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<WebContents>(web_contents_));
-  notification_registrar_.Add(
-      this, NOTIFICATION_RENDERER_PROCESS_CREATED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  notification_registrar_.Add(
-      this, NOTIFICATION_WEB_CONTENTS_CONNECTED,
-      Source<WebContents>(web_contents_));
-
   static_cast<WebContentsViewAndroid*>(
       static_cast<WebContentsImpl*>(web_contents_)->GetView())->
           SetContentViewCore(this);
@@ -298,75 +281,44 @@ void ContentViewCoreImpl::InitWebContents() {
                              new ContentViewUserData(this));
 }
 
-void ContentViewCoreImpl::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
-      std::pair<RenderViewHost*, RenderViewHost*>* switched_details =
-          Details<std::pair<RenderViewHost*, RenderViewHost*> >(details).ptr();
-      int old_pid = 0;
-      if (switched_details->first) {
-        old_pid = GetRenderProcessIdFromRenderViewHost(
-            switched_details->first);
-
-        RenderWidgetHostViewAndroid* view =
-            static_cast<RenderWidgetHostViewAndroid*>(
-                switched_details->first->GetView());
-        if (view)
-          view->SetContentViewCore(NULL);
-
-        view = static_cast<RenderWidgetHostViewAndroid*>(
-            switched_details->second->GetView());
-
-        if (view)
-          view->SetContentViewCore(this);
-      }
-      int new_pid = GetRenderProcessIdFromRenderViewHost(
-          web_contents_->GetRenderViewHost());
-      if (new_pid != old_pid) {
-        // Notify the Java side of the change of the current renderer process.
-        JNIEnv* env = AttachCurrentThread();
-        ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-        if (!obj.is_null()) {
-          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj());
-        }
-      }
-      SetFocusInternal(HasFocus());
-
-      SetAccessibilityEnabledInternal(accessibility_enabled_);
-      break;
-    }
-    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      // Notify the Java side of the current renderer process.
-      RenderProcessHost* source_process_host =
-          Source<RenderProcessHost>(source).ptr();
-      RenderProcessHost* current_process_host =
-          web_contents_->GetRenderViewHost()->GetProcess();
-
-      if (source_process_host == current_process_host) {
-        JNIEnv* env = AttachCurrentThread();
-        ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-        if (!obj.is_null()) {
-          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj());
-        }
-      }
-      break;
-    }
-    case NOTIFICATION_WEB_CONTENTS_CONNECTED: {
-      JNIEnv* env = AttachCurrentThread();
-      ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-      if (!obj.is_null()) {
-        Java_ContentViewCore_onWebContentsConnected(env, obj.obj());
-      }
-      break;
-    }
-  }
-}
-
 void ContentViewCoreImpl::RenderViewReady() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_onRenderProcessChange(env, obj.obj());
+
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
+}
+
+void ContentViewCoreImpl::RenderViewHostChanged(RenderViewHost* old_host,
+                                                RenderViewHost* new_host) {
+  int old_pid = 0;
+  if (old_host) {
+    old_pid = GetRenderProcessIdFromRenderViewHost(old_host);
+
+    RenderWidgetHostViewAndroid* view =
+        static_cast<RenderWidgetHostViewAndroid*>(old_host->GetView());
+    if (view)
+      view->SetContentViewCore(NULL);
+
+    view = static_cast<RenderWidgetHostViewAndroid*>(new_host->GetView());
+    if (view)
+      view->SetContentViewCore(this);
+  }
+  int new_pid = GetRenderProcessIdFromRenderViewHost(
+      web_contents_->GetRenderViewHost());
+  if (new_pid != old_pid) {
+    // Notify the Java side that the renderer process changed.
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (!obj.is_null()) {
+      Java_ContentViewCore_onRenderProcessChange(env, obj.obj());
+    }
+  }
+
+  SetFocusInternal(HasFocus());
+  SetAccessibilityEnabledInternal(accessibility_enabled_);
 }
 
 RenderWidgetHostViewAndroid*
