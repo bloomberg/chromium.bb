@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_MAIN_DELEGATE_H_
-#define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_MAIN_DELEGATE_H_
+#ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_MAIN_DELEGATE_H_
+#define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_MAIN_DELEGATE_H_
+
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/shell/common/shell_content_client.h"
 
-namespace ui {
+namespace views {
+namespace examples {
 
-class ViewsContentBrowserClient;
-class ViewsContentClient;
+class ExamplesContentBrowserClient;
 
-class ViewsContentMainDelegate : public content::ContentMainDelegate {
+class ExamplesMainDelegate : public content::ContentMainDelegate {
  public:
-  explicit ViewsContentMainDelegate(ViewsContentClient* views_content_client);
-  virtual ~ViewsContentMainDelegate();
+  ExamplesMainDelegate();
+  virtual ~ExamplesMainDelegate();
 
   // content::ContentMainDelegate implementation
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
@@ -26,13 +28,13 @@ class ViewsContentMainDelegate : public content::ContentMainDelegate {
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
 
  private:
-  scoped_ptr<ViewsContentBrowserClient> browser_client_;
+  scoped_ptr<ExamplesContentBrowserClient> browser_client_;
   content::ShellContentClient content_client_;
-  ViewsContentClient* views_content_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewsContentMainDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ExamplesMainDelegate);
 };
 
-}  // namespace ui
+}  // namespace examples
+}  // namespace views
 
-#endif  // UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_MAIN_DELEGATE_H_
+#endif  // UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_MAIN_DELEGATE_H_

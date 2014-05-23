@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
-#define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
+#ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,25 +14,21 @@ class ShellBrowserContext;
 struct MainFunctionParams;
 }
 
-namespace views {
-class ViewsDelegate;
-}
-
 namespace wm {
 class WMState;
 class WMTestHelper;
 }
 
-namespace ui {
+namespace views {
+class ViewsDelegate;
 
-class ViewsContentClient;
+namespace examples {
 
-class ViewsContentClientMainParts : public content::BrowserMainParts {
+class ExamplesBrowserMainParts : public content::BrowserMainParts {
  public:
-  ViewsContentClientMainParts(
-      const content::MainFunctionParams& content_params,
-      ViewsContentClient* views_content_client);
-  virtual ~ViewsContentClientMainParts();
+  explicit ExamplesBrowserMainParts(
+      const content::MainFunctionParams& parameters);
+  virtual ~ExamplesBrowserMainParts();
 
   // content::BrowserMainParts:
   virtual void ToolkitInitialized() OVERRIDE;
@@ -47,7 +43,7 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  scoped_ptr<ViewsDelegate> views_delegate_;
 
 #if defined(OS_CHROMEOS)
   // Enable a minimal set of views::corewm to be initialized.
@@ -56,11 +52,10 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
 
   scoped_ptr<wm::WMState> wm_state_;
 
-  ViewsContentClient* views_content_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainParts);
+  DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
 };
 
-}  // namespace ui
+}  // namespace examples
+}  // namespace views
 
-#endif  // UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
+#endif  // UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_

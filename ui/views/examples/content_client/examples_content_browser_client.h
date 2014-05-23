@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_BROWSER_CLIENT_H_
-#define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_BROWSER_CLIENT_H_
+#ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_CONTENT_BROWSER_CLIENT_H_
+#define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_CONTENT_BROWSER_CLIENT_H_
 
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
@@ -12,16 +12,15 @@ namespace content {
 class ShellBrowserContext;
 }
 
-namespace ui {
+namespace views {
+namespace examples {
 
-class ViewsContentClient;
-class ViewsContentClientMainParts;
+class ExamplesBrowserMainParts;
 
-class ViewsContentBrowserClient : public content::ContentBrowserClient {
+class ExamplesContentBrowserClient : public content::ContentBrowserClient {
  public:
-  explicit ViewsContentBrowserClient(
-      ViewsContentClient* views_content_client);
-  virtual ~ViewsContentBrowserClient();
+  ExamplesContentBrowserClient();
+  virtual ~ExamplesContentBrowserClient();
 
   // content::ContentBrowserClient:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
@@ -32,12 +31,12 @@ class ViewsContentBrowserClient : public content::ContentBrowserClient {
       content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
 
  private:
-  ViewsContentClientMainParts* views_content_main_parts_;
-  ViewsContentClient* views_content_client_;
+  ExamplesBrowserMainParts* examples_browser_main_parts_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewsContentBrowserClient);
+  DISALLOW_COPY_AND_ASSIGN(ExamplesContentBrowserClient);
 };
 
-}  // namespace ui
+}  // namespace examples
+}  // namespace views
 
-#endif  // UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_BROWSER_CLIENT_H_
+#endif  // UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_CONTENT_BROWSER_CLIENT_H_

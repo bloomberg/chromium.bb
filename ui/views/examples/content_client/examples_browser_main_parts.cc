@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views_content_client/views_content_client_main_parts.h"
+#include "ui/views/examples/content_client/examples_browser_main_parts.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,10 +17,11 @@
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/widget/native_widget_aura.h"
-#include "ui/views_content_client/views_content_client.h"
 #include "ui/wm/core/wm_state.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/aura/test/test_screen.h"
@@ -31,22 +32,21 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
-namespace ui {
+namespace views {
+namespace examples {
 
-ViewsContentClientMainParts::ViewsContentClientMainParts(
-    const content::MainFunctionParams& content_params,
-    ViewsContentClient* views_content_client)
-    : views_content_client_(views_content_client) {
+ExamplesBrowserMainParts::ExamplesBrowserMainParts(
+    const content::MainFunctionParams& parameters) {
 }
 
-ViewsContentClientMainParts::~ViewsContentClientMainParts() {
+ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 }
 
-void ViewsContentClientMainParts::ToolkitInitialized() {
-  wm_state_.reset(new ::wm::WMState);
+void ExamplesBrowserMainParts::ToolkitInitialized() {
+  wm_state_.reset(new wm::WMState);
 }
 
-void ViewsContentClientMainParts::PreMainMessageLoopRun() {
+void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   ui::InitializeInputMethodForTesting();
   browser_context_.reset(new content::ShellBrowserContext(false, NULL));
 
@@ -55,8 +55,8 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   // Set up basic pieces of views::corewm.
-  wm_test_helper_.reset(new ::wm::WMTestHelper(gfx::Size(800, 600),
-                                               content::GetContextFactory()));
+  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600),
+                                             content::GetContextFactory()));
   // Ensure the X window gets mapped.
   wm_test_helper_->host()->Show();
   // Ensure Aura knows where to open new windows.
@@ -64,14 +64,15 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
 #else
   aura::Env::CreateInstance(true);
   gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
+      gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
 #endif
-  views_delegate_.reset(new views::DesktopTestViewsDelegate);
+  views_delegate_.reset(new DesktopTestViewsDelegate);
 
-  views_content_client_->task().Run(browser_context_.get(), window_context);
+  ShowExamplesWindowWithContent(
+      QUIT_ON_CLOSE, browser_context_.get(), window_context);
 }
 
-void ViewsContentClientMainParts::PostMainMessageLoopRun() {
+void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
 #if defined(OS_CHROMEOS)
   wm_test_helper_.reset();
@@ -80,10 +81,11 @@ void ViewsContentClientMainParts::PostMainMessageLoopRun() {
   aura::Env::DeleteInstance();
 }
 
-bool ViewsContentClientMainParts::MainMessageLoopRun(int* result_code) {
+bool ExamplesBrowserMainParts::MainMessageLoopRun(int* result_code) {
   base::RunLoop run_loop;
   run_loop.Run();
   return true;
 }
 
-}  // namespace ui
+}  // namespace examples
+}  // namespace views
