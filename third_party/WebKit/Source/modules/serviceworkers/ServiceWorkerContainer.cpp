@@ -87,12 +87,14 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
 
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(options.scope);
+    patternURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(patternURL)) {
         resolver->reject(DOMException::create(SecurityError, "Can only register for patterns in the document's origin."));
         return promise;
     }
 
     KURL scriptURL = executionContext->completeURL(url);
+    scriptURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(scriptURL)) {
         resolver->reject(DOMException::create(SecurityError, "Script must be in document's origin."));
         return promise;
@@ -128,6 +130,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
 
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(pattern);
+    patternURL.removeFragmentIdentifier();
     if (!pattern.isEmpty() && !documentOrigin->canRequest(patternURL)) {
         resolver->reject(DOMException::create(SecurityError, "Can only unregister for patterns in the document's origin."));
         return promise;

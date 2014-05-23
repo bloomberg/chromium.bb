@@ -28,6 +28,9 @@ function scope_test(name, url, scope) {
 
 scope_test('default', 'resources/worker-no-op.js');
 scope_test('wildcard', 'resources/worker-no-op.js', '*');
+scope_test('script with fragment', 'resources/worker-no-op.js#ref', 'http://127.0.0.1:8000/*');
+scope_test('scope with fragment', 'resources/worker-no-op.js', 'http://127.0.0.1:8000/*#ref');
+scope_test('scope with query', 'resources/worker-no-op.js', '/a?b=c');
 scope_test('relative path', 'resources/worker-no-op.js', '/a/b/c/');
 scope_test('relative path with wildcard', 'resources/empty-worker.js', '/a/b/c/*');
 scope_test('absolute url', 'resources/empty-worker.js', 'http://127.0.0.1:8000/');

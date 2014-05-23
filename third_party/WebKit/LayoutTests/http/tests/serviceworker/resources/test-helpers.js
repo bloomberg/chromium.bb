@@ -58,5 +58,5 @@ function with_iframe(url, f) {
 }
 
 function normalizeURL(url) {
-  return new URL(url, document.location).toString();
+  return new URL(url, document.location).toString().replace(/#.*$/, '');
 }
