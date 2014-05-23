@@ -107,117 +107,6 @@ def Compare(symbols1, symbols2):
   return (added, removed, changed, unchanged)
 
 
-def TestCompare():
-  # List entries have form: symbol_name, symbol_type, symbol_size, file_path
-  symbol_list1 = (
-    # File with one symbol, left as-is.
-    ( 'unchanged', 't', 1000, '/file_unchanged' ),
-    # File with one symbol, changed.
-    ( 'changed', 't', 1000, '/file_all_changed' ),
-    # File with one symbol, deleted.
-    ( 'removed', 't', 1000, '/file_all_deleted' ),
-    # File with two symbols, one unchanged, one changed, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_changed' ),
-    ( 'changed', 't', 1000, '/file_pair_unchanged_changed' ),
-    # File with two symbols, one unchanged, one deleted, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_removed' ),
-    ( 'removed', 't', 1000, '/file_pair_unchanged_removed' ),
-    # File with two symbols, one unchanged, one added, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_added' ),
-    # File with two symbols, one unchanged, one changed, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_changed' ),
-    ( 'changed', '@', 1000, '/file_pair_unchanged_diffbuck_changed' ),
-    # File with two symbols, one unchanged, one deleted, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_removed' ),
-    ( 'removed', '@', 1000, '/file_pair_unchanged_diffbuck_removed' ),
-    # File with two symbols, one unchanged, one added, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_added' ),
-    # File with four symbols, one added, one removed, one changed, one unchanged
-    ( 'size_changed', 't', 1000, '/file_tetra' ),
-    ( 'removed', 't', 1000, '/file_tetra' ),
-    ( 'unchanged', 't', 1000, '/file_tetra' ),
-  )
-
-  symbol_list2 = (
-    # File with one symbol, left as-is.
-    ( 'unchanged', 't', 1000, '/file_unchanged' ),
-    # File with one symbol, changed.
-    ( 'changed', 't', 2000, '/file_all_changed' ),
-    # File with two symbols, one unchanged, one changed, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_changed' ),
-    ( 'changed', 't', 2000, '/file_pair_unchanged_changed' ),
-    # File with two symbols, one unchanged, one deleted, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_removed' ),
-    # File with two symbols, one unchanged, one added, same bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_added' ),
-    ( 'added', 't', 1000, '/file_pair_unchanged_added' ),
-    # File with two symbols, one unchanged, one changed, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_changed' ),
-    ( 'changed', '@', 2000, '/file_pair_unchanged_diffbuck_changed' ),
-    # File with two symbols, one unchanged, one deleted, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_removed' ),
-    # File with two symbols, one unchanged, one added, different bucket
-    ( 'unchanged', 't', 1000, '/file_pair_unchanged_diffbuck_added' ),
-    ( 'added', '@', 1000, '/file_pair_unchanged_diffbuck_added' ),
-    # File with four symbols, one added, one removed, one changed, one unchanged
-    ( 'size_changed', 't', 2000, '/file_tetra' ),
-    ( 'unchanged', 't', 1000, '/file_tetra' ),
-    ( 'added', 't', 1000, '/file_tetra' ),
-    # New file with one symbol added
-    ( 'added', 't', 1000, '/file_new' ),
-  )
-
-  # Here we go
-  (added, removed, changed, unchanged) = Compare(symbol_list1, symbol_list2)
-
-  # File with one symbol, left as-is.
-  assert ('/file_unchanged', 't', 'unchanged', 1000, 1000) in unchanged
-  # File with one symbol, changed.
-  assert ('/file_all_changed', 't', 'changed', 1000, 2000) in changed
-  # File with one symbol, deleted.
-  assert ('/file_all_deleted', 't', 'removed', 1000, None) in removed
-  # New file with one symbol added
-  assert ('/file_new', 't', 'added', None, 1000) in added
-  # File with two symbols, one unchanged, one changed, same bucket
-  assert ('/file_pair_unchanged_changed',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_changed',
-          't', 'changed', 1000, 2000) in changed
-  # File with two symbols, one unchanged, one removed, same bucket
-  assert ('/file_pair_unchanged_removed',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_removed',
-          't', 'removed', 1000, None) in removed
-  # File with two symbols, one unchanged, one added, same bucket
-  assert ('/file_pair_unchanged_added',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_added',
-          't', 'added', None, 1000) in added
-  # File with two symbols, one unchanged, one changed, different bucket
-  assert ('/file_pair_unchanged_diffbuck_changed',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_diffbuck_changed',
-          '@', 'changed', 1000, 2000) in changed
-  # File with two symbols, one unchanged, one removed, different bucket
-  assert ('/file_pair_unchanged_diffbuck_removed',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_diffbuck_removed',
-          '@', 'removed', 1000, None) in removed
-  # File with two symbols, one unchanged, one added, different bucket
-  assert ('/file_pair_unchanged_diffbuck_added',
-          't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_pair_unchanged_diffbuck_added',
-          '@', 'added', None, 1000) in added
-  # File with four symbols, one added, one removed, one changed, one unchanged
-  assert ('/file_tetra', 't', 'size_changed', 1000, 2000) in changed
-  assert ('/file_tetra', 't', 'unchanged', 1000, 1000) in unchanged
-  assert ('/file_tetra', 't', 'added', None, 1000) in added
-  assert ('/file_tetra', 't', 'removed', 1000, None) in removed
-
-  # Now check final stats.
-  CrunchStats(added, removed, changed, unchanged, True, True)
-
-
 def CrunchStats(added, removed, changed, unchanged, showsources, showsymbols):
   """Outputs to stdout a summary of changes based on the symbol lists."""
   print 'Symbol statistics:'
@@ -284,7 +173,7 @@ def CrunchStats(added, removed, changed, unchanged, showsources, showsymbols):
     sources_with_removed_symbols |
     sources_with_changed_symbols |
     maybe_unchanged_sources)
-  print 'Source stats: '
+  print 'Source stats:'
   print('  %d sources encountered.' % len(allFiles))
   print('  %d completely new.' % len(new_sources))
   print('  %d removed completely.' % len(removed_sources))
@@ -379,13 +268,7 @@ def main():
                     help='show all symbol information; implies --showfiles')
   parser.add_option('--verbose', action='store_true', default=False,
                     help='output internal debugging stuff')
-  parser.add_option('--selftest', action='store_true', default=False,
-                    help='run internal diagnosis')
   opts, _args = parser.parse_args()
-
-  if opts.selftest:
-    TestCompare()
-    return
 
   if not opts.nm1:
     parser.error('--nm1 is required')

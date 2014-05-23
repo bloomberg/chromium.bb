@@ -36,7 +36,7 @@ elf_symbolizer_path = os.path.abspath(os.path.join(
     'android',
     'pylib'))
 sys.path.append(elf_symbolizer_path)
-import symbols.elf_symbolizer as elf_symbolizer
+import symbols.elf_symbolizer as elf_symbolizer  # pylint: disable=F0401
 
 
 # TODO(andrewhayden): Only used for legacy reports. Delete.
