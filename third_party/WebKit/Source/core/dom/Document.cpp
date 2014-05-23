@@ -5669,21 +5669,44 @@ bool Document::hasFocus() const
     return false;
 }
 
+#if ENABLE(OILPAN)
+template<unsigned type>
+bool shouldInvalidateNodeListCachesForAttr(const HeapHashSet<WeakMember<const LiveNodeListBase> > nodeLists[], const QualifiedName& attrName)
+{
+    if (!nodeLists[type].isEmpty() && LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), attrName))
+        return true;
+    return shouldInvalidateNodeListCachesForAttr<type + 1>(nodeLists, attrName);
+}
+
+template<>
+bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const HeapHashSet<WeakMember<const LiveNodeListBase> >[], const QualifiedName&)
+{
+    return false;
+}
+#else
+template<unsigned type>
+bool shouldInvalidateNodeListCachesForAttr(const unsigned nodeListCounts[], const QualifiedName& attrName)
+{
+    if (nodeListCounts[type] && LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), attrName))
+        return true;
+    return shouldInvalidateNodeListCachesForAttr<type + 1>(nodeListCounts, attrName);
+}
+
+template<>
+bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const unsigned[], const QualifiedName&)
+{
+    return false;
+}
+#endif
+
 bool Document::shouldInvalidateNodeListCaches(const QualifiedName* attrName) const
 {
     if (attrName) {
-        for (int type = 1; type < numNodeListInvalidationTypes; ++type) {
 #if ENABLE(OILPAN)
-            if (m_nodeLists[type].isEmpty()) {
+        return shouldInvalidateNodeListCachesForAttr<DoNotInvalidateOnAttributeChanges + 1>(m_nodeLists, *attrName);
 #else
-            if (!m_nodeListCounts[type]) {
+        return shouldInvalidateNodeListCachesForAttr<DoNotInvalidateOnAttributeChanges + 1>(m_nodeListCounts, *attrName);
 #endif
-                continue;
-            }
-
-            if (LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), *attrName))
-                return true;
-        }
     }
 
     for (int type = 0; type < numNodeListInvalidationTypes; ++type) {
