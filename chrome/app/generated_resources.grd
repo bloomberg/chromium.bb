@@ -9122,6 +9122,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Stop sharing
       </message>
 
+      <!-- SSL Overridable Page v2 -->
+      <message name="IDS_SSL_OVERRIDABLE_TITLE" desc="The tab title for the overridable SSL interstitial.">
+        Privacy error
+      </message>
+      <message name="IDS_SSL_OVERRIDABLE_HEADING" desc="The large heading at the top of the overridable SSL interstitial.">
+        Your connection to <ph name="SITE">$1<ex>example.com</ex></ph> is not private
+      </message>
+      <message name="IDS_SSL_OVERRIDABLE_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the overridable SSL interstitial.">
+        Attackers might be trying to steal your information from <ph name="SITE">$1<ex>google.com</ex></ph> (for example, passwords, messages, or credit cards).
+      </message>
+      <message name="IDS_SSL_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
+        Back to safety
+      </message>
+      <message name="IDS_SSL_OVERRIDABLE_DETAILS_BUTTON" desc="The text for the button that expands the details.">
+        Details
+      </message>
+      <message name="IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH" desc="The text for the paragraph at the bottom with the proceed link.">
+        To stay safe, try again later when this temporary problem has been resolved. If you understand the privacy risks, you may <ph name="BEGIN_LINK">&lt;a id="proceed-link"&gt;</ph>use an unsafe connection<ph name="END_LINK">&lt;/a&gt;</ph> to visit <ph name="SITE">$1<ex>example.com</ex></ph>.
+      </message>
+
       <!-- SSL Road Block (Overridable) Page -->
       <message name="IDS_SSL_OVERRIDABLE_PAGE_TITLE" desc="The title of the overridable SSL interstitial.">
         SSL Error
