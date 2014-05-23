@@ -237,6 +237,7 @@ void AccountReconcilor::Shutdown() {
   merge_session_helper_.CancelAll();
   merge_session_helper_.RemoveObserver(this);
   gaia_fetcher_.reset();
+  get_gaia_accounts_callbacks_.clear();
   DeleteFetchers();
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
@@ -349,6 +350,7 @@ void AccountReconcilor::GoogleSigninSucceeded(const std::string& username,
 void AccountReconcilor::GoogleSignedOut(const std::string& username) {
   VLOG(1) << "AccountReconcilor::GoogleSignedOut: signed out";
   gaia_fetcher_.reset();
+  get_gaia_accounts_callbacks_.clear();
   AbortReconcile();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
