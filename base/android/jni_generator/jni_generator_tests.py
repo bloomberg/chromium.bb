@@ -148,6 +148,8 @@ class TestGenerator(unittest.TestCase):
             int nativeDataFetcherImplAndroid,
             double alpha, double beta, double gamma);
     """
+    jni_generator.JniParams.SetFullyQualifiedClass(
+        'org/chromium/example/jni_generator/SampleForTests')
     jni_generator.JniParams.ExtractImportsAndInnerClasses(test_data)
     natives = jni_generator.ExtractNatives(test_data, 'int')
     golden_natives = [
@@ -1033,7 +1035,7 @@ class Foo {
     # Ensure it's fine with the import.
     generate('import java.lang.Runnable;')
 
-  def testJNIAdditionalImport(self):
+  def testSingleJNIAdditionalImport(self):
     test_data = """
     package org.chromium.foo;
 
@@ -1045,6 +1047,27 @@ class Foo {
     }
 
     private static native void nativeDoSomething(Bar.Callback callback);
+    }
+    """
+    jni_from_java = jni_generator.JNIFromJavaSource(test_data,
+                                                    'org/chromium/foo/Foo',
+                                                    TestOptions())
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testMultipleJNIAdditionalImport(self):
+    test_data = """
+    package org.chromium.foo;
+
+    @JNIAdditionalImport({Bar1.class, Bar2.class})
+    class Foo {
+
+    @CalledByNative
+    private static void calledByNative(Bar1.Callback callback1,
+                                       Bar2.Callback callback2) {
+    }
+
+    private static native void nativeDoSomething(Bar1.Callback callback1,
+                                                 Bar2.Callback callback2);
     }
     """
     jni_from_java = jni_generator.JNIFromJavaSource(test_data,
