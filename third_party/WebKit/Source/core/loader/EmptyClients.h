@@ -293,7 +293,6 @@ public:
     virtual bool canCopyCut(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }
     virtual bool canPaste(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }
 
-    virtual void didExecuteCommand(String) OVERRIDE { }
     virtual bool handleKeyboardEvent() OVERRIDE { return false; }
 };
 

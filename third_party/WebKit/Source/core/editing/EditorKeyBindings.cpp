@@ -52,17 +52,11 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt)
         // (e.g. Tab that inserts a Tab character, or Enter).
         if (command.isTextInsertion() || commandName.isEmpty())
             return false;
-        if (command.execute(evt)) {
-            client().didExecuteCommand(commandName);
-            return true;
-        }
-        return false;
+        return command.execute(evt);
     }
 
-    if (command.execute(evt)) {
-        client().didExecuteCommand(commandName);
+    if (command.execute(evt))
         return true;
-    }
 
     if (!behavior().shouldInsertCharacter(*evt) || !canEdit())
         return false;

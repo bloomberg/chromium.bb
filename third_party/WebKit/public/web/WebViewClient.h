@@ -136,7 +136,6 @@ public:
     // operations.
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void didChangeContents() { }
-    virtual void didExecuteCommand(const WebString& commandName) { }
 
     // This method is called in response to WebView's handleInputEvent()
     // when the default action for the current keyboard event is not

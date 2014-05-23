@@ -76,12 +76,6 @@ bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
     return webFrame->permissionClient()->allowReadFromClipboard(defaultValue);
 }
 
-void EditorClientImpl::didExecuteCommand(String commandName)
-{
-    if (m_webView->client())
-        m_webView->client()->didExecuteCommand(WebString(commandName));
-}
-
 bool EditorClientImpl::handleKeyboardEvent()
 {
     return m_webView->client() && m_webView->client()->handleCurrentKeyboardEvent();

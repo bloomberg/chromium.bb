@@ -46,7 +46,6 @@ public:
     virtual bool canCopyCut(LocalFrame*, bool defaultValue) const = 0;
     virtual bool canPaste(LocalFrame*, bool defaultValue) const = 0;
 
-    virtual void didExecuteCommand(String) = 0;
     virtual bool handleKeyboardEvent() = 0;
 };
 

@@ -52,7 +52,6 @@ public:
     virtual void respondToChangedSelection(WebCore::LocalFrame*, WebCore::SelectionType) OVERRIDE;
     virtual bool canCopyCut(WebCore::LocalFrame*, bool defaultValue) const OVERRIDE;
     virtual bool canPaste(WebCore::LocalFrame*, bool defaultValue) const OVERRIDE;
-    virtual void didExecuteCommand(String commandName) OVERRIDE;
     virtual bool handleKeyboardEvent() OVERRIDE;
 
 private:
