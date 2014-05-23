@@ -136,6 +136,11 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     EXPECT_EQ(expected_x, NSMinX(sheet_frame));
   }
 
+  CGFloat GetSheetYOffset(NSRect sheet_frame, NSView* parent_view) {
+    return NSMaxY(sheet_frame) -
+           NSMaxY(GetViewFrameInScreenCoordinates(parent_view));
+  }
+
   base::scoped_nsobject<NSWindow> sheet_window_;
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
   base::scoped_nsobject<ConstrainedWindowSheetController> controller_;
@@ -252,6 +257,31 @@ TEST_F(ConstrainedWindowSheetControllerTest, ResizeHiddenSheet) {
   NSRect new_active_frame = [sheet_window_ frame];
   EXPECT_EQ(NSWidth(new_inactive_frame), NSWidth(new_active_frame));
   EXPECT_EQ(NSHeight(new_inactive_frame), NSHeight(new_active_frame));
+}
+
+// Test resizing parent window keeps the sheet anchored.
+TEST_F(ConstrainedWindowSheetControllerTest, ResizeParentWindow) {
+  [controller_ showSheet:sheet_ forParentView:active_tab_view_];
+  CGFloat sheet_offset =
+      GetSheetYOffset([sheet_window_ frame], active_tab_view_);
+
+  // Test 3x3 different parent window sizes.
+  CGFloat insets[] = {-10, 0, 10};
+  NSRect old_frame = [test_window() frame];
+
+  for (size_t x = 0; x < sizeof(insets) / sizeof(CGFloat); x++) {
+    for (size_t y = 0; y < sizeof(insets) / sizeof(CGFloat); y++) {
+      NSRect resized_frame = NSInsetRect(old_frame, insets[x], insets[y]);
+      [test_window() setFrame:resized_frame display:YES];
+      NSRect sheet_frame = [sheet_window_ frame];
+
+      // Y pos should track parent view's position.
+      EXPECT_EQ(sheet_offset, GetSheetYOffset(sheet_frame, active_tab_view_));
+
+      // X pos should be centered on parent view.
+      VerifySheetXPosition(sheet_frame, active_tab_view_);
+    }
+  }
 }
 
 // Test system sheets.

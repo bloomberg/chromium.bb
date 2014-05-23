@@ -35,7 +35,7 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 - (ConstrainedWindowSheetInfo*)
     findSheetInfoForSheet:(id<ConstrainedWindowSheet>)sheet;
 - (void)onParentWindowWillClose:(NSNotification*)note;
-- (void)onParentViewFrameDidChange:(NSNotification*)note;
+- (void)onParentWindowSizeDidChange:(NSNotification*)note;
 - (void)updateSheetPosition:(NSView*)parentView;
 - (NSRect)overlayWindowFrameForParentView:(NSView*)parentView;
 - (NSPoint)originForSheetSize:(NSSize)sheetSize
@@ -130,13 +130,12 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   if (!activeView_.get())
     activeView_.reset([parentView retain]);
 
-  // Observer the parent view's frame.
-  [parentView setPostsFrameChangedNotifications:YES];
+  // Observe the parent window's size.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(onParentViewFrameDidChange:)
-             name:NSViewFrameDidChangeNotification
-           object:parentView];
+         selector:@selector(onParentWindowSizeDidChange:)
+             name:NSWindowDidResizeNotification
+           object:parentWindow_];
 
   // Create an invisible overlay window.
   NSRect rect = [self overlayWindowFrameForParentView:parentView];
@@ -228,11 +227,8 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   }
 }
 
-- (void)onParentViewFrameDidChange:(NSNotification*)note {
-  NSView* parentView = [note object];
-  if (![activeView_ isEqual:parentView])
-    return;
-  [self updateSheetPosition:parentView];
+- (void)onParentWindowSizeDidChange:(NSNotification*)note {
+  [self updateSheetPosition:activeView_];
 }
 
 - (void)updateSheetPosition:(NSView*)parentView {
@@ -293,8 +289,8 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
-                name:NSViewFrameDidChangeNotification
-              object:[info parentView]];
+                name:NSWindowDidResizeNotification
+              object:parentWindow_];
 
   [parentWindow_ removeChildWindow:[info overlayWindow]];
   [[info sheet] closeSheetWithAnimation:withAnimation];
