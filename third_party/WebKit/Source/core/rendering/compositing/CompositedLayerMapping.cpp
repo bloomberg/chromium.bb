@@ -551,9 +551,16 @@ void CompositedLayerMapping::computeBoundsOfOwningLayer(const RenderLayer* compo
     compositingBoundsRelativeToCompositedAncestor.moveBy(snappedOffsetFromCompositedAncestor);
 }
 
-void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& offsetFromReferenceLayerToParentGraphicsLayer, const RenderLayer& referenceLayer,
-    Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer& graphicsLayer, LayoutPoint* offsetFromTransformedAncestor)
+void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer,
+    Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer* squashingLayer, LayoutPoint* offsetFromTransformedAncestor)
 {
+    if (!squashingLayer)
+        return;
+    ASSERT(compositor()->layerSquashingEnabled());
+
+    LayoutPoint offsetFromReferenceLayerToParentGraphicsLayer(offsetFromCompositedAncestor);
+    offsetFromReferenceLayerToParentGraphicsLayer.moveBy(-graphicsLayerParentLocation);
+
     // FIXME: Cache these offsets.
     LayoutPoint referenceOffsetFromTransformedAncestor = referenceLayer.computeOffsetFromTransformedAncestor();
 
@@ -583,8 +590,8 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
     IntPoint squashLayerOrigin = squashLayerBounds.location();
     LayoutSize squashLayerOriginInOwningLayerSpace = squashLayerOrigin - offsetFromReferenceLayerToParentGraphicsLayer;
 
-    graphicsLayer.setPosition(squashLayerBounds.location());
-    graphicsLayer.setSize(squashLayerBounds.size());
+    squashingLayer->setPosition(squashLayerBounds.location());
+    squashingLayer->setSize(squashLayerBounds.size());
 
     // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
     // from CLM owning layer space to the squashing layer space.
@@ -635,20 +642,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
     m_owningLayer.updateDescendantDependentFlags();
 
-    // m_graphicsLayer is the corresponding GraphicsLayer for this RenderLayer and its non-compositing
-    // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
-    // non-compositing visible layers.
-    bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer()->isVideo()) {
-        HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer()->node());
-        if (mediaElement->isFullscreen())
-            contentsVisible = false;
-    }
-    m_graphicsLayer->setContentsVisible(contentsVisible);
-
-    RenderStyle* style = renderer()->style();
-    m_graphicsLayer->setBackfaceVisibility(style->backfaceVisibility() == BackfaceVisibilityVisible);
-
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;
     if (compositingContainer) {
@@ -670,12 +663,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
     FloatSize contentsSize = relativeCompositingBounds.size();
 
-    m_graphicsLayer->setPosition(FloatPoint(relativeCompositingBounds.location() - graphicsLayerParentLocation));
-    m_graphicsLayer->setOffsetFromRenderer(toIntSize(localCompositingBounds.location()));
-
-    FloatSize oldSize = m_graphicsLayer->size();
-    if (oldSize != contentsSize)
-        m_graphicsLayer->setSize(contentsSize);
+    updateMainGraphicsLayerGeometry(relativeCompositingBounds, localCompositingBounds, graphicsLayerParentLocation);
+    updateSquashingLayerGeometry(offsetFromCompositedAncestor, graphicsLayerParentLocation, m_owningLayer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor);
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
@@ -693,20 +682,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     updateScrollingLayerGeometry(localCompositingBounds);
     updateChildClippingMaskLayerGeometry();
 
-    {
-        LayoutPoint offsetFromReferenceLayerToParentGaphicsLayer(offsetFromCompositedAncestor);
-        offsetFromReferenceLayerToParentGaphicsLayer.moveBy(-graphicsLayerParentLocation);
-        if (m_squashingLayer) {
-            ASSERT(compositor()->layerSquashingEnabled());
-            updateSquashingLayerGeometry(offsetFromReferenceLayerToParentGaphicsLayer, m_owningLayer, m_squashedLayers, *m_squashingLayer, &m_squashingLayerOffsetFromTransformedAncestor);
-        }
-    }
-
     if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
         m_owningLayer.scrollableArea()->positionOverflowControls();
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
-        updateLayerBlendMode(style);
+        updateLayerBlendMode(renderer()->style());
         updateIsRootForIsolatedGroup();
     }
 
@@ -722,6 +702,30 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     registerScrollingLayers();
 
     updateCompositingReasons();
+}
+
+void CompositedLayerMapping::updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, IntPoint& graphicsLayerParentLocation)
+{
+    m_graphicsLayer->setPosition(FloatPoint(relativeCompositingBounds.location() - graphicsLayerParentLocation));
+    m_graphicsLayer->setOffsetFromRenderer(toIntSize(localCompositingBounds.location()));
+
+    FloatSize oldSize = m_graphicsLayer->size();
+    const IntSize& contentsSize = relativeCompositingBounds.size();
+    if (oldSize != contentsSize)
+        m_graphicsLayer->setSize(contentsSize);
+
+    // m_graphicsLayer is the corresponding GraphicsLayer for this RenderLayer and its non-compositing
+    // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
+    // non-compositing visible layers.
+    bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer()->isVideo()) {
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer()->node());
+        if (mediaElement->isFullscreen())
+            contentsVisible = false;
+    }
+    m_graphicsLayer->setContentsVisible(contentsVisible);
+
+    m_graphicsLayer->setBackfaceVisibility(renderer()->style()->backfaceVisibility() == BackfaceVisibilityVisible);
 }
 
 void CompositedLayerMapping::computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation)

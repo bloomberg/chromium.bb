@@ -211,6 +211,8 @@ private:
 
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
+    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor);
+    void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const RenderLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
     void updateChildTransformLayerGeometry();
@@ -260,8 +262,6 @@ private:
 
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
-
-    static void updateSquashingLayerGeometry(const LayoutPoint& offsetFromReferenceLayerToParentGraphicsLayer, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer&, LayoutPoint* offsetFromTransformedAncestor);
 
     void updateOpacity(const RenderStyle*);
     void updateTransform(const RenderStyle*);
