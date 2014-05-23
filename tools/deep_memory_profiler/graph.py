@@ -26,7 +26,7 @@ function turnOn(policy) {
   var data = google.visualization.arrayToDataTable(all_data[policy]);
   var charOptions = {
     title: 'DMP Graph (Policy: ' + policy + ')',
-    vAxis: {title: 'Timestamp',  titleTextStyle: {color: 'red'}},
+    hAxis: {title: 'Timestamp',  titleTextStyle: {color: 'red'}},
     isStacked : true
   };
   var chart = new google.visualization.AreaChart(
