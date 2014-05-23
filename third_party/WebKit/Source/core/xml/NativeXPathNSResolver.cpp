@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-NativeXPathNSResolver::NativeXPathNSResolver(PassRefPtr<Node> node)
+NativeXPathNSResolver::NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node> node)
     : m_node(node)
 {
 }
@@ -53,6 +53,7 @@ AtomicString NativeXPathNSResolver::lookupNamespaceURI(const String& prefix)
 
 void NativeXPathNSResolver::trace(Visitor* visitor)
 {
+    visitor->trace(m_node);
     XPathNSResolver::trace(visitor);
 }
 

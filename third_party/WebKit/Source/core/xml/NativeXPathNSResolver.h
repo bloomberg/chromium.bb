@@ -35,7 +35,7 @@ class Node;
 
 class NativeXPathNSResolver FINAL : public XPathNSResolver {
 public:
-    static PassRefPtrWillBeRawPtr<NativeXPathNSResolver> create(PassRefPtr<Node> node)
+    static PassRefPtrWillBeRawPtr<NativeXPathNSResolver> create(PassRefPtrWillBeRawPtr<Node> node)
     {
         return adoptRefWillBeNoop(new NativeXPathNSResolver(node));
     }
@@ -46,8 +46,9 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    explicit NativeXPathNSResolver(PassRefPtr<Node>);
-    RefPtr<Node> m_node;
+    explicit NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node>);
+
+    RefPtrWillBeMember<Node> m_node;
 };
 
 } // namespace WebCore

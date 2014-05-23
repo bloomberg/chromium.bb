@@ -332,12 +332,12 @@ PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const
     return d.release();
 }
 
-PassRefPtr<Document> DOMImplementation::createDocument(const String& type, LocalFrame* frame, const KURL& url, bool inViewSourceMode)
+PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String& type, LocalFrame* frame, const KURL& url, bool inViewSourceMode)
 {
     return createDocument(type, DocumentInit(url, frame), inViewSourceMode);
 }
 
-PassRefPtr<Document> DOMImplementation::createDocument(const String& type, const DocumentInit& init, bool inViewSourceMode)
+PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String& type, const DocumentInit& init, bool inViewSourceMode)
 {
     if (inViewSourceMode)
         return HTMLViewSourceDocument::create(init, type);

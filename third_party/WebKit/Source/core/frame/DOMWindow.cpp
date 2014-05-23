@@ -363,9 +363,9 @@ void DOMWindow::clearEventQueue()
     m_eventQueue.clear();
 }
 
-PassRefPtr<Document> DOMWindow::createDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
+PassRefPtrWillBeRawPtr<Document> DOMWindow::createDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
 {
-    RefPtr<Document> document;
+    RefPtrWillBeRawPtr<Document> document = nullptr;
     if (forceXHTML) {
         // This is a hack for XSLTProcessor. See XSLTProcessor::createDocumentFromSource().
         document = Document::create(init);
@@ -378,7 +378,7 @@ PassRefPtr<Document> DOMWindow::createDocument(const String& mimeType, const Doc
     return document.release();
 }
 
-PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
+PassRefPtrWillBeRawPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
 {
     ASSERT(init.frame() == m_frame);
 
@@ -388,8 +388,10 @@ PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const
     m_eventQueue = DOMWindowEventQueue::create(m_document.get());
     m_document->attach();
 
-    if (!m_frame)
-        return m_document;
+    if (!m_frame) {
+        // FIXME: Oilpan: Remove .get() when m_document becomes Member<>.
+        return m_document.get();
+    }
 
     m_frame->script().updateDocument();
     m_document->updateViewportDescription();
@@ -410,7 +412,8 @@ PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const
             m_frame->host()->chrome().client().needTouchEvents(true);
     }
 
-    return m_document;
+    // FIXME: Oilpan: Remove .get() when m_document becomes Member<>.
+    return m_document.get();
 }
 
 EventQueue* DOMWindow::eventQueue() const

@@ -37,7 +37,7 @@ public:
         return adoptRefWillBeNoop(new DOMParser);
     }
 
-    PassRefPtr<Document> parseFromString(const String&, const String& contentType, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Document> parseFromString(const String&, const String& contentType, ExceptionState&);
 
     void trace(Visitor*) { }
 

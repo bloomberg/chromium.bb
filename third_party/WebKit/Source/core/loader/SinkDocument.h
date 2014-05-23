@@ -32,9 +32,9 @@ namespace WebCore {
 
 class SinkDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new SinkDocument(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new SinkDocument(initializer));
     }
 
 private:

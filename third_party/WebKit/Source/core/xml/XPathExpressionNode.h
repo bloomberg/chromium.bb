@@ -40,7 +40,7 @@ namespace WebCore {
         struct EvaluationContext {
             WTF_MAKE_FAST_ALLOCATED;
         public:
-            RefPtr<Node> node;
+            RefPtrWillBePersistent<Node> node;
             unsigned long size;
             unsigned long position;
             HashMap<String, String> variableBindings;

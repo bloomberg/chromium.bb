@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
 {
     // HTML5 is very explicit about which types we're allowed to support here:
     // http://domparsing.spec.whatwg.org/#the-domparser-interface
@@ -38,7 +38,7 @@ PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String&
         return nullptr;
     }
 
-    RefPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);
+    RefPtrWillBeRawPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);
     doc->setContent(str);
     return doc.release();
 }

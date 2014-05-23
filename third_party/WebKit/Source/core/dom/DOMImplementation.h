@@ -64,8 +64,8 @@ public:
     PassRefPtrWillBeRawPtr<HTMLDocument> createHTMLDocument(const String& title);
 
     // Other methods (not part of DOM)
-    static PassRefPtr<Document> createDocument(const String& mimeType, LocalFrame*, const KURL&, bool inViewSourceMode);
-    static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool inViewSourceMode);
+    static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, LocalFrame*, const KURL&, bool inViewSourceMode);
+    static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool inViewSourceMode);
 
     static bool isXMLMIMEType(const String&);
     static bool isTextMIMEType(const String&);

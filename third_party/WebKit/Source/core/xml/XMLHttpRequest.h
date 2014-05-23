@@ -233,7 +233,7 @@ private:
     // Used to skip m_responseDocument creation if it's done previously. We need
     // this separate flag since m_responseDocument can be 0 for some cases.
     bool m_createdDocument;
-    RefPtr<Document> m_responseDocument;
+    RefPtrWillBeMember<Document> m_responseDocument;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     RefPtr<ArrayBuffer> m_responseArrayBuffer;

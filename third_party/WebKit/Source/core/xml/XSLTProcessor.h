@@ -50,16 +50,16 @@ public:
 
     void setXSLStyleSheet(PassRefPtrWillBeRawPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
     bool transformToString(Node* source, String& resultMIMEType, String& resultString, String& resultEncoding);
-    PassRefPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame* frame);
+    PassRefPtrWillBeRawPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame*);
 
     // DOM methods
-    void importStylesheet(PassRefPtr<Node> style)
+    void importStylesheet(PassRefPtrWillBeRawPtr<Node> style)
     {
         if (style)
             m_stylesheetRootNode = style;
     }
     PassRefPtrWillBeRawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
-    PassRefPtr<Document> transformToDocument(Node* source);
+    PassRefPtrWillBeRawPtr<Document> transformToDocument(Node* source);
 
     void setParameter(const String& namespaceURI, const String& localName, const String& value);
     String getParameter(const String& namespaceURI, const String& localName) const;
@@ -85,7 +85,7 @@ private:
     }
 
     RefPtrWillBeMember<XSLStyleSheet> m_stylesheet;
-    RefPtr<Node> m_stylesheetRootNode;
+    RefPtrWillBeMember<Node> m_stylesheetRootNode;
     ParameterMap m_parameters;
 };
 

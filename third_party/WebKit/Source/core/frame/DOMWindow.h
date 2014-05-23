@@ -96,14 +96,14 @@ enum PageshowEventPersistence {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
         DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<DOMWindow>);
     public:
-        static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
+        static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
         static PassRefPtrWillBeRawPtr<DOMWindow> create(LocalFrame& frame)
         {
             return adoptRefWillBeRefCountedGarbageCollected(new DOMWindow(frame));
         }
         virtual ~DOMWindow();
 
-        PassRefPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
+        PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual ExecutionContext* executionContext() const OVERRIDE;
