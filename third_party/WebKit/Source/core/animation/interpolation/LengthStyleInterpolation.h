@@ -6,14 +6,15 @@
 #define LengthStyleInterpolation_h
 
 #include "core/animation/interpolation/StyleInterpolation.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id)
+    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id,  ValueRange range)
     {
-        return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id));
+        return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id, range));
     }
 
     static bool canCreateFrom(const CSSValue&);
@@ -23,12 +24,15 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
+    LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id,  ValueRange range)
         : StyleInterpolation(start, end, id)
+        , m_range(range)
     { }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue*);
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*);
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*, ValueRange);
+
+    ValueRange m_range;
 
     friend class AnimationLengthStyleInterpolationTest;
 };

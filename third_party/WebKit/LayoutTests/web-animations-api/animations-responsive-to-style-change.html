@@ -8,6 +8,8 @@
 
 <script>
 var element = document.getElementById('element');
+var container = document.getElementById('container');
+
 test(function() {
     element.style.fontSize = '10px';
     container.style.width = '1000px';
@@ -20,5 +22,23 @@ test(function() {
     container.style.width = '500px';
     assert_equals(getComputedStyle(element).left, '350px');
 }, 'Lengths responsive to style changes');
-</script>
 
+test(function() {
+    container.style.width = '1000px';
+    var player = element.animate([{paddingTop: '30%', offset: 0}, {paddingTop: '50%', offset: 1}], 10);
+    player.pause();
+    player.currentTime = 5;
+    container.style.width = '700px';
+    assert_equals(getComputedStyle(element).paddingTop, '280px');
+}, 'Percentages responsive to width style changes');
+
+test(function() {
+    element.style.fontSize = '1px';
+    var player = element.animate([{lineHeight: '9', offset: 0}, {lineHeight: '13', offset: 1}], 10);
+    player.pause();
+    player.currentTime = 2.5;
+    element.style.fontSize = '7px';
+    assert_equals(getComputedStyle(element).lineHeight, '70px');
+}, 'Numbers responsive to style changes');
+
+</script>

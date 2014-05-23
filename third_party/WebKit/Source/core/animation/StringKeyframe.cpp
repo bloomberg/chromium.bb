@@ -68,17 +68,46 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end)->value();
+    ValueRange range = ValueRangeAll;
 
     if (!CSSAnimations::isAnimatableProperty(property))
         return DefaultStyleInterpolation::create(fromCSSValue, toCSSValue, property);
 
+    // FIXME: add non-negative CSSPropertyFontSize and CSSPropertyOutlineWidth
     switch (property) {
-    case CSSPropertyLeft:
-    case CSSPropertyRight:
-    case CSSPropertyWidth:
+    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyBorderRightWidth:
+    case CSSPropertyBorderTopWidth:
     case CSSPropertyHeight:
+    case CSSPropertyLineHeight:
+    case CSSPropertyMaxHeight:
+    case CSSPropertyMaxWidth:
+    case CSSPropertyMinHeight:
+    case CSSPropertyMinWidth:
+    case CSSPropertyPaddingBottom:
+    case CSSPropertyPaddingLeft:
+    case CSSPropertyPaddingRight:
+    case CSSPropertyPaddingTop:
+    case CSSPropertyPerspective:
+    case CSSPropertyShapeMargin:
+    case CSSPropertyWidth:
+        range = ValueRangeNonNegative;
+        // Fall through
+    case CSSPropertyBottom:
+    case CSSPropertyLeft:
+    case CSSPropertyLetterSpacing:
+    case CSSPropertyMarginBottom:
+    case CSSPropertyMarginLeft:
+    case CSSPropertyMarginRight:
+    case CSSPropertyMarginTop:
+    case CSSPropertyOutlineOffset:
+    case CSSPropertyRight:
+    case CSSPropertyTop:
+    case CSSPropertyVerticalAlign:
+    case CSSPropertyWordSpacing:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+            return LengthStyleInterpolation::create(fromCSSValue, toCSSValue, property, range);
         break;
     default:
         break;

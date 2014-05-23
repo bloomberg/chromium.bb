@@ -19,14 +19,14 @@ protected:
         return LengthStyleInterpolation::lengthToInterpolableValue(value);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue* value)
+    static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue* value, ValueRange range)
     {
-        return LengthStyleInterpolation::interpolableValueToLength(value);
+        return LengthStyleInterpolation::interpolableValueToLength(value, range);
     }
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToLength(lengthToInterpolableValue(value.get()).get());
+        return interpolableValueToLength(lengthToInterpolableValue(value.get()).get(), ValueRangeAll);
     }
 
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, CSSPrimitiveValue::UnitTypes unitType)
@@ -95,6 +95,16 @@ TEST_F(AnimationLengthStyleInterpolationTest, SingleUnit)
 
     value = roundTrip(CSSPrimitiveValue::create(30, CSSPrimitiveValue::CSS_PERCENTAGE));
     testPrimitiveValue(value, 30, CSSPrimitiveValue::CSS_PERCENTAGE);
+
+    value = roundTrip(CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS));
+    testPrimitiveValue(value, -10, CSSPrimitiveValue::CSS_EMS);
+}
+
+TEST_F(AnimationLengthStyleInterpolationTest, SingleClampedUnit)
+{
+    RefPtrWillBeRawPtr<CSSValue> value = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS);
+    value = interpolableValueToLength(lengthToInterpolableValue(value.get()).get(), ValueRangeNonNegative);
+    testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_EMS);
 }
 
 TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)
@@ -102,7 +112,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)
     CSSLengthArray actual, expectation;
     initLengthArray(expectation);
     OwnPtrWillBeRawPtr<InterpolableList> list = createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10);
-    toCSSPrimitiveValue(interpolableValueToLength(list.get()).get())->accumulateLengthArray(expectation);
+    toCSSPrimitiveValue(interpolableValueToLength(list.get(), ValueRangeAll).get())->accumulateLengthArray(expectation);
     EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(10%% + 10ex + 10ch + 10vh + 10vmax)")));
 }
 

@@ -66,7 +66,7 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> constructCalcExpression(Pas
 
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLength(InterpolableValue* value)
+PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLength(InterpolableValue* value, ValueRange range)
 {
     InterpolableList* listValue = toInterpolableList(value);
     unsigned unitCount = 0;
@@ -83,18 +83,22 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthStyleInterpolation::interpolableValueToLe
     case 1:
         for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
             const InterpolableNumber* subValue = toInterpolableNumber(listValue->get(i));
-            if (subValue->value()) {
-                return CSSPrimitiveValue::create(subValue->value(), toUnitType(i));
+            double value = subValue->value();
+            if (value) {
+                if (range == ValueRangeNonNegative && value < 0)
+                    value = 0;
+                return CSSPrimitiveValue::create(value, toUnitType(i));
             }
         }
+        ASSERT_NOT_REACHED();
     default:
-        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listValue, 0)));
+        return CSSPrimitiveValue::create(CSSCalcValue::create(constructCalcExpression(nullptr, listValue, 0), range));
     }
 }
 
 void LengthStyleInterpolation::apply(StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_id, state, interpolableValueToLength(m_cachedValue.get()).get());
+    StyleBuilder::applyProperty(m_id, state, interpolableValueToLength(m_cachedValue.get(), m_range).get());
 }
 
 void LengthStyleInterpolation::trace(Visitor* visitor)
