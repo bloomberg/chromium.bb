@@ -118,9 +118,14 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.clip() == b.clip();
     case CSSPropertyColor:
         return a.color() == b.color() && a.visitedLinkColor() == b.visitedLinkColor();
-    case CSSPropertyFill:
-        return a.fillPaintType() == b.fillPaintType()
-            && (a.fillPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || a.fillPaintColor() == b.fillPaintColor());
+    case CSSPropertyFill: {
+        const SVGRenderStyle& aSVG = *a.svgStyle();
+        const SVGRenderStyle& bSVG = *b.svgStyle();
+        return aSVG.fillPaintType() == bSVG.fillPaintType()
+            && (aSVG.fillPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
+            && aSVG.visitedLinkFillPaintType() == bSVG.visitedLinkFillPaintType()
+            && (aSVG.visitedLinkFillPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkFillPaintColor() == bSVG.visitedLinkFillPaintColor());
+    }
     case CSSPropertyFillOpacity:
         return a.fillOpacity() == b.fillOpacity();
     case CSSPropertyFlexBasis:
@@ -202,9 +207,14 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.stopColor() == b.stopColor();
     case CSSPropertyStopOpacity:
         return a.stopOpacity() == b.stopOpacity();
-    case CSSPropertyStroke:
-        return a.strokePaintType() == b.strokePaintType()
-            && (a.strokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || a.strokePaintColor() == b.strokePaintColor());
+    case CSSPropertyStroke: {
+        const SVGRenderStyle& aSVG = *a.svgStyle();
+        const SVGRenderStyle& bSVG = *b.svgStyle();
+        return aSVG.strokePaintType() == bSVG.strokePaintType()
+            && (aSVG.strokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
+            && aSVG.visitedLinkStrokePaintType() == bSVG.visitedLinkStrokePaintType()
+            && (aSVG.visitedLinkStrokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkStrokePaintColor() == bSVG.visitedLinkStrokePaintColor());
+    }
     case CSSPropertyStrokeDasharray:
         return dataEquivalent(a.strokeDashArray(), b.strokeDashArray());
     case CSSPropertyStrokeDashoffset:

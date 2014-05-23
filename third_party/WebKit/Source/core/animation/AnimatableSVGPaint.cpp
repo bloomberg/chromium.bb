@@ -36,25 +36,30 @@ namespace WebCore {
 bool AnimatableSVGPaint::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-    return paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR;
+    return (paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR)
+        && (visitedLinkPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->visitedLinkPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR);
 }
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableValue* value, double fraction) const
 {
+    if (usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
+
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-    if (paintType() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR && svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR) {
-        ASSERT(uri().isNull());
-        return AnimatableSVGPaint::create(SVGPaint::SVG_PAINTTYPE_RGBCOLOR, m_color.interpolateTo(svgPaint->m_color, fraction), String());
-    }
-    return defaultInterpolateTo(this, value, fraction);
+    RefPtr<AnimatableColor> color = toAnimatableColor(AnimatableValue::interpolate(m_color.get(), svgPaint->m_color.get(), fraction).get());
+    if (fraction < 0.5)
+        return create(paintType(), visitedLinkPaintType(), color, uri(), visitedLinkURI());
+    return create(svgPaint->paintType(), svgPaint->visitedLinkPaintType(), color, svgPaint->uri(), svgPaint->visitedLinkURI());
 }
 
 bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
     return paintType() == svgPaint->paintType()
+        && visitedLinkPaintType() == svgPaint->visitedLinkPaintType()
         && color() == svgPaint->color()
-        && uri() == svgPaint->uri();
+        && uri() == svgPaint->uri()
+        && visitedLinkURI() == svgPaint->visitedLinkURI();
 }
 
 }

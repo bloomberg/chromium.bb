@@ -351,7 +351,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFill:
         {
             const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-            style->accessSVGStyle()->setFillPaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri());
+            style->accessSVGStyle()->setFillPaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri(), true, false);
+            style->accessSVGStyle()->setFillPaint(svgPaint->visitedLinkPaintType(), svgPaint->visitedLinkColor(), svgPaint->visitedLinkURI(), false, true);
         }
         return;
     case CSSPropertyFlexGrow:
@@ -479,7 +480,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyStroke:
         {
             const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-            style->accessSVGStyle()->setStrokePaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri());
+            style->accessSVGStyle()->setStrokePaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri(), true, false);
+            style->accessSVGStyle()->setStrokePaint(svgPaint->visitedLinkPaintType(), svgPaint->visitedLinkColor(), svgPaint->visitedLinkURI(), false, true);
         }
         return;
     case CSSPropertyTextDecorationColor:

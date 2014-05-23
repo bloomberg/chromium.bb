@@ -323,7 +323,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyFillOpacity:
         return createFromDouble(style.fillOpacity());
     case CSSPropertyFill:
-        return AnimatableSVGPaint::create(style.svgStyle()->fillPaintType(), style.svgStyle()->fillPaintColor(), style.svgStyle()->fillPaintUri());
+        return AnimatableSVGPaint::create(
+            style.svgStyle()->fillPaintType(), style.svgStyle()->visitedLinkFillPaintType(),
+            style.svgStyle()->fillPaintColor(), style.svgStyle()->visitedLinkFillPaintColor(),
+            style.svgStyle()->fillPaintUri(), style.svgStyle()->visitedLinkFillPaintUri());
     case CSSPropertyFlexGrow:
         return createFromDouble(style.flexGrow(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
     case CSSPropertyFlexShrink:
@@ -407,7 +410,10 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyStrokeOpacity:
         return createFromDouble(style.strokeOpacity());
     case CSSPropertyStroke:
-        return AnimatableSVGPaint::create(style.svgStyle()->strokePaintType(), style.svgStyle()->strokePaintColor(), style.svgStyle()->strokePaintUri());
+        return AnimatableSVGPaint::create(
+            style.svgStyle()->strokePaintType(), style.svgStyle()->visitedLinkStrokePaintType(),
+            style.svgStyle()->strokePaintColor(), style.svgStyle()->visitedLinkStrokePaintColor(),
+            style.svgStyle()->strokePaintUri(), style.svgStyle()->visitedLinkStrokePaintUri());
     case CSSPropertyTextDecorationColor:
         return AnimatableColor::create(style.textDecorationColor().resolve(style.color()), style.visitedLinkTextDecorationColor().resolve(style.visitedLinkColor()));
     case CSSPropertyTextIndent:

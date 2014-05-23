@@ -80,14 +80,6 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         ::std::string("AnimatableSVGLength(1cm)"),
         PrintToString(AnimatableSVGLength::create(length1cm)));
 
-    EXPECT_EQ(
-        ::std::string("AnimatableSVGPaint(#ff0000)"),
-        PrintToString(AnimatableSVGPaint::create(SVGPaint::SVG_PAINTTYPE_RGBCOLOR, Color(0xFFFF0000), "")));
-
-    EXPECT_EQ(
-        ::std::string("AnimatableSVGPaint(url(abc))"),
-        PrintToString(AnimatableSVGPaint::create(SVGPaint::SVG_PAINTTYPE_URI, Color(0xFFFF0000), "abc")));
-
     EXPECT_THAT(
         PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
         testing::StartsWith("AnimatableShapeValue@"));

@@ -67,7 +67,6 @@ void PrintTo(const AnimatableImage&, ::std::ostream*);
 void PrintTo(const AnimatableNeutral&, ::std::ostream*);
 void PrintTo(const AnimatableRepeatable&, ::std::ostream*);
 void PrintTo(const AnimatableSVGLength&, ::std::ostream*);
-void PrintTo(const AnimatableSVGPaint&, ::std::ostream*);
 void PrintTo(const AnimatableShapeValue&, ::std::ostream*);
 void PrintTo(const AnimatableStrokeDasharrayList&, ::std::ostream*);
 void PrintTo(const AnimatableTransform&, ::std::ostream*);

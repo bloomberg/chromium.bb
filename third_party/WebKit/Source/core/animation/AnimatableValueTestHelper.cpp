@@ -80,18 +80,6 @@ void PrintTo(const AnimatableSVGLength& animSVGLength, ::std::ostream* os)
         << animSVGLength.toSVGLength()->valueAsString().utf8().data() << ")";
 }
 
-void PrintTo(const AnimatableSVGPaint& animSVGPaint, ::std::ostream* os)
-{
-    *os << "AnimatableSVGPaint(";
-    if (animSVGPaint.paintType() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR)
-        *os << animSVGPaint.color().serialized().utf8().data();
-    else if (animSVGPaint.paintType() == SVGPaint::SVG_PAINTTYPE_URI)
-        *os << "url(" << animSVGPaint.uri().utf8().data() << ")";
-    else
-        *os << animSVGPaint.paintType();
-    *os << ")";
-}
-
 void PrintTo(const AnimatableShapeValue& animValue, ::std::ostream* os)
 {
     *os << "AnimatableShapeValue@" << &animValue;
