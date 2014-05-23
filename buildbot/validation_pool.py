@@ -2473,7 +2473,7 @@ class ValidationPool(object):
         continue
       candidates.append(change)
 
-    suspects = ()
+    suspects = set()
     if sanity:
       # If the build was sane, calculate which changes are likely at
       # fault for the failure.
