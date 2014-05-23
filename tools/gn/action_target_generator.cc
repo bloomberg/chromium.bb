@@ -94,8 +94,13 @@ void ActionTargetGenerator::FillScript() {
   if (!value->VerifyTypeIs(Value::STRING, err_))
     return;
 
-  target_->action_values().set_script(
-      scope_->GetSourceDir().ResolveRelativeFile(value->string_value()));
+  SourceFile script_file =
+      scope_->GetSourceDir().ResolveRelativeFile(value->string_value());
+  if (script_file.value().empty()) {
+    *err_ = Err(*value, "script name is empty");
+    return;
+  }
+  target_->action_values().set_script(script_file);
 }
 
 void ActionTargetGenerator::FillScriptArgs() {
