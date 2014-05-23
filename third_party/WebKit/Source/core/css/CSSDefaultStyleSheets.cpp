@@ -89,6 +89,7 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     , m_defaultPrintStyle(nullptr)
     , m_defaultViewSourceStyle(nullptr)
     , m_defaultXHTMLMobileProfileStyle(nullptr)
+    , m_defaultTransitionStyle(nullptr)
     , m_defaultStyleSheet(nullptr)
     , m_viewportStyleSheet(nullptr)
     , m_quirksStyleSheet(nullptr)
@@ -130,6 +131,17 @@ RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
         m_defaultViewSourceStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
     return m_defaultViewSourceStyle.get();
+}
+
+RuleSet* CSSDefaultStyleSheets::defaultTransitionStyle()
+{
+    if (!m_defaultTransitionStyle) {
+        m_defaultTransitionStyle = RuleSet::create();
+        // Loaded stylesheet is leaked on purpose.
+        RefPtrWillBeRawPtr<StyleSheetContents> stylesheet = parseUASheet(navigationTransitionsUserAgentStyleSheet, sizeof(navigationTransitionsUserAgentStyleSheet));
+        m_defaultTransitionStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
+    }
+    return m_defaultTransitionStyle.get();
 }
 
 RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()

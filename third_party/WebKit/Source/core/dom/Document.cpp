@@ -456,6 +456,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
+    , m_isTransitionDocument(false)
     , m_renderView(0)
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())

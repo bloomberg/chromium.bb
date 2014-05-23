@@ -416,6 +416,9 @@ public:
     bool isSrcdocDocument() const { return m_isSrcdocDocument; }
     bool isMobileDocument() const { return m_isMobileDocument; }
 
+    bool isTransitionDocument() const { return m_isTransitionDocument; }
+    void setIsTransitionDocument() { m_isTransitionDocument = true; }
+
     StyleResolver* styleResolver() const;
     StyleResolver& ensureStyleResolver() const;
 
@@ -1325,6 +1328,7 @@ private:
     bool m_sawElementsInKnownNamespaces;
     bool m_isSrcdocDocument;
     bool m_isMobileDocument;
+    bool m_isTransitionDocument;
 
     RenderView* m_renderView;
 

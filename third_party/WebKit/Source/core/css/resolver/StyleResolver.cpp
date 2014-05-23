@@ -295,6 +295,9 @@ void StyleResolver::collectFeatures()
     if (document().isViewSource())
         m_features.add(defaultStyleSheets.defaultViewSourceStyle()->features());
 
+    if (document().isTransitionDocument())
+        m_features.add(defaultStyleSheets.defaultTransitionStyle()->features());
+
     if (m_watchedSelectorsRules)
         m_features.add(m_watchedSelectorsRules->features());
 
@@ -489,6 +492,9 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
     if (document().isViewSource())
         matchUARules(collector, defaultStyleSheets.defaultViewSourceStyle());
+
+    if (document().isTransitionDocument())
+        matchUARules(collector, defaultStyleSheets.defaultTransitionStyle());
 
     collector.setMatchingUARules(false);
 

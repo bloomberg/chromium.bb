@@ -42,6 +42,7 @@ public:
     RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
     RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
     RuleSet* defaultViewSourceStyle();
+    RuleSet* defaultTransitionStyle();
 
     // FIXME: Remove WAP support.
     RuleSet* defaultXHTMLMobileProfileStyle();
@@ -65,6 +66,7 @@ private:
     OwnPtrWillBeMember<RuleSet> m_defaultPrintStyle;
     OwnPtrWillBeMember<RuleSet> m_defaultViewSourceStyle;
     OwnPtrWillBeMember<RuleSet> m_defaultXHTMLMobileProfileStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultTransitionStyle;
 
     RefPtrWillBeMember<StyleSheetContents> m_defaultStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_viewportStyleSheet;

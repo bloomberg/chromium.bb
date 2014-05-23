@@ -538,6 +538,7 @@
               'css/themeWin.css',
               'css/themeWinQuirks.css',
               'css/svg.css',
+              'css/navigationTransitions.css',
               'css/mathml.css',
               'css/mediaControls.css',
               'css/mediaControlsAndroid.css',
