@@ -550,8 +550,8 @@
 	The current and pending input regions of the icon wl_surface are
 	cleared, and wl_surface.set_input_region is ignored until the
 	wl_surface is no longer used as the icon surface. When the use
-	as an icon ends, the the current and pending input regions
-	become undefined, and the wl_surface is unmapped.
+	as an icon ends, the current and pending input regions become
+	undefined, and the wl_surface is unmapped.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
       <arg name="origin" type="object" interface="wl_surface"/>
