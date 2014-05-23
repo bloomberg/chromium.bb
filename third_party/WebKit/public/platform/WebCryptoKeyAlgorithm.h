@@ -61,6 +61,7 @@ public:
 
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createAes(WebCryptoAlgorithmId, unsigned short keyLengthBits);
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits);
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createRsa(WebCryptoAlgorithmId, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize);
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createRsaHashed(WebCryptoAlgorithmId, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash);
 
     ~WebCryptoKeyAlgorithm() { reset(); }
@@ -83,6 +84,7 @@ public:
     // any AES parameters) then returns 0.
     BLINK_PLATFORM_EXPORT WebCryptoAesKeyAlgorithmParams* aesParams() const;
     BLINK_PLATFORM_EXPORT WebCryptoHmacKeyAlgorithmParams* hmacParams() const;
+    BLINK_PLATFORM_EXPORT WebCryptoRsaKeyAlgorithmParams* rsaParams() const;
     BLINK_PLATFORM_EXPORT WebCryptoRsaHashedKeyAlgorithmParams* rsaHashedParams() const;
 
 private:

@@ -31,7 +31,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    SpecialWrapFor=AesKeyAlgorithm|HmacKeyAlgorithm|RsaHashedKeyAlgorithm
+    SpecialWrapFor=AesKeyAlgorithm|HmacKeyAlgorithm|RsaHashedKeyAlgorithm|RsaKeyAlgorithm
 ] interface KeyAlgorithm {
     readonly attribute DOMString name;
 };

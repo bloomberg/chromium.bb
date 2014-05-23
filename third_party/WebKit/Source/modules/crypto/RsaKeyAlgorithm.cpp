@@ -49,13 +49,13 @@ RsaKeyAlgorithm* RsaKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& alg
 
 unsigned RsaKeyAlgorithm::modulusLength()
 {
-    return m_algorithm.rsaHashedParams()->modulusLengthBits();
+    return m_algorithm.rsaParams()->modulusLengthBits();
 }
 
 Uint8Array* RsaKeyAlgorithm::publicExponent()
 {
     if (!m_publicExponent.get()) {
-        const blink::WebVector<unsigned char>& exponent = m_algorithm.rsaHashedParams()->publicExponent();
+        const blink::WebVector<unsigned char>& exponent = m_algorithm.rsaParams()->publicExponent();
         m_publicExponent = Uint8Array::create(exponent.data(), exponent.size());
     }
     return m_publicExponent.get();
@@ -69,7 +69,7 @@ void RsaKeyAlgorithm::trace(Visitor* visitor)
 RsaKeyAlgorithm::RsaKeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)
     : KeyAlgorithm(algorithm)
 {
-    ASSERT(algorithm.rsaHashedParams());
+    ASSERT(algorithm.rsaParams());
     ScriptWrappable::init(this);
 }
 

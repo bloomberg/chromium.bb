@@ -73,6 +73,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-GCM", 7, blink::WebCryptoAlgorithmIdAesGcm},
     {"AES-CTR", 7, blink::WebCryptoAlgorithmIdAesCtr},
     {"RSA-OAEP", 8, blink::WebCryptoAlgorithmIdRsaOaep},
+    {"RSAES-PKCS1-V1_5", 16, blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
     {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
 
@@ -133,6 +134,20 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             Undefined // UnwrapKey
         }
     }, { // Index 3
+        "RSAES-PKCS1-v1_5", {
+            blink::WebCryptoAlgorithmParamsTypeNone, // Encrypt
+            blink::WebCryptoAlgorithmParamsTypeNone, // Decrypt
+            Undefined, // Sign
+            Undefined, // Verify
+            Undefined, // Digest
+            blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams, // GenerateKey
+            blink::WebCryptoAlgorithmParamsTypeNone, // ImportKey
+            Undefined, // DeriveKey
+            Undefined, // DeriveBits
+            blink::WebCryptoAlgorithmParamsTypeNone, // WrapKey
+            blink::WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+        }
+    }, { // Index 4
         "SHA-1", {
             Undefined, // Encrypt
             Undefined, // Decrypt
@@ -146,7 +161,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             Undefined, // WrapKey
             Undefined // UnwrapKey
         }
-    }, { // Index 4
+    }, { // Index 5
         "SHA-256", {
             Undefined, // Encrypt
             Undefined, // Decrypt
@@ -160,7 +175,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             Undefined, // WrapKey
             Undefined // UnwrapKey
         }
-    }, { // Index 5
+    }, { // Index 6
         "SHA-384", {
             Undefined, // Encrypt
             Undefined, // Decrypt
@@ -174,7 +189,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             Undefined, // WrapKey
             Undefined // UnwrapKey
         }
-    }, { // Index 6
+    }, { // Index 7
         "SHA-512", {
             Undefined, // Encrypt
             Undefined, // Decrypt
@@ -188,7 +203,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             Undefined, // WrapKey
             Undefined // UnwrapKey
         }
-    }, { // Index 7
+    }, { // Index 8
         "AES-GCM", {
             blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // Encrypt
             blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // Decrypt
@@ -202,7 +217,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             blink::WebCryptoAlgorithmParamsTypeAesGcmParams, // WrapKey
             blink::WebCryptoAlgorithmParamsTypeAesGcmParams // UnwrapKey
         }
-    }, { // Index 8
+    }, { // Index 9
         "RSA-OAEP", {
             blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Encrypt
             blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // Decrypt
@@ -216,7 +231,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             blink::WebCryptoAlgorithmParamsTypeRsaOaepParams, // WrapKey
             blink::WebCryptoAlgorithmParamsTypeRsaOaepParams // UnwrapKey
         }
-    }, { // Index 9
+    }, { // Index 10
         "AES-CTR", {
             blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // Encrypt
             blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // Decrypt
@@ -230,7 +245,7 @@ const AlgorithmInfo algorithmIdToInfo[] = {
             blink::WebCryptoAlgorithmParamsTypeAesCtrParams, // WrapKey
             blink::WebCryptoAlgorithmParamsTypeAesCtrParams // UnwrapKey
         }
-    }, { // Index 10
+    }, { // Index 11
         "AES-KW", {
             Undefined, // Encrypt
             Undefined, // Decrypt
@@ -253,15 +268,16 @@ const AlgorithmInfo algorithmIdToInfo[] = {
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCbc == 0, AesCbc_idDoesntMatch);
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdHmac == 1, Hmac_idDoesntMatch);
 COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 == 2, RsaSsaPkcs1v1_5_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha1 == 3, Sha1_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha256 == 4, Sha256_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha384 == 5, Sha384_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha512 == 6, Sha512_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesGcm == 7, AesGcm_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaOaep == 8, RsaOaep_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCtr == 9, AesCtr_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesKw == 10, AesKw_idDoesntMatch);
-COMPILE_ASSERT(blink::WebCryptoAlgorithmIdLast == 10, Last_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 == 3, RsaEsPkcs1v1_5_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha1 == 4, Sha1_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha256 == 5, Sha256_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha384 == 6, Sha384_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdSha512 == 7, Sha512_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesGcm == 8, AesGcm_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdRsaOaep == 9, RsaOaep_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesCtr == 10, AesCtr_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdAesKw == 11, AesKw_idDoesntMatch);
+COMPILE_ASSERT(blink::WebCryptoAlgorithmIdLast == 11, Last_idDoesntMatch);
 COMPILE_ASSERT(10 == LastAlgorithmOperation, UpdateParamsMapping);
 
 #if ASSERT_ENABLED
@@ -703,22 +719,42 @@ bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAl
 
 // Defined by the WebCrypto spec as:
 //
-//    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
-//      AlgorithmIdentifier hash;
-//    };
-//
 //    dictionary RsaKeyGenParams : Algorithm {
 //      unsigned long modulusLength;
 //      BigInteger publicExponent;
 //    };
-bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+bool parseRsaKeyGenParams(const Dictionary& raw, uint32_t& modulusLength, RefPtr<Uint8Array>& publicExponent, const ErrorContext& context, CryptoResult* result)
 {
-    uint32_t modulusLength;
     if (!getUint32(raw, "modulusLength", modulusLength, context, result))
         return false;
 
-    RefPtr<Uint8Array> publicExponent;
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, result))
+        return false;
+
+    return true;
+}
+
+bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+{
+    uint32_t modulusLength;
+    RefPtr<Uint8Array> publicExponent;
+    if (!parseRsaKeyGenParams(raw, modulusLength, publicExponent, context, result))
+        return false;
+
+    params = adoptPtr(new blink::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
+//      AlgorithmIdentifier hash;
+//    };
+bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, CryptoResult* result)
+{
+    uint32_t modulusLength;
+    RefPtr<Uint8Array> publicExponent;
+    if (!parseRsaKeyGenParams(raw, modulusLength, publicExponent, context, result))
         return false;
 
     blink::WebCryptoAlgorithm hash;
@@ -824,6 +860,9 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
         context.add("RsaHashedImportParams");
         return parseRsaHashedImportParams(raw, params, context, result);
+    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
+        context.add("RsaKeyGenParams");
+        return parseRsaKeyGenParams(raw, params, context, result);
     case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
         context.add("AesCtrParams");
         return parseAesCtrParams(raw, params, context, result);

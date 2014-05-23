@@ -44,6 +44,7 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCbc,
     WebCryptoAlgorithmIdHmac,
     WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+    WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
     WebCryptoAlgorithmIdSha1,
     WebCryptoAlgorithmIdSha256,
     WebCryptoAlgorithmIdSha384,
@@ -63,6 +64,7 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeAesKeyGenParams,
     WebCryptoAlgorithmParamsTypeHmacImportParams,
     WebCryptoAlgorithmParamsTypeHmacKeyGenParams,
+    WebCryptoAlgorithmParamsTypeRsaKeyGenParams,
     WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,
     WebCryptoAlgorithmParamsTypeRsaHashedImportParams,
     WebCryptoAlgorithmParamsTypeAesGcmParams,
@@ -74,6 +76,7 @@ class WebCryptoAesCbcParams;
 class WebCryptoAesKeyGenParams;
 class WebCryptoHmacImportParams;
 class WebCryptoHmacKeyGenParams;
+class WebCryptoRsaKeyGenParams;
 class WebCryptoAesGcmParams;
 class WebCryptoRsaOaepParams;
 class WebCryptoAesCtrParams;
@@ -121,6 +124,7 @@ public:
     BLINK_PLATFORM_EXPORT const WebCryptoAesKeyGenParams* aesKeyGenParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoHmacImportParams* hmacImportParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoHmacKeyGenParams* hmacKeyGenParams() const;
+    BLINK_PLATFORM_EXPORT const WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoAesGcmParams* aesGcmParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoRsaOaepParams* rsaOaepParams() const;
     BLINK_PLATFORM_EXPORT const WebCryptoAesCtrParams* aesCtrParams() const;

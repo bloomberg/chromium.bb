@@ -52,6 +52,7 @@ public:
     bool isAesKeyAlgorithm() const;
     bool isHmacKeyAlgorithm() const;
     bool isRsaHashedKeyAlgorithm() const;
+    bool isRsaKeyAlgorithm() const;
 
     virtual void trace(Visitor*);
 
