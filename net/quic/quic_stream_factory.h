@@ -222,7 +222,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const scoped_ptr<QuicServerInfo>& server_info);
 
   void ProcessGoingAwaySession(QuicClientSession* session,
-                               const QuicServerId& server_id);
+                               const QuicServerId& server_id,
+                               bool was_session_active);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;

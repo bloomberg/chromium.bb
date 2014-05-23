@@ -582,9 +582,9 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
     }
 
     active_sessions_.erase(*it);
-    ProcessGoingAwaySession(session, *it);
+    ProcessGoingAwaySession(session, *it, true);
   }
-  ProcessGoingAwaySession(session, all_sessions_[session]);
+  ProcessGoingAwaySession(session, all_sessions_[session], false);
   if (!aliases.empty()) {
     const IpAliasKey ip_alias_key(session->connection()->peer_address(),
                                   aliases.begin()->is_https());
@@ -816,12 +816,25 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
 
 void QuicStreamFactory::ProcessGoingAwaySession(
     QuicClientSession* session,
-    const QuicServerId& server_id) {
+    const QuicServerId& server_id,
+    bool session_was_active) {
   if (!http_server_properties_)
     return;
 
   const QuicConnectionStats& stats = session->connection()->GetStats();
-  if (!session->IsCryptoHandshakeConfirmed()) {
+  if (session->IsCryptoHandshakeConfirmed()) {
+    HttpServerProperties::NetworkStats network_stats;
+    network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
+    network_stats.bandwidth_estimate = stats.estimated_bandwidth;
+    http_server_properties_->SetServerNetworkStats(server_id.host_port_pair(),
+                                                   network_stats);
+    return;
+  }
+
+  UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
+                       stats.packets_received);
+
+  if (session_was_active) {
     // TODO(rch):  In the special case where the session has received no
     // packets from the peer, we should consider blacklisting this
     // differently so that we still race TCP but we don't consider the
@@ -830,16 +843,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
         BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
     http_server_properties_->SetBrokenAlternateProtocol(
         server_id.host_port_pair());
-    UMA_HISTOGRAM_COUNTS("Net.QuicHandshakeNotConfirmedNumPacketsReceived",
-                         stats.packets_received);
-    return;
   }
-
-  HttpServerProperties::NetworkStats network_stats;
-  network_stats.srtt = base::TimeDelta::FromMicroseconds(stats.srtt_us);
-  network_stats.bandwidth_estimate = stats.estimated_bandwidth;
-  http_server_properties_->SetServerNetworkStats(server_id.host_port_pair(),
-                                                 network_stats);
 }
 
 }  // namespace net
