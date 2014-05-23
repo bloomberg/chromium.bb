@@ -16,6 +16,11 @@ class Environment {
   ~Environment();
 
  private:
+  class Data;
+
+  // Environment implementation can use this to store state.
+  Data* data_;
+
   MOJO_DISALLOW_COPY_AND_ASSIGN(Environment);
 };
 

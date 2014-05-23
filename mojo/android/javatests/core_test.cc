@@ -17,6 +17,7 @@
 namespace {
 
 struct TestEnvironment {
+  mojo::Environment environment;
   base::MessageLoopForUI message_loop;
 };
 

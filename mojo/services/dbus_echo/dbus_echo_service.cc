@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
                        false,    // Timestamp
                        false);   // Tick count
 
+  mojo::Environment env;
   mojo::embedder::Init();
 
   base::MessageLoopForIO message_loop;

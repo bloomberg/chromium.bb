@@ -12,6 +12,7 @@
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
@@ -120,6 +121,7 @@ class PepperContainerApp: public Application,
 
 extern "C" PEPPER_CONTAINER_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
+  mojo::Environment env;
   mojo::GLES2Initializer gles2;
   base::MessageLoop run_loop;
   mojo::examples::PepperContainerApp app(shell_handle);

@@ -49,7 +49,7 @@ class Setup {
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
 
-static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<Setup> setup = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace base {
@@ -39,6 +40,8 @@ class ShellTestHelper {
 
   // Invoked once connection has been established.
   void OnShellStarted();
+
+  Environment environment_;
 
   base::Thread shell_thread_;
 

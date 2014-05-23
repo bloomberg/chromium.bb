@@ -76,6 +76,14 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     ContentTestSuiteBase::Initialize();
   }
 
+  virtual void Shutdown() OVERRIDE {
+    ContentTestSuiteBase::Shutdown();
+
+#if defined(OS_ANDROID)
+    ShutdownMojo();
+#endif
+  }
+
 #if defined(OS_ANDROID)
   scoped_ptr<ShellContentClient> content_client_;
   scoped_ptr<ShellContentBrowserClient> browser_content_client_;

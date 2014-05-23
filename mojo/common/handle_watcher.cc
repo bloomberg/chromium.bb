@@ -9,13 +9,13 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "mojo/common/environment_data.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/common/message_pump_mojo_handler.h"
 #include "mojo/common/time_helper.h"
@@ -28,6 +28,8 @@ typedef int WatcherID;
 namespace {
 
 const char kWatcherThreadName[] = "handle-watcher-thread";
+
+const char kWatcherThreadManagerKey[] = "watcher-thread-manager";
 
 // TODO(sky): this should be unnecessary once MessageLoop has been refactored.
 MessagePumpMojo* message_pump_mojo = NULL;
@@ -174,7 +176,6 @@ class WatcherThreadManager {
   void StopWatching(WatcherID watcher_id);
 
  private:
-  friend struct DefaultSingletonTraits<WatcherThreadManager>;
   WatcherThreadManager();
 
   base::Thread thread_;
@@ -186,12 +187,29 @@ class WatcherThreadManager {
   DISALLOW_COPY_AND_ASSIGN(WatcherThreadManager);
 };
 
+struct WatcherThreadManagerData : EnvironmentData::Data {
+  scoped_ptr<WatcherThreadManager> thread_manager;
+};
+
 WatcherThreadManager::~WatcherThreadManager() {
   thread_.Stop();
 }
 
+static base::LazyInstance<base::Lock> thread_lookup_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
 WatcherThreadManager* WatcherThreadManager::GetInstance() {
-  return Singleton<WatcherThreadManager>::get();
+  base::AutoLock auto_lock(thread_lookup_lock.Get());
+  WatcherThreadManagerData* data = static_cast<WatcherThreadManagerData*>(
+      EnvironmentData::GetInstance()->GetData(kWatcherThreadManagerKey));
+  if (!data) {
+    data = new WatcherThreadManagerData;
+    data->thread_manager.reset(new WatcherThreadManager);
+    EnvironmentData::GetInstance()->SetData(
+        kWatcherThreadManagerKey,
+        scoped_ptr<EnvironmentData::Data>(data));
+  }
+  return data->thread_manager.get();
 }
 
 WatcherID WatcherThreadManager::StartWatching(

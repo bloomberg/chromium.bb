@@ -6,13 +6,27 @@
 
 #include "base/logging.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/service_manager/service_manager.h"
 
 namespace content {
 
+namespace {
+
+mojo::Environment* environment = NULL;
+
+}  // namespace
+
 void InitializeMojo() {
+  DCHECK(!environment);
+  environment = new mojo::Environment;
   mojo::embedder::Init();
   mojo::ServiceManager::GetInstance();
+}
+
+void ShutdownMojo() {
+  delete environment;
+  environment = NULL;
 }
 
 }  // namespace content

@@ -4,16 +4,32 @@
 
 #include "mojo/public/cpp/environment/environment.h"
 
+#include "mojo/common/environment_data.h"
+
 namespace mojo {
 
-// These methods are intentionally not implemented so that there is a link
-// error if someone uses them in a Chromium-environment.
-#if 0
-Environment::Environment() {
+class Environment::Data {
+ public:
+  Data();
+  ~Data();
+
+ private:
+  common::EnvironmentData data_;
+
+  DISALLOW_COPY_AND_ASSIGN(Data);
+};
+
+Environment::Data::Data() {
+}
+
+Environment::Data::~Data() {
+}
+
+Environment::Environment() : data_(new Environment::Data) {
 }
 
 Environment::~Environment() {
+  delete data_;
 }
-#endif
 
 }  // namespace mojo
