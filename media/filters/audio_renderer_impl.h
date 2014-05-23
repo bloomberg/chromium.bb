@@ -68,8 +68,8 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
+                          const base::Closure& underflow_cb,
                           const TimeCB& time_cb,
-                          const BufferingStateCB& buffering_state_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) OVERRIDE;
   virtual void StartRendering() OVERRIDE;
@@ -77,7 +77,9 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float rate) OVERRIDE;
-  virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
+  virtual void Preroll(base::TimeDelta time,
+                       const PipelineStatusCB& cb) OVERRIDE;
+  virtual void ResumeAfterUnderflow() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
   // Allows injection of a custom time callback for non-realtime testing.
@@ -102,17 +104,25 @@ class MEDIA_EXPORT AudioRendererImpl
   //         |
   //         V            Decoders reset
   //      kFlushed <------------------ kFlushing
-  //         | StartPlayingFrom()         ^
+  //         | Preroll()                  ^
   //         |                            |
-  //         |                            | Flush()
-  //         `---------> kPlaying --------'
+  //         V                            | Flush()
+  //     kPrerolling ----------------> kPlaying ---------.
+  //           Enough data buffered       ^              | Not enough data
+  //                                      |              | buffered
+  //                 Enough data buffered |              V
+  //                                 kRebuffering <--- kUnderflow
+  //                                      ResumeAfterUnderflow()
   enum State {
     kUninitialized,
     kInitializing,
     kFlushing,
     kFlushed,
+    kPrerolling,
     kPlaying,
     kStopped,
+    kUnderflow,
+    kRebuffering,
   };
 
   // Callback from the audio decoder delivering decoded audio samples.
@@ -121,7 +131,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Handles buffers that come out of |splicer_|.
   // Returns true if more buffers are needed.
-  bool HandleSplicerBuffer_Locked(const scoped_refptr<AudioBuffer>& buffer);
+  bool HandleSplicerBuffer(const scoped_refptr<AudioBuffer>& buffer);
 
   // Helper functions for AudioDecoder::Status values passed to
   // DecodedAudioReady().
@@ -167,9 +177,10 @@ class MEDIA_EXPORT AudioRendererImpl
   bool CanRead_Locked();
   void ChangeState_Locked(State new_state);
 
-  // Returns true if the data in the buffer is all before |start_timestamp_|.
-  // This can only return true while in the kPlaying state.
-  bool IsBeforeStartTime(const scoped_refptr<AudioBuffer>& buffer);
+  // Returns true if the data in the buffer is all before
+  // |preroll_timestamp_|. This can only return true while
+  // in the kPrerolling state.
+  bool IsBeforePrerollTime(const scoped_refptr<AudioBuffer>& buffer);
 
   // Called upon AudioBufferStream initialization, or failure thereof (indicated
   // by the value of |success|).
@@ -191,9 +202,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Called by the AudioBufferStream when a config change occurs.
   void OnConfigChange();
-
-  // Updates |buffering_state_| and fires |buffering_state_cb_|.
-  void SetBufferingState_Locked(BufferingState buffering_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -218,13 +226,16 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callbacks provided during Initialize().
   PipelineStatusCB init_cb_;
+  base::Closure underflow_cb_;
   TimeCB time_cb_;
-  BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
 
   // Callback provided to Flush().
   base::Closure flush_cb_;
+
+  // Callback provided to Preroll().
+  PipelineStatusCB preroll_cb_;
 
   // Typically calls base::TimeTicks::Now() but can be overridden by a test.
   NowCB now_cb_;
@@ -238,8 +249,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Simple state tracking variable.
   State state_;
-
-  BufferingState buffering_state_;
 
   // Keep track of whether or not the sink is playing and whether we should be
   // rendering.
@@ -255,7 +264,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   scoped_ptr<AudioClock> audio_clock_;
 
-  base::TimeDelta start_timestamp_;
+  base::TimeDelta preroll_timestamp_;
 
   // We're supposed to know amount of audio data OS or hardware buffered, but
   // that is not always so -- on my Linux box
@@ -273,6 +282,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // than nothing.
   base::TimeTicks earliest_end_time_;
   size_t total_frames_filled_;
+
+  // True if the renderer receives a buffer with kAborted status during preroll,
+  // false otherwise. This flag is cleared on the next Preroll() call.
+  bool preroll_aborted_;
 
   // End variables which must be accessed under |lock_|. ----------------------
 
