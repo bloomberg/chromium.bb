@@ -11,34 +11,46 @@
 #include "base/memory/ref_counted.h"
 
 namespace content {
+class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
-class RenderWidgetHostViewMac;
+
+class CompositingIOSurfaceLayerClient {
+ public:
+  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) = 0;
+  virtual bool AcceleratedLayerHasNotAckedPendingFrame() const = 0;
+};
+
 }
 
 // The CoreAnimation layer for drawing accelerated content.
 @interface CompositingIOSurfaceLayer : CAOpenGLLayer {
  @private
-  content::RenderWidgetHostViewMac* renderWidgetHostView_;
+  content::CompositingIOSurfaceLayerClient* client_;
+  scoped_refptr<content::CompositingIOSurfaceMac> iosurface_;
   scoped_refptr<content::CompositingIOSurfaceContext> context_;
 
   // Used to track when canDrawInCGLContext should return YES. This can be
   // in response to receiving a new compositor frame, or from any of the events
   // that cause setNeedsDisplay to be called on the layer.
-  BOOL needsDisplay_;
+  BOOL needs_display_;
+
+  // Incremented every time that this layer is asked to draw but does not have
+  // new content to draw.
+  uint64 did_not_draw_counter_;
 }
 
-- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
+- (content::CompositingIOSurfaceMac*)iosurface;
+- (content::CompositingIOSurfaceContext*)context;
 
-// Remove this layer from the layer heirarchy, and mark that
-// |renderWidgetHostView_| is no longer valid and may no longer be dereferenced.
-- (void)disableCompositing;
+- (id)initWithIOSurface:(scoped_refptr<content::CompositingIOSurfaceMac>)
+                            iosurface
+             withClient:(content::CompositingIOSurfaceLayerClient*)client;
+
+// Mark that the client is no longer valid and cannot be called back into.
+- (void)resetClient;
 
 // Called when a new frame is received.
 - (void)gotNewFrame;
-
-// Called when it has been a while since a new frame has been received, and the
-// layer should become not-asynchronous.
-- (void)timerSinceGotNewFrameFired;
 
 @end
 

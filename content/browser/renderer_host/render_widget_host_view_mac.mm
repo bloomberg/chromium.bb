@@ -27,6 +27,7 @@
 #include "base/sys_info.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -38,6 +39,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
+#import "content/browser/renderer_host/software_layer_mac.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
@@ -410,7 +412,7 @@ namespace content {
 // DelegatedFrameHost, public:
 
 ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
-  return compositor_.get();
+  return [browser_compositor_view_ compositor];
 }
 
 ui::Layer* RenderWidgetHostViewMac::GetLayer() {
@@ -423,7 +425,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  compositor_->ScheduleFullRedraw();
+  [browser_compositor_view_ compositor]->ScheduleFullRedraw();
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -472,9 +474,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
-      compositing_iosurface_layer_async_timer_(
-            FROM_HERE, base::TimeDelta::FromMilliseconds(250),
-            this, &RenderWidgetHostViewMac::TimerSinceGotAcceleratedFrameFired),
       allow_overlapping_views_(false),
       use_core_animation_(false),
       pending_latency_info_delay_(0),
@@ -513,7 +512,6 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
   // Delete the delegated frame state.
   delegated_frame_host_.reset();
-  compositor_.reset();
   root_layer_.reset();
 
   UnlockMouse();
@@ -592,7 +590,7 @@ bool RenderWidgetHostViewMac::EnsureCompositedIOSurface() {
 
   // Create the IOSurface texture.
   if (new_surface_needed) {
-    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
+    compositing_iosurface_ = CompositingIOSurfaceMac::Create();
     if (!compositing_iosurface_) {
       LOG(ERROR) << "Failed to create CompositingIOSurface";
       return false;
@@ -622,7 +620,6 @@ void RenderWidgetHostViewMac::DestroySoftwareLayer() {
   // Disable the fade-out animation as the layer is removed.
   ScopedCAActionDisabler disabler;
   [software_layer_ removeFromSuperlayer];
-  [software_layer_ disableRendering];
   software_layer_.reset();
 }
 
@@ -634,7 +631,8 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
     return;
 
   compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
-      initWithRenderWidgetHostViewMac:this]);
+      initWithIOSurface:compositing_iosurface_
+             withClient:this]);
   DCHECK(compositing_iosurface_layer_);
 
   // Disable the fade-in animation as the layer is added.
@@ -652,7 +650,7 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer(
     ScopedCAActionDisabler disabler;
     [compositing_iosurface_layer_ removeFromSuperlayer];
   }
-  [compositing_iosurface_layer_ disableCompositing];
+  [compositing_iosurface_layer_ resetClient];
   compositing_iosurface_layer_.reset();
 }
 
@@ -662,7 +660,7 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
   SendPendingSwapAck();
 
   DestroyCompositedIOSurfaceLayer(kRemoveLayerFromHierarchy);
-  compositing_iosurface_.reset();
+  compositing_iosurface_ = NULL;
 
   switch (destroy_context_behavior) {
     case kLeaveContextBoundToView:
@@ -1551,7 +1549,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   ignore_result(scoped_ack.Release());
   if (use_core_animation_) {
     DCHECK(compositing_iosurface_layer_);
-    compositing_iosurface_layer_async_timer_.Reset();
     [compositing_iosurface_layer_ gotNewFrame];
   } else {
     gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
@@ -1566,27 +1563,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // The IOSurface's size may have changed, so re-layout the layers to take
   // this into account. This may force an immediate draw.
   LayoutLayers();
-}
-
-void RenderWidgetHostViewMac::GotBrowserCompositorSoftwareFrame(
-    cc::SoftwareFrameData* frame_data,
-    float scale_factor,
-    SkCanvas* canvas) {
-  if (!frame_data || !canvas)
-    return;
-
-  SkImageInfo info;
-  size_t row_bytes;
-  const void* pixels = canvas->peekPixels(&info, &row_bytes);
-
-  EnsureSoftwareLayer();
-  [software_layer_ setContentsToData:pixels
-                        withRowBytes:row_bytes
-                       withPixelSize:gfx::Size(info.fWidth, info.fHeight)
-                     withScaleFactor:scale_factor];
-
-  LayoutLayers();
-  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
 }
 
 void RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
@@ -1915,21 +1891,22 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   if (frame->delegated_frame_data) {
-    if (!compositor_) {
-      compositor_.reset(new ui::Compositor(cocoa_view_));
+    if (!browser_compositor_view_) {
+      browser_compositor_view_.reset(
+          [[BrowserCompositorViewMac alloc] initWithSuperview:cocoa_view_]);
       root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
       delegated_frame_host_.reset(new DelegatedFrameHost(this));
     }
 
     // TODO(ccameron): Having the root layer set while swapping the frame will
     // result in frames not appearing. Fix this.
-    compositor_->SetRootLayer(NULL);
+    [browser_compositor_view_ compositor]->SetRootLayer(NULL);
     delegated_frame_host_->SwapDelegatedFrame(
         output_surface_id,
         frame->delegated_frame_data.Pass(),
         frame->metadata.device_scale_factor,
         frame->metadata.latency_info);
-    compositor_->SetRootLayer(root_layer_.get());
+    [browser_compositor_view_ compositor]->SetRootLayer(root_layer_.get());
 
     // Update the compositor and root layer size and scale factor to match
     // the frame just received.
@@ -1937,7 +1914,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     gfx::Size dip_size = ToCeiledSize(frame->metadata.viewport_size);
     gfx::Size pixel_size = ConvertSizeToPixel(
         scale_factor, dip_size);
-    compositor_->SetScaleAndSize(scale_factor, pixel_size);
+    [browser_compositor_view_ compositor]->SetScaleAndSize(
+        scale_factor, pixel_size);
     root_layer_->SetBounds(gfx::Rect(dip_size));
   } else if (frame->software_frame_data) {
     if (!software_frame_manager_->SwapToNewFrame(
@@ -2151,10 +2129,6 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
     else
       DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
   }
-}
-
-void RenderWidgetHostViewMac::TimerSinceGotAcceleratedFrameFired() {
-  [compositing_iosurface_layer_ timerSinceGotNewFrameFired];
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
@@ -2388,7 +2362,8 @@ void RenderWidgetHostViewMac::AddPendingSwapAck(
 
   // A trace value of 2 indicates that there is a pending swap ack. See
   // CompositingIOSurfaceLayer's canDrawInCGLContext for other value meanings.
-  TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 2);
+  TRACE_COUNTER_ID1("browser", "PendingSwapAck",
+                    compositing_iosurface_layer_.get(), 2);
 }
 
 void RenderWidgetHostViewMac::SendPendingSwapAck() {
@@ -2433,6 +2408,11 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 void RenderWidgetHostViewMac::LayoutLayers() {
   if (!use_core_animation_)
     return;
+
+  if (browser_compositor_view_) {
+    [browser_compositor_view_ layoutLayers];
+    return;
+  }
 
   // Disable animation of the layer's resizing or change in contents scale.
   ScopedCAActionDisabler disabler;
@@ -2495,6 +2475,20 @@ void RenderWidgetHostViewMac::LayoutLayers() {
 
 SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   return SkBitmap::kARGB_8888_Config;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CompositingIOSurfaceLayerClient, public:
+
+void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
+  SendPendingLatencyInfoToHost();
+  SendPendingSwapAck();
+  if (!succeeded)
+    GotAcceleratedCompositingError();
+}
+
+bool RenderWidgetHostViewMac::AcceleratedLayerHasNotAckedPendingFrame() const {
+  return pending_swap_ack_;
 }
 
 }  // namespace content
@@ -3329,23 +3323,6 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
                                    CGColorGetConstantColor(kCGColorWhite));
     CGContextFillRect(context, NSRectToCGRect(r));
   }
-}
-
-- (void)onNativeSurfaceBuffersSwappedWithParams:
-      (GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)params {
-
-  renderWidgetHostView_->CompositorSwapBuffers(
-      params.surface_handle,
-      params.size,
-      params.scale_factor,
-      params.latency_info);
-}
-
-- (void)gotSoftwareFrame:(cc::SoftwareFrameData*)frame_data
-         withScaleFactor:(float)scale_factor
-              withCanvas:(SkCanvas*)canvas {
-  renderWidgetHostView_->GotBrowserCompositorSoftwareFrame(
-      frame_data, scale_factor, canvas);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -4415,64 +4392,3 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 @end
-
-@implementation SoftwareLayer
-
-- (id)init {
-  if (self = [super init]) {
-    [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-    [self setAnchorPoint:CGPointMake(0, 0)];
-    // Setting contents gravity is necessary to prevent the layer from being
-    // scaled during dyanmic resizes (especially with devtools open).
-    [self setContentsGravity:kCAGravityTopLeft];
-  }
-  return self;
-}
-
-- (void)setContentsToData:(const void *)data
-             withRowBytes:(size_t)rowBytes
-            withPixelSize:(gfx::Size)pixelSize
-          withScaleFactor:(float)scaleFactor {
-  TRACE_EVENT0("browser", "-[SoftwareLayer setContentsToData]");
-
-  // Disable animating the contents change or the scale factor change.
-  ScopedCAActionDisabler disabler;
-
-  // Set the contents of the software CALayer to be a CGImage with the provided
-  // pixel data. Make a copy of the data before backing the image with them,
-  // because the same buffer will be reused for the next frame.
-  base::ScopedCFTypeRef<CFDataRef> dataCopy(
-      CFDataCreate(NULL,
-                   static_cast<const UInt8 *>(data),
-                   rowBytes * pixelSize.height()));
-  base::ScopedCFTypeRef<CGDataProviderRef> dataProvider(
-      CGDataProviderCreateWithCFData(dataCopy));
-  base::ScopedCFTypeRef<CGImageRef> image(
-      CGImageCreate(pixelSize.width(),
-                    pixelSize.height(),
-                    8,
-                    32,
-                    rowBytes,
-                    base::mac::GetSystemColorSpace(),
-                    kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-                    dataProvider,
-                    NULL,
-                    false,
-                    kCGRenderingIntentDefault));
-  [self setContents:(id)image.get()];
-
-  // Set the contents scale of the software CALayer.
-  if ([self respondsToSelector:(@selector(contentsScale))] &&
-      [self respondsToSelector:(@selector(setContentsScale:))] &&
-      [self contentsScale] != scaleFactor) {
-    [self setContentsScale:scaleFactor];
-  }
-}
-
-- (void)disableRendering {
-  // Disable the fade-out animation as the layer is removed.
-  ScopedCAActionDisabler disabler;
-  [self removeFromSuperlayer];
-}
-
-@end  // implementation SoftwareLayer

@@ -217,7 +217,7 @@ void CompositingIOSurfaceMac::CopyContext::PrepareForAsynchronousReadback() {
 
 
 // static
-CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
+scoped_refptr<CompositingIOSurfaceMac> CompositingIOSurfaceMac::Create() {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support) {
     LOG(ERROR) << "No IOSurface support";

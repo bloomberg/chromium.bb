@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -42,11 +43,11 @@ class RenderWidgetHostViewMac;
 // This class manages an OpenGL context and IOSurface for the accelerated
 // compositing code path. The GL context is attached to
 // RenderWidgetHostViewCocoa for blitting the IOSurface.
-class CompositingIOSurfaceMac {
+class CompositingIOSurfaceMac
+    : public base::RefCounted<CompositingIOSurfaceMac> {
  public:
   // Returns NULL if IOSurface support is missing or GL APIs fail.
-  static CompositingIOSurfaceMac* Create();
-  ~CompositingIOSurfaceMac();
+  static scoped_refptr<CompositingIOSurfaceMac> Create();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
   bool SetIOSurfaceWithContextCurrent(
@@ -113,6 +114,8 @@ class CompositingIOSurfaceMac {
   bool HasBeenPoisoned() const;
 
  private:
+  friend class base::RefCounted<CompositingIOSurfaceMac>;
+
   // Vertex structure for use in glDraw calls.
   struct SurfaceVertex {
     SurfaceVertex() : x_(0.0f), y_(0.0f), tx_(0.0f), ty_(0.0f) { }
@@ -203,6 +206,7 @@ class CompositingIOSurfaceMac {
   CompositingIOSurfaceMac(
       IOSurfaceSupport* io_surface_support,
       const scoped_refptr<CompositingIOSurfaceContext>& context);
+  ~CompositingIOSurfaceMac();
 
   // If this IOSurface has moved to a different window, use that window's
   // GL context (if multiple visible windows are using the same GL context

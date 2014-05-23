@@ -7,21 +7,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/gpu_messages.h"
-
-// Declare methods used to present swaps to this view.
-@interface NSView (ContentCompositingView)
-- (void)onNativeSurfaceBuffersSwappedWithParams:
-      (GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)params;
-@end
-
-@implementation NSView (ContentCompositingView)
-- (void)onNativeSurfaceBuffersSwappedWithParams:
-      (GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)params {
-}
-@end
 
 namespace {
 
@@ -30,7 +19,9 @@ void OnNativeSurfaceBuffersSwappedOnUIThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  [native_widget onNativeSurfaceBuffersSwappedWithParams:params];
+  [native_widget gotAcceleratedIOSurfaceFrame:params.surface_handle
+                                withPixelSize:params.size
+                              withScaleFactor:params.scale_factor];
 }
 
 }  // namespace
