@@ -24,7 +24,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface DeprecatedStorageInfo {
     const unsigned short TEMPORARY = 0;

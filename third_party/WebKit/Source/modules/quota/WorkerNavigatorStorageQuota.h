@@ -55,8 +55,8 @@ private:
     explicit WorkerNavigatorStorageQuota();
     static const char* supplementName();
 
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
+    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore

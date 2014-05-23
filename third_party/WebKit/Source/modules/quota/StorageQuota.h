@@ -35,18 +35,16 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class StorageQuota FINAL : public RefCountedWillBeGarbageCollectedFinalized<StorageQuota>, public ScriptWrappable {
+class StorageQuota FINAL : public GarbageCollectedFinalized<StorageQuota>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<StorageQuota> create()
+    static StorageQuota* create()
     {
-        return adoptRefWillBeNoop(new StorageQuota());
+        return new StorageQuota();
     }
 
     Vector<String> supportedTypes() const;

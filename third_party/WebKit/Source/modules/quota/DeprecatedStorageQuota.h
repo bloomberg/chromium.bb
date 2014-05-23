@@ -34,8 +34,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -44,16 +42,16 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageQuota : public RefCountedWillBeGarbageCollectedFinalized<DeprecatedStorageQuota>, public ScriptWrappable {
+class DeprecatedStorageQuota : public GarbageCollectedFinalized<DeprecatedStorageQuota>, public ScriptWrappable {
 public:
     enum Type {
         Temporary,
         Persistent,
     };
 
-    static PassRefPtrWillBeRawPtr<DeprecatedStorageQuota> create(Type type)
+    static DeprecatedStorageQuota* create(Type type)
     {
-        return adoptRefWillBeNoop(new DeprecatedStorageQuota(type));
+        return new DeprecatedStorageQuota(type);
     }
 
     void queryUsageAndQuota(ExecutionContext*, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);

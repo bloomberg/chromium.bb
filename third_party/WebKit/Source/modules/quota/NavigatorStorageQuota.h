@@ -62,9 +62,9 @@ private:
     explicit NavigatorStorageQuota(LocalFrame*);
     static const char* supplementName();
 
-    mutable RefPtrWillBeMember<StorageQuota> m_storageQuota;
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
+    mutable PersistentWillBeMember<StorageQuota> m_storageQuota;
+    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore

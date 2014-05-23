@@ -34,7 +34,7 @@ enum StorageType {
 };
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=QuotaPromise
 ] interface StorageQuota {

@@ -29,7 +29,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=QuotaPromise
 ] interface StorageInfo {

@@ -35,9 +35,6 @@
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -46,16 +43,16 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageInfo : public RefCountedWillBeGarbageCollectedFinalized<DeprecatedStorageInfo>, public ScriptWrappable {
+class DeprecatedStorageInfo : public GarbageCollectedFinalized<DeprecatedStorageInfo>, public ScriptWrappable {
 public:
     enum {
         TEMPORARY,
         PERSISTENT,
     };
 
-    static PassRefPtrWillBeRawPtr<DeprecatedStorageInfo> create()
+    static DeprecatedStorageInfo* create()
     {
-        return adoptRefWillBeNoop(new DeprecatedStorageInfo());
+        return new DeprecatedStorageInfo();
     }
 
     void queryUsageAndQuota(ExecutionContext*, int storageType, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
@@ -71,8 +68,8 @@ private:
 
     DeprecatedStorageQuota* getStorageQuota(int storageType);
 
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtrWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
+    mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable Member<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore

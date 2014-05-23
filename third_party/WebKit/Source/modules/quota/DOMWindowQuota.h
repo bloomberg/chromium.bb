@@ -54,7 +54,7 @@ private:
     explicit DOMWindowQuota(DOMWindow&);
     static const char* supplementName();
 
-    mutable RefPtrWillBeMember<DeprecatedStorageInfo> m_storageInfo;
+    mutable PersistentWillBeMember<DeprecatedStorageInfo> m_storageInfo;
 };
 
 } // namespace WebCore
