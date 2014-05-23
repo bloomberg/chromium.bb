@@ -14,7 +14,7 @@ set -o errexit
 readonly CLOBBER=${CLOBBER:-yes}
 readonly SCONS_TRUSTED="./scons --mode=opt-host -j8"
 readonly SCONS_NACL="./scons --mode=opt-host,nacl -j8"
-readonly SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
+readonly SPEC_HARNESS=${SPEC_HARNESS:-$(pwd)/out/cpu2000}/
 
 readonly TRYBOT_TESTS="176.gcc 179.art 181.mcf 197.parser 252.eon 254.gap"
 readonly TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS="176.gcc"
@@ -67,7 +67,15 @@ handle-error() {
 clobber() {
   if [ "${CLOBBER}" == "yes" ] ; then
     rm -rf scons-out
+    rm -rf out
   fi
+}
+
+download-spec2k-harness() {
+  mkdir -p out
+  ${NATIVE_PYTHON} ${GSUTIL} cp -a public-read \
+    gs://nativeclient-private/cpu2000.tar.bz2 out/cpu2000.tar.bz2
+  tar xvj -C out -f out/cpu2000.tar.bz2
 }
 
 # Make up for the toolchain tarballs not quite being a full SDK
@@ -245,6 +253,7 @@ measure-validator-speed() {
 
 pnacl-trybot-arm-buildonly() {
   clobber
+  download-spec2k-harness
   build-prerequisites "arm" "bitcode" "arm-ncval-core"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
   build-tests SetupPnaclPexeOpt "${TRYBOT_TESTS}" 0 1
