@@ -76,7 +76,7 @@ public:
         m_layerTreeView->setRootLayer(*m_clipLayer->platformLayer());
         m_layerTreeView->registerViewportLayers(
             m_clipLayer->platformLayer(), m_graphicsLayer->platformLayer(), 0);
-        m_layerTreeView->setViewportSize(WebSize(1, 1), WebSize(1, 1));
+        m_layerTreeView->setViewportSize(WebSize(1, 1));
     }
 
     virtual ~GraphicsLayerTest()
