@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/AnimatableValueKeyframe.h"
 
-#include "core/animation/Interpolation.h"
+#include "core/animation/interpolation/LegacyStyleInterpolation.h"
 
 namespace WebCore {
 

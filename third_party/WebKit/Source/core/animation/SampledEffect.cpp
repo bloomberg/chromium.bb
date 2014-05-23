@@ -5,6 +5,8 @@
 #include "config.h"
 #include "core/animation/SampledEffect.h"
 
+#include "core/animation/interpolation/StyleInterpolation.h"
+
 namespace WebCore {
 
 SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)

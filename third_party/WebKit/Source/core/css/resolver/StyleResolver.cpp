@@ -39,6 +39,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/animation/interpolation/StyleInterpolation.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"

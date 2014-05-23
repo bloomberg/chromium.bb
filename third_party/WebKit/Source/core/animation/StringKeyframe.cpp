@@ -5,8 +5,10 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
-#include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/animation/interpolation/DefaultStyleInterpolation.h"
+#include "core/animation/interpolation/LegacyStyleInterpolation.h"
+#include "core/animation/interpolation/LengthStyleInterpolation.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/style/RenderStyle.h"
 

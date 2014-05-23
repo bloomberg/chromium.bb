@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableUnknown.h"
+#include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"

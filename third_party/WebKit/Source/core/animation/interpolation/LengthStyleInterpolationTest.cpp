@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/Interpolation.h"
+#include "core/animation/interpolation/LengthStyleInterpolation.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StylePropertySet.h"
@@ -12,7 +12,7 @@
 
 namespace WebCore {
 
-class AnimationInterpolationTest : public ::testing::Test {
+class AnimationLengthStyleInterpolationTest : public ::testing::Test {
 protected:
     static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue* value)
     {
@@ -79,7 +79,7 @@ protected:
     }
 };
 
-TEST_F(AnimationInterpolationTest, ZeroLength)
+TEST_F(AnimationLengthStyleInterpolationTest, ZeroLength)
 {
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_PX));
     testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_PX);
@@ -88,7 +88,7 @@ TEST_F(AnimationInterpolationTest, ZeroLength)
     testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_PX);
 }
 
-TEST_F(AnimationInterpolationTest, SingleUnit)
+TEST_F(AnimationLengthStyleInterpolationTest, SingleUnit)
 {
     RefPtrWillBeRawPtr<CSSValue> value = roundTrip(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX));
     testPrimitiveValue(value, 10, CSSPrimitiveValue::CSS_PX);
@@ -97,7 +97,7 @@ TEST_F(AnimationInterpolationTest, SingleUnit)
     testPrimitiveValue(value, 30, CSSPrimitiveValue::CSS_PERCENTAGE);
 }
 
-TEST_F(AnimationInterpolationTest, MultipleUnits)
+TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)
 {
     CSSLengthArray actual, expectation;
     initLengthArray(expectation);
