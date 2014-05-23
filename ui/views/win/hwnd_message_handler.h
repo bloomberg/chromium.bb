@@ -78,10 +78,12 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
                             LPARAM l_param, \
                             LRESULT& l_result, \
                             DWORD msg_map_id = 0) { \
+    base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr()); \
     BOOL old_msg_handled = msg_handled_; \
     BOOL ret = _ProcessWindowMessage(hwnd, msg, w_param, l_param, l_result, \
                                      msg_map_id); \
-    msg_handled_ = old_msg_handled; \
+    if (ref.get()) \
+      msg_handled_ = old_msg_handled; \
     return ret; \
   } \
   BOOL _ProcessWindowMessage(HWND hWnd, \
