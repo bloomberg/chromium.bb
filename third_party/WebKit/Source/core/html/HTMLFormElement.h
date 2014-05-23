@@ -69,9 +69,7 @@ public:
     void disassociate(FormAssociatedElement&);
     void associate(HTMLImageElement&);
     void disassociate(HTMLImageElement&);
-#if !ENABLE(OILPAN)
     WeakPtr<HTMLFormElement> createWeakPtr();
-#endif
     void didAssociateByParser();
 
     void prepareForSubmission(Event*);
@@ -114,7 +112,7 @@ public:
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
     const FormAssociatedElement::List& associatedElements() const;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElements();
+    const Vector<HTMLImageElement*>& imageElements();
 
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<RadioNodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
 
@@ -142,7 +140,7 @@ private:
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
 
     void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
-    void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >&);
+    void collectImageElements(Node& root, Vector<HTMLImageElement*>&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively(Event*);
@@ -166,10 +164,8 @@ private:
     // Do not access m_associatedElements directly. Use associatedElements() instead.
     FormAssociatedElement::List m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
-    WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > m_imageElements;
-#if !ENABLE(OILPAN)
+    Vector<HTMLImageElement*> m_imageElements;
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
-#endif
     bool m_associatedElementsAreDirty;
     bool m_imageElementsAreDirty;
     bool m_hasElementsAssociatedByParser;

@@ -42,7 +42,6 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
-    virtual void trace(Visitor*) OVERRIDE;
 
     int width(bool ignorePendingStylesheets = false);
     int height(bool ignorePendingStylesheets = false);
@@ -129,11 +128,8 @@ private:
     void setBestFitURLAndDPRFromImageCandidate(const ImageCandidate&);
 
     HTMLImageLoader m_imageLoader;
-#if ENABLE(OILPAN)
-    Member<HTMLFormElement> m_form;
-#else
+    // m_form should be a strong reference in Oilpan.
     WeakPtr<HTMLFormElement> m_form;
-#endif
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
     AtomicString m_currentSrc;

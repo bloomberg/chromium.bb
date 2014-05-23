@@ -97,7 +97,6 @@ void HTMLFormElement::trace(Visitor* visitor)
     visitor->trace(m_pastNamesMap);
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
-    visitor->trace(m_imageElements);
 #endif
     HTMLElement::trace(visitor);
 }
@@ -166,10 +165,10 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
         }
 
         if (!m_imageElementsAreDirty) {
-            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > images(imageElements());
+            Vector<HTMLImageElement*> images(imageElements());
             notifyFormRemovedFromTree(images, root);
         } else {
-            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > images;
+            Vector<HTMLImageElement*> images;
             collectImageElements(insertionPoint->highestAncestorOrSelf(), images);
             notifyFormRemovedFromTree(images, root);
             collectImageElements(root, images);
@@ -581,7 +580,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     return m_associatedElements;
 }
 
-void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& elements)
+void HTMLFormElement::collectImageElements(Node& root, Vector<HTMLImageElement*>& elements)
 {
     elements.clear();
     for (HTMLImageElement* image = Traversal<HTMLImageElement>::firstWithin(root); image; image = Traversal<HTMLImageElement>::next(*image)) {
@@ -590,7 +589,7 @@ void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWi
     }
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& HTMLFormElement::imageElements()
+const Vector<HTMLImageElement*>& HTMLFormElement::imageElements()
 {
     if (!m_imageElementsAreDirty)
         return m_imageElements;

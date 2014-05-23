@@ -64,7 +64,7 @@ const FormAssociatedElement::List& HTMLFormControlsCollection::formControlElemen
     return toHTMLFieldSetElement(ownerNode()).associatedElements();
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& HTMLFormControlsCollection::formImageElements() const
+const Vector<HTMLImageElement*>& HTMLFormControlsCollection::formImageElements() const
 {
     return toHTMLFormElement(ownerNode()).imageElements();
 }
@@ -110,7 +110,7 @@ void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
 }
 
 static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsArray,
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >* imageElementsArray, const QualifiedName& attrName, const String& name)
+    const Vector<HTMLImageElement*>* imageElementsArray, const QualifiedName& attrName, const String& name)
 {
     ASSERT(attrName == idAttr || attrName == nameAttr);
 
@@ -141,7 +141,7 @@ Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
+    const Vector<HTMLImageElement*>* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
     if (HTMLElement* item = firstNamedItem(formControlElements(), imagesElements, idAttr, name))
         return item;
 
@@ -176,7 +176,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     }
 
     if (isHTMLFormElement(ownerNode())) {
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElementsArray = formImageElements();
+        const Vector<HTMLImageElement*>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];
             const AtomicString& idAttrVal = element->getIdAttribute();

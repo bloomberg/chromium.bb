@@ -58,11 +58,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
-#if ENABLE(OILPAN)
-        m_form = form;
-#else
         m_form = form->createWeakPtr();
-#endif
         m_formWasSetByParser = true;
         m_form->associate(*this);
         m_form->didAssociateByParser();
@@ -81,16 +77,8 @@ PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& docu
 
 HTMLImageElement::~HTMLImageElement()
 {
-#if !ENABLE(OILPAN)
     if (m_form)
         m_form->disassociate(*this);
-#endif
-}
-
-void HTMLImageElement::trace(Visitor* visitor)
-{
-    visitor->trace(m_form);
-    HTMLElement::trace(visitor);
 }
 
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
@@ -159,18 +147,10 @@ void HTMLImageElement::resetFormOwner()
         m_form->disassociate(*this);
     }
     if (nearestForm) {
-#if ENABLE(OILPAN)
-        m_form = nearestForm;
-#else
         m_form = nearestForm->createWeakPtr();
-#endif
         m_form->associate(*this);
     } else {
-#if ENABLE(OILPAN)
-        m_form = nullptr;
-#else
         m_form = WeakPtr<HTMLFormElement>();
-#endif
     }
 }
 
