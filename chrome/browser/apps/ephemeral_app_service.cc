@@ -67,7 +67,8 @@ EphemeralAppService::EphemeralAppService(Profile* profile)
             switches::kEnableEphemeralApps))
     return;
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -89,7 +90,7 @@ void EphemeralAppService::Observe(
       Init();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       DCHECK(extension);

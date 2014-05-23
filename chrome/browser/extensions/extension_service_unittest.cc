@@ -678,7 +678,8 @@ class ExtensionServiceTest
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                    content::NotificationService::AllSources());
   }
 
@@ -711,7 +712,7 @@ class ExtensionServiceTest
         loaded_.erase(i);
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
         const extensions::InstalledExtensionInfo* installed_info =
             content::Details<const extensions::InstalledExtensionInfo>(details)
                 .ptr();
@@ -6932,7 +6933,7 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
 
   // Extension was installed but not loaded.
   EXPECT_TRUE(notifications.CheckNotifications(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED));
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED));
   EXPECT_TRUE(service_->GetInstalledExtension(id));
 
   EXPECT_FALSE(registry_->enabled_extensions().Contains(id));

@@ -148,7 +148,7 @@ CommandService::CommandService(content::BrowserContext* context)
       RegisterFunction<GetAllCommandsFunction>();
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -325,7 +325,7 @@ void CommandService::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       AssignInitialKeybindings(
           content::Details<const InstalledExtensionInfo>(details)->extension);
       break;

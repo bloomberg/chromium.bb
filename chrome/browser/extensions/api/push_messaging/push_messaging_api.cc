@@ -290,7 +290,8 @@ PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
     : extension_registry_observer_(this),
       profile_(Profile::FromBrowserContext(context)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
@@ -358,7 +359,7 @@ void PushMessagingAPI::OnExtensionUnloaded(
 void PushMessagingAPI::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_INSTALLED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED);
   if (!InitEventRouterAndHandler())
     return;
 

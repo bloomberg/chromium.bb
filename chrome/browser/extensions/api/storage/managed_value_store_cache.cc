@@ -106,7 +106,7 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
           policy::SchemaRegistryServiceFactory::GetForContext(profile)),
       weak_factory_(this) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -131,7 +131,7 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       scoped_ptr<ExtensionSet> added(new ExtensionSet);
       added->Insert(
           content::Details<InstalledExtensionInfo>(details)->extension);

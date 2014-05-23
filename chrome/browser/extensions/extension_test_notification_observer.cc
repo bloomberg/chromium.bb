@@ -185,7 +185,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
 
 bool ExtensionTestNotificationObserver::WaitForExtensionInstall() {
   int before = extension_installs_observed_;
-  WaitForNotification(chrome::NOTIFICATION_EXTENSION_INSTALLED);
+  WaitForNotification(chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED);
   return extension_installs_observed_ == (before + 1);
 }
 
@@ -272,7 +272,7 @@ void ExtensionTestNotificationObserver::Observe(
       ++crx_installers_done_observed_;
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       VLOG(1) << "Got EXTENSION_INSTALLED notification.";
       ++extension_installs_observed_;
       break;

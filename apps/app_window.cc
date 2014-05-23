@@ -320,7 +320,7 @@ void AppWindow::Init(const GURL& url,
                  content::NotificationService::AllSources());
   // Update the app menu if an ephemeral app becomes installed.
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<content::BrowserContext>(
                      client->GetOriginalContext(browser_context_)));
 
@@ -971,7 +971,7 @@ void AppWindow::Observe(int type,
         native_app_window_->Close();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       const extensions::Extension* installed_extension =
           content::Details<const extensions::InstalledExtensionInfo>(details)
               ->extension;

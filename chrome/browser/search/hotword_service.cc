@@ -162,7 +162,7 @@ HotwordService::HotwordService(Profile* profile)
                  base::Unretained(this)));
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
 
   // Clear the old user pref because it became unusable.
@@ -179,7 +179,7 @@ HotwordService::~HotwordService() {
 void HotwordService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
+  if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED) {
     const extensions::Extension* extension =
         content::Details<const extensions::InstalledExtensionInfo>(details)
               ->extension;
@@ -194,7 +194,7 @@ void HotwordService::Observe(int type,
       // user opts in at which point the pref registrar will take over
       // enabling and disabling.
       registrar_.Remove(this,
-                        chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                        chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                         content::Source<Profile>(profile_));
     }
   }

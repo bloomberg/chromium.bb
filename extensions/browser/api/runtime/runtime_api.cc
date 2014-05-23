@@ -144,7 +144,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::Source<BrowserContext>(context));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<BrowserContext>(context));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -177,7 +177,7 @@ void RuntimeAPI::Observe(int type,
       OnExtensionLoaded(extension);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       OnExtensionInstalled(extension);

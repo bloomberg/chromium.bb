@@ -67,7 +67,8 @@ StateStore::StateStore(Profile* profile,
                        const base::FilePath& db_path,
                        bool deferred_load)
     : db_path_(db_path), task_queue_(new DelayedTaskQueue()) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile));
@@ -87,7 +88,8 @@ StateStore::StateStore(Profile* profile,
 
 StateStore::StateStore(Profile* profile, scoped_ptr<ValueStore> value_store)
     : store_(value_store.Pass()), task_queue_(new DelayedTaskQueue()) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile));
@@ -133,7 +135,7 @@ void StateStore::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       RemoveKeysForExtension(
           content::Details<const InstalledExtensionInfo>(details)->extension->
               id());

@@ -200,7 +200,7 @@ void ErrorConsole::Enable() {
       content::Source<Profile>(profile_));
   notification_registrar_.Add(
       this,
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile_));
 
   const ExtensionSet& extensions =
@@ -263,7 +263,7 @@ void ErrorConsole::Observe(int type,
       // notifications from our own.
       errors_.Remove(content::Details<Extension>(details).ptr()->id());
       break;
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       const InstalledExtensionInfo* info =
           content::Details<InstalledExtensionInfo>(details).ptr();
 

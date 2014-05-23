@@ -407,7 +407,8 @@ void SyncFileSystemService::Initialize(
     profile_sync_service->AddObserver(this);
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_));
@@ -623,7 +624,7 @@ void SyncFileSystemService::Observe(
   // Reload, Restart: UNLOADED(DISABLE) -> INSTALLED -> ENABLED.
   //
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       HandleExtensionInstalled(details);
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:

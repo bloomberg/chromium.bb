@@ -1959,7 +1959,7 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   }
   extensions::InstalledExtensionInfo details(extension, is_update, old_name);
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const extensions::InstalledExtensionInfo>(&details));
 

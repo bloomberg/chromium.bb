@@ -949,13 +949,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
 
 namespace {
 
-// Simple observer to check for NOTIFICATION_EXTENSION_INSTALLED events to
+// Simple observer to check for NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED
+// events to
 // ensure installation does or does not occur in certain scenarios.
 class CheckExtensionInstalledObserver : public content::NotificationObserver {
  public:
   CheckExtensionInstalledObserver() : seen_(false) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                   chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                    content::NotificationService::AllSources());
   }
 
@@ -1017,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // should not cause it to be re-installed. Instead, we wait for the OnLaunched
   // in a different observer (which would timeout if not the app was not
   // previously installed properly) and then check this observer to make sure it
-  // never saw the NOTIFICATION_EXTENSION_INSTALLED event.
+  // never saw the NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED event.
   CheckExtensionInstalledObserver should_not_install;
   const Extension* extension = LoadExtensionAsComponent(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));

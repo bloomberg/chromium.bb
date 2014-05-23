@@ -739,7 +739,7 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
 
 ManagementEventRouter::ManagementEventRouter(Profile* profile)
     : profile_(profile) {
-  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED};
@@ -765,7 +765,7 @@ void ManagementEventRouter::Observe(
   CHECK(profile_->IsSameProfile(profile));
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       event_name = management::OnInstalled::kEventName;
       extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;

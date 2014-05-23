@@ -58,7 +58,7 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
   // * Call PermissionsUpdater::GrantActivePermissions().
   // * Call ExtensionService::SatisfyImports().
   // * Call ExtensionPrefs::OnExtensionInstalled().
-  // * Send NOTIFICATION_EXTENSION_INSTALLED.
+  // * Send NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED.
 
   ExtensionRegistry::Get(browser_context_)->AddEnabled(extension);
 

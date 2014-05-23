@@ -247,8 +247,7 @@ void ThemeService::Observe(int type,
           content::Source<Profile>(profile_));
       OnExtensionServiceReady();
       break;
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
-    {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       // The theme may be initially disabled. Wait till it is loaded (if ever).
       Details<const extensions::InstalledExtensionInfo> installed_details(
           details);
@@ -501,7 +500,7 @@ void ThemeService::OnExtensionServiceReady() {
   }
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,

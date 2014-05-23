@@ -242,7 +242,8 @@ void EphemeralAppLauncher::CompleteInstall(const std::string& error) {
     WebstoreStandaloneInstaller::CompleteInstall(error);
 
   // If the installation succeeds, we reach this point as a result of
-  // chrome::NOTIFICATION_EXTENSION_INSTALLED, but this is broadcasted before
+  // chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED, but this is
+  // broadcasted before
   // ExtensionService has added the extension to its list of installed
   // extensions and is too early to launch the app. Instead, we will launch at
   // EphemeralAppLauncher::OnExtensionLoaded().

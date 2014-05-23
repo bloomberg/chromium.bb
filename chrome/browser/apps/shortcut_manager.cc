@@ -75,7 +75,8 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
@@ -108,7 +109,7 @@ void AppShortcutManager::Observe(int type,
       OnceOffCreateShortcuts();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
 #if defined(OS_MACOSX)
       if (!apps::IsAppShimsEnabled())
         break;

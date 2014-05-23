@@ -1552,7 +1552,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, forcelist.DeepCopy(), NULL);
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   UpdateProviderPolicy(policies);
   observer.Wait();
@@ -1590,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ExtensionUpdater::CheckParams params;
   params.install_immediately = true;
   content::WindowedNotificationObserver update_observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   updater->CheckNow(params);
   update_observer.Wait();
@@ -1720,7 +1720,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   UpdateProviderPolicy(policies);
 
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       content::NotificationService::AllSources());
   PerformClick(1, 0);
   observer.Wait();

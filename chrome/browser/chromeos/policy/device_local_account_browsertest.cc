@@ -730,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
 
   // Start listening for app/extension installation results.
   content::WindowedNotificationObserver hosted_app_observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
   content::WindowedNotificationObserver extension_observer(
       chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
@@ -825,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Start listening for app/extension installation results.
   content::WindowedNotificationObserver hosted_app_observer(
-      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
       base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
   content::WindowedNotificationObserver extension_observer(
       chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,

@@ -174,7 +174,7 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
     : profile_(profile) {
-  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  int types[] = {chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
@@ -217,7 +217,7 @@ void DeveloperPrivateEventRouter::Observe(
   const Extension* extension = NULL;
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED:
       event_data.event_type = developer::EVENT_TYPE_INSTALLED;
       extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;

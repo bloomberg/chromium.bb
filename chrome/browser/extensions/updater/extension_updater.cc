@@ -151,7 +151,8 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
 #endif
   frequency_seconds_ = std::min(frequency_seconds_, kMaxUpdateFrequencySeconds);
 
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -616,7 +617,7 @@ void ExtensionUpdater::Observe(int type,
       MaybeInstallCRXFile();
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
       const Extension* extension =
           content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension)
