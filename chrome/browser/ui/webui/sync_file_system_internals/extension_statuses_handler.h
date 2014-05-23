@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_FILE_SYSTEM_INTERNALS_EXTENSION_STATUSES_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
@@ -23,16 +24,19 @@ class ExtensionStatusesHandler : public content::WebUIMessageHandler {
 
   // Shared by Extension Statuses Tab and also File Metadata Tab to generate the
   // extension drop down.
-  static void GetExtensionStatusesAsDictionary(Profile* profile,
-                                               base::ListValue* values);
+  static void GetExtensionStatusesAsDictionary(
+      Profile* profile,
+      const base::Callback<void(const base::ListValue&)>& callback);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
  private:
   void GetExtensionStatuses(const base::ListValue* args);
+  void DidGetExtensionStatuses(const base::ListValue& list);
 
   Profile* profile_;
+  base::WeakPtrFactory<ExtensionStatusesHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionStatusesHandler);
 };

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
@@ -111,6 +112,8 @@ class RemoteFileSyncService {
 
   // For GetOriginStatusMap.
   typedef std::map<GURL, std::string> OriginStatusMap;
+  typedef base::Callback<void(scoped_ptr<OriginStatusMap> status_map)>
+      StatusMapCallback;
 
   // For GetRemoteVersions.
   typedef base::Callback<void(SyncStatusCode status,
@@ -189,7 +192,7 @@ class RemoteFileSyncService {
 
   // Returns all origins along with an arbitrary string description of their
   // corresponding sync statuses.
-  virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
+  virtual void GetOriginStatusMap(const StatusMapCallback& callback) = 0;
 
   // Returns file metadata for |origin| to call |callback|.
   virtual void DumpFiles(const GURL& origin,

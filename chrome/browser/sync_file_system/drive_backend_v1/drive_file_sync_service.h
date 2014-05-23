@@ -98,7 +98,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       RemoteChangeProcessor* processor) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
-  virtual void GetOriginStatusMap(OriginStatusMap* status_map) OVERRIDE;
+  virtual void GetOriginStatusMap(const StatusMapCallback& callback) OVERRIDE;
   virtual void DumpFiles(const GURL& origin,
                          const ListCallback& callback) OVERRIDE;
   virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;

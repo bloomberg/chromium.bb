@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,33 +25,15 @@ using sync_file_system::SyncServiceState;
 
 namespace syncfs_internals {
 
-ExtensionStatusesHandler::ExtensionStatusesHandler(Profile* profile)
-    : profile_(profile) {}
+namespace {
 
-ExtensionStatusesHandler::~ExtensionStatusesHandler() {}
+void ConvertExtensionStatusToDictionary(
+    const base::WeakPtr<ExtensionService>& extension_service,
+    const base::Callback<void(const base::ListValue&)>& callback,
+    const std::map<GURL, std::string>& status_map) {
+  DCHECK(!extension_service);
 
-void ExtensionStatusesHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "getExtensionStatuses",
-      base::Bind(&ExtensionStatusesHandler::GetExtensionStatuses,
-                 base::Unretained(this)));
-}
-
-// static
-void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
-    Profile* profile,
-    base::ListValue* values) {
-  DCHECK(profile);
-  DCHECK(values);
-  sync_file_system::SyncFileSystemService* sync_service =
-      SyncFileSystemServiceFactory::GetForProfile(profile);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!sync_service || !extension_service)
-    return;
-
-  std::map<GURL, std::string> status_map;
-  sync_service->GetExtensionStatusMap(&status_map);
+  base::ListValue list;
   for (std::map<GURL, std::string>::const_iterator itr = status_map.begin();
        itr != status_map.end();
        ++itr) {
@@ -66,15 +49,59 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     dict->SetString("extensionID", extension_id);
     dict->SetString("extensionName", extension->name());
     dict->SetString("status", itr->second);
-    values->Append(dict);
+    list.Append(dict);
   }
+
+  callback.Run(list);
+}
+
+}  // namespace
+
+ExtensionStatusesHandler::ExtensionStatusesHandler(Profile* profile)
+    : profile_(profile),
+      weak_ptr_factory_(this) {}
+
+ExtensionStatusesHandler::~ExtensionStatusesHandler() {}
+
+void ExtensionStatusesHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "getExtensionStatuses",
+      base::Bind(&ExtensionStatusesHandler::GetExtensionStatuses,
+                 base::Unretained(this)));
+}
+
+// static
+void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
+    Profile* profile,
+    const base::Callback<void(const base::ListValue&)>& callback) {
+  DCHECK(profile);
+
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile);
+  if (!sync_service)
+    return;
+
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!extension_service)
+    return;
+
+  sync_service->GetExtensionStatusMap(base::Bind(
+      &ConvertExtensionStatusToDictionary,
+      extension_service->AsWeakPtr(), callback));
 }
 
 void ExtensionStatusesHandler::GetExtensionStatuses(
     const base::ListValue* args) {
   DCHECK(args);
-  base::ListValue list;
-  GetExtensionStatusesAsDictionary(profile_, &list);
+  GetExtensionStatusesAsDictionary(
+      profile_,
+      base::Bind(&ExtensionStatusesHandler::DidGetExtensionStatuses,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ExtensionStatusesHandler::DidGetExtensionStatuses(
+    const base::ListValue& list) {
   web_ui()->CallJavascriptFunction("ExtensionStatuses.onGetExtensionStatuses",
                                    list);
 }

@@ -305,12 +305,10 @@ SyncServiceState SyncFileSystemService::GetSyncServiceState() {
 }
 
 void SyncFileSystemService::GetExtensionStatusMap(
-    std::map<GURL, std::string>* status_map) {
-  DCHECK(status_map);
-  status_map->clear();
-  remote_service_->GetOriginStatusMap(status_map);
-  if (v2_remote_service_)
-    v2_remote_service_->GetOriginStatusMap(status_map);
+    const ExtensionStatusMapCallback& callback) {
+  remote_service_->GetOriginStatusMap(
+      base::Bind(&SyncFileSystemService::DidGetExtensionStatusMap,
+                 AsWeakPtr(), callback));
 }
 
 void SyncFileSystemService::DumpFiles(const GURL& origin,
@@ -555,6 +553,31 @@ void SyncFileSystemService::DidDumpV2Database(
   }
 
   callback.Run(*v1list);
+}
+
+void SyncFileSystemService::DidGetExtensionStatusMap(
+    const ExtensionStatusMapCallback& callback,
+    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map) {
+  if (!v2_remote_service_) {
+    callback.Run(*status_map);
+    return;
+  }
+
+  v2_remote_service_->GetOriginStatusMap(
+      base::Bind(&SyncFileSystemService::DidGetV2ExtensionStatusMap,
+                 AsWeakPtr(),
+                 callback,
+                 base::Passed(&status_map)));
+}
+
+void SyncFileSystemService::DidGetV2ExtensionStatusMap(
+    const ExtensionStatusMapCallback& callback,
+    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v1,
+    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v2) {
+  // Merge |status_map_v2| into |status_map_v1|.
+  status_map_v1->insert(status_map_v2->begin(), status_map_v2->end());
+
+  callback.Run(*status_map_v1);
 }
 
 void SyncFileSystemService::SetSyncEnabledForTesting(bool enabled) {

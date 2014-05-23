@@ -10,6 +10,7 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -287,9 +288,10 @@ TEST_F(DriveFileSyncServiceTest, EnableOrigin) {
 }
 
 TEST_F(DriveFileSyncServiceTest, GetOriginStatusMap) {
-  RemoteFileSyncService::OriginStatusMap origin_status_map;
-  sync_service()->GetOriginStatusMap(&origin_status_map);
-  ASSERT_EQ(0u, origin_status_map.size());
+  scoped_ptr<RemoteFileSyncService::OriginStatusMap> origin_status_map;
+  sync_service()->GetOriginStatusMap(
+      CreateResultReceiver(&origin_status_map));
+  ASSERT_EQ(0u, origin_status_map->size());
 
   // Add 3 pending, 2 enabled and 1 disabled sync origin.
   AddOrigin("Pending", "p0");
@@ -299,14 +301,16 @@ TEST_F(DriveFileSyncServiceTest, GetOriginStatusMap) {
   AddOrigin("Enabled", "e1");
   AddOrigin("Disabled", "d0");
 
-  sync_service()->GetOriginStatusMap(&origin_status_map);
-  ASSERT_EQ(6u, origin_status_map.size());
-  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p0")]);
-  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p1")]);
-  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p2")]);
-  EXPECT_EQ("Enabled", origin_status_map[GURL("chrome-extension://app_e0")]);
-  EXPECT_EQ("Enabled", origin_status_map[GURL("chrome-extension://app_e1")]);
-  EXPECT_EQ("Disabled", origin_status_map[GURL("chrome-extension://app_d0")]);
+  sync_service()->GetOriginStatusMap(
+      CreateResultReceiver(&origin_status_map));
+  ASSERT_EQ(6u, origin_status_map->size());
+  EXPECT_EQ("Pending", (*origin_status_map)[GURL("chrome-extension://app_p0")]);
+  EXPECT_EQ("Pending", (*origin_status_map)[GURL("chrome-extension://app_p1")]);
+  EXPECT_EQ("Pending", (*origin_status_map)[GURL("chrome-extension://app_p2")]);
+  EXPECT_EQ("Enabled", (*origin_status_map)[GURL("chrome-extension://app_e0")]);
+  EXPECT_EQ("Enabled", (*origin_status_map)[GURL("chrome-extension://app_e1")]);
+  EXPECT_EQ("Disabled",
+            (*origin_status_map)[GURL("chrome-extension://app_d0")]);
 }
 
 }  // namespace sync_file_system

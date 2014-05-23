@@ -30,6 +30,7 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
 
  private:
   void GetExtensions(const base::ListValue* args);
+  void DidGetExtensions(const base::ListValue& list);
 
   void GetFileMetadata(const base::ListValue* args);
   void DidGetFileMetadata(const base::ListValue& files);

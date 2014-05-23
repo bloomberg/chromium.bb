@@ -204,24 +204,24 @@ RemoteServiceState SyncWorker::GetCurrentState() const {
 }
 
 void SyncWorker::GetOriginStatusMap(
-    RemoteFileSyncService::OriginStatusMap* status_map) {
-  DCHECK(status_map);
-
+    const RemoteFileSyncService::StatusMapCallback& callback) {
   if (!GetMetadataDatabase())
     return;
 
   std::vector<std::string> app_ids;
   GetMetadataDatabase()->GetRegisteredAppIDs(&app_ids);
 
+  scoped_ptr<RemoteFileSyncService::OriginStatusMap>
+      status_map(new RemoteFileSyncService::OriginStatusMap);
   for (std::vector<std::string>::const_iterator itr = app_ids.begin();
        itr != app_ids.end(); ++itr) {
     const std::string& app_id = *itr;
-    GURL origin =
-        extensions::Extension::GetBaseURLFromExtensionId(app_id);
+    GURL origin = extensions::Extension::GetBaseURLFromExtensionId(app_id);
     (*status_map)[origin] =
-        GetMetadataDatabase()->IsAppEnabled(app_id) ?
-        "Enabled" : "Disabled";
+        GetMetadataDatabase()->IsAppEnabled(app_id) ? "Enabled" : "Disabled";
   }
+
+  callback.Run(status_map.Pass());
 }
 
 scoped_ptr<base::ListValue> SyncWorker::DumpFiles(const GURL& origin) {

@@ -100,7 +100,8 @@ class SyncWorker : public SyncTaskManager::Client {
   void SetRemoteChangeProcessor(
       RemoteChangeProcessorOnWorker* remote_change_processor_on_worker);
   RemoteServiceState GetCurrentState() const;
-  void GetOriginStatusMap(RemoteFileSyncService::OriginStatusMap* status_map);
+  void GetOriginStatusMap(
+      const RemoteFileSyncService::StatusMapCallback& callback);
   scoped_ptr<base::ListValue> DumpFiles(const GURL& origin);
   scoped_ptr<base::ListValue> DumpDatabase();
   void SetSyncEnabled(bool enabled);

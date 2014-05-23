@@ -344,9 +344,12 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
   return service_state_;
 }
 
-void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
-  // TODO(peria): Make this route asynchronous.
-  sync_worker_->GetOriginStatusMap(status_map);
+void SyncEngine::GetOriginStatusMap(const StatusMapCallback& callback) {
+  worker_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncWorker::GetOriginStatusMap,
+                 base::Unretained(sync_worker_.get()),
+                 RelayCallbackToCurrentThread(FROM_HERE, callback)));
 }
 
 void SyncEngine::DumpFiles(const GURL& origin,

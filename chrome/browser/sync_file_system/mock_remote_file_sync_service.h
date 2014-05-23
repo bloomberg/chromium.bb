@@ -50,7 +50,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
   MOCK_METHOD1(GetOriginStatusMap,
-               void(RemoteFileSyncService::OriginStatusMap* status_map));
+               void(const StatusMapCallback& callback));
   MOCK_METHOD1(SetSyncEnabled, void(bool enabled));
   MOCK_METHOD0(PromoteDemotedChanges, void());
 

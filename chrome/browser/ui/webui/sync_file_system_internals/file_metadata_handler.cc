@@ -67,8 +67,13 @@ void FileMetadataHandler::GetFileMetadata(
 
 void FileMetadataHandler::GetExtensions(const base::ListValue* args) {
   DCHECK(args);
-  base::ListValue list;
-  ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(profile_, &list);
+  ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
+      profile_,
+      base::Bind(&FileMetadataHandler::DidGetExtensions,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void FileMetadataHandler::DidGetExtensions(const base::ListValue& list) {
   web_ui()->CallJavascriptFunction("FileMetadata.onGetExtensions", list);
 }
 

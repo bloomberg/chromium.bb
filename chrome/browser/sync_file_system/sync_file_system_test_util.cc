@@ -4,7 +4,9 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/gdata_errorcode.h"
@@ -53,6 +55,7 @@ AssignAndQuitCallback(base::RunLoop*, SyncStatusCode*);
   template base::Callback<void(type)> CreateResultReceiver(type*);
 INSTANTIATE_RECEIVER(SyncStatusCode);
 INSTANTIATE_RECEIVER(google_apis::GDataErrorCode);
+INSTANTIATE_RECEIVER(scoped_ptr<RemoteFileSyncService::OriginStatusMap>);
 #undef INSTANTIATE_RECEIVER
 
 }  // namespace sync_file_system

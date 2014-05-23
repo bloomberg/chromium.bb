@@ -201,8 +201,9 @@ RemoteServiceState DriveFileSyncService::GetCurrentState() const {
   return state_;
 }
 
-void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
-  DCHECK(status_map);
+void DriveFileSyncService::GetOriginStatusMap(
+    const StatusMapCallback& callback) {
+  scoped_ptr<OriginStatusMap> status_map(new OriginStatusMap);
 
   // Add batch sync origins held by DriveFileSyncService.
   typedef std::map<GURL, std::string>::const_iterator iterator;
@@ -221,6 +222,8 @@ void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
        itr != metadata_store_->disabled_origins().end();
        ++itr)
     (*status_map)[itr->first] = "Disabled";
+
+  callback.Run(status_map.Pass());
 }
 
 void DriveFileSyncService::DumpFiles(const GURL& origin,
