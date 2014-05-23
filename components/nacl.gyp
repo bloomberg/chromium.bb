@@ -161,6 +161,8 @@
             'nacl/renderer/manifest_downloader.h',
             'nacl/renderer/manifest_service_channel.cc',
             'nacl/renderer/manifest_service_channel.h',
+            'nacl/renderer/nacl_helper.cc',
+            'nacl/renderer/nacl_helper.h',
             'nacl/renderer/json_manifest.cc',
             'nacl/renderer/json_manifest.h',
             'nacl/renderer/nexe_load_manager.cc',

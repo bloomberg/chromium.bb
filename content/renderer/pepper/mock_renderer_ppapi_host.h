@@ -52,6 +52,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
   virtual bool IsRunningInProcess() const OVERRIDE;
+  virtual std::string GetPluginName() const OVERRIDE;
+  virtual void SetToExternalPluginHost() OVERRIDE;
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,

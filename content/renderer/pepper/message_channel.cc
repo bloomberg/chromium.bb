@@ -31,6 +31,7 @@
 
 using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
+using ppapi::ScopedPPVar;
 using ppapi::StringVar;
 using blink::WebBindings;
 using blink::WebElement;
@@ -65,56 +66,9 @@ NPObject* ToPassThroughObject(NPObject* object) {
   return channel ? channel->passthrough_object() : NULL;
 }
 
-// Helper function to determine if a given identifier is equal to kPostMessage.
-bool IdentifierIsPostMessage(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kPostMessage) == identifier;
-}
-
-// Copy a PP_Var in to a PP_Var that is appropriate for sending via postMessage.
-// This currently just copies the value.  For a string Var, the result is a
-// PP_Var with the a copy of |var|'s string contents and a reference count of 1.
-PP_Var CopyPPVar(const PP_Var& var) {
-  switch (var.type) {
-    case PP_VARTYPE_UNDEFINED:
-    case PP_VARTYPE_NULL:
-    case PP_VARTYPE_BOOL:
-    case PP_VARTYPE_INT32:
-    case PP_VARTYPE_DOUBLE:
-      return var;
-    case PP_VARTYPE_STRING: {
-      StringVar* string = StringVar::FromPPVar(var);
-      if (!string)
-        return PP_MakeUndefined();
-      return StringVar::StringToPPVar(string->value());
-    }
-    case PP_VARTYPE_ARRAY_BUFFER: {
-      ArrayBufferVar* buffer = ArrayBufferVar::FromPPVar(var);
-      if (!buffer)
-        return PP_MakeUndefined();
-      PP_Var new_buffer_var =
-          PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-              buffer->ByteLength());
-      DCHECK(new_buffer_var.type == PP_VARTYPE_ARRAY_BUFFER);
-      if (new_buffer_var.type != PP_VARTYPE_ARRAY_BUFFER)
-        return PP_MakeUndefined();
-      ArrayBufferVar* new_buffer = ArrayBufferVar::FromPPVar(new_buffer_var);
-      DCHECK(new_buffer);
-      if (!new_buffer)
-        return PP_MakeUndefined();
-      memcpy(new_buffer->Map(), buffer->Map(), buffer->ByteLength());
-      return new_buffer_var;
-    }
-    case PP_VARTYPE_OBJECT:
-    case PP_VARTYPE_ARRAY:
-    case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_RESOURCE:
-      // These types are not supported by PostMessage in-process. In some rare
-      // cases with the NaCl plugin, they may be sent but they will be dropped
-      // anyway (see crbug.com/318837 for details).
-      return PP_MakeUndefined();
-  }
-  NOTREACHED();
-  return PP_MakeUndefined();
+// Return true iff |identifier| is equal to |string|.
+bool IdentifierIs(NPIdentifier identifier, const char string[]) {
+  return WebBindings::getStringIdentifier(string) == identifier;
 }
 
 //------------------------------------------------------------------------------
@@ -137,8 +91,7 @@ bool MessageChannelHasMethod(NPObject* np_obj, NPIdentifier name) {
   if (!np_obj)
     return false;
 
-  // We only handle a function called postMessage.
-  if (IdentifierIsPostMessage(name))
+  if (IdentifierIs(name, kPostMessage))
     return true;
 
   // Other method names we will pass to the passthrough object, if we have one.
@@ -156,15 +109,15 @@ bool MessageChannelInvoke(NPObject* np_obj,
   if (!np_obj)
     return false;
 
-  // We only handle a function called postMessage.
-  if (IdentifierIsPostMessage(name) && (arg_count == 1)) {
-    MessageChannel* message_channel = ToMessageChannel(np_obj);
-    if (message_channel) {
-      message_channel->NPVariantToPPVar(&args[0]);
-      return true;
-    } else {
-      return false;
-    }
+  MessageChannel* message_channel = ToMessageChannel(np_obj);
+  if (!message_channel)
+    return false;
+
+  // Check to see if we should handle this function ourselves. We only handle
+  // kPostMessage.
+  if (IdentifierIs(name, kPostMessage) && (arg_count == 1)) {
+    message_channel->PostMessageToNative(&args[0]);
+    return true;
   }
   // Other method calls we will pass to the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
@@ -215,7 +168,7 @@ bool MessageChannelGetProperty(NPObject* np_obj,
     return false;
 
   // Don't allow getting the postMessage function.
-  if (IdentifierIsPostMessage(name))
+  if (IdentifierIs(name, kPostMessage))
     return false;
 
   MessageChannel* message_channel = ToMessageChannel(np_obj);
@@ -238,7 +191,7 @@ bool MessageChannelSetProperty(NPObject* np_obj,
     return false;
 
   // Don't allow setting the postMessage function.
-  if (IdentifierIsPostMessage(name))
+  if (IdentifierIs(name, kPostMessage))
     return false;
 
   // Invoke on the passthrough object, if we have one.
@@ -294,12 +247,21 @@ NPClass message_channel_class = {
 
 // MessageChannel --------------------------------------------------------------
 struct MessageChannel::VarConversionResult {
-  VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
-      : result(r), success(s), conversion_completed(true) {}
-  VarConversionResult() : success(false), conversion_completed(false) {}
-  ppapi::ScopedPPVar result;
-  bool success;
-  bool conversion_completed;
+  VarConversionResult() : success_(false), conversion_completed_(false) {}
+  void ConversionCompleted(const ScopedPPVar& var,
+                           bool success) {
+    conversion_completed_ = true;
+    var_ = var;
+    success_ = success;
+  }
+  const ScopedPPVar& var() const { return var_; }
+  bool success() const { return success_; }
+  bool conversion_completed() const { return conversion_completed_; }
+
+ private:
+  ScopedPPVar var_;
+  bool success_;
+  bool conversion_completed_;
 };
 
 MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {}
@@ -321,61 +283,30 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 }
 
-void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
-  converted_var_queue_.push_back(VarConversionResult());
-  std::list<VarConversionResult>::iterator result_iterator =
-      --converted_var_queue_.end();
-  switch (variant->type) {
-    case NPVariantType_Void:
-      NPVariantToPPVarComplete(
-          result_iterator, ppapi::ScopedPPVar(PP_MakeUndefined()), true);
-      return;
-    case NPVariantType_Null:
-      NPVariantToPPVarComplete(
-          result_iterator, ppapi::ScopedPPVar(PP_MakeNull()), true);
-      return;
-    case NPVariantType_Bool:
-      NPVariantToPPVarComplete(result_iterator,
-                               ppapi::ScopedPPVar(PP_MakeBool(PP_FromBool(
-                                   NPVARIANT_TO_BOOLEAN(*variant)))),
-                               true);
-      return;
-    case NPVariantType_Int32:
-      NPVariantToPPVarComplete(
-          result_iterator,
-          ppapi::ScopedPPVar(PP_MakeInt32(NPVARIANT_TO_INT32(*variant))),
-          true);
-      return;
-    case NPVariantType_Double:
-      NPVariantToPPVarComplete(
-          result_iterator,
-          ppapi::ScopedPPVar(PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant))),
-          true);
-      return;
-    case NPVariantType_String:
-      NPVariantToPPVarComplete(
-          result_iterator,
-          ppapi::ScopedPPVar(ppapi::ScopedPPVar::PassRef(),
-                             StringVar::StringToPPVar(
-                                 NPVARIANT_TO_STRING(*variant).UTF8Characters,
-                                 NPVARIANT_TO_STRING(*variant).UTF8Length)),
-          true);
-      return;
-    case NPVariantType_Object: {
-      // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
-      // shouldn't result in a deep copy.
-      v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-      V8VarConverter(instance_->pp_instance())
-          .FromV8Value(v8_value,
-                       v8::Isolate::GetCurrent()->GetCurrentContext(),
-                       base::Bind(&MessageChannel::NPVariantToPPVarComplete,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  result_iterator));
-      return;
-    }
+void MessageChannel::EnqueuePluginMessage(const NPVariant* variant) {
+  plugin_message_queue_.push_back(VarConversionResult());
+  if (variant->type == NPVariantType_Object) {
+    // Convert NPVariantType_Object in to an appropriate PP_Var like Dictionary,
+    // Array, etc. Note NPVariantToVar would convert to an "Object" PP_Var,
+    // which we don't support for Messaging.
+
+    // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
+    // won't result in a deep copy.
+    v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
+    V8VarConverter v8_var_converter(instance_->pp_instance());
+    v8_var_converter.FromV8Value(
+        v8_value,
+        v8::Isolate::GetCurrent()->GetCurrentContext(),
+        base::Bind(&MessageChannel::FromV8ValueComplete,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   &plugin_message_queue_.back()));
+  } else {
+    plugin_message_queue_.back().ConversionCompleted(
+        ScopedPPVar(ScopedPPVar::PassRef(),
+                    NPVariantToPPVar(instance(), variant)),
+        true);
+    DCHECK(plugin_message_queue_.back().var().get().type != PP_VARTYPE_OBJECT);
   }
-  NPVariantToPPVarComplete(
-      result_iterator, ppapi::ScopedPPVar(PP_MakeUndefined()), false);
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
@@ -409,82 +340,69 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   WebSerializedScriptValue serialized_val =
       WebSerializedScriptValue::serialize(v8_val);
 
-  if (instance_->module()->IsProxied()) {
-    if (early_message_queue_state_ != SEND_DIRECTLY) {
-      // We can't just PostTask here; the messages would arrive out of
-      // order. Instead, we queue them up until we're ready to post
-      // them.
-      early_message_queue_.push_back(serialized_val);
-    } else {
-      // The proxy sent an asynchronous message, so the plugin is already
-      // unblocked. Therefore, there's no need to PostTask.
-      DCHECK(early_message_queue_.size() == 0);
-      PostMessageToJavaScriptImpl(serialized_val);
-    }
+  if (early_message_queue_state_ != SEND_DIRECTLY) {
+    // We can't just PostTask here; the messages would arrive out of
+    // order. Instead, we queue them up until we're ready to post
+    // them.
+    early_message_queue_.push_back(serialized_val);
   } else {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&MessageChannel::PostMessageToJavaScriptImpl,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   serialized_val));
+    // The proxy sent an asynchronous message, so the plugin is already
+    // unblocked. Therefore, there's no need to PostTask.
+    DCHECK(early_message_queue_.empty());
+    PostMessageToJavaScriptImpl(serialized_val);
   }
 }
 
-void MessageChannel::StopQueueingJavaScriptMessages() {
+void MessageChannel::Start() {
   // We PostTask here instead of draining the message queue directly
   // since we haven't finished initializing the PepperWebPluginImpl yet, so
   // the plugin isn't available in the DOM.
-  early_message_queue_state_ = DRAIN_PENDING;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MessageChannel::DrainEarlyMessageQueue,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MessageChannel::QueueJavaScriptMessages() {
-  if (early_message_queue_state_ == DRAIN_PENDING)
-    early_message_queue_state_ = DRAIN_CANCELLED;
-  else
-    early_message_queue_state_ = QUEUE_MESSAGES;
+void MessageChannel::FromV8ValueComplete(VarConversionResult* result_holder,
+                                         const ScopedPPVar& result,
+                                         bool success) {
+  result_holder->ConversionCompleted(result, success);
+  DrainCompletedPluginMessages();
 }
 
-void MessageChannel::NPVariantToPPVarComplete(
-    const std::list<VarConversionResult>::iterator& result_iterator,
-    const ppapi::ScopedPPVar& result,
-    bool success) {
-  *result_iterator = VarConversionResult(result, success);
-  std::list<VarConversionResult>::iterator it = converted_var_queue_.begin();
-  while (it != converted_var_queue_.end() && it->conversion_completed) {
-    if (it->success) {
-      PostMessageToNative(it->result.get());
+void MessageChannel::DrainCompletedPluginMessages() {
+  if (early_message_queue_state_ == QUEUE_MESSAGES)
+    return;
+
+  while (!plugin_message_queue_.empty() &&
+         plugin_message_queue_.front().conversion_completed()) {
+    const VarConversionResult& front = plugin_message_queue_.front();
+    if (front.success()) {
+      instance_->HandleMessage(front.var());
     } else {
       PpapiGlobals::Get()->LogWithSource(instance()->pp_instance(),
                                          PP_LOGLEVEL_ERROR,
                                          std::string(),
                                          kV8ToVarConversionError);
     }
-
-    converted_var_queue_.erase(it++);
+    plugin_message_queue_.pop_front();
   }
 }
 
 void MessageChannel::DrainEarlyMessageQueue() {
+  DCHECK(early_message_queue_state_ == QUEUE_MESSAGES);
+
   // Take a reference on the PluginInstance. This is because JavaScript code
   // may delete the plugin, which would destroy the PluginInstance and its
   // corresponding MessageChannel.
   scoped_refptr<PepperPluginInstanceImpl> instance_ref(instance_);
-
-  if (early_message_queue_state_ == DRAIN_CANCELLED) {
-    early_message_queue_state_ = QUEUE_MESSAGES;
-    return;
-  }
-  DCHECK(early_message_queue_state_ == DRAIN_PENDING);
-
   while (!early_message_queue_.empty()) {
     PostMessageToJavaScriptImpl(early_message_queue_.front());
     early_message_queue_.pop_front();
   }
   early_message_queue_state_ = SEND_DIRECTLY;
+
+  DrainCompletedPluginMessages();
 }
 
 void MessageChannel::PostMessageToJavaScriptImpl(
@@ -515,30 +433,12 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   //     at least, postMessage on Workers does not provide the origin or source.
   //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
   //                      policy (see crbug.com/81537)
-
   container->element().dispatchEvent(msg_event);
 }
 
-void MessageChannel::PostMessageToNative(PP_Var message_data) {
-  if (instance_->module()->IsProxied()) {
-    // In the proxied case, the copy will happen via serializiation, and the
-    // message is asynchronous. Therefore there's no need to copy the Var, nor
-    // to PostTask.
-    PostMessageToNativeImpl(message_data);
-  } else {
-    // Make a copy of the message data for the Task we will run.
-    PP_Var var_copy(CopyPPVar(message_data));
-
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&MessageChannel::PostMessageToNativeImpl,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   var_copy));
-  }
-}
-
-void MessageChannel::PostMessageToNativeImpl(PP_Var message_data) {
-  instance_->HandleMessage(message_data);
+void MessageChannel::PostMessageToNative(const NPVariant* message_data) {
+  EnqueuePluginMessage(message_data);
+  DrainCompletedPluginMessages();
 }
 
 MessageChannel::~MessageChannel() {
@@ -565,7 +465,7 @@ void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
 
 bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
                                          NPVariant* value) const {
-  std::map<NPIdentifier, ppapi::ScopedPPVar>::const_iterator it =
+  std::map<NPIdentifier, ScopedPPVar>::const_iterator it =
       internal_properties_.find(key);
   if (it != internal_properties_.end()) {
     if (value)
@@ -576,7 +476,7 @@ bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
 }
 
 void MessageChannel::SetReadOnlyProperty(PP_Var key, PP_Var value) {
-  internal_properties_[PPVarToNPIdentifier(key)] = ppapi::ScopedPPVar(value);
+  internal_properties_[PPVarToNPIdentifier(key)] = ScopedPPVar(value);
 }
 
 }  // namespace content

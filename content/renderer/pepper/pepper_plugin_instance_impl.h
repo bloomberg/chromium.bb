@@ -89,6 +89,7 @@ namespace ppapi {
 class Resource;
 struct InputEventData;
 struct PPP_Instance_Combined;
+class ScopedPPVar;
 }
 
 namespace v8 {
@@ -296,8 +297,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // already in fullscreen mode).
   bool SetFullscreen(bool fullscreen);
 
-  // Implementation of PPP_Messaging.
-  void HandleMessage(PP_Var message);
+  // Send the message on to the plugin.
+  void HandleMessage(ppapi::ScopedPPVar message);
 
   // Returns true if the plugin is processing a user gesture.
   bool IsProcessingUserGesture();

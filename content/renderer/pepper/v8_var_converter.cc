@@ -399,6 +399,20 @@ void V8VarConverter::FromV8Value(
     v8::Handle<v8::Value> val,
     v8::Handle<v8::Context> context,
     const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
+  ScopedPPVar result_var;
+  if (FromV8ValueInternal(val, context, &result_var)) {
+    resource_converter_->Flush(base::Bind(callback, result_var));
+  } else {
+    message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, result_var, false));
+  }
+}
+
+bool V8VarConverter::FromV8ValueInternal(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context,
+    ppapi::ScopedPPVar* result_var) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
 
@@ -408,6 +422,7 @@ void V8VarConverter::FromV8Value(
   std::stack<StackEntry<v8::Handle<v8::Value> > > stack;
   stack.push(StackEntry<v8::Handle<v8::Value> >(val));
   ScopedPPVar root;
+  *result_var = PP_MakeUndefined();
   bool is_root = true;
 
   while (!stack.empty()) {
@@ -431,10 +446,7 @@ void V8VarConverter::FromV8Value(
                         &visited_handles,
                         &parent_handles,
                         resource_converter_.get())) {
-      message_loop_proxy_->PostTask(
-          FROM_HERE,
-          base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-      return;
+      return false;
     }
 
     if (is_root) {
@@ -451,21 +463,14 @@ void V8VarConverter::FromV8Value(
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
       if (!array_var) {
         NOTREACHED();
-        message_loop_proxy_->PostTask(
-            FROM_HERE,
-            base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-        return;
+        return false;
       }
 
       for (uint32 i = 0; i < v8_array->Length(); ++i) {
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_array->Get(i);
-        if (try_catch.HasCaught()) {
-          message_loop_proxy_->PostTask(
-              FROM_HERE,
-              base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-          return;
-        }
+        if (try_catch.HasCaught())
+          return false;
 
         if (!v8_array->HasRealIndexedProperty(i))
           continue;
@@ -478,10 +483,7 @@ void V8VarConverter::FromV8Value(
                             &visited_handles,
                             &parent_handles,
                             resource_converter_.get())) {
-          message_loop_proxy_->PostTask(
-              FROM_HERE,
-              base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-          return;
+          return false;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -496,10 +498,7 @@ void V8VarConverter::FromV8Value(
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
       if (!dict_var) {
         NOTREACHED();
-        message_loop_proxy_->PostTask(
-            FROM_HERE,
-            base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-        return;
+        return false;
       }
 
       v8::Handle<v8::Array> property_names(v8_object->GetOwnPropertyNames());
@@ -511,10 +510,7 @@ void V8VarConverter::FromV8Value(
           NOTREACHED() << "Key \"" << *v8::String::Utf8Value(key)
                        << "\" "
                           "is neither a string nor a number";
-          message_loop_proxy_->PostTask(
-              FROM_HERE,
-              base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-          return;
+          return false;
         }
 
         // Skip all callbacks: crbug.com/139933
@@ -525,12 +521,8 @@ void V8VarConverter::FromV8Value(
 
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_object->Get(key);
-        if (try_catch.HasCaught()) {
-          message_loop_proxy_->PostTask(
-              FROM_HERE,
-              base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-          return;
-        }
+        if (try_catch.HasCaught())
+          return false;
 
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8,
@@ -540,10 +532,7 @@ void V8VarConverter::FromV8Value(
                             &visited_handles,
                             &parent_handles,
                             resource_converter_.get())) {
-          message_loop_proxy_->PostTask(
-              FROM_HERE,
-              base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));
-          return;
+          return false;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -554,7 +543,8 @@ void V8VarConverter::FromV8Value(
       }
     }
   }
-  resource_converter_->Flush(base::Bind(callback, root));
+  *result_var = root;
+  return true;
 }
 
 }  // namespace content

@@ -73,6 +73,8 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
 
   PepperPluginInstanceImpl* GetPluginInstanceImpl(PP_Instance instance) const;
 
+  bool IsExternalPluginHost() const;
+
   // RendererPpapiHost implementation.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
@@ -94,6 +96,8 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
   virtual bool IsRunningInProcess() const OVERRIDE;
+  virtual std::string GetPluginName() const OVERRIDE;
+  virtual void SetToExternalPluginHost() OVERRIDE;
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
@@ -129,6 +133,9 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
 
   // Whether the plugin is running in process.
   bool is_running_in_process_;
+
+  // Whether this is a host for external plugins.
+  bool is_external_plugin_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPpapiHostImpl);
 };

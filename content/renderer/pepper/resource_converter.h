@@ -95,7 +95,7 @@ class ResourceConverterImpl : public ResourceConverter {
   // conveniently passed to |CreateBrowserResourceHosts|.
   std::vector<IPC::Message> browser_host_create_messages_;
   // A list of the resource vars associated with browser hosts.
-  std::vector<scoped_refptr<HostResourceVar> > browser_vars;
+  std::vector<scoped_refptr<HostResourceVar> > browser_vars_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceConverterImpl);
 };

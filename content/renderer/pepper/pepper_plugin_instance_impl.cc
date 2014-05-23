@@ -80,6 +80,7 @@
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
@@ -146,6 +147,7 @@ using ppapi::PPB_View_Shared;
 using ppapi::PPP_Instance_Combined;
 using ppapi::Resource;
 using ppapi::ScopedPPResource;
+using ppapi::ScopedPPVar;
 using ppapi::StringVar;
 using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
@@ -822,8 +824,14 @@ bool PepperPluginInstanceImpl::Initialize(
   scoped_ptr<const char * []> argv_array(StringVectorToArgArray(argv_));
   bool success = PP_ToBool(instance_interface_->DidCreate(
       pp_instance(), argn_.size(), argn_array.get(), argv_array.get()));
-  if (success)
-    message_channel_->StopQueueingJavaScriptMessages();
+  // If this is a plugin that hosts external plugins, we should delay messages
+  // so that the child plugin that's created later will receive all the
+  // messages. (E.g., NaCl trusted plugin starting a child NaCl app.)
+  //
+  // A host for external plugins will call ResetAsProxied later, at which point
+  // we can Start() the message_channel_.
+  if (success && (!module_->renderer_ppapi_host()->IsExternalPluginHost()))
+    message_channel_->Start();
   return success;
 }
 
@@ -1112,11 +1120,11 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   return rv;
 }
 
-void PepperPluginInstanceImpl::HandleMessage(PP_Var message) {
+void PepperPluginInstanceImpl::HandleMessage(ScopedPPVar message) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleMessage");
   ppapi::proxy::HostDispatcher* dispatcher =
       ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
-  if (!dispatcher || (message.type == PP_VARTYPE_OBJECT)) {
+  if (!dispatcher || (message.get().type == PP_VARTYPE_OBJECT)) {
     // The dispatcher should always be valid, and the browser should never send
     // an 'object' var over PPP_Messaging.
     NOTREACHED();
@@ -1125,7 +1133,7 @@ void PepperPluginInstanceImpl::HandleMessage(PP_Var message) {
   dispatcher->Send(new PpapiMsg_PPPMessaging_HandleMessage(
       ppapi::API_ID_PPP_MESSAGING,
       pp_instance(),
-      ppapi::proxy::SerializedVarSendInputShmem(dispatcher, message,
+      ppapi::proxy::SerializedVarSendInputShmem(dispatcher, message.get(),
                                                 pp_instance())));
 }
 
@@ -2737,9 +2745,6 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   original_module_ = module_;
   module_ = module;
 
-  // Don't send any messages to the plugin until DidCreate() has finished.
-  message_channel_->QueueJavaScriptMessages();
-
   // For NaCl instances, remember the NaCl plugin instance interface, so we
   // can shut it down by calling its DidDestroy in our Delete() method.
   original_instance_interface_.reset(instance_interface_.release());
@@ -2775,7 +2780,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   if (!instance_interface_->DidCreate(
           pp_instance(), argn_.size(), argn_array.get(), argv_array.get()))
     return PP_EXTERNAL_PLUGIN_ERROR_INSTANCE;
-  message_channel_->StopQueueingJavaScriptMessages();
+  message_channel_->Start();
 
   // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
   // event. This way, SendDidChangeView will send the "current" view

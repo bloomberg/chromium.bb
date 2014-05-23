@@ -79,6 +79,14 @@ IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
 
 bool MockRendererPpapiHost::IsRunningInProcess() const { return false; }
 
+std::string MockRendererPpapiHost::GetPluginName() const {
+  return std::string();
+}
+
+void MockRendererPpapiHost::SetToExternalPluginHost() {
+  NOTIMPLEMENTED();
+}
+
 void MockRendererPpapiHost::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,

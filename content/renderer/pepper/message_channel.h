@@ -53,16 +53,13 @@ class MessageChannel {
   explicit MessageChannel(PepperPluginInstanceImpl* instance);
   ~MessageChannel();
 
-  // Converts an NPVariant to a PP_Var. This occurs asynchronously and
-  // NPVariantToPPVarComplete will be called upon completion.
-  void NPVariantToPPVar(const NPVariant* variant);
-
   // Post a message to the onmessage handler for this channel's instance
   // asynchronously.
   void PostMessageToJavaScript(PP_Var message_data);
-  // Post a message to the PPP_Instance HandleMessage function for this
-  // channel's instance.
-  void PostMessageToNative(PP_Var message_data);
+
+  // Post a message to the plugin's HandleMessage function for this channel's
+  // instance.
+  void PostMessageToNative(const NPVariant* message_data);
 
   // Return the NPObject* to which we should forward any calls which aren't
   // related to postMessage.  Note that this can be NULL;  it only gets set if
@@ -75,11 +72,10 @@ class MessageChannel {
 
   PepperPluginInstanceImpl* instance() { return instance_; }
 
-  // Messages sent to JavaScript are queued by default. After the DOM is
-  // set up for the plugin, users of MessageChannel should call
-  // StopQueueingJavaScriptMessages to start dispatching messages to JavaScript.
-  void QueueJavaScriptMessages();
-  void StopQueueingJavaScriptMessages();
+  // Messages are queued initially. After the PepperPluginInstanceImpl is ready
+  // to send and handle messages, users of MessageChannel should call
+  // Start().
+  void Start();
 
   bool GetReadOnlyProperty(NPIdentifier key, NPVariant* value) const;
   void SetReadOnlyProperty(PP_Var key, PP_Var value);
@@ -88,13 +84,12 @@ class MessageChannel {
   // Struct for storing the result of a NPVariant being converted to a PP_Var.
   struct VarConversionResult;
 
-  // This is called when an NPVariant is finished being converted.
-  // |result_iteartor| is an iterator into |converted_var_queue_| where the
-  // result should be stored.
-  void NPVariantToPPVarComplete(
-      const std::list<VarConversionResult>::iterator& result_iterator,
-      const ppapi::ScopedPPVar& result,
-      bool success);
+  void EnqueuePluginMessage(const NPVariant* variant);
+
+  void FromV8ValueComplete(VarConversionResult* result_holder,
+                           const ppapi::ScopedPPVar& result_var,
+                           bool success);
+  void DrainCompletedPluginMessages();
 
   PepperPluginInstanceImpl* instance_;
 
@@ -118,22 +113,22 @@ class MessageChannel {
 
   void DrainEarlyMessageQueue();
 
-  // TODO(teravest): Remove all the tricky DRAIN_CANCELLED logic once
-  // PluginInstance::ResetAsProxied() is gone.
   std::deque<blink::WebSerializedScriptValue> early_message_queue_;
   enum EarlyMessageQueueState {
     QUEUE_MESSAGES,  // Queue JS messages.
     SEND_DIRECTLY,   // Post JS messages directly.
-    DRAIN_PENDING,   // Drain queue, then transition to DIRECT.
-    DRAIN_CANCELLED  // Preempt drain, go back to QUEUE.
   };
   EarlyMessageQueueState early_message_queue_state_;
 
-  // This queue stores vars that have been converted from NPVariants. Because
-  // conversion can happen asynchronously, the queue stores the var until all
-  // previous vars have been converted before calling PostMessage to ensure that
-  // the order in which messages are processed is preserved.
-  std::list<VarConversionResult> converted_var_queue_;
+  // This queue stores vars that are being sent to the plugin. Because
+  // conversion can happen asynchronously for object types, the queue stores
+  // the var until all previous vars have been converted and sent. This
+  // preserves the order in which JS->plugin messages are processed.
+  //
+  // Note we rely on raw VarConversionResult* pointers remaining valid after
+  // calls to push_back or pop_front; hence why we're using list. (deque would
+  // probably also work, but is less clearly specified).
+  std::list<VarConversionResult> plugin_message_queue_;
 
   std::map<NPIdentifier, ppapi::ScopedPPVar> internal_properties_;
 

@@ -46,8 +46,12 @@ class CONTENT_EXPORT V8VarConverter {
       v8::Handle<v8::Value> val,
       v8::Handle<v8::Context> context,
       const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback);
-
  private:
+  // Returns true on success, false on failure.
+  bool FromV8ValueInternal(v8::Handle<v8::Value> val,
+                           v8::Handle<v8::Context> context,
+                           ppapi::ScopedPPVar* result_var);
+
   // The message loop to run the callback to |FromV8Value| from.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
