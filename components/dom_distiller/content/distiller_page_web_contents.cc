@@ -7,7 +7,9 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
+#include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
@@ -18,18 +20,48 @@
 
 namespace dom_distiller {
 
+SourcePageHandleWebContents::SourcePageHandleWebContents(
+    scoped_ptr<content::WebContents> web_contents)
+    : web_contents_(web_contents.Pass()) {
+  DCHECK(web_contents_);
+}
+
+SourcePageHandleWebContents::~SourcePageHandleWebContents() {
+}
+
+scoped_ptr<content::WebContents> SourcePageHandleWebContents::GetWebContents() {
+  return web_contents_.Pass();
+}
+
 scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage()
     const {
   DCHECK(browser_context_);
-  return scoped_ptr<DistillerPage>(
-      new DistillerPageWebContents(browser_context_));
+  return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
+      browser_context_, scoped_ptr<SourcePageHandleWebContents>()));
+}
+
+scoped_ptr<DistillerPage>
+DistillerPageWebContentsFactory::CreateDistillerPageWithHandle(
+    scoped_ptr<SourcePageHandle> handle) const {
+  DCHECK(browser_context_);
+  scoped_ptr<SourcePageHandleWebContents> web_contents_handle =
+      scoped_ptr<SourcePageHandleWebContents>(
+          static_cast<SourcePageHandleWebContents*>(handle.release()));
+  return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
+      browser_context_, web_contents_handle.Pass()));
 }
 
 DistillerPageWebContents::DistillerPageWebContents(
-    content::BrowserContext* browser_context)
-    : state_(IDLE), browser_context_(browser_context) {}
+    content::BrowserContext* browser_context,
+    scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle)
+    : state_(IDLE), browser_context_(browser_context) {
+  if (optional_web_contents_handle) {
+    web_contents_ = optional_web_contents_handle->GetWebContents().Pass();
+  }
+}
 
-DistillerPageWebContents::~DistillerPageWebContents() {}
+DistillerPageWebContents::~DistillerPageWebContents() {
+}
 
 void DistillerPageWebContents::DistillPageImpl(const GURL& url,
                                                const std::string& script) {
@@ -38,6 +70,31 @@ void DistillerPageWebContents::DistillPageImpl(const GURL& url,
   state_ = LOADING_PAGE;
   script_ = script;
 
+  if (web_contents_ && web_contents_->GetLastCommittedURL() == url) {
+    WebContentsMainFrameObserver* main_frame_observer =
+        WebContentsMainFrameObserver::FromWebContents(web_contents_.get());
+    if (main_frame_observer && main_frame_observer->is_initialized()) {
+      if (main_frame_observer->is_document_loaded_in_main_frame()) {
+        // Main frame has already loaded for the current WebContents, so execute
+        // JavaScript immediately.
+        ExecuteJavaScript();
+      } else {
+        // Main frame document has not loaded yet, so wait until it has before
+        // executing JavaScript. It will trigger after DocumentLoadedInFrame is
+        // called for the main frame.
+        content::WebContentsObserver::Observe(web_contents_.get());
+      }
+    } else {
+      // The WebContentsMainFrameObserver has not been correctly initialized,
+      // so fall back to creating a new WebContents.
+      CreateNewWebContents(url);
+    }
+  } else {
+    CreateNewWebContents(url);
+  }
+}
+
+void DistillerPageWebContents::CreateNewWebContents(const GURL& url) {
   // Create new WebContents to use for distilling the content.
   content::WebContents::CreateParams create_params(browser_context_);
   create_params.initially_hidden = true;
@@ -54,8 +111,6 @@ void DistillerPageWebContents::DocumentLoadedInFrame(
     int64 frame_id,
     RenderViewHost* render_view_host) {
   if (frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
-    content::WebContentsObserver::Observe(NULL);
-    web_contents_->Stop();
     ExecuteJavaScript();
   }
 }
@@ -81,6 +136,8 @@ void DistillerPageWebContents::ExecuteJavaScript() {
   DCHECK(frame);
   DCHECK_EQ(LOADING_PAGE, state_);
   state_ = EXECUTING_JAVASCRIPT;
+  content::WebContentsObserver::Observe(NULL);
+  web_contents_->Stop();
   DVLOG(1) << "Beginning distillation";
   frame->ExecuteJavaScript(
       base::UTF8ToUTF16(script_),

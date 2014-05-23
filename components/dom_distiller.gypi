@@ -156,6 +156,8 @@
                 'dom_distiller/content/distiller_page_web_contents.h',
                 'dom_distiller/content/dom_distiller_viewer_source.cc',
                 'dom_distiller/content/dom_distiller_viewer_source.h',
+                'dom_distiller/content/web_contents_main_frame_observer.cc',
+                'dom_distiller/content/web_contents_main_frame_observer.h',
               ],
             },
           ],

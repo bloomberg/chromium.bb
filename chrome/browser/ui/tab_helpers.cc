@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
@@ -188,6 +189,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING) && !defined(OS_ANDROID)
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDomDistiller)) {
+    dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
+        web_contents);
+  }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // If this is not an incognito window, setup to handle one-click login.
