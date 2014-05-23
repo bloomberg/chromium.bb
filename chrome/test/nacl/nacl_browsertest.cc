@@ -440,22 +440,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibStderrPM, RedirectBg1) {
       "pm_redir_test.html?stream=stderr&thread=bg&delay_us=1000000"));
 }
 
-class NaClBrowserTestNewlibExtension : public NaClBrowserTestNewlib {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    NaClBrowserTestNewlib::SetUpCommandLine(command_line);
-    base::FilePath src_root;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
-
-    base::FilePath document_root;
-    ASSERT_TRUE(GetDocumentRoot(&document_root));
-
-    // Document root is relative to source root, and source root may not be CWD.
-    command_line->AppendSwitchPath(switches::kLoadExtension,
-                                   src_root.Append(document_root));
-  }
-};
-
 // TODO(ncbray) support glibc and PNaCl
 #if defined(OS_MACOSX)
 // crbug.com/375894

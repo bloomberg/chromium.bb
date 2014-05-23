@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon May 19 11:12:19 2014. */
+/* From private/ppb_nacl_private.idl modified Wed May 21 13:23:26 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -416,10 +416,15 @@ struct PPB_NaCl_Private_1_0 {
    */
   void (*PostMessageToJavaScript)(PP_Instance instance, const char* message);
   /* Downloads the .nexe file at the given URL to a file, and sets |handle|
-   * to a handle to a file containing its contents. */
+   * to a handle to a file containing its contents.
+   * If metadata for identity-based validation caching is available
+   * then it sets file_token_lo and file_token_lo (otherwise left untouched).
+   */
   void (*DownloadNexe)(PP_Instance instance,
                        const char* url,
                        PP_FileHandle* handle,
+                       uint64_t* file_token_lo,
+                       uint64_t* file_token_hi,
                        struct PP_CompletionCallback callback);
 };
 

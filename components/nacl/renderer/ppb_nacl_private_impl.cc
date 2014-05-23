@@ -1326,6 +1326,8 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
 void DownloadNexe(PP_Instance instance,
                   const char* url,
                   PP_FileHandle* out_handle,
+                  uint64_t* file_token_lo,
+                  uint64_t* file_token_hi,
                   PP_CompletionCallback callback) {
   CHECK(url);
   CHECK(out_handle);
@@ -1336,12 +1338,10 @@ void DownloadNexe(PP_Instance instance,
   request.start_time = base::Time::Now();
 
   // Try the fast path for retrieving the file first.
-  uint64_t file_token_lo = 0;
-  uint64_t file_token_hi = 0;
   PP_FileHandle file_handle = OpenNaClExecutable(instance,
                                                  url,
-                                                 &file_token_lo,
-                                                 &file_token_hi);
+                                                 file_token_lo,
+                                                 file_token_hi);
   if (file_handle != PP_kInvalidFileHandle) {
     DownloadNexeCompletion(request,
                            file_handle,

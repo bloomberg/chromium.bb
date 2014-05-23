@@ -81,6 +81,40 @@
       },
     },
     {
+      'target_name': 'extension_validation_cache',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'extension_validation_cache',
+        # The test currently only has the test expectations for the
+        # newlib case (# validation queries/settings), and has also
+        # hardcoded the newlib variant's directory path for the unpacked ext.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        # Need a new directory to not clash with with other extension
+        # tests's files (e.g., manifest.json).
+        'nexe_destination_dir': 'nacl_test_data/extension_vcache_test',
+        'sources': [
+          'simple.cc',
+        ],
+        'test_files': [
+          # TODO(ncbray) move into chrome/test/data/nacl when all tests are
+          # converted.
+          '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
+          'extension_validation_cache/extension_validation_cache.html',
+          'extension_validation_cache/extension_validation_cache.js',
+          # Turns the test data directory into an extension.
+          # Use a different nexe_destination_dir to isolate the files.
+          # Note that the .nexe names are embedded in this file.
+          'extension_validation_cache/manifest.json',
+          'load_util.js',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
+    },
+    {
       'target_name': 'sysconf_nprocessors_onln_test',
       'type': 'none',
       'variables': {

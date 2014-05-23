@@ -297,6 +297,8 @@ class Plugin : public pp::Instance {
   int32_t manifest_id_;
 
   PP_FileHandle nexe_handle_;
+  uint64_t nexe_token_lo_;
+  uint64_t nexe_token_hi_;
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;

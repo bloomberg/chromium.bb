@@ -74,6 +74,12 @@ class NaClBrowser {
 
   int GetProcessGdbDebugStubPort(int process_id);
 
+  enum ValidationCacheStatus {
+    CACHE_MISS = 0,
+    CACHE_HIT,
+    CACHE_MAX
+  };
+
   bool ValidationCacheIsEnabled() const {
     return validation_cache_is_enabled_;
   }

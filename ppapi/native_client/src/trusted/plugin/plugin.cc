@@ -23,6 +23,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
@@ -330,6 +331,8 @@ Plugin::Plugin(PP_Instance pp_instance)
       time_of_last_progress_event_(0),
       manifest_id_(-1),
       nexe_handle_(PP_kInvalidFileHandle),
+      nexe_token_lo_(0),
+      nexe_token_hi_(0),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -411,11 +414,23 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK)
     return;
 
-  int32_t desc = ConvertFileDescriptor(nexe_handle_, true);
+  NaClFileInfo nexe_file_info;
+  nexe_file_info.desc = ConvertFileDescriptor(nexe_handle_, true);
+  nexe_file_info.file_token.lo = nexe_token_lo_;
+  nexe_file_info.file_token.hi = nexe_token_hi_;
   nexe_handle_ = PP_kInvalidFileHandle;  // Clear out nexe handle.
+  nexe_token_lo_ = 0;
+  nexe_token_hi_ = 0;
+
+  NaClDesc *desc = NaClDescIoFromFileInfo(nexe_file_info, O_RDONLY);
+  if (desc == NULL)
+    return;
+  // nexe_file_info_ is handed to desc, clear out old copy.
+  memset(&nexe_file_info, 0, sizeof nexe_file_info);
+  nexe_file_info.desc = -1;
 
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory()->MakeFileDesc(desc, O_RDONLY));
+      wrapper(wrapper_factory()->MakeGenericCleanup(desc));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
       wrapper.release(),
@@ -526,6 +541,8 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
       nacl_interface_->DownloadNexe(pp_instance(),
                                     program_url_.c_str(),
                                     &nexe_handle_,
+                                    &nexe_token_lo_,
+                                    &nexe_token_hi_,
                                     open_callback.pp_completion_callback());
       return;
     }

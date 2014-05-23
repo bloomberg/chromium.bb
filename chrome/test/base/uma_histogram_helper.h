@@ -26,6 +26,12 @@ class UMAHistogramHelper {
                           base::HistogramBase::Sample sample,
                           base::HistogramBase::Count expected_count);
 
+  // We know the exact number of samples in a bucket, but other buckets may
+  // have samples as well.
+  void ExpectBucketCount(const std::string& name,
+                          base::HistogramBase::Sample sample,
+                          base::HistogramBase::Count expected_count);
+
   // We don't know the values of the samples, but we know how many there are.
   void ExpectTotalCount(const std::string& name,
                         base::HistogramBase::Count count);

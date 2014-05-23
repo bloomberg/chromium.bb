@@ -98,7 +98,10 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // these tests having a stronger affinity with the Chrome repo. This method
   // provides a compatibility layer to simplify turning nacl_integration tests
   // into browser tests.
-  void RunNaClIntegrationTest(const base::FilePath::StringType& url_fragment);
+  // |full_url| is true if the full URL is given, otherwise it is a
+  // relative URL.
+  void RunNaClIntegrationTest(const base::FilePath::StringType& url,
+                              bool full_url = false);
 
  private:
   bool StartTestServer();
@@ -153,6 +156,14 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:
   virtual base::FilePath::StringType Variant() OVERRIDE;
   virtual bool GetDocumentRoot(base::FilePath* document_root) OVERRIDE;
+};
+
+// A NaCl browser test that loads from an unpacked chrome extension.
+// The directory of the unpacked extension files is determined by
+// the tester's document root.
+class NaClBrowserTestNewlibExtension : public NaClBrowserTestNewlib {
+ public:
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 // PNaCl tests take a long time on windows debug builds

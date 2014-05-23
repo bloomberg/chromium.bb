@@ -426,9 +426,14 @@ interface PPB_NaCl_Private {
                                [in] str_t message);
 
   /* Downloads the .nexe file at the given URL to a file, and sets |handle|
-   * to a handle to a file containing its contents. */
+   * to a handle to a file containing its contents.
+   * If metadata for identity-based validation caching is available
+   * then it sets file_token_lo and file_token_lo (otherwise left untouched).
+   */
   void DownloadNexe([in] PP_Instance instance,
                     [in] str_t url,
                     [out] PP_FileHandle handle,
+                    [out] uint64_t file_token_lo,
+                    [out] uint64_t file_token_hi,
                     [in] PP_CompletionCallback callback);
 };

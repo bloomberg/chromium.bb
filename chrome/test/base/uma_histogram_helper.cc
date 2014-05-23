@@ -44,6 +44,21 @@ void UMAHistogramHelper::ExpectUniqueSample(
   }
 }
 
+void UMAHistogramHelper::ExpectBucketCount(
+    const std::string& name,
+    base::HistogramBase::Sample sample,
+    base::HistogramBase::Count expected_count) {
+  base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram(name);
+  EXPECT_NE(static_cast<base::HistogramBase*>(NULL), histogram)
+      << "Histogram \"" << name << "\" does not exist.";
+
+  if (histogram) {
+    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    CheckBucketCount(name, sample, expected_count, *samples);
+  }
+}
+
 void UMAHistogramHelper::ExpectTotalCount(
     const std::string& name,
     base::HistogramBase::Count count) {

@@ -28,12 +28,6 @@ const base::FilePath::CharType kValidationCacheFileName[] =
 
 const bool kValidationCacheEnabledByDefault = true;
 
-enum ValidationCacheStatus {
-  CACHE_MISS = 0,
-  CACHE_HIT,
-  CACHE_MAX
-};
-
 // Keep the cache bounded to an arbitrary size.  If it's too small, useful
 // entries could be evicted when multiple .nexes are loaded at once.  On the
 // other hand, entries are not always claimed (and hence removed), so the size
@@ -100,13 +94,15 @@ void RemoveCache(const base::FilePath& filename,
                                    callback);
 }
 
-void LogCacheQuery(ValidationCacheStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query", status, CACHE_MAX);
+void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query", status,
+                            nacl::NaClBrowser::CACHE_MAX);
 }
 
-void LogCacheSet(ValidationCacheStatus status) {
+void LogCacheSet(nacl::NaClBrowser::ValidationCacheStatus status) {
   // Bucket zero is reserved for future use.
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status, CACHE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status,
+                            nacl::NaClBrowser::CACHE_MAX);
 }
 
 // Crash throttling parameters.
