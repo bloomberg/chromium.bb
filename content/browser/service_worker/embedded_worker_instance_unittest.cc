@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -129,7 +130,7 @@ TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
       ipc_sink()->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID));
 }
 
-TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
+TEST_F(EmbeddedWorkerInstanceTest, SortProcesses) {
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
@@ -145,22 +146,22 @@ TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
   helper_->SimulateAddProcessToWorker(embedded_worker_id, 3);
 
   // Process 3 has the biggest # of references and it should be chosen.
-  ServiceWorkerStatusCode status;
-  base::RunLoop run_loop;
-  worker->Start(
-      1L,
-      GURL("http://example.com/*"),
-      GURL("http://example.com/worker.js"),
-      std::vector<int>(),
-      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
-  EXPECT_EQ(3, worker->process_id());
+  EXPECT_THAT(worker->SortProcesses(std::vector<int>()),
+              testing::ElementsAre(3, 2, 1));
+  EXPECT_EQ(-1, worker->process_id());
 
-  // Wait until started message is sent back.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
+  // Argument processes are added to the existing set, but only for a single
+  // call.
+  std::vector<int> registering_processes;
+  registering_processes.push_back(1);
+  registering_processes.push_back(1);
+  registering_processes.push_back(1);
+  registering_processes.push_back(4);
+  EXPECT_THAT(worker->SortProcesses(registering_processes),
+              testing::ElementsAre(1, 3, 2, 4));
+
+  EXPECT_THAT(worker->SortProcesses(std::vector<int>()),
+              testing::ElementsAre(3, 2, 1));
 }
 
 }  // namespace content

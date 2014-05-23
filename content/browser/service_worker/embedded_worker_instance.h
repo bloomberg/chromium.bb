@@ -106,6 +106,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   friend class EmbeddedWorkerRegistry;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
+  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, SortProcesses);
 
   typedef std::map<int, int> ProcessRefMap;
 
