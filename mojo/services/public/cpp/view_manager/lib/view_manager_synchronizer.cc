@@ -365,7 +365,8 @@ class SetViewContentsTransaction : public ViewManagerTransaction {
     memcpy(memory, &data[0], data.size());
 
     AllocationScope scope;
-    service()->SetViewContents(view_id_, duped.Pass(), data.size(),
+    service()->SetViewContents(view_id_, duped.Pass(),
+                               static_cast<uint32_t>(data.size()),
                                ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
