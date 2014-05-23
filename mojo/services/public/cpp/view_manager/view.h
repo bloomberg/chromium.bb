@@ -9,6 +9,8 @@
 #include "base/observer_list.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
+class SkBitmap;
+
 namespace mojo {
 namespace view_manager {
 
@@ -28,6 +30,8 @@ class View {
 
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);
+
+  void SetContents(const SkBitmap& contents);
 
  private:
   friend class ViewPrivate;

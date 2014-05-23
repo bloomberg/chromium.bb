@@ -571,13 +571,17 @@ void ViewManagerConnection::SetView(
 void ViewManagerConnection::SetViewContents(
     TransportViewId view_id,
     ScopedSharedBufferHandle buffer,
-    uint32_t buffer_size) {
+    uint32_t buffer_size,
+    const Callback<void(bool)>& callback) {
   View* view = GetView(ViewIdFromTransportId(view_id));
-  if (!view)
+  if (!view) {
+    callback.Run(false);
     return;
+  }
   void* handle_data;
   if (MapBuffer(buffer.get(), 0, buffer_size, &handle_data,
                 MOJO_MAP_BUFFER_FLAG_NONE) != MOJO_RESULT_OK) {
+    callback.Run(false);
     return;
   }
   SkBitmap bitmap;
@@ -585,6 +589,7 @@ void ViewManagerConnection::SetViewContents(
                         buffer_size, &bitmap);
   view->SetBitmap(bitmap);
   UnmapBuffer(handle_data);
+  callback.Run(true);
 }
 
 void ViewManagerConnection::SetRoots(

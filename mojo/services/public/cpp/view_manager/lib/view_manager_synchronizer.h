@@ -13,6 +13,8 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
+class SkBitmap;
+
 namespace base {
 class RunLoop;
 }
@@ -50,6 +52,7 @@ class ViewManagerSynchronizer : public IViewManagerClient {
 
   void SetActiveView(TransportNodeId node_id, TransportViewId view_id);
   void SetBounds(TransportNodeId node_id, const gfx::Rect& bounds);
+  void SetViewContents(TransportViewId view_id, const SkBitmap& contents);
 
   void set_changes_acked_callback(const base::Callback<void(void)>& callback) {
     changes_acked_callback_ = callback;

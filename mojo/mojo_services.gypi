@@ -150,6 +150,8 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',

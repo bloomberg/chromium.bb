@@ -56,6 +56,11 @@ void View::RemoveObserver(ViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void View::SetContents(const SkBitmap& contents) {
+  if (manager_)
+    ViewManagerPrivate(manager_).synchronizer()->SetViewContents(id_, contents);
+}
+
 View::View(ViewManager* manager)
     : id_(ViewManagerPrivate(manager).synchronizer()->CreateView()),
       node_(NULL),

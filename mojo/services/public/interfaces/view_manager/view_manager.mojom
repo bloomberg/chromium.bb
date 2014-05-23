@@ -85,7 +85,7 @@ interface IViewManager {
   // Shows the specified image (png encoded) in the specified view.
   SetViewContents(uint32 view_id,
                   handle<shared_buffer> buffer,
-                  uint32 buffer_size);
+                  uint32 buffer_size) => (bool success);
 
   // Sets the ids of the roots for the specified connection.
   // TODO(sky): this is temporary for testing. This needs to be conveyed at

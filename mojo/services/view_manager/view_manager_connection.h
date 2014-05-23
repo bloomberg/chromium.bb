@@ -160,7 +160,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                        const Callback<void(bool)>& callback) OVERRIDE;
   virtual void SetViewContents(TransportViewId view_id,
                                ScopedSharedBufferHandle buffer,
-                               uint32_t buffer_size) OVERRIDE;
+                               uint32_t buffer_size,
+                               const Callback<void(bool)>& callback) OVERRIDE;
   virtual void SetRoots(
       TransportConnectionId connection_id,
       const Array<TransportNodeId>& transport_node_ids,

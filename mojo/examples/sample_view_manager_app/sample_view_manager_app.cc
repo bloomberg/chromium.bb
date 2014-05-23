@@ -11,8 +11,10 @@
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
+#include "ui/gfx/canvas.h"
 
 #if defined(WIN32)
 #if !defined(CDECL)
@@ -37,7 +39,18 @@ class SampleApp : public Application {
         view_manager::ViewTreeNode::Create(view_manager_.get());
     view_manager::ViewTreeNode* node11 =
         view_manager::ViewTreeNode::Create(view_manager_.get());
+    node11->SetBounds(gfx::Rect(800, 600));
+
+    view_manager::View* view11 =
+        view_manager::View::Create(view_manager_.get());
+    node11->SetActiveView(view11);
+    view_manager_->tree()->AddChild(node1);
     node1->AddChild(node11);
+
+    gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
+    canvas.DrawColor(SK_ColorRED);
+    view11->SetContents(
+        skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
   }
 
   virtual ~SampleApp() {
