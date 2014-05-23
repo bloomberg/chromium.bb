@@ -6,17 +6,15 @@
 #define MOJO_SPY_SPY_H_
 
 #include <string>
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
-class Thread;
+ class Thread;
 }
 
 namespace mojo {
 
 class ServiceManager;
-class SpyServerImpl;
 
 // mojo::Spy is a troubleshooting and debugging aid. It helps tracking
 // the mojo system core activities like messages, service creation, etc.
@@ -33,9 +31,8 @@ class Spy {
   ~Spy();
 
  private:
-  scoped_refptr<SpyServerImpl> spy_server_;
-  // This thread runs the code that talks to the frontend.
-  scoped_ptr<base::Thread> control_thread_;
+   // This thread runs the code that talks to the frontend.
+   scoped_ptr<base::Thread> control_thread_;
 };
 
 }  // namespace mojo
