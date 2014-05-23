@@ -496,11 +496,18 @@ class OptionParser(optparse.OptionParser):
     optparse.OptionParser.__init__(self, *args, prog='git cache', **kwargs)
     self.add_option('-c', '--cache-dir',
                     help='Path to the directory containing the cache')
-    self.add_option('-v', '--verbose', action='count', default=0,
+    self.add_option('-v', '--verbose', action='count', default=1,
                     help='Increase verbosity (can be passed multiple times)')
+    self.add_option('-q', '--quiet', action='store_true',
+                    help='Suppress all extraneous output')
 
   def parse_args(self, args=None, values=None):
     options, args = optparse.OptionParser.parse_args(self, args, values)
+    if options.quiet:
+      options.verbose = 0
+
+    levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+    logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
 
     try:
       global_cache_dir = Mirror.GetCachePath()
@@ -512,9 +519,6 @@ class OptionParser(optparse.OptionParser):
           os.path.abspath(global_cache_dir)):
         logging.warn('Overriding globally-configured cache directory.')
       Mirror.SetCachePath(options.cache_dir)
-
-    levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-    logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
 
     return options, args
 
