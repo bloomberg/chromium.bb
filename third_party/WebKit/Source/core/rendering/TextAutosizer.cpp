@@ -795,16 +795,16 @@ const RenderBlock* TextAutosizer::findDeepestBlockContainingAllText(const Render
     return containingBlock;
 }
 
-const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderBlock* parent, size_t& depth, TraversalDirection direction)
+const RenderObject* TextAutosizer::findFirstTextLeafNotInCluster(const RenderObject* parent, size_t& depth, TraversalDirection direction)
 {
     if (parent->isText())
         return parent;
 
     ++depth;
-    const RenderObject* child = (direction == FirstToLast) ? parent->firstChild() : parent->lastChild();
+    const RenderObject* child = (direction == FirstToLast) ? parent->slowFirstChild() : parent->slowLastChild();
     while (child) {
         if (!isAutosizingContainer(child) || !isIndependentDescendant(toRenderBlock(child))) {
-            const RenderObject* leaf = findFirstTextLeafNotInCluster(toRenderBlock(child), depth, direction);
+            const RenderObject* leaf = findFirstTextLeafNotInCluster(child, depth, direction);
             if (leaf)
                 return leaf;
         }
