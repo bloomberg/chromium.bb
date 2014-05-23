@@ -288,10 +288,6 @@ class Builder(object):
     args += ['--resume', '--timeout', '0', '--notee', '--nocgroups',
              '--buildroot', os.path.abspath(self._run.options.buildroot)]
 
-    # Tell the called program where to put the etc output.
-    if cros_build_lib.GetBuildbotStepName():
-      args += ['--base-step-name', cros_build_lib.GetBuildbotStepName()]
-
     if hasattr(self._run.attrs, 'manifest_manager'):
       # TODO(mtennant): Is this the same as self._run.attrs.release_tag?
       ver = self._run.attrs.manifest_manager.current_version
@@ -1156,9 +1152,6 @@ def _CreateParser():
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
-  group.add_option('--base-step-name', action='store', default=None,
-                   help='wrapper buildbot step name to put the non stage '
-                        'specific output in')
   group.add_remote_option('--bootstrap-args', action='append', default=[],
                           help='Args passed directly to the bootstrap re-exec '
                                'to skip verification by the bootstrap code')
@@ -1646,9 +1639,6 @@ def main(argv):
         'trybot.')
     time.sleep(5)
 
-  if options.base_step_name:
-    cros_build_lib.SetContainingBuildbotStepName(options.base_step_name)
-
   # Only one config arg is allowed in this mode, which was confirmed earlier.
   bot_id = args[-1]
   build_config = _GetConfig(bot_id)
@@ -1770,19 +1760,4 @@ def main(argv):
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)
 
-    wrapper_name = None
-    if not options.base_step_name:
-      if options.buildbot or options.remote_trybot:
-        wrapper_name = 'wrapper'
-        if options.resume:
-          wrapper_name += ' (inner)'
-        if not options.bootstrap:
-          wrapper_name += ' (bootstrapped)'
-
-    if wrapper_name:
-      cros_build_lib.BeginBuildbotStep(wrapper_name)
-
     _RunBuildStagesWrapper(options, build_config)
-
-    if wrapper_name:
-      cros_build_lib.EndBuildbotStep(wrapper_name)

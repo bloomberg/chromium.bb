@@ -640,44 +640,18 @@ def PrintBuildbotStepFailure(handle=None):
   (handle or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
 
 
-_step_stack = []
-_step_precious = []
-
-def SetContainingBuildbotStepName(name, handle=None):
-  """Sets the step name we fall back to after others have ended."""
-  assert not _step_stack, 'We already have a base step name'
-  _step_stack.insert(0, name)
-  _step_precious.append(name)
-  (handle or sys.stderr).write('\n@@@STEP_CURSOR %s@@@' % name)
-
-
-def GetBuildbotStepName():
-  """Returns the currently active BuildbotStep name."""
-  if _step_stack:
-    return _step_stack[-1]
-
-
-def BeginBuildbotStep(name, handle=None):
+def PrintBuildbotStepName(name, handle=None):
   """Marks a step name for buildbot to display."""
-  if name not in _step_stack:
-    _step_stack.append(name)
-    (handle or sys.stderr).write('\n@@@SEED_STEP %s@@@' % name)
-    (handle or sys.stderr).write('\n@@@STEP_CURSOR %s@@@' % name)
-    (handle or sys.stderr).write('\n@@@STEP_STARTED@@@\n')
-  else:
-    (handle or sys.stderr).write('\n@@@STEP_CURSOR %s@@@' % name)
+  (handle or sys.stderr).write(
+      '\n@@@SEED_STEP %s@@@\n@@@STEP_CURSOR %s@@@\n@@@STEP_STARTED@@@\n' %
+      (name, name)
+  )
 
 
-def EndBuildbotStep(name, handle=None):
+def PrintBuildbotStepClose(name, handle=None):
   """Finishes step for buildbot to display."""
-
-  if name not in _step_precious:
-    (handle or sys.stderr).write('\n@@@STEP_CLOSED@@@\n')
-    if name in _step_stack:
-      _step_stack.remove(name)
-
-  if _step_stack:
-    (handle or sys.stderr).write('@@@STEP_CURSOR %s@@@\n' % _step_stack[-1])
+  (handle or sys.stderr).write(
+      '\n@@@STEP_CURSOR %s@@@\n@@@STEP_CLOSED@@@\n' % name)
 
 
 def ListFiles(base_dir):

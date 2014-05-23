@@ -241,7 +241,7 @@ class BuilderStage(object):
     # and late bind the buildbot name, because renames before this should
     # take effect.
     self._bb_name = self.name
-    cros_build_lib.BeginBuildbotStep(self._bb_name)
+    cros_build_lib.PrintBuildbotStepName(self._bb_name)
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
@@ -252,13 +252,13 @@ class BuilderStage(object):
                       (self.name, cros_build_lib.UserDateTimeFormat()))
 
     # Tell the buildbot we finished the step for the waterfall
-    cros_build_lib.EndBuildbotStep(self._bb_name)
+    cros_build_lib.PrintBuildbotStepClose(self._bb_name)
 
   def _RenameStep(self, name):
     """Finishes being known by one buildbot name, and starts a new one."""
-    cros_build_lib.EndBuildbotStep(self._bb_name)
+    cros_build_lib.PrintBuildbotStepClose(self._bb_name)
     self._bb_name = name
-    cros_build_lib.BeginBuildbotStep(self._bb_name)
+    cros_build_lib.PrintBuildbotStepName(self._bb_name)
 
   def PerformStage(self):
     """Subclassed stages must override this function to perform what they want
