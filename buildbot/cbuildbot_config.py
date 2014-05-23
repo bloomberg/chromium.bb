@@ -43,7 +43,6 @@ CONFIG_TYPE_DUMP_ORDER = (
     'chrome-pfq-informational',
     'pre-flight-branch',
     'factory',
-    'minimal',
     CONFIG_TYPE_FIRMWARE,
     'toolchain-major',
     'toolchain-minor',
@@ -2106,14 +2105,6 @@ _config.add_group('beaglebone-release-group',
     signer_results=False,
     paygen=False,
   ),
-  _beaglebone_release.add_config('beaglebone-minimal',
-    boards=['beaglebone'],
-    profile='minimal',
-    build_packages_in_background=True,
-    # This build doesn't generate signed images, so don't try to release them.
-    signer_results=False,
-    paygen=False,
-  ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
 
@@ -2128,20 +2119,6 @@ _release.add_config('stumpy_moblab-release',
   boards=['stumpy_moblab'],
 )
 
-_config.add_group('panther_embedded-release-group',
-  _brillo_release.add_config('panther_embedded-release',
-    boards=['panther_embedded'],
-    signer_results=False,
-    paygen=False,
-  ),
-  _brillo_release.add_config('panther_embedded-minimal',
-    boards=['panther_embedded'],
-    build_packages_in_background=True,
-    profile='minimal',
-    signer_results=False,
-    paygen=False,
-  ),
-)
 ### Per-chipset release groups
 
 def _AddGroupConfig(name, base_board, group_boards=(), group_variant_boards=()):
