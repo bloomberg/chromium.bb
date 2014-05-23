@@ -73,16 +73,12 @@ void ClocklessAudioSink::Initialize(const AudioParameters& params,
 }
 
 void ClocklessAudioSink::Start() {
+  DCHECK(initialized_);
   DCHECK(!playing_);
 }
 
 void ClocklessAudioSink::Stop() {
-  DCHECK(initialized_);
-
-  if (!playing_)
-    return;
-
-  playback_time_ = thread_->Stop();
+  Pause();
 }
 
 void ClocklessAudioSink::Play() {
@@ -96,7 +92,13 @@ void ClocklessAudioSink::Play() {
 }
 
 void ClocklessAudioSink::Pause() {
-  Stop();
+  DCHECK(initialized_);
+
+  if (!playing_)
+    return;
+
+  playing_ = false;
+  playback_time_ = thread_->Stop();
 }
 
 bool ClocklessAudioSink::SetVolume(double volume) {
