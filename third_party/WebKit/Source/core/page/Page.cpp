@@ -543,6 +543,7 @@ PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 
 void Page::trace(Visitor* visitor)
 {
+    visitor->trace(m_dragController);
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
     WillBeHeapSupplementable<Page>::trace(visitor);

@@ -255,7 +255,7 @@ void SliderThumbElement::dragFrom(const LayoutPoint& point)
 
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 {
-    RefPtr<HTMLInputElement> input(hostInput());
+    RefPtrWillBeRawPtr<HTMLInputElement> input(hostInput());
     Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 
     if (!input->renderer() || !renderBox() || !trackElement->renderBox())

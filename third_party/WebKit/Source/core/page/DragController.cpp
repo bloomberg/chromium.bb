@@ -143,9 +143,9 @@ DragController::~DragController()
 {
 }
 
-PassOwnPtr<DragController> DragController::create(Page* page, DragClient* client)
+PassOwnPtrWillBeRawPtr<DragController> DragController::create(Page* page, DragClient* client)
 {
-    return adoptPtr(new DragController(page, client));
+    return adoptPtrWillBeNoop(new DragController(page, client));
 }
 
 static PassRefPtrWillBeRawPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, RefPtrWillBeRawPtr<Range> context, bool allowPlainText, bool& chosePlainText)
@@ -446,7 +446,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 {
     ASSERT(dragData);
 
-    RefPtr<HTMLInputElement> fileInput = m_fileInputElementUnderMouse;
+    RefPtrWillBeRawPtr<HTMLInputElement> fileInput = m_fileInputElementUnderMouse;
     if (m_fileInputElementUnderMouse) {
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
         m_fileInputElementUnderMouse = nullptr;
@@ -961,6 +961,14 @@ bool DragController::isCopyKeyDown(DragData* dragData)
 
 void DragController::cleanupAfterSystemDrag()
 {
+}
+
+void DragController::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+    visitor->trace(m_documentUnderMouse);
+    visitor->trace(m_dragInitiator);
+    visitor->trace(m_fileInputElementUnderMouse);
 }
 
 } // namespace WebCore

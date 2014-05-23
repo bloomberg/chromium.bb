@@ -60,7 +60,7 @@ struct ClickHandlingState {
 public:
     bool checked;
     bool indeterminate;
-    RefPtr<HTMLInputElement> checkedRadioButton;
+    RefPtrWillBePersistent<HTMLInputElement> checkedRadioButton;
 };
 
 // An InputTypeView object represents the UI-specific part of an

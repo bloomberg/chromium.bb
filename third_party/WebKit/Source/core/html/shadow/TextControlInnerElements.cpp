@@ -221,7 +221,7 @@ void SearchFieldCancelButtonElement::detach(const AttachContext& context)
 void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
 {
     // If the element is visible, on mouseup, clear the value, and set selection
-    RefPtr<HTMLInputElement> input(toHTMLInputElement(shadowHost()));
+    RefPtrWillBeRawPtr<HTMLInputElement> input(toHTMLInputElement(shadowHost()));
     if (!input || input->isDisabledOrReadOnly()) {
         if (!event->defaultHandled())
             HTMLDivElement::defaultEventHandler(event);
