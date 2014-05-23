@@ -100,24 +100,30 @@ void WaveShaperDSPKernel::processCurve(const float* source, float* destination, 
     for (unsigned i = 0; i < framesToProcess; ++i) {
         const float input = source[i];
 
-        // Calculate a virtual index based on input -1 -> +1 with 0 being at the center of the curve data.
-        // Then linearly interpolate between the two points in the curve.
-        double virtualIndex = 0.5 * (input + 1) * curveLength;
-        int index1 = static_cast<int>(virtualIndex);
-        int index2 = index1 + 1;
-        double interpolationFactor = virtualIndex - index1;
+        // Calculate a virtual index based on input -1 -> +1 with -1 being curve[0], +1 being
+        // curve[curveLength - 1], and 0 being at the center of the curve data. Then linearly
+        // interpolate between the two points in the curve.
+        double virtualIndex = 0.5 * (input + 1) * (curveLength - 1);
+        double output;
 
-        // Clip index to the input range of the curve.
-        // This takes care of input outside of nominal range -1 -> +1
-        index1 = max(index1, 0);
-        index1 = min(index1, curveLength - 1);
-        index2 = max(index2, 0);
-        index2 = min(index2, curveLength - 1);
+        if (virtualIndex < 0) {
+            // input < -1, so use curve[0]
+            output = curveData[0];
+        } else if (virtualIndex >= curveLength - 1) {
+            // input >= 1, so use last curve value
+            output = curveData[curveLength - 1];
+        } else {
+            // The general case where -1 <= input < 1, where 0 <= virtualIndex < curveLength - 1,
+            // so interpolate between the nearest samples on the curve.
+            unsigned index1 = static_cast<unsigned>(virtualIndex);
+            unsigned index2 = index1 + 1;
+            double interpolationFactor = virtualIndex - index1;
 
-        double value1 = curveData[index1];
-        double value2 = curveData[index2];
+            double value1 = curveData[index1];
+            double value2 = curveData[index2];
 
-        double output = (1.0 - interpolationFactor) * value1 + interpolationFactor * value2;
+            output = (1.0 - interpolationFactor) * value1 + interpolationFactor * value2;
+        }
         destination[i] = output;
     }
 }
