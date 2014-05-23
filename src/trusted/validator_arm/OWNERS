@@ -3,3 +3,7 @@ set noparent
 jfb@chromium.org
 kschimpf@google.com
 sehr@chromium.org
+
+# For build file review
+per-file *.gn=bradnelson@chromium.org
+per-file *.gn=noelallen@chromium.org

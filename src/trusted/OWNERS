@@ -8,3 +8,7 @@ mseaborn@chromium.org
 ncbray@google.com
 noelallen@google.com
 sehr@chromium.org
+
+# For build file review
+per-file *.gn=bradnelson@chromium.org
+per-file *.gn=noelallen@chromium.org
