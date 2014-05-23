@@ -1,0 +1,13 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("blink_headers_config") {
+  include_dirs = [ ".." ]
+}
+
+# Depend on this target to use public blink API headers for things like enums
+# and public structures without actually linking against any Blink libraries.
+source_set("blink_headers") {
+  direct_dependent_configs = [ ":blink_headers_config" ]
+}
