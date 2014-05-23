@@ -39,9 +39,8 @@
 #include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/history/android/android_history_provider_service.h"
+class AndroidHistoryProviderService;
 #endif
-
 class BookmarkService;
 class GURL;
 class HistoryURLProvider;
