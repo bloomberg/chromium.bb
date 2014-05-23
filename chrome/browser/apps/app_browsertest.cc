@@ -1101,23 +1101,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
                   ->HasFocus());
 }
 
-// The next three tests will only run automatically with Chrome branded builds
-// because they require the PDF preview plug-in. To run these tests manually for
-// Chromium (non-Chrome branded) builds in a development environment:
-//
-//   1) Remove "MAYBE_" in the first line of each test definition
-//   2) Build Chromium browser_tests
-//   3) Make a copy of the PDF plug-in from a recent version of Chrome (Canary
-//      or a recent development build) to your Chromium build:
-//      - On Linux and Chrome OS, copy /opt/google/chrome/libpdf.so to
-//        <path-to-your-src>/out/Debug
-//      - On OS X, copy PDF.plugin from
-//        <recent-chrome-app-folder>/*/*/*/*/"Internet Plug-Ins" to
-//        <path-to-your-src>/out/Debug/Chromium.app/*/*/*/*/"Internet Plug-Ins"
-//   4) Run browser_tests with the --enable-print-preview flag
-
-#if !defined(GOOGLE_CHROME_BUILD) || \
-    (defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX)))
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_WindowDotPrintShouldBringUpPrintPreview \
     DISABLED_WindowDotPrintShouldBringUpPrintPreview
 #else
@@ -1132,17 +1116,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   preview_delegate.WaitUntilPreviewIsReady();
 }
 
-#if !defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_ClosingWindowWhilePrintingShouldNotCrash \
-    DISABLED_ClosingWindowWhilePrintingShouldNotCrash
-#else
-#define MAYBE_ClosingWindowWhilePrintingShouldNotCrash \
-    ClosingWindowWhilePrintingShouldNotCrash
-#endif
-
 // This test verifies that http://crbug.com/297179 is fixed.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       MAYBE_ClosingWindowWhilePrintingShouldNotCrash) {
+                       ClosingWindowWhilePrintingShouldNotCrash) {
   ScopedPreviewTestingDelegate preview_delegate(false);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
@@ -1151,7 +1127,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 // This test currently only passes on OS X (on other platforms the print preview
 // dialog's size is limited by the size of the window being printed).
-#if !defined(GOOGLE_CHROME_BUILD) || !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
 #define MAYBE_PrintPreviewShouldNotBeTooSmall \
     DISABLED_PrintPreviewShouldNotBeTooSmall
 #else

@@ -100,6 +100,7 @@ extern const char kDisablePnacl[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePrerenderLocalPredictor[];
+extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableQuic[];
 extern const char kDisableQuicHttps[];
@@ -405,12 +406,6 @@ extern const char kDebugPrint[];
 
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
-#endif
-
-#if defined(GOOGLE_CHROME_BUILD)
-extern const char kDisablePrintPreview[];
-#else
-extern const char kEnablePrintPreview[];
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

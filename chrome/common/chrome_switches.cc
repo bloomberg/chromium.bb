@@ -331,6 +331,9 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 const char kDisablePrerenderLocalPredictor[] =
     "disable-prerender-local-predictor";
 
+// Disables print preview (For testing, and for users who don't like us. :[ )
+const char kDisablePrintPreview[]           = "disable-print-preview";
+
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
@@ -1407,18 +1410,6 @@ const char kDebugPrint[] = "debug-print";
 #ifndef NDEBUG
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
-#endif
-
-// Controls print preview in the browser process.
-#if defined(GOOGLE_CHROME_BUILD)
-// Disables print preview (For testing, and for users who don't like us. :[ )
-const char kDisablePrintPreview[]           = "disable-print-preview";
-#else
-// Enables print preview. Chromium normally does not have the PDF viewer,
-// required for print preview.
-// pdf.dll or libpdf.so should be present in primary directory of
-// Chromium. For local builds it's usually out/Debug or out/Release.
-const char kEnablePrintPreview[]            = "enable-print-preview";
 #endif
 
 // -----------------------------------------------------------------------------
