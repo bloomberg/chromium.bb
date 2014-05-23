@@ -157,7 +157,13 @@ void SVGElement::buildPendingResourcesIfNeeded()
     while (Element* clientElement = extensions.removeElementFromPendingResourcesForRemoval(resourceId)) {
         ASSERT(clientElement->hasPendingResources());
         if (clientElement->hasPendingResources()) {
-            clientElement->buildPendingResource();
+            // FIXME: Ideally we'd always resolve pending resources async instead of inside
+            // insertedInto and svgAttributeChanged. For now we only do it for <use> since
+            // that would stamp out DOM.
+            if (isSVGUseElement(clientElement))
+                toSVGUseElement(clientElement)->invalidateShadowTree();
+            else
+                clientElement->buildPendingResource();
             extensions.clearHasPendingResourcesIfPossible(clientElement);
         }
     }

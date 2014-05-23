@@ -1828,13 +1828,14 @@ void Document::updateRenderTree(StyleRecalcChange change)
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     DocumentAnimations::updateOutdatedAnimationPlayersIfNeeded(*this);
-    updateDistributionIfNeeded();
-    updateUseShadowTreesIfNeeded();
-    updateStyleInvalidationIfNeeded();
 
     // FIXME: This executes media query listeners which runs script, instead the script
     // should run at raf timing in ScriptedAnimationController just like resize events.
     evaluateMediaQueryListIfNeeded();
+
+    updateUseShadowTreesIfNeeded();
+    updateDistributionIfNeeded();
+    updateStyleInvalidationIfNeeded();
 
     // FIXME: We should update style on our ancestor chain before proceeding
     // however doing so currently causes several tests to crash, as LocalFrame::setDocument calls Document::attach

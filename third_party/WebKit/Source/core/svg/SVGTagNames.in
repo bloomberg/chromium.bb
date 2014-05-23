@@ -88,7 +88,7 @@ text
 textPath
 title
 tspan interfaceName=SVGTSpanElement
-use constructorNeedsCreatedByParser
+use
 view
 #if ENABLE_SVG_FONTS
 vkern interfaceName=SVGVKernElement

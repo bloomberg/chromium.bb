@@ -43,7 +43,10 @@
                 printInstanceTree(m, indent);
             }
         }
-        var useobj = internals.shadowRoot(document.getElementById("zoomplus"));
+        var zoomplus = document.getElementById("zoomplus");
+        // Force a recalcStyle so the use shadow tree is created.
+        getComputedStyle(zoomplus).color;
+        var useobj = internals.shadowRoot(zoomplus);
         print("The instance tree of use element zoomplus:\n");
         printInstanceTree(useobj,"");
 

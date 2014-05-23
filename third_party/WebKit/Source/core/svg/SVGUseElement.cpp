@@ -45,14 +45,13 @@
 
 namespace WebCore {
 
-inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser)
+inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(SVGNames::useTag, document)
     , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
-    , m_wasInsertedByParser(wasInsertedByParser)
     , m_haveFiredLoadEvent(false)
     , m_needsShadowTreeRecreation(false)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
@@ -66,10 +65,10 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
     addToPropertyMap(m_height);
 }
 
-PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)
+PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
-    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeRefCountedGarbageCollected(new SVGUseElement(document, wasInsertedByParser));
+    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeRefCountedGarbageCollected(new SVGUseElement(document));
     use->ensureUserAgentShadowRoot();
     return use.release();
 }
@@ -152,13 +151,9 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
         return InsertionDone;
     ASSERT(!m_targetElementInstance || !isWellFormedDocument(&document()));
     ASSERT(!hasPendingResources() || !isWellFormedDocument(&document()));
-    if (!m_wasInsertedByParser) {
-        buildPendingResource();
-
-        if (!isStructurallyExternal()) {
-            sendSVGLoadEventIfPossibleAsynchronously();
-        }
-    }
+    invalidateShadowTree();
+    if (!isStructurallyExternal())
+        sendSVGLoadEventIfPossibleAsynchronously();
     return InsertionDone;
 }
 
@@ -248,8 +243,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
             setDocumentResource(0);
         }
 
-        if (!m_wasInsertedByParser)
-            buildPendingResource();
+        invalidateShadowTree();
 
         return;
     }
@@ -873,14 +867,13 @@ void SVGUseElement::notifyFinished(Resource* resource)
     if (resource->errorOccurred())
         dispatchEvent(Event::create(EventTypeNames::error));
     else if (!resource->wasCanceled()) {
-        if (m_wasInsertedByParser && m_haveFiredLoadEvent)
+        if (m_haveFiredLoadEvent)
             return;
         if (!isStructurallyExternal())
             return;
-
         ASSERT(!m_haveFiredLoadEvent);
         m_haveFiredLoadEvent = true;
-        sendSVGLoadEventIfPossible();
+        sendSVGLoadEventIfPossibleAsynchronously();
     }
 }
 
@@ -907,10 +900,6 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
 void SVGUseElement::finishParsingChildren()
 {
     SVGGraphicsElement::finishParsingChildren();
-    if (m_wasInsertedByParser) {
-        buildPendingResource();
-        m_wasInsertedByParser = false;
-    }
 }
 
 void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
