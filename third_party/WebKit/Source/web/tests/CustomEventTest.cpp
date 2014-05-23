@@ -108,7 +108,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 
     v8::Isolate* isolate = toIsolate(frame->frame());
-    v8::HandleScope handleScope(isolate);
+    V8ExecutionScope scope(isolate);
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
     RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::create();
     RefPtr<EventListener> listener = TestListener::create(isolate, *world);
