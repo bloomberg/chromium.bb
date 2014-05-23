@@ -94,6 +94,12 @@ public:
     virtual FloatSize sourceSize() const OVERRIDE;
     virtual FloatSize defaultDestinationSize() const OVERRIDE;
 
+    enum UpdateFromElementBehavior {
+        UpdateNormal,
+        UpdateIgnorePreviousError
+    };
+    // public so that HTMLPictureElement can call this as well.
+    void selectSourceURL(UpdateFromElementBehavior);
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);
 

@@ -13,6 +13,8 @@ class HTMLPictureElement FINAL : public HTMLElement {
 public:
     DEFINE_NODE_FACTORY(HTMLPictureElement);
 
+    void sourceOrMediaChanged();
+
 protected:
     explicit HTMLPictureElement(Document&);
 };

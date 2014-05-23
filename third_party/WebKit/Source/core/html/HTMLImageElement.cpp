@@ -194,12 +194,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
     } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
-        unsigned effectiveSize = 0;
-        if (RuntimeEnabledFeatures::pictureSizesEnabled())
-            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
-        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
-        setBestFitURLAndDPRFromImageCandidate(candidate);
-        m_imageLoader.updateFromElementIgnoringPreviousError();
+        selectSourceURL(UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
     } else if (name == compositeAttr) {
@@ -565,4 +560,27 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
     return size;
 }
 
+void HTMLImageElement::selectSourceURL(UpdateFromElementBehavior behavior)
+{
+    bool foundURL = false;
+    if (RuntimeEnabledFeatures::pictureEnabled()) {
+        ImageCandidate candidate = findBestFitImageFromPictureParent();
+        if (!candidate.isEmpty()) {
+            setBestFitURLAndDPRFromImageCandidate(candidate);
+            foundURL = true;
+        }
+    }
+
+    if (!foundURL) {
+        unsigned effectiveSize = 0;
+        if (RuntimeEnabledFeatures::pictureSizesEnabled())
+            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesCached::create(document()));
+        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+        setBestFitURLAndDPRFromImageCandidate(candidate);
+    }
+    if (behavior == UpdateIgnorePreviousError)
+        m_imageLoader.updateFromElementIgnoringPreviousError();
+    else
+        m_imageLoader.updateFromElement();
+}
 }
