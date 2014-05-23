@@ -28,9 +28,16 @@ struct EchoArgsList {
   EchoArgs item;
 };
 
+// Note: For messages which control test flow, pick numbers that are unlikely
+// to be hit as a result of our deliberate corruption of response messages.
 interface CppSide {
-  StartTest();  // Sent for all tests to notify that the JS side is now ready.
-  TestFinished();  // Indicates end for echo, bit-flip, and back-pointer tests.
+  // Sent for all tests to notify that the JS side is now ready.
+  StartTest@88888888();
+
+  // Indicates end for echo, bit-flip, and back-pointer tests.
+  TestFinished@99999999();
+
+  // Responses from specific tests.
   PingResponse();
   EchoResponse(EchoArgsList list);
   BitFlipResponse(EchoArgsList arg);

@@ -146,8 +146,10 @@ void CheckSampleEchoArgsList(const js_to_cpp::EchoArgsList& list) {
   CheckSampleEchoArgsList(list.next());
 }
 
+// More forgiving checks are needed in the face of potentially corrupt
+// messages. The values don't matter so long as all accesses are within
+// bounds.
 void CheckCorruptedString(const mojo::String& arg) {
-  // The values don't matter so long as all accesses are within bounds.
   if (arg.is_null())
     return;
   for (size_t i = 0; i < arg.size(); ++i)
@@ -161,15 +163,37 @@ void CheckCorruptedStringArray(const mojo::Array<mojo::String>& string_array) {
     CheckCorruptedString(string_array[i]);
 }
 
+void CheckCorruptedDataPipe(MojoHandle data_pipe_handle) {
+  unsigned char buffer[100];
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  MojoResult result = MojoReadData(
+      data_pipe_handle, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE);
+  if (result != MOJO_RESULT_OK)
+    return;
+  for (uint32_t i = 0; i < buffer_size; ++i)
+    g_waste_accumulator += buffer[i];
+}
+
+void CheckCorruptedMessagePipe(MojoHandle message_pipe_handle) {
+  unsigned char buffer[100];
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  MojoResult result = MojoReadMessage(
+      message_pipe_handle, buffer, &buffer_size, 0, 0, 0);
+  if (result != MOJO_RESULT_OK)
+    return;
+  for (uint32_t i = 0; i < buffer_size; ++i)
+    g_waste_accumulator += buffer[i];
+}
+
 void CheckCorruptedEchoArgs(const js_to_cpp::EchoArgs& arg) {
   if (arg.is_null())
     return;
   CheckCorruptedString(arg.name());
   CheckCorruptedStringArray(arg.string_array());
   if (arg.data_handle().is_valid())
-    CheckDataPipe(arg.data_handle().get().value());
+    CheckCorruptedDataPipe(arg.data_handle().get().value());
   if (arg.message_handle().is_valid())
-    CheckMessagePipe(arg.message_handle().get().value());
+    CheckCorruptedMessagePipe(arg.message_handle().get().value());
 }
 
 void CheckCorruptedEchoArgsList(const js_to_cpp::EchoArgsList& list) {
@@ -184,7 +208,10 @@ void CheckCorruptedEchoArgsList(const js_to_cpp::EchoArgsList& list) {
 // run_loop().
 class CppSideConnection : public js_to_cpp::CppSide {
  public:
-  CppSideConnection() : run_loop_(NULL), js_side_(NULL) {
+  CppSideConnection() :
+      run_loop_(NULL),
+      js_side_(NULL),
+      mishandled_messages_(0) {
   }
   virtual ~CppSideConnection() {}
 
@@ -204,24 +231,26 @@ class CppSideConnection : public js_to_cpp::CppSide {
   }
 
   virtual void PingResponse() OVERRIDE {
-    NOTREACHED();
+    mishandled_messages_ += 1;
   }
 
   virtual void EchoResponse(const js_to_cpp::EchoArgsList& list) OVERRIDE {
-    NOTREACHED();
+    mishandled_messages_ += 1;
   }
 
   virtual void BitFlipResponse(const js_to_cpp::EchoArgsList& list) OVERRIDE {
-    NOTREACHED();
+    mishandled_messages_ += 1;
   }
 
   virtual void BackPointerResponse(
       const js_to_cpp::EchoArgsList& list) OVERRIDE {
-    NOTREACHED();
+    mishandled_messages_ += 1;
   }
+
  protected:
   base::RunLoop* run_loop_;
   js_to_cpp::JsSide* js_side_;
+  int mishandled_messages_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CppSideConnection);
@@ -244,7 +273,7 @@ class PingCppSideConnection : public CppSideConnection {
   }
 
   bool DidSucceed() {
-    return got_message_;
+    return got_message_ && !mishandled_messages_;
   }
 
  private:
@@ -284,7 +313,9 @@ class EchoCppSideConnection : public CppSideConnection {
   }
 
   bool DidSucceed() {
-    return termination_seen_ && message_count_ == kExpectedMessageCount;
+    return termination_seen_ &&
+        !mishandled_messages_ &&
+        message_count_ == kExpectedMessageCount;
   }
 
  private:
