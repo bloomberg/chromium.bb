@@ -106,8 +106,10 @@ if [ "$(uname -s)" = "Darwin" ]; then
 fi
 
 # Copy libc++ headers.
-mkdir $PDIR/include
-cp -R "${LLVM_BOOTSTRAP_INSTALL_DIR}/include/c++" $PDIR/include
+if [ "$(uname -s)" = "Darwin" ]; then
+  mkdir $PDIR/include
+  cp -R "${LLVM_BOOTSTRAP_INSTALL_DIR}/include/c++" $PDIR/include
+fi
 
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
