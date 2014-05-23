@@ -38,7 +38,7 @@ TextDocument::TextDocument(const DocumentInit& initializer)
 
 PassRefPtr<DocumentParser> TextDocument::createParser()
 {
-    return TextDocumentParser::create(this);
+    return TextDocumentParser::create(*this);
 }
 
 }

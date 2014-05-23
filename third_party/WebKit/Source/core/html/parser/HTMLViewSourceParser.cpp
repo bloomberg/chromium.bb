@@ -33,10 +33,9 @@
 
 namespace WebCore {
 
-// FIXME: HTMLViewSourceDocument should be a reference.
-HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument* document, const String& mimeType)
-    : DecodedDataDocumentParser(*document)
-    , m_tokenizer(HTMLTokenizer::create(HTMLParserOptions(document)))
+HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document, const String& mimeType)
+    : DecodedDataDocumentParser(document)
+    , m_tokenizer(HTMLTokenizer::create(HTMLParserOptions(&document)))
 {
     if (mimeType != "text/html" && !DOMImplementation::isXMLMIMEType(mimeType))
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);

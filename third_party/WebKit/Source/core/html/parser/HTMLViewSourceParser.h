@@ -36,14 +36,14 @@ namespace WebCore {
 
 class HTMLViewSourceParser FINAL :  public DecodedDataDocumentParser {
 public:
-    static PassRefPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument* document, const String& mimeType)
+    static PassRefPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument& document, const String& mimeType)
     {
         return adoptRef(new HTMLViewSourceParser(document, mimeType));
     }
     virtual ~HTMLViewSourceParser() { }
 
 private:
-    HTMLViewSourceParser(HTMLViewSourceDocument*, const String& mimeType);
+    HTMLViewSourceParser(HTMLViewSourceDocument&, const String& mimeType);
 
     // DocumentParser
     virtual void insert(const SegmentedString&) OVERRIDE { ASSERT_NOT_REACHED(); }

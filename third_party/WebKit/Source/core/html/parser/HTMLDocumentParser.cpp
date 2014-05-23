@@ -99,18 +99,17 @@ private:
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
 };
 
-// FIXME: HTMLDocument should be a reference.
-HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors)
-    : ScriptableDocumentParser(*document)
-    , m_options(document)
+HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors)
+    : ScriptableDocumentParser(document)
+    , m_options(&document)
     , m_token(m_options.useThreading ? nullptr : adoptPtr(new HTMLToken))
     , m_tokenizer(m_options.useThreading ? nullptr : HTMLTokenizer::create(m_options))
-    , m_scriptRunner(HTMLScriptRunner::create(document, this))
-    , m_treeBuilder(HTMLTreeBuilder::create(this, document, parserContentPolicy(), reportErrors, m_options))
+    , m_scriptRunner(HTMLScriptRunner::create(&document, this))
+    , m_treeBuilder(HTMLTreeBuilder::create(this, &document, parserContentPolicy(), reportErrors, m_options))
     , m_parserScheduler(HTMLParserScheduler::create(this))
-    , m_xssAuditorDelegate(document)
+    , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
-    , m_preloader(adoptPtr(new HTMLResourcePreloader(document)))
+    , m_preloader(adoptPtr(new HTMLResourcePreloader(&document)))
     , m_isPinnedToMainThread(false)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)

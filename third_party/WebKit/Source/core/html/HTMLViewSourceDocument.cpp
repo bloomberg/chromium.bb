@@ -60,7 +60,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
 
 PassRefPtr<DocumentParser> HTMLViewSourceDocument::createParser()
 {
-    return HTMLViewSourceParser::create(this, m_type);
+    return HTMLViewSourceParser::create(*this, m_type);
 }
 
 void HTMLViewSourceDocument::createContainingTable()

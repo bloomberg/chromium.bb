@@ -2322,7 +2322,7 @@ PassRefPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
-        return HTMLDocumentParser::create(toHTMLDocument(this), reportErrors);
+        return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors);
     }
     // FIXME: this should probably pass the frame instead
     return XMLDocumentParser::create(*this, view());
