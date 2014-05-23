@@ -311,7 +311,8 @@ std::string TestPostMessage::CheckMessageProperties(
 }
 
 std::string TestPostMessage::TestSendInInit() {
-  ASSERT_EQ(1, WaitForMessages());
+  // Wait for the messages from Init() to be guaranteed to be sent.
+  WaitForMessages();
   // This test assumes Init already sent a message.
   ASSERT_EQ(1, message_data_.size());
   ASSERT_TRUE(message_data_.back().is_string());

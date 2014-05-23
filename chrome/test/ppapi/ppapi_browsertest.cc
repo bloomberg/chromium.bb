@@ -675,16 +675,10 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 #undef PostMessage
 #endif
 
-// Flaky: crbug.com/269530
-#if defined(OS_WIN)
-#define MAYBE_PostMessage DISABLED_PostMessage
-#else
-#define MAYBE_PostMessage PostMessage
-#endif
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PostMessage) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PostMessage) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
