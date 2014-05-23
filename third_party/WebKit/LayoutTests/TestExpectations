@@ -899,8 +899,6 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/inl
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
 
-crbug.com/363772 virtual/deferred/fast/images/repaint-subrect-grid.html [ NeedsManualRebaseline ]
-crbug.com/363772 virtual/deferred/fast/images/exif-orientation.html [ NeedsManualRebaseline ]
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
