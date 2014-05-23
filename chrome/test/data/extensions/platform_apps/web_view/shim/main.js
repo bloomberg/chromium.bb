@@ -1043,6 +1043,48 @@ function testGetProcessId() {
   document.body.appendChild(webview);
 }
 
+function testHiddenBeforeNavigation() {
+  var webview = document.createElement('webview');
+  webview.style.visibility = 'hidden';
+
+  var postMessageHandler = function(e) {
+    var data = JSON.parse(e.data);
+    window.removeEventListener('message', postMessageHandler);
+    if (data[0] == 'visibilityState-response') {
+      embedder.test.assertEq('hidden', data[1]);
+      embedder.test.succeed();
+    } else {
+      LOG('Unexpected message: ' + data);
+      embedder.test.fail();
+    }
+  };
+
+  webview.addEventListener('loadstop', function(e) {
+    LOG('webview.loadstop');
+    window.addEventListener('message', postMessageHandler);
+    webview.addEventListener('consolemessage', function(e) {
+      LOG('g: ' + e.message);
+    });
+
+    webview.executeScript(
+      {file: 'inject_hidden_test.js'},
+      function(results) {
+        if (!results || !results.length) {
+          LOG('Failed to inject script: inject_hidden_test.js');
+          embedder.test.fail();
+          return;
+        }
+
+        LOG('script injection success');
+        webview.contentWindow.postMessage(
+            JSON.stringify(['visibilityState-request']), '*');
+      });
+  });
+
+  webview.setAttribute('src', 'data:text/html,<html><body></body></html>');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadstart event fires at the beginning of a load
 // and the loadredirect event fires when a redirect occurs.
 function testLoadStartLoadRedirect() {
@@ -1642,6 +1684,7 @@ embedder.test.testList = {
   'testWebRequestListenerSurvivesReparenting':
       testWebRequestListenerSurvivesReparenting,
   'testGetProcessId': testGetProcessId,
+  'testHiddenBeforeNavigation': testHiddenBeforeNavigation,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testLoadAbortChromeExtensionURLWrongPartition':
       testLoadAbortChromeExtensionURLWrongPartition,

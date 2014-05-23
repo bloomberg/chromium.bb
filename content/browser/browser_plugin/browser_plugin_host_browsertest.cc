@@ -230,28 +230,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
-  const char kEmbedderURL[] = "/browser_plugin_focus.html";
-  const char* kGuestURL = "/browser_plugin_focus_child.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
-
-  SimulateMouseClick(test_embedder()->web_contents(), 0,
-      blink::WebMouseEvent::ButtonLeft);
-  BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
-  // Wait until we focus into the guest.
-  test_guest()->WaitForFocus();
-
-  // TODO(fsamuel): A third Tab key press should not be necessary.
-  // The browser plugin will take keyboard focus but it will not
-  // focus an initial element. The initial element is dependent
-  // upon tab direction which WebKit does not propagate to the plugin.
-  // See http://crbug.com/147644.
-  BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
-  BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
-  BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
-  test_guest()->WaitForAdvanceFocus();
-}
-
 // This test opens a page in http and then opens another page in https, forcing
 // a RenderViewHost swap in the web_contents. We verify that the embedder in the
 // web_contents gets cleared properly.
@@ -421,49 +399,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
 
   base::string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
-}
-
-// This test verifies that if a browser plugin is hidden before navigation,
-// the guest starts off hidden.
-// This test is flaky under ThreadSanitizer, see http://crbug.com/370240
-#if !defined(THREAD_SANITIZER)
-#define MAYBE_HiddenBeforeNavigation HiddenBeforeNavigation
-#else
-#define MAYBE_HiddenBeforeNavigation DISABLED_HiddenBeforeNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_HiddenBeforeNavigation) {
-  const char* kEmbedderURL = "/browser_plugin_embedder.html";
-  const std::string embedder_code =
-      "document.getElementById('plugin').style.visibility = 'hidden'";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuest, true, embedder_code);
-  EXPECT_FALSE(test_guest()->visible());
-}
-
-// This test verifies that if a browser plugin is focused before navigation then
-// the guest starts off focused.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
-  const char* kEmbedderURL = "/browser_plugin_embedder.html";
-  const std::string embedder_code =
-      "document.getElementById('plugin').focus();";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuest, true, embedder_code);
-  RenderFrameHost* guest_rfh = test_guest()->web_contents()->GetMainFrame();
-  // Verify that the guest is focused.
-  scoped_ptr<base::Value> value =
-      content::ExecuteScriptAndGetValue(guest_rfh, "document.hasFocus()");
-  bool result = false;
-  ASSERT_TRUE(value->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
-  const char* kEmbedderURL = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
-  // Blur the embedder.
-  test_embedder()->web_contents()->GetRenderViewHost()->Blur();
-  // Ensure that the guest is also blurred.
-  test_guest()->WaitForBlur();
 }
 
 // This test verifies that if IME is enabled in the embedder, it is also enabled

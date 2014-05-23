@@ -1082,6 +1082,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
   TestHelper("testGetProcessId", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestHiddenBeforeNavigation) {
+  TestHelper("testHiddenBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
 

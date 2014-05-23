@@ -502,12 +502,78 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
+// Tests that if a <webview> is focused before navigation then the guest starts
+// off focused.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusBeforeNavigation) {
+  TestHelper("testFocusBeforeNavigation", "web_view/focus", NO_TEST_SERVER);
+}
+
 // Tests that setting focus on the <webview> sets focus on the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusEvent) {
   TestHelper("testFocusEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
-// Tests that setting focus on the <webview> sets focus on the guest.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusTracksEmbedder) {
+  content::WebContents* embedder_web_contents = NULL;
+
+  scoped_ptr<ExtensionTestMessageListener> done_listener(
+      RunAppHelper("testFocusTracksEmbedder", "web_view/focus", NO_TEST_SERVER,
+                   &embedder_web_contents));
+  done_listener->WaitUntilSatisfied();
+
+  ExtensionTestMessageListener post_test_listener("POST_TEST_PASSED", false);
+  post_test_listener.set_failure_message("POST_TEST_FAILED");
+  EXPECT_TRUE(content::ExecuteScript(
+                  embedder_web_contents,
+                  "window.runCommand('POST_testFocusTracksEmbedder');"));
+
+  // Blur the embedder.
+  embedder_web_contents->GetRenderViewHost()->Blur();
+  // Ensure that the guest is also blurred.
+  ASSERT_TRUE(post_test_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_AdvanceFocus) {
+  content::WebContents* embedder_web_contents = NULL;
+
+  {
+    scoped_ptr<ExtensionTestMessageListener> done_listener(
+        RunAppHelper("testAdvanceFocus", "web_view/focus", NO_TEST_SERVER,
+                     &embedder_web_contents));
+    done_listener->WaitUntilSatisfied();
+  }
+
+  {
+    ExtensionTestMessageListener listener("button1-focused", false);
+    listener.set_failure_message("TEST_FAILED");
+    SimulateRWHMouseClick(embedder_web_contents->GetRenderViewHost(),
+                          blink::WebMouseEvent::ButtonLeft, 200, 20);
+    content::SimulateKeyPress(embedder_web_contents, ui::VKEY_TAB,
+        false, false, false, false);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  {
+    // Wait for button1 to be focused again, this means we were asked to
+    // move the focus to the next focusable element.
+    ExtensionTestMessageListener listener("button1-advance-focus", false);
+    listener.set_failure_message("TEST_FAILED");
+    // TODO(fsamuel): A third Tab key press should not be necessary.
+    // The <webview> will take keyboard focus but it will not focus an initial
+    // element. The initial element is dependent upon tab direction which blink
+    // does not propagate to the plugin.
+    // See http://crbug.com/147644.
+    content::SimulateKeyPress(embedder_web_contents, ui::VKEY_TAB,
+        false, false, false, false);
+    content::SimulateKeyPress(embedder_web_contents, ui::VKEY_TAB,
+        false, false, false, false);
+    content::SimulateKeyPress(embedder_web_contents, ui::VKEY_TAB,
+        false, false, false, false);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+  }
+}
+
+// Tests that blurring <webview> also blurs the guest.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_BlurEvent) {
   TestHelper("testBlurEvent", "web_view/focus", NO_TEST_SERVER);
 }

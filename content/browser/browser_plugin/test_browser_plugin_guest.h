@@ -30,8 +30,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const blink::WebInputEvent* event) OVERRIDE;
-  virtual void OnSetFocus(int instance_id, bool focused) OVERRIDE;
-  virtual void OnTakeFocus(bool reverse) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnImeCancelComposition() OVERRIDE;
 
@@ -39,14 +37,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   // Waits until UpdateRect message is sent from the guest, meaning it is
   // ready/rendered.
   void WaitForUpdateRectMsg();
-  void ResetUpdateRectCount();
-  // Waits for focus to reach this guest.
-  void WaitForFocus();
   // Waits for blur to reach this guest.
-  void WaitForBlur();
-  // Waits for focus to move out of this guest.
-  void WaitForAdvanceFocus();
-  // Waits until input is observed.
   void WaitForInput();
   // Waits until 'loadstop' is observed.
   void WaitForLoadStop();
@@ -64,22 +55,14 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void SendMessageToEmbedder(IPC::Message* msg) OVERRIDE;
 
   int update_rect_count_;
-  bool focus_observed_;
-  bool blur_observed_;
   bool advance_focus_observed_;
   bool input_observed_;
   bool load_stop_observed_;
   bool ime_cancel_observed_;
-  gfx::Size last_view_size_observed_;
-  gfx::Size expected_auto_view_size_;
 
   scoped_refptr<MessageLoopRunner> send_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> focus_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> blur_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> auto_view_size_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> ime_cancel_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
