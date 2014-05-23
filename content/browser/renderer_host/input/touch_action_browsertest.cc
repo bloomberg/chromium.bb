@@ -192,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
 // Disabled on MacOS because it doesn't support touch input.
-#if defined(OS_MACOSX)
+// Flaky on OS_CHROMEOS crbug/376695.
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_TouchActionNone DISABLED_TouchActionNone
 #else
 #define MAYBE_TouchActionNone TouchActionNone
