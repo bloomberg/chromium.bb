@@ -282,6 +282,19 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   return request;
 }
 
+int32_t FileDownloaderToPepperError(FileDownloader::Status status) {
+  switch (status) {
+    case FileDownloader::SUCCESS:
+      return PP_OK;
+    case FileDownloader::ACCESS_DENIED:
+      return PP_ERROR_NOACCESS;
+    case FileDownloader::FAILED:
+      return PP_ERROR_FAILED;
+    // No default case, to catch unhandled Status values.
+  }
+  return PP_ERROR_FAILED;
+}
+
 // Launch NaCl's sel_ldr process.
 void LaunchSelLdr(PP_Instance instance,
                   PP_Bool main_service_runtime,
@@ -886,18 +899,6 @@ PP_Var GetManifestBaseURL(PP_Instance instance) {
   return ppapi::StringVar::StringToPPVar(gurl.spec());
 }
 
-PP_Bool ResolvesRelativeToPluginBaseURL(PP_Instance instance,
-                                        const char *url) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (!load_manager)
-    return PP_FALSE;
-  const GURL& gurl = load_manager->plugin_base_url().Resolve(url);
-  if (!gurl.is_valid())
-    return PP_FALSE;
-  return PP_TRUE;
-}
-
 void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
@@ -1387,22 +1388,9 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
                             PP_FileHandle* out_handle,
                             FileDownloader::Status status,
                             int http_status) {
-  int32_t pp_error;
-  switch (status) {
-    case FileDownloader::SUCCESS:
-      *out_handle = target_file;
-      pp_error = PP_OK;
-      break;
-    case FileDownloader::ACCESS_DENIED:
-      pp_error = PP_ERROR_NOACCESS;
-      break;
-    case FileDownloader::FAILED:
-      pp_error = PP_ERROR_FAILED;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
+  int32_t pp_error = FileDownloaderToPepperError(status);
+  if (pp_error == PP_OK)
+    *out_handle = target_file;
 
   int64_t bytes_read = -1;
   if (pp_error == PP_OK && target_file != base::kInvalidPlatformFileValue) {
@@ -1431,6 +1419,97 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
   request.callback.func(request.callback.user_data, pp_error);
 }
 
+void DownloadFileCompletion(base::PlatformFile file,
+                            PP_NaClFileInfo* file_info,
+                            PP_CompletionCallback callback,
+                            FileDownloader::Status status,
+                            int http_status) {
+  int32_t pp_error = FileDownloaderToPepperError(status);
+  if (pp_error == PP_OK) {
+    file_info->handle = file;
+    file_info->token_lo = 0;
+    file_info->token_hi = 0;
+  }
+  callback.func(callback.user_data, pp_error);
+}
+
+void DownloadFile(PP_Instance instance,
+                  const char* url,
+                  struct PP_NaClFileInfo* file_info,
+                  struct PP_CompletionCallback callback) {
+  CHECK(url);
+  CHECK(file_info);
+
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (!load_manager) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
+  }
+
+  // We have to ensure that this url resolves relative to the plugin base url
+  // before downloading it.
+  const GURL& test_gurl = load_manager->plugin_base_url().Resolve(url);
+  if (!test_gurl.is_valid()) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
+  }
+
+  // Try the fast path for retrieving the file first.
+  uint64_t file_token_lo = 0;
+  uint64_t file_token_hi = 0;
+  PP_FileHandle file_handle = OpenNaClExecutable(instance,
+                                                 url,
+                                                 &file_token_lo,
+                                                 &file_token_hi);
+  if (file_handle != PP_kInvalidFileHandle) {
+    file_info->handle = file_handle;
+    file_info->token_lo = file_token_lo;
+    file_info->token_hi = file_token_hi;
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_OK)));
+    return;
+  }
+
+  // The fast path didn't work, we'll fetch the file using URLLoader and write
+  // it to local storage.
+  base::PlatformFile target_file = CreateTemporaryFile(instance);
+  GURL gurl(url);
+
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (!plugin_instance) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+  }
+  const blink::WebDocument& document =
+      plugin_instance->GetContainer()->element().document();
+  scoped_ptr<blink::WebURLLoader> url_loader(
+      CreateWebURLLoader(document, gurl));
+  blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
+
+  ProgressEventRateLimiter* tracker = new ProgressEventRateLimiter(instance);
+
+  // FileDownloader deletes itself after invoking DownloadNexeCompletion.
+  FileDownloader* file_downloader = new FileDownloader(
+      url_loader.Pass(),
+      target_file,
+      base::Bind(&DownloadFileCompletion, target_file, file_info, callback),
+      base::Bind(&ProgressEventRateLimiter::ReportProgress,
+                 base::Owned(tracker), url));
+  file_downloader->Load(url_request);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1443,7 +1522,6 @@ const PPB_NaCl_Private nacl_interface = {
   &PPIsNonSFIModeEnabled,
   &GetNexeFd,
   &ReportTranslationFinished,
-  &OpenNaClExecutable,
   &DispatchEvent,
   &ReportLoadSuccess,
   &ReportLoadError,
@@ -1463,7 +1541,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNexeSize,
   &RequestNaClManifest,
   &GetManifestBaseURL,
-  &ResolvesRelativeToPluginBaseURL,
   &ProcessNaClManifest,
   &GetManifestURLArgument,
   &DevInterfacesEnabled,
@@ -1474,7 +1551,8 @@ const PPB_NaCl_Private nacl_interface = {
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
   &PostMessageToJavaScript,
-  &DownloadNexe
+  &DownloadNexe,
+  &DownloadFile
 };
 
 }  // namespace

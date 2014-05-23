@@ -166,6 +166,16 @@ interface PPP_ManifestService {
                        [inout] mem_t callback_user_data);
 };
 
+/* Corresponds to NaClFileInfo in
+ * native_client/src/trusted/validator/nacl_file_info.h */
+struct PP_NaClFileInfo {
+  PP_FileHandle handle;
+
+  /* See NaClFileToken comment in nacl_file_info.h */
+  uint64_t token_lo;
+  uint64_t token_hi;
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -281,16 +291,6 @@ interface PPB_NaCl_Private {
   void ReportTranslationFinished([in] PP_Instance instance,
                                  [in] PP_Bool success);
 
-  /* Opens a NaCl executable file in the application's extension directory
-   * corresponding to the file URL and returns a file descriptor, or an invalid
-   * handle on failure. |metadata| is left unchanged on failure.
-   */
-  PP_FileHandle OpenNaClExecutable([in] PP_Instance instance,
-                                   [in] str_t file_url,
-                                   [out] uint64_t file_token_lo,
-                                   [out] uint64_t file_token_hi);
-
-
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
    */
@@ -373,9 +373,6 @@ interface PPB_NaCl_Private {
 
   PP_Var GetManifestBaseURL([in] PP_Instance instance);
 
-  PP_Bool ResolvesRelativeToPluginBaseUrl([in] PP_Instance instance,
-                                          [in] str_t url);
-
   /* Processes the NaCl manifest once it's been retrieved.
    * TODO(teravest): Move the rest of the supporting logic out of the trusted
    * plugin.
@@ -435,5 +432,12 @@ interface PPB_NaCl_Private {
                     [out] PP_FileHandle handle,
                     [out] uint64_t file_token_lo,
                     [out] uint64_t file_token_hi,
+                    [in] PP_CompletionCallback callback);
+
+  /* Downloads a non-nexe file specified in the manifest, and sets |file_info|
+   * to corresponding information about the file. */
+  void DownloadFile([in] PP_Instance instance,
+                    [in] str_t url,
+                    [out] PP_NaClFileInfo file_info,
                     [in] PP_CompletionCallback callback);
 };

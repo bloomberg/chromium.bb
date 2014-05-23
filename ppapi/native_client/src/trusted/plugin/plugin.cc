@@ -358,8 +358,6 @@ Plugin::~Plugin() {
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
 
-  url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
-
   // Clean up accounting for our instance inside the NaCl interface.
   if (manifest_id_ != -1)
     nacl_interface_->DestroyManifest(pp_instance(), manifest_id_);
@@ -559,60 +557,15 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
                                        open_callback.pp_completion_callback());
 }
 
-void Plugin::UrlDidOpenForStreamAsFile(
-    int32_t pp_error,
-    FileDownloader* url_downloader,
-    NaClFileInfo* out_file_info,
-    pp::CompletionCallback callback) {
-  PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%" NACL_PRId32
-                 ", url_downloader=%p)\n", pp_error,
-                 static_cast<void*>(url_downloader)));
-  url_downloaders_.erase(url_downloader);
-  nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
-  NaClFileInfo tmp_info(scoped_url_downloader->GetFileInfo());
-  NaClFileInfoAutoCloser *info = new NaClFileInfoAutoCloser(&tmp_info);
-
-  if (pp_error != PP_OK) {
-    callback.Run(pp_error);
-    delete info;
-  } else if (info->get_desc() > NACL_NO_FILE_DESC) {
-    *out_file_info = info->Release();
-    callback.Run(PP_OK);
-  } else {
-    callback.Run(PP_ERROR_FAILED);
-    delete info;
-  }
-}
-
-bool Plugin::StreamAsFile(const nacl::string& url,
-                          NaClFileInfo* out_file_info,
+void Plugin::StreamAsFile(const nacl::string& url,
+                          PP_NaClFileInfo* file_info,
                           const pp::CompletionCallback& callback) {
   PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
-  FileDownloader* downloader = new FileDownloader();
-  downloader->Initialize(this);
-  url_downloaders_.insert(downloader);
-
-  // Untrusted loads are always relative to the page's origin.
-  if (!GetNaClInterface()->ResolvesRelativeToPluginBaseUrl(pp_instance(),
-                                                           url.c_str()))
-    return false;
-
-  // Try the fast path first. This will only block if the file is installed.
-  if (OpenURLFast(url, downloader)) {
-    UrlDidOpenForStreamAsFile(PP_OK, downloader, out_file_info, callback);
-    return true;
-  }
-
-  pp::CompletionCallback open_callback = callback_factory_.NewCallback(
-      &Plugin::UrlDidOpenForStreamAsFile, downloader, out_file_info, callback);
-  // If true, will always call the callback on success or failure.
-  return downloader->Open(url,
-                          DOWNLOAD_TO_FILE,
-                          open_callback,
-                          true,
-                          &UpdateDownloadProgress);
+  nacl_interface_->DownloadFile(pp_instance(),
+                                url.c_str(),
+                                file_info,
+                                callback.pp_completion_callback());
 }
-
 
 void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
   nacl_interface_->ReportLoadSuccess(
@@ -630,55 +583,6 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
 
 void Plugin::ReportLoadAbort() {
   nacl_interface_->ReportLoadAbort(pp_instance());
-}
-
-void Plugin::UpdateDownloadProgress(
-    PP_Instance pp_instance,
-    PP_Resource pp_resource,
-    int64_t /*bytes_sent*/,
-    int64_t /*total_bytes_to_be_sent*/,
-    int64_t bytes_received,
-    int64_t total_bytes_to_be_received) {
-  Instance* instance = pp::Module::Get()->InstanceForPPInstance(pp_instance);
-  if (instance != NULL) {
-    Plugin* plugin = static_cast<Plugin*>(instance);
-    // Rate limit progress events to a maximum of 100 per second.
-    int64_t time = NaClGetTimeOfDayMicroseconds();
-    int64_t elapsed = time - plugin->time_of_last_progress_event_;
-    const int64_t kTenMilliseconds = 10000;
-    if (elapsed > kTenMilliseconds) {
-      plugin->time_of_last_progress_event_ = time;
-
-      // Find the URL loader that sent this notification.
-      const FileDownloader* file_downloader =
-          plugin->FindFileDownloader(pp_resource);
-      nacl::string url;
-      if (file_downloader)
-        url = file_downloader->url();
-      LengthComputable length_computable = (total_bytes_to_be_received >= 0) ?
-          LENGTH_IS_COMPUTABLE : LENGTH_IS_NOT_COMPUTABLE;
-
-      plugin->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
-                                   url,
-                                   length_computable,
-                                   bytes_received,
-                                   total_bytes_to_be_received);
-    }
-  }
-}
-
-const FileDownloader* Plugin::FindFileDownloader(
-    PP_Resource url_loader) const {
-  const FileDownloader* file_downloader = NULL;
-  std::set<FileDownloader*>::const_iterator it = url_downloaders_.begin();
-  while (it != url_downloaders_.end()) {
-    if (url_loader == (*it)->url_loader()) {
-      file_downloader = (*it);
-      break;
-    }
-    ++it;
-  }
-  return file_downloader;
 }
 
 void Plugin::ReportSelLdrLoadStatus(int status) {
@@ -706,23 +610,6 @@ void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
       length_computable == LENGTH_IS_COMPUTABLE ? PP_TRUE : PP_FALSE,
       loaded_bytes,
       total_bytes);
-}
-
-bool Plugin::OpenURLFast(const nacl::string& url,
-                         FileDownloader* downloader) {
-  uint64_t file_token_lo = 0;
-  uint64_t file_token_hi = 0;
-  PP_FileHandle file_handle =
-      nacl_interface()->OpenNaClExecutable(pp_instance(),
-                                           url.c_str(),
-                                           &file_token_lo, &file_token_hi);
-  // We shouldn't hit this if the file URL is in an installed app.
-  if (file_handle == PP_kInvalidFileHandle)
-    return false;
-
-  // FileDownloader takes ownership of the file handle.
-  downloader->OpenFast(url, file_handle, file_token_lo, file_token_hi);
-  return true;
 }
 
 bool Plugin::DocumentCanRequest(const std::string& url) {

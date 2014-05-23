@@ -85,6 +85,7 @@ struct OpenManifestEntryResource {
 
   std::string url;
   struct NaClFileInfo* file_info;
+  PP_NaClFileInfo pp_file_info;
   bool* op_complete_ptr;
   OpenManifestEntryAsyncCallback* callback;
 };

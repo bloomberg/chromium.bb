@@ -70,6 +70,12 @@ void FileDownloader::didFinishLoading(
     blink::WebURLLoader* loader,
     double finish_time,
     int64_t total_encoded_data_length) {
+  if (status_ == SUCCESS) {
+    // Seek back to the beginning of the file that was just written so it's
+    // easy for consumers to use.
+    if (base::SeekPlatformFile(file_, base::PLATFORM_FILE_FROM_BEGIN, 0) != 0)
+      status_ = FAILED;
+  }
   status_cb_.Run(status_, http_status_code_);
   delete this;
 }

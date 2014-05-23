@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed May 21 13:23:26 2014. */
+/* From private/ppb_nacl_private.idl modified Fri May 23 08:51:49 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -204,7 +204,30 @@ struct PPP_ManifestService_1_0 {
 };
 
 typedef struct PPP_ManifestService_1_0 PPP_ManifestService;
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
+/* Corresponds to NaClFileInfo in
+ * native_client/src/trusted/validator/nacl_file_info.h */
+struct PP_NaClFileInfo {
+  PP_FileHandle handle;
+  /* See NaClFileToken comment in nacl_file_info.h */
+  uint64_t token_lo;
+  uint64_t token_hi;
+};
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -309,14 +332,6 @@ struct PPB_NaCl_Private_1_0 {
    * the plugin.)
    */
   void (*ReportTranslationFinished)(PP_Instance instance, PP_Bool success);
-  /* Opens a NaCl executable file in the application's extension directory
-   * corresponding to the file URL and returns a file descriptor, or an invalid
-   * handle on failure. |metadata| is left unchanged on failure.
-   */
-  PP_FileHandle (*OpenNaClExecutable)(PP_Instance instance,
-                                      const char* file_url,
-                                      uint64_t* file_token_lo,
-                                      uint64_t* file_token_hi);
   /* Dispatch a progress event on the DOM element where the given instance is
    * embedded.
    */
@@ -377,8 +392,6 @@ struct PPB_NaCl_Private_1_0 {
                               int32_t* manifest_id,
                               struct PP_CompletionCallback callback);
   struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
-  PP_Bool (*ResolvesRelativeToPluginBaseUrl)(PP_Instance instance,
-                                             const char* url);
   /* Processes the NaCl manifest once it's been retrieved.
    * TODO(teravest): Move the rest of the supporting logic out of the trusted
    * plugin.
@@ -425,6 +438,12 @@ struct PPB_NaCl_Private_1_0 {
                        PP_FileHandle* handle,
                        uint64_t* file_token_lo,
                        uint64_t* file_token_hi,
+                       struct PP_CompletionCallback callback);
+  /* Downloads a non-nexe file specified in the manifest, and sets |file_info|
+   * to corresponding information about the file. */
+  void (*DownloadFile)(PP_Instance instance,
+                       const char* url,
+                       struct PP_NaClFileInfo* file_info,
                        struct PP_CompletionCallback callback);
 };
 

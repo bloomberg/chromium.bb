@@ -399,36 +399,29 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   // Callback is now delegated from p to open_cont. So, here we manually clear
   // complete callback.
   p->callback = NULL;
+
   pp::CompletionCallback stream_cc = WeakRefNewCallback(
       anchor_,
       this,
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
 
-  if (!plugin_->StreamAsFile(mapped_url, p->file_info, stream_cc)) {
-    NaClLog(4,
-            "OpenManifestEntry_MainThreadContinuation: "
-            "StreamAsFile failed\n");
-    // Here, StreamAsFile is failed and stream_cc is not called.
-    // However, open_cont will be released only by the invocation.
-    // So, we manually call it here with error.
-    stream_cc.Run(PP_ERROR_FAILED);
-    return;
-  }
-
-  NaClLog(4, "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
-  // p is deleted automatically
+  plugin_->StreamAsFile(mapped_url, &open_cont->pp_file_info, stream_cc);
+  // p is deleted automatically.
 }
 
 void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
     OpenManifestEntryResource* p,
     int32_t result) {
-  NaClLog(4,
-          "Entered StreamAsFile_MainThreadContinuation\n");
-
+  NaClLog(4, "Entered StreamAsFile_MainThreadContinuation\n");
   {
     nacl::MutexLocker take(&mu_);
     if (result == PP_OK) {
+      // We downloaded this file to temporary storage for this plugin; it's
+      // reasonable to provide a file descriptor with write access.
+      p->file_info->desc = ConvertFileDescriptor(p->pp_file_info.handle, false);
+      p->file_info->file_token.lo = p->pp_file_info.token_lo;
+      p->file_info->file_token.hi = p->pp_file_info.token_hi;
       NaClLog(4,
               "StreamAsFile_MainThreadContinuation: PP_OK, desc %d\n",
               p->file_info->desc);

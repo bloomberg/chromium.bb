@@ -30,26 +30,6 @@ struct NaClFileInfo NoFileInfo() {
   return info;
 }
 
-// Converts a PP_FileHandle to a POSIX file descriptor.
-int32_t ConvertFileDescriptor(PP_FileHandle handle) {
-  PLUGIN_PRINTF(("ConvertFileDescriptor, handle=%d\n", handle));
-#if NACL_WINDOWS
-  int32_t file_desc = NACL_NO_FILE_DESC;
-  // On Windows, valid handles are 32 bit unsigned integers so this is safe.
-  file_desc = reinterpret_cast<uintptr_t>(handle);
-  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
-  int32_t posix_desc = _open_osfhandle(file_desc, _O_RDWR | _O_BINARY);
-  if (posix_desc == -1) {
-    // Close the Windows HANDLE if it can't be converted.
-    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
-    return -1;
-  }
-  return posix_desc;
-#else
-  return handle;
-#endif
-}
-
 }  // namespace
 
 namespace plugin {
@@ -173,37 +153,6 @@ bool FileDownloader::Open(
                  pp_error));
   CHECK(pp_error == PP_OK_COMPLETIONPENDING);
   return true;
-}
-
-void FileDownloader::OpenFast(const nacl::string& url,
-                              PP_FileHandle file_handle,
-                              uint64_t file_token_lo, uint64_t file_token_hi) {
-  PLUGIN_PRINTF(("FileDownloader::OpenFast (url=%s)\n", url.c_str()));
-
-  file_info_.FreeResources();
-  CHECK(instance_ != NULL);
-  status_code_ = NACL_HTTP_STATUS_OK;
-  url_ = url;
-  mode_ = DOWNLOAD_NONE;
-  if (file_handle != PP_kInvalidFileHandle) {
-    NaClFileInfo tmp_info = NoFileInfo();
-    tmp_info.desc = ConvertFileDescriptor(file_handle, true);
-    tmp_info.file_token.lo = file_token_lo;
-    tmp_info.file_token.hi = file_token_hi;
-    file_info_.TakeOwnership(&tmp_info);
-  }
-}
-
-NaClFileInfo FileDownloader::GetFileInfo() {
-  NaClFileInfo info_to_return = NoFileInfo();
-
-  PLUGIN_PRINTF(("FileDownloader::GetFileInfo, this %p\n", this));
-  if (file_info_.get_desc() != -1) {
-    info_to_return = file_info_.Release();
-  }
-  PLUGIN_PRINTF(("FileDownloader::GetFileInfo -- returning %d\n",
-                 info_to_return.desc));
-  return info_to_return;
 }
 
 bool FileDownloader::InitialResponseIsValid() {

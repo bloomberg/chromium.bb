@@ -118,18 +118,6 @@ class FileDownloader {
   // streaming is done.
   void FinishStreaming(const pp::CompletionCallback& callback);
 
-  // Bypasses downloading and takes a handle to the open file. To get the fd,
-  // call GetFileInfo().
-  void OpenFast(const nacl::string& url, PP_FileHandle file_handle,
-                uint64_t file_token_lo, uint64_t file_token_hi);
-
-  // Return a structure describing the file opened, including a file desc.
-  // If downloading and opening succeeded, this returns a valid read-only
-  // POSIX file descriptor.  On failure, the return value is an invalid
-  // descriptor.  The file descriptor is owned by this instance, so the
-  // delegate does not have to close it.
-  struct NaClFileInfo GetFileInfo();
-
   // Returns the url passed to Open().
   const nacl::string& url() const { return url_; }
 
