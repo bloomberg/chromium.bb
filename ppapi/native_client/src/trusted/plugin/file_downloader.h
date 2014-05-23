@@ -10,10 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/public/nacl_file_info.h"
-#include "ppapi/c/private/pp_file_handle.h"
-#include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/url_loader.h"
@@ -26,45 +23,13 @@ namespace plugin {
 class Plugin;
 
 typedef enum {
-  DOWNLOAD_TO_FILE = 0,
-  DOWNLOAD_TO_BUFFER_AND_STREAM,
+  DOWNLOAD_TO_BUFFER_AND_STREAM = 0,
   DOWNLOAD_NONE
 } DownloadMode;
 
 typedef std::vector<char>* FileStreamData;
 typedef CallbackSource<FileStreamData> StreamCallbackSource;
 typedef pp::CompletionCallbackWithOutput<FileStreamData> StreamCallback;
-
-// RAII-style wrapper class
-class NaClFileInfoAutoCloser {
- public:
-  NaClFileInfoAutoCloser();
-
-  explicit NaClFileInfoAutoCloser(NaClFileInfo* pass_ownership);
-
-  ~NaClFileInfoAutoCloser() {
-    FreeResources();
-  }
-
-  // Frees owned resources
-  void FreeResources();
-
-  void TakeOwnership(NaClFileInfo* pass_ownership);
-
-  // Return NaClFileInfo for temporary use, retaining ownership.
-  const NaClFileInfo& get() { return info_; }
-
-  // Returns POSIX descriptor for temporary use, retaining ownership.
-  int get_desc() { return info_.desc; }
-
-  // Returns ownership to caller
-  NaClFileInfo Release();
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(NaClFileInfoAutoCloser);
-
-  NaClFileInfo info_;
-};
 
 // A class that wraps PPAPI URLLoader and FileIO functionality for downloading
 // the url into a file and providing an open file descriptor.
@@ -76,8 +41,6 @@ class FileDownloader {
       : instance_(NULL),
         file_open_notify_callback_(pp::BlockUntilComplete()),
         stream_finish_callback_(pp::BlockUntilComplete()),
-        file_io_private_interface_(NULL),
-        url_loader_trusted_interface_(NULL),
         mode_(DOWNLOAD_NONE),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
@@ -96,11 +59,6 @@ class FileDownloader {
   // If |progress_callback| is not NULL and |record_progress| is true,
   // then the callback will be invoked for every progress update received
   // by the loader.
-  bool Open(const nacl::string& url,
-            DownloadMode mode,
-            const pp::CompletionCallback& callback,
-            bool record_progress,
-            PP_URLLoaderTrusted_StatusCallback progress_callback);
 
   // Similar to Open(), but used for streaming the |url| data directly to the
   // caller without writing to a temporary file. The callbacks provided by
@@ -112,10 +70,7 @@ class FileDownloader {
                   StreamCallbackSource* stream_callback_source);
 
   // Finish streaming the response body for a URL request started by either
-  // Open() or OpenStream().  If DownloadMode is DOWNLOAD_TO_FILE,
-  // then the response body is streamed to a file, the file is opened and
-  // a file descriptor is made available.  Runs the given |callback| when
-  // streaming is done.
+  // OpenStream(). Runs the given |callback| when streaming is done.
   void FinishStreaming(const pp::CompletionCallback& callback);
 
   // Returns the url passed to Open().
@@ -153,10 +108,6 @@ class FileDownloader {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
-  // This class loads and opens the file in three steps for DOWNLOAD_TO_FILE:
-  //   1) Ask the browser to start streaming |url_| as a file.
-  //   2) Ask the browser to finish streaming if headers indicate success.
-  //   3) Ask the browser to open the file, so we can get the file descriptor.
   // For DOWNLOAD_TO_BUFFER_AND_STREAM, the process is very similar:
   //   1) Ask the browser to start streaming |url_| to an internal buffer.
   //   2) Ask the browser to finish streaming to |temp_buffer_| on success.
@@ -167,10 +118,7 @@ class FileDownloader {
   // function proceeds to step 2) and 3).
   bool InitialResponseIsValid();
   void URLLoadStartNotify(int32_t pp_error);
-  void URLLoadFinishNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
-  void StreamFinishNotify(int32_t pp_error);
-  void GotFileHandleNotify(int32_t pp_error, PP_FileHandle handle);
 
   Plugin* instance_;
   nacl::string url_;
@@ -180,9 +128,6 @@ class FileDownloader {
   pp::URLResponseInfo url_response_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::CompletionCallback stream_finish_callback_;
-  pp::FileIO file_reader_;
-  const PPB_FileIO_Private* file_io_private_interface_;
-  const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
   int32_t status_code_;
@@ -190,7 +135,6 @@ class FileDownloader {
   static const uint32_t kTempBufferSize = 16384;
   std::vector<char> temp_buffer_;
   StreamCallbackSource* data_stream_callback_source_;
-  NaClFileInfoAutoCloser file_info_;
 };
 }  // namespace plugin;
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_
