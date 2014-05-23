@@ -1,0 +1,177 @@
+This file contains high-level info about how to use password manager tests and 
+how to create new ones.
+
+The password manager tests purpose is to allow automatic password manager 
+checking and avoiding to do so manually.
+The tests are written in python using selenium Webdriver library.
+
+
+=====Getting started=====
+
+Build ChromeDriver by building the 'chromedriver' target. This will
+create an executable binary in the build folder named 'chromedriver[.exe]'.
+
+Build chrome too by building the 'chrome' target. This will
+create an executable binary in the build folder named 'chrome[.exe]'.
+
+Install Selenium (the version tested was 2.41.0):
+pip install -U selenium
+
+
+For security reasons, we didn't publish the passwords and the usernames we 
+used to test. So we put them to an xml file (websites.xml). The structure of 
+the file is the following:
+<websites>
+    <website name = "website name">
+        <username>username</username>
+        <password>password</password>
+    </website>
+<websites>
+You can ask someone to give you the websites.xml file and put it in the same
+folder as the tests. You can also create your own websites.xml with your
+personal accounts.
+WARNING: All the content of the PROFILEPATH is going to be deleted.
+Show the help:
+python tests.py --help
+Run all the working tests tests by executing:
+python tests.py --chrome-path CHROMEPATH --chromedriver-path CHROMEDRIVERPATH 
+--profile-path PROFILEPATH [--passwords_path PASSWORDSPATH]
+
+Run all the tests by executing:
+python tests.py --all --chrome-path CHROMEPATH --chromedriver-path
+CHROMEDRIVERPATH --profile-path PROFILEPATH [--passwords_path PASSWORDSPATH]
+
+Run one or many tests by executing:
+python tests.py google --chrome-path CHROMEPATH --chromedriver-path 
+CHROMEDRIVERPATH profile-path PROFILEPATH [--passwords_path PASSWORDSPATH]
+
+python tests.py google facebook --chrome-path CHROMEPATH --chromedriver-path 
+CHROMEDRIVERPATH --profile-path PROFILEPATH [--passwords_path PASSWORDSPATH]
+
+python tests.py google facebook amazon --chrome-path CHROMEPATH 
+--chromedriver-path CHROMEDRIVERPATH --profile-path PROFILEPATH
+[--passwords_path PASSWORDSPATH]
+
+To display the debugging messages on the screen, use:
+python tests.py --log DEBUG|INFO|WARNING|ERROR|CRITICAL --log-screen
+To save debugging messages into a file, use:
+python tests.py --log DEBUG|INFO|WARNING|ERROR|CRITICAL --log-file LOG_FILE
+
+
+=====Creating new test=====
+
+1) Open tests.py.
+
+2) Add tests like this:
+
+class NewWebsiteTest(WebsiteTest):
+
+  def Login(self):
+    # Add login steps for the website, for example:
+    self.GoTo("http://url")
+    self.FillUsernameInto("Username CSS selector")
+    self.FillPasswordInto("Password CSS selector")
+    self.Submit("Password CSS selector")
+
+  def Logout(self):
+    # Add logout steps for the website, for example:
+    self.Click("Logout button CSS selector")
+
+Then, to create the new test, you need just to add:
+
+environment.AddWebsiteTest(NewWebsiteTest("website name"))
+
+* For security reasons, passwords and usernames need to be supplied in a
+separate XML file and never checked in to the repository. The XML file should
+contain data structured like this:
+
+<website name = "website name">
+  <username>username</username>
+  <password>password</password>
+</website>
+
+The "website name" is only used to find the username and password in the xml
+file.
+
+
+Use the flowing methods to perform the login and logout:
+The methods that you can use are:
+
+* Click: find an element using CSS Selector and click on it. Throw an 
+exception if the element is not visible.
+self.Click("css_selector")
+* ClickIfClickable: find an element using CSS Selector and click on it if it's
+possible to do that.
+self.ClickIfClickable("css_selector")
+* GoTo: navigate the main frame to a url.
+self.GoTo("url")
+* HoverOver: find an element using CSS Selector and hover over it.
+self.HoverOver("css_selector")
+* SendEnterTo: find an element using CSS Selector and send enter to it.
+self.SendEnterTo("css_selector")
+
+* IsDisplayed: check if an element is displayed.
+self.IsDisplayed("css_selector")
+* Wait: wait for some amount of time in seconds.
+self.Wait(10)
+* WaitUntilDisplayed: wait for an element defined using CSS Selector to be 
+displayed.
+self.WaitUntilDisplayed("css_selector")
+
+* FillPasswordInto: find an input element using CSS Selector and fill it with
+the password.
+self.FillPasswordInto("css_selector")
+* FillUsernameInto: find an input element using CSS Selector and fill it with
+the username.
+self.FillUsernameInto("css_selector")
+* Submit: find an element using CSS Selector and call its submit() handler.
+self.Submit("css_selector")
+
+
+=====Files structure=====
+
+Classes:
+* environment.py: the definition the tests Environment.
+* websitetest.py: WebsiteTest is defined here. You need to create an instance 
+of this class for each website you want to test.
+
+Tests:
+* tests.py: the tests setup and the configuration for each website happens 
+here. This file contain 3 separate kinds of tests:
+
+1) working tests: tests that are supposed to work. If you have a problem with 
+one of them, rerun it again. Or try using the Known Issues section to fix it.
+2) tests that can cause a crash (the cause of the crash is not related to the
+password manager): This means that this set is expected to become a working 
+test or failing test when the issue that causes the crash now is solved.
+3) failing tests: tests that fail for known bug related to the password 
+manager. When this bug is solved, all the tests that were failing because of 
+it are going to be moved to working tests.
+
+Other files:
+* websites.xml : a private file where you can find all the passwords. You can 
+ask someone to give it to you or just create your own with your personal 
+accounts. 
+<websites>
+  <website name = "website name">
+    <username>username</username>
+    <password>password</password>
+  </website>
+</websites>
+
+
+=====Known Issues=====
+
+The tests are very fragile. Here are some suggestions for solving most of the 
+problems:
+* Restart the tests.
+* Remove the profile if the tests fail at the beginning for unknown reason.
+* If tests fail, isolate the one that causes problem, read debugging messages
+and keep your eyes on the browser window to understand its causes:
+a) In the tests, we often need to wait for a menu to appear ... If the 
+menu takes more time to appear than expected, the tests are going to fail.
+b) The websites change very often. And even if they are not changed, they some 
+time show a popup that broke the tests. In the case you need to login manually 
+to the website, close all popup and logout.
+* If you are logged in when the tests crashes, don't forget to log out before
+running the tests a second time.
