@@ -61,7 +61,11 @@ public:
     const String& uri() const { return m_uri; };
     const String& visitedLinkURI() const { return m_visitedLinkURI; };
 
-    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_color);
+        AnimatableValue::trace(visitor);
+    }
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
@@ -82,7 +86,7 @@ private:
     SVGPaint::SVGPaintType m_type;
     SVGPaint::SVGPaintType m_visitedLinkType;
     // AnimatableColor includes a visited link color.
-    RefPtrWillBeRawPtr<AnimatableColor> m_color;
+    RefPtrWillBeMember<AnimatableColor> m_color;
     String m_uri;
     String m_visitedLinkURI;
 };
