@@ -41,13 +41,17 @@ using blink::WebURLResponse;
 using blink::WebVector;
 using blink::WebView;
 
-WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
+WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
+                             const WebPreferences& preferences)
     : delegate_(delegate),
       container_(NULL),
       web_view_(WebView::create(this)),
-      web_frame_(WebLocalFrame::create(this)),
       finished_loading_(false),
       focused_(false) {
+  // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
+  // consistent view of our preferences.
+  content::ApplyWebPreferences(preferences, web_view_);
+  web_frame_ = WebLocalFrame::create(this);
   web_view_->setMainFrame(web_frame_);
 }
 
@@ -56,10 +60,8 @@ WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
                                      const WebPreferences& preferences,
                                      const std::string& html_data,
                                      const GURL& url) {
-  WebViewPlugin* plugin = new WebViewPlugin(delegate);
-  WebView* web_view = plugin->web_view();
-  content::ApplyWebPreferences(preferences, web_view);
-  web_view->mainFrame()->loadHTMLString(html_data, url);
+  WebViewPlugin* plugin = new WebViewPlugin(delegate, preferences);
+  plugin->web_view()->mainFrame()->loadHTMLString(html_data, url);
   return plugin;
 }
 

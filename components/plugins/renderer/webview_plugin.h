@@ -47,8 +47,6 @@ class WebViewPlugin : public blink::WebPlugin,
     virtual void PluginDestroyed() = 0;
   };
 
-  explicit WebViewPlugin(Delegate* delegate);
-
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
   // only used for navigation and never actually resolved.
@@ -137,6 +135,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
  private:
   friend class base::DeleteHelper<WebViewPlugin>;
+  WebViewPlugin(Delegate* delegate, const WebPreferences& preferences);
   virtual ~WebViewPlugin();
 
   // Manages its own lifetime.
