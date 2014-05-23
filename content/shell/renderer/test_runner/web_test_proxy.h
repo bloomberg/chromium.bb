@@ -82,6 +82,11 @@ class WebTestDelegate;
 class WebTestInterfaces;
 class WebUserMediaClientMock;
 
+// WebTestProxyBase is the "brain" of WebTestProxy in the sense that
+// WebTestProxy does the bridge between RenderViewImpl and WebTestProxyBase and
+// when it requires a behavior to be different from the usual, it will call
+// WebTestProxyBase that implements the expected behavior.
+// See WebTestProxy class comments for more information.
 class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
  public:
   void SetInterfaces(WebTestInterfaces* interfaces);
@@ -240,8 +245,22 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };
 
-// Use this template to inject methods into your WebViewClient/WebFrameClient
-// implementation required for the running layout tests.
+// WebTestProxy is used during LayoutTests and always instantiated, at time of
+// writing with Base=RenderViewImpl. It does not directly inherit from it for
+// layering purposes.
+// The intent of that class is to wrap RenderViewImpl for tests purposes in
+// order to reduce the amount of test specific code in the production code.
+// WebTestProxy is only doing the glue between RenderViewImpl and
+// WebTestProxyBase, that means that there is no logic living in this class
+// except deciding which base class should be called (could be both).
+//
+// Examples of usage:
+//  * when a fooClient has a mock implementation, WebTestProxy can override the
+//    fooClient() call and have WebTestProxyBase return the mock implementation.
+//  * when a value needs to be overridden by LayoutTests, WebTestProxy can
+//    override RenderViewImpl's getter and call a getter from WebTestProxyBase
+//    instead. In addition, WebTestProxyBase will have a public setter that
+//    could be called from the TestRunner.
 template <class Base, typename T>
 class WebTestProxy : public Base, public WebTestProxyBase {
  public:
