@@ -27,6 +27,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
@@ -46,7 +47,7 @@ class Scrollbar;
 
 class HitTestResult {
 public:
-    typedef ListHashSet<RefPtr<Node> > NodeSet;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node> > NodeSet;
 
     HitTestResult();
     HitTestResult(const LayoutPoint&);
@@ -129,18 +130,18 @@ private:
 
     HitTestLocation m_hitTestLocation;
 
-    RefPtr<Node> m_innerNode;
-    RefPtr<Node> m_innerPossiblyPseudoNode;
-    RefPtr<Node> m_innerNonSharedNode;
+    RefPtrWillBePersistent<Node> m_innerNode;
+    RefPtrWillBePersistent<Node> m_innerPossiblyPseudoNode;
+    RefPtrWillBePersistent<Node> m_innerNonSharedNode;
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
     LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
                               // determine where inside the renderer we hit on subsequent operations.
-    RefPtr<Element> m_innerURLElement;
+    RefPtrWillBePersistent<Element> m_innerURLElement;
     RefPtr<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderWidget for example).
     bool m_isFirstLetter;
 
-    mutable OwnPtr<NodeSet> m_rectBasedTestResult;
+    mutable OwnPtrWillBePersistent<NodeSet> m_rectBasedTestResult;
 };
 
 } // namespace WebCore

@@ -25,6 +25,7 @@
 #ifndef PointerLockController_h
 #define PointerLockController_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -59,10 +60,11 @@ private:
     void clearElement();
     void enqueueEvent(const AtomicString& type, Element*);
     void enqueueEvent(const AtomicString& type, Document*);
+
     Page* m_page;
     bool m_lockPending;
-    RefPtr<Element> m_element;
-    RefPtr<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
+    RefPtrWillBePersistent<Element> m_element;
+    RefPtrWillBePersistent<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
 };
 
 } // namespace WebCore

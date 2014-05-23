@@ -114,7 +114,7 @@ public:
     bool mousePressed() const { return m_mousePressed; }
     void setMousePressed(bool pressed) { m_mousePressed = pressed; }
 
-    void setCapturingMouseEventsNode(PassRefPtr<Node>); // A caller is responsible for resetting capturing node to 0.
+    void setCapturingMouseEventsNode(PassRefPtrWillBeRawPtr<Node>); // A caller is responsible for resetting capturing node to 0.
 
     bool updateDragAndDrop(const PlatformMouseEvent&, Clipboard*);
     void cancelDragAndDrop(const PlatformMouseEvent&, Clipboard*);
@@ -315,7 +315,7 @@ private:
 
     bool m_mousePressed;
     bool m_capturesDragging;
-    RefPtr<Node> m_mousePressNode;
+    RefPtrWillBePersistent<Node> m_mousePressNode;
 
     bool m_mouseDownMayStartSelect;
     bool m_mouseDownMayStartDrag;
@@ -337,19 +337,19 @@ private:
 
     RenderLayerScrollableArea* m_resizeScrollableArea;
 
-    RefPtr<Node> m_capturingMouseEventsNode;
+    RefPtrWillBePersistent<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
-    RefPtr<Node> m_nodeUnderMouse;
-    RefPtr<Node> m_lastNodeUnderMouse;
+    RefPtrWillBePersistent<Node> m_nodeUnderMouse;
+    RefPtrWillBePersistent<Node> m_lastNodeUnderMouse;
     RefPtr<LocalFrame> m_lastMouseMoveEventSubframe;
     RefPtr<Scrollbar> m_lastScrollbarUnderMouse;
     Cursor m_currentMouseCursor;
 
     int m_clickCount;
-    RefPtr<Node> m_clickNode;
+    RefPtrWillBePersistent<Node> m_clickNode;
 
-    RefPtr<Node> m_dragTarget;
+    RefPtrWillBePersistent<Node> m_dragTarget;
     bool m_shouldOnlyFireDragOverEvent;
 
     RefPtrWillBePersistent<HTMLFrameSetElement> m_frameSetBeingResized;
@@ -364,23 +364,23 @@ private:
     PlatformMouseEvent m_mouseDown;
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
-    RefPtr<Node> m_latchedWheelEventNode;
+    RefPtrWillBePersistent<Node> m_latchedWheelEventNode;
     bool m_widgetIsLatched;
 
-    RefPtr<Node> m_previousWheelScrolledNode;
+    RefPtrWillBePersistent<Node> m_previousWheelScrolledNode;
 
     // The target of each active touch point indexed by the touch ID.
     typedef HashMap<unsigned, RefPtr<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > TouchTargetMap;
     TouchTargetMap m_targetForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.
-    RefPtr<Document> m_touchSequenceDocument;
+    RefPtrWillBePersistent<Document> m_touchSequenceDocument;
 
     bool m_touchPressed;
 
-    RefPtr<Node> m_scrollGestureHandlingNode;
+    RefPtrWillBePersistent<Node> m_scrollGestureHandlingNode;
     bool m_lastHitTestResultOverWidget;
-    RefPtr<Node> m_previousGestureScrolledNode;
+    RefPtrWillBePersistent<Node> m_previousGestureScrolledNode;
     RefPtr<Scrollbar> m_scrollbarHandlingScrollGesture;
 
     double m_maxMouseMovedDuration;
@@ -391,7 +391,7 @@ private:
 
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;
-    RefPtr<Element> m_lastDeferredTapElement;
+    RefPtrWillBePersistent<Element> m_lastDeferredTapElement;
 };
 
 } // namespace WebCore

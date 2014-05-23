@@ -698,7 +698,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             scaledEvent.data.tap.height = event.data.tap.height / pageScaleFactor();
             IntRect boundingBox(scaledEvent.x - scaledEvent.data.tap.width / 2, scaledEvent.y - scaledEvent.data.tap.height / 2, scaledEvent.data.tap.width, scaledEvent.data.tap.height);
             Vector<IntRect> goodTargets;
-            Vector<Node*> highlightNodes;
+            WillBeHeapVector<RawPtrWillBeMember<Node> > highlightNodes;
             findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
             // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
             // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
@@ -1199,13 +1199,13 @@ void WebViewImpl::enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent
 {
     Node* touchNode = bestTapNode(tapEvent);
 
-    Vector<Node*> highlightNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node> > highlightNodes;
     highlightNodes.append(touchNode);
 
     enableTapHighlights(highlightNodes);
 }
 
-void WebViewImpl::enableTapHighlights(Vector<Node*>& highlightNodes)
+void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node> >& highlightNodes)
 {
     if (highlightNodes.isEmpty())
         return;

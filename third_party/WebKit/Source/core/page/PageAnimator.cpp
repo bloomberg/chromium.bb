@@ -29,7 +29,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
-    Vector<RefPtr<Document> > documents;
+    WillBeHeapVector<RefPtrWillBeMember<Document> > documents;
     for (RefPtr<LocalFrame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
         documents.append(frame->document());
 

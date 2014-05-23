@@ -35,16 +35,18 @@ namespace WebCore {
 class Clipboard;
 class Node;
 
-class DragState : public NoBaseWillBeGarbageCollectedFinalized<DragState> {
+class DragState : public NoBaseWillBeGarbageCollected<DragState> {
     WTF_MAKE_NONCOPYABLE(DragState);
 public:
     DragState() { }
-    RefPtr<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
+
+    RefPtrWillBeMember<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
     DragSourceAction m_dragType;
     RefPtrWillBeMember<Clipboard> m_dragClipboard; // used on only the source side of dragging
 
     void trace(Visitor* visitor)
     {
+        visitor->trace(m_dragSrc);
         visitor->trace(m_dragClipboard);
     }
 };
