@@ -283,7 +283,7 @@
             ],
         },
         {
-            'target_name': 'webkit_test_support',
+            'target_name': 'blink_web_test_support',
             'conditions': [
                 ['component=="shared_library"', {
                     'type': 'none',
