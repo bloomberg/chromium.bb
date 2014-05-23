@@ -37535,6 +37535,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="MappedCSSProperties" type="int">
+<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.cpp -->
+
 <!-- See http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.cpp -->
 
   <int value="1" label="Total Pages Measured"/>
@@ -37549,9 +37551,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="font-weight"/>
   <int value="11" label="text-rendering"/>
   <int value="12" label="webkit-font-feature-settings"/>
-  <int value="13" label="webkit-font-kerning"/>
+  <int value="13" label="font-kerning"/>
   <int value="14" label="webkit-font-smoothing"/>
-  <int value="15" label="webkit-font-variant-ligatures"/>
+  <int value="15" label="font-variant-ligatures"/>
   <int value="16" label="webkit-locale"/>
   <int value="17" label="webkit-text-orientation"/>
   <int value="18" label="webkit-writing-mode"/>
@@ -37766,27 +37768,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="227" label="webkit-columns"/>
   <int value="228" label="webkit-box-decoration-break"/>
   <int value="229" label="webkit-filter"/>
-  <int value="230" label="webkit-align-content"/>
-  <int value="231" label="webkit-align-items"/>
-  <int value="232" label="webkit-align-self"/>
-  <int value="233" label="webkit-flex"/>
-  <int value="234" label="webkit-flex-basis"/>
-  <int value="235" label="webkit-flex-direction"/>
-  <int value="236" label="webkit-flex-flow"/>
-  <int value="237" label="webkit-flex-grow"/>
-  <int value="238" label="webkit-flex-shrink"/>
-  <int value="239" label="webkit-flex-wrap"/>
-  <int value="240" label="webkit-justify-content"/>
+  <int value="230" label="align-content"/>
+  <int value="231" label="align-items"/>
+  <int value="232" label="align-self"/>
+  <int value="233" label="flex"/>
+  <int value="234" label="flex-basis"/>
+  <int value="235" label="flex-direction"/>
+  <int value="236" label="flex-flow"/>
+  <int value="237" label="flex-grow"/>
+  <int value="238" label="flex-shrink"/>
+  <int value="239" label="flex-wrap"/>
+  <int value="240" label="justify-content"/>
   <int value="241" label="webkit-font-size-delta"/>
-  <int value="242" label="webkit-grid-columns"/>
-  <int value="243" label="webkit-grid-rows"/>
-  <int value="244" label="webkit-grid-start"/>
-  <int value="245" label="webkit-grid-end"/>
-  <int value="246" label="webkit-grid-before"/>
-  <int value="247" label="webkit-grid-after"/>
-  <int value="248" label="webkit-grid-column"/>
-  <int value="249" label="webkit-grid-row"/>
-  <int value="250" label="webkit-grid-auto-flow"/>
+  <int value="242" label="grid-template-columns"/>
+  <int value="243" label="grid-template-rows"/>
+  <int value="244" label="grid-column-start"/>
+  <int value="245" label="grid-column-end"/>
+  <int value="246" label="grid-row-start"/>
+  <int value="247" label="grid-row-end"/>
+  <int value="248" label="grid-column"/>
+  <int value="249" label="grid-row"/>
+  <int value="250" label="grid-auto-flow"/>
   <int value="251" label="webkit-highlight"/>
   <int value="252" label="webkit-hyphenate-character"/>
   <int value="253" label="webkit-hyphenate-limit-after"/>
@@ -37839,7 +37841,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="300" label="webkit-min-logical-width"/>
   <int value="301" label="webkit-min-logical-height"/>
   <int value="302" label="webkit-nbsp-mode"/>
-  <int value="303" label="webkit-order"/>
+  <int value="303" label="order"/>
   <int value="304" label="webkit-padding-after"/>
   <int value="305" label="webkit-padding-before"/>
   <int value="306" label="webkit-padding-end"/>
@@ -37878,14 +37880,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="339" label="webkit-user-select"/>
   <int value="340" label="webkit-flow-into"/>
   <int value="341" label="webkit-flow-from"/>
-  <int value="342" label="webkit-region-overflow"/>
+  <int value="342" label="webkit-region-fragment"/>
   <int value="343" label="webkit-region-break-after"/>
   <int value="344" label="webkit-region-break-before"/>
   <int value="345" label="webkit-region-break-inside"/>
-  <int value="346" label="webkit-shape-inside"/>
-  <int value="347" label="webkit-shape-outside"/>
-  <int value="348" label="webkit-shape-margin"/>
-  <int value="349" label="webkit-shape-padding"/>
+  <int value="346" label="shape-inside"/>
+  <int value="347" label="shape-outside"/>
+  <int value="348" label="shape-margin"/>
+  <int value="349" label="shape-padding"/>
   <int value="350" label="webkit-wrap-flow"/>
   <int value="351" label="webkit-wrap-through"/>
   <int value="352" label="webkit-wrap"/>
@@ -37937,11 +37939,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="398" label="image-resolution"/>
   <int value="399" label="webkit-blend-mode"/>
   <int value="400" label="webkit-background-blend-mode"/>
-  <int value="401" label="webkit-text-decoration-line"/>
-  <int value="402" label="webkit-text-decoration-style"/>
-  <int value="403" label="webkit-text-decoration-color"/>
-  <int value="404" label="webkit-text-align-last"/>
-  <int value="405" label="webkit-text-underline-position"/>
+  <int value="401" label="text-decoration-line"/>
+  <int value="402" label="text-decoration-style"/>
+  <int value="403" label="text-decoration-color"/>
+  <int value="404" label="text-align-last"/>
+  <int value="405" label="text-underline-position"/>
   <int value="406" label="max-zoom"/>
   <int value="407" label="min-zoom"/>
   <int value="408" label="orientation"/>
@@ -37959,7 +37961,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="420" label="mix-blend-mode"/>
   <int value="421" label="touch-action"/>
   <int value="422" label="grid-area"/>
-  <int value="423" label="grid-template"/>
+  <int value="423" label="grid-template-areas"/>
   <int value="424" label="animation"/>
   <int value="425" label="animation-delay"/>
   <int value="426" label="animation-direction"/>
@@ -37974,6 +37976,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="435" label="mask-source-type"/>
   <int value="436" label="isolation"/>
   <int value="437" label="object-position"/>
+  <int value="438" label="internal-callback"/>
+  <int value="439" label="shape-image-threshold"/>
+  <int value="440" label="column-fill"/>
+  <int value="441" label="text-justify"/>
+  <int value="442" label="touch-action-delay"/>
+  <int value="443" label="justify-self"/>
+  <int value="444" label="scroll-behavior"/>
+  <int value="445" label="will-change"/>
+  <int value="446" label="transform"/>
+  <int value="447" label="transform-origin"/>
+  <int value="448" label="transform-style"/>
+  <int value="449" label="perspective"/>
+  <int value="450" label="perspective-origin"/>
+  <int value="451" label="backface-visibility"/>
+  <int value="452" label="grid-template"/>
+  <int value="453" label="grid"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

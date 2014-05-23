@@ -136,19 +136,16 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
     enum_node.appendChild(child)
 
 
-def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
-                        start_marker, end_marker):
+def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
+                            source_enum_path):
   """Updates |histogram_enum_name| enum in histograms.xml file with values
-  read from |source_enum_path|, where |start_marker| and |end_marker| indicate
-  the beginning and end of the source enum definition, respectively.
+  from the {value: 'key'} dictionary |source_enum_values|. A comment is added
+  to histograms.xml citing that the values in |histogram_enum_name| were
+  sourced from |source_enum_path|.
   """
   # TODO(ahernandez.miralles): The line below is present in nearly every
   # file in this directory; factor out into a central location
   HISTOGRAMS_PATH = 'histograms.xml'
-
-  Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
-  source_enum_values = ReadHistogramValues(source_enum_path, start_marker,
-                                           end_marker)
 
   Log('Reading existing histograms from "{0}".'.format(HISTOGRAMS_PATH))
   with open(HISTOGRAMS_PATH, 'rb') as f:
@@ -171,3 +168,18 @@ def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
     f.write(new_xml)
 
   Log('Done.')
+
+
+def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
+                        start_marker, end_marker):
+  """Updates |histogram_enum_name| enum in histograms.xml file with values
+  read from |source_enum_path|, where |start_marker| and |end_marker| indicate
+  the beginning and end of the source enum definition, respectively.
+  """
+
+  Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
+  source_enum_values = ReadHistogramValues(source_enum_path, start_marker,
+                                           end_marker)
+
+  UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
+      source_enum_path)
