@@ -278,28 +278,29 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // Tokens can only be added by adding an account through the inline flow,
     // which is started from the account management view. Refresh it to show the
     // update.
-    BubbleViewMode viewMode = [controller_ viewMode];
-    if (viewMode == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
-        viewMode == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-        viewMode == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
-      [controller_
-          initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+    profiles::BubbleViewMode viewMode = [controller_ viewMode];
+    if (viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
+        viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+        viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
+      [controller_ initMenuContentsWithView:
+          profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
     }
   }
 
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
     // Tokens can only be removed from the account management view. Refresh it
     // to show the update.
-    if ([controller_ viewMode] == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
-      [controller_
-          initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+    if ([controller_ viewMode] == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
+      [controller_ initMenuContentsWithView:
+          profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
   }
 
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE {
     // While the bubble is open, the avatar menu can only change from the
     // profile chooser view by modifying the current profile's photo or name.
-    [controller_ initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+    [controller_
+        initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
   }
 
   // content::NotificationObserver:
@@ -663,7 +664,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // using |linkMessageId|, and a left aligned button using |buttonMessageId|.
 // On click, the link would execute |linkAction|, and the button would execute
 // |buttonAction|. It sets |tutorialMode_| to the given |mode|.
-- (NSView*)tutorialViewWithMode:(TutorialMode)mode
+- (NSView*)tutorialViewWithMode:(profiles::TutorialMode)mode
                    titleMessage:(int)titleMessageId
                  contentMessage:(int)contentMessageId
                     linkMessage:(int)linkMessageId
@@ -735,7 +736,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 @end
 
 @implementation ProfileChooserController
-- (BubbleViewMode) viewMode {
+- (profiles::BubbleViewMode) viewMode {
   return viewMode_;
 }
 
@@ -758,11 +759,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showAccountManagement:(id)sender {
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)hideAccountManagement:(id)sender {
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)lockProfile:(id)sender {
@@ -770,7 +771,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showInlineSigninPage:(id)sender {
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_GAIA_SIGNIN];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
 }
 
 - (IBAction)showTabbedSigninPage:(id)sender {
@@ -778,14 +779,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)addAccount:(id)sender {
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
 }
 
 - (IBAction)navigateBackFromSigninPage:(id)sender {
   std::string primaryAccount = SigninManagerFactory::GetForProfile(
       browser_->profile())->GetAuthenticatedUsername();
   [self initMenuContentsWithView:primaryAccount.empty() ?
-      BUBBLE_VIEW_MODE_PROFILE_CHOOSER : BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+      profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
+      profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)showAccountRemovalView:(id)sender {
@@ -802,7 +804,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     accountIdToRemove_ = currentProfileAccounts_[tag];
   }
 
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
 }
 
 - (IBAction)removeAccount:(id)sender {
@@ -811,7 +813,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       browser_->profile())->RevokeCredentials(accountIdToRemove_);
   accountIdToRemove_.clear();
 
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)openTutorialLearnMoreURL:(id)sender {
@@ -834,16 +836,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // indeed shown for the maximum number of times.
   browser_->profile()->GetPrefs()->SetInteger(
       prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)showSendFeedbackTutorial:(id)sender {
-  tutorialMode_ = TUTORIAL_MODE_SEND_FEEDBACK;
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  tutorialMode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)showEndPreviewView:(id)sender {
-  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_END_PREVIEW];
+  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_END_PREVIEW];
 }
 
 - (IBAction)sendFeedback:(id)sender {
@@ -860,7 +862,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(BubbleViewMode)mode {
+             withMode:(profiles::BubbleViewMode)mode {
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
@@ -872,7 +874,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                          anchoredAt:point])) {
     browser_ = browser;
     viewMode_ = mode;
-    tutorialMode_ = TUTORIAL_MODE_NONE;
+    tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
     observer_.reset(new ActiveProfileObserverBridge(self, browser_));
 
     avatarMenu_.reset(new AvatarMenu(
@@ -893,26 +895,28 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return self;
 }
 
-- (void)initMenuContentsWithView:(BubbleViewMode)viewToDisplay {
+- (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay {
   viewMode_ = viewToDisplay;
   NSView* contentView = [[self window] contentView];
   [contentView setSubviews:[NSArray array]];
   NSView* subView;
 
   switch (viewMode_) {
-    case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-    case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       subView = [self buildGaiaEmbeddedView];
       break;
-    case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
+    case profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
       subView = [self buildAccountRemovalView];
       break;
-    case BUBBLE_VIEW_MODE_END_PREVIEW:
+    case profiles::BUBBLE_VIEW_MODE_END_PREVIEW:
       subView = [self buildEndPreviewView];
       break;
-    case BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-    case BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
+    case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
+    case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
       subView = [self buildProfileChooserView];
+      break;
   }
 
   [contentView addSubview:subView];
@@ -936,7 +940,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   for (int i = avatarMenu_->GetNumberOfItems() - 1; i >= 0; --i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
-      if (viewMode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
+      if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
         tutorialView = [self buildPreviewTutorialIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
       enableLock = item.signed_in;
@@ -964,7 +968,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([separator frame]);
   }
 
-  if (viewMode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
+  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
       switches::IsFastUserSwitching()) {
     // Other profiles switcher. The profiles have already been sorted
     // by their y-coordinate, so they can be added in the existing order.
@@ -978,7 +982,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [container addSubview:separator];
       yOffset = NSMaxY([separator frame]);
     }
-  } else if (viewMode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+  } else if (viewMode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
         NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
     [container addSubview:currentProfileAccountsView];
@@ -1003,7 +1007,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container addSubview:tutorialView];
     yOffset = NSMaxY([tutorialView frame]);
   } else {
-    tutorialMode_ = TUTORIAL_MODE_NONE;
+    tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   }
 
   [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
@@ -1012,7 +1016,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (NSView*)buildPreviewTutorialIfNeeded:(const AvatarMenu::Item&)item {
   if (!switches::IsNewProfileManagement()) {
-    return [self tutorialViewWithMode:TUTORIAL_MODE_ENABLE_PREVIEW
+    return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_ENABLE_PREVIEW
                          titleMessage:IDS_PROFILES_PREVIEW_TUTORIAL_TITLE
                        contentMessage:IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT
                           linkMessage:IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE
@@ -1025,8 +1029,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (!switches::IsNewProfileManagementPreviewEnabled())
     return nil;
 
-  if (tutorialMode_ == TUTORIAL_MODE_SEND_FEEDBACK) {
-    return [self tutorialViewWithMode:TUTORIAL_MODE_SEND_FEEDBACK
+  if (tutorialMode_ == profiles::TUTORIAL_MODE_SEND_FEEDBACK) {
+    return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_SEND_FEEDBACK
                          titleMessage:IDS_PROFILES_FEEDBACK_TUTORIAL_TITLE
                        contentMessage:
         IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT
@@ -1043,14 +1047,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (showCount > kProfileAvatarTutorialShowMax)
     return nil;
 
-  if (tutorialMode_ != TUTORIAL_MODE_WELCOME) {
+  if (tutorialMode_ != profiles::TUTORIAL_MODE_WELCOME) {
     if (showCount == kProfileAvatarTutorialShowMax)
       return nil;
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, showCount + 1);
   }
 
-  return [self tutorialViewWithMode:TUTORIAL_MODE_WELCOME
+  return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_WELCOME
                        titleMessage:IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE
                      contentMessage:
       IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT
@@ -1060,7 +1064,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                        buttonAction:@selector(dismissTutorial:)];
 }
 
-- (NSView*)tutorialViewWithMode:(TutorialMode)mode
+- (NSView*)tutorialViewWithMode:(profiles::TutorialMode)mode
                    titleMessage:(int)titleMessageId
                  contentMessage:(int)contentMessageId
                     linkMessage:(int)linkMessageId
@@ -1242,10 +1246,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (item.signed_in) {
     if (switches::IsNewProfileManagement()) {
       NSString* linkTitle = l10n_util::GetNSString(
-          viewMode_ ==  BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
+          viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :
               IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON);
-      SEL linkSelector = (viewMode_ ==  BUBBLE_VIEW_MODE_PROFILE_CHOOSER) ?
+      SEL linkSelector =
+          (viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) ?
           @selector(showAccountManagement:) : @selector(hideAccountManagement:);
       link = [self linkButtonWithTitle:linkTitle
                            frameOrigin:rect.origin
@@ -1439,7 +1444,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSView alloc] initWithFrame:NSZeroRect]);
   CGFloat yOffset = 0;
 
-  bool addSecondaryAccount = viewMode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
+  bool addSecondaryAccount =
+      viewMode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
   signin::Source source = addSecondaryAccount ?
       signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT :
       signin::SOURCE_AVATAR_BUBBLE_SIGN_IN;

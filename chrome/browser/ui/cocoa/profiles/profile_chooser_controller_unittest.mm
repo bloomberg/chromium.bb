@@ -68,7 +68,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
-               withMode:BUBBLE_VIEW_MODE_PROFILE_CHOOSER]);
+               withMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER]);
     [controller_ showWindow:nil];
   }
 
@@ -378,7 +378,8 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
       UpdateCredentials(kSecondaryEmail, kLoginToken);
 
   StartProfileChooserController();
-  [controller() initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [controller() initMenuContentsWithView:
+      profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 
   NSArray* subviews = [[[controller() window] contentView] subviews];
   EXPECT_EQ(1U, [subviews count]);

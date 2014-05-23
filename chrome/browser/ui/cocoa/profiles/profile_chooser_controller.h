@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 class AvatarMenu;
@@ -24,31 +25,7 @@ class WebContents;
 // This window controller manages the bubble that displays a "menu" of profiles.
 // It is brought open by clicking on the avatar icon in the window frame.
 @interface ProfileChooserController : BaseBubbleController<NSTextViewDelegate> {
- @public
-  // Different views that can be displayed in the bubble.
-  enum BubbleViewMode {
-    // Shows a "fast profile switcher" view.
-    BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
-    // Shows a list of accounts for the active user.
-    BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
-    // Shows a web view for primary sign in.
-    BUBBLE_VIEW_MODE_GAIA_SIGNIN,
-    // Shows a web view for adding secondary accounts.
-    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
-    // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
-    // Shows a view for ending new profile management preview.
-    BUBBLE_VIEW_MODE_END_PREVIEW
-  };
-
  @private
-  enum TutorialMode {
-    TUTORIAL_MODE_NONE,             // No tutorial card shown.
-    TUTORIAL_MODE_ENABLE_PREVIEW,   // The enable-mirror-preview tutorial shown.
-    TUTORIAL_MODE_WELCOME,          // The welcome-to-mirror tutorial shown.
-    TUTORIAL_MODE_SEND_FEEDBACK     // The send-feedback tutorial shown.
-  };
-
   // The menu that contains the data from the backend.
   scoped_ptr<AvatarMenu> avatarMenu_;
 
@@ -65,10 +42,10 @@ class WebContents;
   std::string accountIdToRemove_;
 
   // Active view mode.
-  BubbleViewMode viewMode_;
+  profiles::BubbleViewMode viewMode_;
 
   // The current tutorial mode.
-  TutorialMode tutorialMode_;
+  profiles::TutorialMode tutorialMode_;
 
   // List of the full, un-elided accounts for the active profile. The keys are
   // generated used to tag the UI buttons, and the values are the original
@@ -84,13 +61,13 @@ class WebContents;
 
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(BubbleViewMode)mode;
+             withMode:(profiles::BubbleViewMode)mode;
 
 // Creates all the subviews of the avatar bubble for |viewToDisplay|.
-- (void)initMenuContentsWithView:(BubbleViewMode)viewToDisplay;
+- (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay;
 
 // Returns the view currently displayed by the bubble.
-- (BubbleViewMode)viewMode;
+- (profiles::BubbleViewMode)viewMode;
 
 // Switches to a given profile. |sender| is an ProfileChooserItemController.
 - (IBAction)switchToProfile:(id)sender;
@@ -135,7 +112,7 @@ class WebContents;
 @interface ProfileChooserController (ExposedForTesting)
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(BubbleViewMode)mode;
+             withMode:(profiles::BubbleViewMode)mode;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_CHOOSER_CONTROLLER_H_

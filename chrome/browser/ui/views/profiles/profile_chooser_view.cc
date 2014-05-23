@@ -415,7 +415,7 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 
 // static
 void ProfileChooserView::ShowBubble(
-    BubbleViewMode view_mode,
+    profiles::BubbleViewMode view_mode,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
@@ -448,11 +448,11 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        const gfx::Rect& anchor_rect,
                                        Browser* browser,
-                                       BubbleViewMode view_mode)
+                                       profiles::BubbleViewMode view_mode)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       view_mode_(view_mode),
-      tutorial_mode_(TUTORIAL_MODE_NONE) {
+      tutorial_mode_(profiles::TUTORIAL_MODE_NONE) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
 
@@ -499,15 +499,15 @@ void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
   delete_account_button_map_.clear();
   reauth_account_button_map_.clear();
-  tutorial_mode_ = TUTORIAL_MODE_NONE;
+  tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
 }
 
 void ProfileChooserView::Init() {
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
-  if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
       HasAuthError(browser_->profile())) {
-    view_mode_ = BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
+    view_mode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
   }
 
   ShowView(view_mode_, avatar_menu_.get());
@@ -518,40 +518,40 @@ void ProfileChooserView::OnAvatarMenuChanged(
   // Refresh the view with the new menu. We can't just update the local copy
   // as this may have been triggered by a sign out action, in which case
   // the view is being destroyed.
-  ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu);
+  ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu);
 }
 
 void ProfileChooserView::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // Refresh the account management view when a new account is added to the
   // profile.
-  if (view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
+    ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
   }
 }
 
 void ProfileChooserView::OnRefreshTokenRevoked(const std::string& account_id) {
   // Refresh the account management view when an account is removed from the
   // profile.
-  if (view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
+    ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
 }
 
-void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
+void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
   // is signed in.
-  if (view_to_display == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+  if (view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
         avatar_menu->GetActiveProfileIndex());
     DCHECK(active_item.signed_in);
   }
 
   // Records the last tutorial mode.
-  TutorialMode last_tutorial_mode = tutorial_mode_;
+  profiles::TutorialMode last_tutorial_mode = tutorial_mode_;
   ResetView();
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
@@ -559,17 +559,17 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   views::GridLayout* layout;
   views::View* sub_view;
   switch (view_mode_) {
-    case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-    case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-    case BUBBLE_VIEW_MODE_GAIA_REAUTH:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
       sub_view = CreateGaiaSigninView();
       break;
-    case BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
+    case profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
       sub_view = CreateAccountRemovalView();
       break;
-    case BUBBLE_VIEW_MODE_END_PREVIEW:
+    case profiles::BUBBLE_VIEW_MODE_END_PREVIEW:
       layout = CreateSingleColumnLayout(this, kFixedEndPreviewViewWidth);
       sub_view = CreateEndPreviewView();
       break;
@@ -618,7 +618,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD);
-    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (sender == tutorial_enable_new_profile_management_button_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT);
@@ -627,17 +627,18 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
     account_id_to_remove_.clear();
-    ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+    ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
   } else if (sender == gaia_signin_cancel_button_) {
     std::string primary_account =
         SigninManagerFactory::GetForProfile(browser_->profile())->
         GetAuthenticatedUsername();
-    ShowView(primary_account.empty() ? BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
-                                       BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
+    ShowView(primary_account.empty() ?
+                 profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
+                 profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
              avatar_menu_.get());
   } else if (sender == question_mark_button_) {
-    tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
-    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    tutorial_mode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
+    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (sender == tutorial_send_feedback_button_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_SEND_FEEDBACK);
@@ -647,8 +648,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         ProfileMetrics::PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT);
     profiles::DisableNewProfileManagementPreview();
   } else if (sender == end_preview_cancel_button_) {
-    tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
-    ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    tutorial_mode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
+    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (current_profile_photo_ &&
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
@@ -656,7 +657,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // Only show the inline signin if the new UI flag is flipped. Otherwise,
     // use the tab signin page.
     if (switches::IsNewProfileManagement())
-      ShowView(BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
+      ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
     else
       chrome::ShowBrowserSignin(browser_, signin::SOURCE_MENU);
   } else {
@@ -675,11 +676,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           delete_account_button_map_.find(sender);
       if (account_match != delete_account_button_map_.end()) {
         account_id_to_remove_ = account_match->second;
-        ShowView(BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL, avatar_menu_.get());
+        ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
+            avatar_menu_.get());
       } else {
         account_match = reauth_account_button_map_.find(sender);
         DCHECK(account_match != reauth_account_button_map_.end());
-        ShowView(BUBBLE_VIEW_MODE_GAIA_REAUTH, avatar_menu_.get());
+        ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, avatar_menu_.get());
       }
     }
   }
@@ -694,7 +696,7 @@ void ProfileChooserView::RemoveAccount() {
     oauth2_token_service->RevokeCredentials(account_id_to_remove_);
   account_id_to_remove_.clear();
 
-  ShowView(BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
+  ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
 }
 
 void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
@@ -703,12 +705,12 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     // depending on which view it is displayed. ShowView() will DCHECK if
     // the account management view is displayed for non signed-in users.
     ShowView(
-        view_mode_ == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ?
-            BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
-            BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
+        view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ?
+            profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
+            profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
         avatar_menu_.get());
   } else if (sender == add_account_link_) {
-    ShowView(BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
+    ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
   } else if (sender == tutorial_learn_more_link_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE);
@@ -722,7 +724,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     chrome::Navigate(&params);
   } else {
     DCHECK(sender == tutorial_end_preview_link_);
-    ShowView(BUBBLE_VIEW_MODE_END_PREVIEW, avatar_menu_.get());
+    ShowView(profiles::BUBBLE_VIEW_MODE_END_PREVIEW, avatar_menu_.get());
   }
 }
 
@@ -762,7 +764,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
 
 views::View* ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu,
-    TutorialMode last_tutorial_mode) {
+    profiles::TutorialMode last_tutorial_mode) {
   // TODO(guohui, noms): the view should be customized based on whether new
   // profile management preview is enabled or not.
 
@@ -780,12 +782,13 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     if (item.active) {
       option_buttons_view = CreateOptionsView(item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
-      if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+      if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         if (is_new_profile_management) {
-          tutorial_view = last_tutorial_mode == TUTORIAL_MODE_SEND_FEEDBACK ?
+          tutorial_view =
+              last_tutorial_mode == profiles::TUTORIAL_MODE_SEND_FEEDBACK ?
               CreateSendPreviewFeedbackView() :
               CreatePreviewEnabledTutorialView(
-                  item, last_tutorial_mode == TUTORIAL_MODE_PREVIEW_ENABLED);
+                  item, last_tutorial_mode == profiles::TUTORIAL_MODE_WELCOME);
         } else {
           tutorial_view = CreateNewProfileManagementPreviewView();
         }
@@ -817,7 +820,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view);
 
-  if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
     layout->StartRow(1, 0);
     if (switches::IsFastUserSwitching())
       layout->AddView(CreateOtherProfilesView(other_profiles));
@@ -862,7 +865,7 @@ views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
   }
 
   return CreateTutorialView(
-      TUTORIAL_MODE_PREVIEW_ENABLED,
+      profiles::TUTORIAL_MODE_WELCOME,
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
@@ -874,7 +877,7 @@ views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
 
 views::View* ProfileChooserView::CreateSendPreviewFeedbackView() {
   return CreateTutorialView(
-      TUTORIAL_MODE_SEND_FEEDBACK,
+      profiles::TUTORIAL_MODE_SEND_FEEDBACK,
       l10n_util::GetStringUTF16(IDS_PROFILES_FEEDBACK_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT),
@@ -885,7 +888,7 @@ views::View* ProfileChooserView::CreateSendPreviewFeedbackView() {
 }
 
 views::View* ProfileChooserView::CreateTutorialView(
-    TutorialMode tutorial_mode,
+    profiles::TutorialMode tutorial_mode,
     const base::string16& title_text,
     const base::string16& content_text,
     const base::string16& link_text,
@@ -1031,7 +1034,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     layout->StartRow(1, 0);
     if (switches::IsNewProfileManagement()) {
       base::string16 link_title = l10n_util::GetStringUTF16(
-          view_mode_ ==  BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
+          view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
               IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON :
               IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON);
       manage_accounts_link_ = CreateLink(link_title, this);
@@ -1263,19 +1266,19 @@ views::View* ProfileChooserView::CreateGaiaSigninView() {
   int message_id;
 
   switch (view_mode_) {
-    case BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
       url = signin::GetPromoURL(signin::SOURCE_AVATAR_BUBBLE_SIGN_IN,
                                 false /* auto_close */,
                                 true /* is_constrained */);
       message_id = IDS_PROFILES_GAIA_SIGNIN_TITLE;
       break;
-    case BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
       url = signin::GetPromoURL(signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT,
                                 false /* auto_close */,
                                 true /* is_constrained */);
       message_id = IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE;
       break;
-    case BUBBLE_VIEW_MODE_GAIA_REAUTH: {
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
       DCHECK(HasAuthError(browser_->profile()));
       url = signin::GetReauthURL(browser_->profile(),
                                  GetAuthErrorUsername(browser_->profile()));
@@ -1363,7 +1366,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 
 views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
   return CreateTutorialView(
-      TUTORIAL_MODE_ENABLE_PREVIEW,
+      profiles::TUTORIAL_MODE_ENABLE_PREVIEW,
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT),
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),

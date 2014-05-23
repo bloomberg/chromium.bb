@@ -1283,6 +1283,7 @@
         'browser/ui/prefs/prefs_tab_helper.cc',
         'browser/ui/prefs/prefs_tab_helper.h',
         'browser/ui/process_singleton_dialog_linux.h',
+        'browser/ui/profile_chooser_constants.h',
         'browser/ui/profile_error_dialog.cc',
         'browser/ui/profile_error_dialog.h',
         'browser/ui/protocol_dialog_delegate.h',

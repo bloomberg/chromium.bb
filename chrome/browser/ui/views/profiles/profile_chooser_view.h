@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -44,37 +45,12 @@ class ProfileChooserView : public views::BubbleDelegateView,
                            public AvatarMenuObserver,
                            public OAuth2TokenService::Observer {
  public:
-  // Different views that can be displayed in the bubble.
-  enum BubbleViewMode {
-    // Shows a "fast profile switcher" view.
-    BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
-    // Shows a list of accounts for the active user.
-    BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
-    // Shows a web view for primary sign in.
-    BUBBLE_VIEW_MODE_GAIA_SIGNIN,
-    // Shows a web view for adding secondary accounts.
-    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
-    // Shows a web view for reauthenticating an account.
-    BUBBLE_VIEW_MODE_GAIA_REAUTH,
-    // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
-    // Shows a view for ending new profile management preview.
-    BUBBLE_VIEW_MODE_END_PREVIEW
-  };
-
-  enum TutorialMode {
-    TUTORIAL_MODE_NONE,             // No tutorial card shown.
-    TUTORIAL_MODE_ENABLE_PREVIEW,   // The enable-mirror-preview tutorial shown.
-    TUTORIAL_MODE_PREVIEW_ENABLED,  // The welcome-to-mirror tutorial shown.
-    TUTORIAL_MODE_SEND_FEEDBACK     // The send-feedback tutorial shown.
-  };
-
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
-  static void ShowBubble(BubbleViewMode view_mode,
+  static void ShowBubble(profiles::BubbleViewMode view_mode,
                          views::View* anchor_view,
                          views::BubbleBorder::Arrow arrow,
                          views::BubbleBorder::BubbleAlignment border_alignment,
@@ -102,7 +78,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
                      views::BubbleBorder::Arrow arrow,
                      const gfx::Rect& anchor_rect,
                      Browser* browser,
-                     BubbleViewMode view_mode);
+                     profiles::BubbleViewMode view_mode);
   virtual ~ProfileChooserView();
 
   // views::BubbleDelegateView:
@@ -137,13 +113,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ResetView();
 
   // Shows the bubble with the |view_to_display|.
-  void ShowView(BubbleViewMode view_to_display,
+  void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
   // Creates the profile chooser view. |tutorial_shown| indicates if the "mirror
   // enabled" tutorial was shown or not in the last active view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu,
-                                        TutorialMode last_tutorial_mode);
+      profiles::TutorialMode last_tutorial_mode);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
@@ -194,7 +170,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // sets |link| to point to the newly created link, |button| to the newly
   // created button, and |tutorial_mode_| to the given |tutorial_mode|.
   views::View* CreateTutorialView(
-      TutorialMode tutorial_mode,
+      profiles::TutorialMode tutorial_mode,
       const base::string16& title_text,
       const base::string16& content_text,
       const base::string16& link_text,
@@ -251,10 +227,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
   std::string account_id_to_remove_;
 
   // Active view mode.
-  BubbleViewMode view_mode_;
+  profiles::BubbleViewMode view_mode_;
 
   // The current tutorial mode.
-  TutorialMode tutorial_mode_;
+  profiles::TutorialMode tutorial_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };
