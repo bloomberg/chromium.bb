@@ -61,14 +61,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
   #override
   def PushDataDeps(self):
-    self.device.old_interface.WaitForSdCardReady(20)
+    self.device.WaitUntilFullyBooted(timeout=20)
     self.tool.CopyFiles()
     if os.path.exists(constants.ISOLATE_DEPS_DIR):
-      device_dir = self.device.old_interface.GetExternalStorage()
       # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
       # as breakpad_unittests exe. Find a better way to do this.
       if self.test_package.suite_name == 'breakpad_unittests':
         device_dir = constants.TEST_EXECUTABLE_DIR
+      else:
+        device_dir = self.device.GetExternalStoragePath()
       for p in os.listdir(constants.ISOLATE_DEPS_DIR):
         self.device.old_interface.PushIfNeeded(
             os.path.join(constants.ISOLATE_DEPS_DIR, p),

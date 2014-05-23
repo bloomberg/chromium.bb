@@ -12,6 +12,7 @@ import tempfile
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
+from pylib.device import device_errors
 from pylib.gtest.test_package import TestPackage
 
 
@@ -62,14 +63,17 @@ class TestPackageExecutable(TestPackage):
     #     /code/chrome if GCOV_PREFIX_STRIP=3
     try:
       depth = os.environ['NATIVE_COVERAGE_DEPTH_STRIP']
+      export_string = ('export GCOV_PREFIX="%s/gcov"\n' %
+                       device.GetExternalStoragePath())
+      export_string += 'export GCOV_PREFIX_STRIP=%s\n' % depth
+      return export_string
     except KeyError:
       logging.info('NATIVE_COVERAGE_DEPTH_STRIP is not defined: '
                    'No native coverage.')
       return ''
-    export_string = ('export GCOV_PREFIX="%s/gcov"\n' %
-                     device.old_interface.GetExternalStorage())
-    export_string += 'export GCOV_PREFIX_STRIP=%s\n' % depth
-    return export_string
+    except device_errors.CommandFailedError:
+      logging.info('No external storage found: No native coverage.')
+      return ''
 
   #override
   def ClearApplicationState(self, device):

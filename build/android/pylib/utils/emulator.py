@@ -416,6 +416,8 @@ class Emulator(object):
     if wait_for_boot:
       # Now that we checked for obvious problems, wait for a boot complete.
       # Waiting for the package manager is sometimes problematic.
+      # TODO(jbudorick) Convert this once waiting for the package manager and
+      #                 the external storage is no longer problematic.
       d = device_utils.DeviceUtils(self.device_serial)
       d.old_interface.WaitForSystemBootCompleted(self._WAITFORBOOT_TIMEOUT)
 

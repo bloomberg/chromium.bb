@@ -80,7 +80,7 @@ class Parallelizer(object):
     """
     self.pGet(None)
 
-    r = Parallelizer(self._orig_objs)
+    r = type(self)(self._orig_objs)
     r._objs = [getattr(o, name) for o in self._objs]
     return r
 
@@ -92,7 +92,7 @@ class Parallelizer(object):
     """
     self.pGet(None)
 
-    r = Parallelizer(self._orig_objs)
+    r = type(self)(self._orig_objs)
     r._objs = [o[index] for o in self._objs]
     return r
 
@@ -116,7 +116,7 @@ class Parallelizer(object):
       if not callable(o):
         raise AttributeError("'%s' is not callable" % o.__name__)
 
-    r = Parallelizer(self._orig_objs)
+    r = type(self)(self._orig_objs)
     r._objs = reraiser_thread.ReraiserThreadGroup(
         [reraiser_thread.ReraiserThread(
             o, args=args, kwargs=kwargs,

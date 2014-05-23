@@ -104,11 +104,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     test_data = _GetDataFilesForTestSuite(self.test_pkg.GetApkName())
     if test_data:
       # Make sure SD card is ready.
-      self.device.old_interface.WaitForSdCardReady(20)
+      self.device.WaitUntilFullyBooted(timeout=20)
       for p in test_data:
         self.device.old_interface.PushIfNeeded(
             os.path.join(constants.DIR_SOURCE_ROOT, p),
-            os.path.join(self.device.old_interface.GetExternalStorage(), p))
+            os.path.join(self.device.GetExternalStoragePath(), p))
 
     # TODO(frankf): Specify test data in this file as opposed to passing
     # as command-line.
@@ -121,7 +121,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.device.old_interface.PushIfNeeded(
             host_test_files_path,
             '%s/%s/%s' % (
-                self.device.old_interface.GetExternalStorage(),
+                self.device.GetExternalStoragePath(),
                 TestRunner._DEVICE_DATA_DIR,
                 dst_layer))
     self.tool.CopyFiles()
@@ -184,7 +184,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if self.coverage_dir:
       coverage_basename = '%s.ec' % test
       self.coverage_device_file = '%s/%s/%s' % (
-          self.device.old_interface.GetExternalStorage(),
+          self.device.GetExternalStoragePath(),
           TestRunner._DEVICE_COVERAGE_DIR, coverage_basename)
       self.coverage_host_file = os.path.join(
           self.coverage_dir, coverage_basename)

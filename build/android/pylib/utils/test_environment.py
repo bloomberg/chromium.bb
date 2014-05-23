@@ -6,7 +6,6 @@ import logging
 import psutil
 import signal
 
-from pylib import android_commands
 from pylib.device import device_errors
 from pylib.device import device_utils
 
@@ -31,23 +30,17 @@ def _KillWebServers():
         logging.warning('Failed waiting for %s to die. %s', p.pid, e)
 
 
-
 def CleanupLeftoverProcesses():
   """Clean up the test environment, restarting fresh adb and HTTP daemons."""
   _KillWebServers()
-  did_restart_host_adb = False
-  for device_serial in android_commands.GetAttachedDevices():
-    device = device_utils.DeviceUtils(device_serial)
-    # Make sure we restart the host adb server only once.
-    if not did_restart_host_adb:
-      device_utils.RestartServer()
-      did_restart_host_adb = True
-    device.old_interface.RestartAdbdOnDevice()
-    try:
-      device.EnableRoot()
-    except device_errors.CommandFailedError as e:
-      # TODO(jbudorick) Handle this exception appropriately after interface
-      #                 conversions are finished.
-      logging.error(str(e))
-    device.old_interface.WaitForDevicePm()
+  device_utils.RestartServer()
+  p = device_utils.DeviceUtils.parallel()
+  p.old_interface.RestartAdbdOnDevice()
+  try:
+    p.EnableRoot()
+  except device_errors.CommandFailedError as e:
+    # TODO(jbudorick) Handle this exception appropriately after interface
+    #                 conversions are finished.
+    logging.error(str(e))
+  p.WaitUntilFullyBooted()
 

@@ -31,7 +31,7 @@ class VideoRecorder(object):
       device = pylib.device.device_utils.DeviceUtils(device)
     self._device = device
     self._device_file = (
-        '%s/screen-recording.mp4' % device.old_interface.GetExternalStorage())
+        '%s/screen-recording.mp4' % device.GetExternalStoragePath())
     self._host_file = host_file or ('screen-recording-%s.mp4' %
                                     device.old_interface.GetTimestamp())
     self._host_file = os.path.abspath(self._host_file)

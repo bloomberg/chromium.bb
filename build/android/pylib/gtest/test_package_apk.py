@@ -85,9 +85,14 @@ class TestPackageApk(TestPackage):
     # Content shell creates a profile on the sdscard which accumulates cache
     # files over time.
     if self.suite_name == 'content_browsertests':
-      device.old_interface.RunShellCommand(
-          'rm -r %s/content_shell' % device.old_interface.GetExternalStorage(),
-          timeout_time=60 * 2)
+      try:
+        device.old_interface.RunShellCommand(
+            'rm -r %s/content_shell' % device.GetExternalStoragePath(),
+            timeout_time=60 * 2)
+      except device_errors.CommandFailedError:
+        # TODO(jbudorick) Handle this exception appropriately once the
+        #                 conversions are done.
+        pass
 
   #override
   def CreateCommandLineFileOnDevice(self, device, test_filter, test_arguments):

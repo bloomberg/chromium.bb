@@ -52,7 +52,7 @@ class BaseTestRunner(object):
   def _PushTestServerPortInfoToDevice(self):
     """Pushes the latest port information to device."""
     self.device.old_interface.SetFileContents(
-        self.device.old_interface.GetExternalStorage() + '/' +
+        self.device.GetExternalStoragePath() + '/' +
             NET_TEST_SERVER_PORT_INFO_FILE,
         '%d:%d' % (self.test_server_spawner_port, self.test_server_port))
 

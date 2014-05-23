@@ -120,7 +120,7 @@ class AddressSanitizerTool(BaseTool):
                      '--device', self._device.old_interface.GetDevice(),
                      '--lib', self._lib,
                      '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
-    self._device.old_interface.WaitForDevicePm()
+    self._device.WaitUntilFullyBooted()
 
   def GetTestWrapper(self):
     return AddressSanitizerTool.WRAPPER_NAME

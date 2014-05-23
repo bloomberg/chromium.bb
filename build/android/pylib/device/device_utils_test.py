@@ -10,6 +10,7 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 # pylint: disable=W0613
 
 import random
+import time
 import unittest
 
 from pylib import android_commands
@@ -70,9 +71,13 @@ class DeviceUtilsTest(unittest.TestCase):
   @staticmethod
   def _getTestAdbWrapper():
     devices = adb_wrapper.AdbWrapper.GetDevices()
-    if devices:
-      return random.choice(devices)
-    return None
+    start_time = time.time()
+    while time.time() - start_time < device_utils._DEFAULT_TIMEOUT:
+      if devices:
+        return random.choice(devices)
+      time.sleep(1)
+    raise device_errors.DeviceUnreachableError(
+        'No devices available for testing...')
 
   @staticmethod
   def _getUnusedSerial():
@@ -142,6 +147,30 @@ class DeviceUtilsTest(unittest.TestCase):
       self.assertTrue(d.HasRoot())
       d.EnableRoot()
       self.assertTrue(d.HasRoot())
+
+  def testGetExternalStorage(self):
+    a = self._getTestAdbWrapper()
+    d = device_utils.DeviceUtils(a)
+
+    actual_external_storage = a.Shell('echo $EXTERNAL_STORAGE').splitlines()[0]
+    if actual_external_storage and len(actual_external_storage) != 0:
+      self.assertEquals(actual_external_storage, d.GetExternalStoragePath())
+
+  def testWaitUntilFullyBooted(self):
+    a = self._getTestAdbWrapper()
+    d = device_utils.DeviceUtils(a)
+
+    a.Reboot()
+    while a.GetState() == 'device':
+      time.sleep(0.1)
+    d.WaitUntilFullyBooted(wifi=True)
+    self.assertEquals(
+        '1', a.Shell('getprop sys.boot_completed').splitlines()[0])
+    self.assertTrue(
+        a.Shell('pm path android').splitlines()[0].startswith('package:'))
+    self.assertTrue(a.Shell('ls $EXTERNAL_STORAGE'))
+    self.assertTrue(
+        'Wi-Fi is enabled' in a.Shell('dumpsys wifi').splitlines())
 
 
 if __name__ == '__main__':
