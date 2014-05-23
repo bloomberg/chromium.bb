@@ -15,6 +15,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -61,6 +62,17 @@ void ConvertRectToScreen(const View* src, gfx::Rect* r) {
   gfx::Point new_origin = r->origin();
   View::ConvertPointToScreen(src, &new_origin);
   r->set_origin(new_origin);
+}
+
+// Get the drag selection timer delay, respecting animation scaling for testing.
+int GetDragSelectionDelay() {
+  switch (ui::ScopedAnimationDurationScaleMode::duration_scale_mode()) {
+      case ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION: return 100;
+      case ui::ScopedAnimationDurationScaleMode::FAST_DURATION:   return 25;
+      case ui::ScopedAnimationDurationScaleMode::SLOW_DURATION:   return 400;
+      case ui::ScopedAnimationDurationScaleMode::ZERO_DURATION:   return 0;
+    }
+  return 100;
 }
 
 int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
@@ -312,14 +324,14 @@ base::i18n::TextDirection Textfield::GetTextDirection() const {
   return GetRenderText()->GetTextDirection();
 }
 
+base::string16 Textfield::GetSelectedText() const {
+  return model_->GetSelectedText();
+}
+
 void Textfield::SelectAll(bool reversed) {
   model_->SelectAll(reversed);
   UpdateSelectionClipboard();
   UpdateAfterChange(false, true);
-}
-
-base::string16 Textfield::GetSelectedText() const {
-  return model_->GetSelectedText();
 }
 
 void Textfield::ClearSelection() {
@@ -552,35 +564,32 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
+  last_drag_location_ = event.location();
+
   // Don't adjust the cursor on a potential drag and drop, or if the mouse
   // movement from the last mouse click does not exceed the drag threshold.
   if (initiating_drag_ || !event.IsOnlyLeftMouseButton() ||
-      !ExceededDragThreshold(event.location() - last_click_location_)) {
+      !ExceededDragThreshold(last_drag_location_ - last_click_location_)) {
     return true;
   }
 
-  OnBeforeUserAction();
-  model_->MoveCursorTo(event.location(), true);
-  if (aggregated_clicks_ == 1) {
-    model_->SelectWord();
-    // Expand the selection so the initially selected word remains selected.
-    gfx::Range selection = GetRenderText()->selection();
-    const size_t min = std::min(selection.GetMin(),
-                                double_click_word_.GetMin());
-    const size_t max = std::max(selection.GetMax(),
-                                double_click_word_.GetMax());
-    const bool reversed = selection.is_reversed();
-    selection.set_start(reversed ? max : min);
-    selection.set_end(reversed ? min : max);
-    model_->SelectRange(selection);
+  // A timer is used to continuously scroll while selecting beyond side edges.
+  if ((event.location().x() > 0 && event.location().x() < size().width()) ||
+      GetDragSelectionDelay() == 0) {
+    drag_selection_timer_.Stop();
+    SelectThroughLastDragLocation();
+  } else if (!drag_selection_timer_.IsRunning()) {
+    drag_selection_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(GetDragSelectionDelay()),
+        this, &Textfield::SelectThroughLastDragLocation);
   }
-  UpdateAfterChange(false, true);
-  OnAfterUserAction();
+
   return true;
 }
 
 void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
   OnBeforeUserAction();
+  drag_selection_timer_.Stop();
   // Cancel suspected drag initiations, the user was clicking in the selection.
   if (initiating_drag_)
     MoveCursorTo(event.location(), false);
@@ -1540,6 +1549,26 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
 void Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
   if (model_->MoveCursorTo(point, select))
     UpdateAfterChange(false, true);
+}
+
+void Textfield::SelectThroughLastDragLocation() {
+  OnBeforeUserAction();
+  model_->MoveCursorTo(last_drag_location_, true);
+  if (aggregated_clicks_ == 1) {
+    model_->SelectWord();
+    // Expand the selection so the initially selected word remains selected.
+    gfx::Range selection = GetRenderText()->selection();
+    const size_t min = std::min(selection.GetMin(),
+                                double_click_word_.GetMin());
+    const size_t max = std::max(selection.GetMax(),
+                                double_click_word_.GetMax());
+    const bool reversed = selection.is_reversed();
+    selection.set_start(reversed ? max : min);
+    selection.set_end(reversed ? min : max);
+    model_->SelectRange(selection);
+  }
+  UpdateAfterChange(false, true);
+  OnAfterUserAction();
 }
 
 void Textfield::OnCaretBoundsChanged() {

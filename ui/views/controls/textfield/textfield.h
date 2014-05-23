@@ -317,6 +317,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Helper function to call MoveCursorTo on the TextfieldModel.
   void MoveCursorTo(const gfx::Point& point, bool select);
 
+  // Helper function to update the selection on a mouse drag.
+  void SelectThroughLastDragLocation();
+
   // Convenience method to notify the InputMethod and TouchSelectionController.
   void OnCaretBoundsChanged();
 
@@ -372,16 +375,11 @@ class VIEWS_EXPORT Textfield : public View,
 
   scoped_ptr<Painter> focus_painter_;
 
-  // Text color.  Only used if |use_default_text_color_| is false.
+  // Flags indicating whether text and background system colors should be used,
+  // and the actual color values used if the corresponding flags are set false.
   SkColor text_color_;
-
-  // Should we use the system text color instead of |text_color_|?
   bool use_default_text_color_;
-
-  // Background color.  Only used if |use_default_background_color_| is false.
   SkColor background_color_;
-
-  // Should we use the system background color instead of |background_color_|?
   bool use_default_background_color_;
 
   // Text to display when empty.
@@ -400,9 +398,8 @@ class VIEWS_EXPORT Textfield : public View,
   base::TimeDelta password_reveal_duration_;
   base::OneShotTimer<Textfield> password_reveal_timer_;
 
-  // Keeps track of whether currently performing a user action (i.e. when
-  // OnBeforeUserAction() has been called, but OnAfterUserAction() is yet to be
-  // called).
+  // Tracks whether a user action is being performed; i.e. OnBeforeUserAction()
+  // has been called, but OnAfterUserAction() has not yet been called.
   bool performing_user_action_;
 
   // True if InputMethod::CancelComposition() should not be called.
@@ -418,6 +415,10 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Is the user potentially dragging and dropping from this view?
   bool initiating_drag_;
+
+  // A timer and point used to modify the selection when dragging.
+  base::RepeatingTimer<Textfield> drag_selection_timer_;
+  gfx::Point last_drag_location_;
 
   // State variables used to track double and triple clicks.
   size_t aggregated_clicks_;

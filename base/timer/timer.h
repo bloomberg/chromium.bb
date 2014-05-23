@@ -90,8 +90,8 @@ class BASE_EXPORT Timer {
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call the given |user_task|.
   virtual void Start(const tracked_objects::Location& posted_from,
-             TimeDelta delay,
-             const base::Closure& user_task);
+                     TimeDelta delay,
+                     const base::Closure& user_task);
 
   // Call this method to stop and cancel the timer.  It is a no-op if the timer
   // is not running.
@@ -197,9 +197,9 @@ class BaseTimerMethodPointer : public Timer {
   // already running, it will be replaced to call a task formed from
   // |reviewer->*method|.
   virtual void Start(const tracked_objects::Location& posted_from,
-             TimeDelta delay,
-             Receiver* receiver,
-             ReceiverMethod method) {
+                     TimeDelta delay,
+                     Receiver* receiver,
+                     ReceiverMethod method) {
     Timer::Start(posted_from, delay,
                  base::Bind(method, base::Unretained(receiver)));
   }
