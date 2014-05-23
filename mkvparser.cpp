@@ -130,6 +130,8 @@ long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
   return 0;  // success
 }
 
+// TODO(vigneshv): This function assumes that unsigned values never have their
+// high bit set.
 long long mkvparser::UnserializeUInt(IMkvReader* pReader, long long pos,
                                      long long size) {
   assert(pReader);
@@ -4128,12 +4130,13 @@ long Chapters::Atom::Parse(IMkvReader* pReader, long long pos, long long size) {
       if (status < 0)  // error
         return status;
     } else if (id == 0x33C4) {  // UID ID
-      const long long val = UnserializeUInt(pReader, pos, size);
+      long long val;
+      status = UnserializeInt(pReader, pos, size, val);
 
       if (val < 0)  // error
-        return static_cast<long>(val);
+        return status;
 
-      m_uid = val;
+      m_uid = static_cast<unsigned long long>(val);
     } else if (id == 0x11) {  // TimeStart ID
       const long long val = UnserializeUInt(pReader, pos, size);
 
