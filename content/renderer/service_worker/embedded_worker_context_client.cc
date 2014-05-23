@@ -97,9 +97,6 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
 }
 
 EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
-  // g_worker_client_tls.Pointer()->Get() could be NULL if this gets
-  // deleted before workerContextStarted() is called.
-  g_worker_client_tls.Pointer()->Set(NULL);
 }
 
 bool EmbeddedWorkerContextClient::OnMessageReceived(
@@ -143,6 +140,8 @@ void EmbeddedWorkerContextClient::workerContextStarted(
   worker_task_runner_ = new WorkerThreadTaskRunner(
       WorkerTaskRunner::Instance()->CurrentWorkerId());
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
+  // g_worker_client_tls.Pointer()->Get() could return NULL if this context
+  // gets deleted before workerContextStarted() is called.
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
   DCHECK(!script_context_);
   g_worker_client_tls.Pointer()->Set(this);
@@ -164,9 +163,15 @@ void EmbeddedWorkerContextClient::willDestroyWorkerContext() {
   // worker_task_runner_->RunsTasksOnCurrentThread() returns false
   // (while we're still on the worker thread).
   script_context_.reset();
+
+  // This also lets the message filter stop dispatching messages to
+  // this client.
+  g_worker_client_tls.Pointer()->Set(NULL);
 }
 
 void EmbeddedWorkerContextClient::workerContextDestroyed() {
+  DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
+
   // Now we should be able to free the WebEmbeddedWorker container on the
   // main thread.
   main_thread_proxy_->PostTask(
