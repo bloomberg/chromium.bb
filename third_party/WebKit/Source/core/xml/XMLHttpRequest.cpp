@@ -1017,7 +1017,7 @@ void XMLHttpRequest::dispatchThrottledProgressEvent(const AtomicString& type, lo
 
 void XMLHttpRequest::dispatchThrottledProgressEventSnapshot(const AtomicString& type)
 {
-    return dispatchThrottledProgressEvent(type, m_receivedLength, m_response.expectedContentLength());
+    dispatchThrottledProgressEvent(type, m_receivedLength, m_response.expectedContentLength());
 }
 
 void XMLHttpRequest::handleNetworkError()
