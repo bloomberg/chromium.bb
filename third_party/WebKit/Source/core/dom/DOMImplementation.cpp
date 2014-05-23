@@ -197,10 +197,10 @@ PassRefPtrWillBeRawPtr<DocumentType> DOMImplementation::createDocumentType(const
     return DocumentType::create(m_document, qualifiedName, publicId, systemId);
 }
 
-PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& namespaceURI,
+PassRefPtrWillBeRawPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& namespaceURI,
     const AtomicString& qualifiedName, DocumentType* doctype, ExceptionState& exceptionState)
 {
-    RefPtr<XMLDocument> doc;
+    RefPtrWillBeRawPtr<XMLDocument> doc = nullptr;
     DocumentInit init = DocumentInit::fromContext(document().contextDocument());
     if (namespaceURI == SVGNames::svgNamespaceURI) {
         doc = XMLDocument::createSVG(init);
