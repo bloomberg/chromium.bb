@@ -19,5 +19,5 @@
  */
 
 interface CSSCharsetRule : CSSRule {
-    attribute DOMString encoding;
+    [MeasureAs=CSSCharsetRuleEncoding] attribute DOMString encoding;
 };
