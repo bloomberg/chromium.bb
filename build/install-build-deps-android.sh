@@ -47,55 +47,35 @@ sudo apt-get -y install checkstyle lighttpd python-pexpect xvfb x11-utils
 # Few binaries in the Android SDK require 32-bit libraries on the host.
 sudo apt-get -y install lib32z1 g++-multilib
 
-if [ $(/usr/bin/lsb_release -r -s | cut -d"." -f1) -ge 12 ]; then
-  # Ubuntu >= 12.x
-  sudo apt-get -y install ant
+sudo apt-get -y install ant1.8
 
-  # Java can not be installed via ppa on Ubuntu 12.04+ so we'll
-  # simply check to see if it has been setup properly -- if not
-  # let the user know.
+# Install openjdk and openjre 7 stuff
+sudo apt-get -y install openjdk-7-jre openjdk-7-jdk
 
-  if ! java -version 2>&1 | grep -q "Java(TM)"; then
-    echo "****************************************************************"
-    echo "You need to install the Oracle Java SDK from http://goo.gl/uPRSq"
-    echo "and configure it as the default command-line Java environment."
-    echo "****************************************************************"
-    exit
-  fi
-
-else
-  # Ubuntu 10.x
-
-  sudo apt-get -y install ant1.8
-
-  # Install sun-java6 stuff
-  sudo apt-get -y install sun-java6-bin sun-java6-jre sun-java6-jdk
-
-  # Switch version of Java to java-6-sun
-  # Sun's java is missing certain Java plugins (e.g. for firefox, mozilla).
-  # These are not required to build, and thus are treated only as warnings.
-  # Any errors in updating java alternatives which are not '*-javaplugin.so'
-  # will cause errors and stop the script from completing successfully.
-  if ! sudo update-java-alternatives -s java-6-sun \
-            >& "${TEMPDIR}"/update-java-alternatives.out
+# Switch version of Java to openjdk 7.
+# Some Java plugins (e.g. for firefox, mozilla) are not required to build, and
+# thus are treated only as warnings. Any errors in updating java alternatives
+# which are not '*-javaplugin.so' will cause errors and stop the script from
+# completing successfully.
+if ! sudo update-java-alternatives -s java-1.7.0-openjdk-amd64 \
+           >& "${TEMPDIR}"/update-java-alternatives.out
+then
+  # Check that there are the expected javaplugin.so errors for the update
+  if grep 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out >& \
+      /dev/null
   then
-    # Check that there are the expected javaplugin.so errors for the update
-    if grep 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out >& \
-           /dev/null
-    then
-      # Print as warnings all the javaplugin.so errors
-      echo 'WARNING: java-6-sun has no alternatives for the following plugins:'
-      grep 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out
-    fi
-    # Check if there are any errors that are not javaplugin.so
-    if grep -v 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out \
-           >& /dev/null
-    then
-      # If there are non-javaplugin.so errors, treat as errors and exit
-      echo 'ERRORS: Failed to update alternatives for java-6-sun:'
-      grep -v 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out
-      exit 1
-    fi
+    # Print as warnings all the javaplugin.so errors
+    echo 'WARNING: java-6-sun has no alternatives for the following plugins:'
+    grep 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out
+  fi
+  # Check if there are any errors that are not javaplugin.so
+  if grep -v 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out \
+      >& /dev/null
+  then
+    # If there are non-javaplugin.so errors, treat as errors and exit
+    echo 'ERRORS: Failed to update alternatives for java-6-sun:'
+    grep -v 'javaplugin.so' "${TEMPDIR}"/update-java-alternatives.out
+    exit 1
   fi
 fi
 
