@@ -5,7 +5,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 
 #include "base/command_line.h"
-#include "base/strings/string_util.h"
+#include "base/logging.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
@@ -19,15 +19,15 @@ bool ServiceWorkerUtils::IsFeatureEnabled() {
 
 // static
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
-  // This is a really basic, naive
-  // TODO(alecflett): Formalize what scope matches mean.
-  // Temporarily borrowed directly from appcache::Namespace::IsMatch().
-  // We have to escape '?' characters since MatchPattern also treats those
-  // as wildcards which we don't want here, we only do '*'s.
-  std::string scope_spec(scope.spec());
-  if (scope.has_query())
-    ReplaceSubstringsAfterOffset(&scope_spec, 0, "?", "\\?");
-  return MatchPattern(url.spec(), scope_spec);
+  DCHECK(!scope.has_ref());
+  DCHECK(!url.has_ref());
+  const std::string& scope_spec = scope.spec();
+  const std::string& url_spec = url.spec();
+
+  size_t len = scope_spec.size();
+  if (len > 0 && scope_spec[len - 1] == '*')
+    return scope_spec.compare(0, len - 1, url_spec, 0, len - 1) == 0;
+  return scope_spec == url_spec;
 }
 
 }  // namespace content

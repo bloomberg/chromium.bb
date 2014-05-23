@@ -30,6 +30,7 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/"), GURL("http://www.example.com/x")));
 
+  // '?' is not a wildcard.
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/?"), GURL("http://www.example.com/x")));
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
@@ -38,6 +39,30 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
       GURL("http://www.example.com/?"), GURL("http://www.example.com/xx")));
   ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/?"), GURL("http://www.example.com/?")));
+
+  // Query string is part of the resource.
+  ASSERT_TRUE(
+      ServiceWorkerUtils::ScopeMatches(GURL("http://www.example.com/?a=b"),
+                                       GURL("http://www.example.com/?a=b")));
+  ASSERT_TRUE(
+      ServiceWorkerUtils::ScopeMatches(GURL("http://www.example.com/?a=*"),
+                                       GURL("http://www.example.com/?a=b")));
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/*"), GURL("http://www.example.com/?a=b")));
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/"), GURL("http://www.example.com/?a=b")));
+
+  // '*' only has special meaning in terminal position.
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/*/x"), GURL("http://www.example.com/*/x")));
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/*/x"), GURL("http://www.example.com/a/x")));
+  ASSERT_FALSE(
+      ServiceWorkerUtils::ScopeMatches(GURL("http://www.example.com/*/x/*"),
+                                       GURL("http://www.example.com/a/x/b")));
+  ASSERT_TRUE(
+      ServiceWorkerUtils::ScopeMatches(GURL("http://www.example.com/*/x/*"),
+                                       GURL("http://www.example.com/*/x/b")));
 
   // URLs canonicalize \ to / so this is equivalent to  "...//*" and "...//x"
   ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
