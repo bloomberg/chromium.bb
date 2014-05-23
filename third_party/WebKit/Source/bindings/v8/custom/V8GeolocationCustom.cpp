@@ -37,7 +37,7 @@ using namespace WTF;
 
 namespace WebCore {
 
-static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded)
+static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded, ExceptionState& exceptionState)
 {
     succeeded = true;
 
@@ -85,13 +85,11 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
         double timeoutDouble = timeoutNumber->Value();
         // If the value is positive infinity, there's nothing to do.
         if (!(std::isinf(timeoutDouble) && timeoutDouble > 0)) {
-            v8::Local<v8::Int32> timeoutInt32 = timeoutValue->ToInt32();
-            if (timeoutInt32.IsEmpty()) {
-                succeeded = false;
-                return nullptr;
+            if (timeoutDouble <= 0) {
+                options->setTimeout(0);
+            } else {
+                options->setTimeout(toUInt32(timeoutValue, Clamp, exceptionState));
             }
-            // Wrap to int32 and force non-negative to match behavior of window.setTimeout.
-            options->setTimeout(max(0, timeoutInt32->Value()));
         }
     }
 
@@ -111,13 +109,11 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             // If the value is positive infinity, clear maximumAge.
             options->clearMaximumAge();
         } else {
-            v8::Local<v8::Int32> maximumAgeInt32 = maximumAgeValue->ToInt32();
-            if (maximumAgeInt32.IsEmpty()) {
-                succeeded = false;
-                return nullptr;
+            if (maximumAgeDouble <= 0) {
+                options->setMaximumAge(0);
+            } else {
+                options->setMaximumAge(toUInt32(maximumAgeValue, Clamp, exceptionState));
             }
-            // Wrap to int32 and force non-negative to match behavior of window.setTimeout.
-            options->setMaximumAge(max(0, maximumAgeInt32->Value()));
         }
     }
 
@@ -140,7 +136,7 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
     if (!succeeded)
         return;
 
-    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
+    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
@@ -165,7 +161,7 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
     if (!succeeded)
         return;
 
-    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
+    RefPtrWillBeRawPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded, exceptionState);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
