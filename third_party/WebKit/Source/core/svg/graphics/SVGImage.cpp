@@ -373,6 +373,12 @@ bool SVGImage::dataChanged(bool allDataReceived)
         return true;
 
     if (allDataReceived) {
+        // SVGImage will fire events (and the default C++ handlers run) but doesn't
+        // actually allow script to run so it's fine to call into it. We allow this
+        // since it means an SVG data url can synchronously load like other image
+        // types.
+        NoEventDispatchAssertion::AllowSVGImageEvents allowSVGImageEvents;
+
         static FrameLoaderClient* dummyFrameLoaderClient = new EmptyFrameLoaderClient;
 
         Page::PageClients pageClients;
