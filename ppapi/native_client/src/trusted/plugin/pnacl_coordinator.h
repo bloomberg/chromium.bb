@@ -201,9 +201,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   pp::CompletionCallbackFactory<PnaclCoordinator,
                                 pp::ThreadSafeThreadTraits> callback_factory_;
 
-  // The manifest used by resource loading and ld + llc's reverse service
-  // to look up objects and libraries.
-  int32_t manifest_id_;
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
 

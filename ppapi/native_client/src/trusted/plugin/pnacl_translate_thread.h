@@ -42,7 +42,6 @@ class PnaclTranslateThread {
   // Start the translation process. It will continue to run and consume data
   // as it is passed in with PutBytes.
   void RunTranslate(const pp::CompletionCallback& finish_callback,
-                    int32_t manifest_id,
                     const std::vector<TempFile*>* obj_files,
                     TempFile* nexe_file,
                     nacl::DescWrapper* invalid_desc_wrapper,
@@ -110,7 +109,6 @@ class PnaclTranslateThread {
   int64_t compile_time_;
 
   // Data about the translation files, owned by the coordinator
-  int32_t manifest_id_;
   const std::vector<TempFile*>* obj_files_;
   TempFile* nexe_file_;
   nacl::DescWrapper* invalid_desc_wrapper_;

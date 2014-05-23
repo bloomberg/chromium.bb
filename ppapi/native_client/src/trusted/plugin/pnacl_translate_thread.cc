@@ -56,7 +56,6 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                ld_subprocess_active_(false),
                                                done_(false),
                                                compile_time_(0),
-                                               manifest_id_(0),
                                                obj_files_(NULL),
                                                nexe_file_(NULL),
                                                coordinator_error_info_(NULL),
@@ -70,7 +69,6 @@ PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
 
 void PnaclTranslateThread::RunTranslate(
     const pp::CompletionCallback& finish_callback,
-    int32_t manifest_id,
     const std::vector<TempFile*>* obj_files,
     TempFile* nexe_file,
     nacl::DescWrapper* invalid_desc_wrapper,
@@ -81,7 +79,6 @@ void PnaclTranslateThread::RunTranslate(
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
-  manifest_id_ = manifest_id;
   obj_files_ = obj_files;
   nexe_file_ = nexe_file;
   invalid_desc_wrapper_ = invalid_desc_wrapper;
@@ -170,7 +167,7 @@ void PnaclTranslateThread::DoTranslate() {
 
     // On success, ownership of llc_file_handle is transferred.
     llc_subprocess_.reset(plugin_->LoadHelperNaClModule(
-        resources_->GetLlcUrl(), llc_file_handle, manifest_id_, &error_info));
+        resources_->GetLlcUrl(), llc_file_handle, &error_info));
     if (llc_subprocess_.get() == NULL) {
       if (llc_file_handle != PP_kInvalidFileHandle)
         CloseFileHandle(llc_file_handle);
@@ -341,7 +338,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
 
     // On success, ownership of ld_file_handle is transferred.
     ld_subprocess_.reset(plugin_->LoadHelperNaClModule(
-        resources_->GetLdUrl(), ld_file_handle, manifest_id_, &error_info));
+        resources_->GetLdUrl(), ld_file_handle, &error_info));
     if (ld_subprocess_ == NULL) {
       if (ld_file_handle != PP_kInvalidFileHandle)
         CloseFileHandle(ld_file_handle);

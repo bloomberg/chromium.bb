@@ -113,7 +113,6 @@ class Plugin : public pp::Instance {
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
   NaClSubprocess* LoadHelperNaClModule(const nacl::string& helper_url,
                                        PP_FileHandle file_handle,
-                                       int32_t manifest_id,
                                        ErrorInfo* error_info);
 
   enum LengthComputable {

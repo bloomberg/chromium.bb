@@ -129,8 +129,6 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
       new PnaclCoordinator(plugin, pexe_url,
                            pnacl_options,
                            translate_notify_callback);
-  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest_id=%d)\n",
-                 coordinator->manifest_id_));
 
   coordinator->pnacl_init_time_ = NaClGetTimeOfDayMicroseconds();
   int cpus = plugin->nacl_interface()->GetNumberOfProcessors();
@@ -153,8 +151,6 @@ PnaclCoordinator::PnaclCoordinator(
     plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
     translation_finished_reported_(false),
-    manifest_id_(
-        GetNaClInterface()->CreatePnaclManifest(plugin->pp_instance())),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
     architecture_attributes_(GetArchitectureAttributes(plugin)),
@@ -619,7 +615,6 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
 
   CHECK(translate_thread_ != NULL);
   translate_thread_->RunTranslate(report_translate_finished,
-                                  manifest_id_,
                                   &obj_files_,
                                   temp_nexe_file_.get(),
                                   invalid_desc_wrapper_.get(),

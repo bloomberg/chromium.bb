@@ -253,7 +253,6 @@ bool Plugin::LoadNaClModuleContinuationIntern() {
 
 NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
                                              PP_FileHandle file_handle,
-                                             int32_t manifest_id,
                                              ErrorInfo* error_info) {
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
       new NaClSubprocess("helper module", NULL, NULL));
@@ -279,6 +278,10 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(const nacl::string& helper_url,
                            false /* enable_dyncode_syscalls */,
                            false /* enable_exception_handling */,
                            true /* enable_crash_throttling */);
+
+  // Helper NaCl modules always use the PNaCl manifest, as there is no
+  // corresponding NMF.
+  int32_t manifest_id = nacl_interface_->CreatePnaclManifest(pp_instance());
   if (!LoadNaClModuleFromBackgroundThread(file_handle, nacl_subprocess.get(),
                                           manifest_id, params)) {
     return NULL;
