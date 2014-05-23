@@ -41,6 +41,8 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
@@ -245,11 +247,6 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     EXPECT_EQ(kBlue, webView->backgroundColor());
 }
 
-static void disableAccleratedCompositing(WebSettings* webSettings)
-{
-    webSettings->setAcceleratedCompositingEnabled(false);
-}
-
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
 {
     const WebColor kAlphaRed = 0x80FF0000;
@@ -257,11 +254,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     const int kWidth = 100;
     const int kHeight = 100;
 
-    // Make a WebView that is not composited.
-    bool enableJavascript = false;
-    FrameTestHelpers::TestWebFrameClient* frameClient = 0;
-    WebViewClient* viewClient = 0;
-    WebView* webView = m_webViewHelper.initialize(enableJavascript, frameClient, viewClient, &disableAccleratedCompositing);
+    WebView* webView = m_webViewHelper.initialize();
 
     // Set WebView background to green with alpha.
     webView->setBaseBackgroundColor(kAlphaGreen);
@@ -274,7 +267,15 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     ASSERT_TRUE(bitmap.allocN32Pixels(kWidth, kHeight));
     SkCanvas canvas(bitmap);
     canvas.clear(kAlphaRed);
-    webView->paint(&canvas, WebRect(0, 0, kWidth, kHeight));
+
+    WebCore::GraphicsContext context(&canvas);
+
+    // Paint the root of the main frame in the way that CompositedLayerMapping would.
+    WebCore::FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    WebCore::RenderLayer* rootLayer = view->renderView()->layer();
+    WebCore::IntRect paintRect(0, 0, kWidth, kHeight);
+    WebCore::LayerPaintingInfo paintingInfo(rootLayer, paintRect, WebCore::PaintBehaviorNormal, WebCore::LayoutSize());
+    rootLayer->paintLayerContents(&context, paintingInfo, WebCore::PaintLayerPaintingCompositingAllPhases);
 
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
