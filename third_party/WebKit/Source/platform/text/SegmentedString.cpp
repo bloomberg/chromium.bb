@@ -119,7 +119,14 @@ void SegmentedString::close()
 void SegmentedString::append(const SegmentedString& s)
 {
     ASSERT(!m_closed);
-    ASSERT(!s.escaped());
+    if (s.m_pushedChar1) {
+        Vector<UChar, 2> unconsumedData;
+        unconsumedData.append(s.m_pushedChar1);
+        if (s.m_pushedChar2)
+            unconsumedData.append(s.m_pushedChar2);
+        append(SegmentedSubstring(String(unconsumedData)));
+    }
+
     append(s.m_currentString);
     if (s.isComposite()) {
         Deque<SegmentedSubstring>::const_iterator it = s.m_substrings.begin();
@@ -141,7 +148,7 @@ void SegmentedString::prepend(const SegmentedString& s)
             prepend(*it);
     }
     prepend(s.m_currentString);
-    m_currentChar = m_pushedChar1 ? m_pushedChar1 : (m_currentString.m_length ? m_currentString.getCurrentChar() : 0);
+    m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
 }
 
 void SegmentedString::advanceSubstring()
