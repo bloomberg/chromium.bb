@@ -53,6 +53,7 @@
         'mock_node.cc',
         'mock_node.h',
         'mock_util.h',
+        'syscalls_test.cc',
         'path_test.cc',
         'pepper_interface_mock.cc',
         'pepper_interface_mock.h',

@@ -5,6 +5,12 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
+#if defined(__native_client__)
+// Don't wrap mkdir on host builds. This allows us to test against the real
+// "mkdir" on Linux standalone builds.
+
 int mkdir(const char* pathname, mode_t mode) {
   return ki_mkdir(pathname, mode);
 }
+
+#endif
