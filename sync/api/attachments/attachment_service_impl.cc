@@ -95,9 +95,11 @@ void AttachmentServiceImpl::OnSyncDataUpdate(
   // attachments from local storage (bug 356351).
 }
 
-void AttachmentServiceImpl::ReadDone(const GetOrDownloadCallback& callback,
-                                     const AttachmentStore::Result& result,
-                                     scoped_ptr<AttachmentMap> attachments) {
+void AttachmentServiceImpl::ReadDone(
+    const GetOrDownloadCallback& callback,
+    const AttachmentStore::Result& result,
+    scoped_ptr<AttachmentMap> attachments,
+    scoped_ptr<AttachmentIdList> unavailable_attachment_ids) {
   AttachmentService::GetOrDownloadResult get_result =
       AttachmentService::GET_UNSPECIFIED_ERROR;
   if (result == AttachmentStore::SUCCESS) {

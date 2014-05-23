@@ -23,6 +23,7 @@ class FakeAttachmentStoreTest : public testing::Test {
   FakeAttachmentStore store;
   AttachmentStore::Result result;
   scoped_ptr<AttachmentMap> attachments;
+  scoped_ptr<AttachmentIdList> failed_attachment_ids;
 
   AttachmentStore::ReadCallback read_callback;
   AttachmentStore::WriteCallback write_callback;
@@ -38,7 +39,8 @@ class FakeAttachmentStoreTest : public testing::Test {
     read_callback = base::Bind(&FakeAttachmentStoreTest::CopyResultAttachments,
                                base::Unretained(this),
                                &result,
-                               &attachments);
+                               &attachments,
+                               &failed_attachment_ids);
     write_callback = base::Bind(
         &FakeAttachmentStoreTest::CopyResult, base::Unretained(this), &result);
     drop_callback = write_callback;
@@ -59,6 +61,7 @@ class FakeAttachmentStoreTest : public testing::Test {
   void Clear() {
     result = AttachmentStore::UNSPECIFIED_ERROR;
     attachments.reset();
+    failed_attachment_ids.reset();
   }
 
   void CopyResult(AttachmentStore::Result* destination_result,
@@ -66,12 +69,16 @@ class FakeAttachmentStoreTest : public testing::Test {
     *destination_result = source_result;
   }
 
-  void CopyResultAttachments(AttachmentStore::Result* destination_result,
-                             scoped_ptr<AttachmentMap>* destination_attachments,
-                             const AttachmentStore::Result& source_result,
-                             scoped_ptr<AttachmentMap> source_attachments) {
+  void CopyResultAttachments(
+      AttachmentStore::Result* destination_result,
+      scoped_ptr<AttachmentMap>* destination_attachments,
+      scoped_ptr<AttachmentIdList>* destination_failed_attachment_ids,
+      const AttachmentStore::Result& source_result,
+      scoped_ptr<AttachmentMap> source_attachments,
+      scoped_ptr<AttachmentIdList> source_failed_attachment_ids) {
     CopyResult(destination_result, source_result);
     *destination_attachments = source_attachments.Pass();
+    *destination_failed_attachment_ids = source_failed_attachment_ids.Pass();
   }
 };
 
@@ -104,6 +111,7 @@ TEST_F(FakeAttachmentStoreTest, Write_NoOverwriteNoError) {
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
   EXPECT_EQ(attachments->size(), 1U);
+  EXPECT_EQ(failed_attachment_ids->size(), 0U);
   AttachmentMap::const_iterator a1 = attachments->find(attachment1.GetId());
   EXPECT_TRUE(a1 != attachments->end());
   EXPECT_TRUE(attachment1.GetData()->Equals(a1->second.GetData()));
@@ -128,6 +136,7 @@ TEST_F(FakeAttachmentStoreTest, Write_RoundTrip) {
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::SUCCESS);
   EXPECT_EQ(attachments->size(), 2U);
+  EXPECT_EQ(failed_attachment_ids->size(), 0U);
 
   AttachmentMap::const_iterator a1 = attachments->find(attachment1.GetId());
   EXPECT_TRUE(a1 != attachments->end());
@@ -160,6 +169,7 @@ TEST_F(FakeAttachmentStoreTest, Read_OneNotFound) {
   // See that only attachment1 was read.
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 1U);
+  EXPECT_EQ(failed_attachment_ids->size(), 1U);
 }
 
 // Try to drop two attachments when only one exists. Verify that no error occurs
@@ -187,6 +197,8 @@ TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
+  EXPECT_EQ(failed_attachment_ids->size(), 1U);
+  EXPECT_EQ((*failed_attachment_ids)[0], attachment1.GetId());
 
   // Drop both attachment1 and attachment2.
   ids.clear();
@@ -203,6 +215,8 @@ TEST_F(FakeAttachmentStoreTest, Drop_DropTwoButOnlyOneExists) {
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
+  EXPECT_EQ(failed_attachment_ids->size(), 1U);
+  EXPECT_EQ((*failed_attachment_ids)[0], attachment2.GetId());
 }
 
 // Verify that attempting to drop an attachment that does not exist is not an
@@ -227,6 +241,8 @@ TEST_F(FakeAttachmentStoreTest, Drop_DoesNotExist) {
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(attachments->size(), 0U);
+  EXPECT_EQ(failed_attachment_ids->size(), 1U);
+  EXPECT_EQ((*failed_attachment_ids)[0], attachment1.GetId());
 
   // Drop again, see that no error occurs.
   ids.clear();

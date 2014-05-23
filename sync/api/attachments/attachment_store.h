@@ -38,17 +38,21 @@ class SYNC_EXPORT AttachmentStore {
     UNSPECIFIED_ERROR,  // An unspecified error occurred for one or more items.
   };
 
-  typedef base::Callback<void(const Result&, scoped_ptr<AttachmentMap>)>
-      ReadCallback;
+  typedef base::Callback<void(const Result&,
+                              scoped_ptr<AttachmentMap>,
+                              scoped_ptr<AttachmentIdList>)> ReadCallback;
   typedef base::Callback<void(const Result&)> WriteCallback;
   typedef base::Callback<void(const Result&)> DropCallback;
 
   // Asynchronously reads the attachments identified by |ids|.
   //
-  // |callback| will be invoked when finished. If any of the attachments do not
-  // exist or could not be read, |callback|'s Result will be UNSPECIFIED_ERROR
-  // and |callback| may receive a partial result. That is, AttachmentMap may be
-  // empty or may contain the attachments that were read successfully.
+  // |callback| will be invoked when finished. AttachmentStore will attempt to
+  // read all attachments specified in ids. If any of the attachments do not
+  // exist or could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
+  // Callback's AttachmentMap will contain all attachments that were
+  // successfully read, AttachmentIdList will contain attachment ids of
+  // attachments that are unavailable in attachment store, these need to be
+  // downloaded from server.
   //
   // Reads on individual attachments are treated atomically; |callback| will not
   // read only part of an attachment.

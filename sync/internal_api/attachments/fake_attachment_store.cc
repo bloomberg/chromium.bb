@@ -47,6 +47,7 @@ void FakeAttachmentStore::Backend::Read(const AttachmentIdList& ids,
   AttachmentIdList::const_iterator id_iter = ids.begin();
   AttachmentIdList::const_iterator id_end = ids.end();
   scoped_ptr<AttachmentMap> result_map(new AttachmentMap);
+  scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList);
   for (; id_iter != id_end; ++id_iter) {
     const AttachmentId& id = *id_iter;
     syncer::AttachmentMap::iterator attachment_iter =
@@ -55,12 +56,18 @@ void FakeAttachmentStore::Backend::Read(const AttachmentIdList& ids,
       const Attachment& attachment = attachment_iter->second;
       result_map->insert(std::make_pair(id, attachment));
     } else {
-      result_code = UNSPECIFIED_ERROR;
-      break;
+      unavailable_attachments->push_back(id);
     }
   }
+  if (!unavailable_attachments->empty()) {
+    result_code = UNSPECIFIED_ERROR;
+  }
   frontend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback, result_code, base::Passed(&result_map)));
+      FROM_HERE,
+      base::Bind(callback,
+                 result_code,
+                 base::Passed(&result_map),
+                 base::Passed(&unavailable_attachments)));
 }
 
 void FakeAttachmentStore::Backend::Write(const AttachmentList& attachments,

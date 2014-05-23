@@ -45,7 +45,8 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
  private:
   void ReadDone(const GetOrDownloadCallback& callback,
                 const AttachmentStore::Result& result,
-                scoped_ptr<AttachmentMap> attachments);
+                scoped_ptr<AttachmentMap> attachments,
+                scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
   void DropDone(const DropCallback& callback,
                 const AttachmentStore::Result& result);
   void WriteDone(const StoreCallback& callback,

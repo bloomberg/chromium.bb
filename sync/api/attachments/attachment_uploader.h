@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
 
@@ -36,7 +35,7 @@ class SYNC_EXPORT AttachmentUploader {
   // or otherwise).
   //
   // |callback| will receive an UploadResult code and an updated AttachmentId
-  // |containing the server address of the newly uploaded attachment.
+  // containing the server address of the newly uploaded attachment.
   virtual void UploadAttachment(const Attachment& attachment,
                                 const UploadCallback& callback) = 0;
 };
