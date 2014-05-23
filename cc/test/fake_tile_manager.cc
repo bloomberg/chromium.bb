@@ -63,26 +63,17 @@ base::LazyInstance<FakeRasterizerImpl> g_fake_rasterizer =
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
+                  base::MessageLoopProxy::current(),
                   NULL,
                   g_fake_rasterizer.Pointer(),
-                  true,
                   NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
+                  base::MessageLoopProxy::current(),
                   resource_pool,
                   g_fake_rasterizer.Pointer(),
-                  true,
-                  NULL) {}
-
-FakeTileManager::FakeTileManager(TileManagerClient* client,
-                                 ResourcePool* resource_pool,
-                                 bool allow_on_demand_raster)
-    : TileManager(client,
-                  resource_pool,
-                  g_fake_rasterizer.Pointer(),
-                  allow_on_demand_raster,
                   NULL) {}
 
 FakeTileManager::~FakeTileManager() {}

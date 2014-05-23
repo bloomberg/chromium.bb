@@ -1240,21 +1240,21 @@ void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
 }
 
-void LayerTreeHostImpl::NotifyTileInitialized(const Tile* tile) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::NotifyTileInitialized");
+void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::NotifyTileStateChanged");
 
   if (active_tree_) {
     LayerImpl* layer_impl =
         active_tree_->FindActiveTreeLayerById(tile->layer_id());
     if (layer_impl)
-      layer_impl->NotifyTileInitialized(tile);
+      layer_impl->NotifyTileStateChanged(tile);
   }
 
   if (pending_tree_) {
     LayerImpl* layer_impl =
         pending_tree_->FindPendingTreeLayerById(tile->layer_id());
     if (layer_impl)
-      layer_impl->NotifyTileInitialized(tile);
+      layer_impl->NotifyTileStateChanged(tile);
   }
 }
 
@@ -1922,9 +1922,9 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
 
   tile_manager_ =
       TileManager::Create(this,
+                          proxy_->ImplThreadTaskRunner(),
                           resource_pool_.get(),
                           raster_worker_pool_->AsRasterizer(),
-                          GetRendererCapabilities().allow_rasterize_on_demand,
                           rendering_stats_instrumentation_);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());

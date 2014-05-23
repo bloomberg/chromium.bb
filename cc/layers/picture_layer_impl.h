@@ -92,7 +92,7 @@ class CC_EXPORT PictureLayerImpl
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void UpdateTilePriorities() OVERRIDE;
-  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE;
+  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
@@ -136,6 +136,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
   WhichTree GetTree() const;
   bool IsOnActiveOrPendingTree() const;
+  bool AllTilesRequiredForActivationAreReadyToDraw() const;
 
  protected:
   friend class LayerRasterTileIterator;
