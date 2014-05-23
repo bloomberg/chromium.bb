@@ -206,6 +206,7 @@ void CSSDefaultStyleSheets::trace(Visitor* visitor)
     visitor->trace(m_defaultPrintStyle);
     visitor->trace(m_defaultViewSourceStyle);
     visitor->trace(m_defaultXHTMLMobileProfileStyle);
+    visitor->trace(m_defaultTransitionStyle);
     visitor->trace(m_defaultStyleSheet);
     visitor->trace(m_viewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);
