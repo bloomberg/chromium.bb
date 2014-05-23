@@ -5,10 +5,10 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "d1fa94fc01d3aace2c6345f6f7bcc875e41cd021",
+          "hash": "0003f88876beff98641b0c70f7f39ae81fa6b456",
           "name": "pnacl-translator.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13222/naclsdk_pnacl_translator.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13228/naclsdk_pnacl_translator.tgz"
         }
       ],
       "version": 1
@@ -17,10 +17,10 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "d1fa94fc01d3aace2c6345f6f7bcc875e41cd021",
+          "hash": "0003f88876beff98641b0c70f7f39ae81fa6b456",
           "name": "pnacl-translator.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13222/naclsdk_pnacl_translator.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13228/naclsdk_pnacl_translator.tgz"
         }
       ],
       "version": 1
@@ -29,10 +29,10 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "d1fa94fc01d3aace2c6345f6f7bcc875e41cd021",
+          "hash": "0003f88876beff98641b0c70f7f39ae81fa6b456",
           "name": "pnacl-translator.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13222/naclsdk_pnacl_translator.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13228/naclsdk_pnacl_translator.tgz"
         }
       ],
       "version": 1
@@ -41,15 +41,15 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "d1fa94fc01d3aace2c6345f6f7bcc875e41cd021",
+          "hash": "0003f88876beff98641b0c70f7f39ae81fa6b456",
           "name": "pnacl-translator.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13222/naclsdk_pnacl_translator.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13228/naclsdk_pnacl_translator.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": 13222,
-  "revision_hash": "a29af499055680e435dea5ce8615b0e93bdda12c"
+  "revision": 13228,
+  "revision_hash": "76616469c2631c2006a7e64ef04d494c3d75e574"
 }
