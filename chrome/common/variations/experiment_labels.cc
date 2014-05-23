@@ -58,10 +58,8 @@ base::string16 BuildGoogleUpdateExperimentLabel(
     if (id == EMPTY_ID)
       continue;
 
-    if (!experiment_labels.empty()) {
-      experiment_labels +=
-          base::ASCIIToUTF16(google_update::kExperimentLabelSep);
-    }
+    if (!experiment_labels.empty())
+      experiment_labels += google_update::kExperimentLabelSeparator;
     experiment_labels += CreateSingleExperimentLabel(++counter, id,
                                                      current_time);
   }
@@ -70,15 +68,12 @@ base::string16 BuildGoogleUpdateExperimentLabel(
 }
 
 base::string16 ExtractNonVariationLabels(const base::string16& labels) {
-  const base::string16 separator =
-      base::ASCIIToUTF16(google_update::kExperimentLabelSep);
-  base::string16 non_variation_labels;
-
   // First, split everything by the label separator.
   std::vector<base::string16> entries;
-  base::SplitStringUsingSubstr(labels, separator, &entries);
+  base::SplitString(labels, google_update::kExperimentLabelSeparator, &entries);
 
   // For each label, keep the ones that do not look like a Variations label.
+  base::string16 non_variation_labels;
   for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
     if (it->empty() ||
@@ -88,7 +83,7 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
 
     // Dump the whole thing, including the timestamp.
     if (!non_variation_labels.empty())
-      non_variation_labels += separator;
+      non_variation_labels += google_update::kExperimentLabelSeparator;
     non_variation_labels += *it;
   }
 
@@ -97,8 +92,7 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
 
 base::string16 CombineExperimentLabels(const base::string16& variation_labels,
                                        const base::string16& other_labels) {
-  const base::string16 separator =
-      base::ASCIIToUTF16(google_update::kExperimentLabelSep);
+  const base::string16 separator(1, google_update::kExperimentLabelSeparator);
   DCHECK(!StartsWith(variation_labels, separator, false));
   DCHECK(!EndsWith(variation_labels, separator, false));
   DCHECK(!StartsWith(other_labels, separator, false));
@@ -106,7 +100,7 @@ base::string16 CombineExperimentLabels(const base::string16& variation_labels,
   // Note that if either label is empty, a separator is not necessary.
   base::string16 combined_labels = other_labels;
   if (!other_labels.empty() && !variation_labels.empty())
-    combined_labels += separator;
+    combined_labels += google_update::kExperimentLabelSeparator;
   combined_labels += variation_labels;
   return combined_labels;
 }

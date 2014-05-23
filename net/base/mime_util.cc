@@ -924,8 +924,7 @@ void GetExtensionsFromHardCodedMappings(
   for (size_t i = 0; i < mappings_len; ++i) {
     if (StartsWithASCII(mappings[i].mime_type, leading_mime_type, false)) {
       std::vector<string> this_extensions;
-      base::SplitStringUsingSubstr(mappings[i].extensions, ",",
-                                   &this_extensions);
+      base::SplitString(mappings[i].extensions, ',', &this_extensions);
       for (size_t j = 0; j < this_extensions.size(); ++j) {
 #if defined(OS_WIN)
         base::FilePath::StringType extension(

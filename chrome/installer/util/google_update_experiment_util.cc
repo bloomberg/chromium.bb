@@ -17,7 +17,7 @@ namespace google_update {
 const wchar_t kExperimentLabels[] = L"experiment_labels";
 #endif
 
-const char kExperimentLabelSep[] = ";";
+const base::char16 kExperimentLabelSeparator = ';';
 
 }  // namespace google_update
 

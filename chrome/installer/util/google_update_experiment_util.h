@@ -19,9 +19,8 @@ namespace google_update {
 extern const wchar_t kExperimentLabels[];
 #endif
 
-// The separator used to separate items in kExperimentLabels.  This is a UTF-8
-// string because it is used on platforms other than Windows.
-extern const char kExperimentLabelSep[];
+// The separator used to separate items in kExperimentLabels.
+extern const base::char16 kExperimentLabelSeparator;
 
 }  // namespace google_update
 
