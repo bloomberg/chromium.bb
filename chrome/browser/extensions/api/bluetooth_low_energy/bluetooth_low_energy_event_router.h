@@ -140,6 +140,14 @@ class BluetoothLowEnergyEventRouter
                                 const base::Closure& callback,
                                 const base::Closure& error_callback);
 
+  // Sends a request to read the value of the descriptor with instance ID
+  // |instance_id|. Returns false, if no such descriptor is known. Otherwise,
+  // returns true and invokes |callback| on success, and |error_callback| on
+  // failure.
+  bool ReadDescriptorValue(const std::string& instance_id,
+                           const base::Closure& callback,
+                           const base::Closure& error_callback);
+
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 
@@ -204,8 +212,8 @@ class BluetoothLowEnergyEventRouter
   device::BluetoothGattDescriptor* FindDescriptorById(
       const std::string& instance_id) const;
 
-  // Called by BluetoothGattCharacteristic in response to
-  // ReadRemoteCharacteristic.
+  // Called by BluetoothGattCharacteristic and BluetoothGattDescriptor in
+  // response to ReadRemoteCharacteristic and ReadRemoteDescriptor.
   void ValueCallback(const base::Closure& callback,
                      const std::vector<uint8>& value);
 
