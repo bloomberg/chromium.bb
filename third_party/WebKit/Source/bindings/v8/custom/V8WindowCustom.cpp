@@ -290,46 +290,53 @@ void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
 
 class DialogHandler {
 public:
-    explicit DialogHandler(v8::Handle<v8::Value> dialogArguments)
-        : m_dialogArguments(dialogArguments)
+    explicit DialogHandler(v8::Handle<v8::Value> dialogArguments, ScriptState* scriptState)
+        : m_scriptState(scriptState)
+        , m_dialogArguments(dialogArguments)
     {
     }
 
-    void dialogCreated(DOMWindow*, v8::Isolate*);
-    v8::Handle<v8::Value> returnValue(v8::Isolate*) const;
+    void dialogCreated(DOMWindow*);
+    v8::Handle<v8::Value> returnValue() const;
 
 private:
+    RefPtr<ScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptStateForDialogFrame;
     v8::Handle<v8::Value> m_dialogArguments;
-    v8::Handle<v8::Context> m_dialogContext;
 };
 
-inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* isolate)
+void DialogHandler::dialogCreated(DOMWindow* dialogFrame)
 {
-    // FIXME: It's wrong to use the current world. Instead we should use the world
-    // from which the modal dialog was requested.
-    m_dialogContext = dialogFrame->frame() ? toV8Context(isolate, dialogFrame->frame(), DOMWrapperWorld::current(isolate)) : v8::Local<v8::Context>();
-    if (m_dialogContext.IsEmpty())
-        return;
     if (m_dialogArguments.IsEmpty())
         return;
-    v8::Context::Scope scope(m_dialogContext);
-    m_dialogContext->Global()->Set(v8AtomicString(isolate, "dialogArguments"), m_dialogArguments);
+    v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Handle<v8::Context> context = toV8Context(isolate, dialogFrame->frame(), m_scriptState->world());
+    if (context.IsEmpty())
+        return;
+    m_scriptStateForDialogFrame = ScriptState::from(context);
+
+    ScriptState::Scope scope(m_scriptStateForDialogFrame.get());
+    m_scriptStateForDialogFrame->context()->Global()->Set(v8AtomicString(isolate, "dialogArguments"), m_dialogArguments);
 }
 
-inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) const
+v8::Handle<v8::Value> DialogHandler::returnValue() const
 {
-    if (m_dialogContext.IsEmpty())
-        return v8::Undefined(isolate);
-    v8::Context::Scope scope(m_dialogContext);
-    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8AtomicString(isolate, "returnValue"));
+    if (!m_scriptStateForDialogFrame)
+        return v8Undefined();
+    ASSERT(!m_scriptStateForDialogFrame->contextIsEmpty());
+
+    v8::Isolate* isolate = m_scriptStateForDialogFrame->isolate();
+    v8::EscapableHandleScope handleScope(isolate);
+    ScriptState::Scope scope(m_scriptStateForDialogFrame.get());
+    v8::Local<v8::Value> returnValue = m_scriptStateForDialogFrame->context()->Global()->Get(v8AtomicString(isolate, "returnValue"));
     if (returnValue.IsEmpty())
-        return v8::Undefined(isolate);
-    return returnValue;
+        return v8Undefined();
+    return handleScope.Escape(returnValue);
 }
 
 static void setUpDialog(DOMWindow* dialog, void* handler)
 {
-    static_cast<DialogHandler*>(handler)->dialogCreated(dialog, v8::Isolate::GetCurrent());
+    static_cast<DialogHandler*>(handler)->dialogCreated(dialog);
 }
 
 void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -342,12 +349,12 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
-    DialogHandler handler(info[1]);
+    DialogHandler handler(info[1], ScriptState::current(info.GetIsolate()));
     TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, dialogFeaturesString, info[2]);
 
     impl->showModalDialog(urlString, dialogFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), setUpDialog, &handler);
 
-    v8SetReturnValue(info, handler.returnValue(info.GetIsolate()));
+    v8SetReturnValue(info, handler.returnValue());
 }
 
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
