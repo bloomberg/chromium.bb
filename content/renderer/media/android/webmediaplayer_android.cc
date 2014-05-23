@@ -434,12 +434,6 @@ WebMediaPlayer::ReadyState WebMediaPlayerAndroid::readyState() const {
   return ready_state_;
 }
 
-const WebTimeRanges& WebMediaPlayerAndroid::buffered() {
-  if (media_source_delegate_)
-    return media_source_delegate_->Buffered();
-  return buffered_;
-}
-
 WebTimeRanges WebMediaPlayerAndroid::buffered() const {
   if (media_source_delegate_)
     return media_source_delegate_->Buffered();

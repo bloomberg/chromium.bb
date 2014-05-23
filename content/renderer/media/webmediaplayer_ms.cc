@@ -301,11 +301,6 @@ WebMediaPlayer::ReadyState WebMediaPlayerMS::readyState() const {
   return ready_state_;
 }
 
-const blink::WebTimeRanges& WebMediaPlayerMS::buffered() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return buffered_;
-}
-
 blink::WebTimeRanges WebMediaPlayerMS::buffered() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return buffered_;

@@ -98,7 +98,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual const blink::WebTimeRanges& buffered();
   virtual blink::WebTimeRanges buffered() const;
   virtual double maxTimeSeekable() const;
 

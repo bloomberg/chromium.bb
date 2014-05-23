@@ -184,12 +184,6 @@ void MediaSourceDelegate::InitializeDemuxer() {
                              false);
 }
 
-const blink::WebTimeRanges& MediaSourceDelegate::Buffered() {
-  buffered_web_time_ranges_ =
-      ConvertToWebTimeRanges(buffered_time_ranges_);
-  return buffered_web_time_ranges_;
-}
-
 blink::WebTimeRanges MediaSourceDelegate::Buffered() const {
   return ConvertToWebTimeRanges(buffered_time_ranges_);
 }

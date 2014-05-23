@@ -75,7 +75,6 @@ class WebMediaPlayerMS
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
   virtual void setPreload(blink::WebMediaPlayer::Preload preload);
-  virtual const blink::WebTimeRanges& buffered();
   virtual blink::WebTimeRanges buffered() const;
   virtual double maxTimeSeekable() const;
 
