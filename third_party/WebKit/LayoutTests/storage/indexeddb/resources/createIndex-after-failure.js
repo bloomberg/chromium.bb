@@ -30,17 +30,16 @@ function createIndex() {
     evalAndExpectException("objectStore.deleteIndex('index')", "DOMException.NOT_FOUND_ERR", "'NotFoundError'");
     debug("Now requesting object2");
     var req3 = objectStore.get("object2");
-    req3.onsuccess = deleteIndexAfterGet;
-    req3.onerror = unexpectedErrorCallback;
+    req3.onsuccess = unexpectedSuccessCallback;
+    req3.onerror = deleteIndexAfterGetError;
     debug("now we wait.");
 }
 
-function deleteIndexAfterGet() {
-    // so we will delete it next, but it should already be gone... right?
-    debug("deleteIndexAfterGet()");
+function deleteIndexAfterGetError() {
+    debug("deleteIndexAfterGetError()");
     // the index should still be gone, and this should not crash.
-    evalAndExpectException("objectStore.deleteIndex('index')", "DOMException.NOT_FOUND_ERR", "'NotFoundError'");
-    evalAndExpectException("objectStore.deleteIndex('index')", "DOMException.NOT_FOUND_ERR", "'NotFoundError'");
+    evalAndExpectException("objectStore.deleteIndex('index')", "0", "'TransactionInactiveError'");
+    evalAndExpectException("objectStore.deleteIndex('index')", "0", "'TransactionInactiveError'");
 
     finishJSTest();
 }

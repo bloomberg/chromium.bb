@@ -404,7 +404,6 @@ crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
-crbug.com/374230 storage/indexeddb/createIndex-deleteObjectStore.htm [ Pass Failure Timeout Crash ]
 
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
@@ -985,9 +984,6 @@ crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
-
-# Temporarily disabled so crrev.com/277583002 can land
-crbug.com/370056 storage/indexeddb/createIndex-after-failure.html [ Skip ]
 
 crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 

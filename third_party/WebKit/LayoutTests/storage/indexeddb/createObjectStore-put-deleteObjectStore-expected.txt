@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Create store/put/delete store should not crash 
+Harness: the test ran to completion.
+
