@@ -109,19 +109,19 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 // ImageBitmaps that have crop rects outside of the bounds of the HTMLImageElement do not have elevated CacheLiveResourcePriority.
 TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> imageNoCrop = HTMLImageElement::create(*Document::create().get());
+    RefPtrWillBePersistent<HTMLImageElement> imageNoCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageNoCrop = new ImageResource(ResourceRequest("http://foo.com/1"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageNoCrop->setImageResource(cachedImageNoCrop.get());
 
-    RefPtrWillBeRawPtr<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(*Document::create().get());
+    RefPtrWillBePersistent<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageInteriorCrop = new ImageResource(ResourceRequest("http://foo.com/2"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageInteriorCrop->setImageResource(cachedImageInteriorCrop.get());
 
-    RefPtrWillBeRawPtr<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(*Document::create().get());
+    RefPtrWillBePersistent<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageExteriorCrop = new ImageResource(ResourceRequest("http://foo.com/3"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageExteriorCrop->setImageResource(cachedImageExteriorCrop.get());
 
-    RefPtrWillBeRawPtr<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(*Document::create().get());
+    RefPtrWillBePersistent<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(*Document::create().get());
     ResourcePtr<ImageResource> cachedImageOutsideCrop = new ImageResource(ResourceRequest("http://foo.com/4"), BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     imageOutsideCrop->setImageResource(cachedImageOutsideCrop.get());
 
