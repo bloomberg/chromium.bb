@@ -316,6 +316,13 @@ HTMLTreeBuilder::~HTMLTreeBuilder()
 {
 }
 
+void HTMLTreeBuilder::trace(Visitor* visitor)
+{
+    visitor->trace(m_tree);
+    visitor->trace(m_parser);
+    visitor->trace(m_scriptToProcess);
+}
+
 void HTMLTreeBuilder::detach()
 {
 #ifndef NDEBUG
@@ -344,7 +351,7 @@ HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
 {
 }
 
-PassRefPtr<Element> HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
+PassRefPtrWillBeRawPtr<Element> HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
 {
     ASSERT(m_scriptToProcess);
     ASSERT(!m_tree.hasPendingTasks());
@@ -1775,7 +1782,7 @@ void HTMLTreeBuilder::processEndTagForInBody(AtomicHTMLToken* token)
         return;
     }
     if (token->name() == formTag) {
-        RefPtr<Element> node = m_tree.takeForm();
+        RefPtrWillBeRawPtr<Element> node = m_tree.takeForm();
         if (!node || !m_tree.openElements()->inScope(node.get())) {
             parseError(token);
             return;

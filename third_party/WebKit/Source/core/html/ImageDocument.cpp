@@ -76,9 +76,9 @@ private:
 
 class ImageDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtr<ImageDocumentParser> create(ImageDocument* document)
+    static PassRefPtrWillBeRawPtr<ImageDocumentParser> create(ImageDocument* document)
     {
-        return adoptRef(new ImageDocumentParser(document));
+        return adoptRefWillBeNoop(new ImageDocumentParser(document));
     }
 
     ImageDocument* document() const
@@ -173,7 +173,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtr<DocumentParser> ImageDocument::createParser()
+PassRefPtrWillBeRawPtr<DocumentParser> ImageDocument::createParser()
 {
     return ImageDocumentParser::create(this);
 }

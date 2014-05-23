@@ -50,9 +50,9 @@ using namespace HTMLNames;
 // FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtr<MediaDocumentParser> create(MediaDocument* document)
+    static PassRefPtrWillBeRawPtr<MediaDocumentParser> create(MediaDocument* document)
     {
-        return adoptRef(new MediaDocumentParser(document));
+        return adoptRefWillBeNoop(new MediaDocumentParser(document));
     }
 
 private:
@@ -72,7 +72,7 @@ private:
 void MediaDocumentParser::createDocumentStructure()
 {
     ASSERT(document());
-    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
+    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
 
@@ -123,7 +123,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtr<DocumentParser> MediaDocument::createParser()
+PassRefPtrWillBeRawPtr<DocumentParser> MediaDocument::createParser()
 {
     return MediaDocumentParser::create(this);
 }

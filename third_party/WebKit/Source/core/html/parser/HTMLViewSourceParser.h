@@ -36,9 +36,9 @@ namespace WebCore {
 
 class HTMLViewSourceParser FINAL :  public DecodedDataDocumentParser {
 public:
-    static PassRefPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument& document, const String& mimeType)
+    static PassRefPtrWillBeRawPtr<HTMLViewSourceParser> create(HTMLViewSourceDocument& document, const String& mimeType)
     {
-        return adoptRef(new HTMLViewSourceParser(document, mimeType));
+        return adoptRefWillBeNoop(new HTMLViewSourceParser(document, mimeType));
     }
     virtual ~HTMLViewSourceParser() { }
 

@@ -39,6 +39,8 @@
 namespace WebCore {
 
 struct HTMLConstructionSiteTask {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     enum Operation {
         Insert,
         InsertText, // Handles possible merging of text nodes.
@@ -53,6 +55,13 @@ struct HTMLConstructionSiteTask {
     {
     }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(parent);
+        visitor->trace(nextChild);
+        visitor->trace(child);
+    }
+
     ContainerNode* oldParent()
     {
         // It's sort of ugly, but we store the |oldParent| in the |child| field
@@ -62,9 +71,9 @@ struct HTMLConstructionSiteTask {
     }
 
     Operation operation;
-    RefPtr<ContainerNode> parent;
-    RefPtr<Node> nextChild;
-    RefPtr<Node> child;
+    RefPtrWillBeMember<ContainerNode> parent;
+    RefPtrWillBeMember<Node> nextChild;
+    RefPtrWillBeMember<Node> child;
     bool selfClosing;
 };
 
@@ -89,10 +98,12 @@ class HTMLFormElement;
 
 class HTMLConstructionSite {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
+    DISALLOW_ALLOCATION();
 public:
     HTMLConstructionSite(Document*, ParserContentPolicy);
     HTMLConstructionSite(DocumentFragment*, ParserContentPolicy);
     ~HTMLConstructionSite();
+    void trace(Visitor*);
 
     void detach();
 
@@ -151,7 +162,7 @@ public:
     PassRefPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 
     bool shouldFosterParent() const;
-    void fosterParent(PassRefPtr<Node>);
+    void fosterParent(PassRefPtrWillBeRawPtr<Node>);
 
     bool indexOfFirstUnopenFormattingElement(unsigned& firstUnopenElementIndex) const;
     void reconstructTheActiveFormattingElements();
@@ -177,7 +188,7 @@ public:
 
     void setForm(HTMLFormElement*);
     HTMLFormElement* form() const { return m_form.get(); }
-    PassRefPtr<HTMLFormElement> takeForm();
+    PassRefPtrWillBeRawPtr<HTMLFormElement> takeForm();
 
     ParserContentPolicy parserContentPolicy() { return m_parserContentPolicy; }
 
@@ -204,12 +215,12 @@ public:
 private:
     // In the common case, this queue will have only one task because most
     // tokens produce only one DOM mutation.
-    typedef Vector<HTMLConstructionSiteTask, 1> TaskQueue;
+    typedef WillBeHeapVector<HTMLConstructionSiteTask, 1> TaskQueue;
 
     void setCompatibilityMode(Document::CompatibilityMode);
     void setCompatibilityModeFromDoctype(const String& name, const String& publicId, const String& systemId);
 
-    void attachLater(ContainerNode* parent, PassRefPtr<Node> child, bool selfClosing = false);
+    void attachLater(ContainerNode* parent, PassRefPtrWillBeRawPtr<Node> child, bool selfClosing = false);
 
     void findFosterSite(HTMLConstructionSiteTask&);
 
@@ -222,15 +233,15 @@ private:
     void executeTask(HTMLConstructionSiteTask&);
     void queueTask(const HTMLConstructionSiteTask&);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
 
     // This is the root ContainerNode to which the parser attaches all newly
     // constructed nodes. It points to a DocumentFragment when parsing fragments
     // and a Document in all other cases.
-    ContainerNode* m_attachmentRoot;
+    RawPtrWillBeMember<ContainerNode> m_attachmentRoot;
 
     RefPtr<HTMLStackItem> m_head;
-    RefPtrWillBePersistent<HTMLFormElement> m_form;
+    RefPtrWillBeMember<HTMLFormElement> m_form;
     mutable HTMLElementStack m_openElements;
     mutable HTMLFormattingElementList m_activeFormattingElements;
 

@@ -324,7 +324,7 @@ void XMLDocumentParser::clearCurrentNodeStack()
 {
     if (m_currentNode && m_currentNode != document())
         m_currentNode->deref();
-    m_currentNode = 0;
+    m_currentNode = nullptr;
     m_leafTextNode = nullptr;
 
     if (m_currentNodeStack.size()) { // Aborted parsing.
@@ -357,7 +357,7 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
 
     // JavaScript can detach the parser. Make sure this is not released
     // before the end of this method.
-    RefPtr<XMLDocumentParser> protect(this);
+    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
     doWrite(source.toString());
 }
@@ -457,14 +457,14 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     m_pendingScript->removeClient(this);
     m_pendingScript = 0;
 
-    RefPtr<Element> e = m_scriptElement;
+    RefPtrWillBeRawPtr<Element> e = m_scriptElement;
     m_scriptElement = nullptr;
 
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(e.get());
     ASSERT(scriptLoader);
 
     // JavaScript can detach this parser, make sure it's kept alive even if detached.
-    RefPtr<XMLDocumentParser> protect(this);
+    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
     if (errorOccurred)
         scriptLoader->dispatchErrorEvent();
@@ -505,7 +505,7 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
         return true;
     }
 
-    RefPtr<XMLDocumentParser> parser = XMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
+    RefPtrWillBeRawPtr<XMLDocumentParser> parser = XMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
     bool wellFormed = parser->appendFragmentSource(chunk);
     // Do not call finish().  Current finish() and doEnd() implementations touch the main Document/loader
     // and can cause crashes in the fragment case.
@@ -741,7 +741,7 @@ bool XMLDocumentParser::supportsXMLVersion(const String& version)
 
 XMLDocumentParser::XMLDocumentParser(Document& document, FrameView* frameView)
     : ScriptableDocumentParser(document)
-    , m_view(frameView)
+    , m_hasView(frameView)
     , m_context(nullptr)
     , m_currentNode(&document)
     , m_isCurrentlyParsing8BitChunk(false)
@@ -765,7 +765,7 @@ XMLDocumentParser::XMLDocumentParser(Document& document, FrameView* frameView)
 
 XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parentElement, ParserContentPolicy parserContentPolicy)
     : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
-    , m_view(0)
+    , m_hasView(false)
     , m_context(nullptr)
     , m_currentNode(fragment)
     , m_isCurrentlyParsing8BitChunk(false)
@@ -826,13 +826,27 @@ XMLParserContext::~XMLParserContext()
 
 XMLDocumentParser::~XMLDocumentParser()
 {
+#if !ENABLE(OILPAN)
     // The XMLDocumentParser will always be detached before being destroyed.
     ASSERT(m_currentNodeStack.isEmpty());
     ASSERT(!m_currentNode);
+#endif
 
     // FIXME: m_pendingScript handling should be moved into XMLDocumentParser.cpp!
     if (m_pendingScript)
         m_pendingScript->removeClient(this);
+}
+
+void XMLDocumentParser::trace(Visitor* visitor)
+{
+    visitor->trace(m_currentNode);
+#if ENABLE(OILPAN)
+    visitor->trace(m_currentNodeStack);
+#endif
+    visitor->trace(m_leafTextNode);
+    visitor->trace(m_xmlErrors);
+    visitor->trace(m_scriptElement);
+    ScriptableDocumentParser::trace(visitor);
 }
 
 void XMLDocumentParser::doWrite(const String& parseString)
@@ -848,7 +862,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
     if (parseString.length()) {
         // JavaScript may cause the parser to detach during parseChunk
         // keep this alive until this function is done.
-        RefPtr<XMLDocumentParser> protect(this);
+        RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
         XMLDocumentParserScope scope(document()->fetcher());
         TemporaryChange<bool> encodingScope(m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
@@ -998,11 +1012,11 @@ void XMLDocumentParser::endElementNs()
 
     // JavaScript can detach the parser.  Make sure this is not released
     // before the end of this method.
-    RefPtr<XMLDocumentParser> protect(this);
+    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
 
     exitText();
 
-    RefPtr<ContainerNode> n = m_currentNode;
+    RefPtrWillBeRawPtr<ContainerNode> n = m_currentNode;
     if (m_currentNode->isElementNode())
         toElement(n.get())->finishParsingChildren();
 
@@ -1012,7 +1026,7 @@ void XMLDocumentParser::endElementNs()
         return;
     }
 
-    if (!n->isElementNode() || !m_view) {
+    if (!n->isElementNode() || !m_hasView) {
         popCurrentNode();
         return;
     }

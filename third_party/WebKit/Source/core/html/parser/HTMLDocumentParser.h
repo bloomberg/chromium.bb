@@ -66,13 +66,14 @@ class ScriptSourceCode;
 class PumpSession;
 
 class HTMLDocumentParser :  public ScriptableDocumentParser, HTMLScriptRunnerHost, ResourceClient {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassRefPtr<HTMLDocumentParser> create(HTMLDocument& document, bool reportErrors)
+    static PassRefPtrWillBeRawPtr<HTMLDocumentParser> create(HTMLDocument& document, bool reportErrors)
     {
-        return adoptRef(new HTMLDocumentParser(document, reportErrors));
+        return adoptRefWillBeNoop(new HTMLDocumentParser(document, reportErrors));
     }
     virtual ~HTMLDocumentParser();
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Exposed for HTMLParserScheduler
     void resumeParsingAfterYield();
@@ -118,9 +119,9 @@ protected:
     void forcePlaintextForTextDocument();
 
 private:
-    static PassRefPtr<HTMLDocumentParser> create(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
+    static PassRefPtrWillBeRawPtr<HTMLDocumentParser> create(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
     {
-        return adoptRef(new HTMLDocumentParser(fragment, contextElement, parserContentPolicy));
+        return adoptRefWillBeNoop(new HTMLDocumentParser(fragment, contextElement, parserContentPolicy));
     }
 
     // DocumentParser
@@ -186,7 +187,7 @@ private:
     OwnPtr<HTMLToken> m_token;
     OwnPtr<HTMLTokenizer> m_tokenizer;
     OwnPtr<HTMLScriptRunner> m_scriptRunner;
-    OwnPtr<HTMLTreeBuilder> m_treeBuilder;
+    OwnPtrWillBeMember<HTMLTreeBuilder> m_treeBuilder;
     OwnPtr<HTMLPreloadScanner> m_preloadScanner;
     OwnPtr<HTMLPreloadScanner> m_insertionPreloadScanner;
     OwnPtr<HTMLParserScheduler> m_parserScheduler;

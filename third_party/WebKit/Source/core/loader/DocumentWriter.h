@@ -30,6 +30,7 @@
 #define DocumentWriter_h
 
 #include "core/loader/TextResourceDecoderBuilder.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -76,7 +77,7 @@ private:
     Document* m_document;
     TextResourceDecoderBuilder m_decoderBuilder;
 
-    RefPtr<DocumentParser> m_parser;
+    RefPtrWillBePersistent<DocumentParser> m_parser;
 };
 
 } // namespace WebCore

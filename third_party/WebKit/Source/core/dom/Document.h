@@ -527,7 +527,7 @@ public:
     DocumentLoader* loader() const;
 
     void open(Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
-    PassRefPtr<DocumentParser> implicitOpen();
+    PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen();
 
     // close() is the DOM API document.close()
     void close(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -580,7 +580,7 @@ public:
 
     CSSStyleSheet& elementSheet();
 
-    virtual PassRefPtr<DocumentParser> createParser();
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser();
     DocumentParser* parser() const { return m_parser.get(); }
     ScriptableDocumentParser* scriptableDocumentParser() const;
 
@@ -1193,7 +1193,7 @@ private:
     HTMLImportsController* m_importsController;
 
     RefPtrWillBeMember<ResourceFetcher> m_fetcher;
-    RefPtr<DocumentParser> m_parser;
+    RefPtrWillBeMember<DocumentParser> m_parser;
     unsigned m_activeParserCount;
     RefPtrWillBeMember<ContextFeatures> m_contextFeatures;
 

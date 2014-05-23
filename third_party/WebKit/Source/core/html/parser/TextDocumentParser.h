@@ -32,9 +32,9 @@ namespace WebCore {
 
 class TextDocumentParser FINAL : public HTMLDocumentParser {
 public:
-    static PassRefPtr<TextDocumentParser> create(HTMLDocument& document)
+    static PassRefPtrWillBeRawPtr<TextDocumentParser> create(HTMLDocument& document)
     {
-        return adoptRef(new TextDocumentParser(document));
+        return adoptRefWillBeNoop(new TextDocumentParser(document));
     }
     virtual ~TextDocumentParser();
 

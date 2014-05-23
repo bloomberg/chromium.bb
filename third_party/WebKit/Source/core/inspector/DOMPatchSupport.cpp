@@ -83,7 +83,7 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* domEditor, Document& document)
 
 void DOMPatchSupport::patchDocument(const String& markup)
 {
-    RefPtr<Document> newDocument;
+    RefPtrWillBeRawPtr<Document> newDocument = nullptr;
     if (m_document.isHTMLDocument())
         newDocument = HTMLDocument::create();
     else if (m_document.isXHTMLDocument())
@@ -93,7 +93,7 @@ void DOMPatchSupport::patchDocument(const String& markup)
 
     ASSERT(newDocument);
     newDocument->setContextFeatures(m_document.contextFeatures());
-    RefPtr<DocumentParser> parser;
+    RefPtrWillBeRawPtr<DocumentParser> parser = nullptr;
     if (m_document.isHTMLDocument())
         parser = HTMLDocumentParser::create(toHTMLDocument(*newDocument), false);
     else

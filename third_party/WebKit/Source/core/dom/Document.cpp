@@ -548,7 +548,6 @@ Document::~Document()
     // that is OK?
 #if !ENABLE(OILPAN)
     removeAllEventListenersRecursively();
-#endif
 
     // Currently we believe that Document can never outlive the parser.
     // Although the Document may be replaced synchronously, DocumentParsers
@@ -558,6 +557,7 @@ Document::~Document()
     // if the DocumentParser outlives the Document it won't cause badness.
     ASSERT(!m_parser || m_parser->refCount() == 1);
     detachParser();
+#endif
 
     if (this == topDocument())
         clearAXObjectCache();
@@ -2319,7 +2319,7 @@ AXObjectCache* Document::axObjectCache() const
     return topDocument.m_axObjectCache.get();
 }
 
-PassRefPtr<DocumentParser> Document::createParser()
+PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()
 {
     if (isHTMLDocument()) {
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(page());
@@ -2402,7 +2402,7 @@ void Document::cancelParsing()
     explicitClose();
 }
 
-PassRefPtr<DocumentParser> Document::implicitOpen()
+PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen()
 {
     cancelParsing();
 
@@ -2508,7 +2508,7 @@ void Document::close(ExceptionState& exceptionState)
 
 void Document::explicitClose()
 {
-    if (RefPtr<DocumentParser> parser = m_parser)
+    if (RefPtrWillBeRawPtr<DocumentParser> parser = m_parser)
         parser->finish();
 
     if (!m_frame) {
@@ -5747,6 +5747,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_styleEngine);
     visitor->trace(m_formController);
     visitor->trace(m_fetcher);
+    visitor->trace(m_parser);
     visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_mediaQueryMatcher);

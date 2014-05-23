@@ -49,6 +49,11 @@ XMLErrors::XMLErrors(Document* document)
 {
 }
 
+void XMLErrors::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 void XMLErrors::handleError(ErrorType type, const char* message, int lineNumber, int columnNumber)
 {
     handleError(type, message, TextPosition(OrdinalNumber::fromOneBasedInt(lineNumber), OrdinalNumber::fromOneBasedInt(columnNumber)));
@@ -83,7 +88,7 @@ void XMLErrors::appendErrorMessage(const String& typeString, TextPosition positi
     m_errorMessages.append(message);
 }
 
-static inline PassRefPtr<Element> createXHTMLParserErrorHeader(Document* doc, const String& errorMessages)
+static inline PassRefPtrWillBeRawPtr<Element> createXHTMLParserErrorHeader(Document* doc, const String& errorMessages)
 {
     RefPtrWillBeRawPtr<Element> reportElement = doc->createElement(QualifiedName(nullAtom, "parsererror", xhtmlNamespaceURI), true);
 
@@ -117,7 +122,7 @@ void XMLErrors::insertErrorMessageBlock()
     // where the errors are located)
 
     // Create elements for display
-    RefPtr<Element> documentElement = m_document->documentElement();
+    RefPtrWillBeRawPtr<Element> documentElement = m_document->documentElement();
     if (!documentElement) {
         RefPtrWillBeRawPtr<Element> rootElement = m_document->createElement(htmlTag, true);
         RefPtrWillBeRawPtr<Element> body = m_document->createElement(bodyTag, true);
@@ -144,7 +149,7 @@ void XMLErrors::insertErrorMessageBlock()
     }
 
     String errorMessages = m_errorMessages.toString();
-    RefPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);
+    RefPtrWillBeRawPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);
 
     if (m_document->transformSourceDocument()) {
         Vector<Attribute> attributes;

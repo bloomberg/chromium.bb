@@ -52,7 +52,7 @@ public:
 private:
     explicit ImageDocument(const DocumentInit&);
 
-    virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
     virtual void dispose() OVERRIDE;
 
     void createDocumentStructure();

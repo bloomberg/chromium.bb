@@ -65,18 +65,19 @@ class Text;
     };
 
     class XMLDocumentParser FINAL : public ScriptableDocumentParser, public ResourceClient {
-        WTF_MAKE_FAST_ALLOCATED;
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     public:
-        static PassRefPtr<XMLDocumentParser> create(Document& document, FrameView* view)
+        static PassRefPtrWillBeRawPtr<XMLDocumentParser> create(Document& document, FrameView* view)
         {
-            return adoptRef(new XMLDocumentParser(document, view));
+            return adoptRefWillBeNoop(new XMLDocumentParser(document, view));
         }
-        static PassRefPtr<XMLDocumentParser> create(DocumentFragment* fragment, Element* element, ParserContentPolicy parserContentPolicy)
+        static PassRefPtrWillBeRawPtr<XMLDocumentParser> create(DocumentFragment* fragment, Element* element, ParserContentPolicy parserContentPolicy)
         {
-            return adoptRef(new XMLDocumentParser(fragment, element, parserContentPolicy));
+            return adoptRefWillBeNoop(new XMLDocumentParser(fragment, element, parserContentPolicy));
         }
 
         virtual ~XMLDocumentParser();
+        virtual void trace(Visitor*) OVERRIDE;
 
         // Exposed for callbacks:
         void handleError(XMLErrors::ErrorType, const char* message, TextPosition);
@@ -154,7 +155,7 @@ class Text;
         void doWrite(const String&);
         void doEnd();
 
-        FrameView* m_view;
+        bool m_hasView;
 
         SegmentedString m_originalSourceForTransform;
 
@@ -163,10 +164,10 @@ class Text;
         Deque<OwnPtr<PendingCallback> > m_pendingCallbacks;
         Vector<xmlChar> m_bufferedText;
 
-        ContainerNode* m_currentNode;
-        Vector<ContainerNode*> m_currentNodeStack;
+        RawPtrWillBeMember<ContainerNode> m_currentNode;
+        WillBeHeapVector<RawPtrWillBeMember<ContainerNode> > m_currentNodeStack;
 
-        RefPtrWillBePersistent<Text> m_leafTextNode;
+        RefPtrWillBeMember<Text> m_leafTextNode;
 
         bool m_isCurrentlyParsing8BitChunk;
         bool m_sawError;
@@ -181,7 +182,7 @@ class Text;
         XMLErrors m_xmlErrors;
 
         ResourcePtr<ScriptResource> m_pendingScript;
-        RefPtr<Element> m_scriptElement;
+        RefPtrWillBeMember<Element> m_scriptElement;
         TextPosition m_scriptStartPosition;
 
         bool m_parsingFragment;

@@ -272,7 +272,7 @@ void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
     m_taskQueue.append(task);
 }
 
-void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> prpChild, bool selfClosing)
+void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtrWillBeRawPtr<Node> prpChild, bool selfClosing)
 {
     ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) || !prpChild.get()->isElementNode() || !toScriptLoaderIfPossible(toElement(prpChild.get())));
     ASSERT(pluginContentIsAllowed(m_parserContentPolicy) || !isHTMLPlugInElement(prpChild));
@@ -346,14 +346,22 @@ HTMLConstructionSite::~HTMLConstructionSite()
     ASSERT(m_pendingText.isEmpty());
 }
 
+void HTMLConstructionSite::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+    visitor->trace(m_attachmentRoot);
+    visitor->trace(m_form);
+    visitor->trace(m_taskQueue);
+}
+
 void HTMLConstructionSite::detach()
 {
     // FIXME: We'd like to ASSERT here that we're canceling and not just discarding
     // text that really should have made it into the DOM earlier, but there
     // doesn't seem to be a nice way to do that.
     m_pendingText.discard();
-    m_document = 0;
-    m_attachmentRoot = 0;
+    m_document = nullptr;
+    m_attachmentRoot = nullptr;
 }
 
 void HTMLConstructionSite::setForm(HTMLFormElement* form)
@@ -363,7 +371,7 @@ void HTMLConstructionSite::setForm(HTMLFormElement* form)
     m_form = form;
 }
 
-PassRefPtr<HTMLFormElement> HTMLConstructionSite::takeForm()
+PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLConstructionSite::takeForm()
 {
     return m_form.release();
 }
@@ -378,7 +386,7 @@ void HTMLConstructionSite::dispatchDocumentElementAvailableIfNeeded()
 void HTMLConstructionSite::insertHTMLHtmlStartTagBeforeHTML(AtomicHTMLToken* token)
 {
     ASSERT(m_document);
-    RefPtr<HTMLHtmlElement> element = HTMLHtmlElement::create(*m_document);
+    RefPtrWillBeRawPtr<HTMLHtmlElement> element = HTMLHtmlElement::create(*m_document);
     setAttributes(element.get(), token, m_parserContentPolicy);
     attachLater(m_attachmentRoot, element);
     m_openElements.pushHTMLHtmlElement(HTMLStackItem::create(element, token));
@@ -587,7 +595,7 @@ void HTMLConstructionSite::insertHTMLHeadElement(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
 {
     ASSERT(!shouldFosterParent());
-    RefPtr<Element> body = createHTMLElement(token);
+    RefPtrWillBeRawPtr<Element> body = createHTMLElement(token);
     attachLater(currentNode(), body);
     m_openElements.pushHTMLBodyElement(HTMLStackItem::create(body.release(), token));
     if (LocalFrame* frame = m_document->frame())
@@ -606,7 +614,7 @@ void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool is
 
 void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token)
 {
-    RefPtr<Element> element = createHTMLElement(token);
+    RefPtrWillBeRawPtr<Element> element = createHTMLElement(token);
     attachLater(currentNode(), element);
     m_openElements.push(HTMLStackItem::create(element.release(), token));
 }
@@ -652,7 +660,7 @@ void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const At
     ASSERT(token->type() == HTMLToken::StartTag);
     notImplemented(); // parseError when xmlns or xmlns:xlink are wrong.
 
-    RefPtr<Element> element = createElement(token, namespaceURI);
+    RefPtrWillBeRawPtr<Element> element = createElement(token, namespaceURI);
     if (scriptingContentIsAllowed(m_parserContentPolicy) || !toScriptLoaderIfPossible(element.get()))
         attachLater(currentNode(), element, token->selfClosing());
     if (!token->selfClosing())
@@ -848,7 +856,7 @@ bool HTMLConstructionSite::shouldFosterParent() const
         && currentStackItem()->causesFosterParenting();
 }
 
-void HTMLConstructionSite::fosterParent(PassRefPtr<Node> node)
+void HTMLConstructionSite::fosterParent(PassRefPtrWillBeRawPtr<Node> node)
 {
     HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
     findFosterSite(task);

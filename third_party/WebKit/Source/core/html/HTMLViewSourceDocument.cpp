@@ -58,7 +58,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
     lockCompatibilityMode();
 }
 
-PassRefPtr<DocumentParser> HTMLViewSourceDocument::createParser()
+PassRefPtrWillBeRawPtr<DocumentParser> HTMLViewSourceDocument::createParser()
 {
     return HTMLViewSourceParser::create(*this, m_type);
 }
