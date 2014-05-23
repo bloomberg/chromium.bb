@@ -734,6 +734,10 @@ void WizardController::PerformPostEulaActions() {
 
 void WizardController::PerformOOBECompletedActions() {
   StartupUtils::MarkOobeCompleted();
+  UMA_HISTOGRAM_COUNTS_100(
+      "HIDDetection.TimesDialogShownPerOOBECompleted",
+      GetLocalState()->GetInteger(prefs::kTimesHIDDialogShown));
+  GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
 }
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {

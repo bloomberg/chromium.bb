@@ -7,10 +7,14 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/pref_names.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -67,7 +71,7 @@ HIDDetectionScreenHandler::HIDDetectionScreenHandler()
       mouse_is_pairing_(false),
       keyboard_is_pairing_(false),
       switch_on_adapter_when_ready_(false),
-      skip_screen_if_devices_present_(true),
+      first_time_screen_show_(true),
       weak_ptr_factory_(this) {
 }
 
@@ -100,8 +104,8 @@ void HIDDetectionScreenHandler::Show() {
     return;
   }
   input_service_proxy_.AddObserver(this);
-  skip_screen_if_devices_present_ = true;
-  UpdateDevices();
+  first_time_screen_show_ = true;
+  GetDevicesFirstTime();
   ShowScreen(OobeUI::kScreenHIDDetection, NULL);
 }
 
@@ -155,6 +159,21 @@ void HIDDetectionScreenHandler::RegisterMessages() {
 }
 
 void HIDDetectionScreenHandler::HandleOnContinue() {
+  if (!first_time_screen_show_) {
+    // Continue button pressed.
+    ContinueScenarioType scenario_type;
+    if (!pointing_device_id_.empty() && !keyboard_device_id_.empty())
+      scenario_type = All_DEVICES_DETECTED;
+    else if (pointing_device_id_.empty())
+      scenario_type = KEYBOARD_DEVICE_ONLY_DETECTED;
+    else
+      scenario_type = POINTING_DEVICE_ONLY_DETECTED;
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "HIDDetection.OOBEDevicesDetectedOnContinuePressed",
+        scenario_type,
+        CONTINUE_SCENARIO_TYPE_SIZE);
+  }
   if (delegate_)
     delegate_->OnExit();
 }
@@ -330,10 +349,21 @@ void HIDDetectionScreenHandler::OnInputDeviceRemoved(const std::string& id) {
   }
 }
 
+// static
+void HIDDetectionScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kTimesHIDDialogShown, 0);
+}
+
+void HIDDetectionScreenHandler::GetDevicesFirstTime() {
+  input_service_proxy_.GetDevices(
+      base::Bind(&HIDDetectionScreenHandler::OnGetInputDevicesListFirstTime,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void HIDDetectionScreenHandler::UpdateDevices() {
   input_service_proxy_.GetDevices(
       base::Bind(&HIDDetectionScreenHandler::OnGetInputDevicesList,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HIDDetectionScreenHandler::UpdateBTDevices() {
@@ -353,7 +383,7 @@ void HIDDetectionScreenHandler::UpdateBTDevices() {
   }
 }
 
-void HIDDetectionScreenHandler::OnGetInputDevicesList(
+void HIDDetectionScreenHandler::ProcessConnectedDevicesList(
     const std::vector<InputDeviceInfo>& devices) {
   for (std::vector<InputDeviceInfo>::const_iterator it = devices.begin();
        it != devices.end() &&
@@ -372,14 +402,9 @@ void HIDDetectionScreenHandler::OnGetInputDevicesList(
       SendKeyboardDeviceNotification(NULL);
     }
   }
-  // Skip screen if both devices are present and skip was requested.
-  if (!pointing_device_id_.empty() &&
-      !keyboard_device_id_.empty() &&
-      skip_screen_if_devices_present_) {
-    HandleOnContinue();
-  }
-  // Skip requested only once on dialog show.
-  skip_screen_if_devices_present_ = false;
+}
+
+void HIDDetectionScreenHandler::TryInitiateBTDevicesUpdate() {
   if ((pointing_device_id_.empty() || keyboard_device_id_.empty()) &&
       adapter_) {
     if (!adapter_->IsPresent()) {
@@ -396,6 +421,35 @@ void HIDDetectionScreenHandler::OnGetInputDevicesList(
       UpdateBTDevices();
     }
   }
+}
+
+void HIDDetectionScreenHandler::OnGetInputDevicesListFirstTime(
+    const std::vector<InputDeviceInfo>& devices) {
+  ProcessConnectedDevicesList(devices);
+
+  // Skip screen if both devices are present.
+  bool all_devices_autodetected = !pointing_device_id_.empty() &&
+                                  !keyboard_device_id_.empty();
+  UMA_HISTOGRAM_BOOLEAN("HIDDetection.OOBEDialogShown",
+                        !all_devices_autodetected);
+  if (all_devices_autodetected) {
+    HandleOnContinue();
+    return;
+  }
+  PrefService* local_state = g_browser_process->local_state();
+  int num_of_times_dialog_was_shown = local_state->GetInteger(
+      prefs::kTimesHIDDialogShown);
+  local_state->SetInteger(prefs::kTimesHIDDialogShown,
+                          num_of_times_dialog_was_shown + 1);
+  first_time_screen_show_ = false;
+
+  TryInitiateBTDevicesUpdate();
+}
+
+void HIDDetectionScreenHandler::OnGetInputDevicesList(
+    const std::vector<InputDeviceInfo>& devices) {
+  ProcessConnectedDevicesList(devices);
+  TryInitiateBTDevicesUpdate();
 }
 
 void HIDDetectionScreenHandler::ConnectBTDevice(

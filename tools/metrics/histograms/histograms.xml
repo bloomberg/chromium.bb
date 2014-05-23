@@ -7835,6 +7835,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="HIDDetection.OOBEDevicesDetectedOnContinuePressed"
+    enum="HIDContinueScenarioType">
+  <owner>merkulova@chromium.org</owner>
+  <summary>
+    Which HID were detected when user pressed Continue on OOBE dialog. This
+    metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="HIDDetection.OOBEDialogShown">
+  <owner>merkulova@chromium.org</owner>
+  <summary>
+    Whether HID detection dialog was shown on OOBE. Logged on screen show or on
+    screen skip respectively. This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="HIDDetection.TimesDialogShownPerOOBECompleted">
+  <owner>merkulova@chromium.org</owner>
+  <summary>
+    Records number of times the dialog was shown by the time OOBE is completed.
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="History.DeleteFTSIndexDatabases">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -36257,6 +36282,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="HOSTED_NOT_ALLOWED"/>
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
+</enum>
+
+<enum name="HIDContinueScenarioType" type="int">
+  <summary>Possible detected devices combination on leaving dialog</summary>
+  <int value="0" label="Pointing device only detected."/>
+  <int value="1" label="Keyboard device only detected."/>
+  <int value="2" label="Both devices, pointing and keyboard, detected."/>
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum" type="int">

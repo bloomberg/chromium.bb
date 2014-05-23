@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen_actor.h"
@@ -78,7 +79,25 @@ class HIDDetectionScreenHandler
   virtual void OnInputDeviceAdded(const InputDeviceInfo& info) OVERRIDE;
   virtual void OnInputDeviceRemoved(const std::string& id) OVERRIDE;
 
+  // Registers the preference for derelict state.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
  private:
+  // Types of dialog leaving scenarios for UMA metric.
+  enum ContinueScenarioType {
+    // Only pointing device detected, user pressed 'Continue'.
+    POINTING_DEVICE_ONLY_DETECTED,
+
+    // Only keyboard detected, user pressed 'Continue'.
+    KEYBOARD_DEVICE_ONLY_DETECTED,
+
+    // All devices detected.
+    All_DEVICES_DETECTED,
+
+    // Must be last enum element.
+    CONTINUE_SCENARIO_TYPE_SIZE
+  };
+
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Sends a notification to the Web UI of the status of available Bluetooth/USB
@@ -89,6 +108,21 @@ class HIDDetectionScreenHandler
   // keyboard device.
   void SendKeyboardDeviceNotification(base::DictionaryValue* params);
 
+  // Updates internal state and UI using list of connected devices.
+  void ProcessConnectedDevicesList(const std::vector<InputDeviceInfo>& devices);
+
+  // Checks for lack of mouse or keyboard. If found starts BT devices update.
+  // Initiates BTAdapter if it's not active and BT devices update required.
+  void TryInitiateBTDevicesUpdate();
+
+  // Processes list of input devices returned by InputServiceProxy on the first
+  // time the screen is initiated. Skips the screen if all required devices are
+  // present.
+  void OnGetInputDevicesListFirstTime(
+      const std::vector<InputDeviceInfo>& devices);
+
+  // Processes list of input devices returned by InputServiceProxy on regular
+  // request.
   void OnGetInputDevicesList(const std::vector<InputDeviceInfo>& devices);
 
   void StartBTDiscoverySession();
@@ -127,6 +161,10 @@ class HIDDetectionScreenHandler
   // Called by device::BluetoothAdapter in response to a failure to
   // power BT adapter.
   void SetPoweredError();
+
+  // Special case uf UpdateDevice. Called on first show, skips the dialog if
+  // all necessary devices (mouse and keyboard) already connected.
+  void GetDevicesFirstTime();
 
   // Called for revision of active devices. If current-placement is available
   // for mouse or keyboard device, sets one of active devices as current or
@@ -170,7 +208,7 @@ class HIDDetectionScreenHandler
 
   bool switch_on_adapter_when_ready_;
 
-  bool skip_screen_if_devices_present_;
+  bool first_time_screen_show_;
 
   base::WeakPtrFactory<HIDDetectionScreenHandler> weak_ptr_factory_;
 

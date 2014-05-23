@@ -704,6 +704,7 @@ extern const char kDeviceRobotAnyApiRefreshToken[];
 extern const char kDeviceEnrollmentRequisition[];
 extern const char kDeviceEnrollmentAutoStart[];
 extern const char kDeviceEnrollmentCanExit[];
+extern const char kTimesHIDDialogShown[];
 extern const char kUsersLRUInputMethod[];
 extern const char kEchoCheckedOffers[];
 extern const char kCachedMultiProfileUserBehavior[];

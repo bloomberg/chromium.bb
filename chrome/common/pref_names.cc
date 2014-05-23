@@ -2030,6 +2030,9 @@ const char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
 // Whether the user may exit enrollment.
 const char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 
+// How many times HID detection OOBE dialog was shown.
+const char kTimesHIDDialogShown[] = "HIDDialog.shown_how_many_times";
+
 // Dictionary of per-user Least Recently Used input method (used at login
 // screen).
 extern const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
