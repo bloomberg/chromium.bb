@@ -1179,6 +1179,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // Profile name, centered.
+  bool editingAllowed = !isGuestSession_ && !browser_->profile()->IsManaged();
   base::scoped_nsobject<EditableProfileNameButton> profileName(
       [[EditableProfileNameButton alloc]
           initWithFrame:NSMakeRect(xOffset, yOffset,
@@ -1187,7 +1188,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                 profile:browser_->profile()
             profileName:base::SysUTF16ToNSString(
                 profiles::GetAvatarNameForProfile(browser_->profile()))
-         editingAllowed:!isGuestSession_]);
+         editingAllowed:editingAllowed]);
 
   [container addSubview:profileName];
   yOffset = NSMaxY([profileName frame]);
