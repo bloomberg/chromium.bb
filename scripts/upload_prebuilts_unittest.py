@@ -388,7 +388,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     options.profile = None
     target = prebuilt.BuildTarget(options.board, options.profile)
     options.build_path = '/trunk'
-    options.debug = False
+    options.dryrun = False
     options.private = True
     options.packages = []
     options.sync_host = True
@@ -408,7 +408,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     options.sync_binhost_conf = True
     options.slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
-    prebuilt.ParseOptions().AndReturn(tuple([options, target]))
+    prebuilt.ParseOptions([]).AndReturn(tuple([options, target]))
     self.mox.StubOutWithMock(binpkg, 'GrabRemotePackageIndex')
     binpkg.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')

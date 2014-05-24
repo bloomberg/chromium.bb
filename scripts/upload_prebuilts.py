@@ -20,13 +20,13 @@ upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 
 import datetime
 import multiprocessing
-import optparse
 import os
 import sys
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import binpkg
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -309,9 +309,9 @@ def _GrabAllRemotePackageIndexes(binhost_urls):
 class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
-  def __init__(self, upload_location, acl, binhost_base_url,
-               pkg_indexes, build_path, packages, skip_upload,
-               binhost_conf_dir, debug, target, slave_targets):
+  def __init__(self, upload_location, acl, binhost_base_url, pkg_indexes,
+               build_path, packages, skip_upload, binhost_conf_dir, dryrun,
+               target, slave_targets):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -330,7 +330,7 @@ class PrebuiltUploader(object):
       packages: Packages to upload.
       skip_upload: Don't actually upload the tarballs.
       binhost_conf_dir: Directory where to store binhost.conf files.
-      debug: Don't push or upload prebuilts.
+      dryrun: Don't push or upload prebuilts.
       target: BuildTarget managed by this builder.
       slave_targets: List of BuildTargets managed by slave builders.
     """
@@ -343,7 +343,7 @@ class PrebuiltUploader(object):
     self._found_packages = set()
     self._skip_upload = skip_upload
     self._binhost_conf_dir = binhost_conf_dir
-    self._debug = debug
+    self._dryrun = dryrun
     self._target = target
     self._slave_targets = slave_targets
 
@@ -471,7 +471,7 @@ class PrebuiltUploader(object):
                                      'target': target}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-      if self._target == target and not self._skip_upload and not self._debug:
+      if self._target == target and not self._skip_upload and not self._dryrun:
         # Upload prebuilts.
         package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
         self._UploadPrebuilt(package_path, packages_url_suffix)
@@ -484,7 +484,7 @@ class PrebuiltUploader(object):
     if git_sync:
       git_file = os.path.join(self._build_path,
           _PREBUILT_MAKE_CONF[_HOST_ARCH])
-      RevGitFile(git_file, {key: binhost}, dryrun=self._debug)
+      RevGitFile(git_file, {key: binhost}, dryrun=self._dryrun)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
           'host', '%s-%s.conf' % (_HOST_ARCH, key))
@@ -516,7 +516,7 @@ class PrebuiltUploader(object):
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
       # Process the target board differently if it is the main --board.
-      if self._target == target and not self._skip_upload and not self._debug:
+      if self._target == target and not self._skip_upload and not self._dryrun:
         # This strips "chroot" prefix because that is sometimes added as the
         # --prepend-version argument (e.g. by chromiumos-sdk bot).
         # TODO(build): Clean it up to be less hard-coded.
@@ -547,7 +547,7 @@ class PrebuiltUploader(object):
                 'SDK_LATEST_VERSION': version_str,
                 'TC_PATH': toolchain_upload_path,
             }
-            RevGitFile(sdk_conf, sdk_settings, dryrun=self._debug)
+            RevGitFile(sdk_conf, sdk_settings, dryrun=self._dryrun)
 
       # Record URL where prebuilts were uploaded.
       url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
@@ -555,20 +555,13 @@ class PrebuiltUploader(object):
 
       if git_sync:
         git_file = DeterminePrebuiltConfFile(self._build_path, target)
-        RevGitFile(git_file, {key: url_value}, dryrun=self._debug)
+        RevGitFile(git_file, {key: url_value}, dryrun=self._dryrun)
 
       if sync_binhost_conf:
         # Update the binhost configuration file in git.
         binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
             'target', '%s-%s.conf' % (target, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
-
-
-def Usage(parser, msg):
-  """Display usage message and parser help then exit with 1."""
-  print >> sys.stderr, msg
-  parser.print_help()
-  sys.exit(1)
 
 
 def _AddSlaveBoard(_option, _opt_str, value, parser):
@@ -579,20 +572,23 @@ def _AddSlaveBoard(_option, _opt_str, value, parser):
 def _AddSlaveProfile(_option, _opt_str, value, parser):
   """Callback that adds a slave profile to the list of slave targets."""
   if not parser.values.slave_targets:
-    Usage(parser, 'Must specify --slave-board before --slave-profile')
+    parser.error('Must specify --slave-board before --slave-profile')
   if parser.values.slave_targets[-1].profile is not None:
-    Usage(parser, 'Cannot specify --slave-profile twice for same board')
+    parser.error('Cannot specify --slave-profile twice for same board')
   parser.values.slave_targets[-1].profile = value
 
 
-def ParseOptions():
+def ParseOptions(argv):
   """Returns options given by the user and the target specified.
+
+  Args:
+    argv: The args to parse.
 
   Returns:
     A tuple containing a parsed options object and BuildTarget.
     The target instance is None if no board is specified.
   """
-  parser = optparse.OptionParser()
+  parser = commandline.OptionParser()
   parser.add_option('-H', '--binhost-base-url', dest='binhost_base_url',
                     default=_BINHOST_BASE_URL,
                     help='Base URL to use for binhost in make.conf updates')
@@ -666,70 +662,68 @@ def ParseOptions():
   parser.add_option('', '--upload-board-tarball', dest='upload_board_tarball',
                     action='store_true', default=False,
                     help='Upload board tarball to Google Storage.')
-  parser.add_option('', '--debug', dest='debug',
+  parser.add_option('-n', '--dry-run', dest='dryrun',
                     action='store_true', default=False,
                     help='Don\'t push or upload prebuilts.')
 
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(argv)
   if not options.build_path:
-    Usage(parser, 'Error: you need provide a chroot path')
+    parser.error('you need provide a chroot path')
   if not options.upload and not options.skip_upload:
-    Usage(parser, 'Error: you need to provide an upload location using -u')
+    parser.error('you need to provide an upload location using -u')
   if not options.set_version and options.skip_upload:
-    Usage(parser, 'Error: If you are using --skip-upload, you must specify a '
-                  'version number using --set-version.')
+    parser.error('If you are using --skip-upload, you must specify a '
+                 'version number using --set-version.')
   if args:
-    Usage(parser, 'Error: invalid arguments passed to upload_prebuilts: '
-                  '%r' % args)
+    parser.error('invalid arguments passed to upload_prebuilts: %r' % args)
 
   target = None
   if options.board:
     target = BuildTarget(options.board, options.profile)
 
   if target in options.slave_targets:
-    Usage(parser, 'Error: --board/--profile must not also be a slave target.')
+    parser.error('--board/--profile must not also be a slave target.')
 
   if len(set(options.slave_targets)) != len(options.slave_targets):
-    Usage(parser, 'Error: --slave-boards must not have duplicates.')
+    parser.error('--slave-boards must not have duplicates.')
 
   if options.slave_targets and options.git_sync:
-    Usage(parser, 'Error: --slave-boards is not compatible with --git-sync')
+    parser.error('--slave-boards is not compatible with --git-sync')
 
   if (options.upload_board_tarball and options.skip_upload and
       options.board == 'amd64-host'):
-    Usage(parser, 'Error: --skip-upload is not compatible with '
-                  '--upload-board-tarball and --board=amd64-host')
+    parser.error('--skip-upload is not compatible with '
+                 '--upload-board-tarball and --board=amd64-host')
 
   if (options.upload_board_tarball and not options.skip_upload and
       not options.upload.startswith('gs://')):
-    Usage(parser, 'Error: --upload-board-tarball only works with gs:// URLs.\n'
-                  '--upload must be a gs:// URL.')
+    parser.error('--upload-board-tarball only works with gs:// URLs.\n'
+                 '--upload must be a gs:// URL.')
 
   if options.upload_board_tarball and options.prepackaged_tarball is None:
-    Usage(parser, 'Error: --upload-board-tarball requires '
-                  '--prepackaged-tarball.')
+    parser.error('--upload-board-tarball requires --prepackaged-tarball')
 
   if options.private:
     if options.sync_host:
-      Usage(parser, 'Error: --private and --sync-host/-s cannot be specified '
-                    'together, we do not support private host prebuilts')
+      parser.error('--private and --sync-host/-s cannot be specified '
+                   'together; we do not support private host prebuilts')
 
     if not options.upload or not options.upload.startswith('gs://'):
-      Usage(parser, 'Error: --private is only valid for gs:// URLs.\n'
-                    '--upload must be a gs:// URL.')
+      parser.error('--private is only valid for gs:// URLs; '
+                   '--upload must be a gs:// URL.')
 
     if options.binhost_base_url != _BINHOST_BASE_URL:
-      Usage(parser, 'Error: when using --private the --binhost-base-url '
-                    'is automatically derived.')
+      parser.error('when using --private the --binhost-base-url '
+                   'is automatically derived.')
 
   return options, target
 
 
-def main(_argv):
+def main(argv):
   # Set umask to a sane value so that files created as root are readable.
   os.umask(0o22)
 
-  options, target = ParseOptions()
+  options, target = ParseOptions(argv)
 
   # Calculate a list of Packages index files to compare against. Whenever we
   # upload a package, we check to make sure it's not already stored in one of
@@ -757,7 +751,7 @@ def main(_argv):
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
-                              options.binhost_conf_dir, options.debug,
+                              options.binhost_conf_dir, options.dryrun,
                               target, options.slave_targets)
 
   if options.sync_host:

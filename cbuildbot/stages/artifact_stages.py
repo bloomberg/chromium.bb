@@ -491,7 +491,7 @@ class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
     """Generate common prebuilt arguments."""
     generated_args = []
     if self._run.options.debug:
-      generated_args.append('--debug')
+      generated_args.extend(['--debug', '--dry-run'])
 
     profile = self._run.options.profile or self._run.config['profile']
     if profile:
@@ -581,7 +581,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     """Generate common prebuilt arguments."""
     generated_args = []
     if self._run.options.debug:
-      generated_args.append('--debug')
+      generated_args.extend(['--debug', '--dry-run'])
 
     profile = self._run.options.profile or self._run.config.profile
     if profile:
