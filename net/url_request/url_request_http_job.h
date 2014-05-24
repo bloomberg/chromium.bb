@@ -248,7 +248,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   base::TimeTicks receive_headers_end_;
 
   scoped_ptr<HttpFilterContext> filter_context_;
-  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 
   CompletionCallback on_headers_received_callback_;
 
@@ -270,6 +269,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool awaiting_callback_;
 
   const HttpUserAgentSettings* http_user_agent_settings_;
+
+  base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestHttpJob);
 };

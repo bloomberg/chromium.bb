@@ -121,9 +121,6 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   // Callback which gets the result of closing a file.
   void CloseComplete(const CompletionCallback& callback, int result);
 
-  // Callbacks are created for use with base::FileUtilProxy.
-  base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;
-
   // Task runner on which file operations should happen.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
@@ -135,6 +132,9 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   bool owns_file_;
 
   scoped_ptr<FileStream> file_stream_;
+
+  // Callbacks are created for use with base::FileUtilProxy.
+  base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherFileWriter);
 };

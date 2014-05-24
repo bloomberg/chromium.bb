@@ -94,10 +94,10 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
 
   scoped_refptr<AuthData> auth_data_;
 
-  base::WeakPtrFactory<URLRequestFtpJob> weak_factory_;
-
   FtpTransactionFactory* ftp_transaction_factory_;
   FtpAuthCache* ftp_auth_cache_;
+
+  base::WeakPtrFactory<URLRequestFtpJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestFtpJob);
 };

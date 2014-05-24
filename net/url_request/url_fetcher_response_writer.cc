@@ -52,10 +52,10 @@ URLFetcherStringWriter* URLFetcherStringWriter::AsStringWriter() {
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const base::FilePath& file_path)
-    : weak_factory_(this),
-      file_task_runner_(file_task_runner),
+    : file_task_runner_(file_task_runner),
       file_path_(file_path),
-      owns_file_(false) {
+      owns_file_(false),
+      weak_factory_(this) {
   DCHECK(file_task_runner_.get());
 }
 
