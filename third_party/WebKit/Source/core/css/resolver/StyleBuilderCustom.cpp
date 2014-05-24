@@ -795,8 +795,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-    if (primitiveValue->getValueID())
-        return state.style()->setVerticalAlign(*primitiveValue);
+    if (primitiveValue->getValueID()) {
+        state.style()->setVerticalAlign(*primitiveValue);
+        return;
+    }
 
     state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
 }

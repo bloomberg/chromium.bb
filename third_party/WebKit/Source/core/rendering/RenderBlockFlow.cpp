@@ -1879,8 +1879,10 @@ void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox* child, LayoutUn
 
 void RenderBlockFlow::addChild(RenderObject* newChild, RenderObject* beforeChild)
 {
-    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread())
-        return flowThread->addChild(newChild, beforeChild);
+    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+        flowThread->addChild(newChild, beforeChild);
+        return;
+    }
     RenderBlock::addChild(newChild, beforeChild);
 }
 
