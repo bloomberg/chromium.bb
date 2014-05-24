@@ -619,4 +619,21 @@ TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
   base_file_->Finish();
 }
 
+TEST_F(BaseFileTest, NoDoubleDeleteAfterCancel) {
+  ASSERT_TRUE(InitializeFile());
+  base::FilePath full_path = base_file_->full_path();
+  ASSERT_FALSE(full_path.empty());
+  ASSERT_TRUE(base::PathExists(full_path));
+
+  base_file_->Cancel();
+  ASSERT_FALSE(base::PathExists(full_path));
+
+  const char kData[] = "hello";
+  const int kDataLength = static_cast<int>(arraysize(kData) - 1);
+  ASSERT_EQ(kDataLength, base::WriteFile(full_path, kData, kDataLength));
+  // The file that we created here should stick around when the BaseFile is
+  // destroyed during TearDown.
+  expect_file_survives_ = true;
+}
+
 }  // namespace content
