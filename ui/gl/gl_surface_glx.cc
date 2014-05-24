@@ -21,6 +21,7 @@ extern "C" {
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -425,6 +426,15 @@ bool NativeViewGLSurfaceGLX::Initialize() {
                           NULL);
   XMapWindow(g_display, window_);
 
+  ui::PlatformEventSource* event_source =
+      ui::PlatformEventSource::GetInstance();
+  // Can be NULL in tests, when we don't care about Exposes.
+  if (event_source) {
+    XSelectInput(g_display, window_, ExposureMask);
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  }
+  XFlush(g_display);
+
   gfx::AcceleratedWidget window_for_vsync = window_;
 
   if (g_glx_oml_sync_control_supported)
@@ -437,9 +447,26 @@ bool NativeViewGLSurfaceGLX::Initialize() {
 
 void NativeViewGLSurfaceGLX::Destroy() {
   if (window_) {
+    ui::PlatformEventSource* event_source =
+        ui::PlatformEventSource::GetInstance();
+    if (event_source)
+      event_source->RemovePlatformEventDispatcher(this);
     XDestroyWindow(g_display, window_);
     XFlush(g_display);
   }
+}
+
+bool NativeViewGLSurfaceGLX::CanDispatchEvent(const ui::PlatformEvent& event) {
+  return event->type == Expose && event->xexpose.window == window_;
+}
+
+uint32_t NativeViewGLSurfaceGLX::DispatchEvent(const ui::PlatformEvent& event) {
+  XEvent forwarded_event = *event;
+  forwarded_event.xexpose.window = parent_window_;
+  XSendEvent(g_display, parent_window_, False, ExposureMask,
+             &forwarded_event);
+  XFlush(g_display);
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
@@ -545,12 +572,6 @@ bool NativeViewGLSurfaceGLX::PostSubBuffer(
 
 VSyncProvider* NativeViewGLSurfaceGLX::GetVSyncProvider() {
   return vsync_provider_.get();
-}
-
-NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX()
-  : parent_window_(0),
-    window_(0),
-    config_(NULL) {
 }
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {

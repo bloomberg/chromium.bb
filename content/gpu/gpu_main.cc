@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
@@ -144,6 +145,12 @@ int GpuMain(const MainFunctionParams& parameters) {
     message_loop_type = base::MessageLoop::TYPE_UI;
   }
   base::MessageLoop main_message_loop(message_loop_type);
+#elif defined(OS_LINUX) && defined(USE_X11)
+  // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
+  // and https://crbug.com/326995.
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  scoped_ptr<ui::PlatformEventSource> event_source =
+      ui::PlatformEventSource::CreateDefault();
 #elif defined(OS_LINUX)
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
 #elif defined(OS_MACOSX)
