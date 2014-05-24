@@ -16,7 +16,7 @@ namespace sxs_linux {
 // Records channel of the running browser in user data dir. This is needed
 // to support a seamless and automatic upgrade from non-side-by-side
 // to side-by-side Linux packages (the latter use different default data dirs).
-// Must be run on FILE thread.
+// Must be run on a blocking thread pool.
 void AddChannelMarkToUserDataDir();
 
 // Returns true if user data dir migration has been requested.

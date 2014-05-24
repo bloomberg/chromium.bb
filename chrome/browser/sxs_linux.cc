@@ -89,7 +89,7 @@ bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
 namespace sxs_linux {
 
 void AddChannelMarkToUserDataDir() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath user_data_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR) << "Failed to get user data dir path. The profile will not be "
@@ -105,7 +105,7 @@ void AddChannelMarkToUserDataDir() {
 }
 
 bool ShouldMigrateUserDataDir() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kMigrateDataDirForSxS);
 }
 
@@ -142,7 +142,7 @@ int MigrateUserDataDir() {
   }
 
   base::FilePath target_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kMigrateDataDirForSxS);
 
   if (!base::Move(source_path, target_path)) {
