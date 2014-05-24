@@ -46,10 +46,6 @@
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/metrics_log_chromeos.h"
-#endif  // OS_CHROMEOS
-
 using metrics::MetricsLogBase;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
@@ -193,10 +189,6 @@ MetricsLog::MetricsLog(const std::string& client_id,
       client_(client),
       creation_time_(base::TimeTicks::Now()) {
   uma_proto()->mutable_system_profile()->set_channel(client_->GetChannel());
-
-#if defined(OS_CHROMEOS)
-  metrics_log_chromeos_.reset(new MetricsLogChromeOS(uma_proto()));
-#endif  // OS_CHROMEOS
 }
 
 MetricsLog::~MetricsLog() {}
@@ -317,10 +309,6 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
     pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   }
 
-#if defined(OS_CHROMEOS)
-  metrics_log_chromeos_->WriteRealtimeStabilityAttributes(pref);
-#endif  // OS_CHROMEOS
-
   const uint64 incremental_uptime_sec = incremental_uptime.InSeconds();
   if (incremental_uptime_sec)
     stability->set_incremental_uptime_sec(incremental_uptime_sec);
@@ -389,10 +377,6 @@ void MetricsLog::RecordEnvironment(
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile);
   WriteFieldTrials(synthetic_trials, system_profile);
-
-#if defined(OS_CHROMEOS)
-  metrics_log_chromeos_->LogChromeOSMetrics();
-#endif  // OS_CHROMEOS
 
   for (size_t i = 0; i < metrics_providers.size(); ++i)
     metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);

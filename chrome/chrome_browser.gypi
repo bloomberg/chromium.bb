@@ -1209,8 +1209,6 @@
         'browser/metrics/metric_event_duration_details.h',
         'browser/metrics/metrics_log.cc',
         'browser/metrics/metrics_log.h',
-        'browser/metrics/metrics_log_chromeos.cc',
-        'browser/metrics/metrics_log_chromeos.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
         'browser/metrics/metrics_service_accessor.cc',
@@ -2970,6 +2968,10 @@
         }, {  # chromeos==1
           'dependencies': [
             'browser_chromeos',
+          ],
+          'sources': [
+            'browser/metrics/chromeos_metrics_provider.cc',
+            'browser/metrics/chromeos_metrics_provider.h',
           ],
           'sources!': [
             'browser/first_run/upgrade_util.cc',

@@ -2300,6 +2300,7 @@
           ],
           'sources': [
             'browser/extensions/updater/local_extension_cache_unittest.cc',
+            'browser/metrics/chromeos_metrics_provider_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/ui/views/app_list/linux/'],

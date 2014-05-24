@@ -18,10 +18,6 @@
 
 class PrefService;
 
-#if defined(OS_CHROMEOS)
-class MetricsLogChromeOS;
-#endif
-
 namespace base {
 class DictionaryValue;
 }
@@ -112,11 +108,6 @@ class MetricsLog : public metrics::MetricsLogBase {
   // group ids.
   virtual void GetFieldTrialIds(
       std::vector<variations::ActiveGroupId>* field_trial_ids) const;
-
-  // Exposed to allow dependency injection for tests.
-#if defined(OS_CHROMEOS)
-  scoped_ptr<MetricsLogChromeOS> metrics_log_chromeos_;
-#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);

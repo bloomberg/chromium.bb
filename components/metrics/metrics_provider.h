@@ -20,6 +20,9 @@ class MetricsProvider {
   MetricsProvider() {}
   virtual ~MetricsProvider() {}
 
+  // Called when a new MetricsLog is created.
+  virtual void OnDidCreateMetricsLog() {}
+
   // Called when metrics recording has been enabled.
   virtual void OnRecordingEnabled() {}
 

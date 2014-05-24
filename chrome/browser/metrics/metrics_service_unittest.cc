@@ -19,10 +19,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/metrics_log_chromeos.h"
-#endif  // OS_CHROMEOS
-
 namespace {
 
 using metrics::MetricsLogManager;
@@ -40,32 +36,14 @@ class TestMetricsService : public MetricsService {
   DISALLOW_COPY_AND_ASSIGN(TestMetricsService);
 };
 
-#if defined(OS_CHROMEOS)
-class TestMetricsLogChromeOS : public MetricsLogChromeOS {
- public:
-  explicit TestMetricsLogChromeOS(
-      metrics::ChromeUserMetricsExtension* uma_proto)
-      : MetricsLogChromeOS(uma_proto) {
-  }
-
- protected:
-  // Don't touch bluetooth information, as it won't be correctly initialized.
-  virtual void WriteBluetoothProto() OVERRIDE {
-  }
-};
-#endif  // OS_CHROMEOS
-
 class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id,
                  int session_id,
                  metrics::MetricsServiceClient* client)
       : MetricsLog(client_id, session_id, MetricsLog::ONGOING_LOG, client) {
-#if defined(OS_CHROMEOS)
-    metrics_log_chromeos_.reset(new TestMetricsLogChromeOS(
-        MetricsLog::uma_proto()));
-#endif  // OS_CHROMEOS
   }
+
   virtual ~TestMetricsLog() {}
 
  private:

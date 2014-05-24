@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_log_chromeos.h"
+#include "chrome/browser/metrics/chromeos_metrics_provider.h"
 
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -80,17 +83,57 @@ void WriteExternalTouchscreensProto(SystemProfileProto::Hardware* hardware) {
 #endif  // defined(USE_X11)
 }
 
+void IncrementPrefValue(const char* path) {
+  PrefService* pref = g_browser_process->local_state();
+  DCHECK(pref);
+  int value = pref->GetInteger(path);
+  pref->SetInteger(path, value + 1);
+}
+
 }  // namespace
 
-MetricsLogChromeOS::~MetricsLogChromeOS() {
+ChromeOSMetricsProvider::ChromeOSMetricsProvider()
+    : registered_user_count_at_log_initialization_(false),
+      user_count_at_log_initialization_(0) {
 }
 
-MetricsLogChromeOS::MetricsLogChromeOS(ChromeUserMetricsExtension* uma_proto)
-    : uma_proto_(uma_proto) {
-  UpdateMultiProfileUserCount();
+ChromeOSMetricsProvider::~ChromeOSMetricsProvider() {
 }
 
-void MetricsLogChromeOS::LogChromeOSMetrics() {
+// static
+void ChromeOSMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kStabilityOtherUserCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityKernelCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
+}
+
+// static
+void ChromeOSMetricsProvider::LogCrash(const std::string& crash_type) {
+  if (crash_type == "user")
+    IncrementPrefValue(prefs::kStabilityOtherUserCrashCount);
+  else if (crash_type == "kernel")
+    IncrementPrefValue(prefs::kStabilityKernelCrashCount);
+  else if (crash_type == "uncleanshutdown")
+    IncrementPrefValue(prefs::kStabilitySystemUncleanShutdownCount);
+  else
+    NOTREACHED() << "Unexpected Chrome OS crash type " << crash_type;
+
+  // Wake up metrics logs sending if necessary now that new
+  // log data is available.
+  g_browser_process->metrics_service()->OnApplicationNotIdle();
+}
+
+void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
+  registered_user_count_at_log_initialization_ = false;
+  if (chromeos::UserManager::IsInitialized()) {
+    registered_user_count_at_log_initialization_ = true;
+    user_count_at_log_initialization_ =
+        chromeos::UserManager::Get()->GetLoggedInUsers().size();
+  }
+}
+
+void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
+    metrics::SystemProfileProto* system_profile_proto) {
   std::vector<PerfDataProto> perf_data;
   if (perf_provider_.GetPerfData(&perf_data)) {
     for (std::vector<PerfDataProto>::iterator iter = perf_data.begin();
@@ -100,11 +143,11 @@ void MetricsLogChromeOS::LogChromeOSMetrics() {
     }
   }
 
-  WriteBluetoothProto();
-  UpdateMultiProfileUserCount();
+  WriteBluetoothProto(system_profile_proto);
+  UpdateMultiProfileUserCount(system_profile_proto);
 
-  SystemProfileProto::Hardware* hardware =
-      uma_proto_->mutable_system_profile()->mutable_hardware();
+  metrics::SystemProfileProto::Hardware* hardware =
+      system_profile_proto->mutable_hardware();
   gfx::Display::TouchSupport has_touch = ui::GetInternalDisplayTouchSupport();
   if (has_touch == gfx::Display::TOUCH_SUPPORT_AVAILABLE)
     hardware->set_internal_display_supports_touch(true);
@@ -113,38 +156,39 @@ void MetricsLogChromeOS::LogChromeOSMetrics() {
   WriteExternalTouchscreensProto(hardware);
 }
 
-void MetricsLogChromeOS::WriteRealtimeStabilityAttributes(PrefService* pref) {
-  SystemProfileProto::Stability* stability =
-      uma_proto_->mutable_system_profile()->mutable_stability();
-
+void ChromeOSMetricsProvider::ProvideStabilityMetrics(
+    metrics::SystemProfileProto* system_profile_proto) {
+  metrics::SystemProfileProto::Stability* stability_proto =
+      system_profile_proto->mutable_stability();
+  PrefService* pref = g_browser_process->local_state();
   int count = pref->GetInteger(prefs::kStabilityOtherUserCrashCount);
   if (count) {
-    stability->set_other_user_crash_count(count);
+    stability_proto->set_other_user_crash_count(count);
     pref->SetInteger(prefs::kStabilityOtherUserCrashCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilityKernelCrashCount);
   if (count) {
-    stability->set_kernel_crash_count(count);
+    stability_proto->set_kernel_crash_count(count);
     pref->SetInteger(prefs::kStabilityKernelCrashCount, 0);
   }
 
   count = pref->GetInteger(prefs::kStabilitySystemUncleanShutdownCount);
   if (count) {
-    stability->set_unclean_system_shutdown_count(count);
+    stability_proto->set_unclean_system_shutdown_count(count);
     pref->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 0);
   }
 }
 
-void MetricsLogChromeOS::WriteBluetoothProto() {
-  SystemProfileProto::Hardware* hardware =
-      uma_proto_->mutable_system_profile()->mutable_hardware();
+void ChromeOSMetricsProvider::WriteBluetoothProto(
+    metrics::SystemProfileProto* system_profile_proto) {
+  metrics::SystemProfileProto::Hardware* hardware =
+      system_profile_proto->mutable_hardware();
 
   // BluetoothAdapterFactory::GetAdapter is synchronous on Chrome OS; if that
   // changes this will fail at the DCHECK().
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&MetricsLogChromeOS::SetBluetoothAdapter,
-                 base::Unretained(this)));
+  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+      &ChromeOSMetricsProvider::SetBluetoothAdapter, base::Unretained(this)));
   DCHECK(adapter_.get());
 
   SystemProfileProto::Hardware::Bluetooth* bluetooth =
@@ -154,8 +198,9 @@ void MetricsLogChromeOS::WriteBluetoothProto() {
   bluetooth->set_is_enabled(adapter_->IsPowered());
 
   device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  for (device::BluetoothAdapter::DeviceList::iterator iter =
-           devices.begin(); iter != devices.end(); ++iter) {
+  for (device::BluetoothAdapter::DeviceList::iterator iter = devices.begin();
+       iter != devices.end();
+       ++iter) {
     device::BluetoothDevice* device = *iter;
     // Don't collect information about LE devices yet.
     if (!device->IsPaired())
@@ -168,8 +213,8 @@ void MetricsLogChromeOS::WriteBluetoothProto() {
     // |address| is xx:xx:xx:xx:xx:xx, extract the first three components and
     // pack into a uint32.
     std::string address = device->GetAddress();
-    if (address.size() > 9 &&
-        address[2] == ':' && address[5] == ':' && address[8] == ':') {
+    if (address.size() > 9 && address[2] == ':' && address[5] == ':' &&
+        address[8] == ':') {
       std::string vendor_prefix_str;
       uint64 vendor_prefix;
 
@@ -197,24 +242,22 @@ void MetricsLogChromeOS::WriteBluetoothProto() {
   }
 }
 
-void MetricsLogChromeOS::UpdateMultiProfileUserCount() {
-  metrics::SystemProfileProto* system_profile =
-      uma_proto_->mutable_system_profile();
-
+void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
+    metrics::SystemProfileProto* system_profile_proto) {
   if (chromeos::UserManager::IsInitialized()) {
     size_t user_count = chromeos::UserManager::Get()->GetLoggedInUsers().size();
 
     // We invalidate the user count if it changed while the log was open.
-    if (system_profile->has_multi_profile_user_count() &&
-        user_count != system_profile->multi_profile_user_count()) {
+    if (registered_user_count_at_log_initialization_ &&
+        user_count != user_count_at_log_initialization_) {
       user_count = 0;
     }
 
-    system_profile->set_multi_profile_user_count(user_count);
+    system_profile_proto->set_multi_profile_user_count(user_count);
   }
 }
 
-void MetricsLogChromeOS::SetBluetoothAdapter(
+void ChromeOSMetricsProvider::SetBluetoothAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
 }

@@ -20,6 +20,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
@@ -28,7 +29,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -149,9 +150,7 @@ void ExternalMetrics::RecordAction(const char* action) {
 }
 
 void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
-  if (g_browser_process && g_browser_process->metrics_service()) {
-    g_browser_process->metrics_service()->LogChromeOSCrash(crash_kind);
-  }
+  ChromeOSMetricsProvider::LogCrash(crash_kind);
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {

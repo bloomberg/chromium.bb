@@ -201,11 +201,6 @@ class MetricsService
   // This count is eventually send via UMA logs.
   void RecordBreakpadHasDebugger(bool has_debugger);
 
-#if defined(OS_CHROMEOS)
-  // Records a Chrome OS crash.
-  void LogChromeOSCrash(const std::string &crash_type);
-#endif
-
   bool recording_active() const;
   bool reporting_active() const;
 

@@ -210,6 +210,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
 
@@ -336,11 +337,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
                                 0);
   registry->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
   registry->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
-#if defined(OS_CHROMEOS)
-  registry->RegisterIntegerPref(prefs::kStabilityOtherUserCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityKernelCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
-#endif  // OS_CHROMEOS
 
   registry->RegisterStringPref(prefs::kStabilitySavedSystemProfile,
                                std::string());
@@ -420,6 +416,11 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
       g_browser_process->local_state());
   RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
       plugin_metrics_provider_));
+#endif
+
+#if defined(OS_CHROMEOS)
+  RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new ChromeOSMetricsProvider));
 #endif
 }
 
@@ -822,6 +823,8 @@ void MetricsService::NotifyOnDidCreateMetricsLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(
       MetricsServiceObserver, observers_, OnDidCreateMetricsLog());
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->OnDidCreateMetricsLog();
 }
 
 //------------------------------------------------------------------------------
@@ -1401,22 +1404,6 @@ void MetricsService::LogCleanShutdown() {
   pref->SetInteger(prefs::kStabilityExecutionPhase,
                    MetricsService::SHUTDOWN_COMPLETE);
 }
-
-#if defined(OS_CHROMEOS)
-void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
-  if (crash_type == "user")
-    IncrementPrefValue(prefs::kStabilityOtherUserCrashCount);
-  else if (crash_type == "kernel")
-    IncrementPrefValue(prefs::kStabilityKernelCrashCount);
-  else if (crash_type == "uncleanshutdown")
-    IncrementPrefValue(prefs::kStabilitySystemUncleanShutdownCount);
-  else
-    NOTREACHED() << "Unexpected Chrome OS crash type " << crash_type;
-  // Wake up metrics logs sending if necessary now that new
-  // log data is available.
-  HandleIdleSinceLastTransmission(false);
-}
-#endif  // OS_CHROMEOS
 
 void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
 #if defined(ENABLE_PLUGINS)
