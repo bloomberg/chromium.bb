@@ -9070,7 +9070,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
   if (shaders == NULL || binary == NULL) {
     return error::kOutOfBounds;
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
+  scoped_ptr<GLuint[]> service_ids(new GLuint[n]);
   for (GLsizei ii = 0; ii < n; ++ii) {
     Shader* shader = GetShader(shaders[ii]);
     if (!shader) {
