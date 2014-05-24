@@ -11,12 +11,14 @@
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
@@ -38,8 +40,10 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/timezone/timezone_request.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
@@ -52,11 +56,15 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -70,8 +78,29 @@ using ::testing::Return;
 namespace chromeos {
 
 namespace {
+
 const char kUsername[] = "test_user@managedchrome.com";
 const char kPassword[] = "test_password";
+
+const char kGeolocationResponseBody[] =
+    "{\n"
+    "  \"location\": {\n"
+    "    \"lat\": 51.0,\n"
+    "    \"lng\": -0.1\n"
+    "  },\n"
+    "  \"accuracy\": 1200.4\n"
+    "}";
+
+// Timezone should not match kGeolocationResponseBody to check that exactly
+// this value will be used.
+const char kTimezoneResponseBody[] =
+    "{\n"
+    "    \"dstOffset\" : 0.0,\n"
+    "    \"rawOffset\" : -32400.0,\n"
+    "    \"status\" : \"OK\",\n"
+    "    \"timeZoneId\" : \"America/Anchorage\",\n"
+    "    \"timeZoneName\" : \"Pacific Standard Time\"\n"
+    "}";
 
 class PrefStoreStub : public TestingPrefStore {
  public:
@@ -303,6 +332,48 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
             cras->GetOutputVolumePercent());
 }
 
+class WizardControllerTestURLFetcherFactory
+    : public net::TestURLFetcherFactory {
+ public:
+  virtual net::URLFetcher* CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) OVERRIDE {
+    if (StartsWithASCII(
+            url.spec(),
+            SimpleGeolocationProvider::DefaultGeolocationProviderURL().spec(),
+            true)) {
+      return new net::FakeURLFetcher(url,
+                                     d,
+                                     std::string(kGeolocationResponseBody),
+                                     net::HTTP_OK,
+                                     net::URLRequestStatus::SUCCESS);
+    }
+    if (StartsWithASCII(url.spec(),
+                        chromeos::DefaultTimezoneProviderURL().spec(),
+                        true)) {
+      return new net::FakeURLFetcher(url,
+                                     d,
+                                     std::string(kTimezoneResponseBody),
+                                     net::HTTP_OK,
+                                     net::URLRequestStatus::SUCCESS);
+    }
+    return net::TestURLFetcherFactory::CreateURLFetcher(
+        id, url, request_type, d);
+  }
+  virtual ~WizardControllerTestURLFetcherFactory() {}
+};
+
+class TimeZoneTestRunner {
+ public:
+  void OnResolved() { loop_.Quit(); }
+  void Run() { loop_.Run(); }
+
+ private:
+  base::RunLoop loop_;
+};
+
 class WizardControllerFlowTest : public WizardControllerTest {
  protected:
   WizardControllerFlowTest() {}
@@ -332,8 +403,57 @@ class WizardControllerFlowTest : public WizardControllerTest {
         WizardController::kNetworkScreenName);
   }
 
+  virtual void TearDown() {
+    if (fallback_fetcher_factory_) {
+      fetcher_factory_.reset();
+      net::URLFetcherImpl::set_factory(fallback_fetcher_factory_.get());
+      fallback_fetcher_factory_.reset();
+    }
+  }
+
+  void InitTimezoneResolver() {
+    fallback_fetcher_factory_.reset(new WizardControllerTestURLFetcherFactory);
+    net::URLFetcherImpl::set_factory(NULL);
+    fetcher_factory_.reset(
+        new net::FakeURLFetcherFactory(fallback_fetcher_factory_.get()));
+
+    network_portal_detector_ = new NetworkPortalDetectorTestImpl();
+    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
+
+    NetworkPortalDetector::CaptivePortalState online_state;
+    online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+    online_state.response_code = 204;
+    // Default detworks happens to be usually "eth1" in tests.
+    network_portal_detector_->SetDefaultNetworkPathForTesting(
+        NetworkHandler::Get()
+            ->network_state_handler()
+            ->DefaultNetwork()
+            ->path());
+    network_portal_detector_->SetDetectionResultsForTesting(
+        NetworkHandler::Get()
+            ->network_state_handler()
+            ->DefaultNetwork()
+            ->path(),
+        online_state);
+  }
+
   void OnExit(ScreenObserver::ExitCodes exit_code) {
     WizardController::default_controller()->OnExit(exit_code);
+  }
+
+  chromeos::SimpleGeolocationProvider* GetGeolocationProvider() {
+    return WizardController::default_controller()->geolocation_provider_.get();
+  }
+
+  void WaitUntilTimezoneResolved() {
+    scoped_ptr<TimeZoneTestRunner> runner(new TimeZoneTestRunner);
+    if (!WizardController::default_controller()
+             ->SetOnTimeZoneResolvedForTesting(
+                 base::Bind(&TimeZoneTestRunner::OnResolved,
+                            base::Unretained(runner.get()))))
+      return;
+
+    runner->Run();
   }
 
   MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
@@ -344,6 +464,13 @@ class WizardControllerFlowTest : public WizardControllerTest {
       MockEnrollmentScreenActor>* mock_enrollment_screen_;
 
  private:
+  NetworkPortalDetectorTestImpl* network_portal_detector_;
+
+  // Use a test factory as a fallback so we don't have to deal with other
+  // requests.
+  scoped_ptr<WizardControllerTestURLFetcherFactory> fallback_fetcher_factory_;
+  scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
 
@@ -370,7 +497,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  // Enable TimeZone resolve
+  InitTimezoneResolver();
   OnExit(ScreenObserver::EULA_ACCEPTED);
+  EXPECT_TRUE(GetGeolocationProvider());
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
 
@@ -384,6 +514,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   EXPECT_EQ("ethernet,wifi,cellular",
             NetworkHandler::Get()->network_state_handler()
             ->GetCheckPortalListForTest());
+
+  WaitUntilTimezoneResolved();
+  EXPECT_EQ("America/Anchorage",
+            base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                                  ->GetCurrentTimezoneID()));
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {

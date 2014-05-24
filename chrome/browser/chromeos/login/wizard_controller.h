@@ -288,6 +288,10 @@ class WizardController : public ScreenObserver {
                           bool server_error,
                           const base::TimeDelta elapsed);
 
+  // Returns true if callback has been installed.
+  // Returns false if timezone has already been resolved.
+  bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -376,10 +380,14 @@ class WizardController : public ScreenObserver {
 
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
-  base::WeakPtrFactory<WizardController> weak_factory_;
-
   scoped_ptr<SimpleGeolocationProvider> geolocation_provider_;
   scoped_ptr<TimeZoneProvider> timezone_provider_;
+
+  // Tests check result of timezone resolve.
+  bool timezone_resolved_;
+  base::Closure on_timezone_resolved_for_testing_;
+
+  base::WeakPtrFactory<WizardController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

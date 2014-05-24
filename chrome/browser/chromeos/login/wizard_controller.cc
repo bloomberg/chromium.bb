@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -171,6 +172,7 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       skip_update_enroll_after_eula_(false),
       login_screen_started_(false),
       user_image_screen_return_to_previous_hack_(false),
+      timezone_resolved_(false),
       weak_factory_(this) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
@@ -1032,6 +1034,10 @@ void WizardController::OnTimezoneResolved(
   // (timezone_provider_) in this case. Expect crash here.
   DCHECK(timezone_provider_.get());
 
+  timezone_resolved_ = true;
+  base::ScopedClosureRunner inform_test(on_timezone_resolved_for_testing_);
+  on_timezone_resolved_for_testing_.Reset();
+
   VLOG(1) << "Resolved local timezone={" << timezone->ToStringForDebug()
           << "}.";
 
@@ -1096,6 +1102,15 @@ void WizardController::OnLocationResolved(const Geoposition& position,
       timeout - elapsed,
       base::Bind(&WizardController::OnTimezoneResolved,
                  base::Unretained(this)));
+}
+
+bool WizardController::SetOnTimeZoneResolvedForTesting(
+    const base::Closure& callback) {
+  if (timezone_resolved_)
+    return false;
+
+  on_timezone_resolved_for_testing_ = callback;
+  return true;
 }
 
 }  // namespace chromeos
