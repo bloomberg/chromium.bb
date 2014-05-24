@@ -37,20 +37,6 @@ class RasterizeAndRecordMicroKeySilkCases(test.Test):
 
 
 @test.Disabled('mac', 'win')
-class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
-  """Measures rasterize and record performance on the silk sites.
-
-  Uses bleeding edge rendering fast paths.
-
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  tag = 'fast_path'
-  test = rasterize_and_record_micro.RasterizeAndRecordMicro
-  page_set = 'page_sets/key_silk_cases.py'
-  def CustomizeBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForFastPath(options)
-
-
-@test.Disabled('mac', 'win')
 class RasterizeAndRecordMicroFastPathGpuRasterizationKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
