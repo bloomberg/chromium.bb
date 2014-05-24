@@ -1,0 +1,4 @@
+Historically this directory has been a home for Valgrind and ThreadSanitizer.
+Since then other memory tools used in Chromium started squatting here and the
+name became confusing.
+We're replacing tools/valgrind with tools/memory/ new tools should go there.
