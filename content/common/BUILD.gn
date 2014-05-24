@@ -148,7 +148,7 @@ source_set("common") {
     include_dirs += [ "//third_party/khronos" ]
     configs += [ "//build/config/linux:xcomposite" ]
 
-    if (cpu_arch != "arm" || !is_chromos) {
+    if (cpu_arch != "arm" || !is_chromeos) {
       sources +=[
         "gpu/x_util.cc",
         "gpu/x_util.h",
