@@ -2276,6 +2276,11 @@
       # Targets are by default not nacl untrusted code.
       'nacl_untrusted_build%': 0,
 
+      # Enable a new Gamepad interface.
+      # TODO(cdumez): This is temporary and should go away once the chromium
+      # and blink interfaces are in sync, http://crbug.com/344556.
+      'enable_new_gamepad_api%': 1,
+
       'pnacl_compile_flags': [
         # pnacl uses the clang compiler so we need to suppress all the
         # same warnings as we do for clang.
@@ -2444,6 +2449,9 @@
       }],
       ['enable_hidpi==1', {
         'defines': ['ENABLE_HIDPI=1'],
+      }],
+      ['enable_new_gamepad_api==1', {
+        'defines': ['ENABLE_NEW_GAMEPAD_API=1'],
       }],
       ['native_discardable_memory==1', {
         'defines': ['DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY'],
