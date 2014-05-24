@@ -53,7 +53,7 @@ class CryptoResultImpl FINAL : public CryptoResult {
 public:
     ~CryptoResultImpl();
 
-    static PassRefPtr<CryptoResultImpl> create();
+    static PassRefPtr<CryptoResultImpl> create(ScriptState*);
 
     virtual void completeWithError(blink::WebCryptoErrorType, const blink::WebString&) OVERRIDE;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
@@ -65,7 +65,7 @@ public:
     ScriptPromise promise();
 
 private:
-    explicit CryptoResultImpl(ExecutionContext*);
+    explicit CryptoResultImpl(ScriptState*);
 
     class PromiseState;
     WeakPtr<PromiseState> m_promiseState;

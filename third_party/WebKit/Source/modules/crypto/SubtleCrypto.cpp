@@ -42,11 +42,9 @@
 
 namespace WebCore {
 
-namespace {
-
 // Seems like the generated bindings should take care of these however it
 // currently doesn't. See also http://crbug.com/264520
-bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResult* result)
+static bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResult* result)
 {
     if (x.isNull()) {
         String message = String("Invalid ") + paramName + String(" argument");
@@ -56,7 +54,7 @@ bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResult* res
     return true;
 }
 
-bool ensureNotNull(Key* key, const char* paramName, CryptoResult* result)
+static bool ensureNotNull(Key* key, const char* paramName, CryptoResult* result)
 {
     if (!key) {
         String message = String("Invalid ") + paramName + String(" argument");
@@ -66,9 +64,9 @@ bool ensureNotNull(Key* key, const char* paramName, CryptoResult* result)
     return true;
 }
 
-ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
+static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     bool requiresKey = operationType != Digest;
@@ -114,41 +112,39 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
     return promise;
 }
 
-} // namespace
-
 SubtleCrypto::SubtleCrypto()
 {
     ScriptWrappable::init(this);
 }
 
-ScriptPromise SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Encrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, Encrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Decrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, Decrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Sign, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, Sign, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& signature, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, Key* key, const ArrayPiece& signature, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, key, Verify, signature, data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, Verify, signature, data);
 }
 
-ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const Dictionary& rawAlgorithm, const ArrayPiece& data)
 {
-    return startCryptoOperation(rawAlgorithm, 0, Digest, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, 0, Digest, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyUsageMask keyUsages;
@@ -163,9 +159,9 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     return promise;
 }
 
-ScriptPromise SubtleCrypto::importKey(const String& rawFormat, const ArrayPiece& keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!ensureNotNull(keyData, "keyData", result.get()))
@@ -187,9 +183,9 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, const ArrayPiece&
     return promise;
 }
 
-ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key)
+ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState, const String& rawFormat, Key* key)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!ensureNotNull(key, "key", result.get()))
@@ -208,9 +204,9 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key)
     return promise;
 }
 
-ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrappingKey, const Dictionary& rawWrapAlgorithm)
+ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawFormat, Key* key, Key* wrappingKey, const Dictionary& rawWrapAlgorithm)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!ensureNotNull(key, "key", result.get()))
@@ -239,9 +235,9 @@ ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrap
     return promise;
 }
 
-ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, const ArrayPiece& wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& wrappedKey, Key* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
 
     if (!ensureNotNull(wrappedKey, "wrappedKey", result.get()))

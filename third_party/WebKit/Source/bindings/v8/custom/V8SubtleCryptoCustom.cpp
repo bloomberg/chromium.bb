@@ -29,7 +29,7 @@ void verify1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID(Key*, key, V8Key::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     TONATIVE_VOID(ArrayBuffer*, signature, info[2]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[2])) : 0);
     TONATIVE_VOID(ArrayBuffer*, data, info[3]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[3])) : 0);
-    v8SetReturnValue(info, impl->verifySignature(algorithm, key, signature, data).v8Value());
+    v8SetReturnValue(info, impl->verifySignature(ScriptState::current(info.GetIsolate()), algorithm, key, signature, data).v8Value());
 }
 
 // Promise verify(Dictionary algorithm, Key key, ArrayBuffer signature, ArrayBufferView data);
@@ -44,7 +44,7 @@ void verify2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID(Key*, key, V8Key::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     TONATIVE_VOID(ArrayBuffer*, signature, info[2]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[2])) : 0);
     TONATIVE_VOID(ArrayBufferView*, data, info[3]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[3])) : 0);
-    v8SetReturnValue(info, impl->verifySignature(algorithm, key, signature, data).v8Value());
+    v8SetReturnValue(info, impl->verifySignature(ScriptState::current(info.GetIsolate()), algorithm, key, signature, data).v8Value());
 }
 
 // Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBuffer data);
@@ -59,7 +59,7 @@ void verify3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID(Key*, key, V8Key::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     TONATIVE_VOID(ArrayBufferView*, signature, info[2]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[2])) : 0);
     TONATIVE_VOID(ArrayBuffer*, data, info[3]->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast(info[3])) : 0);
-    v8SetReturnValue(info, impl->verifySignature(algorithm, key, signature, data).v8Value());
+    v8SetReturnValue(info, impl->verifySignature(ScriptState::current(info.GetIsolate()), algorithm, key, signature, data).v8Value());
 }
 
 // Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
@@ -74,7 +74,7 @@ void verify4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID(Key*, key, V8Key::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     TONATIVE_VOID(ArrayBufferView*, signature, info[2]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[2])) : 0);
     TONATIVE_VOID(ArrayBufferView*, data, info[3]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(info[3])) : 0);
-    v8SetReturnValue(info, impl->verifySignature(algorithm, key, signature, data).v8Value());
+    v8SetReturnValue(info, impl->verifySignature(ScriptState::current(info.GetIsolate()), algorithm, key, signature, data).v8Value());
 }
 
 void V8SubtleCrypto::verifyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

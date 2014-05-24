@@ -40,30 +40,30 @@ typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
     GarbageCollected,
     NoInterfaceObject,
 ] interface SubtleCrypto {
-    Promise encrypt(Dictionary algorithm, Key key, ArrayBuffer data);
-    Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
 
-    Promise decrypt(Dictionary algorithm, Key key, ArrayBuffer data);
-    Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
 
-    Promise sign(Dictionary algorithm, Key key, ArrayBuffer data);
-    Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
+    [CallWith=ScriptState] Promise sign(Dictionary algorithm, Key key, ArrayBuffer data);
+    [CallWith=ScriptState] Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
 
     // FIXME: should be: Promise verify(Dictionary algorithm, Key key, CryptoOperationData signature, CryptoOperationData data);
-    [Custom, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, object signature, object data);
+    [CallWith=ScriptState, Custom, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, object signature, object data);
 
-    Promise digest(Dictionary algorithm, ArrayBuffer data);
-    Promise digest(Dictionary algorithm, ArrayBufferView data);
+    [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBuffer data);
+    [CallWith=ScriptState] Promise digest(Dictionary algorithm, ArrayBufferView data);
 
-    Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [CallWith=ScriptState] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
 
-    Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
-    Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
 
-    Promise exportKey(KeyFormat format, Key key);
+    [CallWith=ScriptState] Promise exportKey(KeyFormat format, Key key);
 
-    Promise wrapKey(KeyFormat format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+    [CallWith=ScriptState] Promise wrapKey(KeyFormat format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
 
-    Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
-    Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
 };

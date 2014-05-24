@@ -50,19 +50,19 @@ public:
         return new SubtleCrypto();
     }
 
-    ScriptPromise encrypt(const Dictionary&, Key*, const ArrayPiece&);
-    ScriptPromise decrypt(const Dictionary&, Key*, const ArrayPiece&);
-    ScriptPromise sign(const Dictionary&, Key*, const ArrayPiece&);
+    ScriptPromise encrypt(ScriptState*, const Dictionary&, Key*, const ArrayPiece&);
+    ScriptPromise decrypt(ScriptState*, const Dictionary&, Key*, const ArrayPiece&);
+    ScriptPromise sign(ScriptState*, const Dictionary&, Key*, const ArrayPiece&);
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    ScriptPromise verifySignature(const Dictionary&, Key*, const ArrayPiece& signature, const ArrayPiece& data);
-    ScriptPromise digest(const Dictionary&, const ArrayPiece& data);
+    ScriptPromise verifySignature(ScriptState*, const Dictionary&, Key*, const ArrayPiece& signature, const ArrayPiece& data);
+    ScriptPromise digest(ScriptState*, const Dictionary&, const ArrayPiece& data);
 
-    ScriptPromise generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages);
-    ScriptPromise importKey(const String&, const ArrayPiece&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
-    ScriptPromise exportKey(const String&, Key*);
+    ScriptPromise generateKey(ScriptState*, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise importKey(ScriptState*, const String&, const ArrayPiece&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise exportKey(ScriptState*, const String&, Key*);
 
-    ScriptPromise wrapKey(const String&, Key*, Key*, const Dictionary&);
-    ScriptPromise unwrapKey(const String&, const ArrayPiece&, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
+    ScriptPromise wrapKey(ScriptState*, const String&, Key*, Key*, const Dictionary&);
+    ScriptPromise unwrapKey(ScriptState*, const String&, const ArrayPiece&, Key*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
 
     void trace(Visitor*) { }
 

@@ -91,9 +91,9 @@ ExceptionCode toExceptionCode(blink::WebCryptoErrorType errorType)
 // which may die before the operation is completed).
 class CryptoResultImpl::PromiseState FINAL {
 public:
-    static WeakPtr<PromiseState> create(ExecutionContext* context)
+    static WeakPtr<PromiseState> create(ScriptState* scriptState)
     {
-        PromiseState* promiseState = new PromiseState(context);
+        PromiseState* promiseState = new PromiseState(scriptState);
         return promiseState->m_weakFactory.createWeakPtr();
     }
 
@@ -165,9 +165,9 @@ private:
         PromiseState* m_promiseState;
     };
 
-    explicit PromiseState(ExecutionContext* context)
+    explicit PromiseState(ScriptState* scriptState)
         : m_weakFactory(this)
-        , m_promiseResolver(PromiseResolver::create(ScriptState::current(toIsolate(context)), this))
+        , m_promiseResolver(PromiseResolver::create(scriptState, this))
     {
     }
 
@@ -179,9 +179,9 @@ CryptoResultImpl::~CryptoResultImpl()
 {
 }
 
-PassRefPtr<CryptoResultImpl> CryptoResultImpl::create()
+PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptState* scriptState)
 {
-    return adoptRef(new CryptoResultImpl(callingExecutionContext(v8::Isolate::GetCurrent())));
+    return adoptRef(new CryptoResultImpl(scriptState));
 }
 
 void CryptoResultImpl::completeWithError(blink::WebCryptoErrorType errorType, const blink::WebString& errorDetails)
@@ -214,8 +214,8 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
         m_promiseState->completeWithKeyPair(publicKey, privateKey);
 }
 
-CryptoResultImpl::CryptoResultImpl(ExecutionContext* context)
-    : m_promiseState(PromiseState::create(context))
+CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
+    : m_promiseState(PromiseState::create(scriptState))
 {
 }
 
