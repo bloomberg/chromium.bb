@@ -221,6 +221,7 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
     RenderObject* container = renderer->container();
     // If the renderer is not hooked up yet then we have to wait until it is.
     if (!container) {
+        ASSERT(m_renderView.document().lifecycle().state() < DocumentLifecycle::InCompositingUpdate);
         // FIXME: Remove this and ASSERT(container) once we get rid of the incremental
         // allocateOrClearCompositedLayerMapping compositing update. This happens when
         // adding the renderer to the tree because we setStyle before addChild in
@@ -279,13 +280,12 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
 
     // Fixed position elements that are invisible in the current view don't get their own layer.
     if (FrameView* frameView = m_renderView.frameView()) {
+        ASSERT(m_renderView.document().lifecycle().state() == DocumentLifecycle::InCompositingUpdate);
         LayoutRect viewBounds = frameView->viewportConstrainedVisibleContentRect();
         LayoutRect layerBounds = layer->boundingBoxForCompositing(layer->compositor()->rootRenderLayer(), RenderLayer::ApplyBoundsChickenEggHacks);
         if (!viewBounds.intersects(enclosingIntRect(layerBounds))) {
-            if (viewportConstrainedNotCompositedReason) {
+            if (viewportConstrainedNotCompositedReason)
                 *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForBoundsOutOfView;
-                *needToRecomputeCompositingRequirements = true;
-            }
             return false;
         }
     }

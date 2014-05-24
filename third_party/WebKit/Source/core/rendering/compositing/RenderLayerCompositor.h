@@ -192,8 +192,6 @@ public:
 
     void updateStyleDeterminedCompositingReasons(RenderLayer*);
 
-    void scheduleAnimationIfNeeded();
-
     // Whether the layer could ever be composited.
     bool canBeComposited(const RenderLayer*) const;
 

@@ -310,30 +310,13 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
-void RenderLayerCompositor::scheduleAnimationIfNeeded()
-{
-    // FIXME: This function should not exist. crbug.com/354100.
-    LocalFrame* localFrame = &m_renderView.frameView()->frame();
-    for (LocalFrame* currentFrame = localFrame; currentFrame; currentFrame = currentFrame->tree().traverseNext(localFrame)) {
-        if (currentFrame->contentRenderer()) {
-            RenderLayerCompositor* childCompositor = currentFrame->contentRenderer()->compositor();
-            childCompositor->assertNoUnresolvedDirtyBits();
-            if (childCompositor && childCompositor->m_needsToRecomputeCompositingRequirements) {
-                m_renderView.frameView()->scheduleAnimation();
-                return;
-            }
-        }
-    }
-}
-
 void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
     ASSERT(!compositingLayersNeedRebuild());
     ASSERT(!m_needsUpdateCompositingRequirementsState);
     ASSERT(m_pendingUpdateType == CompositingUpdateNone);
     ASSERT(!m_rootShouldAlwaysCompositeDirty);
-    // FIXME: This should assert !m_needsToRecomputeCompositingRequirements.
-    // crbug.com/354100.
+    ASSERT(!m_needsToRecomputeCompositingRequirements);
 }
 
 void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
@@ -601,6 +584,7 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 {
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
     m_compositingReasonFinder.requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason, &m_needsToRecomputeCompositingRequirements);
+    ASSERT(!m_needsToRecomputeCompositingRequirements || lifecycle().state() < DocumentLifecycle::InCompositingUpdate);
 
     if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
         ASSERT(viewportConstrainedNotCompositedReason == RenderLayer::NoNotCompositedReason || layer->renderer()->style()->position() == FixedPosition);
