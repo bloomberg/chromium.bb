@@ -221,6 +221,10 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
     RenderObject* container = renderer->container();
     // If the renderer is not hooked up yet then we have to wait until it is.
     if (!container) {
+        // FIXME: Remove this and ASSERT(container) once we get rid of the incremental
+        // allocateOrClearCompositedLayerMapping compositing update. This happens when
+        // adding the renderer to the tree because we setStyle before addChild in
+        // createRendererForElementIfNeeded.
         *needToRecomputeCompositingRequirements = true;
         return false;
     }
@@ -260,6 +264,7 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* 
     }
 
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
+    // FIXME: Get rid of this codepath once we get rid of the incremental compositing update in RenderLayer::styleChanged.
     if (m_renderView.document().lifecycle().state() < DocumentLifecycle::LayoutClean) {
         *needToRecomputeCompositingRequirements = true;
         return layer->hasCompositedLayerMapping();

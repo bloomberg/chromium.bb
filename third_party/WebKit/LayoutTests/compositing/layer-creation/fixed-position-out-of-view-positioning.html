@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/js-test.js"></script>
   <script src="../../resources/run-after-display.js"></script>
   <style>
     .fixed {
@@ -19,19 +20,21 @@
   </style>
 
   <script type="text/javascript">
-    function doTest() {
-      if (!window.testRunner)
-        return;
+    window.jsTestIsAsync = true;
 
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
+    function doTest() {
+      if (!window.internals)
+        return;
 
       document.getElementById("layertree1").innerText = window.internals.layerTreeAsText(document);
       window.scrollTo(0, 10);
 
       runAfterDisplay(function() {
-        document.getElementById("layertree2").innerText = window.internals.layerTreeAsText(document);
-        testRunner.notifyDone();
+        layerTree = window.internals.layerTreeAsText(document);
+        // Make sure the layer tree dump is stable.
+        shouldBe('layerTree', 'window.internals.layerTreeAsText(document)');
+        document.getElementById("layertree2").innerText = layerTree;
+        finishJSTest();
       });
     }
 
