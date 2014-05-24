@@ -681,10 +681,10 @@ class GestureRecognizerTest : public AuraTestBase,
 
   virtual void SetUp() OVERRIDE {
     // TODO(tdresser): Once unified GR has landed, only run these tests once.
-    if (UsingUnifiedGR()) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseUnifiedGestureDetector);
-    }
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUnifiedGestureDetector,
+        UsingUnifiedGR() ? switches::kUnifiedGestureDetectorEnabled
+                         : switches::kUnifiedGestureDetectorDisabled);
 
     AuraTestBase::SetUp();
   }
