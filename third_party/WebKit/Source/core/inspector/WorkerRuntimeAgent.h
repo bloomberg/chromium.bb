@@ -51,6 +51,7 @@ public:
 
     // Protocol commands.
     virtual void run(ErrorString*) OVERRIDE;
+    virtual void isRunRequired(ErrorString*, bool* out_result) OVERRIDE;
 
     void willEvaluateWorkerScript(WorkerGlobalScope*, int workerThreadStartMode);
 

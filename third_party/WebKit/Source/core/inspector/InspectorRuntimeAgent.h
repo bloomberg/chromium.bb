@@ -78,6 +78,7 @@ public:
     virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties) OVERRIDE FINAL;
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) OVERRIDE FINAL;
     virtual void run(ErrorString*) OVERRIDE;
+    virtual void isRunRequired(ErrorString*, bool* out_result) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
     virtual void clearFrontend() OVERRIDE FINAL;

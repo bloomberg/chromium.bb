@@ -154,6 +154,11 @@ void InspectorRuntimeAgent::run(ErrorString*)
 {
 }
 
+void InspectorRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
+{
+    *out_result = false;
+}
+
 void InspectorRuntimeAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->runtime();

@@ -94,6 +94,11 @@ void WorkerRuntimeAgent::run(ErrorString*)
     m_paused = false;
 }
 
+void WorkerRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
+{
+    *out_result = m_paused;
+}
+
 void WorkerRuntimeAgent::willEvaluateWorkerScript(WorkerGlobalScope* context, int workerThreadStartMode)
 {
     if (workerThreadStartMode != PauseWorkerGlobalScopeOnStart)
