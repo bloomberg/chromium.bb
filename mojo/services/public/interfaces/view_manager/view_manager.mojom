@@ -101,9 +101,9 @@ interface IViewManagerClient {
   // that uniquely identifies this connection. |next_server_change_id| is the
   // id of the next change the server is expecting. |nodes| are the nodes
   // parented to the root.
-  OnConnectionEstablished(uint16 connection_id,
-                          uint32 next_server_change_id,
-                          INode[] nodes);
+  OnViewManagerConnectionEstablished(uint16 connection_id,
+                                     uint32 next_server_change_id,
+                                     INode[] nodes);
 
   // This is sent to clients when a change is made to the server that results
   // in the |server_change_id| changing but the client isn't notified. This is

@@ -43,8 +43,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   ViewManagerConnection(RootNodeManager* root_node_manager);
   virtual ~ViewManagerConnection();
 
-  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
-
   TransportConnectionId id() const { return id_; }
 
   // Returns the Node with the specified id.
@@ -177,6 +175,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void OnNodeViewReplaced(const Node* node,
                                   const View* new_view,
                                   const View* old_view) OVERRIDE;
+
+  // InterfaceImp overrides:
+  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
 
   RootNodeManager* root_node_manager_;
 

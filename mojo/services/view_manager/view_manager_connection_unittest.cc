@@ -272,7 +272,7 @@ class ViewManagerClientImpl : public IViewManagerClient {
 
  private:
   // IViewManagerClient overrides:
-  virtual void OnConnectionEstablished(
+  virtual void OnViewManagerConnectionEstablished(
       TransportConnectionId connection_id,
       TransportChangeId next_server_change_id,
       const mojo::Array<INode>& nodes) OVERRIDE {

@@ -71,19 +71,6 @@ ViewManagerConnection::~ViewManagerConnection() {
   root_node_manager_->RemoveConnection(this);
 }
 
-void ViewManagerConnection::OnConnectionEstablished() {
-  DCHECK_EQ(0, id_);  // Should only get OnConnectionEstablished() once.
-  id_ = root_node_manager_->GetAndAdvanceNextConnectionId();
-  root_node_manager_->AddConnection(this);
-  std::vector<const Node*> to_send;
-  GetUnknownNodesFrom(root_node_manager_->root(), &to_send);
-  AllocationScope allocation_scope;
-  client()->OnConnectionEstablished(
-      id_,
-      root_node_manager_->next_server_change_id(),
-      NodesToINodes(to_send));
-}
-
 const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
   if (id_ == id.connection_id) {
     NodeMap::const_iterator i = node_map_.find(id.node_id);
@@ -424,7 +411,7 @@ bool ViewManagerConnection::ProcessSetRoots(
   for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
     GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
   AllocationScope allocation_scope;
-  client()->OnConnectionEstablished(
+  client()->OnViewManagerConnectionEstablished(
       id_,
       root_node_manager_->next_server_change_id(),
       NodesToINodes(to_send));
@@ -636,6 +623,19 @@ void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
                                                const View* new_view,
                                                const View* old_view) {
   root_node_manager_->ProcessNodeViewReplaced(node, new_view, old_view);
+}
+
+void ViewManagerConnection::OnConnectionEstablished() {
+  DCHECK_EQ(0, id_);  // Should only get OnConnectionEstablished() once.
+  id_ = root_node_manager_->GetAndAdvanceNextConnectionId();
+  root_node_manager_->AddConnection(this);
+  std::vector<const Node*> to_send;
+  GetUnknownNodesFrom(root_node_manager_->root(), &to_send);
+  AllocationScope allocation_scope;
+  client()->OnViewManagerConnectionEstablished(
+      id_,
+      root_node_manager_->next_server_change_id(),
+      NodesToINodes(to_send));
 }
 
 }  // namespace service

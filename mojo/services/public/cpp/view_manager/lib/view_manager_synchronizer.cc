@@ -516,7 +516,7 @@ void ViewManagerSynchronizer::SetViewContents(TransportViewId view_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, IViewManagerClient implementation:
 
-void ViewManagerSynchronizer::OnConnectionEstablished(
+void ViewManagerSynchronizer::OnViewManagerConnectionEstablished(
     TransportConnectionId connection_id,
     TransportChangeId next_server_change_id,
     const Array<INode>& nodes) {
