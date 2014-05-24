@@ -83,6 +83,9 @@ void EnsureMethodsLoaded() {
 
   void* indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
   if (!indicator_lib) {
+    indicator_lib = dlopen("libappindicator3.so.1", RTLD_LAZY);
+  }
+  if (!indicator_lib) {
     indicator_lib = dlopen("libappindicator.so.1", RTLD_LAZY);
   }
   if (!indicator_lib) {
