@@ -326,11 +326,10 @@ public:
 public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
-    virtual bool isBR() const { return false; }
     virtual bool isBoxModelObject() const { return false; }
+    virtual bool isBR() const { return false; }
+    virtual bool isCanvas() const { return false; }
     virtual bool isCounter() const { return false; }
-    virtual bool isQuote() const { return false; }
-
     virtual bool isDetailsMarker() const { return false; }
     virtual bool isEmbeddedObject() const { return false; }
     virtual bool isFieldset() const { return false; }
@@ -348,48 +347,40 @@ public:
     virtual bool isMenuList() const { return false; }
     virtual bool isMeter() const { return false; }
     virtual bool isProgress() const { return false; }
+    virtual bool isQuote() const { return false; }
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderBlockFlow() const { return false; }
     virtual bool isRenderButton() const { return false; }
+    virtual bool isRenderFlowThread() const { return false; }
+    virtual bool isRenderFullScreen() const { return false; }
+    virtual bool isRenderFullScreenPlaceholder() const { return false; }
+    virtual bool isRenderGrid() const { return false; }
     virtual bool isRenderIFrame() const { return false; }
     virtual bool isRenderImage() const { return false; }
     virtual bool isRenderInline() const { return false; }
+    virtual bool isRenderMultiColumnSet() const { return false; }
     virtual bool isRenderPart() const { return false; }
     virtual bool isRenderRegion() const { return false; }
+    virtual bool isRenderScrollbarPart() const { return false; }
+    virtual bool isRenderTableCol() const { return false; }
     virtual bool isRenderView() const { return false; }
     virtual bool isReplica() const { return false; }
-
     virtual bool isRuby() const { return false; }
     virtual bool isRubyBase() const { return false; }
     virtual bool isRubyRun() const { return false; }
     virtual bool isRubyText() const { return false; }
-
     virtual bool isSlider() const { return false; }
     virtual bool isSliderThumb() const { return false; }
     virtual bool isTable() const { return false; }
-    virtual bool isTableCell() const { return false; }
-    virtual bool isRenderTableCol() const { return false; }
     virtual bool isTableCaption() const { return false; }
+    virtual bool isTableCell() const { return false; }
     virtual bool isTableRow() const { return false; }
     virtual bool isTableSection() const { return false; }
-    virtual bool isTextControl() const { return false; }
     virtual bool isTextArea() const { return false; }
+    virtual bool isTextControl() const { return false; }
     virtual bool isTextField() const { return false; }
     virtual bool isVideo() const { return false; }
     virtual bool isWidget() const { return false; }
-    virtual bool isCanvas() const { return false; }
-    virtual bool isRenderFullScreen() const { return false; }
-    virtual bool isRenderFullScreenPlaceholder() const { return false; }
-
-    virtual bool isRenderGrid() const { return false; }
-
-    virtual bool isRenderFlowThread() const { return false; }
-    bool isInFlowRenderFlowThread() const { return isRenderFlowThread() && !isOutOfFlowPositioned(); }
-    bool isOutOfFlowRenderFlowThread() const { return isRenderFlowThread() && isOutOfFlowPositioned(); }
-
-    virtual bool isRenderMultiColumnSet() const { return false; }
-
-    virtual bool isRenderScrollbarPart() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
@@ -727,10 +718,6 @@ public:
     RenderObject* clippingContainer() const;
 
     bool canContainFixedPositionObjects() const
-    {
-        return isRenderView() || (hasTransform() && isRenderBlock()) || isSVGForeignObject() || isOutOfFlowRenderFlowThread();
-    }
-    bool canContainAbsolutePositionObjects() const
     {
         return isRenderView() || (hasTransform() && isRenderBlock()) || isSVGForeignObject();
     }

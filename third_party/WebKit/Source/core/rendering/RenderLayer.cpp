@@ -311,7 +311,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
-    if (useRegionBasedColumns() && renderer()->isInFlowRenderFlowThread()) {
+    if (useRegionBasedColumns() && renderer()->isRenderFlowThread()) {
         updatePagination();
         flags |= UpdatePagination;
     }
@@ -658,7 +658,7 @@ void RenderLayer::updatePagination()
     // layers). We track an enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
     // to that layer easily.
     bool regionBasedColumnsUsed = useRegionBasedColumns();
-    if (regionBasedColumnsUsed && renderer()->isInFlowRenderFlowThread()) {
+    if (regionBasedColumnsUsed && renderer()->isRenderFlowThread()) {
         m_enclosingPaginationLayer = this;
         return;
     }
@@ -1641,8 +1641,7 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
 
         // We should not reach RenderView layer past the RenderFlowThread layer for any
         // children of the RenderFlowThread.
-        if (renderer->flowThreadContainingBlock() && !layer->isOutOfFlowRenderFlowThread())
-            ASSERT(parentLayer != renderer->view()->layer());
+        ASSERT(!renderer->flowThreadContainingBlock() || parentLayer != renderer->view()->layer());
 
         if (foundAncestorFirst) {
             // Found ancestorLayer before the abs. positioned container, so compute offset of both relative
@@ -2688,7 +2687,7 @@ bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& 
     ASSERT(!renderer()->frame()->view()->layoutPending());
     ASSERT(!renderer()->document().renderView()->needsLayout());
 
-    LayoutRect hitTestArea = isOutOfFlowRenderFlowThread() ? toRenderFlowThread(renderer())->borderBoxRect() : renderer()->view()->documentRect();
+    LayoutRect hitTestArea = renderer()->view()->documentRect();
     if (!request.ignoreClipping())
         hitTestArea.intersect(frameVisibleRect(renderer()));
 

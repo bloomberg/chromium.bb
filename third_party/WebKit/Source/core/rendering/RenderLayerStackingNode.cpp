@@ -219,7 +219,7 @@ void RenderLayerStackingNode::collectLayers(OwnPtr<Vector<RenderLayerStackingNod
     layer()->updateDescendantDependentFlags();
 
     // Overflow layers are just painted by their enclosing layers, so they don't get put in zorder lists.
-    if (!isNormalFlowOnly() && !layer()->isOutOfFlowRenderFlowThread()) {
+    if (!isNormalFlowOnly()) {
         // Determine which buffer the child should be in.
         OwnPtr<Vector<RenderLayerStackingNode*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
 

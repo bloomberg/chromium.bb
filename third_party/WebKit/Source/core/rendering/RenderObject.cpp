@@ -788,7 +788,7 @@ RenderBlock* RenderObject::containingBlock() const
             if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
                 break;
 
-            if (o->canContainAbsolutePositionObjects())
+            if (o->canContainFixedPositionObjects())
                 break;
 
             if (o->style()->hasInFlowPosition() && o->isInline() && !o->isReplaced()) {
