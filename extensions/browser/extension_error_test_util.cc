@@ -26,7 +26,7 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
     bool from_incognito) {
   StackTrace stack_trace;
   scoped_ptr<StackFrame> frame =
-      StackFrame::CreateFromText(base::UTF8ToUTF16(kDefaultStackTrace));
+      StackFrame::CreateFromText(base::ASCIIToUTF16(kDefaultStackTrace));
   CHECK(frame.get());
   stack_trace.push_back(*frame);
 
@@ -57,8 +57,8 @@ scoped_ptr<ExtensionError> CreateNewManifestError(
   return scoped_ptr<ExtensionError>(
       new ManifestError(extension_id,
                         base::UTF8ToUTF16(message),
-                        base::EmptyString16(),
-                        base::EmptyString16()));
+                        base::string16(),
+                        base::string16()));
 }
 
 }  // namespace error_test_util
