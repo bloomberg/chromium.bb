@@ -109,6 +109,7 @@ SyncBackendHostCore::SyncBackendHostCore(
       registrar_(NULL),
       has_sync_setup_completed_(has_sync_setup_completed),
       forward_protocol_events_(false),
+      forward_type_info_(false),
       weak_ptr_factory_(this) {
   DCHECK(backend.get());
 }
@@ -577,8 +578,8 @@ void SyncBackendHostCore::DoShutdown(bool sync_disabled) {
 void SyncBackendHostCore::DoDestroySyncManager() {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   if (sync_manager_) {
-    save_changes_timer_.reset();
     DisableDirectoryTypeDebugInfoForwarding();
+    save_changes_timer_.reset();
     sync_manager_->RemoveObserver(this);
     sync_manager_->ShutdownOnSyncThread();
     sync_manager_.reset();
@@ -669,6 +670,9 @@ void SyncBackendHostCore::DisableProtocolEventForwarding() {
 
 void SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding() {
   DCHECK(sync_manager_);
+
+  forward_type_info_ = true;
+
   if (!sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
     sync_manager_->RegisterDirectoryTypeDebugInfoObserver(this);
   sync_manager_->RequestEmitDebugInfo();
@@ -676,6 +680,12 @@ void SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding() {
 
 void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
   DCHECK(sync_manager_);
+
+  if (!forward_type_info_)
+    return;
+
+  forward_type_info_ = false;
+
   if (sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
     sync_manager_->UnregisterDirectoryTypeDebugInfoObserver(this);
 }

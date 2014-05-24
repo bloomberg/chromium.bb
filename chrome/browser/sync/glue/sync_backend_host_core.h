@@ -319,6 +319,9 @@ class SyncBackendHostCore
   // Set when we've been asked to forward sync protocol events to the frontend.
   bool forward_protocol_events_;
 
+  // Set when the forwarding of per-type debug counters is enabled.
+  bool forward_type_info_;
+
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHostCore);
