@@ -312,6 +312,12 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
 
   self->ReloadLocalizedContent();
 
+  // We still do not have device owner, so owner settings are not applied.
+  // But Guest session can be started before owner is created, so we need to
+  // save locale settings directly here.
+  g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
+                                              self->selected_language_code_);
+
   AccessibilityManager::Get()->OnLocaleChanged();
 }
 
