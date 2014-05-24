@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class TouchEvent FINAL : public MouseRelatedEvent {
+class TouchEvent FINAL : public UIEventWithKeyState {
 public:
     virtual ~TouchEvent();
 
@@ -44,18 +44,16 @@ public:
     static PassRefPtrWillBeRawPtr<TouchEvent> create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,
         const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view,
-        int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable)
     {
-        return adoptRefWillBeNoop(new TouchEvent(touches, targetTouches, changedTouches,
-            type, view, screenX, screenY, pageX, pageY,
+        return adoptRefWillBeNoop(new TouchEvent(touches, targetTouches, changedTouches, type, view,
             ctrlKey, altKey, shiftKey, metaKey, cancelable));
     }
 
     void initTouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
-        PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY,
-        int clientX, int clientY,
+        PassRefPtrWillBeRawPtr<AbstractView>,
+        int, int, int, int, // unused useless members of web exposed API
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
     TouchList* touches() const { return m_touches.get(); }
@@ -78,8 +76,7 @@ private:
     TouchEvent();
     TouchEvent(TouchList* touches, TouchList* targetTouches,
             TouchList* changedTouches, const AtomicString& type,
-            PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int pageX,
-            int pageY,
+            PassRefPtrWillBeRawPtr<AbstractView>,
             bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable);
 
     RefPtrWillBeMember<TouchList> m_touches;

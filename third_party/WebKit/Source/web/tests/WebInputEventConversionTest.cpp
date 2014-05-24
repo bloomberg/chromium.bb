@@ -285,7 +285,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         RefPtrWillBeRawPtr<Touch> touch = Touch::create(webViewImpl->page()->mainFrame(), document.get(), 0, 10, 10, 10, 10, 10, 10, 0, 0);
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, 10, 10, 10, 10, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, false, false, false, false, false);
 
         WebTouchEventBuilder webTouchBuilder(view, docRenderer, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);

@@ -547,6 +547,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
     clickCount = event.detail();
 }
 
+// Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a mouse
+// with touch input for plugins that don't support touch input).
 WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const TouchEvent& event)
 {
     if (!event.touches())
@@ -569,7 +571,18 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
     else
         return;
 
-    updateWebMouseEventFromWebCoreMouseEvent(event, *widget, *renderObject, *this);
+    timeStampSeconds = event.timeStamp() / millisPerSecond;
+    modifiers = getWebInputModifiers(event);
+
+    // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
+    ScrollView* view =  toScrollView(widget->parent());
+    IntPoint windowPoint = IntPoint(touch->absoluteLocation().x(), touch->absoluteLocation().y());
+    if (view)
+        windowPoint = view->contentsToWindow(windowPoint);
+    globalX = touch->screenX();
+    globalY = touch->screenY();
+    windowX = windowPoint.x();
+    windowY = windowPoint.y();
 
     button = WebMouseEvent::ButtonLeft;
     modifiers |= WebInputEvent::LeftButtonDown;

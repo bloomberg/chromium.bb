@@ -41,11 +41,9 @@ TouchEvent::TouchEvent()
 
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
-        PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int pageX, int pageY,
+        PassRefPtrWillBeRawPtr<AbstractView> view,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable)
-    : MouseRelatedEvent(type, true, cancelable, view, 0, IntPoint(screenX, screenY),
-                        IntPoint(pageX, pageY),
-                        IntPoint(0, 0),
+    : UIEventWithKeyState(type, true, cancelable, view, 0,
                         ctrlKey, altKey, shiftKey, metaKey)
     , m_touches(touches)
     , m_targetTouches(targetTouches)
@@ -60,7 +58,8 @@ TouchEvent::~TouchEvent()
 
 void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
-        PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY,
+        PassRefPtrWillBeRawPtr<AbstractView> view,
+        int, int, int, int,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
     if (dispatched())
@@ -75,12 +74,10 @@ void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,
     m_touches = touches;
     m_targetTouches = targetTouches;
     m_changedTouches = changedTouches;
-    m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;
     m_altKey = altKey;
     m_shiftKey = shiftKey;
     m_metaKey = metaKey;
-    initCoordinates(IntPoint(clientX, clientY));
 }
 
 const AtomicString& TouchEvent::interfaceName() const
@@ -95,7 +92,7 @@ bool TouchEvent::isTouchEvent() const
 
 void TouchEvent::preventDefault()
 {
-    MouseRelatedEvent::preventDefault();
+    UIEventWithKeyState::preventDefault();
 
     // A common developer error is to wait too long before attempting to stop
     // scrolling by consuming a touchmove event. Generate a warning if this
@@ -110,7 +107,7 @@ void TouchEvent::trace(Visitor* visitor)
     visitor->trace(m_touches);
     visitor->trace(m_targetTouches);
     visitor->trace(m_changedTouches);
-    MouseRelatedEvent::trace(visitor);
+    UIEventWithKeyState::trace(visitor);
 }
 
 PassRefPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
