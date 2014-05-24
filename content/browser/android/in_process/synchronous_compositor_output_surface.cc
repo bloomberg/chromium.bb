@@ -12,6 +12,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
@@ -48,7 +49,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
       NOTREACHED() << "BeginPaint with no canvas set";
       return &null_canvas_;
     }
-    LOG_IF(WARNING, surface_->did_swap_buffer_)
+    LOG_IF(WARNING, surface_->frame_holder_.get())
         << "Mutliple calls to BeginPaint per frame";
     return surface_->current_sw_canvas_;
   }
@@ -72,14 +73,16 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       routing_id_(routing_id),
       needs_begin_frame_(false),
       invoking_composite_(false),
-      did_swap_buffer_(false),
       current_sw_canvas_(NULL),
       memory_policy_(0),
-      output_surface_client_(NULL),
-      weak_ptr_factory_(this) {
+      output_surface_client_(NULL) {
   capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
+  if (IsDelegatedRendererEnabled()) {
+    capabilities_.delegated_rendering = true;
+    capabilities_.max_frames_pending = 1;
+  }
   // Cannot call out to GetDelegate() here as the output surface is not
   // constructed on the correct thread.
 
@@ -136,31 +139,15 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
-  if (!ForcedDrawToSoftwareDevice()) {
+  if (!ForcedDrawToSoftwareDevice() && !IsDelegatedRendererEnabled()) {
     DCHECK(context_provider_);
     context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   }
-  UpdateFrameMetaData(frame->metadata);
 
-  did_swap_buffer_ = true;
+  frame_holder_.reset(new cc::CompositorFrame);
+  frame->AssignTo(frame_holder_.get());
+
   client_->DidSwapBuffers();
-}
-
-void SynchronousCompositorOutputSurface::UpdateFrameMetaData(
-    const cc::CompositorFrameMetadata& frame_info) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SynchronousCompositorOutputSurface::UpdateFrameMetaData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   frame_info));
-    return;
-  }
-
-  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
-  if (delegate)
-    delegate->UpdateFrameMetaData(frame_info);
 }
 
 namespace {
@@ -184,7 +171,8 @@ void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
   cc::OutputSurface::ReleaseGL();
 }
 
-bool SynchronousCompositorOutputSurface::DemandDrawHw(
+scoped_ptr<cc::CompositorFrame>
+SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
     gfx::Rect viewport,
@@ -198,10 +186,11 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   SetExternalStencilTest(stencil_enabled);
   InvokeComposite(transform, viewport, clip, true);
 
-  return did_swap_buffer_;
+  return frame_holder_.Pass();
 }
 
-bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
+scoped_ptr<cc::CompositorFrame>
+SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
@@ -220,7 +209,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   InvokeComposite(transform, clip, clip, false);
 
-  return did_swap_buffer_;
+  return frame_holder_.Pass();
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
@@ -229,8 +218,8 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     gfx::Rect clip,
     bool valid_for_tile_management) {
   DCHECK(!invoking_composite_);
+  DCHECK(!frame_holder_.get());
   base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_, true);
-  did_swap_buffer_ = false;
 
   gfx::Transform adjusted_transform = transform;
   AdjustTransform(&adjusted_transform, viewport);
@@ -251,12 +240,17 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
         cached_hw_transform_, cached_hw_viewport_, cached_hw_clip_, true);
   }
 
-  if (did_swap_buffer_)
+  if (frame_holder_.get())
     client_->DidSwapBuffersComplete();
 
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
     delegate->SetContinuousInvalidate(needs_begin_frame_);
+}
+
+void SynchronousCompositorOutputSurface::ReturnResources(
+    const cc::CompositorFrameAck& frame_ack) {
+  ReclaimResources(&frame_ack);
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(

@@ -41,6 +41,12 @@ void DeferredGpuCommandService::SetInstance() {
   }
 }
 
+// static
+DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
+  DCHECK(g_service.Get().get());
+  return g_service.Get().get();
+}
+
 DeferredGpuCommandService::DeferredGpuCommandService() {}
 
 DeferredGpuCommandService::~DeferredGpuCommandService() {
@@ -48,8 +54,9 @@ DeferredGpuCommandService::~DeferredGpuCommandService() {
   DCHECK(tasks_.empty());
 }
 
+// This method can be called on any thread.
 // static
-void DeferredGpuCommandService::RequestProcessGLOnUIThread() {
+void DeferredGpuCommandService::RequestProcessGL() {
   SharedRendererState* renderer_state =
       GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
   if (!renderer_state) {
@@ -68,7 +75,8 @@ void DeferredGpuCommandService::ScheduleTask(const base::Closure& task) {
   if (ScopedAllowGL::IsAllowed()) {
     RunTasks();
   } else {
-    RequestProcessGLOnUIThread();
+    // TODO(boliu): Improve this to avoid PostTask storm.
+    RequestProcessGL();
   }
 }
 

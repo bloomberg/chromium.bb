@@ -27,12 +27,12 @@ class ScopedAllowGL {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
 
-// TODO(boliu): Teach this class about RT.
 class DeferredGpuCommandService
     : public gpu::InProcessCommandBuffer::Service,
       public base::RefCountedThreadSafe<DeferredGpuCommandService> {
  public:
   static void SetInstance();
+  static DeferredGpuCommandService* GetInstance();
 
   virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
   virtual void ScheduleIdleWork(const base::Closure& task) OVERRIDE;
@@ -50,7 +50,7 @@ class DeferredGpuCommandService
   friend class base::RefCountedThreadSafe<DeferredGpuCommandService>;
 
  private:
-  static void RequestProcessGLOnUIThread();
+  static void RequestProcessGL();
 
   DeferredGpuCommandService();
 

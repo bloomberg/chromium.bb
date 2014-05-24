@@ -179,14 +179,18 @@ scoped_refptr<ContextProviderWebContext> SynchronousCompositorFactoryImpl::
 scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
     CreateOnscreenContextProviderForCompositorThread(
         scoped_refptr<gfx::GLSurface> surface) {
-  DCHECK(surface);
   DCHECK(service_);
 
   if (!share_context_.get())
     share_context_ = CreateContext(NULL, service_, NULL);
   return webkit::gpu::ContextProviderInProcess::Create(
       WrapContext(CreateContext(surface, service_, share_context_.get())),
-      "Compositor-Onscreen");
+      "Child-Compositor");
+}
+
+gpu::GLInProcessContext* SynchronousCompositorFactoryImpl::GetShareContext() {
+  DCHECK(share_context_.get());
+  return share_context_.get();
 }
 
 scoped_refptr<StreamTextureFactory>

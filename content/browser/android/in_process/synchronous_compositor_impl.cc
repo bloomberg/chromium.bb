@@ -66,7 +66,8 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
     : compositor_client_(NULL),
       output_surface_(NULL),
       contents_(contents),
-      input_handler_(NULL) {
+      input_handler_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK(contents);
 }
 
@@ -110,24 +111,58 @@ void SynchronousCompositorImpl::ReleaseHwDraw() {
   g_factory.Get().CompositorReleasedHardwareDraw();
 }
 
-bool SynchronousCompositorImpl::DemandDrawHw(
-      gfx::Size surface_size,
-      const gfx::Transform& transform,
-      gfx::Rect viewport,
-      gfx::Rect clip,
-      bool stencil_enabled) {
+gpu::GLInProcessContext* SynchronousCompositorImpl::GetShareContext() {
+  DCHECK(CalledOnValidThread());
+  return g_factory.Get().GetShareContext();
+}
+
+scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
+    gfx::Size surface_size,
+    const gfx::Transform& transform,
+    gfx::Rect viewport,
+    gfx::Rect clip,
+    bool stencil_enabled) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  return output_surface_->DemandDrawHw(
+  scoped_ptr<cc::CompositorFrame> frame = output_surface_->DemandDrawHw(
       surface_size, transform, viewport, clip, stencil_enabled);
+  if (frame.get())
+    UpdateFrameMetaData(frame->metadata);
+  return frame.Pass();
+}
+
+void SynchronousCompositorImpl::ReturnResources(
+    const cc::CompositorFrameAck& frame_ack) {
+  DCHECK(CalledOnValidThread());
+  output_surface_->ReturnResources(frame_ack);
 }
 
 bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  return output_surface_->DemandDrawSw(canvas);
+  scoped_ptr<cc::CompositorFrame> frame = output_surface_->DemandDrawSw(canvas);
+  if (frame.get())
+    UpdateFrameMetaData(frame->metadata);
+  return !!frame.get();
+}
+
+void SynchronousCompositorImpl::UpdateFrameMetaData(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&SynchronousCompositorImpl::UpdateFrameMetaData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   frame_metadata));
+    return;
+  }
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->SynchronousFrameMetadata(frame_metadata);
 }
 
 void SynchronousCompositorImpl::SetMemoryPolicy(
@@ -205,14 +240,6 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
       contents_->GetRoutingID(), input_event);
-}
-
-void SynchronousCompositorImpl::UpdateFrameMetaData(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-      contents_->GetRenderWidgetHostView());
-  if (rwhv)
-    rwhv->SynchronousFrameMetadata(frame_metadata);
 }
 
 void SynchronousCompositorImpl::DidActivatePendingTree() {

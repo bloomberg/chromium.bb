@@ -81,7 +81,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
               const gfx::Vector2d& scroll,
               const gfx::Rect& global_visible_rect,
               const gfx::Rect& clip);
-  void DidDrawGL(const DrawGLResult& result);
+  void DidDrawGL(scoped_ptr<DrawGLResult> result);
+  void DidDrawDelegated(scoped_ptr<DrawGLResult> result);
 
   // CapturePicture API methods.
   skia::RefPtr<SkPicture> CapturePicture(int width, int height);
@@ -153,6 +154,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       const gfx::Vector2dF& total_scroll_offset_dip,
       const gfx::SizeF& scrollable_size_dip);
 
+  bool OnDrawHardwareLegacy(jobject java_canvas);
+  bool OnDrawHardware(jobject java_canvas);
+  void ReturnResources();
+
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
@@ -189,10 +194,14 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool view_visible_;
   bool window_visible_;  // Only applicable if |attached_to_window_| is true.
   bool attached_to_window_;
+  bool hardware_enabled_;
   float dip_scale_;
   float page_scale_factor_;
   bool on_new_picture_enable_;
   bool clear_view_;
+
+  gfx::Vector2d last_on_draw_scroll_offset_;
+  gfx::Rect last_on_draw_global_visible_rect_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation. This value is set by the compositor and should always
@@ -208,8 +217,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   int width_;
   int height_;
-
-  DrawGLInput draw_gl_input_;
 
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_dip_;

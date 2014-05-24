@@ -51,13 +51,16 @@ class SynchronousCompositorImpl
   virtual bool InitializeHwDraw(
       scoped_refptr<gfx::GLSurface> surface) OVERRIDE;
   virtual void ReleaseHwDraw() OVERRIDE;
-  virtual bool DemandDrawHw(
+  virtual gpu::GLInProcessContext* GetShareContext() OVERRIDE;
+  virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
       gfx::Rect clip,
       bool stencil_enabled) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+  virtual void ReturnResources(
+      const cc::CompositorFrameAck& frame_ack) OVERRIDE;
   virtual void SetMemoryPolicy(
       const SynchronousCompositorMemoryPolicy& policy) OVERRIDE;
   virtual void DidChangeRootLayerScrollOffset() OVERRIDE;
@@ -68,8 +71,6 @@ class SynchronousCompositorImpl
   virtual void DidDestroySynchronousOutputSurface(
       SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
   virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
-  virtual void UpdateFrameMetaData(
-      const cc::CompositorFrameMetadata& frame_info) OVERRIDE;
   virtual void DidActivatePendingTree() OVERRIDE;
 
   // LayerScrollOffsetDelegate
@@ -91,14 +92,15 @@ class SynchronousCompositorImpl
   virtual ~SynchronousCompositorImpl();
   friend class WebContentsUserData<SynchronousCompositorImpl>;
 
-  void DidCreateSynchronousOutputSurface(
-      SynchronousCompositorOutputSurface* output_surface);
+  void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
   bool CalledOnValidThread() const;
 
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
   WebContents* contents_;
   cc::InputHandler* input_handler_;
+
+  base::WeakPtrFactory<SynchronousCompositorImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorImpl);
 };

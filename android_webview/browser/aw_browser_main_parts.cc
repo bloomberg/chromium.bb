@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
+#include "android_webview/common/aw_switches.h"
 #include "base/android/build_info.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/command_line.h"
@@ -62,9 +63,13 @@ int AwBrowserMainParts::PreCreateThreads() {
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
-  if (!gpu::gles2::MailboxSynchronizer::Initialize()) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableAccelerated2dCanvas);
+  // TODO(boliu): Can't support accelerated 2d canvas and WebGL with ubercomp
+  // yet: crbug.com/352424.
+  if (!switches::UbercompEnabled() &&
+      !gpu::gles2::MailboxSynchronizer::Initialize()) {
+    CommandLine* cl = CommandLine::ForCurrentProcess();
+    cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+    cl->AppendSwitch(switches::kDisableExperimentalWebGL);
   }
 
   browser_context_->PreMainMessageLoopRun();

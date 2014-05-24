@@ -59,6 +59,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_refptr<cc::ContextProvider>
       CreateOnscreenContextProviderForCompositorThread(
           scoped_refptr<gfx::GLSurface> surface);
+  gpu::GLInProcessContext* GetShareContext();
 
  private:
   bool CanCreateMainThreadContext();
