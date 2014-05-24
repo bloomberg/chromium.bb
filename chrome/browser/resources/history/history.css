@@ -347,28 +347,18 @@ html[dir='rtl'] .site-domain {
 .entry input[type='checkbox'] {
   -webkit-margin-end: 6px;
   line-height: 1em;
-  margin-top: 2px;
   min-width: 13px;
+  top: 0;
 }
 
 <if expr="not is_android">
-/* Checkboxes are shown when checked or focused, or when the entry is hovered.
- * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
-.site-domain-wrapper input[type=checkbox]:not(:checked),
-.entry input[type='checkbox']:not(:checked) {
-  opacity: 0;
-}
-
 .site-domain-wrapper:hover input[type='checkbox'],
+.site-domain-wrapper input[type='checkbox']:checked,
 .site-domain-wrapper input[type='checkbox']:focus,
 .entry-box:hover input[type='checkbox'],
+.entry-box input[type='checkbox']:checked,
 .entry-box input[type='checkbox']:focus {
-  opacity: 1;
-}
-
-.site-domain-wrapper input[type='checkbox']:focus,
-.entry-box input[type='checkbox']:focus {
-  -webkit-transition: opacity 150ms;
+  border-color: rgba(0, 0, 0, .5);
 }
 
 .filter-status {
@@ -428,13 +418,13 @@ html[dir='rtl'] .site-domain {
 </if>
 
 .entry-box {
-  background-color: none;
+  -webkit-padding-start: 6px;
+  border-radius: 2px;
 }
 
 .entry-box:hover,
 .entry-box.contains-focus {
-  background-color: rgb(252, 252, 252);
-  border-radius: 2px;
+  background-color: rgba(0, 0, 0, .05);
 }
 
 .entry-box-container {
