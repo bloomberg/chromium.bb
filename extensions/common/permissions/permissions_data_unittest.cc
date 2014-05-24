@@ -243,7 +243,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
       PermissionsData::GetPermissionMessageStrings(extension.get());
   // Warning for "tabs" is suppressed by "history" permission.
   ASSERT_EQ(5u, warnings.size());
-  EXPECT_EQ("Access your data on api.flickr.com",
+  EXPECT_EQ("Read and modify your data on api.flickr.com",
             UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("Read and modify your bookmarks", UTF16ToUTF8(warnings[1]));
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
@@ -261,7 +261,8 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
       PermissionsData::GetPermissionMessageDetailsStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   ASSERT_EQ(1u, warnings_details.size());
-  EXPECT_EQ("Access your data on 5 websites", UTF16ToUTF8(warnings[0]));
+  EXPECT_EQ("Read and modify your data on 5 websites",
+            UTF16ToUTF8(warnings[0]));
   EXPECT_EQ("- www.a.com\n- www.b.com\n- www.c.com\n- www.d.com\n- www.e.com",
             UTF16ToUTF8(warnings_details[0]));
 }
@@ -284,8 +285,9 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
   std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
-            UTF16ToUTF8(warnings[0]));
+  EXPECT_EQ(
+      "Read and modify your data on encrypted.google.com and www.google.com",
+      UTF16ToUTF8(warnings[0]));
 }
 
 TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
@@ -299,8 +301,10 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
   ASSERT_EQ(0u, warnings.size());
 #else
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Access all data on your computer and the websites you visit",
-            UTF16ToUTF8(warnings[0]));
+  EXPECT_EQ(
+      "Read and modify all your data on your computer and the websites you "
+      "visit",
+      UTF16ToUTF8(warnings[0]));
 #endif
 }
 

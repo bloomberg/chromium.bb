@@ -4185,7 +4185,7 @@ Make sure you do not expose any sensitive information.
       </message>
 
       <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">
-        • <ph name="PERMISSION">$1<ex>Access your data on all websites</ex></ph>
+          • <ph name="PERMISSION">$1<ex>Read and modify all your data on the websites you visit</ex></ph>
       </message>
       <message name="IDS_EXTENSION_RATING_COUNT" desc="Number of ratings an app or extensions has (displayed after star icons)">
         (<ph name="RATING_COUNT">$1<ex>46</ex></ph>)
@@ -4266,16 +4266,16 @@ Make sure you do not expose any sensitive information.
 
       <if expr="is_android">
         <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Mobile: Permission string for full access to the device and all websites.">
-          Access all data on your device and the websites you visit
+          Read and modify all your data on your device and the websites you visit
         </message>
       </if>
       <if expr="not is_android">
         <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
-          Access all data on your computer and the websites you visit
+          Read and modify all your data on your computer and the websites you visit
         </message>
       </if>
       <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
-        Access your data on all websites
+        Read and modify all your data on the websites you visit
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_FAVICON" desc="Permission string for access to favicons.">
         Access the icons of the websites you visit
