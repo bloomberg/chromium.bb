@@ -7,6 +7,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "mojo/public/c/gles2/gles2.h"
 #include "ui/events/event_constants.h"
@@ -17,6 +18,10 @@ namespace {
 
 float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
   return hypot(start.x() - end.x(), start.y() - end.y());
+}
+
+float GetRandomColor() {
+  return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
 }
@@ -73,6 +78,8 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
       cube_.SetFlingMultiplier(
           CalculateDragDistance(capture_point_, event.location()),
           delta);
+
+      cube_.set_color(GetRandomColor(), GetRandomColor(), GetRandomColor());
 
       capture_point_ = last_drag_point_ = gfx::PointF();
       RequestAnimationFrames();

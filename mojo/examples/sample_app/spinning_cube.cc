@@ -314,6 +314,7 @@ class SpinningCube::GLState {
   GLuint program_object_;
   GLint position_location_;
   GLint mvp_location_;
+  GLint color_location_;
   GLuint vbo_vertices_;
   GLuint vbo_indices_;
   int num_indices_;
@@ -329,6 +330,7 @@ void SpinningCube::GLState::OnGLContextLost() {
   program_object_ = 0;
   position_location_ = 0;
   mvp_location_ = 0;
+  color_location_ = 0;
   vbo_vertices_ = 0;
   vbo_indices_ = 0;
   num_indices_ = 0;
@@ -340,8 +342,10 @@ SpinningCube::SpinningCube()
       height_(0),
       state_(new GLState()),
       fling_multiplier_(1.0f),
-      direction_(1) {
+      direction_(1),
+      color_() {
   state_->angle_ = 45.0f;
+  set_color(0.0, 1.0, 0.0);
 }
 
 SpinningCube::~SpinningCube() {
@@ -369,9 +373,10 @@ void SpinningCube::Init(uint32_t width, uint32_t height) {
 
   const char fragment_shader_source[] =
       "precision mediump float;                            \n"
+      "uniform vec4 u_color;                               \n"
       "void main()                                         \n"
       "{                                                   \n"
-      "  gl_FragColor = vec4( 0.0, 1.0, 0.0, 1.0 );        \n"
+      "  gl_FragColor = u_color;                           \n"
       "}                                                   \n";
 
   state_->program_object_ = LoadProgram(
@@ -380,6 +385,8 @@ void SpinningCube::Init(uint32_t width, uint32_t height) {
       state_->program_object_, "a_position");
   state_->mvp_location_ = glGetUniformLocation(
       state_->program_object_, "u_mvpMatrix");
+  state_->color_location_ = glGetUniformLocation(
+      state_->program_object_, "u_color");
   state_->num_indices_ = GenerateCube(
       &state_->vbo_vertices_, &state_->vbo_indices_);
 
@@ -439,6 +446,7 @@ void SpinningCube::Draw() {
                         1,
                         GL_FALSE,
                         (GLfloat*) &state_->mvp_matrix_.m[0][0]);
+  glUniform4f(state_->color_location_, color_[0], color_[1], color_[2], 1.0);
   glDrawElements(GL_TRIANGLES,
                     state_->num_indices_,
                     GL_UNSIGNED_SHORT,
