@@ -59,6 +59,12 @@ This directory contains the source code of ICU 52.1 for C/C++
      (source/data/brkitr/khmerdict.txt) obtained from 
      http://bugs.icu-project.org/trac/ticket/9451
 
+   - Add several common Chinese words that were dropped previously to
+     source/data/cjdict/brkitr/cjdict.txt
+     patch: patches/cjdict.patch
+     upstream bug: http://bugs.icu-project.org/trac/ticket/10888
+
+
    - android/brkitr.patch (to be applied for Android build only) :
        Reverts some changes about Chinese/Japanese segmentation rules in
        patches/brkitr.patch to reduce binary size for Android.

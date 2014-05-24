@@ -14,8 +14,6 @@
 
 # CHROME: 1. Use line_ja.txt to apply small kana rules in all locales.
 #         2. Adjust CL, OP, and IS to handle 'comma-variants' consistently.
-#         3. Adjust CL, QU, and OP to handle quotation marks around Chinese
-#            characters.
 
 !!chain;
 !!LBCMNoChain;
@@ -65,8 +63,7 @@ $BK = [:LineBreak =  Mandatory_Break:];
 $B2 = [:LineBreak =  Break_Both:];
 $CB = [:LineBreak =  Contingent_Break:];
 $CJ = [:LineBreak =  Conditional_Japanese_Starter:];
-$QU2CL = [\u2019\u201D\u275C\u275E];
-$CL = [[:LineBreak =  Close_Punctuation:] [\uFE51\uFE10\u23B5] $QU2CL];
+$CL = [[:LineBreak =  Close_Punctuation:] [\uFE51\uFE10\u23B5]];
 $CM = [:LineBreak =  Combining_Mark:];
 $CP = [:LineBreak =  Close_Parenthesis:];
 $CR = [:LineBreak =  Carriage_Return:];
@@ -86,11 +83,10 @@ $LF = [:LineBreak =  Line_Feed:];
 $NL = [:LineBreak =  Next_Line:];
 $NS = [:LineBreak =  Nonstarter:];
 $NU = [:LineBreak =  Numeric:];
-$QU2OP = [\u2018\u201B\u201C\u201F\u275B\u275D];
-$OP = [[:LineBreak =  Open_Punctuation:] \u23B4 $QU2OP];
+$OP = [[:LineBreak =  Open_Punctuation:] \u23B4];
 $PO = [:LineBreak =  Postfix_Numeric:];
 $PR = [:LineBreak =  Prefix_Numeric:];
-$QU = [[:LineBreak =  Quotation:] - $QU2CL - $QU2OP];
+$QU = [:LineBreak =  Quotation:];
 $RI = [:LineBreak =  Regional_Indicator:];
 $SA = [:LineBreak =  Complex_Context:];
 $SG = [:LineBreak =  Surrogate:];

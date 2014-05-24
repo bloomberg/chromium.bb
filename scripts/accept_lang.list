@@ -1,6 +1,6 @@
-# ti -> fil, iw->he
+# iw->he.
 # Put both sh (for lang display name) and sr_Latn (locale data trim target) 
-# and keep no (for lang display name)
+# and keep no (for lang display name). Keep both tl and fil.
 ach
 af
 ak
@@ -129,6 +129,7 @@ tg
 th
 ti
 tk
+tl
 tn
 to
 tr
