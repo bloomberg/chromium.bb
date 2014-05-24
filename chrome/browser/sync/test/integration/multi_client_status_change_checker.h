@@ -25,9 +25,6 @@ class MultiClientStatusChangeChecker
       std::vector<ProfileSyncService*> services);
   virtual ~MultiClientStatusChangeChecker();
 
-  // Timeout length for this operation.  Default is 45s.
-  virtual base::TimeDelta GetTimeoutDuration();
-
   // Called when waiting times out.
   void OnTimeout();
 
@@ -36,9 +33,6 @@ class MultiClientStatusChangeChecker
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
-
-  // Returns true if the checker timed out.
-  bool TimedOut();
 
   // StatusChangeChecker implementations and stubs.
   virtual bool IsExitConditionSatisfied() = 0;
@@ -49,7 +43,6 @@ class MultiClientStatusChangeChecker
 
  private:
   std::vector<ProfileSyncService*> services_;
-  bool timed_out_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_

@@ -145,7 +145,7 @@ bool ProgressMarkerWatcher::IsSyncDisabled() {
 
 QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
     std::vector<ProfileSyncService*> services)
-  : services_(services), timed_out_(false) {
+  : services_(services) {
   DCHECK_LE(1U, services_.size());
   for (size_t i = 0; i < services_.size(); ++i) {
     observers_.push_back(new ProgressMarkerWatcher(services[i], this));
@@ -153,10 +153,6 @@ QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
 }
 
 QuiesceStatusChangeChecker::~QuiesceStatusChangeChecker() {}
-
-base::TimeDelta QuiesceStatusChangeChecker::GetTimeoutDuration() {
-  return base::TimeDelta::FromSeconds(45);
-}
 
 void QuiesceStatusChangeChecker::Wait() {
   DVLOG(1) << "Await: " << GetDebugMessage();
@@ -166,17 +162,7 @@ void QuiesceStatusChangeChecker::Wait() {
     return;
   }
 
-  base::OneShotTimer<QuiesceStatusChangeChecker> timer;
-  timer.Start(FROM_HERE,
-              GetTimeoutDuration(),
-              base::Bind(&QuiesceStatusChangeChecker::OnTimeout,
-                         base::Unretained(this)));
-
-  {
-    base::MessageLoop* loop = base::MessageLoop::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    loop->Run();
-  }
+  StartBlockingWait();
 }
 
 bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
@@ -232,18 +218,5 @@ std::string QuiesceStatusChangeChecker::GetDebugMessage() const {
 
 void QuiesceStatusChangeChecker::OnServiceStateChanged(
     ProfileSyncService* service) {
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Condition met: " << GetDebugMessage();
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-}
-
-void QuiesceStatusChangeChecker::OnTimeout() {
-  DVLOG(1) << "Await -> Timed out: " << GetDebugMessage();
-  timed_out_ = true;
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-bool QuiesceStatusChangeChecker::TimedOut() const {
-  return timed_out_;
+  CheckExitCondition();
 }

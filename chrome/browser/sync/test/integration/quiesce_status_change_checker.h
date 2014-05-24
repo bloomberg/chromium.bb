@@ -34,27 +34,19 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
       std::vector<ProfileSyncService*> services);
   virtual ~QuiesceStatusChangeChecker();
 
-  // Timeout length for this operation.  Default is 45s.
-  virtual base::TimeDelta GetTimeoutDuration();
-
   // Blocks until all clients have quiesced or we time out.
   void Wait();
 
   // A callback function for some helper objects.
   void OnServiceStateChanged(ProfileSyncService* service);
 
-  // A callback for when the time limit is exceeded.
-  void OnTimeout();
-
+  // Implementation of StatusChangeChecker.
   virtual bool IsExitConditionSatisfied() OVERRIDE;
   virtual std::string GetDebugMessage() const OVERRIDE;
-
-  bool TimedOut() const;
 
  private:
   std::vector<ProfileSyncService*> services_;
   ScopedVector<ProgressMarkerWatcher> observers_;
-  bool timed_out_;
 
   DISALLOW_COPY_AND_ASSIGN(QuiesceStatusChangeChecker);
 };

@@ -10,18 +10,9 @@
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
     std::vector<ProfileSyncService*> services)
-  : services_(services), timed_out_(false) {}
+  : services_(services) {}
 
 MultiClientStatusChangeChecker::~MultiClientStatusChangeChecker() {}
-
-base::TimeDelta MultiClientStatusChangeChecker::GetTimeoutDuration() {
-  return base::TimeDelta::FromSeconds(45);
-}
-void MultiClientStatusChangeChecker::OnTimeout() {
-  DVLOG(1) << "Await -> Timed out: " << GetDebugMessage();
-  timed_out_ = true;
-  base::MessageLoop::current()->QuitWhenIdle();
-}
 
 void MultiClientStatusChangeChecker::Wait() {
   DVLOG(1) << "Await: " << GetDebugMessage();
@@ -37,27 +28,9 @@ void MultiClientStatusChangeChecker::Wait() {
     obs.Add(*it);
   }
 
-  base::OneShotTimer<MultiClientStatusChangeChecker> timer;
-  timer.Start(FROM_HERE,
-              GetTimeoutDuration(),
-              base::Bind(&MultiClientStatusChangeChecker::OnTimeout,
-                         base::Unretained(this)));
-
-  {
-    base::MessageLoop* loop = base::MessageLoop::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-    loop->Run();
-  }
+  StartBlockingWait();
 }
 
 void MultiClientStatusChangeChecker::OnStateChanged() {
-  DVLOG(1) << "Await -> Checking Condition: " << GetDebugMessage();
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Condition met: " << GetDebugMessage();
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-}
-
-bool MultiClientStatusChangeChecker::TimedOut() {
-  return timed_out_;
+  CheckExitCondition();
 }
