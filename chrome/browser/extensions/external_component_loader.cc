@@ -42,7 +42,8 @@ void ExternalComponentLoader::StartLoading() {
 
   UpdateBookmarksExperimentState(profile_->GetPrefs(),
                                  g_browser_process->local_state(),
-                                 IsUserSignedin(profile_));
+                                 IsUserSignedin(profile_),
+                                 kBookmarksExperimentEnabledFromSyncUnknown);
   std::string ext_id;
   if (GetBookmarksExperimentExtensionID(profile_->GetPrefs(), &ext_id) &&
       !ext_id.empty()) {

@@ -1037,44 +1037,18 @@ void ProfileSyncService::OnExperimentsChanged(
   profile()->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                     experiments.gcm_invalidations_enabled);
 
-  int bookmarks_experiment_state_before = profile_->GetPrefs()->GetInteger(
-      sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
-  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
-  // "" and "1" means experiment is enabled.
-  if ((CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-           switches::kEnhancedBookmarksExperiment) != "0")) {
-    profile_->GetPrefs()->SetInteger(
-        sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
-        experiments.enhanced_bookmarks_enabled ? kBookmarksExperimentEnabled
-                                               : kNoBookmarksExperiment);
+  if (experiments.enhanced_bookmarks_enabled) {
     profile_->GetPrefs()->SetString(
         sync_driver::prefs::kEnhancedBookmarksExtensionId,
         experiments.enhanced_bookmarks_ext_id);
   } else {
-    // User opt-out from chrome://flags
-    if (experiments.enhanced_bookmarks_enabled) {
-      profile_->GetPrefs()->SetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
-          kBookmarksExperimentEnabledUserOptOut);
-      // Keep extension id up-to-date in case will opt-in later.
-      profile_->GetPrefs()->SetString(
-          sync_driver::prefs::kEnhancedBookmarksExtensionId,
-          experiments.enhanced_bookmarks_ext_id);
-    } else {
-      profile_->GetPrefs()->ClearPref(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
-      profile_->GetPrefs()->ClearPref(
-          sync_driver::prefs::kEnhancedBookmarksExtensionId);
-    }
+    profile_->GetPrefs()->ClearPref(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId);
   }
-  BookmarksExperimentState bookmarks_experiment_state =
-      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  // If bookmark experiment state was changed update about flags experiment.
-  if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
-    ForceFinchBookmarkExperimentIfNeeded(g_browser_process->local_state(),
-                                         bookmarks_experiment_state);
-  }
+  UpdateBookmarksExperimentState(
+      profile_->GetPrefs(), g_browser_process->local_state(), true,
+      experiments.enhanced_bookmarks_enabled ? kBookmarksExperimentEnabled :
+                                               kNoBookmarksExperiment);
 
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync

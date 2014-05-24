@@ -21,6 +21,7 @@ enum BookmarksExperimentState {
   kBookmarksExperimentEnabledFromFinch,
   kBookmarksExperimentOptOutFromFinch,
   kBookmarksExperimentEnabledFromFinchUserSignedIn,
+  kBookmarksExperimentEnabledFromSyncUnknown,
   kBookmarksExperimentEnumSize
 };
 
@@ -31,9 +32,11 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
 
 // Updates bookmark experiment state based on information from Chrome sync
 // and Finch experiments.
-void UpdateBookmarksExperimentState(PrefService* user_prefs,
-                                    PrefService* local_state,
-                                    bool user_signed_in);
+void UpdateBookmarksExperimentState(
+    PrefService* user_prefs,
+    PrefService* local_state,
+    bool user_signed_in,
+    BookmarksExperimentState experiment_enabled_from_sync);
 
 // Sets flag to opt-in user into Finch experiment.
 void ForceFinchBookmarkExperimentIfNeeded(

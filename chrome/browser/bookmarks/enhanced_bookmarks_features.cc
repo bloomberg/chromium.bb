@@ -55,9 +55,11 @@ bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
   return false;
 }
 
-void UpdateBookmarksExperimentState(PrefService* user_prefs,
-                                    PrefService* local_state,
-                                    bool user_signed_in) {
+void UpdateBookmarksExperimentState(
+    PrefService* user_prefs,
+    PrefService* local_state,
+    bool user_signed_in,
+    BookmarksExperimentState experiment_enabled_from_sync) {
  PrefService* flags_storage = local_state;
 #if defined(OS_CHROMEOS)
   // Chrome OS is using user prefs for flags storage.
@@ -80,16 +82,8 @@ void UpdateBookmarksExperimentState(PrefService* user_prefs,
 
   BookmarksExperimentState bookmarks_experiment_new_state =
       kNoBookmarksExperiment;
-  bool enabled_from_finch = false;
-  if (IsEnhancedBookmarksExperimentEnabledFromFinch()) {
-    enabled_from_finch = !user_signed_in;
-    if (user_signed_in) {
-      bookmarks_experiment_new_state =
-          kBookmarksExperimentEnabledFromFinchUserSignedIn;
-    }
-  }
 
-  if (enabled_from_finch) {
+  if (IsEnhancedBookmarksExperimentEnabledFromFinch() && !user_signed_in) {
     if (opt_out) {
       // Experiment enabled but user opted out.
       bookmarks_experiment_new_state = kBookmarksExperimentOptOutFromFinch;
@@ -97,6 +91,18 @@ void UpdateBookmarksExperimentState(PrefService* user_prefs,
       // Experiment enabled.
       bookmarks_experiment_new_state = kBookmarksExperimentEnabledFromFinch;
     }
+  } else if (experiment_enabled_from_sync == kBookmarksExperimentEnabled) {
+    // Experiment enabled from Chrome sync.
+    if (opt_out) {
+      // Experiment enabled but user opted out.
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+    } else {
+      // Experiment enabled.
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+    }
+  } else if (experiment_enabled_from_sync == kNoBookmarksExperiment) {
+    // Experiment is not enabled from Chrome sync.
+    bookmarks_experiment_new_state = kNoBookmarksExperiment;
   } else if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
     if (opt_out) {
       // Experiment enabled but user opted out.
@@ -120,9 +126,8 @@ void UpdateBookmarksExperimentState(PrefService* user_prefs,
   user_prefs->SetInteger(
       sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
       bookmarks_experiment_new_state);
-  if (bookmarks_experiment_state_before != bookmarks_experiment_new_state)
-    ForceFinchBookmarkExperimentIfNeeded(flags_storage,
-                                         bookmarks_experiment_new_state);
+  ForceFinchBookmarkExperimentIfNeeded(flags_storage,
+                                       bookmarks_experiment_new_state);
 }
 
 void ForceFinchBookmarkExperimentIfNeeded(
