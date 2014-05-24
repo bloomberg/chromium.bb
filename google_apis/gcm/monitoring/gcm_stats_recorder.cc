@@ -140,50 +140,6 @@ std::string GetUnregistrationStatusString(
 
 }  // namespace
 
-GCMStatsRecorder::Activity::Activity()
-    : time(base::Time::Now()) {
-}
-
-GCMStatsRecorder::Activity::~Activity() {
-}
-
-GCMStatsRecorder::CheckinActivity::CheckinActivity() {
-}
-
-GCMStatsRecorder::CheckinActivity::~CheckinActivity() {
-}
-
-GCMStatsRecorder::ConnectionActivity::ConnectionActivity() {
-}
-
-GCMStatsRecorder::ConnectionActivity::~ConnectionActivity() {
-}
-
-GCMStatsRecorder::RegistrationActivity::RegistrationActivity() {
-}
-
-GCMStatsRecorder::RegistrationActivity::~RegistrationActivity() {
-}
-
-GCMStatsRecorder::ReceivingActivity::ReceivingActivity()
-    : message_byte_size(0) {
-}
-
-GCMStatsRecorder::ReceivingActivity::~ReceivingActivity() {
-}
-
-GCMStatsRecorder::SendingActivity::SendingActivity() {
-}
-
-GCMStatsRecorder::SendingActivity::~SendingActivity() {
-}
-
-GCMStatsRecorder::RecordedActivities::RecordedActivities() {
-}
-
-GCMStatsRecorder::RecordedActivities::~RecordedActivities() {
-}
-
 GCMStatsRecorder::GCMStatsRecorder() : is_recording_(false), delegate_(NULL) {
 }
 

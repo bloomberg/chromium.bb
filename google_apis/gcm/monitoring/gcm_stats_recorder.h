@@ -15,6 +15,7 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
+#include "google_apis/gcm/gcm_activity.h"
 
 namespace gcm {
 
@@ -31,68 +32,6 @@ class GCM_EXPORT GCMStatsRecorder {
     DATA_MESSAGE,
     // Message that indicates some messages have been deleted on the server.
     DELETED_MESSAGES,
-  };
-
-  // Contains data that are common to all activity kinds below.
-  struct GCM_EXPORT Activity {
-    Activity();
-    virtual ~Activity();
-
-    base::Time time;
-    std::string event;    // A short description of the event.
-    std::string details;  // Any additional detail about the event.
-  };
-
-  // Contains relevant data of a connection activity.
-  struct GCM_EXPORT ConnectionActivity : Activity {
-    ConnectionActivity();
-    virtual ~ConnectionActivity();
-  };
-
-  // Contains relevant data of a check-in activity.
-  struct GCM_EXPORT CheckinActivity : Activity {
-    CheckinActivity();
-    virtual ~CheckinActivity();
-  };
-
-  // Contains relevant data of a registration/unregistration step.
-  struct GCM_EXPORT RegistrationActivity : Activity {
-    RegistrationActivity();
-    virtual ~RegistrationActivity();
-
-    std::string app_id;
-    std::string sender_ids;  // Comma separated sender ids.
-  };
-
-  // Contains relevant data of a message receiving event.
-  struct GCM_EXPORT ReceivingActivity : Activity {
-    ReceivingActivity();
-    virtual ~ReceivingActivity();
-
-    std::string app_id;
-    std::string from;
-    int message_byte_size;
-  };
-
-  // Contains relevant data of a send-message step.
-  struct GCM_EXPORT SendingActivity : Activity {
-    SendingActivity();
-    virtual ~SendingActivity();
-
-    std::string app_id;
-    std::string receiver_id;
-    std::string message_id;
-  };
-
-  struct GCM_EXPORT RecordedActivities {
-    RecordedActivities();
-    virtual ~RecordedActivities();
-
-    std::vector<GCMStatsRecorder::CheckinActivity> checkin_activities;
-    std::vector<GCMStatsRecorder::ConnectionActivity> connection_activities;
-    std::vector<GCMStatsRecorder::RegistrationActivity> registration_activities;
-    std::vector<GCMStatsRecorder::ReceivingActivity> receiving_activities;
-    std::vector<GCMStatsRecorder::SendingActivity> sending_activities;
   };
 
   // A delegate interface that allows the GCMStatsRecorder instance to interact

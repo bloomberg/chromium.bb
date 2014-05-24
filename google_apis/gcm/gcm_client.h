@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
-#include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
+#include "google_apis/gcm/gcm_activity.h"
 
 template <class T> class scoped_refptr;
 
@@ -134,7 +135,7 @@ class GCM_EXPORT GCMClient {
     int send_queue_size;
     int resend_queue_size;
 
-    GCMStatsRecorder::RecordedActivities recorded_activities;
+    RecordedActivities recorded_activities;
   };
 
   // A delegate interface that allows the GCMClient instance to interact with

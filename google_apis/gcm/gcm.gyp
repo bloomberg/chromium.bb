@@ -69,6 +69,8 @@
         'engine/registration_request.h',
         'engine/unregistration_request.cc',
         'engine/unregistration_request.h',
+        'gcm_activity.cc',
+        'gcm_activity.h',
         'gcm_client.cc',
         'gcm_client.h',
         'gcm_client_impl.cc',

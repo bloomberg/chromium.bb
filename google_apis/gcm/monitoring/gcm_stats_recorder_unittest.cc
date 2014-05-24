@@ -286,7 +286,7 @@ class GCMStatsRecorderTest : public testing::Test {
 
  protected:
   void VerifyCheckin(
-      const std::deque<GCMStatsRecorder::CheckinActivity>& queue,
+      const std::deque<CheckinActivity>& queue,
       const std::string& event,
       const std::string& details,
       const std::string& remark) {
@@ -295,7 +295,7 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
   void VerifyConnection(
-      const std::deque<GCMStatsRecorder::ConnectionActivity>& queue,
+      const std::deque<ConnectionActivity>& queue,
       const std::string& event,
       const std::string& details,
       const std::string& remark) {
@@ -304,7 +304,7 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
   void VerifyRegistration(
-      const std::deque<GCMStatsRecorder::RegistrationActivity>& queue,
+      const std::deque<RegistrationActivity>& queue,
       const std::string& sender_ids,
       const std::string& event,
       const std::string& details,
@@ -316,7 +316,7 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
   void VerifyReceivingData(
-      const std::deque<GCMStatsRecorder::ReceivingActivity>& queue,
+      const std::deque<ReceivingActivity>& queue,
       const std::string& event,
       const std::string& details,
       const std::string& remark) {
@@ -328,7 +328,7 @@ class GCMStatsRecorderTest : public testing::Test {
   }
 
   void VerifySendingData(
-      const std::deque<GCMStatsRecorder::SendingActivity>& queue,
+      const std::deque<SendingActivity>& queue,
       const std::string& event, const std::string& details,
       const std::string& remark) {
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
