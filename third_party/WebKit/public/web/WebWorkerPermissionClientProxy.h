@@ -51,22 +51,9 @@ public:
         return true;
     }
 
-    // FIXME: This is going away once requestFileSystemAccess has been wired
-    // out into the Blink embedder.
-    virtual bool allowFileSystem()
-    {
-        return true;
-    }
-
     virtual bool requestFileSystemAccessSync()
     {
         return true;
-    }
-
-    virtual void requestFileSystemAccessAsync(const WebPermissionCallbacks& callbacks)
-    {
-        WebPermissionCallbacks permissionCallbacks(callbacks);
-        permissionCallbacks.doAllow();
     }
 
     virtual bool allowIndexedDB(const WebString& name)

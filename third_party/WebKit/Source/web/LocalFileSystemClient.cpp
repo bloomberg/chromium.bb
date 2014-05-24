@@ -54,18 +54,6 @@ LocalFileSystemClient::~LocalFileSystemClient()
 {
 }
 
-bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
-{
-    ASSERT(context);
-    if (context->isDocument()) {
-        Document* document = toDocument(context);
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        return !webFrame->permissionClient() || webFrame->permissionClient()->allowFileSystem();
-    }
-    ASSERT(context->isWorkerGlobalScope());
-    return WorkerPermissionClient::from(*toWorkerGlobalScope(context))->allowFileSystem();
-}
-
 bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* context)
 {
     ASSERT(context);

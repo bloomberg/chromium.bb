@@ -35,10 +35,12 @@
 #include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
 #include "wtf/Forward.h"
+#include "wtf/Functional.h"
 
 namespace WebCore {
 
 class AsyncFileSystemCallbacks;
+class CallbackWrapper;
 class FileSystemClient;
 class ExecutionContext;
 
@@ -67,6 +69,12 @@ public:
 protected:
     explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
 
+private:
+    void requestFileSystemAccessInternal(ExecutionContext*, const Closure& allowed, const Closure& denied);
+    void fileSystemNotAllowedInternal(PassRefPtr<ExecutionContext>, PassRefPtr<CallbackWrapper>);
+    void fileSystemAllowedInternal(PassRefPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
+    void resolveURLInternal(const KURL&, PassRefPtr<CallbackWrapper>);
+    void deleteFileSystemInternal(PassRefPtr<ExecutionContext>, FileSystemType, PassRefPtr<CallbackWrapper>);
     OwnPtr<FileSystemClient> m_client;
 };
 

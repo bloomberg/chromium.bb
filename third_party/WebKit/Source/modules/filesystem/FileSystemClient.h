@@ -48,7 +48,6 @@ public:
     FileSystemClient() { }
     virtual ~FileSystemClient() { }
 
-    virtual bool allowFileSystem(ExecutionContext*) = 0;
     virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
     virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<WebCore::PermissionCallbacks>) = 0;
 };

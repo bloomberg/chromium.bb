@@ -53,9 +53,7 @@ public:
     virtual ~WorkerPermissionClient();
 
     bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize);
-    bool allowFileSystem();
     bool requestFileSystemAccessSync();
-    void requestFileSystemAccessAsync(const WebPermissionCallbacks&);
     bool allowIndexedDB(const WebString& name);
 
     static const char* supplementName();

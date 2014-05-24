@@ -57,28 +57,11 @@ bool WorkerPermissionClient::allowDatabase(const WebString& name, const WebStrin
     return m_proxy->allowDatabase(name, displayName, estimatedSize);
 }
 
-bool WorkerPermissionClient::allowFileSystem()
-{
-    if (!m_proxy)
-        return true;
-    return m_proxy->allowFileSystem();
-}
-
 bool WorkerPermissionClient::requestFileSystemAccessSync()
 {
     if (!m_proxy)
         return true;
     return m_proxy->requestFileSystemAccessSync();
-}
-
-void WorkerPermissionClient::requestFileSystemAccessAsync(const WebPermissionCallbacks& callbacks)
-{
-    if (!m_proxy) {
-        WebPermissionCallbacks permissionCallbacks(callbacks);
-        permissionCallbacks.doAllow();
-        return;
-    }
-    m_proxy->requestFileSystemAccessAsync(callbacks);
 }
 
 bool WorkerPermissionClient::allowIndexedDB(const WebString& name)
