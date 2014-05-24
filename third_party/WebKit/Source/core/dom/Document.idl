@@ -135,7 +135,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
-    [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
+    [MeasureAs=DocumentDefaultCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString readyState;
 
     Element            elementFromPoint([Default=Undefined] optional long x,

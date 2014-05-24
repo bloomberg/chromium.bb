@@ -1164,6 +1164,7 @@ String Document::defaultCharset() const
 
 void Document::setCharset(const String& charset)
 {
+    UseCounter::count(*this, UseCounter::DocumentSetCharset);
     if (DocumentLoader* documentLoader = loader())
         documentLoader->setUserChosenEncoding(charset);
     WTF::TextEncoding encoding(charset);
