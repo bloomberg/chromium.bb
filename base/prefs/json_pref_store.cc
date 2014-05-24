@@ -330,6 +330,11 @@ void JsonPrefStore::OnFileRead(scoped_ptr<base::Value> value,
         // operation itself.
         NOTREACHED();
         break;
+      case PREF_READ_ERROR_LEVELDB_IO:
+      case PREF_READ_ERROR_LEVELDB_CORRUPTION_READ_ONLY:
+      case PREF_READ_ERROR_LEVELDB_CORRUPTION:
+        // These are specific to LevelDBPrefStore.
+        NOTREACHED();
       case PREF_READ_ERROR_MAX_ENUM:
         NOTREACHED();
         break;

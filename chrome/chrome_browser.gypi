@@ -1568,6 +1568,8 @@
         'browser/prefs/incognito_mode_prefs.h',
         'browser/prefs/interceptable_pref_filter.cc',
         'browser/prefs/interceptable_pref_filter.h',
+        'browser/prefs/leveldb_pref_store.cc',
+        'browser/prefs/leveldb_pref_store.h',
         'browser/prefs/pref_hash_calculator.cc',
         'browser/prefs/pref_hash_calculator.h',
         'browser/prefs/pref_hash_filter.cc',

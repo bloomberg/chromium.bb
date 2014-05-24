@@ -313,7 +313,8 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
     // an example problem that this can cause.
     // Do some diagnosis and try to avoid losing data.
     int message_id = 0;
-    if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
+    if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE ||
+        error == PersistentPrefStore::PREF_READ_ERROR_LEVELDB_CORRUPTION) {
       message_id = IDS_PREFERENCES_CORRUPT_ERROR;
     } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
       message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
