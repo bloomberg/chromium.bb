@@ -44,7 +44,7 @@ SkBitmap MakeBitmap(SkColor color, int w, int h) {
 SkColor GetColor(const gfx::ImageSkia& image, ui::ScaleFactor factor,
                  int x = -1, int y = -1) {
   const SkBitmap& bitmap =
-      image.GetRepresentation(ui::GetImageScale(factor)).sk_bitmap();
+      image.GetRepresentation(ui::GetScaleForScaleFactor(factor)).sk_bitmap();
   if (x == -1)
     x = bitmap.width() / 2;
   if (y == -1)

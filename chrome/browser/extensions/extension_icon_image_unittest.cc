@@ -31,7 +31,7 @@ namespace {
 
 SkBitmap CreateBlankBitmapForScale(int size_dip, ui::ScaleFactor scale_factor) {
   SkBitmap bitmap;
-  const float scale = ui::GetImageScale(scale_factor);
+  const float scale = ui::GetScaleForScaleFactor(scale_factor);
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                    static_cast<int>(size_dip * scale),
                    static_cast<int>(size_dip * scale));

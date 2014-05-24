@@ -1198,7 +1198,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_WIN)
     switches::kEnableDirectWrite,
     switches::kEnableHighResolutionTime,
-    switches::kHighDPISupport,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,

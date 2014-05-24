@@ -22,6 +22,10 @@
 #include "base/mac/bundle_locations.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
+
 namespace {
 
 class UIBaseTestSuite : public base::TestSuite {
@@ -42,6 +46,10 @@ UIBaseTestSuite::UIBaseTestSuite(int argc, char** argv)
 
 void UIBaseTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+#if defined(OS_WIN)
+  gfx::ForceHighDPISupportForTesting(1.0);
+#endif
 
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.

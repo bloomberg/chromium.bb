@@ -21,6 +21,9 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
 
 using ::testing::_;
 using ::testing::Between;
@@ -439,6 +442,9 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
+#if defined(OS_WIN)
+  gfx::ForceHighDPISupportForTesting(2.0);
+#endif
   std::vector<ScaleFactor> supported_factors;
   supported_factors.push_back(SCALE_FACTOR_100P);
   supported_factors.push_back(SCALE_FACTOR_200P);
@@ -471,16 +477,18 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
   // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
   // available for both scale factors in |image_skia|.
   gfx::ImageSkiaRep image_rep =
-      image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_100P));
+      image_skia->GetRepresentation(
+      GetScaleForScaleFactor(ui::SCALE_FACTOR_100P));
   EXPECT_EQ(ui::SCALE_FACTOR_100P, GetSupportedScaleFactor(image_rep.scale()));
   image_rep =
-      image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_200P));
+      image_skia->GetRepresentation(
+      GetScaleForScaleFactor(ui::SCALE_FACTOR_200P));
   EXPECT_EQ(ui::SCALE_FACTOR_200P, GetSupportedScaleFactor(image_rep.scale()));
 
   // The 1.4x pack was not loaded. Requesting the 1.4x resource should return
   // either the 1x or the 2x resource.
   image_rep = image_skia->GetRepresentation(
-      ui::GetImageScale(ui::SCALE_FACTOR_140P));
+      ui::GetScaleForScaleFactor(ui::SCALE_FACTOR_140P));
   ui::ScaleFactor scale_factor = GetSupportedScaleFactor(image_rep.scale());
   EXPECT_TRUE(scale_factor == ui::SCALE_FACTOR_100P ||
               scale_factor == ui::SCALE_FACTOR_200P);
@@ -519,7 +527,8 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   // The image rep for 2x should be available. It should be resized to the
   // proper 2x size.
   gfx::ImageSkiaRep image_rep =
-    image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_200P));
+      image_skia->GetRepresentation(GetScaleForScaleFactor(
+      ui::SCALE_FACTOR_200P));
   EXPECT_EQ(ui::SCALE_FACTOR_200P, GetSupportedScaleFactor(image_rep.scale()));
   EXPECT_EQ(20, image_rep.pixel_width());
   EXPECT_EQ(20, image_rep.pixel_height());
@@ -558,10 +567,10 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
   gfx::ImageSkiaRep image_rep =
     image_skia->GetRepresentation(
-      GetImageScale(ui::SCALE_FACTOR_140P));
+    GetScaleForScaleFactor(ui::SCALE_FACTOR_140P));
   EXPECT_EQ(12, image_rep.pixel_width());
   image_rep = image_skia->GetRepresentation(
-    GetImageScale(ui::SCALE_FACTOR_180P));
+    GetScaleForScaleFactor(ui::SCALE_FACTOR_180P));
   EXPECT_EQ(15, image_rep.pixel_width());
 }
 #endif

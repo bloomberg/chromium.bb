@@ -29,7 +29,7 @@ namespace ui {
 namespace {
 
 bool ScaleFactorComparator(const ScaleFactor& lhs, const ScaleFactor& rhs){
-  return GetImageScale(lhs) < GetImageScale(rhs);
+  return GetScaleForScaleFactor(lhs) < GetScaleForScaleFactor(rhs);
 }
 
 std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
