@@ -114,7 +114,11 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 
   DCHECK(view);
   download_views_.push_back(view);
-  AddChildView(view);
+
+  // Insert the new view as the first child, so the logical child order matches
+  // the visual order.  This ensures that tabbing through downloads happens in
+  // the order users would expect.
+  AddChildViewAt(view, 0);
   if (download_views_.size() > kMaxDownloadViews)
     RemoveDownloadView(*download_views_.begin());
 
@@ -149,7 +153,7 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
 
 views::View* DownloadShelfView::GetDefaultFocusableChild() {
   return download_views_.empty() ?
-      static_cast<View*>(show_all_view_) : download_views_[0];
+      static_cast<View*>(show_all_view_) : download_views_.back();
 }
 
 void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
