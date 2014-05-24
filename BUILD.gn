@@ -19,13 +19,15 @@ group("root") {
 
     "//apps/common/api:apps_api",
     #"//chrome",
+    "//components/favicon_base",
     "//components/language_usage_metrics",
     "//components/metrics",
     "//components/navigation_metrics",
     "//components/onc",
     "//components/os_crypt",
-    "//components/startup_metric_utils",
+    "//components/query_parser",
     "//components/resources:components_resources",
+    "//components/startup_metric_utils",
     "//components/tracing",
     "//components/translate:translate_core_browser",
     "//components/translate:translate_core_common",
@@ -70,6 +72,7 @@ group("root") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gl",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
     "//ui/surface",
@@ -80,6 +83,12 @@ group("root") {
   if (is_linux) {
     deps += [
       "//third_party/freetype2",
+    ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//ui/metro_viewer",
     ]
   }
 
