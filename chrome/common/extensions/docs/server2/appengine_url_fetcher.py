@@ -5,7 +5,8 @@
 import base64
 import posixpath
 
-from appengine_wrappers import GetAppVersion, urlfetch
+from appengine_wrappers import urlfetch
+from environment import GetAppVersion
 from future import Future
 
 

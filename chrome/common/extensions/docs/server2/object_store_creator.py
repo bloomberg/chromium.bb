@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import GetAppVersion
 from cache_chain_object_store import CacheChainObjectStore
+from environment import GetAppVersion
 from memcache_object_store import MemcacheObjectStore
 from test_object_store import TestObjectStore
 from persistent_object_store import PersistentObjectStore

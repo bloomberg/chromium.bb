@@ -2,19 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
-from app_yaml_helper import AppYamlHelper
-
-def GetAppVersion():
-  if 'CURRENT_VERSION_ID' in os.environ:
-    # The version ID looks like 2-0-25.36712548, we only want the 2-0-25.
-    return os.environ['CURRENT_VERSION_ID'].split('.', 1)[0]
-  # Not running on appengine, get it from the app.yaml file ourselves.
-  app_yaml_path = os.path.join(os.path.split(__file__)[0], 'app.yaml')
-  with open(app_yaml_path, 'r') as app_yaml:
-    return AppYamlHelper.ExtractVersion(app_yaml.read())
-
 def IsDeadlineExceededError(error):
   '''A general way of determining whether |error| is a DeadlineExceededError,
   since there are 3 different types thrown by AppEngine and we might as well
@@ -23,8 +10,10 @@ def IsDeadlineExceededError(error):
   '''
   return type(error).__name__ == 'DeadlineExceededError'
 
+
 def IsDownloadError(error):
   return type(error).__name__ == 'DownloadError'
+
 
 # This will attempt to import the actual App Engine modules, and if it fails,
 # they will be replaced with fake modules. This is useful during testing.

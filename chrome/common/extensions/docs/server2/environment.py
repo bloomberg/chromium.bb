@@ -2,8 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
 import os
 import sys
+
+from app_yaml_helper import AppYamlHelper
+from third_party.json_schema_compiler.memoize import memoize
+
+
+@memoize
+def GetAppVersion():
+  return GetAppVersionNonMemoized()
+
+
+# This one is for running from tests, which memoization messes up.
+def GetAppVersionNonMemoized():
+  if 'CURRENT_VERSION_ID' in os.environ:
+    # The version ID looks like 2-0-25.36712548 or 2-0-25.23/223; we only
+    # want the 2-0-25.
+    return re.compile('[./]').split(os.environ['CURRENT_VERSION_ID'])[0]
+  # Not running on appengine, get it from the app.yaml file ourselves.
+  app_yaml_path = os.path.join(os.path.split(__file__)[0], 'app.yaml')
+  with open(app_yaml_path, 'r') as app_yaml:
+    return AppYamlHelper.ExtractVersion(app_yaml.read())
 
 
 def _IsServerSoftware(name):

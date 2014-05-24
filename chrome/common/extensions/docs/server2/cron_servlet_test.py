@@ -5,11 +5,11 @@
 
 import unittest
 
-from appengine_wrappers import GetAppVersion
 from app_yaml_helper import AppYamlHelper
 from content_providers import IgnoreMissingContentProviders
 from cron_servlet import CronServlet
 from empty_dir_file_system import EmptyDirFileSystem
+from environment import GetAppVersion
 from extensions_paths import (
     APP_YAML, CONTENT_PROVIDERS, CHROME_EXTENSIONS, PUBLIC_TEMPLATES, SERVER2,
     STATIC_DOCS)

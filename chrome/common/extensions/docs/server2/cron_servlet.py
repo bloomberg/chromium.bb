@@ -7,12 +7,11 @@ import posixpath
 import traceback
 
 from app_yaml_helper import AppYamlHelper
-from appengine_wrappers import (
-    GetAppVersion, IsDeadlineExceededError, logservice)
+from appengine_wrappers import IsDeadlineExceededError, logservice
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from data_source_registry import CreateDataSources
-from environment import IsDevServer
+from environment import GetAppVersion, IsDevServer
 from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, STATIC_DOCS
 from file_system_util import CreateURLsFromPaths
 from future import Future

@@ -5,7 +5,7 @@
 
 import unittest
 
-from appengine_wrappers import GetAppVersion
+from environment import GetAppVersion
 from test_object_store import TestObjectStore
 from object_store_creator import ObjectStoreCreator
 
