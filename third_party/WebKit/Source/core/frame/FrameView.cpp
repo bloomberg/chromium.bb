@@ -887,7 +887,7 @@ void FrameView::layout(bool allowSubtree)
 
     Document* document = m_frame->document();
     bool inSubtreeLayout = isSubtreeLayout();
-    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutSubtreeRoot : document->renderer();
+    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutSubtreeRoot : document->renderView();
     if (!rootForThisLayout) {
         // FIXME: Do we need to set m_size here?
         ASSERT_NOT_REACHED();
@@ -1014,7 +1014,7 @@ void FrameView::layout(bool allowSubtree)
 
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
-    document->renderer()->assertSubtreeIsLaidOut();
+    document->renderView()->assertSubtreeIsLaidOut();
 #endif
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
@@ -1668,7 +1668,7 @@ void FrameView::scrollPositionChanged()
 
 void FrameView::didScrollTimerFired(Timer<FrameView>*)
 {
-    if (m_frame->document() && m_frame->document()->renderer()) {
+    if (m_frame->document() && m_frame->document()->renderView()) {
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
     }
 }
@@ -2894,7 +2894,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     ASSERT(!needsLayout());
     ASSERT(!m_frame->document()->hasElementsRequiringLayerUpdate());
 #ifndef NDEBUG
-    m_frame->document()->renderer()->assertRendererLaidOut();
+    m_frame->document()->renderView()->assertRendererLaidOut();
 #endif
 
 }

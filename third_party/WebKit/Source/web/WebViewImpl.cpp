@@ -3399,7 +3399,7 @@ WebAXObject WebViewImpl::accessibilityObject()
 
     Document* document = mainFrameImpl()->frame()->document();
     return WebAXObject(
-        document->axObjectCache()->getOrCreate(document->renderer()));
+        document->axObjectCache()->getOrCreate(document->renderView()));
 }
 
 void WebViewImpl::performCustomContextMenuAction(unsigned action)

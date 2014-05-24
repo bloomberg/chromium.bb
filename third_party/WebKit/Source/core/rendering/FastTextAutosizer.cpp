@@ -493,7 +493,7 @@ void FastTextAutosizer::updatePageInfo()
     if (!m_pageInfo.m_settingEnabled || m_document->printing()) {
         m_pageInfo.m_pageNeedsAutosizing = false;
     } else {
-        RenderView* renderView = toRenderView(m_document->renderer());
+        RenderView* renderView = m_document->renderView();
         bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
         LocalFrame* mainFrame = m_document->page()->mainFrame();
@@ -535,7 +535,7 @@ void FastTextAutosizer::updatePageInfo()
 
 void FastTextAutosizer::resetMultipliers()
 {
-    RenderObject* renderer = m_document->renderer();
+    RenderObject* renderer = m_document->renderView();
     while (renderer) {
         if (RenderStyle* style = renderer->style()) {
             if (style->textAutosizingMultiplier() != 1)
@@ -547,7 +547,7 @@ void FastTextAutosizer::resetMultipliers()
 
 void FastTextAutosizer::setAllTextNeedsLayout()
 {
-    RenderObject* renderer = m_document->renderer();
+    RenderObject* renderer = m_document->renderView();
     while (renderer) {
         if (renderer->isText())
             renderer->setNeedsLayoutAndFullRepaint();

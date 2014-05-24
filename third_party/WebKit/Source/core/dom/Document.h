@@ -515,6 +515,9 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     void prepareForDestruction();
 
+    // If you have a Document, use renderView() instead which is faster.
+    void renderer() const WTF_DELETED_FUNCTION;
+
     RenderView* renderView() const { return m_renderView; }
 
     AXObjectCache* existingAXObjectCache() const;

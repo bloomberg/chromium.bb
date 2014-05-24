@@ -218,8 +218,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    if (document().renderer() && document().renderer()->style())
-        document().renderer()->style()->font().update(document().styleEngine()->fontSelector());
+    if (document().renderView() && document().renderView()->style())
+        document().renderView()->style()->font().update(document().styleEngine()->fontSelector());
 
     collectViewportRules();
 

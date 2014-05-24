@@ -760,7 +760,7 @@ void HTMLElement::calculateAndAdjustDirectionality()
 
 void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(Node* beforeChange, int childCountDelta)
 {
-    if (document().renderer() && childCountDelta < 0) {
+    if (document().renderView() && childCountDelta < 0) {
         Node* node = beforeChange ? NodeTraversal::nextSkippingChildren(*beforeChange) : 0;
         for (int counter = 0; node && counter < childCountDelta; counter++, node = NodeTraversal::nextSkippingChildren(*node)) {
             if (elementAffectsDirectionality(node))

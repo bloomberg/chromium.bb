@@ -53,6 +53,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebAXObject.h"
@@ -263,7 +264,7 @@ WebElement WebDocument::createElement(const WebString& tagName)
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
-    return WebAXObject(document->axObjectCache()->getOrCreate(document->renderer()));
+    return WebAXObject(document->axObjectCache()->getOrCreate(document->renderView()));
 }
 
 WebAXObject WebDocument::accessibilityObjectFromID(int axID) const

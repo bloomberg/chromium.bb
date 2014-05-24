@@ -41,6 +41,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/rendering/RenderView.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "web/WebViewImpl.h"
@@ -110,7 +111,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     FrameView* view = webViewImpl->page()->mainFrame()->view();
     RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
     DOMWindow* domWindow = document->domWindow();
-    RenderObject* docRenderer = document->renderer();
+    RenderView* documentRenderView = document->renderView();
 
     {
         WebMouseEvent webMouseEvent;
@@ -251,7 +252,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
-        WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
+        WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
 
         EXPECT_EQ(10, webMouseBuilder.x);
         EXPECT_EQ(10, webMouseBuilder.y);
@@ -264,14 +265,14 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
         RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
-        WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
+        WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
     }
 
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), IntSize(10, 10), 0, false, false, false, false, 10, 10, 10, 10);
         RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
-        WebGestureEventBuilder webGestureBuilder(view, docRenderer, *gestureEvent);
+        WebGestureEventBuilder webGestureBuilder(view, documentRenderView, *gestureEvent);
 
         EXPECT_EQ(10, webGestureBuilder.x);
         EXPECT_EQ(10, webGestureBuilder.y);
@@ -287,7 +288,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         touchList->append(touch);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, false, false, false, false, false);
 
-        WebTouchEventBuilder webTouchBuilder(view, docRenderer, *touchEvent);
+        WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
         EXPECT_EQ(10, webTouchBuilder.touches[0].screenPosition.x);
         EXPECT_EQ(10, webTouchBuilder.touches[0].screenPosition.y);
@@ -462,7 +463,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     FrameView* view = webViewImpl->page()->mainFrame()->view();
     RefPtrWillBeRawPtr<Document> document = webViewImpl->page()->mainFrame()->document();
     DOMWindow* domWindow = document->domWindow();
-    RenderObject* docRenderer = document->renderer();
+    RenderView* documentRenderView = document->renderView();
 
     {
         WebGestureEvent webGestureEvent;
@@ -483,7 +484,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(1, platformGestureBuilder.tapCount());
 
         RefPtrWillBeRawPtr<WebCore::GestureEvent> coreGestureEvent = WebCore::GestureEvent::create(domWindow, platformGestureBuilder);
-        WebGestureEventBuilder recreatedWebGestureEvent(view, docRenderer, *coreGestureEvent);
+        WebGestureEventBuilder recreatedWebGestureEvent(view, documentRenderView, *coreGestureEvent);
         EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
         EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);
         EXPECT_EQ(webGestureEvent.y, recreatedWebGestureEvent.y);

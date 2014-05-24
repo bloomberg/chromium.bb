@@ -792,8 +792,8 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
         Node* target = iter->key;
         if (target == document || target == document->documentElement() || target == document->body()) {
-            if (RenderObject* renderer = document->renderer()) {
-                renderer->computeLayerHitTestRects(rects);
+            if (RenderView* rendererView = document->renderView()) {
+                rendererView->computeLayerHitTestRects(rects);
             }
             return;
         }

@@ -677,7 +677,7 @@ TEST_F(WebFrameTest, FrameViewNeedsLayoutOnFixedLayoutResize)
 static bool checkOrSetTextAutosizingMultiplier(Document* document, float multiplier, bool setMultiplier)
 {
     bool multiplierCheckedOrSetAtLeastOnce = false;
-    for (WebCore::RenderObject* renderer = document->renderer(); renderer; renderer = renderer->nextInPreOrder()) {
+    for (WebCore::RenderObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style()) {
             if (setMultiplier)
                 renderer->style()->setTextAutosizingMultiplier(multiplier);
@@ -751,7 +751,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
 
     for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         EXPECT_TRUE(setTextAutosizingMultiplier(frame->document(), 2));
-        for (WebCore::RenderObject* renderer = frame->document()->renderer(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (WebCore::RenderObject* renderer = frame->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_FALSE(renderer->needsLayout());
         }
@@ -759,7 +759,7 @@ TEST_F(WebFrameTest, SetFrameRectInvalidatesTextAutosizingMultipliers)
 
     frameView->setFrameRect(WebCore::IntRect(0, 0, 200, 200));
     for (WebCore::LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
-        for (WebCore::RenderObject* renderer = frame->document()->renderer(); renderer; renderer = renderer->nextInPreOrder()) {
+        for (WebCore::RenderObject* renderer = frame->document()->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
             if (renderer->isText())
                 EXPECT_TRUE(renderer->needsLayout());
         }

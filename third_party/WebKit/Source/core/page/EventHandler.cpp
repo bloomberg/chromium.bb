@@ -1947,7 +1947,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     Document* doc = m_frame->document();
 
-    if (!doc->renderer())
+    if (!doc->renderView())
         return false;
 
     RefPtr<FrameView> protector(m_frame->view());
