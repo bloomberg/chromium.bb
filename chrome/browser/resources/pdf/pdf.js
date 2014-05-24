@@ -76,39 +76,46 @@ function PDFViewer() {
   // background page and stream details object with the details of the request.
   // Otherwise, we take the query string of the URL to indicate the URL of the
   // PDF to load. This is used for print preview in particular.
-  var streamDetails;
   if (chrome.extension.getBackgroundPage &&
       chrome.extension.getBackgroundPage()) {
-    streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
+    this.streamDetails =
+        chrome.extension.getBackgroundPage().popStreamDetails();
   }
 
-  if (!streamDetails) {
+  if (!this.streamDetails) {
     // The URL of this page will be of the form
     // "chrome-extension://<extension id>?<pdf url>". We pull out the <pdf url>
     // part here.
     var url = window.location.search.substring(1);
-    streamDetails = {
+    this.streamDetails = {
       streamUrl: url,
-      originalUrl: url
+      originalUrl: url,
+      responseHeaders: ''
     };
   }
 
-  this.plugin_.setAttribute('src', streamDetails.streamUrl);
+  this.plugin_.setAttribute('src', this.streamDetails.originalUrl);
+  this.plugin_.setAttribute('stream-url', this.streamDetails.streamUrl);
+  var headers = '';
+  for (var header in this.streamDetails.responseHeaders) {
+    headers += header + ': ' +
+        this.streamDetails.responseHeaders[header] + '\n';
+  }
+  this.plugin_.setAttribute('headers', headers);
+
   if (window.top == window)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
-  this.setupEventListeners_(streamDetails);
+  this.setupEventListeners_();
 }
 
 PDFViewer.prototype = {
   /**
    * @private
    * Sets up event listeners for key shortcuts and also the UI buttons.
-   * @param {Object} streamDetails the details of the original HTTP request for
-   *     the PDF.
    */
-  setupEventListeners_: function(streamDetails) {
+  setupEventListeners_: function() {
     // Setup the button event listeners.
     $('fit-to-width-button').addEventListener('click',
         this.viewport_.fitToWidth.bind(this.viewport_));
@@ -118,7 +125,7 @@ PDFViewer.prototype = {
         this.viewport_.zoomIn.bind(this.viewport_));
     $('zoom-out-button').addEventListener('click',
         this.viewport_.zoomOut.bind(this.viewport_));
-    $('save-button-link').href = streamDetails.originalUrl;
+    $('save-button-link').href = this.streamDetails.originalUrl;
     $('print-button').addEventListener('click', this.print_.bind(this));
 
     // Setup keyboard event listeners.
@@ -306,6 +313,9 @@ PDFViewer.prototype = {
         this.passwordScreen_.text = message.data.getPasswordString;
         this.progressBar_.text = message.data.loadingString;
         this.errorScreen_.text = message.data.loadFailedString;
+        break;
+      case 'cancelStreamUrl':
+        chrome.streamsPrivate.abort(this.streamDetails.streamUrl);
         break;
     }
   },
