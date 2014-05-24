@@ -191,32 +191,36 @@ void ExtensionToolbarModel::OnExtensionUnloaded(
   RemoveExtension(extension);
 }
 
+void ExtensionToolbarModel::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  // Remove the extension id from the ordered list, if it exists (the extension
+  // might not be represented in the list because it might not have an icon).
+  ExtensionIdList::iterator pos =
+      std::find(last_known_positions_.begin(),
+                last_known_positions_.end(), extension->id());
+
+  if (pos != last_known_positions_.end()) {
+    last_known_positions_.erase(pos);
+    UpdatePrefs();
+  }
+}
+
 void ExtensionToolbarModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      UninstalledExtension(extension);
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED: {
-      const Extension* extension =
-          ExtensionRegistry::Get(profile_)->GetExtensionById(
-              *content::Details<const std::string>(details).ptr(),
-              ExtensionRegistry::EVERYTHING);
-      if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
-                                                         extension->id())) {
-        AddExtension(extension);
-      } else {
-        RemoveExtension(extension);
-      }
-      break;
-    }
-    default:
-      NOTREACHED() << "Received unexpected notification";
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+            type);
+  const Extension* extension =
+      ExtensionRegistry::Get(profile_)->GetExtensionById(
+          *content::Details<const std::string>(details).ptr(),
+          ExtensionRegistry::EVERYTHING);
+  if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
+                                                     extension->id())) {
+    AddExtension(extension);
+  } else {
+    RemoveExtension(extension);
   }
 }
 
@@ -227,9 +231,6 @@ void ExtensionToolbarModel::OnReady() {
   // changes so that the toolbar buttons can be shown in their stable ordering
   // taken from prefs.
   extension_registry_observer_.Add(registry);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
@@ -323,19 +324,6 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   }
 
   UpdatePrefs();
-}
-
-void ExtensionToolbarModel::UninstalledExtension(const Extension* extension) {
-  // Remove the extension id from the ordered list, if it exists (the extension
-  // might not be represented in the list because it might not have an icon).
-  ExtensionIdList::iterator pos =
-      std::find(last_known_positions_.begin(),
-                last_known_positions_.end(), extension->id());
-
-  if (pos != last_known_positions_.end()) {
-    last_known_positions_.erase(pos);
-    UpdatePrefs();
-  }
 }
 
 // Combine the currently enabled extensions that have browser actions (which
@@ -589,6 +577,6 @@ void ExtensionToolbarModel::StopHighlighting() {
     }
     FOR_EACH_OBSERVER(Observer, observers_, HighlightModeChanged(false));
   }
-};
+}
 
 }  // namespace extensions

@@ -768,6 +768,7 @@ bool ExtensionService::UninstallExtension(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension.get()));
+  ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());
 
   if (extension_sync_service_) {
     extension_sync_service_->ProcessSyncUninstallExtension(extension->id(),
@@ -1426,6 +1427,7 @@ void ExtensionService::RemoveComponentExtension(
         chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
+    ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());
   }
 }
 

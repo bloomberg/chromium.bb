@@ -39,11 +39,13 @@ class TestObserver : public ExtensionRegistryObserver {
     loaded_.clear();
     unloaded_.clear();
     installed_.clear();
+    uninstalled_.clear();
   }
 
   const ExtensionList& loaded() { return loaded_; }
   const ExtensionList& unloaded() { return unloaded_; }
   const ExtensionList& installed() { return installed_; }
+  const ExtensionList& uninstalled() { return uninstalled_; }
 
  private:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -66,9 +68,15 @@ class TestObserver : public ExtensionRegistryObserver {
     installed_.push_back(extension);
   }
 
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) OVERRIDE {
+    uninstalled_.push_back(extension);
+  }
+
   ExtensionList loaded_;
   ExtensionList unloaded_;
   ExtensionList installed_;
+  ExtensionList uninstalled_;
 };
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
@@ -250,6 +258,10 @@ TEST_F(ExtensionRegistryTest, Observer) {
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));
   observer.Reset();
+
+  registry.TriggerOnUninstalled(extension);
+  EXPECT_TRUE(observer.installed().empty());
+  EXPECT_TRUE(HasSingleExtension(observer.uninstalled(), extension.get()));
 
   registry.RemoveObserver(&observer);
 }

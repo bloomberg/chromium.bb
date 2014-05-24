@@ -65,6 +65,13 @@ void ExtensionRegistry::TriggerOnWillBeInstalled(const Extension* extension,
                         browser_context_, extension, is_update, old_name));
 }
 
+void ExtensionRegistry::TriggerOnUninstalled(const Extension* extension) {
+  DCHECK(!GenerateInstalledExtensionsSet()->Contains(extension->id()));
+  FOR_EACH_OBSERVER(ExtensionRegistryObserver,
+                    observers_,
+                    OnExtensionUninstalled(browser_context_, extension));
+}
+
 const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
                                                      int include_mask) const {
   std::string lowercase_id = StringToLowerASCII(id);

@@ -82,6 +82,10 @@ class ExtensionRegistry : public KeyedService {
                                 bool is_update,
                                 const std::string& old_name);
 
+  // Invokes the observer method OnExtensionUninstalled(). The extension must
+  // not be any installed extension with |extension|'s ID.
+  void TriggerOnUninstalled(const Extension* extension);
+
   // Find an extension by ID using |include_mask| to pick the sets to search:
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
   //  * disabled_extensions()    --> ExtensionRegistry::DISABLED

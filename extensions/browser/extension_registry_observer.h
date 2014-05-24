@@ -48,6 +48,11 @@ class ExtensionRegistryObserver {
       const Extension* extension,
       bool is_update,
       const std::string& old_name) {}
+
+  // Called after an extension is uninstalled. The extension no longer exsit in
+  // any of the ExtensionRegistry sets (enabled, disabled, etc.).
+  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                      const Extension* extension) {}
 };
 
 }  // namespace extensions
