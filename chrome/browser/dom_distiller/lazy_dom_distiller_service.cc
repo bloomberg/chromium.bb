@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/notification_source.h"
 
@@ -77,12 +76,6 @@ scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
 scoped_ptr<DistillerPage>
 LazyDomDistillerService::CreateDefaultDistillerPage() {
   return instance()->CreateDefaultDistillerPage();
-}
-
-scoped_ptr<DistillerPage>
-LazyDomDistillerService::CreateDefaultDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) {
-  return instance()->CreateDefaultDistillerPageWithHandle(handle.Pass());
 }
 
 void LazyDomDistillerService::AddObserver(DomDistillerObserver* observer) {

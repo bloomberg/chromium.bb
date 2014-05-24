@@ -46,8 +46,7 @@ DomDistillerService::DomDistillerService(
       distiller_page_factory_(distiller_page_factory.Pass()) {
 }
 
-DomDistillerService::~DomDistillerService() {
-}
+DomDistillerService::~DomDistillerService() {}
 
 syncer::SyncableService* DomDistillerService::GetSyncableService() const {
   return store_->GetSyncableService();
@@ -55,13 +54,6 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
 
 scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage() {
   return distiller_page_factory_->CreateDistillerPage().Pass();
-}
-
-scoped_ptr<DistillerPage>
-DomDistillerService::CreateDefaultDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) {
-  return distiller_page_factory_->CreateDistillerPageWithHandle(handle.Pass())
-      .Pass();
 }
 
 const std::string DomDistillerService::AddToList(

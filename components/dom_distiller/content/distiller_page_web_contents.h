@@ -21,18 +21,7 @@ using content::RenderViewHost;
 
 namespace dom_distiller {
 
-class SourcePageHandleWebContents : public SourcePageHandle {
- public:
-  explicit SourcePageHandleWebContents(
-      scoped_ptr<content::WebContents> web_contents);
-  virtual ~SourcePageHandleWebContents();
-
-  scoped_ptr<content::WebContents> GetWebContents();
-
- private:
-  // The WebContents this class owns.
-  scoped_ptr<content::WebContents> web_contents_;
-};
+class DistillerContext;
 
 class DistillerPageWebContentsFactory : public DistillerPageFactory {
  public:
@@ -42,8 +31,6 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
   virtual ~DistillerPageWebContentsFactory() {}
 
   virtual scoped_ptr<DistillerPage> CreateDistillerPage() const OVERRIDE;
-  virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;
@@ -52,9 +39,7 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
 class DistillerPageWebContents : public DistillerPage,
                                  public content::WebContentsObserver {
  public:
-  DistillerPageWebContents(
-      content::BrowserContext* browser_context,
-      scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle);
+  DistillerPageWebContents(content::BrowserContext* browser_context);
   virtual ~DistillerPageWebContents();
 
   // content::WebContentsObserver implementation.
@@ -73,8 +58,6 @@ class DistillerPageWebContents : public DistillerPage,
                                const std::string& script) OVERRIDE;
 
  private:
-  friend class TestDistillerPageWebContents;
-
   enum State {
     // The page distiller is idle.
     IDLE,
@@ -86,10 +69,6 @@ class DistillerPageWebContents : public DistillerPage,
     // JavaScript completes, the state will be returned to |IDLE|.
     EXECUTING_JAVASCRIPT
   };
-
-  // Creates a new WebContents, adds |this| as an observer, and loads the
-  // |url|.
-  virtual void CreateNewWebContents(const GURL& url);
 
   // Injects and executes JavaScript in the context of a loaded page. This
   // must only be called after the page has successfully loaded.

@@ -50,8 +50,6 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
       scoped_ptr<DistillerPage> distiller_page,
       const GURL& url) OVERRIDE;
   virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() OVERRIDE;
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
 

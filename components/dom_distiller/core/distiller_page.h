@@ -29,11 +29,6 @@ struct DistilledPageInfo {
   DISALLOW_COPY_AND_ASSIGN(DistilledPageInfo);
 };
 
-class SourcePageHandle {
- public:
-  virtual ~SourcePageHandle() {}
-};
-
 // Injects JavaScript into a page, and uses it to extract and return long-form
 // content. The class can be reused to load and distill multiple pages,
 // following the state transitions described along with the class's states.
@@ -67,6 +62,10 @@ class DistillerPage {
   // should be the same regardless of the DistillerPage implementation.
   virtual void DistillPageImpl(const GURL& url, const std::string& script) = 0;
 
+  // Called by |ExecuteJavaScript| to carry out platform-specific instructions
+  // to inject and execute JavaScript within the context of the loaded page.
+  //virtual void ExecuteJavaScriptImpl() = 0;
+
  private:
   bool ready_;
   DistillerPageCallback distiller_page_callback_;
@@ -82,8 +81,6 @@ class DistillerPageFactory {
   // should be very cheap, since the pages can be thrown away without being
   // used.
   virtual scoped_ptr<DistillerPage> CreateDistillerPage() const = 0;
-  virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const = 0;
 };
 
 }  // namespace dom_distiller
