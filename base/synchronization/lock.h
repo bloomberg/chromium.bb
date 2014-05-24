@@ -80,11 +80,7 @@ class BASE_EXPORT Lock {
 
   // All private data is implicitly protected by lock_.
   // Be VERY careful to only access members under that lock.
-
-  // Determines validity of owning_thread_id_.  Needed as we don't have
-  // a null owning_thread_id_ value.
-  bool owned_by_thread_;
-  base::PlatformThreadId owning_thread_id_;
+  base::PlatformThreadRef owning_thread_ref_;
 #endif  // NDEBUG
 
   // Platform specific underlying lock implementation.

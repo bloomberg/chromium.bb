@@ -130,6 +130,11 @@ PlatformThreadId PlatformThread::CurrentId() {
 }
 
 // static
+PlatformThreadRef PlatformThread::CurrentRef() {
+  return PlatformThreadRef(GetCurrentThreadId());
+}
+
+// static
 PlatformThreadHandle PlatformThread::CurrentHandle() {
   NOTIMPLEMENTED(); // See OpenThread()
   return PlatformThreadHandle();

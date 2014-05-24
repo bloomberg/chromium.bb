@@ -164,7 +164,12 @@ PlatformThreadId PlatformThread::CurrentId() {
 #endif
 }
 
-//static
+// static
+PlatformThreadRef PlatformThread::CurrentRef() {
+  return PlatformThreadRef(pthread_self());
+}
+
+// static
 PlatformThreadHandle PlatformThread::CurrentHandle() {
   return PlatformThreadHandle(pthread_self(), CurrentId());
 }
