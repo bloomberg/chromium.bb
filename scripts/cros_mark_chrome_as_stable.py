@@ -68,6 +68,7 @@ def _GetVersionContents(chrome_version_info):
 
   return '.'.join(chrome_version_array)
 
+
 def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
   """Returns the Chromium version, from a repository URL and version.
 
@@ -265,6 +266,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
   else:
     return None
 
+
 def _AnnotateAndPrint(text, url):
   """Add buildbot trappings to print <a href='url'>text</a> in the waterfall.
 
@@ -309,6 +311,7 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
   assert chrome_rev in _REV_TYPES_FOR_LINKS
   return GetChromeRevisionLinkFromVersions(old_chrome.chrome_version,
                                            new_chrome.chrome_version)
+
 
 def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                              chrome_version, commit, overlay_dir):

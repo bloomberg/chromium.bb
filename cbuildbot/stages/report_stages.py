@@ -139,10 +139,10 @@ class ReportStage(generic_stages.BuilderStage,
       if (builder_run.config.health_alert_recipients and
           streak_value <= -builder_run.config.health_threshold):
         cros_build_lib.Info(
-          'Builder failed %i consecutive times, sending health alert email '
-          'to %s.',
-          -streak_value,
-          builder_run.config.health_alert_recipients)
+            'Builder failed %i consecutive times, sending health alert email '
+            'to %s.',
+            -streak_value,
+            builder_run.config.health_alert_recipients)
 
         if not self._run.debug:
           alerts.SendEmail('%s health alert' % builder_run.config.name,

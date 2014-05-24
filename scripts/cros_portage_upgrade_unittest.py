@@ -237,12 +237,14 @@ def _GetGoldenDepsSet(pkg):
   """Retrieve the golden dependency set for |pkg| from GOLDEN_DEP_SETS."""
   return GOLDEN_DEP_SETS.get(pkg, None)
 
+
 def _VerifyDepsGraph(deps_graph, pkgs):
   for pkg in pkgs:
     if not _VerifyDepsGraphOnePkg(deps_graph, pkg):
       return False
 
   return True
+
 
 def _VerifyDepsGraphOnePkg(deps_graph, pkg):
   """Verfication function for Mox to validate deps graph for |pkg|."""
@@ -293,6 +295,7 @@ def _VerifyDepsGraphOnePkg(deps_graph, pkg):
 def _GenDepsGraphVerifier(pkgs):
   """Generate a graph verification function for the given package."""
   return lambda deps_graph: _VerifyDepsGraph(deps_graph, pkgs)
+
 
 class ManifestLine(object):
   """Class to represent a Manifest line."""

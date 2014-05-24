@@ -16,6 +16,7 @@ import sys
 
 from chromite.lib import cros_build_lib
 
+
 def FindCandidateBoards():
   """Find candidate local boards to grab prebuilts from."""
   portageq_prefix = "/usr/local/bin/portageq-"

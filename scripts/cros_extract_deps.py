@@ -13,6 +13,7 @@ from parallel_emerge import DepGraphGenerator
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 
+
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
   """Simplify dependency json.
 

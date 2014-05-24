@@ -184,6 +184,7 @@ def _GsUpload(local_file, remote_file, acl):
     # Apply the passed in ACL xml file to the uploaded object.
     gs_context.SetACL(remote_file, acl=acl)
 
+
 def RemoteUpload(acl, files, pool=10):
   """Upload to google storage.
 
@@ -223,6 +224,7 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
     upload_files[local_path] = remote_path
 
   return upload_files
+
 
 def GetBoardOverlay(build_path, target):
   """Get the path to the board variant.
@@ -721,6 +723,7 @@ def ParseOptions():
                     'is automatically derived.')
 
   return options, target
+
 
 def main(_argv):
   # Set umask to a sane value so that files created as root are readable.

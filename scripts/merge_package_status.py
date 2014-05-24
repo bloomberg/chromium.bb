@@ -49,6 +49,7 @@ def _GetCrosTargetRank(target):
       return ix + 1 # Avoid a 0 (non-true) result
   return None
 
+
 def ProcessTargets(targets, reverse_cros=False):
   """Process a list of |targets| to smaller, sorted list.
 
@@ -84,12 +85,14 @@ def ProcessTargets(targets, reverse_cros=False):
 
     return final_targets
 
+
 def LoadTable(filepath):
   """Load the csv file at |filepath| into a table.Table object."""
   table_name = os.path.basename(filepath)
   if table_name.endswith('.csv'):
     table_name = table_name[:-4]
   return table.Table.LoadFromCSV(filepath, name=table_name)
+
 
 def MergeTables(tables):
   """Merge all |tables| into one merged table.  Return table."""
@@ -174,6 +177,7 @@ def MergeTables(tables):
 
   return csv_table
 
+
 def LoadAndMergeTables(args):
   """Load all csv files in |args| into one merged table.  Return table."""
   tables = []
@@ -182,6 +186,7 @@ def LoadAndMergeTables(args):
     tables.append(LoadTable(arg))
 
   return MergeTables(tables)
+
 
 # Used by upload_package_status.
 def FinalizeTable(csv_table):
@@ -234,6 +239,7 @@ def FinalizeTable(csv_table):
       else:
         row[col_cmp_arch] = 'same'
 
+
 def WriteTable(csv_table, outpath):
   """Write |csv_table| out to |outpath| as csv."""
   try:
@@ -243,6 +249,7 @@ def WriteTable(csv_table, outpath):
   except IOError as ex:
     oper.Error('Unable to open %s for write: %s' % (outpath, ex))
     raise
+
 
 def main(argv):
   """Main function."""

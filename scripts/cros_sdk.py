@@ -53,6 +53,7 @@ NEEDED_TOOLS = ('curl', 'xz')
 # Tools needed for --proxy-sim only.
 PROXY_NEEDED_TOOLS = ('ip',)
 
+
 def GetArchStageTarballs(version):
   """Returns the URL for a given arch/version"""
   extension = {'bz2':'tbz2', 'xz':'tar.xz'}

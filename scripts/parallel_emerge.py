@@ -862,6 +862,7 @@ def KillHandler(_signum, _frame):
   # Kill self and all subprocesses.
   os.killpg(0, signal.SIGKILL)
 
+
 def SetupWorkerSignals():
   def ExitHandler(_signum, _frame):
     # Set KILLED flag.
