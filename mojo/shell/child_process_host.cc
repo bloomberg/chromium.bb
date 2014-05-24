@@ -70,8 +70,9 @@ bool ChildProcessHost::DoLaunch() {
     switches::kVModule,
   };
 
-  const CommandLine* parent_command_line = CommandLine::ForCurrentProcess();
-  CommandLine child_command_line(parent_command_line->GetProgram());
+  const base::CommandLine* parent_command_line =
+      base::CommandLine::ForCurrentProcess();
+  base::CommandLine child_command_line(parent_command_line->GetProgram());
   child_command_line.CopySwitchesFrom(*parent_command_line, kForwardSwitches,
                                       arraysize(kForwardSwitches));
   child_command_line.AppendSwitchASCII(

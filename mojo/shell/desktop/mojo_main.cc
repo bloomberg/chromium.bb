@@ -38,11 +38,11 @@ class TestChildProcessHostDelegate
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   mojo::Environment env;
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   mojo::shell::InitializeLogging();
 
   // TODO(vtl): Move this a proper test (and remove includes marked "remove").
-  if (CommandLine::ForCurrentProcess()->HasSwitch("run-test-child")) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("run-test-child")) {
     base::MessageLoop message_loop(
         scoped_ptr<base::MessagePump>(new mojo::common::MessagePumpMojo()));
 
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   // TODO(vtl): Unify parent and child process cases to the extent possible.
   if (scoped_ptr<mojo::shell::ChildProcess> child_process =
           mojo::shell::ChildProcess::Create(
-              *CommandLine::ForCurrentProcess())) {
+              *base::CommandLine::ForCurrentProcess())) {
     child_process->Main();
   } else {
     gfx::GLSurface::InitializeOneOff();

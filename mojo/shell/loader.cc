@@ -77,7 +77,8 @@ scoped_ptr<Loader::Job> Loader::Load(const GURL& app_url, Delegate* delegate) {
 #else
   job->fetcher_->SaveResponseToTemporaryFile(file_runner_.get());
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableCache))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCache))
     job->fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   job->fetcher_->Start();
   return job.Pass();

@@ -177,7 +177,7 @@ class AuraDemo : public Application {
 
 extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::MessageLoop loop;
   mojo::GLES2Initializer gles2;

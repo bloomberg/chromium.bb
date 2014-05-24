@@ -21,7 +21,7 @@
 
 extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::MessageLoop loop;
   mojo::Application app(shell_handle);

@@ -19,7 +19,8 @@ ChildProcess::~ChildProcess() {
 }
 
 // static
-scoped_ptr<ChildProcess> ChildProcess::Create(const CommandLine& command_line) {
+scoped_ptr<ChildProcess> ChildProcess::Create(
+    const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(switches::kChildProcessType))
     return scoped_ptr<ChildProcess>();
 

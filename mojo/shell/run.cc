@@ -19,15 +19,16 @@ namespace shell {
 void Run(Context* context) {
   KeepAlive keep_alive(context);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringVector args = command_line.GetArgs();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line.GetArgs();
 
   if (args.empty()) {
     LOG(ERROR) << "No app path specified.";
     return;
   }
 
-  for (CommandLine::StringVector::const_iterator it = args.begin();
+  for (base::CommandLine::StringVector::const_iterator it = args.begin();
        it != args.end(); ++it) {
     GURL url(*it);
     if (url.scheme() == "mojo" && !command_line.HasSwitch(switches::kOrigin)) {

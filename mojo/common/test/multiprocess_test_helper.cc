@@ -33,7 +33,8 @@ void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
 
   std::string test_child_main = test_child_name + "TestChildMain";
 
-  CommandLine command_line(base::GetMultiProcessTestChildBaseCommandLine());
+  base::CommandLine command_line(
+      base::GetMultiProcessTestChildBaseCommandLine());
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_->PrepareToPassClientHandleToChildProcess(
       &command_line, &handle_passing_info);
@@ -72,10 +73,10 @@ bool MultiprocessTestHelper::WaitForChildTestShutdown() {
 
 // static
 void MultiprocessTestHelper::ChildSetup() {
-  CHECK(CommandLine::InitializedForCurrentProcess());
+  CHECK(base::CommandLine::InitializedForCurrentProcess());
   client_platform_handle =
       embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *CommandLine::ForCurrentProcess());
+          *base::CommandLine::ForCurrentProcess());
 }
 
 // static

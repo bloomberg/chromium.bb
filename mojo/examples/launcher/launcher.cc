@@ -267,7 +267,7 @@ class LauncherImpl : public InterfaceImpl<Launcher>,
 
 extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::i18n::InitializeICU();
 

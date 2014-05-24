@@ -45,7 +45,7 @@ class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
 
     if (url.SchemeIs("mojo")) {
       std::string origin =
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kOrigin);
       std::string lib = MakeSharedLibraryName(url.ExtractFileName());
       url_to_load = GURL(origin + "/" + lib);

@@ -73,7 +73,7 @@ PlatformChannelPair::PlatformChannelPair() {
 
 // static
 ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   std::string client_handle_string =
       command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
 
@@ -89,7 +89,7 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
 }
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
-    CommandLine* command_line,
+    base::CommandLine* command_line,
     base::HandlesToInheritVector* handle_passing_info) const {
   DCHECK(command_line);
   DCHECK(handle_passing_info);
