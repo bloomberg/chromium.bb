@@ -54,9 +54,10 @@ class EnterpriseInstallAttributes {
       chromeos::CryptohomeClient* cryptohome_client);
   ~EnterpriseInstallAttributes();
 
-  // Reads data from the cache file. The cache file is used to work around slow
-  // cryptohome startup, which takes a while to register its DBus interface.
-  // See http://crosbug.com/37367 for background on this.
+  // Reads data from the cache file which is created early during the boot
+  // process.  The cache file is used to work around slow cryptohome startup,
+  // which takes a while to register its DBus interface.  See
+  // http://crosbug.com/37367 for background on this.
   void ReadCacheFile(const base::FilePath& cache_file);
 
   // Makes sure the local caches for enterprise-related install attributes are
