@@ -281,6 +281,7 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(self.pkgindex, 'ResolveDuplicateUploads')
     self.pkgindex.ResolveDuplicateUploads([]).AndReturn(PRIVATE_PACKAGES)
     self.mox.StubOutWithMock(self.pkgindex, 'WriteToNamedTemporaryFile')
+    self.mox.StubOutWithMock(prebuilt, '_GsUpload')
     fake_pkgs_file = MockTemporaryFile('fake')
     self.pkgindex.WriteToNamedTemporaryFile().AndReturn(fake_pkgs_file)
 
@@ -293,6 +294,8 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
     uploads['fake'] = 'gs://foo/suffix/Packages'
     acl = 'public-read'
     prebuilt.RemoteUpload(mox.IgnoreArg(), acl, uploads)
+    prebuilt._GsUpload(mox.IgnoreArg(), mox.IgnoreArg(),
+                       mox.IgnoreArg(), mox.IgnoreArg())
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],

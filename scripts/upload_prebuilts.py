@@ -25,8 +25,10 @@ import functools
 import multiprocessing
 import os
 import sys
+import tempfile
 
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import cbuildbot_commands as commands
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import binpkg
 from chromite.lib import commandline
@@ -293,6 +295,33 @@ def UpdateBinhostConfFile(path, key, value):
   git.RunGit(cwd, ['commit', '-m', description])
 
 
+def GenerateHtmlIndex(files, index, board, version):
+  """Given the list of |files|, generate an index.html at |index|.
+
+  Args:
+    files: The list of files to link to.
+    index: The path to the html index.
+    board: Name of the board this index is for.
+    version: Build version this index is for.
+  """
+  head = """<html>
+<head>
+ <title>Package Prebuilt Index: %(board)s / %(version)s</title>
+</head>
+<body>
+<h2>Package Prebuilt Index: %(board)s / %(version)s</h2>"""
+  head %= {
+      'board': board,
+      'version': version,
+  }
+
+  files = files + [
+      '.|Google Storage Index',
+      '..|',
+  ]
+  commands.GenerateHtmlIndex(index, files, head=head)
+
+
 def _GrabAllRemotePackageIndexes(binhost_urls):
   """Grab all of the packages files associated with a list of binhost_urls.
 
@@ -401,6 +430,18 @@ class PrebuiltUploader(object):
     upload_files[tmp_packages_file.name] = remote_file
 
     RemoteUpload(self._gs_context, self._acl, upload_files)
+
+    with tempfile.NamedTemporaryFile(
+        prefix='chromite.upload_prebuilts.index.') as index:
+      GenerateHtmlIndex(
+          [x[len(remote_location) + 1:] for x in upload_files.values()],
+          index.name, self._target, self._version)
+      self._Upload(index.name, '%s/index.html' % remote_location.rstrip('/'))
+
+      link_name = 'Prebuilts[%s]: %s' % (self._target, self._version)
+      url = '%s%s/index.html' % (gs.PUBLIC_BASE_HTTPS_URL,
+                                 remote_location[len(gs.BASE_GS_URL):])
+      cros_build_lib.PrintBuildbotLink(link_name, url)
 
   def _UploadSdkTarball(self, board_path, url_suffix, prepackaged,
                         toolchain_tarballs, toolchain_upload_path):
