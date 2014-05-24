@@ -365,25 +365,24 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // static
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
-    base::SequencedTaskRunner* task_runner,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
+    bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   return make_scoped_ptr(new TileManager(client,
-                                         task_runner,
                                          resource_pool,
                                          rasterizer,
+                                         use_rasterize_on_demand,
                                          rendering_stats_instrumentation));
 }
 
 TileManager::TileManager(
     TileManagerClient* client,
-    base::SequencedTaskRunner* task_runner,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
+    bool use_rasterize_on_demand,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
-      task_runner_(task_runner),
       resource_pool_(resource_pool),
       rasterizer_(rasterizer),
       prioritized_tiles_dirty_(false),
@@ -397,8 +396,7 @@ TileManager::TileManager(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
-      check_if_ready_to_activate_pending_(false),
-      weak_ptr_factory_(this) {
+      use_rasterize_on_demand_(use_rasterize_on_demand) {
   rasterizer_->SetClient(this);
 }
 
@@ -530,14 +528,12 @@ void TileManager::DidFinishRunningTasks() {
       // If we can't raster on demand, give up early (and don't activate).
       if (!allow_rasterize_on_demand)
         return;
-
-      tile_version.set_rasterize_on_demand();
-      client_->NotifyTileStateChanged(tile);
+      if (use_rasterize_on_demand_)
+        tile_version.set_rasterize_on_demand();
     }
   }
 
-  DCHECK(IsReadyToActivate());
-  ScheduleCheckIfReadyToActivate();
+  client_->NotifyReadyToActivate();
 }
 
 void TileManager::DidFinishRunningTasksRequiredForActivation() {
@@ -549,7 +545,7 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
   if (!all_tiles_required_for_activation_have_memory_)
     return;
 
-  ScheduleCheckIfReadyToActivate();
+  client_->NotifyReadyToActivate();
 }
 
 void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
@@ -668,7 +664,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     // can visit it.
     if (mts.bin == NEVER_BIN &&
         !mts.tile_versions[mts.raster_mode].raster_task_) {
-      FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
+      FreeResourcesForTile(tile);
       continue;
     }
 
@@ -857,7 +853,7 @@ void TileManager::AssignGpuMemoryToTiles(
 
     // If the tile is not needed, free it up.
     if (mts.bin == NEVER_BIN) {
-      FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
+      FreeResourcesForTile(tile);
       continue;
     }
 
@@ -899,18 +895,13 @@ void TileManager::AssignGpuMemoryToTiles(
 
     // Tile is OOM.
     if (tile_bytes > tile_bytes_left || tile_resources > resources_left) {
-      bool was_ready_to_draw = tile->IsReadyToDraw();
-
       FreeResourcesForTile(tile);
 
       // This tile was already on screen and now its resources have been
       // released. In order to prevent checkerboarding, set this tile as
       // rasterize on demand immediately.
-      if (mts.visible_and_ready_to_draw)
+      if (mts.visible_and_ready_to_draw && use_rasterize_on_demand_)
         tile_version.set_rasterize_on_demand();
-
-      if (was_ready_to_draw)
-        client_->NotifyTileStateChanged(tile);
 
       oomed_soft = true;
       if (tile_uses_hard_limit) {
@@ -1004,14 +995,6 @@ void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
     if (mode != used_mode)
       FreeResourceForTile(tile, static_cast<RasterMode>(mode));
   }
-}
-
-void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
-    Tile* tile) {
-  bool was_ready_to_draw = tile->IsReadyToDraw();
-  FreeResourcesForTile(tile);
-  if (was_ready_to_draw)
-    client_->NotifyTileStateChanged(tile);
 }
 
 void TileManager::ScheduleTasks(
@@ -1206,11 +1189,11 @@ void TileManager::OnRasterTaskCompleted(
     ++resources_releasable_;
   }
 
+  client_->NotifyTileInitialized(tile);
+
   FreeUnusedResourcesForTile(tile);
   if (tile->priority(ACTIVE_TREE).distance_to_visible == 0.f)
     did_initialize_visible_tile_ = true;
-
-  client_->NotifyTileStateChanged(tile);
 }
 
 scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
@@ -1642,40 +1625,6 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
 void TileManager::SetRasterizerForTesting(Rasterizer* rasterizer) {
   rasterizer_ = rasterizer;
   rasterizer_->SetClient(this);
-}
-
-bool TileManager::IsReadyToActivate() const {
-  for (std::vector<PictureLayerImpl*>::const_iterator it = layers_.begin();
-       it != layers_.end();
-       ++it) {
-    if (!(*it)->AllTilesRequiredForActivationAreReadyToDraw())
-      return false;
-  }
-
-  return true;
-}
-
-void TileManager::ScheduleCheckIfReadyToActivate() {
-  if (check_if_ready_to_activate_pending_)
-    return;
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&TileManager::CheckIfReadyToActivate,
-                                    weak_ptr_factory_.GetWeakPtr()));
-  check_if_ready_to_activate_pending_ = true;
-}
-
-void TileManager::CheckIfReadyToActivate() {
-  TRACE_EVENT0("cc", "TileManager::CheckIfReadyToActivate");
-
-  DCHECK(check_if_ready_to_activate_pending_);
-  check_if_ready_to_activate_pending_ = false;
-
-  rasterizer_->CheckForCompletedTasks();
-  did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
-
-  if (IsReadyToActivate())
-    client_->NotifyReadyToActivate();
 }
 
 }  // namespace cc

@@ -30,15 +30,8 @@ class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
  public:
-  // Called when all tiles marked as required for activation are ready to draw.
   virtual void NotifyReadyToActivate() = 0;
-
-  // Called when the visible representation of a tile might have changed. Some
-  // examples are:
-  // - Tile version initialized.
-  // - Tile resources freed.
-  // - Tile marked for on-demand raster.
-  virtual void NotifyTileStateChanged(const Tile* tile) = 0;
+  virtual void NotifyTileInitialized(const Tile* tile) = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -161,9 +154,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
-      base::SequencedTaskRunner* task_runner,
       ResourcePool* resource_pool,
       Rasterizer* rasterizer,
+      bool use_rasterize_on_demand,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~TileManager();
 
@@ -235,9 +228,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
  protected:
   TileManager(TileManagerClient* client,
-              base::SequencedTaskRunner* task_runner,
               ResourcePool* resource_pool,
               Rasterizer* rasterizer,
+              bool use_rasterize_on_demand,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
   // Methods called by Tile
@@ -283,7 +276,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
-  void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<ImageDecodeTask> CreateImageDecodeTask(Tile* tile,
                                                        SkPixelRef* pixel_ref);
   scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
@@ -291,12 +283,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   void UpdatePrioritizedTileSetIfNeeded();
   void CleanUpLayers();
 
-  bool IsReadyToActivate() const;
-  void ScheduleCheckIfReadyToActivate();
-  void CheckIfReadyToActivate();
-
   TileManagerClient* client_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ResourcePool* resource_pool_;
   Rasterizer* rasterizer_;
   GlobalStateThatImpactsTilePriority global_state_;
@@ -336,6 +323,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   std::vector<Tile*> released_tiles_;
 
+  bool use_rasterize_on_demand_;
+
   ResourceFormat resource_format_;
 
   // Queue used when scheduling raster tasks.
@@ -344,10 +333,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   std::vector<scoped_refptr<RasterTask> > orphan_raster_tasks_;
 
   std::vector<PictureLayerImpl*> layers_;
-
-  bool check_if_ready_to_activate_pending_;
-
-  base::WeakPtrFactory<TileManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

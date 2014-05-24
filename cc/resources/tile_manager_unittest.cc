@@ -32,7 +32,8 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   void Initialize(int max_tiles,
                   TileMemoryLimitPolicy memory_limit_policy,
-                  TreePriority tree_priority) {
+                  TreePriority tree_priority,
+                  bool allow_on_demand_raster = true) {
     output_surface_ = FakeOutputSurface::Create3d();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
@@ -42,8 +43,8 @@ class TileManagerTest : public testing::TestWithParam<bool>,
         false);
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
-    tile_manager_ =
-        make_scoped_ptr(new FakeTileManager(this, resource_pool_.get()));
+    tile_manager_ = make_scoped_ptr(new FakeTileManager(
+        this, resource_pool_.get(), allow_on_demand_raster));
 
     memory_limit_policy_ = memory_limit_policy;
     max_tiles_ = max_tiles;
@@ -84,7 +85,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 
   TileVector CreateTilesWithSize(int count,
                                  TilePriority active_priority,
@@ -613,6 +614,40 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
   EXPECT_LE(memory_allocated_bytes, global_state_.hard_memory_limit_in_bytes);
 }
 
+TEST_P(TileManagerTest, AllowRasterizeOnDemand) {
+  // Not enough memory to initialize tiles required for activation.
+  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES);
+  TileVector tiles =
+      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
+
+  tile_manager()->AssignMemoryToTiles(global_state_);
+
+  // This should make required tiles ready to draw by marking them as
+  // required tiles for on-demand raster.
+  tile_manager()->DidFinishRunningTasksForTesting();
+
+  EXPECT_TRUE(ready_to_activate());
+  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
+    EXPECT_TRUE((*it)->IsReadyToDraw());
+}
+
+TEST_P(TileManagerTest, PreventRasterizeOnDemand) {
+  // Not enough memory to initialize tiles required for activation.
+  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES, false);
+  TileVector tiles =
+      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
+
+  tile_manager()->AssignMemoryToTiles(global_state_);
+
+  // This should make required tiles ready to draw by marking them as
+  // required tiles for on-demand raster.
+  tile_manager()->DidFinishRunningTasksForTesting();
+
+  EXPECT_TRUE(ready_to_activate());
+  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
+    EXPECT_FALSE((*it)->IsReadyToDraw());
+}
+
 // If true, the max tile limit should be applied as bytes; if false,
 // as num_resources_limit.
 INSTANTIATE_TEST_CASE_P(TileManagerTests,
@@ -719,7 +754,7 @@ class TileManagerTileIteratorTest : public testing::Test,
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
 

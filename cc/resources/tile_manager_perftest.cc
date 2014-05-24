@@ -293,7 +293,7 @@ class TileManagerPerfTest : public testing::Test, public TileManagerClient {
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
-  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE {}
 
   TileManager* tile_manager() { return host_impl_.tile_manager(); }
 
