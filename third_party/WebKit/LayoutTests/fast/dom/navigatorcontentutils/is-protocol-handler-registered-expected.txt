@@ -2,6 +2,10 @@ This test makes sure that navigator.isProtocolHandlerRegistered throws the prope
 
 PASS window.navigator.isProtocolHandlerRegistered is defined.
 PASS Invalid url "%S" threw SyntaxError exception.
+PASS Invalid scheme "mailto:" falied.
+PASS Invalid scheme "ssh:/" falied.
+PASS Invalid scheme "magnet:+" falied.
+PASS Invalid scheme "tel:sip" falied.
 PASS window.navigator.isProtocolHandlerRegistered returns "new" state
 PASS successfullyParsed is true
 

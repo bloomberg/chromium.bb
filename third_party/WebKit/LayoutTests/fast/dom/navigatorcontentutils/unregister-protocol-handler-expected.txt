@@ -24,6 +24,10 @@ Pass: Valid protocol "urn" allowed.
 Pass: Valid protocol "webcal" allowed.
 Pass: Valid protocol "wtai" allowed.
 Pass: Valid protocol "xmpp" allowed.
+Pass: Invalid scheme "mailto:" falied.
+Pass: Invalid scheme "ssh:/" falied.
+Pass: Invalid scheme "magnet:+" falied.
+Pass: Invalid scheme "tel:sip" falied.
 Pass: Invalid url "" threw SyntaxError exception.Failed to execute 'unregisterProtocolHandler' on 'Navigator': The url provided ('') does not contain '%s'.".
 Pass: Invalid url "%S" threw SyntaxError exception.Failed to execute 'unregisterProtocolHandler' on 'Navigator': The url provided ('%S') does not contain '%s'.".
 Pass: Valid call succeeded.

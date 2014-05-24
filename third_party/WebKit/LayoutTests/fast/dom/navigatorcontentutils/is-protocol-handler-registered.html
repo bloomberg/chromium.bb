@@ -28,6 +28,21 @@ if (succeeded)
 else
     debug('FAIL Invalid url "' + invalidUrl + '" allowed.');
 
+var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
+invalid_schemes.forEach(function (scheme) {
+    var succeeded = false;
+    try {
+        window.navigator.registerProtocolHandler(scheme, 'invalid scheme uri=%s', 'title');
+    } catch (e) {
+        succeeded = true;
+    }
+
+    if (succeeded)
+        debug('PASS Invalid scheme "' + scheme + '" falied.');
+    else
+        debug('FAIL Invalid scheme "' + scheme + '" allowed.');
+});
+
 // FIXME: Need to check if this function can return 'registered' and 'declined' states as well.
 try {
     var state = window.navigator.isProtocolHandlerRegistered("bitcoin", "valid protocol %s");
