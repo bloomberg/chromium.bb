@@ -53,8 +53,6 @@ KeyAlgorithm* KeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm
         return AesKeyAlgorithm::create(algorithm);
     case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
         return HmacKeyAlgorithm::create(algorithm);
-    case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
-        return RsaKeyAlgorithm::create(algorithm);
     case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
         return RsaHashedKeyAlgorithm::create(algorithm);
     }
@@ -93,11 +91,6 @@ bool KeyAlgorithm::isHmacKeyAlgorithm() const
 bool KeyAlgorithm::isRsaHashedKeyAlgorithm() const
 {
     return m_algorithm.paramsType() == blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed;
-}
-
-bool KeyAlgorithm::isRsaKeyAlgorithm() const
-{
-    return m_algorithm.paramsType() == blink::WebCryptoKeyAlgorithmParamsTypeRsa;
 }
 
 void KeyAlgorithm::trace(Visitor*)

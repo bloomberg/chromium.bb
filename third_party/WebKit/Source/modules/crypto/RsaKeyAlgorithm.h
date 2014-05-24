@@ -53,8 +53,6 @@ private:
     RefPtr<Uint8Array> m_publicExponent;
 };
 
-DEFINE_KEY_ALGORITHM_TYPE_CASTS(RsaKeyAlgorithm);
-
 } // namespace WebCore
 
 #endif

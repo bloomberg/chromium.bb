@@ -80,12 +80,6 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(WebCryptoAlgorithmId has
     return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac, adoptPtr(new WebCryptoHmacKeyAlgorithmParams(createHash(hash), keyLengthBits)));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsa(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
-{
-    // FIXME: Verify that id is an RSA algorithm without a hash
-    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoRsaKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize)));
-}
-
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash)
 {
     // FIXME: Verify that id is an RSA algorithm which expects a hash
@@ -126,14 +120,6 @@ WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::hmacParams() const
     ASSERT(!isNull());
     if (paramsType() == WebCryptoKeyAlgorithmParamsTypeHmac)
         return static_cast<WebCryptoHmacKeyAlgorithmParams*>(m_private->params.get());
-    return 0;
-}
-
-WebCryptoRsaKeyAlgorithmParams* WebCryptoKeyAlgorithm::rsaParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeRsa || paramsType() == WebCryptoKeyAlgorithmParamsTypeRsaHashed)
-        return static_cast<WebCryptoRsaKeyAlgorithmParams*>(m_private->params.get());
     return 0;
 }
 

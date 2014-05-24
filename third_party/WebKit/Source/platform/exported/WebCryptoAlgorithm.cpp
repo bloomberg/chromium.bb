@@ -123,14 +123,6 @@ const WebCryptoHmacKeyGenParams* WebCryptoAlgorithm::hmacKeyGenParams() const
     return 0;
 }
 
-const WebCryptoRsaKeyGenParams* WebCryptoAlgorithm::rsaKeyGenParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaKeyGenParams)
-        return static_cast<WebCryptoRsaKeyGenParams*>(m_private->params.get());
-    return 0;
-}
-
 const WebCryptoAesGcmParams* WebCryptoAlgorithm::aesGcmParams() const
 {
     ASSERT(!isNull());
@@ -174,7 +166,6 @@ bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
     case WebCryptoAlgorithmIdAesCbc:
     case WebCryptoAlgorithmIdHmac:
     case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-    case WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
     case WebCryptoAlgorithmIdAesGcm:
     case WebCryptoAlgorithmIdRsaOaep:
     case WebCryptoAlgorithmIdAesCtr:
