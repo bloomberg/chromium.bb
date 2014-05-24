@@ -313,7 +313,7 @@ class PrebuiltUploader(object):
 
   def __init__(self, upload_location, acl, binhost_base_url, pkg_indexes,
                build_path, packages, skip_upload, binhost_conf_dir, dryrun,
-               target, slave_targets):
+               target, slave_targets, version):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -335,6 +335,8 @@ class PrebuiltUploader(object):
       dryrun: Don't push or upload prebuilts.
       target: BuildTarget managed by this builder.
       slave_targets: List of BuildTargets managed by slave builders.
+      version: A unique string, intended to be included in the upload path,
+          which identifies the version number of the uploaded prebuilts.
     """
     self._upload_location = upload_location
     self._acl = acl
@@ -348,6 +350,7 @@ class PrebuiltUploader(object):
     self._dryrun = dryrun
     self._target = target
     self._slave_targets = slave_targets
+    self._version = version
 
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
@@ -390,14 +393,13 @@ class PrebuiltUploader(object):
 
     RemoteUpload(self._acl, upload_files)
 
-  def _UploadSdkTarball(self, board_path, url_suffix, version, prepackaged,
+  def _UploadSdkTarball(self, board_path, url_suffix, prepackaged,
                         toolchain_tarballs, toolchain_upload_path):
     """Upload a tarball of the sdk at the specified path to Google Storage.
 
     Args:
       board_path: The path to the board dir.
       url_suffix: The remote subdirectory where we should upload the packages.
-      version: The version of the board.
       prepackaged: If given, a tarball that has been packaged outside of this
                    script and should be used.
       toolchain_tarballs: List of toolchain tarballs to upload.
@@ -410,7 +412,7 @@ class PrebuiltUploader(object):
     assert boardname == constants.CHROOT_BUILDER_BOARD
     assert prepackaged is not None
 
-    version_str = version[len('chroot-'):]
+    version_str = self._version[len('chroot-'):]
     remote_tarfile = toolchain.GetSdkURL(
         for_gsutil=True, suburl='cros-sdk-%s.tar.xz' % (version_str,))
     # For SDK, also upload the manifest which is guaranteed to exist
@@ -443,7 +445,7 @@ class PrebuiltUploader(object):
 
     return targets
 
-  def SyncHostPrebuilts(self, version, key, git_sync, sync_binhost_conf):
+  def SyncHostPrebuilts(self, key, git_sync, sync_binhost_conf):
     """Synchronize host prebuilt files.
 
     This function will sync both the standard host packages, plus the host
@@ -455,8 +457,6 @@ class PrebuiltUploader(object):
     'armv7a-cros-linux-gnueabi'.
 
     Args:
-      version: A unique string, intended to be included in the upload path,
-          which identifies the version number of the uploaded prebuilts.
       key: The variable key to update in the git file.
       git_sync: If set, update make.conf of target to reference the latest
           prebuilt packages generated here.
@@ -468,7 +468,7 @@ class PrebuiltUploader(object):
     # over preflight host prebuilts from other builders.)
     binhost_urls = []
     for target in self._GetTargets():
-      url_suffix = _REL_HOST_PATH % {'version': version,
+      url_suffix = _REL_HOST_PATH % {'version': self._version,
                                      'host_arch': _HOST_ARCH,
                                      'target': target}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
@@ -492,14 +492,12 @@ class PrebuiltUploader(object):
           'host', '%s-%s.conf' % (_HOST_ARCH, key))
       UpdateBinhostConfFile(binhost_conf, key, binhost)
 
-  def SyncBoardPrebuilts(self, version, key, git_sync, sync_binhost_conf,
+  def SyncBoardPrebuilts(self, key, git_sync, sync_binhost_conf,
                          upload_board_tarball, prepackaged_board,
                          toolchain_tarballs, toolchain_upload_path):
     """Synchronize board prebuilt files.
 
     Args:
-      version: A unique string, intended to be included in the upload path,
-          which identifies the version number of the uploaded prebuilts.
       key: The variable key to update in the git file.
       git_sync: If set, update make.conf of target to reference the latest
           prebuilt packages generated here.
@@ -514,7 +512,8 @@ class PrebuiltUploader(object):
       board_path = os.path.join(self._build_path,
                                 _BOARD_PATH % {'board': target.board_variant})
       package_path = os.path.join(board_path, 'packages')
-      url_suffix = _REL_BOARD_PATH % {'target': target, 'version': version}
+      url_suffix = _REL_BOARD_PATH % {'target': target,
+                                      'version': self._version}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
       # Process the target board differently if it is the main --board.
@@ -522,7 +521,7 @@ class PrebuiltUploader(object):
         # This strips "chroot" prefix because that is sometimes added as the
         # --prepend-version argument (e.g. by chromiumos-sdk bot).
         # TODO(build): Clean it up to be less hard-coded.
-        version_str = version[len('chroot-'):]
+        version_str = self._version[len('chroot-'):]
 
         # Upload board tarballs in the background.
         if upload_board_tarball:
@@ -530,7 +529,7 @@ class PrebuiltUploader(object):
             toolchain_upload_path %= {'version': version_str}
           tar_process = multiprocessing.Process(
               target=self._UploadSdkTarball,
-              args=(board_path, url_suffix, version, prepackaged_board,
+              args=(board_path, url_suffix, prepackaged_board,
                     toolchain_tarballs, toolchain_upload_path))
           tar_process.start()
 
@@ -754,14 +753,14 @@ def main(argv):
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
                               options.binhost_conf_dir, options.dryrun,
-                              target, options.slave_targets)
+                              target, options.slave_targets, version)
 
   if options.sync_host:
-    uploader.SyncHostPrebuilts(version, options.key, options.git_sync,
+    uploader.SyncHostPrebuilts(options.key, options.git_sync,
                                options.sync_binhost_conf)
 
   if options.board or options.slave_targets:
-    uploader.SyncBoardPrebuilts(version, options.key, options.git_sync,
+    uploader.SyncBoardPrebuilts(options.key, options.git_sync,
                                 options.sync_binhost_conf,
                                 options.upload_board_tarball,
                                 options.prepackaged_tarball,

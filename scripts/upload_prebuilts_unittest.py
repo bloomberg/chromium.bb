@@ -296,7 +296,7 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
-                                         False, 'foo', False, 'x86-foo', [])
+                                         False, 'foo', False, 'x86-foo', [], '')
     uploader._UploadPrebuilt('/packages', 'suffix')
 
 
@@ -334,15 +334,16 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncHostPrebuilts(self.version, self.key, True, True)
+        self.build_path, [], False, 'foo', False, target, slave_targets,
+        self.version)
+    uploader.SyncHostPrebuilts(self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
     board = 'x86-foo'
     target = prebuilt.BuildTarget(board, 'aura')
     slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
-    board_path = os.path.join(self.build_path,
-        prebuilt._BOARD_PATH % {'board': board})
+    board_path = os.path.join(
+        self.build_path, prebuilt._BOARD_PATH % {'board': board})
     package_path = os.path.join(board_path, 'packages')
     url_suffix = prebuilt._REL_BOARD_PATH % {'version': self.version,
         'target': target}
@@ -351,18 +352,19 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
     self.mox.StubOutWithMock(multiprocessing.Process, 'join')
-    multiprocessing.Process.__init__(target=mox.IgnoreArg(),
-        args=(board_path, url_suffix, self.version, None, None, None))
+    multiprocessing.Process.__init__(
+        target=mox.IgnoreArg(),
+        args=(board_path, url_suffix, None, None, None))
     multiprocessing.Process.start()
-    prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
-        packages_url_suffix).AndReturn(True)
+    prebuilt.PrebuiltUploader._UploadPrebuilt(
+        package_path, packages_url_suffix).AndReturn(True)
     multiprocessing.Process.join()
     multiprocessing.Process.exitcode = 0
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     bar_binhost = url_value.replace('foo', 'bar')
-    prebuilt.DeterminePrebuiltConfFile(self.build_path,
-        slave_targets[0]).AndReturn('bar')
+    prebuilt.DeterminePrebuiltConfFile(
+        self.build_path, slave_targets[0]).AndReturn('bar')
     prebuilt.RevGitFile('bar', {self.key: bar_binhost}, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, bar_binhost)
     prebuilt.DeterminePrebuiltConfFile(self.build_path, target).AndReturn('foo')
@@ -371,9 +373,9 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True, None,
-                                None, None)
+        self.build_path, [], False, 'foo', False, target, slave_targets,
+        self.version)
+    uploader.SyncBoardPrebuilts(self.key, True, True, True, None, None, None)
 
 
 class TestMain(cros_test_lib.MoxTestCase):
@@ -422,13 +424,14 @@ class TestMain(cros_test_lib.MoxTestCase):
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
                                        False, options.binhost_conf_dir, False,
-                                       target, options.slave_targets)
+                                       target, options.slave_targets,
+                                       mox.IgnoreArg())
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncHostPrebuilts')
-    prebuilt.PrebuiltUploader.SyncHostPrebuilts(mox.IgnoreArg(), options.key,
-        options.git_sync, options.sync_binhost_conf)
+    prebuilt.PrebuiltUploader.SyncHostPrebuilts(
+        options.key, options.git_sync, options.sync_binhost_conf)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts')
     prebuilt.PrebuiltUploader.SyncBoardPrebuilts(
-        mox.IgnoreArg(), options.key, options.git_sync,
+        options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball, None, [], '')
     self.mox.ReplayAll()
     prebuilt.main([])
@@ -446,7 +449,7 @@ class TestSdk(cros_test_lib.MoxTestCase):
     # All these args pretty much get ignored.  Whee.
     self.uploader = prebuilt.PrebuiltUploader(
         'gs://foo', self.acl, 'prebuilt', [], '/', [],
-        False, 'foo', False, 'x86-foo', [])
+        False, 'foo', False, 'x86-foo', [], 'chroot-1234')
 
   def testSdkUpload(self, cb=lambda:None, tc_tarballs=(),
                     tc_upload_path=None):
@@ -463,7 +466,7 @@ class TestSdk(cros_test_lib.MoxTestCase):
                        'gs://chromiumos-sdk/cros-sdk-latest.conf', self.acl)
     self.mox.ReplayAll()
 
-    self.uploader._UploadSdkTarball('amd64-host', '', 'chroot-%s' % ver,
+    self.uploader._UploadSdkTarball('amd64-host', '',
                                     tar, tc_tarballs, tc_upload_path)
 
   def testTarballUpload(self):
