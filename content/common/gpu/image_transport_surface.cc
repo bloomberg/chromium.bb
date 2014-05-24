@@ -19,6 +19,10 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace content {
 
 ImageTransportSurface::ImageTransportSurface() {}
@@ -157,6 +161,14 @@ bool ImageTransportHelper::MakeCurrent() {
 }
 
 void ImageTransportHelper::SetSwapInterval(gfx::GLContext* context) {
+#if defined(OS_WIN)
+  // If Aero Glass is enabled, then the renderer will handle ratelimiting and
+  // there's no tearing, so waiting for vsync is unnecessary.
+  if (ui::win::IsAeroGlassEnabled()) {
+    context->SetSwapInterval(0);
+    return;
+  }
+#endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
     context->SetSwapInterval(0);
   else
