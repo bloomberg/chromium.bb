@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/renderer/dispatcher.h"
+#include "third_party/WebKit/public/platform/WebPermissionCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -27,7 +28,7 @@
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
-using blink::WebFrameClient;
+using blink::WebPermissionCallbacks;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebURL;
@@ -153,7 +154,8 @@ ContentSettingsObserver::ContentSettingsObserver(
       allow_running_insecure_content_(false),
       content_setting_rules_(NULL),
       is_interstitial_page_(false),
-      npapi_plugins_blocked_(false) {
+      npapi_plugins_blocked_(false),
+      current_request_id_(0) {
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->setPermissionClient(this);
 
@@ -207,6 +209,8 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
                         OnSetAllowRunningInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ReloadFrame, OnReloadFrame);
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
+                        OnRequestFileSystemAccessAsyncResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   if (handled)
@@ -269,10 +273,34 @@ bool ContentSettingsObserver::allowFileSystem() {
     return false;
 
   bool result = false;
-  Send(new ChromeViewHostMsg_AllowFileSystem(
+  Send(new ChromeViewHostMsg_RequestFileSystemAccessSync(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()), &result));
   return result;
+}
+
+void ContentSettingsObserver::requestFileSystemAccessAsync(
+    const WebPermissionCallbacks& callbacks) {
+  WebFrame* frame = render_frame()->GetWebFrame();
+  if (frame->document().securityOrigin().isUnique() ||
+      frame->top()->document().securityOrigin().isUnique()) {
+    WebPermissionCallbacks permissionCallbacks(callbacks);
+    permissionCallbacks.doDeny();
+    return;
+  }
+  ++current_request_id_;
+  std::pair<PermissionRequestMap::iterator, bool> insert_result =
+      permission_requests_.insert(
+          std::make_pair(current_request_id_, callbacks));
+
+  // Verify there are no duplicate insertions.
+  DCHECK(insert_result.second);
+
+  Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
+      routing_id(),
+      current_request_id_,
+      GURL(frame->document().securityOrigin().toString()),
+      GURL(frame->top()->document().securityOrigin().toString())));
 }
 
 bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
@@ -603,6 +631,23 @@ void ContentSettingsObserver::OnReloadFrame() {
   DCHECK(!render_frame()->GetWebFrame()->parent()) <<
       "Should only be called on the main frame";
   render_frame()->GetWebFrame()->reload();
+}
+
+void ContentSettingsObserver::OnRequestFileSystemAccessAsyncResponse(
+    int request_id,
+    bool allowed) {
+  PermissionRequestMap::iterator it = permission_requests_.find(request_id);
+  if (it == permission_requests_.end())
+    return;
+
+  WebPermissionCallbacks callbacks = it->second;
+  permission_requests_.erase(it);
+
+  if (allowed) {
+    callbacks.doAllow();
+    return;
+  }
+  callbacks.doDeny();
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {

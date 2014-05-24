@@ -42,7 +42,18 @@ bool SharedWorkerPermissionClientProxy::allowFileSystem() {
   if (is_unique_origin_)
     return false;
   bool result = false;
-  thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowFileSystem(
+  thread_safe_sender_->Send(
+      new WorkerProcessHostMsg_RequestFileSystemAccessSync(
+      routing_id_, origin_url_, &result));
+  return result;
+}
+
+bool SharedWorkerPermissionClientProxy::requestFileSystemAccessSync() {
+  if (is_unique_origin_)
+    return false;
+  bool result = false;
+  thread_safe_sender_->Send(
+      new WorkerProcessHostMsg_RequestFileSystemAccessSync(
       routing_id_, origin_url_, &result));
   return result;
 }

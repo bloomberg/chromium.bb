@@ -136,10 +136,14 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                          const GURL& top_origin_url,
                          bool local,
                          bool* allowed);
-  void OnAllowFileSystem(int render_frame_id,
-                         const GURL& origin_url,
-                         const GURL& top_origin_url,
-                         bool* allowed);
+  void OnRequestFileSystemAccessSync(int render_frame_id,
+                                     const GURL& origin_url,
+                                     const GURL& top_origin_url,
+                                     bool* allowed);
+  void OnRequestFileSystemAccessAsync(int render_frame_id,
+                                      int  request_id,
+                                      const GURL& origin_url,
+                                      const GURL& top_origin_url);
   void OnAllowIndexedDB(int render_frame_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,

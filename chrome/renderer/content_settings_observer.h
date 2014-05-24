@@ -53,6 +53,8 @@ class ContentSettingsObserver
                              const blink::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
+  virtual void requestFileSystemAccessAsync(
+      const blink::WebPermissionCallbacks& callbacks);
   virtual bool allowImage(bool enabled_per_settings,
                           const blink::WebURL& image_url);
   virtual bool allowIndexedDB(const blink::WebString& name,
@@ -98,6 +100,7 @@ class ContentSettingsObserver
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnReloadFrame();
+  void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
@@ -140,6 +143,10 @@ class ContentSettingsObserver
   std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;
   bool npapi_plugins_blocked_;
+
+  int current_request_id_;
+  typedef std::map<int, blink::WebPermissionCallbacks> PermissionRequestMap;
+  PermissionRequestMap permission_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

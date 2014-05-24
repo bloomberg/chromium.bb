@@ -67,7 +67,7 @@ IPC_SYNC_MESSAGE_CONTROL5_1(WorkerProcessHostMsg_AllowDatabase,
                             bool /* result */)
 
 // Sent by the worker process to check whether access to file system is allowed.
-IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_AllowFileSystem,
+IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_RequestFileSystemAccessSync,
                             int /* worker_route_id */,
                             GURL /* origin url */,
                             bool /* result */)

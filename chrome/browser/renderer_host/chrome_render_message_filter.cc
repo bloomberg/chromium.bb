@@ -123,7 +123,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAddEventToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessSync,
+                        OnRequestFileSystemAccessSync)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessAsync,
+                        OnRequestFileSystemAccessAsync)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
@@ -432,10 +435,11 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
                  !*allowed));
 }
 
-void ChromeRenderMessageFilter::OnAllowFileSystem(int render_frame_id,
-                                                  const GURL& origin_url,
-                                                  const GURL& top_origin_url,
-                                                  bool* allowed) {
+void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
+    int render_frame_id,
+    const GURL& origin_url,
+    const GURL& top_origin_url,
+    bool* allowed) {
   *allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
   // Record access to file system for potential display in UI.
@@ -443,6 +447,31 @@ void ChromeRenderMessageFilter::OnAllowFileSystem(int render_frame_id,
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
                  render_process_id_, render_frame_id, origin_url, !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
+    int render_frame_id,
+    int request_id,
+    const GURL& origin_url,
+    const GURL& top_origin_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  bool allowed =
+      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+  // Record access to file system for potential display in UI.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &TabSpecificContentSettings::FileSystemAccessed,
+          render_process_id_,
+          render_frame_id,
+          origin_url,
+          !allowed));
+
+  Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
+      render_frame_id,
+      request_id,
+      allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,

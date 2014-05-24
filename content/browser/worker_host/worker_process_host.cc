@@ -386,7 +386,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerConnected,
                         OnWorkerConnected)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
-    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_RequestFileSystemAccessSync,
+                        OnRequestFileSystemAccessSync)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_ForceKillWorker,
                         OnForceKillWorkerProcess)
@@ -472,9 +473,9 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
       GetRenderFrameIDsForWorker(worker_route_id));
 }
 
-void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
-                                          const GURL& url,
-                                          bool* result) {
+void WorkerProcessHost::OnRequestFileSystemAccessSync(int worker_route_id,
+                                                      const GURL& url,
+                                                      bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerFileSystem(
       url, resource_context_, GetRenderFrameIDsForWorker(worker_route_id));
 }

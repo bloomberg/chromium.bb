@@ -36,6 +36,7 @@ class WorkerPermissionClientProxy
                              const blink::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
+  virtual bool requestFileSystemAccessSync();
   virtual bool allowIndexedDB(const blink::WebString& name);
 
  private:
