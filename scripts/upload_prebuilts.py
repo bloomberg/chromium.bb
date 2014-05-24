@@ -21,6 +21,7 @@ upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 from __future__ import print_function
 
 import datetime
+import functools
 import multiprocessing
 import os
 import sys
@@ -162,13 +163,14 @@ def GetVersion():
   return datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
 
-def _GsUpload(local_file, remote_file, acl):
+def _GsUpload(gs_context, acl, local_file, remote_file):
   """Upload to GS bucket.
 
   Args:
+    gs_context: A lib.gs.GSContext instance.
+    acl: The ACL to use for uploading the file.
     local_file: The local file to be uploaded.
     remote_file: The remote location to upload to.
-    acl: The ACL to use for uploading the file.
 
   Returns:
     Return the arg tuple of two if the upload failed
@@ -176,7 +178,6 @@ def _GsUpload(local_file, remote_file, acl):
   CANNED_ACLS = ['public-read', 'private', 'bucket-owner-read',
                  'authenticated-read', 'bucket-owner-full-control',
                  'public-read-write']
-  gs_context = gs.GSContext(retries=_RETRIES, sleep=_SLEEP_TIME)
   if acl in CANNED_ACLS:
     gs_context.Copy(local_file, remote_file, acl=acl)
   else:
@@ -187,12 +188,13 @@ def _GsUpload(local_file, remote_file, acl):
     gs_context.SetACL(remote_file, acl=acl)
 
 
-def RemoteUpload(acl, files, pool=10):
+def RemoteUpload(gs_context, acl, files, pool=10):
   """Upload to google storage.
 
   Create a pool of process and call _GsUpload with the proper arguments.
 
   Args:
+    gs_context: A lib.gs.GSContext instance.
     acl: The canned acl used for uploading. acl can be one of: "public-read",
          "public-read-write", "authenticated-read", "bucket-owner-read",
          "bucket-owner-full-control", or "private".
@@ -202,8 +204,9 @@ def RemoteUpload(acl, files, pool=10):
   Returns:
     Return a set of tuple arguments of the failed uploads
   """
-  tasks = [[key, value, acl] for key, value in files.iteritems()]
-  parallel.RunTasksInProcessPool(_GsUpload, tasks, pool)
+  upload = functools.partial(_GsUpload, gs_context, acl)
+  tasks = [[key, value] for key, value in files.iteritems()]
+  parallel.RunTasksInProcessPool(upload, tasks, pool)
 
 
 def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
@@ -351,6 +354,12 @@ class PrebuiltUploader(object):
     self._target = target
     self._slave_targets = slave_targets
     self._version = version
+    self._gs_context = gs.GSContext(retries=_RETRIES, sleep=_SLEEP_TIME,
+                                    dry_run=self._dryrun)
+
+  def _Upload(self, local_file, remote_file):
+    """Wrapper around _GsUpload"""
+    _GsUpload(self._gs_context, self._acl, local_file, remote_file)
 
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
@@ -391,7 +400,7 @@ class PrebuiltUploader(object):
     remote_file = '%s/Packages' % remote_location.rstrip('/')
     upload_files[tmp_packages_file.name] = remote_file
 
-    RemoteUpload(self._acl, upload_files)
+    RemoteUpload(self._gs_context, self._acl, upload_files)
 
   def _UploadSdkTarball(self, board_path, url_suffix, prepackaged,
                         toolchain_tarballs, toolchain_upload_path):
@@ -417,16 +426,15 @@ class PrebuiltUploader(object):
         for_gsutil=True, suburl='cros-sdk-%s.tar.xz' % (version_str,))
     # For SDK, also upload the manifest which is guaranteed to exist
     # by the builderstage.
-    _GsUpload(prepackaged + '.Manifest', remote_tarfile + '.Manifest',
-              self._acl)
-    _GsUpload(prepackaged, remote_tarfile, self._acl)
+    self._Upload(prepackaged + '.Manifest', remote_tarfile + '.Manifest')
+    self._Upload(prepackaged, remote_tarfile)
 
     # Post the toolchain tarballs too.
     for tarball in toolchain_tarballs:
       target, local_path = tarball.split(':')
       suburl = toolchain_upload_path % {'target': target}
       remote_path = toolchain.GetSdkURL(for_gsutil=True, suburl=suburl)
-      _GsUpload(local_path, remote_path, self._acl)
+      self._Upload(local_path, remote_path)
 
     # Finally, also update the pointer to the latest SDK on which polling
     # scripts rely.
@@ -435,7 +443,7 @@ class PrebuiltUploader(object):
       remote_pointerfile = toolchain.GetSdkURL(for_gsutil=True,
                                                suburl='cros-sdk-latest.conf')
       osutils.WriteFile(pointerfile, 'LATEST_SDK="%s"' % version_str)
-      _GsUpload(pointerfile, remote_pointerfile, self._acl)
+      self._Upload(pointerfile, remote_pointerfile)
 
   def _GetTargets(self):
     """Retuns the list of targets to use."""
@@ -473,7 +481,7 @@ class PrebuiltUploader(object):
                                      'target': target}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
-      if self._target == target and not self._skip_upload and not self._dryrun:
+      if self._target == target and not self._skip_upload:
         # Upload prebuilts.
         package_path = os.path.join(self._build_path, _HOST_PACKAGES_PATH)
         self._UploadPrebuilt(package_path, packages_url_suffix)
@@ -517,7 +525,7 @@ class PrebuiltUploader(object):
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
       # Process the target board differently if it is the main --board.
-      if self._target == target and not self._skip_upload and not self._dryrun:
+      if self._target == target and not self._skip_upload:
         # This strips "chroot" prefix because that is sometimes added as the
         # --prepend-version argument (e.g. by chromiumos-sdk bot).
         # TODO(build): Clean it up to be less hard-coded.

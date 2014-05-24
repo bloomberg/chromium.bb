@@ -292,7 +292,7 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
     uploads = uploads.copy()
     uploads['fake'] = 'gs://foo/suffix/Packages'
     acl = 'public-read'
-    prebuilt.RemoteUpload(acl, uploads)
+    prebuilt.RemoteUpload(mox.IgnoreArg(), acl, uploads)
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
@@ -458,12 +458,13 @@ class TestSdk(cros_test_lib.MoxTestCase):
     ver = '1234'
     vtar = 'cros-sdk-%s.tar.xz' % ver
 
-    prebuilt._GsUpload('%s.Manifest' % tar,
-                       'gs://chromiumos-sdk/%s.Manifest' % vtar, self.acl)
-    prebuilt._GsUpload(tar, 'gs://chromiumos-sdk/%s' % vtar, self.acl)
+    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, '%s.Manifest' % tar,
+                       'gs://chromiumos-sdk/%s.Manifest' % vtar)
+    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, tar,
+                       'gs://chromiumos-sdk/%s' % vtar)
     cb()
-    prebuilt._GsUpload(mox.IgnoreArg(),
-                       'gs://chromiumos-sdk/cros-sdk-latest.conf', self.acl)
+    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, mox.IgnoreArg(),
+                       'gs://chromiumos-sdk/cros-sdk-latest.conf')
     self.mox.ReplayAll()
 
     self.uploader._UploadSdkTarball('amd64-host', '',
@@ -480,9 +481,8 @@ class TestSdk(cros_test_lib.MoxTestCase):
       for tc in tc_tarballs:
         tc = tc.split(':')
         prebuilt._GsUpload(
-            tc[1],
-            ('gs://chromiumos-sdk/' + tc_upload_path) % {'target': tc[0]},
-            self.acl)
+            mox.IgnoreArg(), self.acl, tc[1],
+            ('gs://chromiumos-sdk/' + tc_upload_path) % {'target': tc[0]})
     self.testSdkUpload(cb, tc_tarballs, tc_upload_path)
 
 
