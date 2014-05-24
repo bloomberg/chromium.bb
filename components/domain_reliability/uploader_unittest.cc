@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"

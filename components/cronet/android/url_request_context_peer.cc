@@ -132,6 +132,7 @@ void URLRequestContextPeer::Initialize() {
 }
 
 void URLRequestContextPeer::InitializeURLRequestContext() {
+  // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(new BasicNetworkDelegate());
   context_builder.set_proxy_config_service(
@@ -145,8 +146,6 @@ void URLRequestContextPeer::InitializeURLRequestContext() {
     context_->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
                                                net::NetLog::LOG_ALL_BUT_BYTES);
   }
-
-  net::HttpStreamFactory::EnableNpnSpdy31();
 
   delegate_->OnContextInitialized(this);
 }

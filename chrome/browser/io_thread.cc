@@ -767,18 +767,22 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
           command_line.GetSwitchValueASCII(switches::kUseSpdy);
       EnableSpdy(spdy_mode);
     } else if (command_line.HasSwitch(switches::kEnableSpdy4)) {
-      net::HttpStreamFactory::EnableNpnSpdy4Http2();
+      globals_->next_protos = net::NextProtosSpdy4Http2();
+      globals_->use_alternate_protocols.set(true);
     } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
-      net::HttpStreamFactory::EnableNpnSpdy3();
+      globals_->next_protos = net::NextProtosSpdy3();
+      globals_->use_alternate_protocols.set(true);
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
-      net::HttpStreamFactory::EnableNpnHttpOnly();
+      globals_->next_protos = net::NextProtosHttpOnly();
+      globals_->use_alternate_protocols.set(false);
     } else {
       if (spdy_trial_group == kSpdyFieldTrialDisabledGroupName &&
           !command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
-         net::HttpStreamFactory::set_spdy_enabled(false);
+        net::HttpStreamFactory::set_spdy_enabled(false);
       } else {
         // Use SPDY/3.1 by default.
-        net::HttpStreamFactory::EnableNpnSpdy31();
+        globals_->next_protos = net::NextProtosSpdy31();
+        globals_->use_alternate_protocols.set(true);
       }
     }
   }
@@ -821,20 +825,21 @@ void IOThread::EnableSpdy(const std::string& mode) {
       net::HttpStreamFactory::set_spdy_enabled(false);
     } else if (option == kDisableSSL) {
       globals_->spdy_default_protocol.set(net::kProtoSPDY3);
-      net::HttpStreamFactory::set_force_spdy_over_ssl(false);
-      net::HttpStreamFactory::set_force_spdy_always(true);
+      globals_->force_spdy_over_ssl.set(false);
+      globals_->force_spdy_always.set(true);
     } else if (option == kSSL) {
       globals_->spdy_default_protocol.set(net::kProtoSPDY3);
-      net::HttpStreamFactory::set_force_spdy_over_ssl(true);
-      net::HttpStreamFactory::set_force_spdy_always(true);
+      globals_->force_spdy_over_ssl.set(true);
+      globals_->force_spdy_always.set(true);
     } else if (option == kDisablePing) {
       globals_->enable_spdy_ping_based_connection_checking.set(false);
     } else if (option == kExclude) {
-      net::HttpStreamFactory::add_forced_spdy_exclusion(value);
+      globals_->forced_spdy_exclusions.insert(
+          net::HostPortPair::FromURL(GURL(value)));
     } else if (option == kDisableCompression) {
       globals_->enable_spdy_compression.set(false);
     } else if (option == kDisableAltProtocols) {
-      net::HttpStreamFactory::set_use_alternate_protocols(false);
+      globals_->use_alternate_protocols.set(false);
     } else if (option == kForceAltProtocols) {
       net::PortAlternateProtocolPair pair;
       pair.port = 443;
@@ -944,8 +949,14 @@ void IOThread::InitializeNetworkSessionParams(
       &params->enable_spdy_ping_based_connection_checking);
   globals_->spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
-  globals_->trusted_spdy_proxy.CopyToIfSet(
-      &params->trusted_spdy_proxy);
+  params->next_protos = globals_->next_protos;
+  globals_->trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
+  globals_->force_spdy_over_ssl.CopyToIfSet(&params->force_spdy_over_ssl);
+  globals_->force_spdy_always.CopyToIfSet(&params->force_spdy_always);
+  globals_->forced_spdy_exclusions = params->forced_spdy_exclusions;
+  globals_->use_alternate_protocols.CopyToIfSet(
+      &params->use_alternate_protocols);
+
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->enable_quic_pacing.CopyToIfSet(

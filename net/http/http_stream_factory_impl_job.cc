@@ -99,8 +99,6 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       using_quic_(false),
       quic_request_(session_->quic_stream_factory()),
       using_existing_quic_session_(false),
-      force_spdy_always_(HttpStreamFactory::force_spdy_always()),
-      force_spdy_over_ssl_(HttpStreamFactory::force_spdy_over_ssl()),
       spdy_certificate_error_(OK),
       establishing_tunnel_(false),
       was_npn_negotiated_(false),
@@ -300,7 +298,7 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   // working.
   return request_info_.url.SchemeIs("https") ||
          proxy_info_.proxy_server().is_https() ||
-         force_spdy_always_;
+         session_->params().force_spdy_always;
 }
 
 void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
@@ -704,13 +702,15 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceSpdySSL() const {
-  bool rv = force_spdy_always_ && force_spdy_over_ssl_;
-  return rv && !HttpStreamFactory::HasSpdyExclusion(origin_);
+  bool rv = session_->params().force_spdy_always &&
+      session_->params().force_spdy_over_ssl;
+  return rv && !session_->HasSpdyExclusion(origin_);
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceSpdyWithoutSSL() const {
-  bool rv = force_spdy_always_ && !force_spdy_over_ssl_;
-  return rv && !HttpStreamFactory::HasSpdyExclusion(origin_);
+  bool rv = session_->params().force_spdy_always &&
+      !session_->params().force_spdy_over_ssl;
+  return rv && !session_->HasSpdyExclusion(origin_);
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {

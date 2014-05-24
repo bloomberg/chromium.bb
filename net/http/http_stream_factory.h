@@ -7,7 +7,6 @@
 
 #include <list>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -17,7 +16,6 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
-#include "net/socket/ssl_client_socket.h"
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
@@ -36,6 +34,7 @@ class BoundNetLog;
 class HostMappingRules;
 class HostPortPair;
 class HttpAuthController;
+class HttpNetworkSession;
 class HttpResponseInfo;
 class HttpServerProperties;
 class HttpStreamBase;
@@ -181,7 +180,8 @@ class NET_EXPORT HttpStreamFactory {
   void ProcessAlternateProtocol(
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       const std::string& alternate_protocol_str,
-      const HostPortPair& http_host_port_pair);
+      const HostPortPair& http_host_port_pair,
+      const HttpNetworkSession& session);
 
   GURL ApplyHostMappingRules(const GURL& url, HostPortPair* endpoint);
 
@@ -229,83 +229,18 @@ class NET_EXPORT HttpStreamFactory {
   static void ResetStaticSettingsToInit();
 
   // Turns spdy on or off.
+  // TODO(mmenke):  Figure out if this can be made a property of the
+  //                HttpNetworkSession.
   static void set_spdy_enabled(bool value) {
     spdy_enabled_ = value;
-    if (!spdy_enabled_) {
-      delete next_protos_;
-      next_protos_ = NULL;
-    }
   }
   static bool spdy_enabled() { return spdy_enabled_; }
-
-  // Controls whether or not we use the Alternate-Protocol header.
-  static void set_use_alternate_protocols(bool value) {
-    use_alternate_protocols_ = value;
-  }
-  static bool use_alternate_protocols() { return use_alternate_protocols_; }
-
-  // Controls whether or not we use ssl when in spdy mode.
-  static void set_force_spdy_over_ssl(bool value) {
-    force_spdy_over_ssl_ = value;
-  }
-  static bool force_spdy_over_ssl() {
-    return force_spdy_over_ssl_;
-  }
-
-  // Controls whether or not we use spdy without npn.
-  static void set_force_spdy_always(bool value) {
-    force_spdy_always_ = value;
-  }
-  static bool force_spdy_always() { return force_spdy_always_; }
-
-  // Add a URL to exclude from forced SPDY.
-  static void add_forced_spdy_exclusion(const std::string& value);
-  // Check if a HostPortPair is excluded from using spdy.
-  static bool HasSpdyExclusion(const HostPortPair& endpoint);
-
-  // Sets http/1.1 as the only protocol supported via NPN or Alternate-Protocol.
-  static void EnableNpnHttpOnly();
-
-  // Sets http/1.1, quic, and spdy/3 as the protocols supported via
-  // NPN or Alternate-Protocol.
-  static void EnableNpnSpdy3();
-
-  // Sets http/1.1, quic, spdy/3, and spdy/3.1 as the protocols
-  // supported via NPN or Alternate-Protocol.
-  static void EnableNpnSpdy31();
-
-  // Sets http/1.1, quic, spdy/2, spdy/3, and spdy/3.1 as the
-  // protocols supported via NPN or Alternate-Protocol.
-  static void EnableNpnSpdy31WithSpdy2();
-
-  // Sets http/1.1, quic, spdy/3, spdy/3.1, and spdy/4 (http/2) as the
-  // protocols supported via NPN or Alternate-Protocol.
-  static void EnableNpnSpdy4Http2();
-
-  // Sets the protocols supported by NPN (next protocol negotiation) during the
-  // SSL handshake as well as by HTTP Alternate-Protocol.
-  static void SetNextProtos(const std::vector<NextProto>& value);
-  static bool has_next_protos() { return next_protos_ != NULL; }
-  static const std::vector<std::string>& next_protos() {
-    return *next_protos_;
-  }
 
  protected:
   HttpStreamFactory();
 
  private:
-  // |protocol| must be a valid protocol value.
-  static bool IsProtocolEnabled(AlternateProtocol protocol);
-  static void SetProtocolEnabled(AlternateProtocol protocol);
-  static void ResetEnabledProtocols();
-
-  static std::vector<std::string>* next_protos_;
-  static bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
   static bool spdy_enabled_;
-  static bool use_alternate_protocols_;
-  static bool force_spdy_over_ssl_;
-  static bool force_spdy_always_;
-  static std::list<HostPortPair>* forced_spdy_exclusions_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactory);
 };

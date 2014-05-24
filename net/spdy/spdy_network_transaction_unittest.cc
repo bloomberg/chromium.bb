@@ -70,15 +70,45 @@ struct SpdyNetworkTransactionTestParams {
   SpdyNetworkTransactionTestSSLType ssl_type;
 };
 
+void UpdateSpdySessionDependencies(
+    SpdyNetworkTransactionTestParams test_params,
+    SpdySessionDependencies* session_deps) {
+  switch (test_params.ssl_type) {
+    case SPDYNPN:
+      session_deps->http_server_properties.SetAlternateProtocol(
+          HostPortPair("www.google.com", 80), 443,
+          AlternateProtocolFromNextProto(test_params.protocol));
+      session_deps->use_alternate_protocols = true;
+      session_deps->next_protos = SpdyNextProtos();
+      break;
+    case SPDYNOSSL:
+      session_deps->force_spdy_over_ssl = false;
+      session_deps->force_spdy_always = true;
+      break;
+    case SPDYSSL:
+      session_deps->force_spdy_over_ssl = true;
+      session_deps->force_spdy_always = true;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 SpdySessionDependencies* CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params) {
-  return new SpdySessionDependencies(test_params.protocol);
+  SpdySessionDependencies* session_deps =
+      new SpdySessionDependencies(test_params.protocol);
+  UpdateSpdySessionDependencies(test_params, session_deps);
+  return session_deps;
 }
 
 SpdySessionDependencies* CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params,
     ProxyService* proxy_service) {
-  return new SpdySessionDependencies(test_params.protocol, proxy_service);
+  SpdySessionDependencies* session_deps =
+      new SpdySessionDependencies(test_params.protocol, proxy_service);
+  UpdateSpdySessionDependencies(test_params, session_deps);
+  return session_deps;
 }
 
 }  // namespace
@@ -174,33 +204,9 @@ class SpdyNetworkTransactionTest
       LOG(INFO) << __FUNCTION__;
       if (!session_deps_.get())
         session_deps_.reset(CreateSpdySessionDependencies(test_params_));
-      if (!session_.get())
+      if (!session_.get()) {
         session_ = SpdySessionDependencies::SpdyCreateSession(
             session_deps_.get());
-      HttpStreamFactory::set_use_alternate_protocols(false);
-      HttpStreamFactory::set_force_spdy_over_ssl(false);
-      HttpStreamFactory::set_force_spdy_always(false);
-
-      std::vector<NextProto> next_protos = SpdyNextProtos();
-
-      switch (test_params_.ssl_type) {
-        case SPDYNPN:
-          session_->http_server_properties()->SetAlternateProtocol(
-              HostPortPair("www.google.com", 80), 443,
-              AlternateProtocolFromNextProto(test_params_.protocol));
-          HttpStreamFactory::set_use_alternate_protocols(true);
-          HttpStreamFactory::SetNextProtos(next_protos);
-          break;
-        case SPDYNOSSL:
-          HttpStreamFactory::set_force_spdy_over_ssl(false);
-          HttpStreamFactory::set_force_spdy_always(true);
-          break;
-        case SPDYSSL:
-          HttpStreamFactory::set_force_spdy_over_ssl(true);
-          HttpStreamFactory::set_force_spdy_always(true);
-          break;
-        default:
-          NOTREACHED();
       }
 
       // We're now ready to use SSL-npn SPDY.
@@ -1096,9 +1102,7 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   helper.session()->ssl_config_service()->GetSSLConfig(&preconnect_ssl_config);
   HttpStreamFactory* http_stream_factory =
       helper.session()->http_stream_factory();
-  if (http_stream_factory->has_next_protos()) {
-    preconnect_ssl_config.next_protos = http_stream_factory->next_protos();
-  }
+  helper.session()->GetNextProtos(&preconnect_ssl_config.next_protos);
 
   http_stream_factory->PreconnectStreams(
       1, httpreq, DEFAULT_PRIORITY,
@@ -2560,11 +2564,12 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
                           writes2, arraysize(writes2));
 
   // TODO(erikchen): Make test support SPDYSSL, SPDYNPN
-  HttpStreamFactory::set_force_spdy_over_ssl(false);
-  HttpStreamFactory::set_force_spdy_always(true);
   TestDelegate d;
   {
-    SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
+    SpdyURLRequestContext spdy_url_request_context(
+        GetParam().protocol,
+        false  /* force_spdy_over_ssl*/,
+        true  /* force_spdy_always */);
     net::URLRequest r(GURL("http://www.google.com/"),
                       DEFAULT_PRIORITY,
                       &d,
@@ -2654,11 +2659,12 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
                           writes2, arraysize(writes2));
 
   // TODO(erikchen): Make test support SPDYSSL, SPDYNPN
-  HttpStreamFactory::set_force_spdy_over_ssl(false);
-  HttpStreamFactory::set_force_spdy_always(true);
   TestDelegate d;
   TestDelegate d2;
-  SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
+  SpdyURLRequestContext spdy_url_request_context(
+      GetParam().protocol,
+      false  /* force_spdy_over_ssl*/,
+      true  /* force_spdy_always */);
   {
     net::URLRequest r(GURL("http://www.google.com/"),
                       DEFAULT_PRIORITY,
@@ -5003,7 +5009,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
 
 // Test that turning SPDY on and off works properly.
 TEST_P(SpdyNetworkTransactionTest, SpdyOnOffToggle) {
-  net::HttpStreamFactory::set_spdy_enabled(true);
+  HttpStreamFactory::set_spdy_enabled(true);
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite spdy_writes[] = { CreateMockWrite(*req) };

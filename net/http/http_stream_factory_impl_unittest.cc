@@ -43,20 +43,6 @@ namespace net {
 
 namespace {
 
-class UseAlternateProtocolsScopedSetter {
- public:
-  explicit UseAlternateProtocolsScopedSetter(bool use_alternate_protocols)
-      : use_alternate_protocols_(HttpStreamFactory::use_alternate_protocols()) {
-    HttpStreamFactory::set_use_alternate_protocols(use_alternate_protocols);
-  }
-  ~UseAlternateProtocolsScopedSetter() {
-    HttpStreamFactory::set_use_alternate_protocols(use_alternate_protocols_);
-  }
-
- private:
-  bool use_alternate_protocols_;
-};
-
 class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
  public:
   enum StreamType {
@@ -1265,9 +1251,9 @@ TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
 
 // TODO(ricea): Re-enable once WebSocket over SPDY is implemented.
 TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
-  UseAlternateProtocolsScopedSetter use_alternate_protocols(true);
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
+  session_deps.use_alternate_protocols = true;
 
   MockRead mock_read(ASYNC, OK);
   DeterministicSocketData socket_data(&mock_read, 1, NULL, 0);

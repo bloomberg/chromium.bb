@@ -113,6 +113,7 @@
       'socket/client_socket_handle.h',
       'socket/client_socket_pool_histograms.cc',
       'socket/client_socket_pool_histograms.h',
+      'socket/next_proto.cc',
       'socket/next_proto.h',
       'socket/openssl_ssl_util.cc',
       'socket/openssl_ssl_util.h',

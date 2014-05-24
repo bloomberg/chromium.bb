@@ -190,7 +190,7 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     const GURL& original_url,
     GURL* alternate_url) {
-  if (!use_alternate_protocols())
+  if (!session_->params().use_alternate_protocols)
     return kNoAlternateProtocol;
 
   if (original_url.SchemeIs("ftp"))
@@ -231,10 +231,10 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   origin.set_port(alternate.port);
   if (alternate.protocol >= NPN_SPDY_MINIMUM_VERSION &&
       alternate.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
-    if (!spdy_enabled())
+    if (!HttpStreamFactory::spdy_enabled())
       return kNoAlternateProtocol;
 
-    if (HttpStreamFactory::HasSpdyExclusion(origin))
+    if (session_->HasSpdyExclusion(origin))
       return kNoAlternateProtocol;
 
     *alternate_url = UpgradeUrlToHttps(original_url, alternate.port);

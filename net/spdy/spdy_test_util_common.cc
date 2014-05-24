@@ -50,8 +50,8 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 
 }  // namespace
 
-std::vector<NextProto> SpdyNextProtos() {
-  std::vector<NextProto> next_protos;
+NextProtoVector SpdyNextProtos() {
+  NextProtoVector next_protos;
   for (int i = kProtoMinimumVersion; i <= kProtoMaximumVersion; ++i) {
     next_protos.push_back(static_cast<NextProto>(i));
   }
@@ -357,6 +357,9 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       protocol(protocol),
       stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
+      force_spdy_over_ssl(false),
+      force_spdy_always(false),
+      use_alternate_protocols(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
@@ -387,6 +390,9 @@ SpdySessionDependencies::SpdySessionDependencies(
       protocol(protocol),
       stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
+      force_spdy_over_ssl(false),
+      force_spdy_always(false),
+      use_alternate_protocols(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
@@ -441,12 +447,18 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.spdy_stream_initial_recv_window_size =
       session_deps->stream_initial_recv_window_size;
   params.time_func = session_deps->time_func;
+  params.next_protos = session_deps->next_protos;
   params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
+  params.force_spdy_over_ssl = session_deps->force_spdy_over_ssl;
+  params.force_spdy_always = session_deps->force_spdy_always;
+  params.use_alternate_protocols = session_deps->use_alternate_protocols;
   params.net_log = session_deps->net_log;
   return params;
 }
 
-SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
+SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol,
+                                             bool force_spdy_over_ssl,
+                                             bool force_spdy_always)
     : storage_(this) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
@@ -471,6 +483,8 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   params.enable_spdy_compression = false;
   params.enable_spdy_ping_based_connection_checking = false;
   params.spdy_default_protocol = protocol;
+  params.force_spdy_over_ssl = force_spdy_over_ssl;
+  params.force_spdy_always = force_spdy_always;
   params.http_server_properties = http_server_properties();
   scoped_refptr<HttpNetworkSession> network_session(
       new HttpNetworkSession(params));

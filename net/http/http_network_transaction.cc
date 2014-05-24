@@ -76,8 +76,7 @@ namespace net {
 namespace {
 
 void ProcessAlternateProtocol(
-    HttpStreamFactory* factory,
-    const base::WeakPtr<HttpServerProperties>& http_server_properties,
+    HttpNetworkSession* session,
     const HttpResponseHeaders& headers,
     const HostPortPair& http_host_port_pair) {
   std::string alternate_protocol_str;
@@ -88,9 +87,11 @@ void ProcessAlternateProtocol(
     return;
   }
 
-  factory->ProcessAlternateProtocol(http_server_properties,
-                                    alternate_protocol_str,
-                                    http_host_port_pair);
+  session->http_stream_factory()->ProcessAlternateProtocol(
+      session->http_server_properties(),
+      alternate_protocol_str,
+      http_host_port_pair,
+      *session);
 }
 
 // Returns true if |error| is a client certificate authentication error.
@@ -142,10 +143,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       establishing_tunnel_(false),
       websocket_handshake_stream_base_create_helper_(NULL) {
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
-  if (session->http_stream_factory()->has_next_protos()) {
-    server_ssl_config_.next_protos =
-        session->http_stream_factory()->next_protos();
-  }
+  session->GetNextProtos(&server_ssl_config_.next_protos);
   proxy_ssl_config_ = server_ssl_config_;
 }
 
@@ -1086,8 +1084,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
   HostPortPair endpoint = HostPortPair(request_->url.HostNoBrackets(),
                                        request_->url.EffectiveIntPort());
-  ProcessAlternateProtocol(session_->http_stream_factory(),
-                           session_->http_server_properties(),
+  ProcessAlternateProtocol(session_,
                            *response_.headers.get(),
                            endpoint);
 

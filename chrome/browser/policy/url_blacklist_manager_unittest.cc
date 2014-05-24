@@ -16,6 +16,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"

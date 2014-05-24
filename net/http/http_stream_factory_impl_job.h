@@ -296,12 +296,6 @@ class HttpStreamFactoryImpl::Job {
   // True if this job used an existing QUIC session.
   bool using_existing_quic_session_;
 
-  // Force spdy for all connections.
-  bool force_spdy_always_;
-
-  // Force spdy only for SSL connections.
-  bool force_spdy_over_ssl_;
-
   // Force quic for a specific port.
   int force_quic_port_;
 

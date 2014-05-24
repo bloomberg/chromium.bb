@@ -1362,24 +1362,25 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
   DCHECK(!list);
   base::DictionaryValue* status_dict = new base::DictionaryValue();
 
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(GetMainContext());
+
   status_dict->Set("spdy_enabled",
                    base::Value::CreateBooleanValue(
                        net::HttpStreamFactory::spdy_enabled()));
   status_dict->Set("use_alternate_protocols",
                    base::Value::CreateBooleanValue(
-                       net::HttpStreamFactory::use_alternate_protocols()));
+                       http_network_session->params().use_alternate_protocols));
   status_dict->Set("force_spdy_over_ssl",
                    base::Value::CreateBooleanValue(
-                       net::HttpStreamFactory::force_spdy_over_ssl()));
+                       http_network_session->params().force_spdy_over_ssl));
   status_dict->Set("force_spdy_always",
                    base::Value::CreateBooleanValue(
-                       net::HttpStreamFactory::force_spdy_always()));
+                       http_network_session->params().force_spdy_always));
 
-  // The next_protos may not be specified for certain configurations of SPDY.
-  std::string next_protos_string;
-  if (net::HttpStreamFactory::has_next_protos()) {
-    next_protos_string = JoinString(net::HttpStreamFactory::next_protos(), ',');
-  }
+  std::vector<std::string> next_protos;
+  http_network_session->GetNextProtos(&next_protos);
+  std::string next_protos_string = JoinString(next_protos, ',');
   status_dict->SetString("next_protos", next_protos_string);
 
   SendJavascriptCommand("receivedSpdyStatus", status_dict);

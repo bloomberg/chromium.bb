@@ -70,6 +70,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   const net::HttpNetworkSession::Params* reference_params =
       request_context->GetNetworkSessionParams();
   if (reference_params) {
+    // TODO(mmenke):  Just copying specific parameters seems highly regression
+    // prone.  Should have a better way to do this.
     session_params.host_mapping_rules = reference_params->host_mapping_rules;
     session_params.ignore_certificate_errors =
         reference_params->ignore_certificate_errors;
@@ -79,7 +81,14 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
         reference_params->testing_fixed_http_port;
     session_params.testing_fixed_https_port =
         reference_params->testing_fixed_https_port;
+    session_params.next_protos = reference_params->next_protos;
     session_params.trusted_spdy_proxy = reference_params->trusted_spdy_proxy;
+    session_params.force_spdy_over_ssl = reference_params->force_spdy_over_ssl;
+    session_params.force_spdy_always = reference_params->force_spdy_always;
+    session_params.forced_spdy_exclusions =
+        reference_params->forced_spdy_exclusions;
+    session_params.use_alternate_protocols =
+        reference_params->use_alternate_protocols;
   }
 
   network_session_ = new net::HttpNetworkSession(session_params);
