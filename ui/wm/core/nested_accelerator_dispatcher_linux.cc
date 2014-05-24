@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_dispatcher.h"
+#include "ui/wm/core/nested_accelerator_dispatcher.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -10,12 +10,13 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
+#include "ui/wm/core/nested_accelerator_delegate.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #endif
 
-namespace ash {
+namespace wm {
 
 namespace {
 
@@ -41,13 +42,14 @@ scoped_ptr<ui::ScopedEventDispatcher> OverrideDispatcher(
 
 }  // namespace
 
-class AcceleratorDispatcherLinux : public AcceleratorDispatcher,
-                                   public ui::PlatformEventDispatcher {
+class NestedAcceleratorDispatcherLinux : public NestedAcceleratorDispatcher,
+                                         public ui::PlatformEventDispatcher {
  public:
-  AcceleratorDispatcherLinux()
-      : restore_dispatcher_(OverrideDispatcher(this)) {}
+  explicit NestedAcceleratorDispatcherLinux(NestedAcceleratorDelegate* delegate)
+      : NestedAcceleratorDispatcher(delegate),
+        restore_dispatcher_(OverrideDispatcher(this)) {}
 
-  virtual ~AcceleratorDispatcherLinux() {}
+  virtual ~NestedAcceleratorDispatcherLinux() {}
 
  private:
   // AcceleratorDispatcher:
@@ -63,7 +65,7 @@ class AcceleratorDispatcherLinux : public AcceleratorDispatcher,
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
     if (IsKeyEvent(event)) {
       ui::KeyEvent key_event(event, false);
-      if (MenuClosedForPossibleAccelerator(key_event)) {
+      if (!delegate_->ShouldProcessEventNow(key_event)) {
 #if defined(USE_X11)
         XPutBackEvent(event->xany.display, event);
 #else
@@ -72,23 +74,25 @@ class AcceleratorDispatcherLinux : public AcceleratorDispatcher,
         return ui::POST_DISPATCH_NONE;
       }
 
-      if (AcceleratorProcessedForKeyEvent(key_event))
+      if (delegate_->ProcessEvent(key_event))
         return ui::POST_DISPATCH_NONE;
     }
-
     ui::PlatformEventDispatcher* prev = *restore_dispatcher_;
+
     return prev ? prev->DispatchEvent(event)
                 : ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
   scoped_ptr<ui::ScopedEventDispatcher> restore_dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcherLinux);
+  DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDispatcherLinux);
 };
 
-scoped_ptr<AcceleratorDispatcher> AcceleratorDispatcher::Create(
+scoped_ptr<NestedAcceleratorDispatcher> NestedAcceleratorDispatcher::Create(
+    NestedAcceleratorDelegate* delegate,
     base::MessagePumpDispatcher* nested_dispatcher) {
-  return scoped_ptr<AcceleratorDispatcher>(new AcceleratorDispatcherLinux());
+  return scoped_ptr<NestedAcceleratorDispatcher>(
+      new NestedAcceleratorDispatcherLinux(delegate));
 }
 
-}  // namespace ash
+}  // namespace wm

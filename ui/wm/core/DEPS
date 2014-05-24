@@ -1,6 +1,7 @@
 include_rules = [
   "+grit/ui_resources.h",
   "+ui/aura",
+  "+ui/base/accelerators",
   "+ui/base/cursor",
   "+ui/base/hit_test.h",
   "+ui/base/ime",

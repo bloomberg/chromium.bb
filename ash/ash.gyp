@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+#a Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -55,10 +55,8 @@
         'accelerators/accelerator_commands.h',
         'accelerators/accelerator_controller.cc',
         'accelerators/accelerator_controller.h',
-        'accelerators/accelerator_dispatcher.cc',
-        'accelerators/accelerator_dispatcher.h',
-        'accelerators/accelerator_dispatcher_linux.cc',
-        'accelerators/accelerator_dispatcher_win.cc',
+        'accelerators/nested_accelerator_delegate.cc',
+        'accelerators/nested_accelerator_delegate.h',
         'accelerators/accelerator_filter.cc',
         'accelerators/accelerator_filter.h',
         'accelerators/accelerator_table.cc',
@@ -73,8 +71,6 @@
         'accelerators/focus_manager_factory.h',
         'accelerators/magnifier_key_scroller.cc',
         'accelerators/magnifier_key_scroller.h',
-        'accelerators/nested_dispatcher_controller.cc',
-        'accelerators/nested_dispatcher_controller.h',
         'accelerators/spoken_feedback_toggler.cc',
         'accelerators/spoken_feedback_toggler.h',
         'accelerometer/accelerometer_controller.cc',
@@ -920,7 +916,6 @@
         'accelerators/accelerator_filter_unittest.cc',
         'accelerators/accelerator_table_unittest.cc',
         'accelerators/magnifier_key_scroller_unittest.cc',
-        'accelerators/nested_dispatcher_controller_unittest.cc',
         'accelerators/spoken_feedback_toggler_unittest.cc',
         'autoclick/autoclick_unittest.cc',
         'desktop_background/desktop_background_controller_unittest.cc',
