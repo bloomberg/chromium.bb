@@ -137,6 +137,22 @@ bool FrameIdMap::NextContinuousFrame(uint32* frame_id) const {
   return false;
 }
 
+bool FrameIdMap::HaveMultipleDecodableFrames() const {
+  // Find the oldest decodable frame.
+  FrameMap::const_iterator it;
+  bool found_one = false;
+  for (it = frame_map_.begin(); it != frame_map_.end(); ++it) {
+    if (it->second->Complete() && DecodableFrame(it->second.get())) {
+      if (found_one) {
+        return true;
+      } else {
+        found_one = true;
+      }
+    }
+  }
+  return false;
+}
+
 uint32 FrameIdMap::LastContinuousFrame() const {
   uint32 last_continuous_frame_id = last_released_frame_;
   uint32 next_expected_frame = last_released_frame_;
@@ -157,43 +173,16 @@ uint32 FrameIdMap::LastContinuousFrame() const {
   return last_continuous_frame_id;
 }
 
-bool FrameIdMap::NextAudioFrameAllowingMissingFrames(uint32* frame_id) const {
-  // First check if we have continuous frames.
-  if (NextContinuousFrame(frame_id))
-    return true;
-
-  // Find the oldest frame.
-  FrameMap::const_iterator it_best_match = frame_map_.end();
-  FrameMap::const_iterator it;
-
-  // Find first complete frame.
-  for (it = frame_map_.begin(); it != frame_map_.end(); ++it) {
-    if (it->second->Complete()) {
-      it_best_match = it;
-      break;
-    }
-  }
-  if (it_best_match == frame_map_.end())
-    return false;  // No complete frame.
-
-  ++it;
-  for (; it != frame_map_.end(); ++it) {
-    if (it->second->Complete() &&
-        IsOlderFrameId(it->first, it_best_match->first)) {
-      it_best_match = it;
-    }
-  }
-  *frame_id = it_best_match->first;
-  return true;
-}
-
-bool FrameIdMap::NextVideoFrameAllowingSkippingFrames(uint32* frame_id) const {
+bool FrameIdMap::NextFrameAllowingSkippingFrames(uint32* frame_id) const {
   // Find the oldest decodable frame.
   FrameMap::const_iterator it_best_match = frame_map_.end();
   FrameMap::const_iterator it;
   for (it = frame_map_.begin(); it != frame_map_.end(); ++it) {
-    if (it->second->Complete() && DecodableVideoFrame(it->second.get())) {
-      it_best_match = it;
+    if (it->second->Complete() && DecodableFrame(it->second.get())) {
+      if (it_best_match == frame_map_.end() ||
+          IsOlderFrameId(it->first, it_best_match->first)) {
+        it_best_match = it;
+      }
     }
   }
   if (it_best_match == frame_map_.end())
@@ -237,11 +226,14 @@ bool FrameIdMap::ContinuousFrame(FrameInfo* frame) const {
   return static_cast<uint32>(last_released_frame_ + 1) == frame->frame_id();
 }
 
-bool FrameIdMap::DecodableVideoFrame(FrameInfo* frame) const {
+bool FrameIdMap::DecodableFrame(FrameInfo* frame) const {
   if (frame->is_key_frame())
     return true;
   if (waiting_for_key_ && !frame->is_key_frame())
     return false;
+  // Self-reference?
+  if (frame->referenced_frame_id() == frame->frame_id())
+    return true;
 
   // Current frame is not necessarily referencing the last frame.
   // Do we have the reference frame?

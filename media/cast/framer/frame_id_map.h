@@ -64,8 +64,8 @@ class FrameIdMap {
   bool NextContinuousFrame(uint32* frame_id) const;
   uint32 LastContinuousFrame() const;
 
-  bool NextAudioFrameAllowingMissingFrames(uint32* frame_id) const;
-  bool NextVideoFrameAllowingSkippingFrames(uint32* frame_id) const;
+  bool NextFrameAllowingSkippingFrames(uint32* frame_id) const;
+  bool HaveMultipleDecodableFrames() const;
 
   int NumberOfCompleteFrames() const;
   void GetMissingPackets(uint32 frame_id,
@@ -74,7 +74,7 @@ class FrameIdMap {
 
  private:
   bool ContinuousFrame(FrameInfo* frame) const;
-  bool DecodableVideoFrame(FrameInfo* frame) const;
+  bool DecodableFrame(FrameInfo* frame) const;
 
   FrameMap frame_map_;
   bool waiting_for_key_;

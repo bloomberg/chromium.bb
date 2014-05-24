@@ -40,15 +40,14 @@ class Framer {
                     const RtpCastHeader& rtp_header,
                     bool* duplicate);
 
-  // Extracts a complete encoded frame - will only return a complete continuous
-  // frame.
-  // Returns false if the frame does not exist or if the frame is not complete
-  // within the given time frame.
-  bool GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
-                            bool* next_frame);
-
-  bool GetEncodedAudioFrame(transport::EncodedFrame* audio_frame,
-                            bool* next_frame);
+  // Extracts a complete encoded frame - will only return a complete and
+  // decodable frame. Returns false if no such frames exist.
+  // |next_frame| will be set to true if the returned frame is the very
+  // next frame. |have_multiple_complete_frames| will be set to true
+  // if there are more decodadble frames available.
+  bool GetEncodedFrame(transport::EncodedFrame* video_frame,
+                       bool* next_frame,
+                       bool* have_multiple_complete_frames);
 
   void ReleaseFrame(uint32 frame_id);
 

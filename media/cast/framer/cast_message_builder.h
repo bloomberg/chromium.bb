@@ -7,6 +7,7 @@
 #ifndef MEDIA_CAST_FRAMER_CAST_MESSAGE_BUILDER_H_
 #define MEDIA_CAST_FRAMER_CAST_MESSAGE_BUILDER_H_
 
+#include <deque>
 #include <map>
 
 #include "media/cast/framer/frame_id_map.h"
@@ -30,13 +31,13 @@ class CastMessageBuilder {
                      int max_unacked_frames);
   ~CastMessageBuilder();
 
-  void CompleteFrameReceived(uint32 frame_id, bool is_key_frame);
+  void CompleteFrameReceived(uint32 frame_id);
   bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
   void UpdateCastMessage();
   void Reset();
 
  private:
-  bool UpdateAckMessage();
+  bool UpdateAckMessage(uint32 frame_id);
   void BuildPacketList();
   bool UpdateCastMessageInternal(RtcpCastMessage* message);
 
@@ -51,13 +52,13 @@ class CastMessageBuilder {
 
   RtcpCastMessage cast_msg_;
   base::TimeTicks last_update_time_;
-  bool waiting_for_key_frame_;
 
   TimeLastNackMap time_last_nacked_map_;
 
   bool slowing_down_ack_;
   bool acked_last_frame_;
   uint32 last_acked_frame_id_;
+  std::deque<uint32> ack_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilder);
 };

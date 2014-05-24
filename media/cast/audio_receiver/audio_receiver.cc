@@ -169,19 +169,29 @@ void AudioReceiver::EmitAvailableEncodedFrames() {
     scoped_ptr<transport::EncodedFrame> encoded_frame(
         new transport::EncodedFrame());
     bool is_consecutively_next_frame = false;
-    if (!framer_.GetEncodedAudioFrame(encoded_frame.get(),
-                                      &is_consecutively_next_frame)) {
+    bool have_multiple_complete_frames = false;
+    if (!framer_.GetEncodedFrame(encoded_frame.get(),
+                                 &is_consecutively_next_frame,
+                                 &have_multiple_complete_frames)) {
       VLOG(1) << "Wait for more audio packets to produce a completed frame.";
       return;  // OnReceivedPayloadData() will invoke this method in the future.
+    }
+
+    const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+    const base::TimeTicks playout_time =
+        GetPlayoutTime(now, encoded_frame->rtp_timestamp);
+
+    // If we have multiple decodable frames, and the current frame is
+    // too old, then skip it and decode the next frame instead.
+    if (have_multiple_complete_frames && now > playout_time) {
+      framer_.ReleaseFrame(encoded_frame->frame_id);
+      continue;
     }
 
     // If |framer_| has a frame ready that is out of sequence, examine the
     // playout time to determine whether it's acceptable to continue, thereby
     // skipping one or more frames.  Skip if the missing frame wouldn't complete
     // playing before the start of playback of the available frame.
-    const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-    const base::TimeTicks playout_time =
-        GetPlayoutTime(now, encoded_frame->rtp_timestamp);
     if (!is_consecutively_next_frame) {
       // TODO(miu): Also account for expected decode time here?
       const base::TimeTicks earliest_possible_end_time_of_missing_frame =

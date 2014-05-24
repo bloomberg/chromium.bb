@@ -58,42 +58,15 @@ bool Framer::InsertPacket(const uint8* payload_data,
     it->second->InsertPacket(payload_data, payload_size, rtp_header);
   }
 
-  bool complete = (packet_type == kNewPacketCompletingFrame);
-  if (complete) {
-    // ACK as soon as possible.
-    VLOG(2) << "Complete frame " << static_cast<int>(rtp_header.frame_id);
-    cast_msg_builder_->CompleteFrameReceived(rtp_header.frame_id,
-                                             rtp_header.is_key_frame);
-  }
-  return complete;
+  return packet_type == kNewPacketCompletingFrame;
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedAudioFrame(transport::EncodedFrame* audio_frame,
-                                  bool* next_frame) {
-  uint32 frame_id;
-  // Find frame id.
-  if (frame_id_map_.NextContinuousFrame(&frame_id)) {
-    // We have our next frame.
-    *next_frame = true;
-  } else {
-    if (!frame_id_map_.NextAudioFrameAllowingMissingFrames(&frame_id)) {
-      return false;
-    }
-    *next_frame = false;
-  }
+bool Framer::GetEncodedFrame(transport::EncodedFrame* frame,
+                             bool* next_frame,
+                             bool* have_multiple_decodable_frames) {
+  *have_multiple_decodable_frames = frame_id_map_.HaveMultipleDecodableFrames();
 
-  ConstFrameIterator it = frames_.find(frame_id);
-  DCHECK(it != frames_.end());
-  if (it == frames_.end())
-    return false;
-
-  return it->second->AssembleEncodedFrame(audio_frame);
-}
-
-// This does not release the frame.
-bool Framer::GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
-                                  bool* next_frame) {
   uint32 frame_id;
   // Find frame id.
   if (frame_id_map_.NextContinuousFrame(&frame_id)) {
@@ -104,10 +77,15 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
     if (!decoder_faster_than_max_frame_rate_)
       return false;
 
-    if (!frame_id_map_.NextVideoFrameAllowingSkippingFrames(&frame_id)) {
+    if (!frame_id_map_.NextFrameAllowingSkippingFrames(&frame_id)) {
       return false;
     }
     *next_frame = false;
+  }
+
+  if (*next_frame) {
+    VLOG(2) << "ACK frame " << frame_id;
+    cast_msg_builder_->CompleteFrameReceived(frame_id);
   }
 
   ConstFrameIterator it = frames_.find(frame_id);
@@ -115,7 +93,7 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedFrame* video_frame,
   if (it == frames_.end())
     return false;
 
-  return it->second->AssembleEncodedFrame(video_frame);
+  return it->second->AssembleEncodedFrame(frame);
 }
 
 void Framer::Reset() {
