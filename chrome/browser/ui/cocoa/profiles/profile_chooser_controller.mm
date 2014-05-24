@@ -411,16 +411,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       // Hide the button until the image is hovered over.
       [changePhotoButton_ setHidden:YES];
     }
-
-    // Add the frame overlay last, so that both the photo and the button
-    // look like circles.
-    base::scoped_nsobject<NSImageView> frameOverlay(
-        [[NSImageView alloc] initWithFrame:bounds]);
-    [frameOverlay setImage:ui::ResourceBundle::GetSharedInstance().
-        GetNativeImageNamed(IDR_ICON_PROFILES_AVATAR_PHOTO_FRAME).AsNSImage()];
-    [self addSubview:frameOverlay];
   }
   return self;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  NSRect bounds = [self bounds];
+
+  // Display the profile picture as a circle.
+  NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:bounds];
+  [path addClip];
+  [self.image drawAtPoint:bounds.origin
+                 fromRect:bounds
+                operation:NSCompositeSourceOver
+                 fraction:1.0];
+
 }
 
 - (void)editPhoto:(id)sender {
