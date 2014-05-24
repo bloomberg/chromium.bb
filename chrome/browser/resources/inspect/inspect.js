@@ -29,6 +29,14 @@ function sendTargetCommand(command, target) {
   sendCommand(command, target.source, target.id);
 }
 
+function sendServiceWorkerCommand(action, partition_path, scope) {
+  $('serviceworker-internals').contentWindow.postMessage({
+    'action': action,
+    'partition_path': partition_path,
+    'scope': scope
+  },'chrome://serviceworker-internals');
+}
+
 function removeChildren(element_id) {
   var element = $(element_id);
   element.textContent = '';
@@ -51,6 +59,15 @@ function onload() {
   onHashChange();
   initSettings();
   sendCommand('init-ui');
+  window.addEventListener('message', onMessage.bind(this), false);
+}
+
+function onMessage(event) {
+  if (event.origin != 'chrome://serviceworker-internals') {
+    return;
+  }
+  populateServiceWorkers(event.data.partition_id,
+                         event.data.workers);
 }
 
 function onHashChange() {
@@ -85,6 +102,45 @@ function selectTab(id) {
     return false;
   window.location.hash = id;
   return true;
+}
+
+function populateServiceWorkers(partition_id, workers) {
+  var list = $('service-workers-list-' + partition_id);
+  if (workers.length == 0) {
+    if (list) {
+        list.parentNode.removeChild(list);
+    }
+    return;
+  }
+  if (list) {
+    list.textContent = '';
+  } else {
+    list = document.createElement('div');
+    list.id = 'service-workers-list-' + partition_id;
+    list.className = 'list';
+    $('service-workers-list').appendChild(list);
+  }
+  for (var i = 0; i < workers.length; i++) {
+    var worker = workers[i];
+    worker.hasCustomInspectAction = true;
+    var row = addTargetToList(worker, list, ['scope', 'url']);
+    addActionLink(
+        row,
+        'inspect',
+        sendServiceWorkerCommand.bind(null,
+                                      'inspect',
+                                      worker.partition_path,
+                                      worker.scope),
+        false);
+    addActionLink(
+        row,
+        'terminate',
+        sendServiceWorkerCommand.bind(null,
+                                      'stop',
+                                      worker.partition_path,
+                                      worker.scope),
+        false);
+  }
 }
 
 function populateTargets(source, data) {
@@ -508,8 +564,10 @@ function addTargetToList(data, list, properties) {
   actionBox.className = 'actions';
   subrowBox.appendChild(actionBox);
 
-  addActionLink(row, 'inspect', sendTargetCommand.bind(null, 'inspect', data),
-      data.hasNoUniqueId || data.adbAttachedForeign);
+  if (!data.hasCustomInspectAction) {
+    addActionLink(row, 'inspect', sendTargetCommand.bind(null, 'inspect', data),
+        data.hasNoUniqueId || data.adbAttachedForeign);
+  }
 
   list.appendChild(row);
   return row;

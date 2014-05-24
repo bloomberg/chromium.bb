@@ -368,7 +368,32 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
   source->AddResourcePath("inspect.css", IDR_INSPECT_CSS);
   source->AddResourcePath("inspect.js", IDR_INSPECT_JS);
   source->SetDefaultResource(IDR_INSPECT_HTML);
+  source->OverrideContentSecurityPolicyFrameSrc(
+      "frame-src chrome://serviceworker-internals;");
+  serviceworker_webui_.reset(web_ui()->GetWebContents()->CreateWebUI(
+      GURL(content::kChromeUIServiceWorkerInternalsURL)));
+  serviceworker_webui_->OverrideJavaScriptFrame(
+      content::kChromeUIServiceWorkerInternalsHost);
   return source;
+}
+
+void InspectUI::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  serviceworker_webui_->GetController()->RenderViewCreated(render_view_host);
+}
+
+void InspectUI::RenderViewReused(content::RenderViewHost* render_view_host) {
+  serviceworker_webui_->GetController()->RenderViewReused(render_view_host);
+}
+
+bool InspectUI::OverrideHandleWebUIMessage(const GURL& source_url,
+                                           const std::string& message,
+                                           const base::ListValue& args) {
+  if (source_url.SchemeIs(content::kChromeUIScheme) &&
+      source_url.host() == content::kChromeUIServiceWorkerInternalsHost) {
+    serviceworker_webui_->ProcessWebUIMessage(source_url, message, args);
+    return true;
+  }
+  return false;
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {

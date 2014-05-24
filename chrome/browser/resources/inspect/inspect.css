@@ -42,6 +42,10 @@ img {
   padding-left: 20px;
 }
 
+#serviceworker-internals {
+  visibility: hidden;
+}
+
 .tab-header {
   -webkit-border-start: 6px solid transparent;
   padding-left: 15px;

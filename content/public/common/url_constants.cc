@@ -50,6 +50,8 @@ const char kChromeUIHangURL[] = "chrome://hang";
 const char kChromeUIKillURL[] = "chrome://kill";
 const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash";
 const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang";
+const char kChromeUIServiceWorkerInternalsURL[] =
+    "chrome://serviceworker-internals";
 
 const char kStandardSchemeSeparator[] = "://";
 
