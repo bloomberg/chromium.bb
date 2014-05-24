@@ -4947,6 +4947,12 @@
                 },
               },
             },
+            # https://code.google.com/p/chromium/issues/detail?id=372451#c20
+            # Warning 4702 ("Unreachable code") should be re-enabled once
+            # Express users are updated to VS2013 Update 2.
+            'msvs_disabled_warnings': [
+              4702
+            ],
             'msvs_settings': {
               'VCLinkerTool': {
                 # Explicitly required when using the ATL with express
@@ -4974,12 +4980,12 @@
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_shell': 0,
-        'msvs_disabled_warnings': [4351, 4355, 4396, 4503, 4819,
+        'msvs_disabled_warnings': [
+          4351, 4355, 4396, 4503, 4819,
           # TODO(maruel): These warnings are level 4. They will be slowly
           # removed as code is fixed.
           4100, 4121, 4125, 4127, 4130, 4131, 4189, 4201, 4238, 4244, 4245,
-          4310, 4428, 4481, 4505, 4510, 4512, 4530, 4610, 4611, 4701, 4702,
-          4706,
+          4310, 4428, 4481, 4505, 4510, 4512, 4530, 4610, 4611, 4701, 4706,
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {
