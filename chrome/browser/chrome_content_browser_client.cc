@@ -186,7 +186,6 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
-#include "base/linux_util.h"
 #include "components/breakpad/app/breakpad_linux.h"
 #include "components/breakpad/browser/crash_handler_host_linux.h"
 #endif
@@ -272,12 +271,12 @@ namespace {
 base::LazyInstance<std::string> g_io_thread_application_locale;
 
 #if defined(ENABLE_PLUGINS)
-const char* kPredefinedAllowedFileHandleOrigins[] = {
+const char* const kPredefinedAllowedFileHandleOrigins[] = {
   "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
   "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
 };
 
-const char* kPredefinedAllowedSocketOrigins[] = {
+const char* const kPredefinedAllowedSocketOrigins[] = {
   "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
   "pnhechapfaindjhompbnflcldabbghjo",  // HTerm App (SSH Client)
   "bglhmjfplikpjnfoegeomebmfnkjomhe",  // see crbug.com/122126
@@ -482,8 +481,8 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
 void FillFontFamilyMap(const PrefService* prefs,
                        const char* map_name,
                        webkit_glue::ScriptFontFamilyMap* map) {
-  // TODO: Get rid of the brute-force scan over possible (font family / script)
-  // combinations - see http://crbug.com/308095.
+  // TODO(falken): Get rid of the brute-force scan over possible
+  // (font family / script) combinations - see http://crbug.com/308095.
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -500,15 +499,16 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   {
     ANNOTATE_SCOPED_MEMORY_LEAK;
+    bool upload = (getenv(env_vars::kHeadless) == NULL);
     breakpad::CrashHandlerHostLinux* crash_handler =
-        new breakpad::CrashHandlerHostLinux(
-            process_type, dumps_path, getenv(env_vars::kHeadless) == NULL);
+        new breakpad::CrashHandlerHostLinux(process_type, dumps_path, upload);
     crash_handler->StartUploaderThread();
     return crash_handler;
   }
 }
 
 int GetCrashSignalFD(const CommandLine& command_line) {
+  // Extensions have the same process type as renderers.
   if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
     static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
@@ -1484,13 +1484,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   if (breakpad::IsCrashReporterEnabled()) {
     std::string enable_crash_reporter;
     GoogleUpdateSettings::GetMetricsId(&enable_crash_reporter);
-#if !defined(OS_MACOSX)
-    enable_crash_reporter += "," + base::GetLinuxDistro();
-#endif
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-        enable_crash_reporter);
+                                    enable_crash_reporter);
   }
-#endif  // OS_POSIX
+#endif  // defined(OS_POSIX)
 
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);
