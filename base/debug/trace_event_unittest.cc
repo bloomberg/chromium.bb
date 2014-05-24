@@ -65,6 +65,7 @@ class TraceEventTestFixture : public testing::Test {
                                          const char* phase,
                                          const char* key,
                                          const char* value);
+  void DropTracedMetadataRecords();
   bool FindMatchingValue(const char* key,
                          const char* value);
   bool FindNonMatchingValue(const char* key,
@@ -249,6 +250,28 @@ DictionaryValue* TraceEventTestFixture::FindMatchingTraceEntry(
       return dict;
   }
   return NULL;
+}
+
+void TraceEventTestFixture::DropTracedMetadataRecords() {
+
+  scoped_ptr<ListValue> old_trace_parsed(trace_parsed_.DeepCopy());
+  size_t old_trace_parsed_size = old_trace_parsed->GetSize();
+  trace_parsed_.Clear();
+
+  for (size_t i = 0; i < old_trace_parsed_size; i++) {
+    Value* value = NULL;
+    old_trace_parsed->Get(i, &value);
+    if (!value || value->GetType() != Value::TYPE_DICTIONARY) {
+      trace_parsed_.Append(value->DeepCopy());
+      continue;
+    }
+    DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+    std::string tmp;
+    if(dict->GetString("ph", &tmp) && tmp == "M")
+      continue;
+
+    trace_parsed_.Append(value->DeepCopy());
+  }
 }
 
 DictionaryValue* TraceEventTestFixture::FindNamePhase(const char* name,
@@ -1102,6 +1125,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
+  DropTracedMetadataRecords();
   EXPECT_TRUE(trace_parsed_.empty());
 
   // Include existent category -> only events of that category
@@ -1113,6 +1137,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
+  DropTracedMetadataRecords();
   EXPECT_TRUE(FindMatchingValue("cat", "inc"));
   EXPECT_FALSE(FindNonMatchingValue("cat", "inc"));
 
@@ -2288,6 +2313,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording1) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
 
+  DropTracedMetadataRecords();
   VerifyCallbackAndRecordedEvents(2, 2);
 }
 
@@ -2311,6 +2337,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording2) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
 
+  DropTracedMetadataRecords();
   VerifyCallbackAndRecordedEvents(3, 1);
 }
 
@@ -2334,6 +2361,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording3) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
 
+  DropTracedMetadataRecords();
   VerifyCallbackAndRecordedEvents(1, 3);
 }
 
@@ -2357,6 +2385,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording4) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
 
+  DropTracedMetadataRecords();
   VerifyCallbackAndRecordedEvents(2, 2);
 }
 
@@ -2787,6 +2816,7 @@ TEST_F(TraceEventTestFixture, TimeOffset) {
       TimeTicks::NowFromSystemTraceTime().ToInternalValue());
 
   EndTraceAndFlush();
+  DropTracedMetadataRecords();
 
   double end_time = static_cast<double>(
       (TimeTicks::NowFromSystemTraceTime() - time_offset).ToInternalValue());

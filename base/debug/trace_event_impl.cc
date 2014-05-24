@@ -2049,6 +2049,14 @@ void TraceLog::CancelWatchEvent() {
 void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
 
+#if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
+  InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
+                          0,
+                          "num_cpus", "number",
+                          base::SysInfo::NumberOfProcessors());
+#endif
+
+
   int current_thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   if (process_sort_index_ != 0) {
     InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),

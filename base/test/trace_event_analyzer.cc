@@ -634,8 +634,11 @@ namespace {
 // Search |events| for |query| and add matches to |output|.
 size_t FindMatchingEvents(const std::vector<TraceEvent>& events,
                           const Query& query,
-                          TraceEventVector* output) {
+                          TraceEventVector* output,
+                          bool ignore_metadata_events) {
   for (size_t i = 0; i < events.size(); ++i) {
+    if (ignore_metadata_events && events[i].phase == TRACE_EVENT_PHASE_METADATA)
+      continue;
     if (query.Evaluate(events[i]))
       output->push_back(&events[i]);
   }
@@ -669,8 +672,9 @@ bool ParseEventsFromJson(const std::string& json,
 
 // TraceAnalyzer
 
-TraceAnalyzer::TraceAnalyzer() : allow_assocation_changes_(true) {
-}
+TraceAnalyzer::TraceAnalyzer()
+    : ignore_metadata_events_(false),
+      allow_assocation_changes_(true) {}
 
 TraceAnalyzer::~TraceAnalyzer() {
 }
@@ -788,7 +792,8 @@ void TraceAnalyzer::MergeAssociatedEventArgs() {
 size_t TraceAnalyzer::FindEvents(const Query& query, TraceEventVector* output) {
   allow_assocation_changes_ = false;
   output->clear();
-  return FindMatchingEvents(raw_events_, query, output);
+  return FindMatchingEvents(
+      raw_events_, query, output, ignore_metadata_events_);
 }
 
 const TraceEvent* TraceAnalyzer::FindFirstOf(const Query& query) {

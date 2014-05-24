@@ -563,6 +563,8 @@ class TraceAnalyzer {
   static TraceAnalyzer* Create(const std::string& json_events)
                                WARN_UNUSED_RESULT;
 
+  void SetIgnoreMetadataEvents(bool ignore) { ignore_metadata_events_ = true; }
+
   // Associate BEGIN and END events with each other. This allows Query(OTHER_*)
   // to access the associated event and enables Query(EVENT_DURATION).
   // An end event will match the most recent begin event with the same name,
@@ -630,6 +632,7 @@ class TraceAnalyzer {
 
   std::map<TraceEvent::ProcessThreadID, std::string> thread_names_;
   std::vector<TraceEvent> raw_events_;
+  bool ignore_metadata_events_;
   bool allow_assocation_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceAnalyzer);
