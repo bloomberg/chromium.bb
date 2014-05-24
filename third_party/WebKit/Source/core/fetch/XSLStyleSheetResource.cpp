@@ -30,15 +30,13 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/StyleSheetResourceClient.h"
-#include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest)
-    : StyleSheetResource(resourceRequest, XSLStyleSheet)
-    , m_decoder(TextResourceDecoder::create("text/xsl"))
+XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
+    : StyleSheetResource(resourceRequest, XSLStyleSheet, "text/xsl", charset)
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));
@@ -56,22 +54,10 @@ void XSLStyleSheetResource::didAddClient(ResourceClient* c)
         static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
 
-void XSLStyleSheetResource::setEncoding(const String& chs)
-{
-    m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
-}
-
-String XSLStyleSheetResource::encoding() const
-{
-    return m_decoder->encoding().name();
-}
-
 void XSLStyleSheetResource::checkNotify()
 {
-    if (m_data.get()) {
-        m_sheet = m_decoder->decode(m_data->data(), encodedSize());
-        m_sheet = m_sheet + m_decoder->flush();
-    }
+    if (m_data.get())
+        m_sheet = decodedText();
 
     ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
     while (StyleSheetResourceClient* c = w.next())

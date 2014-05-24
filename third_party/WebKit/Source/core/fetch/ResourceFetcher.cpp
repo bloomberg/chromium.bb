@@ -91,7 +91,7 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
     case Resource::Media:
         return new RawResource(request, type);
     case Resource::XSLStyleSheet:
-        return new XSLStyleSheetResource(request);
+        return new XSLStyleSheetResource(request, charset);
     case Resource::LinkPrefetch:
         return new Resource(request, Resource::LinkPrefetch);
     case Resource::LinkSubresource:

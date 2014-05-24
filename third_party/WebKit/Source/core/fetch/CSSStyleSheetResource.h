@@ -45,8 +45,6 @@ public:
     const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
     virtual void didAddClient(ResourceClient*) OVERRIDE;
-    virtual void setEncoding(const String&) OVERRIDE;
-    virtual String encoding() const OVERRIDE;
 
     PassRefPtrWillBeRawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
     void saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>);
@@ -59,7 +57,6 @@ private:
     bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
     virtual void checkNotify() OVERRIDE;
 
-    OwnPtr<TextResourceDecoder> m_decoder;
     String m_decodedSheetText;
 
     RefPtrWillBePersistent<StyleSheetContents> m_parsedStyleSheetCache;

@@ -30,7 +30,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/StyleSheetResourceClient.h"
-#include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
@@ -39,8 +38,7 @@
 namespace WebCore {
 
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
-    : StyleSheetResource(resourceRequest, CSSStyleSheet)
-    , m_decoder(TextResourceDecoder::create("text/css", charset))
+    : StyleSheetResource(resourceRequest, CSSStyleSheet, "text/css", charset)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptCSS, ("text/css,*/*;q=0.1", AtomicString::ConstructFromLiteral));
 
@@ -64,17 +62,7 @@ void CSSStyleSheetResource::didAddClient(ResourceClient* c)
     Resource::didAddClient(c);
 
     if (!isLoading())
-        static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
-}
-
-void CSSStyleSheetResource::setEncoding(const String& chs)
-{
-    m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
-}
-
-String CSSStyleSheetResource::encoding() const
-{
-    return m_decoder->encoding().name();
+        static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), encoding(), this);
 }
 
 const String CSSStyleSheetResource::sheetText(bool enforceMIMEType, bool* hasValidMIMEType) const
@@ -88,22 +76,18 @@ const String CSSStyleSheetResource::sheetText(bool enforceMIMEType, bool* hasVal
         return m_decodedSheetText;
 
     // Don't cache the decoded text, regenerating is cheap and it can use quite a bit of memory
-    String sheetText = m_decoder->decode(m_data->data(), m_data->size());
-    sheetText = sheetText + m_decoder->flush();
-    return sheetText;
+    return decodedText();
 }
 
 void CSSStyleSheetResource::checkNotify()
 {
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
-    if (m_data) {
-        m_decodedSheetText = m_decoder->decode(m_data->data(), m_data->size());
-        m_decodedSheetText = m_decodedSheetText + m_decoder->flush();
-    }
+    if (m_data)
+        m_decodedSheetText = decodedText();
 
     ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
     while (StyleSheetResourceClient* c = w.next())
-        c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
+        c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), encoding(), this);
     // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
     m_decodedSheetText = String();
 }

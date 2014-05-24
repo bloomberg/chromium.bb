@@ -26,14 +26,11 @@
 #ifndef ScriptResource_h
 #define ScriptResource_h
 
-#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/TextResource.h"
 
 namespace WebCore {
 
-class ResourceFetcher;
-class TextResourceDecoder;
-
-class ScriptResource FINAL : public Resource {
+class ScriptResource FINAL : public TextResource {
 public:
     typedef ResourceClient ClientType;
 
@@ -42,15 +39,12 @@ public:
 
     const String& script();
 
-    virtual void setEncoding(const String&) OVERRIDE;
-    virtual String encoding() const OVERRIDE;
     AtomicString mimeType() const;
 
     bool mimeTypeAllowedByNosniff() const;
 
 private:
     AtomicString m_script;
-    OwnPtr<TextResourceDecoder> m_decoder;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

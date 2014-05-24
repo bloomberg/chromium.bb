@@ -31,18 +31,18 @@
 #ifndef StyleSheetResource_h
 #define StyleSheetResource_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/TextResource.h"
 
 namespace WebCore {
 
 class StyleSheetResourceClient;
 
-class StyleSheetResource : public Resource {
+class StyleSheetResource : public TextResource {
 public:
     typedef StyleSheetResourceClient ClientType;
 
-    StyleSheetResource(const ResourceRequest& request, Type type)
-        : Resource(request, type)
+    StyleSheetResource(const ResourceRequest& request, Type type, const String& mimeType, const String& charset)
+        : TextResource(request, type, mimeType, charset)
     { }
 };
 

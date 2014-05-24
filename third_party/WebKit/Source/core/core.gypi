@@ -1093,6 +1093,8 @@
             'fetch/ResourcePtr.h',
             'fetch/ScriptResource.cpp',
             'fetch/ScriptResource.h',
+            'fetch/TextResource.cpp',
+            'fetch/TextResource.h',
             'fetch/XSLStyleSheetResource.cpp',
             'fetch/XSLStyleSheetResource.h',
             'fileapi/Blob.cpp',
