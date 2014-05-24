@@ -254,7 +254,7 @@ class PackageIndex(object):
     Returns:
       A temporary file containing the packages from pkgindex.
     """
-    f = tempfile.NamedTemporaryFile()
+    f = tempfile.NamedTemporaryFile(prefix='chromite.binpkg.pkgidx.')
     self.Write(f)
     f.flush()
     f.seek(0)
