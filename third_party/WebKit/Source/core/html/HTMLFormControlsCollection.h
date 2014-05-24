@@ -46,6 +46,8 @@ public:
     virtual Element* namedItem(const AtomicString& name) const OVERRIDE;
     void namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>&, bool& elementEnabled, RefPtrWillBeRawPtr<Element>&);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit HTMLFormControlsCollection(ContainerNode&);
 
@@ -57,7 +59,7 @@ private:
     virtual Element* virtualItemAfter(Element*) const OVERRIDE;
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
 
-    mutable Element* m_cachedElement;
+    mutable RawPtrWillBeMember<Element> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;
 };
 

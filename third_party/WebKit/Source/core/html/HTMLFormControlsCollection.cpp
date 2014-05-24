@@ -40,7 +40,7 @@ using namespace HTMLNames;
 
 HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     : HTMLCollection(ownerNode, FormControls, OverridesItemAfter)
-    , m_cachedElement(0)
+    , m_cachedElement(nullptr)
     , m_cachedElementOffsetInArray(0)
 {
     ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
@@ -105,7 +105,7 @@ Element* HTMLFormControlsCollection::virtualItemAfter(Element* previous) const
 void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
 {
     HTMLCollection::invalidateCache(oldDocument);
-    m_cachedElement = 0;
+    m_cachedElement = nullptr;
     m_cachedElementOffsetInArray = 0;
 }
 
@@ -235,6 +235,12 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
                 names.append(nameAttribute);
         }
     }
+}
+
+void HTMLFormControlsCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_cachedElement);
+    HTMLCollection::trace(visitor);
 }
 
 }
