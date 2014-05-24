@@ -587,8 +587,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   window->AddChild(shell()->web_contents()->GetContentNativeView());
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       ContentWindowClose) {
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
 
@@ -675,6 +674,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(2, GetCurrentIndex());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
+}
+
+// Verify that hiding a parent of the renderer will hide the content too.
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  aura::Window* content = web_contents->GetNativeView()->parent();
+  aura::Window* parent = content->parent();
+  EXPECT_TRUE(web_contents->should_normally_be_visible());
+  parent->Hide();
+  EXPECT_FALSE(web_contents->should_normally_be_visible());
+  parent->Show();
+  EXPECT_TRUE(web_contents->should_normally_be_visible());
 }
 
 }  // namespace content

@@ -164,6 +164,8 @@ class CONTENT_EXPORT WebContentsImpl
     return geolocation_dispatcher_host_.get();
   }
 
+  bool should_normally_be_visible() { return should_normally_be_visible_; }
+
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(WebContentsDelegate* delegate) OVERRIDE;

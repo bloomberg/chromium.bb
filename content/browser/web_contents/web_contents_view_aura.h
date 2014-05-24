@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
@@ -41,7 +42,8 @@ class WebContentsViewAura
       public OverscrollControllerDelegate,
       public ui::ImplicitAnimationObserver,
       public aura::WindowDelegate,
-      public aura::client::DragDropDelegate {
+      public aura::client::DragDropDelegate,
+      public aura::WindowObserver {
  public:
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
@@ -175,6 +177,12 @@ class WebContentsViewAura
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowParentChanged(aura::Window* window,
+                                     aura::Window* parent) OVERRIDE;
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE;
 
   scoped_ptr<aura::Window> window_;
 
