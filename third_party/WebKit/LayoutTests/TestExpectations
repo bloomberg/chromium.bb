@@ -616,17 +616,6 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
-crbug.com/360889 fast/block/float/026.html [ NeedsRebaseline ]
-crbug.com/360889 fast/block/float/028.html [ NeedsRebaseline ]
-crbug.com/360889 fast/block/float/overhanging-tall-block.html [ NeedsRebaseline ]
-crbug.com/360889 fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/select-overflow-scroll-inherited.html [ NeedsRebaseline ]
-crbug.com/360889 fast/forms/select-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/360889 fast/overflow/007.html [ NeedsRebaseline ]
-crbug.com/360889 fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
-crbug.com/360889 virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
-crbug.com/360889 fast/css/zoom-body-scroll.html [ NeedsRebaseline ]
-
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 
