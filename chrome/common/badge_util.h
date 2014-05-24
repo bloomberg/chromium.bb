@@ -26,14 +26,6 @@ namespace badge_util {
 // rendering badge overlay text (correct font, typeface, etc).
 SkPaint* GetBadgeTextPaintSingleton();
 
-// Given an |icon|, renders the |text| centered on the |icon|. If |text| is
-// too large to fit within the bounds of the image, the |fallback| string is
-// rendered instead (or nothing, if |fallback| is empty).
-SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
-                              float font_size_in_pixels,
-                              const base::string16& text,
-                              const base::string16& fallback);
-
 // Paints badge with specified parameters to |canvas|.
 void PaintBadge(gfx::Canvas* canvas,
                 const gfx::Rect& bounds,
@@ -43,6 +35,6 @@ void PaintBadge(gfx::Canvas* canvas,
                 int icon_width,
                 extensions::ActionInfo::Type action_type);
 
-}  // namespace badge_util;
+}  // namespace badge_util
 
 #endif  // CHROME_COMMON_BADGE_UTIL_H_

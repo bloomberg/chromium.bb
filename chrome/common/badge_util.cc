@@ -18,31 +18,31 @@
 namespace {
 
 // Different platforms need slightly different constants to look good.
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-const float kTextSize = 9.0;
-const int kBottomMarginBrowserAction = 0;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
-const int kTopTextPadding = 0;
-#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-const float kTextSize = 8.0;
-const int kBottomMarginBrowserAction = 0;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
-const int kTopTextPadding = 1;
-#elif defined(OS_MACOSX)
-const float kTextSize = 9.0;
-const int kBottomMarginBrowserAction = 5;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
-const int kTopTextPadding = 0;
-#else
+#if defined(OS_WIN)
 const float kTextSize = 10;
 const int kBottomMarginBrowserAction = 0;
 const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
 const int kTopTextPadding = -1;
+#elif defined(OS_MACOSX)
+const float kTextSize = 9.0;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
+#elif defined(OS_CHROMEOS)
+const float kTextSize = 8.0;
+const int kBottomMarginBrowserAction = 0;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 1;
+#elif defined(OS_POSIX)
+const float kTextSize = 9.0;
+const int kBottomMarginBrowserAction = 0;
+const int kBottomMarginPageAction = 2;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
 #endif
 
 const int kBadgeHeight = 11;
@@ -90,53 +90,6 @@ SkPaint* GetBadgeTextPaintSingleton() {
     // |text_paint| adds its own ref. Release the ref from CreateFontName.
   }
   return text_paint;
-}
-
-SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
-                              float font_size,
-                              const base::string16& text,
-                              const base::string16& fallback) {
-  const int kMinPadding = 1;
-
-  // Calculate the proper style/text overlay to render on the badge.
-  SkPaint* paint = badge_util::GetBadgeTextPaintSingleton();
-  paint->setTextSize(SkFloatToScalar(font_size));
-  paint->setColor(SK_ColorWHITE);
-
-  std::string badge_text = base::UTF16ToUTF8(text);
-
-  // See if the text will fit - otherwise use a default.
-  SkScalar text_width = paint->measureText(badge_text.c_str(),
-                                           badge_text.size());
-
-  if (SkScalarRoundToInt(text_width) > (icon.width() - kMinPadding * 2)) {
-    // String is too large - use the alternate text.
-    badge_text = base::UTF16ToUTF8(fallback);
-    text_width = paint->measureText(badge_text.c_str(), badge_text.size());
-  }
-
-  // When centering the text, we need to make sure there are an equal number
-  // of pixels on each side as otherwise the text looks off-center. So if the
-  // padding would be uneven, clip one pixel off the right side.
-  int badge_width = icon.width();
-  if ((SkScalarRoundToInt(text_width) % 1) != (badge_width % 1))
-    badge_width--;
-
-  // Render the badge bitmap and overlay into a canvas.
-  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
-      gfx::Size(badge_width, icon.height()), 1.0f, false));
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(icon), 0, 0);
-
-  // Draw the text overlay centered horizontally and vertically. Skia expects
-  // us to specify the lower left coordinate of the text box, which is why we
-  // add 'font_size - 1' to the height.
-  SkScalar x = (badge_width - text_width)/2;
-  SkScalar y = (icon.height() - font_size)/2 + font_size - 1;
-  canvas->sk_canvas()->drawText(
-      badge_text.c_str(), badge_text.size(), x, y, *paint);
-
-  // Return the generated image.
-  return canvas->ExtractImageRep().sk_bitmap();
 }
 
 void PaintBadge(gfx::Canvas* canvas,
