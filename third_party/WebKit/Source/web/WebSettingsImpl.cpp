@@ -369,11 +369,6 @@ void WebSettingsImpl::setTouchEditingEnabled(bool enabled)
     m_settings->setTouchEditingEnabled(enabled);
 }
 
-void WebSettingsImpl::setThreadedHTMLParser(bool enabled)
-{
-    m_settings->setThreadedHTMLParser(enabled);
-}
-
 void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool enabled)
 {
     m_settings->setOfflineWebApplicationCacheEnabled(enabled);
@@ -714,11 +709,6 @@ void WebSettingsImpl::setPinchVirtualViewportEnabled(bool enabled)
 void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
 {
     m_settings->setUseSolidColorScrollbars(enabled);
-}
-
-void WebSettingsImpl::setUseThreadedHTMLParserForDataURLs(bool enabled)
-{
-    // FIXME: Remove once Chrome dependencies are gone.
 }
 
 void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)

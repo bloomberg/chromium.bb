@@ -156,14 +156,12 @@ public:
     virtual void setAccessibilityFontScaleFactor(float) OVERRIDE;
     virtual void setTouchDragDropEnabled(bool) OVERRIDE;
     virtual void setTouchEditingEnabled(bool) OVERRIDE;
-    virtual void setThreadedHTMLParser(bool) OVERRIDE;
     virtual void setUnifiedTextCheckerEnabled(bool) OVERRIDE;
     virtual void setUnsafePluginPastingEnabled(bool) OVERRIDE;
     virtual void setUsesEncodingDetector(bool) OVERRIDE;
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) OVERRIDE;
     virtual void setUseSolidColorScrollbars(bool) OVERRIDE;
     virtual void setUseWideViewport(bool) OVERRIDE;
-    virtual void setUseThreadedHTMLParserForDataURLs(bool) OVERRIDE;
     virtual void setValidationMessageTimerMagnification(int) OVERRIDE;
     virtual void setViewportEnabled(bool) OVERRIDE;
     virtual void setViewportMetaEnabled(bool) OVERRIDE;
