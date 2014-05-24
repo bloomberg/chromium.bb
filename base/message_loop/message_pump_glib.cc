@@ -9,8 +9,10 @@
 
 #include <glib.h>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
@@ -117,6 +119,49 @@ GSourceFuncs WorkSourceFuncs = {
   NULL
 };
 
+// The following is used to make sure we only run the MessagePumpGlib on one
+// thread. X only has one message pump so we can only have one UI loop per
+// process.
+#ifndef NDEBUG
+
+// Tracks the pump the most recent pump that has been run.
+struct ThreadInfo {
+  // The pump.
+  MessagePumpGlib* pump;
+
+  // ID of the thread the pump was run on.
+  PlatformThreadId thread_id;
+};
+
+// Used for accesing |thread_info|.
+static LazyInstance<Lock>::Leaky thread_info_lock = LAZY_INSTANCE_INITIALIZER;
+
+// If non-NULL it means a MessagePumpGlib exists and has been Run. This is
+// destroyed when the MessagePump is destroyed.
+ThreadInfo* thread_info = NULL;
+
+void CheckThread(MessagePumpGlib* pump) {
+  AutoLock auto_lock(thread_info_lock.Get());
+  if (!thread_info) {
+    thread_info = new ThreadInfo;
+    thread_info->pump = pump;
+    thread_info->thread_id = PlatformThread::CurrentId();
+  }
+  DCHECK(thread_info->thread_id == PlatformThread::CurrentId()) <<
+      "Running MessagePumpGlib on two different threads; "
+      "this is unsupported by GLib!";
+}
+
+void PumpDestroyed(MessagePumpGlib* pump) {
+  AutoLock auto_lock(thread_info_lock.Get());
+  if (thread_info && thread_info->pump == pump) {
+    delete thread_info;
+    thread_info = NULL;
+  }
+}
+
+#endif
+
 }  // namespace
 
 struct MessagePumpGlib::RunState {
@@ -160,6 +205,9 @@ MessagePumpGlib::MessagePumpGlib()
 }
 
 MessagePumpGlib::~MessagePumpGlib() {
+#ifndef NDEBUG
+  PumpDestroyed(this);
+#endif
   g_source_destroy(work_source_);
   g_source_unref(work_source_);
   close(wakeup_pipe_read_);
@@ -232,12 +280,7 @@ void MessagePumpGlib::HandleDispatch() {
 
 void MessagePumpGlib::Run(Delegate* delegate) {
 #ifndef NDEBUG
-  // Make sure we only run this on one thread. X only has one message pump
-  // so we can only have one UI loop per process.
-  static PlatformThreadId thread_id = PlatformThread::CurrentId();
-  DCHECK(thread_id == PlatformThread::CurrentId()) <<
-      "Running MessagePumpGlib on two different threads; "
-      "this is unsupported by GLib!";
+  CheckThread(this);
 #endif
 
   RunState state;
