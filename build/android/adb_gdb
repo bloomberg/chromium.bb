@@ -16,7 +16,7 @@ PROGNAME=$(basename "$0")
 PROGDIR=$(dirname "$0")
 
 # Location of Chromium-top-level sources.
-CHROMIUM_SRC=$(cd "$PROGDIR"/../.. && pwd 2>/dev/null)
+CHROMIUM_SRC=$(cd "$PROGDIR"/../.. >/dev/null && pwd 2>/dev/null)
 
 # Location of Chromium out/ directory.
 if [ -z "$CHROMIUM_OUT_DIR" ]; then
@@ -991,6 +991,6 @@ if [ "$VERBOSE" -gt 0 ]; then
   echo "### END $COMMANDS"
 fi
 
-log "Launching gdb client: $GDB $GDBARGS -x $COMMANDS"
-$GDB $GDBARGS -x $COMMANDS &&
+log "Launching gdb client: $GDB $GDB_ARGS -x $COMMANDS"
+$GDB $GDB_ARGS -x $COMMANDS &&
 rm -f "$GDBSERVER_PIDFILE"
