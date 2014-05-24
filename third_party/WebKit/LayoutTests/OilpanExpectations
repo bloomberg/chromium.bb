@@ -41,3 +41,10 @@ crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakey
 
 # This test is flaky in debug without oilpan, but fails much more with oilpan.
 crbug.com/354785 svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
+
+# ~HTMLScriptRunner timing issue by r174697
+Bug(tkent) http/tests/misc/write-while-waiting.html [ Crash Pass ]
+# Binding issue? by r174676
+Bug(tkent) fast/xsl/import-non-document-node.xhtml [ Failure ]
+Bug(tkent) fast/xsl/transform-xhr-doc.xhtml [ Failure ]
+Bug(tkent) fast/xsl/xslt-processor.html [ Failure ]
