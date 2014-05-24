@@ -62,8 +62,7 @@ remoting.SmartReconnector = function(connector, clientSession) {
 // to connect.
 remoting.SmartReconnector.kReconnectDelay = 2000;
 
-// If no frames are received from the server for more than |kConnectionTimeout|,
-// disconnect the session.
+// If the video channel is inactive for 10 seconds reconnect the session.
 remoting.SmartReconnector.kConnectionTimeout = 10000;
 
 remoting.SmartReconnector.prototype = {
@@ -97,22 +96,13 @@ remoting.SmartReconnector.prototype = {
   },
 
   /**
-   * @param {boolean} active  This function is called if no frames are received
-   *    on the client for more than 1 second.
+   * @param {boolean} active  True if the video channel is active.
    */
   videoChannelStateChanged_: function (active) {
     this.cancelPending_();
     if (!active) {
-      // If the channel becomes inactive due to a lack of network connection,
-      // wait for it to go online.  The plugin will try to reconnect the video
-      // channel once it is online.  If the video channels doesn't finish
-      // reconnecting within the timeout, tear down the session and reconnect.
-      if (navigator.onLine) {
-        this.reconnect_();
-      } else {
-        window.addEventListener(
+      window.addEventListener(
           'online', this.bound_.startReconnectTimeout, false);
-      }
     }
   },
 
