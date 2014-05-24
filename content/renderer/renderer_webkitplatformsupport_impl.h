@@ -117,8 +117,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       createMIDIAccessor(blink::WebMIDIAccessorClient* client);
 
   virtual blink::WebBlobRegistry* blobRegistry();
-  virtual void sampleGamepads(blink::WebGamepads&) OVERRIDE;
-  virtual void setGamepadListener(blink::WebGamepadListener*) OVERRIDE;
+  virtual void sampleGamepads(blink::WebGamepads&);
+  virtual void setGamepadListener(blink::WebGamepadListener*);
   virtual blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
   virtual blink::WebMediaStreamCenter* createMediaStreamCenter(
@@ -136,21 +136,21 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual blink::WebString convertIDNToUnicode(
       const blink::WebString& host, const blink::WebString& languages);
   virtual void setDeviceMotionListener(
-      blink::WebDeviceMotionListener* listener) OVERRIDE;
+      blink::WebDeviceMotionListener* listener);
   virtual void setDeviceOrientationListener(
-      blink::WebDeviceOrientationListener* listener) OVERRIDE;
+      blink::WebDeviceOrientationListener* listener);
   virtual void queryStorageUsageAndQuota(
       const blink::WebURL& storage_partition,
       blink::WebStorageQuotaType,
-      blink::WebStorageQuotaCallbacks) OVERRIDE;
+      blink::WebStorageQuotaCallbacks);
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
   virtual void setScreenOrientationListener(
-      blink::WebScreenOrientationListener*) OVERRIDE;
-  virtual void lockOrientation(blink::WebScreenOrientationLockType) OVERRIDE;
-  virtual void unlockOrientation() OVERRIDE;
+      blink::WebScreenOrientationListener*);
+  virtual void lockOrientation(blink::WebScreenOrientationLockType);
+  virtual void unlockOrientation();
   virtual void setBatteryStatusListener(
-      blink::WebBatteryStatusListener* listener) OVERRIDE;
+      blink::WebBatteryStatusListener* listener);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
