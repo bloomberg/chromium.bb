@@ -353,15 +353,8 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
     that.updateState_();
   };
 
-  /** @param {remoting.HostController.AsyncResult} asyncResult */
-  var onDone = function(asyncResult) {
-    if (asyncResult == remoting.HostController.AsyncResult.OK) {
-      that.hostController_.getLocalHostState(onHostState);
-    } else if (asyncResult == remoting.HostController.AsyncResult.CANCELLED) {
-      onError(remoting.Error.CANCELLED);
-    } else {
-      onError(remoting.Error.UNEXPECTED);
-    }
+  var onDone = function() {
+    that.hostController_.getLocalHostState(onHostState);
   };
 
   /** @param {remoting.HostController.State} state */
@@ -374,23 +367,14 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
       that.flow_.switchToNextStep();
       that.updateState_();
     } else {
-      // For Mac/Linux, prompt the user again if the host is not installed.
-      if (navigator.platform != 'Win32') {
-        hostInstallDialog.tryAgain();
-      } else {
-        // For Windows, report an error in the unlikely case that
-        // HostController.installHost reports AsyncResult.OK but the host is not
-        // installed.
-        console.error('The chromoting host is not installed.');
-        onError(remoting.Error.UNEXPECTED);
-      }
+      // Prompt the user again if the host is not installed.
+      hostInstallDialog.tryAgain();
     }
   };
 
   /** @type {remoting.HostInstallDialog} */
   var hostInstallDialog = new remoting.HostInstallDialog();
-  hostInstallDialog.show(
-      this.hostController_.getDispatcher().getNpapiHost(), onDone, onError);
+  hostInstallDialog.show(onDone, onError);
 }
 
 /**

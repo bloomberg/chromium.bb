@@ -190,15 +190,14 @@ remoting.createNpapiPlugin = function(container) {
   // Hiding the plugin means it doesn't load, so make it size zero instead.
   plugin.width = 0;
   plugin.height = 0;
-  container.appendChild(plugin);
 
   // Verify if the plugin was loaded successfully.
-  if (!plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
-    container.removeChild(plugin);
-    return null;
+  if (plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
+    container.appendChild(plugin);
+    return /** @type {remoting.HostPlugin} */ (plugin);
   }
 
-  return /** @type {remoting.HostPlugin} */ (plugin);
+  return null;
 };
 
 /**

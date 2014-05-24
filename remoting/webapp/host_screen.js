@@ -44,26 +44,10 @@ remoting.tryShare = function() {
         document.getElementById('host-plugin-container'));
   }
 
-  /** @param {remoting.HostController.AsyncResult} asyncResult */
-  var onHostInstalled = function(asyncResult) {
-    if (asyncResult == remoting.HostController.AsyncResult.OK) {
-      tryInitializeDispatcher();
-    } else if (asyncResult == remoting.HostController.AsyncResult.CANCELLED) {
-      onInstallError(remoting.Error.CANCELLED);
-    } else {
-      onInstallError(remoting.Error.UNEXPECTED);
-    }
-  };
-
   var onDispatcherInitialized = function () {
     if (hostDispatcher.usingNpapi()) {
       hostInstallDialog = new remoting.HostInstallDialog();
-      if (navigator.platform == 'Win32') {
-        hostInstallDialog.show(
-            hostDispatcher.getNpapiHost(), onHostInstalled, onInstallError);
-      } else {
-        hostInstallDialog.show(null, onHostInstalled, onInstallError);
-      }
+      hostInstallDialog.show(tryInitializeDispatcher, onInstallError);
     } else {
       // Host alrady installed.
       remoting.startHostUsingDispatcher_(hostDispatcher);
@@ -82,10 +66,9 @@ remoting.tryShare = function() {
     if (hostInstallDialog == null) {
       hostInstallDialog = new remoting.HostInstallDialog();
 
-      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).show(
-          null, onHostInstalled, onInstallError);
+      hostInstallDialog.show(tryInitializeDispatcher, onInstallError);
     } else {
-      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).tryAgain();
+      hostInstallDialog.tryAgain();
     }
   };
 

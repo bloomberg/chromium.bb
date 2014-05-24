@@ -42,6 +42,19 @@
   "optional_permissions": [
     "<all_urls>"
   ],
+
+{% if webapp_type != 'v1' %}
+  "oauth2": {
+    "client_id": "{{ REMOTING_IDENTITY_API_CLIENT_ID }}",
+    "scopes": [
+      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
+    ]
+  },
+  "sandbox": {
+    "pages": [ "wcs_sandbox.html" ]
+  },
+{% endif %}
+
   "permissions": [
     "{{ OAUTH2_ACCOUNTS_HOST }}/*",
     "{{ OAUTH2_API_BASE_URL }}/*",
@@ -72,30 +85,5 @@
       ]
     }
 {% endif %}
-  ],
-
-{% if webapp_type == 'v1' %}
-  "plugins": [
-    { "path": "remoting_host_plugin.dll", "public": false },
-    { "path": "libremoting_host_plugin.ia32.so", "public": false },
-    { "path": "libremoting_host_plugin.x64.so", "public": false },
-    { "path": "remoting_host_plugin.plugin", "public": false }
-  ],
-  "requirements": {
-    "plugins": {
-      "npapi": false
-    }
-  }
-{% else %}
-  "oauth2": {
-    "client_id": "{{ REMOTING_IDENTITY_API_CLIENT_ID }}",
-    "scopes": [
-      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
-    ]
-  },
-  "sandbox": {
-    "pages": [ "wcs_sandbox.html" ]
-  }
-{% endif %}
-
+  ]
 }
