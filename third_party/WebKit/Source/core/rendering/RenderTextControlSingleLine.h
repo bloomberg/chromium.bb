@@ -45,7 +45,6 @@ protected:
     Element* containerElement() const;
     Element* editingViewPortElement() const;
     HTMLInputElement* inputElement() const;
-    virtual void updateFromElement() OVERRIDE FINAL;
 
 private:
     virtual bool hasControlClip() const OVERRIDE FINAL;
