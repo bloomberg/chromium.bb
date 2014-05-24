@@ -13,27 +13,8 @@
 namespace media {
 namespace cast {
 
-const int64 kMinSchedulingDelayMs = 1;
-
-class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
- public:
-  explicit LocalRtcpAudioSenderFeedback(AudioSender* audio_sender)
-      : audio_sender_(audio_sender) {}
-
-  virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
-      OVERRIDE {
-    if (!cast_feedback.missing_frames_and_packets_.empty()) {
-      audio_sender_->ResendPackets(cast_feedback.missing_frames_and_packets_);
-    }
-    VLOG(2) << "Received audio ACK "
-            << static_cast<int>(cast_feedback.ack_frame_id_);
-  }
-
- private:
-  AudioSender* audio_sender_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtcpAudioSenderFeedback);
-};
+const int kNumAggressiveReportsSentAtStart = 100;
+const int kMinSchedulingDelayMs = 1;
 
 // TODO(mikhal): Reduce heap allocation when not needed.
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -42,9 +23,8 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       rtp_timestamp_helper_(audio_config.frequency),
-      rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
       rtcp_(cast_environment,
-            rtcp_feedback_.get(),
+            this,
             transport_sender_,
             NULL,  // paced sender.
             NULL,
@@ -54,7 +34,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
             audio_config.incoming_feedback_ssrc,
             audio_config.rtcp_c_name,
             true),
-      timers_initialized_(false),
+      num_aggressive_rtcp_reports_sent_(0),
       cast_initialization_cb_(STATUS_AUDIO_UNINITIALIZED),
       weak_factory_(this) {
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
@@ -79,14 +59,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
 
 AudioSender::~AudioSender() {}
 
-void AudioSender::InitializeTimers() {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (!timers_initialized_) {
-    timers_initialized_ = true;
-    ScheduleNextRtcpReport();
-  }
-}
-
 void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
                               const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -100,7 +72,22 @@ void AudioSender::SendEncodedAudioFrame(
   DCHECK(!audio_frame->reference_time.is_null());
   rtp_timestamp_helper_.StoreLatestTime(audio_frame->reference_time,
                                         audio_frame->rtp_timestamp);
-  InitializeTimers();
+
+  // At the start of the session, it's important to send reports before each
+  // frame so that the receiver can properly compute playout times.  The reason
+  // more than one report is sent is because transmission is not guaranteed,
+  // only best effort, so we send enough that one should almost certainly get
+  // through.
+  if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
+    // SendRtcpReport() will schedule future reports to be made if this is the
+    // last "aggressive report."
+    ++num_aggressive_rtcp_reports_sent_;
+    const bool is_last_aggressive_report =
+        (num_aggressive_rtcp_reports_sent_ == kNumAggressiveReportsSentAtStart);
+    VLOG_IF(1, is_last_aggressive_report) << "Sending last aggressive report.";
+    SendRtcpReport(is_last_aggressive_report);
+  }
+
   transport_sender_->InsertCodedAudioFrame(*audio_frame);
 }
 
@@ -126,19 +113,47 @@ void AudioSender::ScheduleNextRtcpReport() {
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(&AudioSender::SendRtcpReport, weak_factory_.GetWeakPtr()),
+      base::Bind(&AudioSender::SendRtcpReport,
+                 weak_factory_.GetWeakPtr(),
+                 true),
       time_to_next);
 }
 
-void AudioSender::SendRtcpReport() {
+void AudioSender::SendRtcpReport(bool schedule_future_reports) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   uint32 now_as_rtp_timestamp = 0;
   if (rtp_timestamp_helper_.GetCurrentTimeAsRtpTimestamp(
           now, &now_as_rtp_timestamp)) {
     rtcp_.SendRtcpFromRtpSender(now, now_as_rtp_timestamp);
+  } else {
+    // |rtp_timestamp_helper_| should have stored a mapping by this point.
+    NOTREACHED();
   }
-  ScheduleNextRtcpReport();
+  if (schedule_future_reports)
+    ScheduleNextRtcpReport();
+}
+
+void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  if (rtcp_.is_rtt_available()) {
+    // Having the RTT values implies the receiver sent back a receiver report
+    // based on it having received a report from here.  Therefore, ensure this
+    // sender stops aggressively sending reports.
+    if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
+      VLOG(1) << "No longer a need to send reports aggressively (sent "
+              << num_aggressive_rtcp_reports_sent_ << ").";
+      num_aggressive_rtcp_reports_sent_ = kNumAggressiveReportsSentAtStart;
+      ScheduleNextRtcpReport();
+    }
+  }
+
+  if (!cast_feedback.missing_frames_and_packets_.empty()) {
+    ResendPackets(cast_feedback.missing_frames_and_packets_);
+  }
+  VLOG(2) << "Received audio ACK "
+          << static_cast<int>(cast_feedback.ack_frame_id_);
 }
 
 }  // namespace cast

@@ -98,6 +98,7 @@ class Rtcp {
            base::TimeDelta* avg_rtt,
            base::TimeDelta* min_rtt,
            base::TimeDelta* max_rtt) const;
+  bool is_rtt_available() const { return number_of_rtt_in_avg_ > 0; }
   bool RtpTimestampInSenderTime(int frequency,
                                 uint32 rtp_timestamp,
                                 base::TimeTicks* rtp_timestamp_in_ticks) const;

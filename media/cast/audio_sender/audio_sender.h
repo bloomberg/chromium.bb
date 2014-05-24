@@ -22,11 +22,11 @@ namespace media {
 namespace cast {
 
 class AudioEncoder;
-class LocalRtcpAudioSenderFeedback;
 
 // This class is not thread safe.
 // It's only called from the main cast thread.
-class AudioSender : public base::NonThreadSafe,
+class AudioSender : public RtcpSenderFeedback,
+                    public base::NonThreadSafe,
                     public base::SupportsWeakPtr<AudioSender> {
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -49,23 +49,21 @@ class AudioSender : public base::NonThreadSafe,
   void SendEncodedAudioFrame(scoped_ptr<transport::EncodedFrame> audio_frame);
 
  private:
-  friend class LocalRtcpAudioSenderFeedback;
-
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
   void ScheduleNextRtcpReport();
-  void SendRtcpReport();
+  void SendRtcpReport(bool schedule_future_reports);
 
-  void InitializeTimers();
+  virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
+      OVERRIDE;
 
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
   scoped_ptr<AudioEncoder> audio_encoder_;
   RtpTimestampHelper rtp_timestamp_helper_;
-  scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
-  bool timers_initialized_;
+  int num_aggressive_rtcp_reports_sent_;
   CastInitializationStatus cast_initialization_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

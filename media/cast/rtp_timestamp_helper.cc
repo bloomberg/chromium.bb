@@ -19,9 +19,10 @@ bool RtpTimestampHelper::GetCurrentTimeAsRtpTimestamp(
     const base::TimeTicks& now, uint32* rtp_timestamp) const {
   if (last_capture_time_.is_null())
     return false;
-  base::TimeDelta elapsed_time = now - last_capture_time_;
-  *rtp_timestamp = last_rtp_timestamp_ + elapsed_time.InMilliseconds() *
-      frequency_ / base::Time::kMillisecondsPerSecond;
+  const base::TimeDelta elapsed_time = now - last_capture_time_;
+  const int64 rtp_delta =
+      elapsed_time * frequency_ / base::TimeDelta::FromSeconds(1);
+  *rtp_timestamp = last_rtp_timestamp_ + static_cast<uint32>(rtp_delta);
   return true;
 }
 

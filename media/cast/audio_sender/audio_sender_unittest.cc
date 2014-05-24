@@ -33,6 +33,12 @@ class TestPacketSender : public transport::PacketSender {
     if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
+      // Check that at least one RTCP packet was sent before the first RTP
+      // packet.  This confirms that the receiver will have the necessary lip
+      // sync info before it has to calculate the playout time of the first
+      // frame.
+      if (number_of_rtp_packets_ == 0)
+        EXPECT_LE(1, number_of_rtcp_packets_);
       ++number_of_rtp_packets_;
     }
     return true;
@@ -88,7 +94,7 @@ class AudioSenderTest : public ::testing::Test {
   virtual ~AudioSenderTest() {}
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-    EXPECT_EQ(status, transport::TRANSPORT_AUDIO_INITIALIZED);
+    EXPECT_EQ(transport::TRANSPORT_AUDIO_INITIALIZED, status);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -110,9 +116,8 @@ TEST_F(AudioSenderTest, Encode20ms) {
 
   audio_sender_->InsertAudio(bus.Pass(), testing_clock_->NowTicks());
   task_runner_->RunTasks();
-  EXPECT_GE(
-      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
-      1);
+  EXPECT_LE(1, transport_.number_of_rtp_packets());
+  EXPECT_LE(1, transport_.number_of_rtcp_packets());
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
@@ -131,8 +136,8 @@ TEST_F(AudioSenderTest, RtcpTimer) {
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
   testing_clock_->Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
-  EXPECT_GE(transport_.number_of_rtp_packets(), 1);
-  EXPECT_EQ(transport_.number_of_rtcp_packets(), 1);
+  EXPECT_LE(1, transport_.number_of_rtp_packets());
+  EXPECT_LE(1, transport_.number_of_rtcp_packets());
 }
 
 }  // namespace cast

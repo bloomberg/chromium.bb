@@ -20,23 +20,8 @@
 namespace media {
 namespace cast {
 
-const int64 kMinSchedulingDelayMs = 1;
-
-class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
- public:
-  explicit LocalRtcpVideoSenderFeedback(VideoSender* video_sender)
-      : video_sender_(video_sender) {}
-
-  virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
-      OVERRIDE {
-    video_sender_->OnReceivedCastFeedback(cast_feedback);
-  }
-
- private:
-  VideoSender* video_sender_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtcpVideoSenderFeedback);
-};
+const int kNumAggressiveReportsSentAtStart = 100;
+const int kMinSchedulingDelayMs = 1;
 
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
@@ -51,7 +36,7 @@ VideoSender::VideoSender(
       cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       rtp_timestamp_helper_(kVideoFrequency),
-      rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
+      num_aggressive_rtcp_reports_sent_(0),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
       frames_in_encoder_(0),
@@ -91,7 +76,7 @@ VideoSender::VideoSender(
 
   rtcp_.reset(
       new Rtcp(cast_environment_,
-               rtcp_feedback_.get(),
+               this,
                transport_sender_,
                NULL,  // paced sender.
                NULL,
@@ -189,6 +174,22 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   DCHECK(!encoded_frame->reference_time.is_null());
   rtp_timestamp_helper_.StoreLatestTime(encoded_frame->reference_time,
                                         encoded_frame->rtp_timestamp);
+
+  // At the start of the session, it's important to send reports before each
+  // frame so that the receiver can properly compute playout times.  The reason
+  // more than one report is sent is because transmission is not guaranteed,
+  // only best effort, so send enough that one should almost certainly get
+  // through.
+  if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
+    // SendRtcpReport() will schedule future reports to be made if this is the
+    // last "aggressive report."
+    ++num_aggressive_rtcp_reports_sent_;
+    const bool is_last_aggressive_report =
+        (num_aggressive_rtcp_reports_sent_ == kNumAggressiveReportsSentAtStart);
+    VLOG_IF(1, is_last_aggressive_report) << "Sending last aggressive report.";
+    SendRtcpReport(is_last_aggressive_report);
+  }
+
   transport_sender_->InsertCodedVideoFrame(*encoded_frame);
   UpdateFramesInFlight();
   InitializeTimers();
@@ -210,19 +211,25 @@ void VideoSender::ScheduleNextRtcpReport() {
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN,
       FROM_HERE,
-      base::Bind(&VideoSender::SendRtcpReport, weak_factory_.GetWeakPtr()),
+      base::Bind(&VideoSender::SendRtcpReport,
+                 weak_factory_.GetWeakPtr(),
+                 true),
       time_to_next);
 }
 
-void VideoSender::SendRtcpReport() {
+void VideoSender::SendRtcpReport(bool schedule_future_reports) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   uint32 now_as_rtp_timestamp = 0;
   if (rtp_timestamp_helper_.GetCurrentTimeAsRtpTimestamp(
           now, &now_as_rtp_timestamp)) {
     rtcp_->SendRtcpFromRtpSender(now, now_as_rtp_timestamp);
+  } else {
+    // |rtp_timestamp_helper_| should have stored a mapping by this point.
+    NOTREACHED();
   }
-  ScheduleNextRtcpReport();
+  if (schedule_future_reports)
+    ScheduleNextRtcpReport();
 }
 
 void VideoSender::ScheduleNextResendCheck() {
@@ -313,6 +320,16 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
     // Don't use a RTT lower than our average.
     rtt = std::max(rtt, avg_rtt);
+
+    // Having the RTT values implies the receiver sent back a receiver report
+    // based on it having received a report from here.  Therefore, ensure this
+    // sender stops aggressively sending reports.
+    if (num_aggressive_rtcp_reports_sent_ < kNumAggressiveReportsSentAtStart) {
+      VLOG(1) << "No longer a need to send reports aggressively (sent "
+              << num_aggressive_rtcp_reports_sent_ << ").";
+      num_aggressive_rtcp_reports_sent_ = kNumAggressiveReportsSentAtStart;
+      ScheduleNextRtcpReport();
+    }
   } else {
     // We have no measured value use default.
     rtt = base::TimeDelta::FromMilliseconds(kStartRttMs);
@@ -367,11 +384,6 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
     // Receiver is sending a status message before any frames are ready to
     // be acked. Ignore.
     return;
-  }
-  // Start sending RTCP packets only after receiving the first ACK, i.e. only
-  // after establishing that the receiver is active.
-  if (last_acked_frame_id_ == -1) {
-    ScheduleNextRtcpReport();
   }
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();

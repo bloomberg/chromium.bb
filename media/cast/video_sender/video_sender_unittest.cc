@@ -62,6 +62,12 @@ class TestPacketSender : public transport::PacketSender {
     if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
+      // Check that at least one RTCP packet was sent before the first RTP
+      // packet.  This confirms that the receiver will have the necessary lip
+      // sync info before it has to calculate the playout time of the first
+      // frame.
+      if (number_of_rtp_packets_ == 0)
+        EXPECT_LE(1, number_of_rtcp_packets_);
       ++number_of_rtp_packets_;
     }
     return true;
@@ -129,7 +135,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-    EXPECT_EQ(status, transport::TRANSPORT_VIDEO_INITIALIZED);
+    EXPECT_EQ(transport::TRANSPORT_VIDEO_INITIALIZED, status);
   }
 
   void InitEncoder(bool external) {
@@ -193,7 +199,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   void InitializationResult(CastInitializationStatus result) {
-    EXPECT_EQ(result, STATUS_VIDEO_INITIALIZED);
+    EXPECT_EQ(STATUS_VIDEO_INITIALIZED, result);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -214,9 +220,8 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
-  EXPECT_GE(
-      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
-      1);
+  EXPECT_LE(1, transport_.number_of_rtp_packets());
+  EXPECT_LE(1, transport_.number_of_rtcp_packets());
 }
 
 TEST_F(VideoSenderTest, ExternalEncoder) {
@@ -248,16 +253,15 @@ TEST_F(VideoSenderTest, RtcpTimer) {
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
 
   RunTasks(max_rtcp_timeout.InMilliseconds());
-  EXPECT_GE(transport_.number_of_rtp_packets(), 1);
-  // Don't send RTCP prior to receiving an ACK.
-  EXPECT_GE(transport_.number_of_rtcp_packets(), 0);
+  EXPECT_LE(1, transport_.number_of_rtp_packets());
+  EXPECT_LE(1, transport_.number_of_rtcp_packets());
   // Build Cast msg and expect RTCP packet.
   RtcpCastMessage cast_feedback(1);
   cast_feedback.media_ssrc_ = 2;
   cast_feedback.ack_frame_id_ = 0;
   video_sender_->OnReceivedCastFeedback(cast_feedback);
   RunTasks(max_rtcp_timeout.InMilliseconds());
-  EXPECT_GE(transport_.number_of_rtcp_packets(), 1);
+  EXPECT_LE(1, transport_.number_of_rtcp_packets());
 }
 
 TEST_F(VideoSenderTest, ResendTimer) {
@@ -283,9 +287,9 @@ TEST_F(VideoSenderTest, ResendTimer) {
   // Make sure that we do a re-send.
   RunTasks(max_resend_timeout.InMilliseconds());
   // Should have sent at least 3 packets.
-  EXPECT_GE(
-      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
-      3);
+  EXPECT_LE(
+      3,
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets());
 }
 
 TEST_F(VideoSenderTest, LogAckReceivedEvent) {
@@ -353,16 +357,16 @@ TEST_F(VideoSenderTest, StopSendingIntheAbsenceOfAck) {
   cast_feedback.media_ssrc_ = 2;
   cast_feedback.ack_frame_id_ = 0;
   video_sender_->OnReceivedCastFeedback(cast_feedback);
-  EXPECT_GE(
-      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
-      4);
+  EXPECT_LE(
+      4,
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets());
 
   // Empty the pipeline.
   RunTasks(100);
   // Should have sent at least 7 packets.
-  EXPECT_GE(
-      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
-      7);
+  EXPECT_LE(
+      7,
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets());
 }
 
 }  // namespace cast
