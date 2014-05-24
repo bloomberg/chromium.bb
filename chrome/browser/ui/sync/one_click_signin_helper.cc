@@ -753,8 +753,8 @@ void OneClickSigninHelper::LogHistogramValue(
       // This switch statement needs to be updated when the enum Source changes.
       COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 12,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
-      NOTREACHED();
-      return;
+      UMA_HISTOGRAM_ENUMERATION("Signin.UnknownActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
   }
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
                             one_click_signin::HISTOGRAM_MAX);
