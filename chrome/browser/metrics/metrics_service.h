@@ -32,8 +32,6 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
-#include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleUpdateMetricsProviderWin;
@@ -91,7 +89,6 @@ struct SyntheticTrialGroup {
 class MetricsService
     : public base::HistogramFlattener,
       public chrome_browser_metrics::TrackingSynchronizerObserver,
-      public content::BrowserChildProcessObserver,
       public net::URLFetcherDelegate {
  public:
   // The execution phase of the browser.
@@ -170,10 +167,6 @@ class MetricsService
   virtual void UniqueInconsistencyDetected(
       base::HistogramBase::Inconsistency problem) OVERRIDE;
   virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
-
-  // Implementation of content::BrowserChildProcessObserver
-  virtual void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) OVERRIDE;
 
   // This should be called when the application is not idle, i.e. the user seems
   // to be interacting with the application.

@@ -9,16 +9,22 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/process_map.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/metrics/plugin_metrics_provider.h"
+#endif
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
@@ -57,9 +63,11 @@ int MapCrashExitCodeForHistogram(int exit_code) {
 }  // namespace
 
 ChromeStabilityMetricsProvider::ChromeStabilityMetricsProvider() {
+  BrowserChildProcessObserver::Add(this);
 }
 
 ChromeStabilityMetricsProvider::~ChromeStabilityMetricsProvider() {
+  BrowserChildProcessObserver::Remove(this);
 }
 
 void ChromeStabilityMetricsProvider::OnRecordingEnabled() {
@@ -109,6 +117,18 @@ void ChromeStabilityMetricsProvider::ProvideStabilityMetrics(
   }
 }
 
+// static
+void ChromeStabilityMetricsProvider::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
+                                0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
+}
+
 void ChromeStabilityMetricsProvider::Observe(
     int type,
     const content::NotificationSource& source,
@@ -141,6 +161,18 @@ void ChromeStabilityMetricsProvider::Observe(
       NOTREACHED();
       break;
   }
+}
+
+void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
+    const content::ChildProcessData& data) {
+#if defined(ENABLE_PLUGINS)
+  // Exclude plugin crashes from the count below because we report them via
+  // a separate UMA metric.
+  if (PluginMetricsProvider::IsPluginProcess(data.process_type))
+    return;
+#endif
+
+  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
 }
 
 void ChromeStabilityMetricsProvider::LogLoadStarted(

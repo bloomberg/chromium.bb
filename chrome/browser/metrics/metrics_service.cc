@@ -200,9 +200,6 @@
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/variations/entropy_provider.h"
-#include "content/public/browser/child_process_data.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -334,12 +331,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
-                                0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail, 0);
   registry->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationSuccess,
                                 0);
@@ -360,11 +351,13 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
-  registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+
+  // TODO(asvitkine): Move this out of here.
+  ChromeStabilityMetricsProvider::RegisterPrefs(registry);
 
 #if defined(OS_ANDROID)
   // TODO(asvitkine): Move this out of here.
@@ -428,14 +421,10 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider>(
       plugin_metrics_provider_));
 #endif
-
-  BrowserChildProcessObserver::Add(this);
 }
 
 MetricsService::~MetricsService() {
   DisableRecording();
-
-  BrowserChildProcessObserver::Remove(this);
 }
 
 void MetricsService::InitializeMetricsRecordingState() {
@@ -561,19 +550,6 @@ void MetricsService::UniqueInconsistencyDetected(
 void MetricsService::InconsistencyDetectedInLoggedCount(int amount) {
   UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser",
                        std::abs(amount));
-}
-
-void MetricsService::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data) {
-  // TODO(asvitkine): Move this into ChromeStabilityStatsProvider.
-#if defined(ENABLE_PLUGINS)
-  // Exclude plugin crashes from the count below because we report them via
-  // a separate UMA metric.
-  if (PluginMetricsProvider::IsPluginProcess(data.process_type))
-    return;
-#endif
-
-  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -1473,4 +1449,3 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
   plugin_metrics_provider_->RecordPluginChanges();
 #endif
 }
-
