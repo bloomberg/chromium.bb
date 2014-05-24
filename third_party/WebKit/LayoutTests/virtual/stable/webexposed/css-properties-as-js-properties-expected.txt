@@ -163,6 +163,9 @@ position
 quotes
 resize
 right
+shapeImageThreshold
+shapeMargin
+shapeOutside
 shapeRendering
 size
 speak

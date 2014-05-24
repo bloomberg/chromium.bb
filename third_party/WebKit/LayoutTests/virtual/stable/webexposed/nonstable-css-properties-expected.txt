@@ -3,13 +3,13 @@ Test getting and setting nonstable css properties to non-default values
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-el.style.setProperty('-webkit-shape-margin', '10px')
-el.style.getPropertyValue('-webkit-shape-margin') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-margin') is null
+el.style.setProperty('shape-margin', '10px')
+el.style.getPropertyValue('shape-margin') is 10px
+getComputedStyle(el).getPropertyValue('shape-margin') is 10px
 
-el.style.setProperty('-webkit-shape-outside', 'circle(10px at 10px 10px)')
-el.style.getPropertyValue('-webkit-shape-outside') is null
-getComputedStyle(el).getPropertyValue('-webkit-shape-outside') is null
+el.style.setProperty('shape-outside', 'circle(10px at 10px 10px)')
+el.style.getPropertyValue('shape-outside') is circle(10px at 10px 10px)
+getComputedStyle(el).getPropertyValue('shape-outside') is circle(10px at 10px 10px)
 
 el.style.setProperty('-webkit-wrap-flow', 'both')
 el.style.getPropertyValue('-webkit-wrap-flow') is null
