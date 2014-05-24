@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
@@ -152,6 +153,9 @@ class TabLoader : public content::NotificationObserver,
   // Called when a tab goes away or a load completes.
   void HandleTabClosedOrLoaded(NavigationController* controller);
 
+  // TODO(sky): remove. For debugging 368236.
+  void CheckNotObserving(NavigationController* controller);
+
   content::NotificationRegistrar registrar_;
 
   // Current delay before a new tab is loaded. See class description for
@@ -203,6 +207,7 @@ TabLoader* TabLoader::GetTabLoader(base::TimeTicks restore_started) {
 }
 
 void TabLoader::ScheduleLoad(NavigationController* controller) {
+  CheckNotObserving(controller);
   DCHECK(controller);
   DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
          tabs_to_load_.end());
@@ -211,6 +216,7 @@ void TabLoader::ScheduleLoad(NavigationController* controller) {
 }
 
 void TabLoader::TabIsLoading(NavigationController* controller) {
+  CheckNotObserving(controller);
   DCHECK(controller);
   DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
          tabs_loading_.end());
@@ -478,6 +484,29 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
     UMA_HISTOGRAM_COUNTS_100("SessionRestore.ParallelTabLoads",
                              max_parallel_tab_loads_);
   }
+}
+
+void TabLoader::CheckNotObserving(NavigationController* controller) {
+  const bool in_tabs_to_load =
+      find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) !=
+          tabs_to_load_.end();
+  const bool in_tabs_loading =
+      find(tabs_loading_.begin(), tabs_loading_.end(), controller) !=
+          tabs_loading_.end();
+  const bool observing =
+      registrar_.IsRegistered(
+          this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+          content::Source<WebContents>(controller->GetWebContents())) ||
+      registrar_.IsRegistered(
+          this, content::NOTIFICATION_LOAD_STOP,
+          content::Source<NavigationController>(controller)) ||
+      registrar_.IsRegistered(
+          this, content::NOTIFICATION_LOAD_START,
+          content::Source<NavigationController>(controller));
+  base::debug::Alias(&in_tabs_to_load);
+  base::debug::Alias(&in_tabs_loading);
+  base::debug::Alias(&observing);
+  CHECK(!in_tabs_to_load && !in_tabs_loading && !observing);
 }
 
 // SessionRestoreImpl ---------------------------------------------------------
@@ -959,6 +988,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
         ShowBrowser(
             browser,
             browser->tab_strip_model()->GetIndexOfWebContents(restored_tab));
+        // TODO(sky): remove. For debugging 368236.
+        CHECK_EQ(browser->tab_strip_model()->GetActiveWebContents(),
+                 restored_tab);
         tab_loader_->TabIsLoading(&browser->tab_strip_model()
                                        ->GetActiveWebContents()
                                        ->GetController());
