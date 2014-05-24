@@ -18,6 +18,8 @@ Example of uploading x86-dogfood binhosts to Google Storage:
 upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 """
 
+from __future__ import print_function
+
 import datetime
 import multiprocessing
 import os
@@ -112,7 +114,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
     file_var, file_val = line.split('=')
     if file_var == key:
       found = True
-      print 'Updating %s=%s to %s="%s"' % (file_var, file_val, key, value)
+      print('Updating %s=%s to %s="%s"' % (file_var, file_val, key, value))
       value = '"%s"' % value
       file_lines.append(keyval_str % {'key': key, 'value': value})
     else:
@@ -142,7 +144,7 @@ def RevGitFile(filename, data, retries=5, dryrun=False):
   description = '%s: updating %s' % (os.path.basename(filename),
                                      ', '.join(data.keys()))
   # UpdateLocalFile will print out the keys/values for us.
-  print 'Revving git file %s' % filename
+  print('Revving git file %s' % filename)
 
   try:
     git.CreatePushBranch(prebuilt_branch, cwd)
