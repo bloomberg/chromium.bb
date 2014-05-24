@@ -1024,12 +1024,12 @@ void Node::reattachWhitespaceSiblings(Text* start)
 {
     for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
         if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
-            bool hadRenderer = sibling->hasRenderer();
+            bool hadRenderer = !!sibling->renderer();
             sibling->reattach();
             // If the reattach didn't toggle the visibility of the whitespace we don't
             // need to continue reattaching siblings since they won't toggle visibility
             // either.
-            if (hadRenderer == sibling->hasRenderer())
+            if (hadRenderer == !!sibling->renderer())
                 return;
         } else if (sibling->renderer()) {
             return;

@@ -509,7 +509,6 @@ public:
         else
             m_data.m_renderer = renderer;
     }
-    bool hasRenderer() const { return renderer(); }
 
     // Use these two methods with caution.
     RenderBox* renderBox() const;
