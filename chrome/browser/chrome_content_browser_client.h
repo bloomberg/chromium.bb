@@ -200,7 +200,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       content::RenderFrameHost* render_frame_host,
-      base::Closure& callback) OVERRIDE;
+      const base::Closure& callback) OVERRIDE;
   virtual blink::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_origin,

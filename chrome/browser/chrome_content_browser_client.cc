@@ -2029,7 +2029,7 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     content::RenderFrameHost* render_frame_host,
-    base::Closure& callback) {
+    const base::Closure& callback) {
 #if defined(ENABLE_NOTIFICATIONS)
   // Skip showing the infobar if the request comes from an extension, and that
   // extension has the 'notify' permission. (If the extension does not have the
