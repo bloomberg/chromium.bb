@@ -449,6 +449,13 @@ crbug.com/235110 [ Mac ] virtual/softwarecompositing/z-order/collect-layers-does
 crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ Crash ]
 crbug.com/376441 [ Mac ] virtual/softwarecompositing/lots-of-img-layers.html [ Crash ]
 
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/iframes/composited-parent-iframe.html [ NeedsRebaseline ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/iframes/connect-compositing-iframe-delayed.html [ NeedsRebaseline ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/iframes/connect-compositing-iframe3.html [ NeedsRebaseline ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/iframes/resizer.html [ NeedsRebaseline ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing/update-paint-phases.html [ NeedsRebaseline ]
+
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 
