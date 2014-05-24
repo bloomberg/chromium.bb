@@ -96,13 +96,21 @@ def _GetRevision(options):
   return revision
 
 
-def RunTestSuites(options, suites):
+def RunTestSuites(options, suites, suites_options=None):
   """Manages an invocation of test_runner.py for gtests.
 
   Args:
     options: options object.
     suites: List of suite names to run.
+    suites_options: Command line options dictionary for particular suites.
+                    For example,
+                    {'content_browsertests', ['--num_retries=1', '--release']}
+                    will add the options only to content_browsertests.
   """
+
+  if not suites_options:
+    suites_options = {}
+
   args = ['--verbose']
   if options.target == 'Release':
     args.append('--release')
@@ -110,9 +118,11 @@ def RunTestSuites(options, suites):
     args.append('--tool=asan')
   if options.gtest_filter:
     args.append('--gtest-filter=%s' % options.gtest_filter)
+
   for suite in suites:
     bb_annotations.PrintNamedStep(suite)
     cmd = ['build/android/test_runner.py', 'gtest', '-s', suite] + args
+    cmd += suites_options.get(suite, [])
     if suite == 'content_browsertests':
       cmd.append('--num_retries=1')
     RunCmd(cmd)
