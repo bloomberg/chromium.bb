@@ -490,6 +490,13 @@ public:
     virtual void removePageOverlay(WebPageOverlay*) = 0;
 
 
+    // i18n -----------------------------------------------------------------
+
+    // Inform the WebView that the accept languages have changed.
+    // If the WebView wants to get the accept languages value, it will have
+    // to call the WebViewClient::acceptLanguages().
+    virtual void acceptLanguagesChanged() = 0;
+
     // Testing functionality for TestRunner ---------------------------------
 
 protected:

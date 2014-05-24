@@ -900,6 +900,10 @@ void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
     bounds = boundingBox;
 }
 
+void WebViewImpl::acceptLanguagesChanged()
+{
+}
+
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
     ASSERT((event.type == WebInputEvent::RawKeyDown)

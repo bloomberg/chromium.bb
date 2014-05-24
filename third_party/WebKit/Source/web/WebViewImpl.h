@@ -259,6 +259,7 @@ public:
     virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
     virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
     virtual void getSelectionRootBounds(WebRect& bounds) const OVERRIDE;
+    virtual void acceptLanguagesChanged() OVERRIDE;
 
     // WebViewImpl
 
