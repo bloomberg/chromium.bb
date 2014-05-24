@@ -323,8 +323,10 @@ exposay_layout(struct desktop_shell *shell, struct shell_output *shell_output)
 		i++;
 	}
 
-	if (highlight)
+	if (highlight) {
+		shell->exposay.focus_current = NULL;
 		exposay_highlight_surface(shell, highlight);
+	}
 
 	weston_compositor_schedule_repaint(shell->compositor);
 
