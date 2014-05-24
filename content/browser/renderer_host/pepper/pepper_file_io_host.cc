@@ -237,10 +237,9 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
 
 void PepperFileIOHost::DidOpenInternalFile(
     ppapi::host::ReplyMessageContext reply_context,
-    base::File::Error result,
-    base::PlatformFile file,
+    base::File file,
     const base::Closure& on_close_callback) {
-  if (result == base::File::FILE_OK) {
+  if (file.IsValid()) {
     on_close_callback_ = on_close_callback;
 
     if (FileOpenForWrite(open_flags_) && file_system_host_->ChecksQuota()) {
@@ -251,13 +250,16 @@ void PepperFileIOHost::DidOpenInternalFile(
           base::Bind(&PepperFileIOHost::DidOpenQuotaFile,
                      weak_factory_.GetWeakPtr(),
                      reply_context,
-                     file));
+                     base::Passed(&file)));
       return;
     }
   }
 
-  ExecutePlatformOpenFileCallback(
-      reply_context, result, base::PassPlatformFile(&file), true);
+  DCHECK(!file_.IsValid());
+  base::File::Error error =
+      file.IsValid() ? base::File::FILE_OK : file.error_details();
+  file_.SetFile(file.Pass());
+  OnOpenProxyCallback(reply_context, error);
 }
 
 void PepperFileIOHost::GotResolvedRenderProcessId(
@@ -357,12 +359,14 @@ int32_t PepperFileIOHost::OnHostMsgClose(
 
 void PepperFileIOHost::DidOpenQuotaFile(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFile file,
+    base::File file,
     int64_t max_written_offset) {
+  DCHECK(!file_.IsValid());
+  DCHECK(file.IsValid());
   max_written_offset_ = max_written_offset;
+  file_.SetFile(file.Pass());
 
-  ExecutePlatformOpenFileCallback(
-      reply_context, base::File::FILE_OK, base::PassPlatformFile(&file), true);
+  OnOpenProxyCallback(reply_context, base::File::FILE_OK);
 }
 
 void PepperFileIOHost::DidCloseFile(base::File::Error /*error*/) {
@@ -414,18 +418,6 @@ void PepperFileIOHost::ExecutePlatformGeneralCallback(
   reply_context.params.set_result(ppapi::FileErrorToPepperError(error_code));
   host()->SendReply(reply_context, PpapiPluginMsg_FileIO_GeneralReply());
   state_manager_.SetOperationFinished();
-}
-
-// TODO(rvargas): this method should go away when FileApi moves to use File.
-void PepperFileIOHost::ExecutePlatformOpenFileCallback(
-    ppapi::host::ReplyMessageContext reply_context,
-    base::File::Error error_code,
-    base::PassPlatformFile file,
-    bool unused_created) {
-  DCHECK(!file_.IsValid());
-  file_.SetFile(base::File(file.ReleaseValue()));
-
-  OnOpenProxyCallback(reply_context, error_code);
 }
 
 void PepperFileIOHost::OnOpenProxyCallback(

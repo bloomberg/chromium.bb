@@ -350,16 +350,15 @@ OperationID FileSystemOperationRunner::OpenFile(
   BeginOperationScoper scope;
   OperationHandle handle = BeginOperation(operation, scope.AsWeakPtr());
   if (!operation) {
-    DidOpenFile(handle, callback, error, base::kInvalidPlatformFileValue,
-                base::Closure());
+    DidOpenFile(handle, callback, base::File(error), base::Closure());
     return handle.id;
   }
   if (file_flags &
-      (base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_OPEN_ALWAYS |
-       base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_TRUNCATED |
-       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-       base::PLATFORM_FILE_DELETE_ON_CLOSE |
-       base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
+      (base::File::FLAG_CREATE | base::File::FLAG_OPEN_ALWAYS |
+       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_OPEN_TRUNCATED |
+       base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_WRITE |
+       base::File::FLAG_DELETE_ON_CLOSE |
+       base::File::FLAG_WRITE_ATTRIBUTES)) {
     PrepareForWrite(handle.id, url);
   } else {
     PrepareForRead(handle.id, url);
@@ -579,18 +578,17 @@ void FileSystemOperationRunner::DidWrite(
 void FileSystemOperationRunner::DidOpenFile(
     const OperationHandle& handle,
     const OpenFileCallback& callback,
-    base::File::Error rv,
-    base::PlatformFile file,
+    base::File file,
     const base::Closure& on_close_callback) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(&FileSystemOperationRunner::DidOpenFile,
-                              AsWeakPtr(), handle, callback, rv, file,
+                              AsWeakPtr(), handle, callback, Passed(&file),
                               on_close_callback));
     return;
   }
-  callback.Run(rv, file, on_close_callback);
+  callback.Run(file.Pass(), on_close_callback);
   FinishOperation(handle.id);
 }
 

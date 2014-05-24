@@ -351,7 +351,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 
     switch (file_util->GetFileInfo(context.get(), url,
                                    &file_info, &platform_path)) {
-      case base::PLATFORM_FILE_OK: {
+      case base::File::FILE_OK: {
         if (!file_info.is_directory) {
           RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                        SYNC_FILE_TYPE_FILE));
@@ -372,7 +372,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
         }
         break;
       }
-      case base::PLATFORM_FILE_ERROR_NOT_FOUND: {
+      case base::File::FILE_ERROR_NOT_FOUND: {
         // File represented by |url| has already been deleted. Since we cannot
         // figure out if this file was directory or not from the URL, file
         // type is treated as SYNC_FILE_TYPE_UNKNOWN.
@@ -383,7 +383,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
                                      SYNC_FILE_TYPE_UNKNOWN));
         break;
       }
-      case base::PLATFORM_FILE_ERROR_FAILED:
+      case base::File::FILE_ERROR_FAILED:
       default:
         // TODO(nhiroki): handle file access error (http://crbug.com/155251).
         LOG(WARNING) << "Failed to access local file.";

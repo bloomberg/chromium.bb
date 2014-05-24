@@ -79,11 +79,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   void ExecutePlatformGeneralCallback(
       ppapi::host::ReplyMessageContext reply_context,
       base::File::Error error_code);
-  void ExecutePlatformOpenFileCallback(
-      ppapi::host::ReplyMessageContext reply_context,
-      base::File::Error error_code,
-      base::PassPlatformFile file,
-      bool unused_created);
 
   void OnOpenProxyCallback(ppapi::host::ReplyMessageContext reply_context,
                            base::File::Error error_code);
@@ -93,8 +88,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       int platform_file_flags,
       UIThreadStuff ui_thread_stuff);
   void DidOpenInternalFile(ppapi::host::ReplyMessageContext reply_context,
-                           base::File::Error result,
-                           base::PlatformFile file,
+                           base::File file,
                            const base::Closure& on_close_callback);
   void GotResolvedRenderProcessId(
       ppapi::host::ReplyMessageContext reply_context,
@@ -103,7 +97,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       base::ProcessId resolved_render_process_id);
 
   void DidOpenQuotaFile(ppapi::host::ReplyMessageContext reply_context,
-                        base::PlatformFile file,
+                        base::File file,
                         int64_t max_written_offset);
   bool CallSetLength(ppapi::host::ReplyMessageContext reply_context,
                      int64_t length);

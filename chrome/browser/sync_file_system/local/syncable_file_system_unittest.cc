@@ -21,7 +21,6 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 
-using base::PlatformFileError;
 using content::SandboxFileSystemTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;

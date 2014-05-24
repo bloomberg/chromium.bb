@@ -203,9 +203,8 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
   DCHECK(SetPendingOperationType(kOperationOpenFile));
 
   if (file_flags &
-      (base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN)) {
-    callback.Run(base::File::FILE_ERROR_FAILED,
-                 base::kInvalidPlatformFileValue,
+      (base::File::FLAG_TEMPORARY | base::File::FLAG_HIDDEN)) {
+    callback.Run(base::File(base::File::FILE_ERROR_FAILED),
                  base::Closure());
     return;
   }
@@ -214,8 +213,7 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
       base::Bind(&FileSystemOperationImpl::DoOpenFile,
                  weak_factory_.GetWeakPtr(),
                  url, callback, file_flags),
-      base::Bind(callback, base::File::FILE_ERROR_FAILED,
-                 base::kInvalidPlatformFileValue,
+      base::Bind(callback, Passed(base::File(base::File::FILE_ERROR_FAILED)),
                  base::Closure()));
 }
 
@@ -547,17 +545,7 @@ void FileSystemOperationImpl::DidOpenFile(
     const OpenFileCallback& callback,
     base::File file,
     const base::Closure& on_close_callback) {
-  // TODO(rvargas): Remove PlatformFile from FileSystemOperation.
-  base::File::Error error;
-  base::PlatformFile platform_file;
-  if (file.IsValid()) {
-    error = base::File::FILE_OK;
-    platform_file = file.TakePlatformFile();
-  } else {
-    error = file.error_details();
-    platform_file = base::kInvalidPlatformFileValue;
-  }
-  callback.Run(error, platform_file, on_close_callback);
+  callback.Run(file.Pass(), on_close_callback);
 }
 
 bool FileSystemOperationImpl::SetPendingOperationType(OperationType type) {

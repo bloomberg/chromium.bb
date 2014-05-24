@@ -271,8 +271,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   void DidOpenFile(
       const OperationHandle& handle,
       const OpenFileCallback& callback,
-      base::File::Error rv,
-      base::PlatformFile file,
+      base::File file,
       const base::Closure& on_close_callback);
   void DidCreateSnapshot(
       const OperationHandle& handle,
