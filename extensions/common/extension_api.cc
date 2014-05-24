@@ -22,7 +22,6 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/extensions_api_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -227,34 +226,7 @@ void ExtensionAPI::InitDefaultConfiguration() {
   for (size_t i = 0; i < arraysize(names); ++i)
     RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
 
-  // Schemas to be loaded from resources.
-  CHECK(unloaded_schemas_.empty());
-  RegisterSchemaResource("accessibilityPrivate",
-                         IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE);
-  RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
-  RegisterSchemaResource("browserAction", IDR_EXTENSION_API_JSON_BROWSERACTION);
-  RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
-  RegisterSchemaResource("declarativeContent",
-      IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
-  RegisterSchemaResource("declarativeWebRequest",
-      IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
-  RegisterSchemaResource("fileBrowserHandler",
-      IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
-  RegisterSchemaResource("inputMethodPrivate",
-      IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
-  RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
-  RegisterSchemaResource("pageActions", IDR_EXTENSION_API_JSON_PAGEACTIONS);
-  RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
-  RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
-  RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
-  RegisterSchemaResource("scriptBadge", IDR_EXTENSION_API_JSON_SCRIPTBADGE);
-  RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
-  RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
-  RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
-  RegisterSchemaResource("types.private", IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
-  RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
-  RegisterSchemaResource("webViewRequest",
-      IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
+  ExtensionsClient::Get()->RegisterAPISchemaResources(this);
 
   default_configuration_initialized_ = true;
 }

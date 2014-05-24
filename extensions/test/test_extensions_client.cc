@@ -85,6 +85,9 @@ base::StringPiece TestExtensionsClient::GetAPISchema(
   return base::StringPiece();
 }
 
+void TestExtensionsClient::RegisterAPISchemaResources(ExtensionAPI* api) const {
+}
+
 bool TestExtensionsClient::ShouldSuppressFatalErrors() const {
   return true;
 }

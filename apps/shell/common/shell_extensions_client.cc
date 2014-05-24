@@ -207,6 +207,10 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
   return extensions::core_api::GeneratedSchemas::Get(name);
 }
 
+void ShellExtensionsClient::RegisterAPISchemaResources(
+    extensions::ExtensionAPI* api) const {
+}
+
 bool ShellExtensionsClient::ShouldSuppressFatalErrors() const { return true; }
 
 }  // namespace apps

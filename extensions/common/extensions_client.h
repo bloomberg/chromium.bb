@@ -18,6 +18,7 @@ namespace extensions {
 
 class APIPermissionSet;
 class Extension;
+class ExtensionAPI;
 class FeatureProvider;
 class JSONFeatureProviderSource;
 class ManifestPermissionSet;
@@ -82,8 +83,12 @@ class ExtensionsClient {
   // Returns true iff a schema named |name| is generated.
   virtual bool IsAPISchemaGenerated(const std::string& name) const = 0;
 
-  // Gets the API schema named |name|.
+  // Gets the generated API schema named |name|.
   virtual base::StringPiece GetAPISchema(const std::string& name) const = 0;
+
+  // Register non-generated API schema resources with the global ExtensionAPI.
+  // Called when the ExtensionAPI is lazily initialized.
+  virtual void RegisterAPISchemaResources(ExtensionAPI* api) const = 0;
 
   // Determines if certain fatal extensions errors should be surpressed
   // (i.e., only logged) or allowed (i.e., logged before crashing).

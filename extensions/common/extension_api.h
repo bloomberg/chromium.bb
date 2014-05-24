@@ -60,8 +60,11 @@ class ExtensionAPI {
   ExtensionAPI();
   virtual ~ExtensionAPI();
 
+  // Add a (non-generated) API schema resource.
   void RegisterSchemaResource(const std::string& api_name, int resource_id);
 
+  // Add a FeatureProvider for APIs. The features are used to specify
+  // dependencies and constraints on the availability of APIs.
   void RegisterDependencyProvider(const std::string& name,
                                   const FeatureProvider* provider);
 

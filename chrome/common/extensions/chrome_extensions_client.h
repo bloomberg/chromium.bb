@@ -45,6 +45,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   virtual bool IsAPISchemaGenerated(const std::string& name) const OVERRIDE;
   virtual base::StringPiece GetAPISchema(const std::string& name) const
       OVERRIDE;
+  virtual void RegisterAPISchemaResources(ExtensionAPI* api) const OVERRIDE;
   virtual bool ShouldSuppressFatalErrors() const OVERRIDE;
 
   // Get the LazyInstance for ChromeExtensionsClient.

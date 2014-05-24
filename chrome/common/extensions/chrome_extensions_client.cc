@@ -17,6 +17,7 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_api.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/features/feature_provider.h"
@@ -33,6 +34,9 @@
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/common_resources.h"
+#if defined(ENABLE_EXTENSIONS)
+#include "grit/extensions_api_resources.h"
+#endif
 #include "grit/extensions_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -229,6 +233,42 @@ base::StringPiece ChromeExtensionsClient::GetAPISchema(
     return core_api::GeneratedSchemas::Get(name);
 
   return apps::api::GeneratedSchemas::Get(name);
+}
+
+void ChromeExtensionsClient::RegisterAPISchemaResources(
+    ExtensionAPI* api) const {
+#if defined(ENABLE_EXTENSIONS)
+  api->RegisterSchemaResource("accessibilityPrivate",
+                              IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE);
+  api->RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
+  api->RegisterSchemaResource("browserAction",
+                              IDR_EXTENSION_API_JSON_BROWSERACTION);
+  api->RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
+  api->RegisterSchemaResource("declarativeContent",
+                              IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
+  api->RegisterSchemaResource("declarativeWebRequest",
+                              IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
+  api->RegisterSchemaResource("fileBrowserHandler",
+                              IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
+  api->RegisterSchemaResource("inputMethodPrivate",
+                              IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
+  api->RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
+  api->RegisterSchemaResource("pageActions",
+                              IDR_EXTENSION_API_JSON_PAGEACTIONS);
+  api->RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
+  api->RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
+  api->RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
+  api->RegisterSchemaResource("scriptBadge",
+                              IDR_EXTENSION_API_JSON_SCRIPTBADGE);
+  api->RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
+  api->RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
+  api->RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
+  api->RegisterSchemaResource("types.private",
+                              IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
+  api->RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
+  api->RegisterSchemaResource("webViewRequest",
+                              IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
