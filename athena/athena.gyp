@@ -22,8 +22,12 @@
       'sources': [
         # All .cc, .h under athena, except unittests
         'athena_export.h',
-        'screen/background_controller.h',
+        'home/home_card_delegate_view.cc',
+        'home/home_card_delegate_view.h',
+        'home/home_card_impl.cc',
+        'home/public/home_card.h',
         'screen/background_controller.cc',
+        'screen/background_controller.h',
         'screen/public/screen_manager.h',
         'screen/screen_manager_impl.cc',
         'wm/public/window_manager.h',

@@ -1,0 +1,6 @@
+include_rules = [
+  "+athena/screen/public",
+  "+ui/aura",
+  "+ui/views",
+  "+ui/wm/core",
+]

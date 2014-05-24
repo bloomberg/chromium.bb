@@ -5,6 +5,8 @@
 #ifndef ATHENA_SCREEN_PUBLIC_SCREEN_MANAGER_H_
 #define ATHENA_SCREEN_PUBLIC_SCREEN_MANAGER_H_
 
+#include <string>
+
 #include "athena/athena_export.h"
 
 namespace aura {
@@ -17,8 +19,9 @@ class ImageSkia;
 
 namespace athena {
 
-// Mananges screen and UI components on the screen such as background,
-// home card, etc.
+// Mananges basic UI components on the screen such as background, and provide
+// API for other UI components, such as window manager, home card, to
+// create and manage their windows on the screen.
 class ATHENA_EXPORT ScreenManager {
  public:
   // Creates, returns and deletes the singleton object of the ScreenManager
@@ -29,8 +32,12 @@ class ATHENA_EXPORT ScreenManager {
 
   virtual ~ScreenManager() {}
 
-  // Returns the container window for window on the screen.
-  virtual aura::Window* GetContainerWindow() = 0;
+  // Creates the container window that is used when creating a normal
+  // widget without specific parent.
+  virtual aura::Window* CreateDefaultContainer(const std::string& name) = 0;
+
+  // Creates the container window on the screen.
+  virtual aura::Window* CreateContainer(const std::string& name) = 0;
 
   // Return the context object to be used for widget creation.
   virtual aura::Window* GetContext() = 0;

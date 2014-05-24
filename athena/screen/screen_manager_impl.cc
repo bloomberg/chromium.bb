@@ -73,7 +73,8 @@ class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(AthenaWindowTreeClient);
 };
 
-aura::Window* CreateContainer(aura::Window* parent, const std::string& name) {
+aura::Window* CreateContainerInternal(aura::Window* parent,
+                                      const std::string& name) {
   aura::Window* container = new aura::Window(NULL);
   container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   container->SetName(name);
@@ -90,15 +91,16 @@ class ScreenManagerImpl : public ScreenManager {
   void Init();
 
  private:
-  // Screenmanager:
-  virtual aura::Window* GetContainerWindow() OVERRIDE { return container_; }
+  // ScreenManager:
+  virtual aura::Window* CreateDefaultContainer(
+      const std::string& name) OVERRIDE;
+  virtual aura::Window* CreateContainer(const std::string& name) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE;
 
   aura::Window* root_window_;
-  // A container used for apps/web windows.
-  aura::Window* container_;
   aura::Window* background_window_;
+
   scoped_ptr<BackgroundController> background_controller_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
@@ -107,14 +109,23 @@ class ScreenManagerImpl : public ScreenManager {
 
 void ScreenManagerImpl::Init() {
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
-  background_window_ = CreateContainer(root_window_, "AthenaBackground");
+  background_window_ =
+      CreateContainerInternal(root_window_, "AthenaBackground");
   background_window_->SetLayoutManager(
       new FillLayoutManager(background_window_));
   background_controller_.reset(new BackgroundController(background_window_));
-  container_ = CreateContainer(root_window_, "AthenaContainer");
+}
 
-  window_tree_client_.reset(new AthenaWindowTreeClient(container_));
+aura::Window* ScreenManagerImpl::CreateDefaultContainer(
+    const std::string& name) {
+  aura::Window* container = CreateContainerInternal(root_window_, name);
+  window_tree_client_.reset(new AthenaWindowTreeClient(container));
   aura::client::SetWindowTreeClient(root_window_, window_tree_client_.get());
+  return container;
+}
+
+aura::Window* ScreenManagerImpl::CreateContainer(const std::string& name) {
+  return CreateContainerInternal(root_window_, name);
 }
 
 void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {

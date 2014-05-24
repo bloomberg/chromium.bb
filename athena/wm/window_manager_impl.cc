@@ -12,7 +12,7 @@
 namespace athena {
 namespace {
 
-class WindowManagerImpl : public WindowManager {
+class WindowManagerImpl : public WindowManager, public aura::WindowObserver {
  public:
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
@@ -20,7 +20,13 @@ class WindowManagerImpl : public WindowManager {
   void Layout();
 
  private:
-  aura::Window* container_;
+  // aura::WindowObserver
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    if (window == container_)
+      container_.reset();
+  }
+
+  scoped_ptr<aura::Window> container_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
@@ -56,16 +62,23 @@ class AthenaContainerLayoutManager : public aura::LayoutManager {
 };
 
 WindowManagerImpl::WindowManagerImpl()
-    : container_(ScreenManager::Get()->GetContainerWindow()) {
+    : container_(
+          ScreenManager::Get()->CreateDefaultContainer("MainContainer")) {
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
+  container_->AddObserver(this);
   instance = this;
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
+  if (container_)
+    container_->RemoveObserver(this);
+  container_.reset();
   instance = NULL;
 }
 
 void WindowManagerImpl::Layout() {
+  if (!container_)
+    return;
   gfx::Rect bounds = gfx::Rect(container_->bounds().size());
   // Just make it small a bit so that the background is visible.
   bounds.Inset(10, 10, 10, 10);

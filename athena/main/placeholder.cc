@@ -16,6 +16,7 @@
 #include "ui/views/widget/widget.h"
 
 void CreateTestWindows() {
+  const int kAppWindowBackgroundColor = 0xFFDDDDDD;
   views::Widget* test_app_widget = new views::Widget;
   // Athena doesn't have frame yet.
   views::Widget::InitParams params(
@@ -25,7 +26,7 @@ void CreateTestWindows() {
   views::Label* label = new views::Label;
   label->SetText(base::ASCIIToUTF16("AppWindow"));
   label->set_background(
-      views::Background::CreateSolidBackground(SK_ColorWHITE));
+      views::Background::CreateSolidBackground(kAppWindowBackgroundColor));
   test_app_widget->SetContentsView(label);
   test_app_widget->Show();
 }
