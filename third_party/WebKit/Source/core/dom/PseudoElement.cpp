@@ -78,7 +78,7 @@ void PseudoElement::dispose()
     ASSERT(!previousSibling());
 
     detach();
-    RefPtr<Element> parent = parentOrShadowHostElement();
+    RefPtrWillBeRawPtr<Element> parent = parentOrShadowHostElement();
     setParentOrShadowHostNode(0);
     removedFrom(parent.get());
 }

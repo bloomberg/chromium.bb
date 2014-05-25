@@ -364,7 +364,7 @@ private:
     virtual void performTask(ExecutionContext* context) OVERRIDE
     {
         Document* document = toDocument(context);
-        if (RefPtr<Element> element = document->autofocusElement()) {
+        if (RefPtrWillBeRawPtr<Element> element = document->autofocusElement()) {
             document->setAutofocusElement(0);
             element->focus();
         }
@@ -961,7 +961,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
             exceptionState.throwDOMException(NamespaceError, "The imported node has an invalid namespace.");
             return nullptr;
         }
-        RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
+        RefPtrWillBeRawPtr<Element> newElement = createElement(oldElement->tagQName(), false);
 
         newElement->cloneDataFromElement(*oldElement);
 
@@ -3467,7 +3467,7 @@ void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
     m_hoverNode = newHoverNode;
 }
 
-void Document::setActiveHoverElement(PassRefPtr<Element> newActiveElement)
+void Document::setActiveHoverElement(PassRefPtrWillBeRawPtr<Element> newActiveElement)
 {
     if (!newActiveElement) {
         m_activeHoverElement.clear();
@@ -3538,11 +3538,11 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     setAnnotatedRegionsDirty(false);
 }
 
-bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, FocusType type)
+bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedElement, FocusType type)
 {
     m_clearFocusedElementTimer.stop();
 
-    RefPtr<Element> newFocusedElement = prpNewFocusedElement;
+    RefPtrWillBeRawPtr<Element> newFocusedElement = prpNewFocusedElement;
 
     // Make sure newFocusedNode is actually in this document
     if (newFocusedElement && (newFocusedElement->document() != this))

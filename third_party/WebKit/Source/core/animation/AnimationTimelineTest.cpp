@@ -98,9 +98,9 @@ protected:
 
     virtual void TearDown()
     {
-        timeline.release();
         document.release();
         element.release();
+        timeline.release();
     }
 
     void updateClockAndService(double time)
@@ -110,7 +110,7 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtr<Element> element;
+    RefPtrWillBePersistent<Element> element;
     RefPtrWillBePersistent<AnimationTimeline> timeline;
     Timing timing;
     MockPlatformTiming* platformTiming;
