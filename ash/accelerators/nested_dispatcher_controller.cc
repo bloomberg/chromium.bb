@@ -1,34 +1,30 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/nested_accelerator_controller.h"
+#include "ash/accelerators/nested_dispatcher_controller.h"
 
+#include "ash/accelerators/accelerator_dispatcher.h"
+#include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "base/run_loop.h"
-#include "ui/wm/core/nested_accelerator_delegate.h"
-#include "ui/wm/core/nested_accelerator_dispatcher.h"
 
-namespace wm {
+namespace ash {
 
-NestedAcceleratorController::NestedAcceleratorController(
-    NestedAcceleratorDelegate* delegate)
-    : dispatcher_delegate_(delegate) {
-  DCHECK(delegate);
+NestedDispatcherController::NestedDispatcherController() {
 }
 
-NestedAcceleratorController::~NestedAcceleratorController() {
+NestedDispatcherController::~NestedDispatcherController() {
 }
 
-void NestedAcceleratorController::RunWithDispatcher(
+void NestedDispatcherController::RunWithDispatcher(
     base::MessagePumpDispatcher* nested_dispatcher) {
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
-  scoped_ptr<NestedAcceleratorDispatcher> old_accelerator_dispatcher =
+  scoped_ptr<AcceleratorDispatcher> old_accelerator_dispatcher =
       accelerator_dispatcher_.Pass();
-  accelerator_dispatcher_ = NestedAcceleratorDispatcher::Create(
-      dispatcher_delegate_.get(), nested_dispatcher);
+  accelerator_dispatcher_ = AcceleratorDispatcher::Create(nested_dispatcher);
 
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().
@@ -39,10 +35,10 @@ void NestedAcceleratorController::RunWithDispatcher(
   accelerator_dispatcher_ = old_accelerator_dispatcher.Pass();
 }
 
-void NestedAcceleratorController::QuitNestedMessageLoop() {
+void NestedDispatcherController::QuitNestedMessageLoop() {
   CHECK(!quit_closure_.is_null());
   quit_closure_.Run();
   accelerator_dispatcher_.reset();
 }
 
-}  // namespace wm
+}  // namespace ash

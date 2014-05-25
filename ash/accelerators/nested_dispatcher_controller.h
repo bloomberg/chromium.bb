@@ -1,29 +1,28 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_CORE_NESTED_ACCELERATOR_CONTROLLER_H_
-#define UI_WM_CORE_NESTED_ACCELERATOR_CONTROLLER_H_
+#ifndef ASH_ACCELERATORS_NESTED_DISPATCHER_CONTROLLER_H_
+#define ASH_ACCELERATORS_NESTED_DISPATCHER_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/wm/public/dispatcher_client.h"
-#include "ui/wm/wm_export.h"
 
-namespace wm {
+namespace ash {
 
-class NestedAcceleratorDelegate;
-class NestedAcceleratorDispatcher;
+class AcceleratorDispatcher;
 
 // Creates a dispatcher which wraps another dispatcher.
 // The outer dispatcher runs first and performs ash specific handling.
 // If it does not consume the event it forwards the event to the nested
 // dispatcher.
-class WM_EXPORT NestedAcceleratorController
+class ASH_EXPORT NestedDispatcherController
     : public aura::client::DispatcherClient {
  public:
-  explicit NestedAcceleratorController(NestedAcceleratorDelegate* delegate);
-  virtual ~NestedAcceleratorController();
+  NestedDispatcherController();
+  virtual ~NestedDispatcherController();
 
   // aura::client::DispatcherClient:
   virtual void RunWithDispatcher(
@@ -32,12 +31,11 @@ class WM_EXPORT NestedAcceleratorController
 
  private:
   base::Closure quit_closure_;
-  scoped_ptr<NestedAcceleratorDispatcher> accelerator_dispatcher_;
-  scoped_ptr<NestedAcceleratorDelegate> dispatcher_delegate_;
+  scoped_ptr<AcceleratorDispatcher> accelerator_dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorController);
+  DISALLOW_COPY_AND_ASSIGN(NestedDispatcherController);
 };
 
-}  // namespace wm
+}  // namespace ash
 
-#endif  // UI_WM_CORE_NESTED_ACCELERATOR_CONTROLLER_H_
+#endif  // ASH_ACCELERATORS_NESTED_DISPATCHER_CONTROLLER_H_

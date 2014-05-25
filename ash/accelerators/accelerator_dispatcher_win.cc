@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/nested_accelerator_dispatcher.h"
+#include "ash/accelerators/accelerator_dispatcher.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/run_loop.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/nested_accelerator_delegate.h"
 
 using base::MessagePumpDispatcher;
 
-namespace wm {
+namespace ash {
 
 namespace {
 
@@ -23,16 +22,15 @@ bool IsKeyEvent(const MSG& msg) {
 
 }  // namespace
 
-class NestedAcceleratorDispatcherWin : public NestedAcceleratorDispatcher,
-                                       public MessagePumpDispatcher {
+class AcceleratorDispatcherWin : public AcceleratorDispatcher,
+                                 public MessagePumpDispatcher {
  public:
-  NestedAcceleratorDispatcherWin(NestedAcceleratorDelegate* delegate,
-                                 MessagePumpDispatcher* nested)
-      : NestedAcceleratorDispatcher(delegate), nested_dispatcher_(nested) {}
-  virtual ~NestedAcceleratorDispatcherWin() {}
+  explicit AcceleratorDispatcherWin(MessagePumpDispatcher* nested)
+      : nested_dispatcher_(nested) {}
+  virtual ~AcceleratorDispatcherWin() {}
 
  private:
-  // NestedAcceleratorDispatcher:
+  // AcceleratorDispatcher:
   virtual scoped_ptr<base::RunLoop> CreateRunLoop() OVERRIDE {
     return scoped_ptr<base::RunLoop>(new base::RunLoop(this));
   }
@@ -41,10 +39,10 @@ class NestedAcceleratorDispatcherWin : public NestedAcceleratorDispatcher,
   virtual uint32_t Dispatch(const MSG& event) OVERRIDE {
     if (IsKeyEvent(event)) {
       ui::KeyEvent key_event(event, false);
-      if (!delegate_->ShouldProcessEventNow(key_event))
+      if (MenuClosedForPossibleAccelerator(key_event))
         return POST_DISPATCH_QUIT_LOOP;
 
-      if (delegate_->ProcessEvent(key_event))
+      if (AcceleratorProcessedForKeyEvent(key_event))
         return POST_DISPATCH_NONE;
     }
 
@@ -54,14 +52,13 @@ class NestedAcceleratorDispatcherWin : public NestedAcceleratorDispatcher,
 
   MessagePumpDispatcher* nested_dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDispatcherWin);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcherWin);
 };
 
-scoped_ptr<NestedAcceleratorDispatcher> NestedAcceleratorDispatcher::Create(
-    NestedAcceleratorDelegate* delegate,
+scoped_ptr<AcceleratorDispatcher> AcceleratorDispatcher::Create(
     MessagePumpDispatcher* nested_dispatcher) {
-  return scoped_ptr<NestedAcceleratorDispatcher>(
-      new NestedAcceleratorDispatcherWin(delegate, nested_dispatcher));
+  return scoped_ptr<AcceleratorDispatcher>(
+      new AcceleratorDispatcherWin(nested_dispatcher));
 }
 
-}  // namespace wm
+}  // namespace ash
