@@ -31,20 +31,7 @@
 #include "config.h"
 #include "core/animation/AnimatableRepeatable.h"
 
-namespace {
-
-size_t greatestCommonDivisor(size_t a, size_t b)
-{
-    return b ? greatestCommonDivisor(b, a % b) : a;
-}
-
-size_t lowestCommonMultiple(size_t a, size_t b)
-{
-    ASSERT(a && b);
-    return a / greatestCommonDivisor(a, b) * b;
-}
-
-} // namespace
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
@@ -54,6 +41,7 @@ bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* v
     const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& toValues = toAnimatableRepeatable(value)->m_values;
     ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
     size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+    ASSERT(size > 0);
     for (size_t i = 0; i < size; ++i) {
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();
@@ -70,6 +58,7 @@ bool AnimatableRepeatable::interpolateLists(const WillBeHeapVector<RefPtrWillBeM
     ASSERT(interpolatedValues.isEmpty());
     ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
     size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+    ASSERT(size > 0);
     for (size_t i = 0; i < size; ++i) {
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();

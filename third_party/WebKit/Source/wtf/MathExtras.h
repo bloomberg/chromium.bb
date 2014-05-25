@@ -273,6 +273,16 @@ inline bool isWithinIntRange(float x)
     return x > static_cast<float>(std::numeric_limits<int>::min()) && x < static_cast<float>(std::numeric_limits<int>::max());
 }
 
+static size_t greatestCommonDivisor(size_t a, size_t b)
+{
+    return b ? greatestCommonDivisor(b, a % b) : a;
+}
+
+inline size_t lowestCommonMultiple(size_t a, size_t b)
+{
+    return a && b ? a / greatestCommonDivisor(a, b) * b : 0;
+}
+
 #ifndef UINT64_C
 #if COMPILER(MSVC)
 #define UINT64_C(c) c ## ui64

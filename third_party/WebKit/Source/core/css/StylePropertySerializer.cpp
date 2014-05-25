@@ -702,47 +702,64 @@ String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) c
     return result.isEmpty() ? String() : result.toString();
 }
 
+static void buildSingleBackgroundRepeatValue(StringBuilder& builder, const CSSValue& repeatXValue, const CSSValue& repeatYValue)
+{
+    CSSValueID repeatXValueId = toCSSPrimitiveValue(repeatXValue).getValueID();
+    CSSValueID repeatYValueId = toCSSPrimitiveValue(repeatYValue).getValueID();
+    if (repeatXValueId == repeatYValueId) {
+        builder.append(repeatXValue.cssText());
+    } else if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
+        builder.append("repeat-y");
+    } else if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
+        builder.append("repeat-x");
+    } else {
+        builder.append(repeatXValue.cssText());
+        builder.append(" ");
+        builder.append(repeatYValue.cssText());
+    }
+}
+
 String StylePropertySerializer::backgroundRepeatPropertyValue() const
 {
     RefPtrWillBeRawPtr<CSSValue> repeatX = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
     RefPtrWillBeRawPtr<CSSValue> repeatY = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
     if (!repeatX || !repeatY)
         return String();
-    if (repeatX->cssValueType() != repeatY->cssValueType())
-        return String();
     if (m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatX) != m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatY))
         return String();
-
-    StringBuilder builder;
-    switch (repeatX->cssValueType()) {
-    case CSSValue::CSS_INHERIT:
-    case CSSValue::CSS_INITIAL:
+    if (repeatX->cssValueType() == repeatY->cssValueType()
+        && (repeatX->cssValueType() == CSSValue::CSS_INITIAL || repeatX->cssValueType() == CSSValue::CSS_INHERIT)) {
         return repeatX->cssText();
+    }
 
-    case CSSValue::CSS_PRIMITIVE_VALUE:
-        {
-            CSSValueID repeatXValueId = toCSSPrimitiveValue(repeatX.get())->getValueID();
-            CSSValueID repeatYValueId = toCSSPrimitiveValue(repeatY.get())->getValueID();
-            if (repeatXValueId == repeatYValueId)
-                return repeatX->cssText();
+    RefPtrWillBeRawPtr<CSSValueList> repeatXList;
+    if (repeatX->cssValueType() == CSSValue::CSS_PRIMITIVE_VALUE) {
+        repeatXList = CSSValueList::createCommaSeparated();
+        repeatXList->append(repeatX);
+    } else if (repeatX->cssValueType() == CSSValue::CSS_VALUE_LIST) {
+        repeatXList = toCSSValueList(repeatX.get());
+    } else {
+        return String();
+    }
 
-            if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
-                builder.append("repeat-y");
-                break;
-            }
-            if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
-                builder.append("repeat-x");
-                break;
-            }
-            // Fall through intentional.
-        }
-    case CSSValue::CSS_CUSTOM:
-    case CSSValue::CSS_VALUE_LIST:
-    default:
-        builder.append(repeatX->cssText());
-        builder.append(' ');
-        builder.append(repeatY->cssText());
-        break;
+    RefPtrWillBeRawPtr<CSSValueList> repeatYList;
+    if (repeatY->cssValueType() == CSSValue::CSS_PRIMITIVE_VALUE) {
+        repeatYList = CSSValueList::createCommaSeparated();
+        repeatYList->append(repeatY);
+    } else if (repeatY->cssValueType() == CSSValue::CSS_VALUE_LIST) {
+        repeatYList = toCSSValueList(repeatY.get());
+    } else {
+        return String();
+    }
+
+    size_t shorthandLength = lowestCommonMultiple(repeatXList->length(), repeatYList->length());
+    StringBuilder builder;
+    for (size_t i = 0; i < shorthandLength; ++i) {
+        if (i)
+            builder.append(", ");
+        buildSingleBackgroundRepeatValue(builder,
+            *repeatXList->item(i % repeatXList->length()),
+            *repeatYList->item(i % repeatYList->length()));
     }
     return builder.toString();
 }
