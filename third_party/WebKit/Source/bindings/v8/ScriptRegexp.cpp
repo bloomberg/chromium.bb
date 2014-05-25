@@ -80,6 +80,9 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     v8::Handle<v8::Value> argv[] = { v8String(isolate, string.substring(startFrom)) };
     v8::Local<v8::Value> returnValue = V8ScriptRunner::callInternalFunction(exec, regex, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
+    if (tryCatch.HasCaught())
+        return -1;
+
     // RegExp#exec returns null if there's no match, otherwise it returns an
     // Array of strings with the first being the whole match string and others
     // being subgroups. The Array also has some random properties tacked on like
@@ -87,6 +90,7 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     //
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
 
+    ASSERT(!returnValue.IsEmpty());
     if (!returnValue->IsArray())
         return -1;
 
