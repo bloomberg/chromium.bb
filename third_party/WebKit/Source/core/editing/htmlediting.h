@@ -182,7 +182,7 @@ bool lineBreakExistsAtVisiblePosition(const VisiblePosition&);
 
 int comparePositions(const VisiblePosition&, const VisiblePosition&);
 
-int indexForVisiblePosition(const VisiblePosition&, RefPtr<ContainerNode>& scope);
+int indexForVisiblePosition(const VisiblePosition&, RefPtrWillBeRawPtr<ContainerNode>& scope);
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // -------------------------------------------------------------------------
@@ -218,7 +218,7 @@ Node* enclosingListChild(Node*);
 // Functions returning Element
 
 PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&);
-PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&, PassRefPtr<Node> tabTextNode);
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&, PassRefPtrWillBeRawPtr<Node> tabTextNode);
 PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&, const String& tabText);
 PassRefPtrWillBeRawPtr<Element> createBlockPlaceholderElement(Document&);
 

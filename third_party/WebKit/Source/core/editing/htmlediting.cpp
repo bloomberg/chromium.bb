@@ -837,9 +837,9 @@ Node* tabSpanNode(const Node* node)
     return isTabSpanTextNode(node) ? node->parentNode() : 0;
 }
 
-PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document, PassRefPtr<Node> prpTabTextNode)
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document, PassRefPtrWillBeRawPtr<Node> prpTabTextNode)
 {
-    RefPtr<Node> tabTextNode = prpTabTextNode;
+    RefPtrWillBeRawPtr<Node> tabTextNode = prpTabTextNode;
 
     // Make the span to hold the tab.
     RefPtrWillBeRawPtr<Element> spanElement = document.createElement(spanTag, false);
@@ -862,7 +862,7 @@ PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document, const S
 
 PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document)
 {
-    return createTabSpanElement(document, PassRefPtr<Node>());
+    return createTabSpanElement(document, PassRefPtrWillBeRawPtr<Node>(nullptr));
 }
 
 bool isNodeRendered(const Node *node)
@@ -1001,7 +1001,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
 // opertion is unreliable. TextIterator's TextIteratorEmitsCharactersBetweenAllVisiblePositions mode needs to be fixed,
 // or these functions need to be changed to iterate using actual VisiblePositions.
 // FIXME: Deploy these functions everywhere that TextIterators are used to convert between VisiblePositions and indices.
-int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<ContainerNode>& scope)
+int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtrWillBeRawPtr<ContainerNode>& scope)
 {
     if (visiblePosition.isNull())
         return 0;
