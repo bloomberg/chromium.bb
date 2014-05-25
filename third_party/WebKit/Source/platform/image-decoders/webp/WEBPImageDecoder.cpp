@@ -56,13 +56,15 @@ inline uint8_t blendChannel(uint8_t src, uint8_t srcA, uint8_t dst, uint8_t dstA
 inline uint32_t blendSrcOverDstNonPremultiplied(uint32_t src, uint32_t dst)
 {
     uint8_t srcA = SkGetPackedA32(src);
+    if (srcA == 0)
+        return dst;
+
     uint8_t dstA = SkGetPackedA32(dst);
     uint8_t dstFactorA = (dstA * SkAlpha255To256(255 - srcA)) >> 8;
-    uint16_t blendA = srcA + dstFactorA;
-    if (blendA == 0)
-        return 0;
-
+    ASSERT(srcA + dstFactorA < (1U << 8));
+    uint8_t blendA = srcA + dstFactorA;
     unsigned scale = (1UL << 24) / blendA;
+
     uint8_t blendR = blendChannel(SkGetPackedR32(src), srcA, SkGetPackedR32(dst), dstFactorA, scale);
     uint8_t blendG = blendChannel(SkGetPackedG32(src), srcA, SkGetPackedG32(dst), dstFactorA, scale);
     uint8_t blendB = blendChannel(SkGetPackedB32(src), srcA, SkGetPackedB32(dst), dstFactorA, scale);
