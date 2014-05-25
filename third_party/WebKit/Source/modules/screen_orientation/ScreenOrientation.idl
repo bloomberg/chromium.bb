@@ -24,7 +24,7 @@ enum OrientationLockType {
 ] partial interface Screen {
     readonly attribute OrientationType orientation;
 
-    [RaisesException] boolean lockOrientation(OrientationLockType orientation);
+    [CallWith=ScriptState] Promise lockOrientation(OrientationLockType orientation);
 
     void unlockOrientation();
 };

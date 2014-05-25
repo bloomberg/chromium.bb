@@ -10,13 +10,15 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebScreenOrientationLockType.h"
+#include "public/platform/WebScreenOrientationType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class Document;
-class ExceptionState;
+class ScriptPromise;
+class ScriptState;
 class Screen;
 
 class ScreenOrientation FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientation>, public WillBeHeapSupplement<Screen>, DOMWindowProperty {
@@ -26,22 +28,19 @@ public:
     virtual ~ScreenOrientation();
 
     static const AtomicString& orientation(Screen&);
-    static bool lockOrientation(Screen&, const AtomicString& orientation, ExceptionState&);
+    static ScriptPromise lockOrientation(ScriptState*, Screen&, const AtomicString& orientation);
     static void unlockOrientation(Screen&);
+
+    // Helper being used by this class and LockOrientationCallback.
+    static const AtomicString& orientationTypeToString(blink::WebScreenOrientationType);
 
     virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Screen>::trace(visitor); }
 
 private:
     explicit ScreenOrientation(Screen&);
 
-    void lockOrientationAsync(blink::WebScreenOrientationLockType);
-    void orientationLockTimerFired(Timer<ScreenOrientation>*);
-
     static const char* supplementName();
     Document* document() const;
-
-    Timer<ScreenOrientation> m_orientationLockTimer;
-    blink::WebScreenOrientationLockType m_prospectiveLock;
 };
 
 } // namespace WebCore

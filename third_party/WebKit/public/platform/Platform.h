@@ -42,7 +42,9 @@
 #include "WebGamepads.h"
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
+#include "WebLockOrientationCallback.h"
 #include "WebScreenOrientationLockType.h"
+#include "WebScreenOrientationType.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
@@ -634,6 +636,13 @@ public:
 
     virtual void setScreenOrientationListener(blink::WebScreenOrientationListener*) { }
     virtual void lockOrientation(WebScreenOrientationLockType) { }
+    // Request a screen orientation lock and pass a |callback| object to be used
+    // to notify of success/failure. The |callback| parameter is expected to be
+    // owned by the implementation.
+    virtual void lockOrientation(WebScreenOrientationLockType, WebLockOrientationCallback* callback)
+    {
+        delete callback; // prevents memory leak if there is no implementation.
+    }
     virtual void unlockOrientation() { }
 
 

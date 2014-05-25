@@ -1,21 +1,52 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
-description("Basic screen.lockOrientation() / screen.unlockOrientation() testing");
 
-shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldNotThrow("screen.unlockOrientation()");
+var previousOrientation = screen.orientation;
 
-[ 'any', 'portrait', 'landscape', 'portrait-primary', 'portrait-secondary',
-  'landscape-primary', 'landscape-secondary' ].forEach(function(orientation) {
-  shouldBeTrue("screen.lockOrientation('" + orientation + "')");
-});
+test(function() {
+    var caught = false;
+    try {
+        screen.unlockOrientation();
+    } catch (e) {
+        caught = true;
+    }
 
-// Update is made asynchronously so that shouldn't change.
-shouldBeEqualToString("screen.orientation", "portrait-primary");
-shouldNotThrow("screen.unlockOrientation()");
+    assert_false(caught);
+}, "Test that unlockOrientation() doesn't throw when there is no lock");
+
+test(function() {
+    [ 'any', 'portrait', 'landscape', 'portrait-primary', 'portrait-secondary',
+      'landscape-primary', 'landscape-secondary' ].forEach(function(orientation) {
+        var pending = true;
+        screen.lockOrientation(orientation).then(function() {
+            pending = false;
+        }, function() {
+            pending = false;
+        });
+
+        assert_true(pending);
+    });
+}, "Test that screen.lockOrientation returns a pending promise.");
+
+test(function() {
+    assert_equals(screen.orientation, previousOrientation);
+}, "Test that screen.lockOrientation() is actually async");
+
+test(function() {
+    var caught = false;
+    try {
+        screen.unlockOrientation();
+    } catch (e) {
+        caught = true;
+    }
+
+    assert_false(caught);
+}, "Test that unlockOrientation doesn't throw when there is a lock");
+
 </script>
 </body>
 </html>

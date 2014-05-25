@@ -622,6 +622,8 @@
       'quota/StorageUsageCallback.h',
       'quota/WorkerNavigatorStorageQuota.cpp',
       'quota/WorkerNavigatorStorageQuota.h',
+      'screen_orientation/LockOrientationCallback.cpp',
+      'screen_orientation/LockOrientationCallback.h',
       'screen_orientation/ScreenOrientation.cpp',
       'screen_orientation/ScreenOrientation.h',
       'screen_orientation/ScreenOrientationController.cpp',
