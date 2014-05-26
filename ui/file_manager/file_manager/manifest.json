@@ -95,28 +95,6 @@
       ]
     },
     {
-      "id": "gallery-video",
-      "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "common/images/file_types/200/image.png",
-      "file_filters": [
-        // Video formats
-        "filesystem:*.3gp",
-        "filesystem:*.avi",
-        "filesystem:*.m4v",
-        "filesystem:*.mkv",
-        "filesystem:*.mov",
-        "filesystem:*.mp4",
-        "filesystem:*.mpeg",
-        "filesystem:*.mpeg4",
-        "filesystem:*.mpg",
-        "filesystem:*.mpg4",
-        "filesystem:*.ogm",
-        "filesystem:*.ogv",
-        "filesystem:*.ogx",
-        "filesystem:*.webm"
-      ]
-    },
-    {
       "id": "open-hosted-generic",
       "default_title": "__MSG_HOSTED__",
       "default_icon": "common/images/file_types/200generic.png",

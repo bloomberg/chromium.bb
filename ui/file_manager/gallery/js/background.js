@@ -93,9 +93,15 @@ function getChildren(entry) {
 
 /**
  * Promise to be fulfilled with single application window.
- * @param {AppWindow}
+ * @type {Promise}
  */
-var appWindowPromise = null;
+var appWindowPromise = Promise.resolve(null);
+
+/**
+ * Promise to be fulfilled with the current window is closed.
+ * @type {Promise}
+ */
+var closingPromise = Promise.resolve(null);
 
 chrome.app.runtime.onLaunched.addListener(function(launchData) {
   // Skip if files are not selected.
@@ -136,19 +142,16 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
         });
       });
 
-  // Close previous window.
-  var closePromise;
-  if (appWindowPromise) {
-    closePromise = appWindowPromise.then(function(appWindow) {
-      return new Promise(function(fulfill) {
-        appWindow.close();
-        appWindow.onClosed.addListener(fulfill);
-      });
-    });
-  } else {
-    closePromise = Promise.resolve();
-  }
-  var createdWindowPromise = closePromise.then(function() {
+  // If there is the previous window, close the window.
+  appWindowPromise = appWindowPromise.then(function(appWindow) {
+    if (appWindow) {
+      appWindow.close();
+      return closingPromise;
+    }
+  });
+
+  // Create a new window.
+  appWindowPromise = appWindowPromise.then(function() {
     return new Promise(function(fulfill) {
       chrome.app.window.create(
           'gallery.html',
@@ -161,11 +164,16 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
           function(appWindow) {
             appWindow.contentWindow.addEventListener(
                 'load', fulfill.bind(null, appWindow));
+            closingPromise = new Promise(function(fulfill) {
+              appWindow.onClosed.addListener(fulfill);
+            });
           });
     });
   });
+
+  // Initialize the window document.
   appWindowPromise = Promise.all([
-    createdWindowPromise,
+    appWindowPromise,
     backgroundComponentsPromise,
   ]).then(function(args) {
     args[0].contentWindow.initialize(args[1]);

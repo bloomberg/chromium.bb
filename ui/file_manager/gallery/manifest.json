@@ -25,18 +25,35 @@
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj"
   ],
   "file_handlers": {
-    "image": {
+    "open": {
       "types": [
-        "image/*"
+        "image/*",
+        "video/*"
       ],
       "extensions": [
+        // images
         "bmp",
         "gif",
         "ico",
         "jpg",
         "jpeg",
         "png",
-        "webp"
+        "webp",
+        // videos
+        "3gp",
+        "avi",
+        "m4v",
+        "mkv",
+        "mov",
+        "mp4",
+        "mpeg",
+        "mpeg4",
+        "mpg",
+        "mpg4",
+        "ogm",
+        "ogv",
+        "ogx",
+        "webm"
       ],
       // TODO(hirono): Rename and localize this.
       "title": "Open"

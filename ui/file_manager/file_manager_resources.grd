@@ -17,9 +17,6 @@
       <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/background/js/background.js" type="BINDATA" />
 
-      <include name="IDR_FILE_MANAGER_GALLERY" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/foreground/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
-
       <!-- Scripts working in background page. -->
       <include name="IDR_FILE_MANAGER_ERROR_UTIL_JS" file="file_manager/common/js/error_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/common/js/async_util.js" flattenhtml="false" type="BINDATA" />
@@ -65,21 +62,7 @@
       <include name="IDR_FILE_MANAGER_IMG_UI_DRIVE_WELCOME_LOGO" file="file_manager/foreground/images/files/ui/drive_logo.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_UI_2X_DRIVE_WELCOME_LOGO" file="file_manager/foreground/images/files/ui/2x/drive_logo.png" type="BINDATA" />
 
-      <!-- Custom cursors (which grit cannot inline). -->
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="file_manager/foreground/images/gallery/cursor_crop.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_LEFTRIGHT" file="file_manager/foreground/images/gallery/cursor_leftright.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_MOVE" file="file_manager/foreground/images/gallery/cursor_move.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_NWSE" file="file_manager/foreground/images/gallery/cursor_nwse.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/foreground/images/gallery/cursor_swne.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_UPDOWN" file="file_manager/foreground/images/gallery/cursor_updown.png" type="BINDATA" />
-
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_CROP" file="file_manager/foreground/images/gallery/2x/cursor_crop.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_LEFTRIGHT" file="file_manager/foreground/images/gallery/2x/cursor_leftright.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_MOVE" file="file_manager/foreground/images/gallery/2x/cursor_move.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_NWSE" file="file_manager/foreground/images/gallery/2x/cursor_nwse.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_SWNE" file="file_manager/foreground/images/gallery/2x/cursor_swne.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_UPDOWN" file="file_manager/foreground/images/gallery/2x/cursor_updown.png" type="BINDATA" />
-
+      <!-- Audio player pages and scripts. -->
       <include name="IDR_FILE_MANAGER_AUDIO_PLAYER" file="file_manager/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_SCRIPTS_JS" file="file_manager/audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
 
@@ -103,6 +86,21 @@
       <include name="IDR_GALLERY_ERROR_UTIL_JS" file="gallery/js/error_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_GALLERY_ICON_16" file="gallery/images/100/icon.png" type="BINDATA" />
       <include name="IDR_GALLERY_ICON_32" file="gallery/images/200/icon.png" type="BINDATA" />
+
+      <!-- Custom cursors (which grit cannot inline). -->
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="gallery/images/100/cursor_crop.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_LEFTRIGHT" file="gallery/images/100/cursor_leftright.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_MOVE" file="gallery/images/100/cursor_move.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_NWSE" file="gallery/images/100/cursor_nwse.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="gallery/images/100/cursor_swne.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_UPDOWN" file="gallery/images/100/cursor_updown.png" type="BINDATA" />
+
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_CROP" file="gallery/images/200/cursor_crop.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_LEFTRIGHT" file="gallery/images/200/cursor_leftright.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_MOVE" file="gallery/images/200/cursor_move.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_NWSE" file="gallery/images/200/cursor_nwse.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_SWNE" file="gallery/images/200/cursor_swne.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_UPDOWN" file="gallery/images/200/cursor_updown.png" type="BINDATA" />
 
       <!-- Image loader extension manifest and scripts. -->
       <if expr="image_loader_extension">

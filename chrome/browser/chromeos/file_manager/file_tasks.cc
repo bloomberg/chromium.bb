@@ -138,8 +138,7 @@ void ChooseSuitableVideoHandler(
   std::vector<FullTaskDescriptor>::iterator video_player_iter =
       FindTaskForAppIdAndActionId(task_list, kVideoPlayerAppId, "video");
   std::vector<FullTaskDescriptor>::iterator gallery_video_iter =
-      FindTaskForAppIdAndActionId(
-          task_list, kFileManagerAppId, "gallery-video");
+      FindTaskForAppIdAndActionId(task_list, kGalleryAppId, "open");
 
   if (video_player_iter != task_list->end() &&
       gallery_video_iter != task_list->end()) {
