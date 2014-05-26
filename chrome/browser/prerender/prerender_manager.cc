@@ -1318,7 +1318,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     return NULL;
   }
 
-  if (!cookie_store_loaded()) {
+  if (IsPrerenderCookieStoreEnabled() && !cookie_store_loaded()) {
     // Only prerender if the cookie store for this profile has been loaded.
     // This is required by PrerenderCookieMonster.
     RecordFinalStatusWithoutCreatingPrerenderContents(
@@ -1350,7 +1350,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   gfx::Size contents_size =
       size.IsEmpty() ? config_.default_tab_bounds.size() : size;
 
-  net::URLRequestContextGetter* request_context = GetURLRequestContext();
+  net::URLRequestContextGetter* request_context =
+      (IsPrerenderCookieStoreEnabled() ? GetURLRequestContext() : NULL);
 
   prerender_contents->StartPrerendering(process_id, contents_size,
                                         session_storage_namespace,
@@ -1897,10 +1898,14 @@ void PrerenderManager::AddPrerenderProcessHost(
   process_host->AddObserver(this);
 }
 
-bool PrerenderManager::IsProcessPrerendering(
+bool PrerenderManager::MayReuseProcessHost(
     content::RenderProcessHost* process_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return (prerender_process_hosts_.find(process_host) !=
+  // If prerender cookie stores are disabled, there is no need to require
+  // isolated prerender processes.
+  if (!IsPrerenderCookieStoreEnabled())
+    return true;
+  return (prerender_process_hosts_.find(process_host) ==
           prerender_process_hosts_.end());
 }
 

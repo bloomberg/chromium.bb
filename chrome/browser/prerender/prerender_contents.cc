@@ -350,15 +350,19 @@ void PrerenderContents::StartPrerendering(
   // cookie changes performed by the prerender. Once the prerender is shown,
   // the cookie changes will be committed to the actual cookie store,
   // otherwise, they will be discarded.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PrerenderTracker::AddPrerenderCookieStoreOnIOThread,
-                 base::Unretained(prerender_manager()->prerender_tracker()),
-                 GetRenderViewHost()->GetProcess()->GetID(),
-                 make_scoped_refptr(request_context),
-                 base::Bind(&PrerenderContents::Destroy,
-                            AsWeakPtr(),
-                            FINAL_STATUS_COOKIE_CONFLICT)));
+  // If |request_context| is NULL, the feature must be disabled, so the
+  // operation will not be performed.
+  if (request_context) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PrerenderTracker::AddPrerenderCookieStoreOnIOThread,
+                   base::Unretained(prerender_manager()->prerender_tracker()),
+                   GetRenderViewHost()->GetProcess()->GetID(),
+                   make_scoped_refptr(request_context),
+                   base::Bind(&PrerenderContents::Destroy,
+                              AsWeakPtr(),
+                              FINAL_STATUS_COOKIE_CONFLICT)));
+  }
 
   NotifyPrerenderStart();
 

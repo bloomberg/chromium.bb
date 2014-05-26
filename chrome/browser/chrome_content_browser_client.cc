@@ -1227,7 +1227,7 @@ bool ChromeContentBrowserClient::MayReuseHost(
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   if (prerender_manager &&
-      prerender_manager->IsProcessPrerendering(process_host)) {
+      !prerender_manager->MayReuseProcessHost(process_host)) {
     return false;
   }
 

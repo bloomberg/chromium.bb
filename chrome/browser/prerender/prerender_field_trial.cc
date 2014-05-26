@@ -75,6 +75,7 @@ const char kSkipPrerenderServiceCanadidates[] =
     "SkipPrerenderServiceCandidates";
 const char kDisableSessionStorageNamespaceMerging[] =
     "DisableSessionStorageNamespaceMerging";
+const char kPrerenderCookieStore[] = "PrerenderCookieStore";
 
 void SetupPrerenderFieldTrial() {
   const FieldTrial::Probability divisor = 1000;
@@ -432,6 +433,11 @@ bool SkipLocalPredictorServiceCandidates() {
 bool ShouldMergeSessionStorageNamespaces() {
   return GetLocalPredictorSpecValue(kDisableSessionStorageNamespaceMerging) !=
       kDisabledGroup;
+}
+
+bool IsPrerenderCookieStoreEnabled() {
+  return GetLocalPredictorSpecValue(kPrerenderCookieStore) != kDisabledGroup &&
+      FieldTrialList::FindFullName(kPrerenderCookieStore) != kDisabledGroup;
 }
 
 }  // namespace prerender

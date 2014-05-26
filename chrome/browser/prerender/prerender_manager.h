@@ -368,7 +368,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // PrerenderContents.
   void AddPrerenderProcessHost(content::RenderProcessHost* process_host);
 
-  bool IsProcessPrerendering(content::RenderProcessHost* process_host);
+  // Returns whether or not |process_host| may be reused for new navigations
+  // from a prerendering perspective. Currently, if Prerender Cookie Stores are
+  // enabled, prerenders must be in their own processes that may not be shared.
+  bool MayReuseProcessHost(content::RenderProcessHost* process_host);
 
   // content::RenderProcessHostObserver implementation.
   virtual void RenderProcessHostDestroyed(
