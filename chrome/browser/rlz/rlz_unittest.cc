@@ -6,6 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
@@ -230,9 +233,20 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
 #endif
 
 void RlzLibTest::SimulateOmniboxUsage() {
+  // Create a dummy OmniboxLog object. The 'is_popup_open' field needs to be
+  // true to trigger record of the first search. All other fields are passed in
+  // with empty or invalid values.
+  AutocompleteResult empty_result;
+  OmniboxLog dummy(base::string16(), false, AutocompleteInput::INVALID,
+                   true, 0, false, -1,
+                   AutocompleteInput::INVALID_SPEC,
+                   base::TimeDelta::FromSeconds(0), 0,
+                   base::TimeDelta::FromSeconds(0),
+                   AutocompleteResult());
+
   tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    content::NotificationService::AllSources(),
-                   content::Details<OmniboxLog>(NULL));
+                   content::Details<OmniboxLog>(&dummy));
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
