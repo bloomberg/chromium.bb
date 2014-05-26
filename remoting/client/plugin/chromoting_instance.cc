@@ -54,6 +54,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "third_party/libjingle/source/talk/base/helpers.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
 #include "url/gurl.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
@@ -245,7 +246,9 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   char random_seed[kRandomSeedSize];
   crypto::RandBytes(random_seed, sizeof(random_seed));
   talk_base::InitRandom(random_seed, sizeof(random_seed));
-#endif  // defined(USE_OPENSSL)
+#elif defined(USE_NSS)
+  talk_base::InitializeSSL();
+#endif  // defined(USE_NSS)
 
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
