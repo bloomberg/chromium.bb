@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
@@ -21,7 +20,9 @@
 
 namespace extensions {
 
-CommandHandler::CommandHandler(Profile* profile) : profile_(profile) {
+CommandHandler::CommandHandler(Profile* profile)
+    : profile_(profile),
+      extension_registry_observer_(this) {
 }
 
 CommandHandler::~CommandHandler() {
@@ -46,11 +47,7 @@ void CommandHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 }
 
 void CommandHandler::RegisterMessages() {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 
   web_ui()->RegisterMessageCallback("extensionCommandsRequestExtensionsData",
       base::Bind(&CommandHandler::HandleRequestExtensionsData,
@@ -66,12 +63,15 @@ void CommandHandler::RegisterMessages() {
       base::Unretained(this)));
 }
 
-void CommandHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
+void CommandHandler::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
+  UpdateCommandDataOnPage();
+}
+
+void CommandHandler::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   UpdateCommandDataOnPage();
 }
 
@@ -141,10 +141,11 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
   Profile* profile = Profile::FromWebUI(web_ui());
   CommandService* command_service = CommandService::Get(profile);
 
-  const ExtensionSet* extensions = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->extensions();
-  for (ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile)->enabled_extensions();
+  for (ExtensionSet::const_iterator extension = extensions.begin();
+       extension != extensions.end();
+       ++extension) {
     scoped_ptr<base::DictionaryValue> extension_dict(new base::DictionaryValue);
     extension_dict->SetString("name", (*extension)->name());
     extension_dict->SetString("id", (*extension)->id());
@@ -154,7 +155,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
 
     bool active = false;
 
-    extensions::Command browser_action;
+    Command browser_action;
     if (command_service->GetBrowserActionCommand((*extension)->id(),
                                                  CommandService::ALL,
                                                  &browser_action,
@@ -163,7 +164,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
           browser_action.ToValue((extension->get()), active));
     }
 
-    extensions::Command page_action;
+    Command page_action;
     if (command_service->GetPageActionCommand((*extension)->id(),
                                               CommandService::ALL,
                                               &page_action,
@@ -171,15 +172,16 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
       extensions_list->Append(page_action.ToValue((extension->get()), active));
     }
 
-    extensions::CommandMap named_commands;
+    CommandMap named_commands;
     if (command_service->GetNamedCommands((*extension)->id(),
                                           CommandService::ALL,
-                                          extensions::CommandService::ANY_SCOPE,
+                                          CommandService::ANY_SCOPE,
                                           &named_commands)) {
-      for (extensions::CommandMap::const_iterator iter = named_commands.begin();
-           iter != named_commands.end(); ++iter) {
-        extensions::Command command = command_service->FindCommandByName(
-                (*extension)->id(), iter->second.command_name());
+      for (CommandMap::const_iterator iter = named_commands.begin();
+           iter != named_commands.end();
+           ++iter) {
+        Command command = command_service->FindCommandByName(
+            (*extension)->id(), iter->second.command_name());
         ui::Accelerator shortcut_assigned = command.accelerator();
 
         active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);

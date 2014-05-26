@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_COMMAND_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry_observer.h"
+
+class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -22,16 +24,12 @@ class WebUIDataSource;
 namespace extensions {
 class Command;
 class CommandService;
-}
-
 class Extension;
-class Profile;
-
-namespace extensions {
+class ExtensionRegistry;
 
 // The handler page for the Extension Commands UI overlay.
 class CommandHandler : public content::WebUIMessageHandler,
-                       public content::NotificationObserver {
+                       public ExtensionRegistryObserver {
  public:
   explicit CommandHandler(Profile* profile);
   virtual ~CommandHandler();
@@ -42,12 +40,15 @@ class CommandHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
    // Update the list of extension commands in the config UI.
   void UpdateCommandDataOnPage();
 
@@ -72,9 +73,10 @@ class CommandHandler : public content::WebUIMessageHandler,
   // |commands|.
   void GetAllCommands(base::DictionaryValue* commands);
 
-  content::NotificationRegistrar registrar_;
-
   Profile* profile_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandHandler);
 };

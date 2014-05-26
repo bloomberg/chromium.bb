@@ -8,13 +8,17 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 class ListValue;
+}
+
+namespace extensions {
+class ExtensionRegistry;
 }
 
 namespace app_list {
@@ -23,7 +27,7 @@ class RecommendedApps;
 
 // Handler for the app launcher start page.
 class StartPageHandler : public content::WebUIMessageHandler,
-                         public content::NotificationObserver,
+                         public extensions::ExtensionRegistryObserver,
                          public RecommendedAppsObserver {
  public:
   StartPageHandler();
@@ -33,10 +37,14 @@ class StartPageHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler overrides:
   virtual void RegisterMessages() OVERRIDE;
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // RecommendedAppsObserver overrdies:
   virtual void OnRecommendedAppsChanged() OVERRIDE;
@@ -58,7 +66,10 @@ class StartPageHandler : public content::WebUIMessageHandler,
 
   RecommendedApps* recommended_apps_;  // Not owned.
   PrefChangeRegistrar pref_change_registrar_;
-  content::NotificationRegistrar registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageHandler);
 };

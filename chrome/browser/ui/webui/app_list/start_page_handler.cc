@@ -9,8 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "base/version.h"
 #include "chrome/browser/omaha_query_params/omaha_query_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -21,10 +20,10 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "ui/app_list/app_list_switches.h"
@@ -61,7 +60,10 @@ scoped_ptr<base::DictionaryValue> CreateAppInfo(
 
 }  // namespace
 
-StartPageHandler::StartPageHandler() : recommended_apps_(NULL) {}
+StartPageHandler::StartPageHandler()
+    : recommended_apps_(NULL),
+      extension_registry_observer_(this) {
+}
 
 StartPageHandler::~StartPageHandler() {
   if (recommended_apps_)
@@ -89,31 +91,26 @@ void StartPageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void StartPageHandler::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
+void StartPageHandler::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
 #if defined(OS_CHROMEOS)
   DCHECK_EQ(Profile::FromWebUI(web_ui()),
-            content::Source<Profile>(source).ptr());
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      extensions::Extension* extension =
-          content::Details<extensions::Extension>(details).ptr();
-      if (extension->id() == extension_misc::kHotwordExtensionId)
-        OnHotwordEnabledChanged();
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      extensions::UnloadedExtensionInfo* info =
-          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
-      if (info->extension->id() == extension_misc::kHotwordExtensionId)
-        OnHotwordEnabledChanged();
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+            Profile::FromBrowserContext(browser_context));
+  if (extension->id() == extension_misc::kHotwordExtensionId)
+    OnHotwordEnabledChanged();
+#endif
+}
+
+void StartPageHandler::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+#if defined(OS_CHROMEOS)
+  DCHECK_EQ(Profile::FromWebUI(web_ui()),
+            Profile::FromBrowserContext(browser_context));
+  if (extension->id() == extension_misc::kHotwordExtensionId)
+    OnHotwordEnabledChanged();
 #endif
 }
 
@@ -139,15 +136,14 @@ void StartPageHandler::OnHotwordEnabledChanged() {
   // hotwordPrivate API to provide the feature.
   // TODO(mukai): remove this after everything gets stable.
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
-    return;
 
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
   const extensions::Extension* hotword_extension =
-      extension_service->GetExtensionById(
-          extension_misc::kHotwordExtensionId, false /* include_disabled */);
-  if (hotword_extension && hotword_extension->version()->CompareTo(
+      registry->GetExtensionById(extension_misc::kHotwordExtensionId,
+                                 extensions::ExtensionRegistry::ENABLED);
+  if (hotword_extension &&
+      hotword_extension->version()->CompareTo(
           base::Version(kOldHotwordExtensionVersionString)) <= 0) {
     StartPageService* service = StartPageService::Get(profile);
     web_ui()->CallJavascriptFunction(
@@ -177,11 +173,9 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
         prefs::kHotwordSearchEnabled,
         base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
                    base::Unretained(this)));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                   content::Source<Profile>(profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   content::Source<Profile>(profile));
+
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(profile));
   }
 #endif
 
@@ -201,9 +195,9 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
   CHECK(args->GetString(0, &app_id));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const extensions::Extension* app = service->GetInstalledExtension(app_id);
+  const extensions::Extension* app =
+      extensions::ExtensionRegistry::Get(profile)
+          ->GetExtensionById(app_id, extensions::ExtensionRegistry::EVERYTHING);
   if (!app) {
     NOTREACHED();
     return;
