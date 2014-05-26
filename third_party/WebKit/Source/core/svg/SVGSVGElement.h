@@ -114,6 +114,8 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit SVGSVGElement(Document&);
     virtual ~SVGSVGElement();
@@ -156,7 +158,7 @@ private:
     bool m_useCurrentView;
     RefPtr<SMILTimeContainer> m_timeContainer;
     RefPtr<SVGPoint> m_translation;
-    RefPtr<SVGViewSpec> m_viewSpec;
+    RefPtrWillBeMember<SVGViewSpec> m_viewSpec;
 
     friend class SVGCurrentTranslateTearOff;
 };

@@ -79,7 +79,7 @@ void SVGViewSpec::detachContextElement()
     m_transform = nullptr;
     clearViewBox();
     clearPreserveAspectRatio();
-    m_contextElement = 0;
+    m_contextElement = nullptr;
 }
 
 SVGElement* SVGViewSpec::viewTarget() const
@@ -210,6 +210,17 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
         return false;
 
     return true;
+}
+
+void SVGViewSpec::trace(Visitor* visitor)
+{
+    visitor->registerWeakMembers<SVGViewSpec, &SVGViewSpec::clearWeakMembers>(this);
+}
+
+void SVGViewSpec::clearWeakMembers(Visitor* visitor)
+{
+    if (!visitor->isAlive(m_contextElement))
+        detachContextElement();
 }
 
 }

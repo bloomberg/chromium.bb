@@ -24,18 +24,21 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"
+#include "platform/heap/Handle.h"
 #include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
-class SVGViewSpec FINAL : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
+class SVGViewSpec FINAL : public RefCountedWillBeGarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
+#if !ENABLE(OILPAN)
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;
+#endif
 
-    static PassRefPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
     {
-        return adoptRef(new SVGViewSpec(contextElement));
+        return adoptRefWillBeNoop(new SVGViewSpec(contextElement));
     }
 
     bool parseViewSpec(const String&);
@@ -54,14 +57,16 @@ public:
     void setZoomAndPan(unsigned short value) { } // read only
     void setZoomAndPan(unsigned short value, ExceptionState&);
 
+    void trace(Visitor*);
+    void clearWeakMembers(Visitor*);
+
 private:
     explicit SVGViewSpec(SVGSVGElement*);
 
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-    // FIXME(oilpan): This is back-ptr to be cleared from contextElement.
-    SVGSVGElement* m_contextElement;
+    RawPtrWillBeWeakMember<SVGSVGElement> m_contextElement;
     RefPtr<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };

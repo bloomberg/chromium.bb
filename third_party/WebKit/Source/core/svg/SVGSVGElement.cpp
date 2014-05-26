@@ -88,10 +88,10 @@ SVGSVGElement::SVGSVGElement(Document& doc)
 
 SVGSVGElement::~SVGSVGElement()
 {
+#if !ENABLE(OILPAN)
     if (m_viewSpec)
         m_viewSpec->detachContextElement();
 
-#if !ENABLE(OILPAN)
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
     // With Oilpan, either removedFrom is called or the document
@@ -777,6 +777,12 @@ void SVGSVGElement::finishParsingChildren()
     // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
     // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
     sendSVGLoadEventIfPossible();
+}
+
+void SVGSVGElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_viewSpec);
+    SVGGraphicsElement::trace(visitor);
 }
 
 }
