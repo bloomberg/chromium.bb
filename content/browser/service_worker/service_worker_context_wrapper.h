@@ -49,11 +49,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // The core context is only for use on the IO thread.
   ServiceWorkerContextCore* context();
 
-  // The process manager can be used on either UI or IO.
-  ServiceWorkerProcessManager* process_manager() {
-    return process_manager_.get();
-  }
-
   // ServiceWorkerContext implementation:
   virtual void RegisterServiceWorker(
       const GURL& pattern,
@@ -76,12 +71,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                     base::SequencedTaskRunner* database_task_runner,
                     base::MessageLoopProxy* disk_cache_thread,
                     quota::QuotaManagerProxy* quota_manager_proxy);
-  void ShutdownOnIO();
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
-  const scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in Shutdown():
+  BrowserContext* browser_context_;
   scoped_ptr<ServiceWorkerContextCore> context_core_;
 };
 

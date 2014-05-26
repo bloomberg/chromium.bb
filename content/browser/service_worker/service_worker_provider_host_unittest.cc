@@ -23,13 +23,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   virtual ~ServiceWorkerProviderHostTest() {}
 
   virtual void SetUp() OVERRIDE {
-    context_.reset(
-        new ServiceWorkerContextCore(base::FilePath(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     NULL,
-                                     NULL,
-                                     NULL));
+    context_.reset(new ServiceWorkerContextCore(
+        base::FilePath(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
+        NULL,
+        NULL,
+        scoped_ptr<ServiceWorkerProcessManager>()));
 
     scope_ = GURL("http://www.example.com/*");
     script_url_ = GURL("http://www.example.com/service_worker.js");

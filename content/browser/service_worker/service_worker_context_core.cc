@@ -82,16 +82,14 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     base::MessageLoopProxy* disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
-    ServiceWorkerContextWrapper* wrapper)
+    scoped_ptr<ServiceWorkerProcessManager> process_manager)
     : weak_factory_(this),
-      wrapper_(wrapper),
-      storage_(new ServiceWorkerStorage(path,
-                                        AsWeakPtr(),
-                                        database_task_runner,
-                                        disk_cache_thread,
-                                        quota_manager_proxy)),
+      storage_(new ServiceWorkerStorage(
+          path, AsWeakPtr(), database_task_runner, disk_cache_thread,
+          quota_manager_proxy)),
       embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
+      process_manager_(process_manager.Pass()),
       next_handle_id_(0),
       observer_list_(observer_list) {
 }
@@ -307,10 +305,6 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
       version->embedded_worker()->thread_id(),
       ServiceWorkerContextObserver::ConsoleMessage(
           source_identifier, message_level, message, line_number, source_url));
-}
-
-ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
-  return wrapper_->process_manager();
 }
 
 }  // namespace content
