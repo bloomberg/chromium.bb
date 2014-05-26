@@ -136,7 +136,7 @@ public:
         : m_storage(storage)
         , m_gcInfo(gcInfo)
         , m_threadState(state)
-        , m_lastGCMarkedConservatively(0)
+        , m_padding(0)
     {
         ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
     }
@@ -161,19 +161,17 @@ public:
     const GCInfo* gcInfo() { return m_gcInfo; }
     virtual bool isLargeObject() { return false; }
 
-    bool lastGCMarkedConservatively() const { return m_lastGCMarkedConservatively == 1; }
-    void setLastGCMarkedConservatively(bool value) { m_lastGCMarkedConservatively = value ? 1 : 0; }
-
 private:
+    // Accessor to silence unused warnings for the m_padding field.
+    intptr_t padding() const { return m_padding; }
+
     PageMemory* m_storage;
     const GCInfo* m_gcInfo;
     ThreadState* m_threadState;
     // Pointer sized integer to ensure proper alignment of the
-    // HeapPage header. This could be turned into a bit field
-    // if we need more bits in the header. For now we only use it
-    // to indicate whether the last GC marked objects in this page
-    // conservatively.
-    intptr_t m_lastGCMarkedConservatively;
+    // HeapPage header. This can be used as a bit field if we need
+    // to associate more information with pages.
+    intptr_t m_padding;
 };
 
 // Large allocations are allocated as separate objects and linked in a
@@ -954,6 +952,10 @@ public:
     static void flushHeapDoesNotContainCache();
     static bool heapDoesNotContainCacheIsEmpty() { return s_heapDoesNotContainCache->isEmpty(); }
 
+    // Return true if the last GC found a pointer into a heap page
+    // during conservative scanning.
+    static bool lastGCWasConservative() { return s_lastGCWasConservative; }
+
 private:
     static Visitor* s_markingVisitor;
 
@@ -961,6 +963,7 @@ private:
     static CallbackStack* s_weakCallbackStack;
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static bool s_shutdownCalled;
+    static bool s_lastGCWasConservative;
     friend class ThreadState;
 };
 

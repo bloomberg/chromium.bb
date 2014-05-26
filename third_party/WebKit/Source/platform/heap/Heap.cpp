@@ -816,13 +816,14 @@ void ThreadHeap<Header>::assertEmpty()
         for (headerAddress = page->payload(); headerAddress < end; ) {
             BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
-            // A live object is potentially a dangling pointer from some root.
-            // Treat that as a critical bug both in release and debug mode.
-            // Unfortunately, we can only check the heap pages where nothing
-            // has been marked conservatively from the stack. Something could
-            // be conservatively kept alive because a non-pointer on another
-            // thread's stack is treated as a pointer into this heap page.
-            RELEASE_ASSERT(page->lastGCMarkedConservatively() || basicHeader->isFree());
+            // A live object is potentially a dangling pointer from
+            // some root. Treat that as a critical bug both in release
+            // and debug mode. Unfortunately, we can only check when
+            // nothing has been marked conservatively from the
+            // stack. Something could be conservatively kept alive
+            // because a non-pointer on another thread's stack is
+            // treated as a pointer into the heap.
+            RELEASE_ASSERT(Heap::lastGCWasConservative() || basicHeader->isFree());
             headerAddress += basicHeader->size();
         }
         ASSERT(headerAddress == end);
@@ -957,10 +958,6 @@ bool HeapPage<Header>::isEmpty()
 template<typename Header>
 void HeapPage<Header>::sweep()
 {
-    // The object start bit map is only computed for this page if we find
-    // pointers on a stack that could point into this page. We use that as
-    // the indication that something in this page was marked conservatively.
-    setLastGCMarkedConservatively(isObjectStartBitMapComputed());
     clearObjectStartBitMap();
     heap()->stats().increaseAllocatedSpace(blinkPageSize);
     Address startOfGap = payload();
@@ -1562,6 +1559,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
             // Pointer was in a page of that thread. If it actually pointed
             // into an object then that object was found and marked.
             ASSERT(!s_heapDoesNotContainCache->lookup(address));
+            s_lastGCWasConservative = true;
             return address;
         }
     }
@@ -1645,6 +1643,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
         ThreadState::current()->setGCRequested();
         return;
     }
+
+    s_lastGCWasConservative = false;
+
     TRACE_EVENT0("Blink", "Heap::collectGarbage");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BlinkGC");
 #if ENABLE(GC_TRACING)
@@ -1734,4 +1735,5 @@ CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_weakCallbackStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
+bool Heap::s_lastGCWasConservative = false;
 }
