@@ -44,7 +44,7 @@ public:
     virtual ~StorageQuotaClientImpl();
 
     virtual void requestQuota(WebCore::ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, PassOwnPtr<WebCore::StorageQuotaCallback>, PassOwnPtr<WebCore::StorageErrorCallback>) OVERRIDE;
-    virtual WebCore::ScriptPromise requestPersistentQuota(WebCore::ExecutionContext*, unsigned long long newQuotaInBytes) OVERRIDE;
+    virtual WebCore::ScriptPromise requestPersistentQuota(WebCore::ScriptState*, unsigned long long newQuotaInBytes) OVERRIDE;
 
     virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::StorageQuotaClient::trace(visitor); }
 

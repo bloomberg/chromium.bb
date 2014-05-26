@@ -111,7 +111,7 @@ ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, uns
         return promise;
     }
 
-    return client->requestPersistentQuota(scriptState->executionContext(), newQuota);
+    return client->requestPersistentQuota(scriptState, newQuota);
 }
 
 StorageQuota::~StorageQuota()
