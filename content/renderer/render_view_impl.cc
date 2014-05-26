@@ -3087,7 +3087,12 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
     UpdateScrollState(webview()->mainFrame());
   }
 
+  gfx::Size old_visible_viewport_size = visible_viewport_size_;
+
   RenderWidget::OnResize(params);
+
+  if (old_visible_viewport_size != visible_viewport_size_)
+    has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
 void RenderViewImpl::DidInitiatePaint() {
