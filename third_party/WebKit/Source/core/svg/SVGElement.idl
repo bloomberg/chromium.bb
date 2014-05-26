@@ -24,8 +24,8 @@
     Custom=Wrap,
 ] interface SVGElement : Element {
     attribute DOMString xmlbase;
-    readonly attribute SVGSVGElement ownerSVGElement;
-    readonly attribute SVGElement viewportElement;
+    [TypeChecking=Interface|Nullable] readonly attribute SVGSVGElement? ownerSVGElement;
+    [TypeChecking=Interface|Nullable] readonly attribute SVGElement? viewportElement;
 
     attribute DOMString xmllang;
     attribute DOMString xmlspace;
