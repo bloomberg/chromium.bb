@@ -38,29 +38,16 @@ class WebGamepadButton {
 public:
     WebGamepadButton()
         : pressed(false)
-// FIXME(cdumez): Remove #ifdefs once chromium-side has been updated.
-#if defined(ENABLE_NEW_GAMEPAD_API)
         , value(0.)
-#else
-        , value(0.f)
-#endif
     {
     }
-#if defined(ENABLE_NEW_GAMEPAD_API)
     WebGamepadButton(bool pressed, double value)
-#else
-    WebGamepadButton(bool pressed, float value)
-#endif
         : pressed(pressed)
         , value(value)
     {
     }
     bool pressed;
-#if defined(ENABLE_NEW_GAMEPAD_API)
     double value;
-#else
-    float value;
-#endif
 };
 
 // This structure is intentionally POD and fixed size so that it can be shared
@@ -97,11 +84,7 @@ public:
     unsigned axesLength;
 
     // Normalized values representing axes, in the range [-1..1].
-#if defined(ENABLE_NEW_GAMEPAD_API)
     double axes[axesLengthCap];
-#else
-    float axes[axesLengthCap];
-#endif
 
     // Number of valid entries in the buttons array.
     unsigned buttonsLength;
@@ -114,11 +97,7 @@ public:
 };
 
 #if BLINK_IMPLEMENTATION
-#if defined(ENABLE_NEW_GAMEPAD_API)
 COMPILE_ASSERT(sizeof(WebGamepad) == 721, WebGamepad_has_wrong_size);
-#else
-COMPILE_ASSERT(sizeof(WebGamepad) == 529, WebGamepad_has_wrong_size);
-#endif
 #endif
 
 #pragma pack(pop)

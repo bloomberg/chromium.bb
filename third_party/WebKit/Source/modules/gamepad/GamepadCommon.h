@@ -54,11 +54,7 @@ public:
     void setMapping(const String& val) { m_mapping = val; }
 
     const DoubleVector& axes() const { return m_axes; }
-#if defined(ENABLE_NEW_GAMEPAD_API)
     void setAxes(unsigned count, const double* data);
-#else
-    void setAxes(unsigned count, const float* data);
-#endif
 
 protected:
     String m_id;

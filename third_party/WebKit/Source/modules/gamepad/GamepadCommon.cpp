@@ -38,20 +38,11 @@ GamepadCommon::~GamepadCommon()
 {
 }
 
-#if defined(ENABLE_NEW_GAMEPAD_API)
 void GamepadCommon::setAxes(unsigned count, const double* data)
 {
     m_axes.resize(count);
     if (count)
         std::copy(data, data + count, m_axes.begin());
 }
-#else
-void GamepadCommon::setAxes(unsigned count, const float* data)
-{
-    m_axes.resize(count);
-    for (unsigned i = 0; i < count; ++i)
-        m_axes[i] = data[i];
-}
-#endif
 
 } // namespace WebCore
