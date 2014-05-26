@@ -52,9 +52,9 @@ main(int argc, char **argv)
   lou_registerLogCallback(log_to_buffer);
   log_buffer_pos = 0;
   lou_setLogLevel(LOG_WARN);
-  lou_log(LOG_ERROR, "foo");
-  lou_log(LOG_INFO, "bar");
+  logMessage(LOG_ERROR, "foo");
+  logMessage(LOG_INFO, "bar");
   lou_setLogLevel(LOG_INFO);
-  lou_log(LOG_INFO, "baz");
+  logMessage(LOG_INFO, "baz");
   return assert_log_buffer_equals("[ERROR] foo\n[INFO] baz\n");
 }
