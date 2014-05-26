@@ -31,7 +31,7 @@ class MonitoredVideoStub : public VideoStub {
   // destroy the MonitoredVideoStub object.
   typedef base::Callback<void(bool connected)> ChannelStateCallback;
 
-  static const int kConnectivityCheckDelaySeconds = 1;
+  static const int kConnectivityCheckDelaySeconds = 2;
 
   MonitoredVideoStub(
       VideoStub* video_stub,
