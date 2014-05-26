@@ -329,15 +329,23 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 
 #if defined(OS_CHROMEOS)
 std::string ComponentLoader::AddChromeVoxExtension() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int idr = command_line->HasSwitch(chromeos::switches::kGuestSession) ?
-      IDR_CHROMEVOX_GUEST_MANIFEST : IDR_CHROMEVOX_MANIFEST;
+  base::FilePath chromevox_path;
+  PathService::Get(chrome::DIR_RESOURCES, &chromevox_path);
+  chromevox_path =
+      chromevox_path.Append(extension_misc::kChromeVoxExtensionPath);
 
-  // TODO(dtseng): Guest mode manifest for ChromeVox Next pending work to
-  // generate manifests.
-  if (command_line->HasSwitch(chromeos::switches::kEnableChromeVoxNext))
-    idr = IDR_CHROMEVOX2_MANIFEST;
-  return Add(idr, base::FilePath(extension_misc::kChromeVoxExtensionPath));
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const char* manifest_filename =
+      command_line->HasSwitch(chromeos::switches::kGuestSession) ?
+      extension_misc::kChromeVoxGuestManifestFilename :
+          extension_misc::kChromeVoxManifestFilename;
+
+  std::string error;
+  scoped_ptr<base::DictionaryValue> manifest(
+      file_util::LoadManifest(chromevox_path, manifest_filename, &error));
+  CHECK(manifest) << error;
+
+  return Add(manifest.release(), chromevox_path);
 }
 
 std::string ComponentLoader::AddChromeOsSpeechSynthesisExtension() {

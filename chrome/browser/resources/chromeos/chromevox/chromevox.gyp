@@ -23,6 +23,7 @@
         'content_script_loader_file': 'chromevox/injected/loader.js',
         'options_script_loader_file': 'chromevox/background/options_loader.js',
         'kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
+        'template_manifest_path': 'manifest.json.jinja2',
       },
       'targets': [
         {
@@ -31,6 +32,8 @@
           'dependencies': [
             'chromevox_assets',
             'chromevox_static_files',
+            'chromevox_manifest',
+            'chromevox_guest_manifest',
             'chromevox_strings',
             'chromevox_uncompiled_js_files',
             '<(chromevox_third_party_dir)/chromevox.gyp:chromevox_third_party_resources',
@@ -62,6 +65,23 @@
           'includes': [
             'chromevox_assets.gypi',
           ],
+        },
+        {
+          'target_name': 'chromevox_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
+          },
+          'includes': [ 'generate_manifest.gypi', ],
+        },
+        {
+          'target_name': 'chromevox_guest_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest_guest.json',
+            'is_guest_manifest': 1,
+          },
+          'includes': [ 'generate_manifest.gypi', ],
         },
         {
           'target_name': 'chromevox_static_files',

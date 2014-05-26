@@ -155,7 +155,14 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
 
 base::DictionaryValue* LoadManifest(const base::FilePath& extension_path,
                                     std::string* error) {
-  base::FilePath manifest_path = extension_path.Append(kManifestFilename);
+  return LoadManifest(extension_path, kManifestFilename, error);
+}
+
+base::DictionaryValue* LoadManifest(
+    const base::FilePath& extension_path,
+    const base::FilePath::CharType* manifest_filename,
+    std::string* error) {
+  base::FilePath manifest_path = extension_path.Append(manifest_filename);
   if (!base::PathExists(manifest_path)) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     return NULL;

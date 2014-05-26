@@ -61,6 +61,12 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_root,
 base::DictionaryValue* LoadManifest(const base::FilePath& extension_root,
                                     std::string* error);
 
+// Convenience overload for specifying a manifest filename.
+base::DictionaryValue* LoadManifest(
+    const base::FilePath& extension_root,
+    const base::FilePath::CharType* manifest_filename,
+    std::string* error);
+
 // Returns true if the given extension object is valid and consistent.
 // May also append a series of warning messages to |warnings|, but they
 // should not prevent the extension from running.
