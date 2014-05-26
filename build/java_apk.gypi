@@ -433,8 +433,13 @@
   ],
   'actions': [
     {
-      'action_name': 'ant_codegen_<(_target_name)',
-      'message': 'Generating R.java for <(_target_name)',
+      'action_name': 'process_resources',
+      'message': 'processing resources for <(_target_name)',
+      'variables': {
+        # Write the inputs list to a file, so that its mtime is updated when
+        # the list of inputs changes.
+        'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(additional_input_paths) >@(resource_input_paths))',
+      },
       'conditions': [
         ['is_test_apk == 1', {
           'variables': {
@@ -443,15 +448,9 @@
           }
         }],
       ],
-      'variables': {
-        # Write the inputs list to a file, so that its mtime is updated when
-        # the list of inputs changes.
-        'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(additional_input_paths) >@(resource_input_paths))'
-      },
       'inputs': [
-        '<(DEPTH)/build/android/ant/apk-codegen.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/ant.py',
+        '<(DEPTH)/build/android/gyp/process_resources.py',
         '<(android_manifest_path)',
         '>@(additional_input_paths)',
         '>@(resource_input_paths)',
@@ -461,23 +460,22 @@
         '<(codegen_stamp)',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/gyp/ant.py',
-        '-quiet',
-        '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
-        '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
-        '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
-        '-DANDROID_MANIFEST=<(android_manifest_path)',
-        '-DANDROID_SDK_JAR=<(android_sdk_jar)',
-        '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-        '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-        '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-        '-DOUT_DIR=<(intermediate_dir)',
-        '-DRESOURCE_DIR=<(resource_dir)',
+        'python', '<(DEPTH)/build/android/gyp/process_resources.py',
+        '--android-sdk', '<(android_sdk)',
+        '--android-sdk-tools', '<(android_sdk_tools)',
 
-        '-DSTAMP=<(codegen_stamp)',
-        '-Dbasedir=.',
-        '-buildfile',
-        '<(DEPTH)/build/android/ant/apk-codegen.xml',
+        '--android-manifest', '<(android_manifest_path)',
+        '--dependencies-res-dirs', '>(additional_res_dirs)',
+
+        '--extra-res-packages', '>(additional_res_packages)',
+        '--extra-r-text-files', '>(additional_R_text_files)',
+
+        '--resource-dir', '<(resource_dir)',
+        '--crunch-output-dir', '<(intermediate_dir)/res',
+
+        '--R-dir', '<(intermediate_dir)/gen',
+
+        '--stamp', '<(codegen_stamp)',
       ],
     },
     {
