@@ -77,6 +77,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void ClearErrors() OVERRIDE;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) OVERRIDE;
   virtual void ShowControlBar(bool show) OVERRIDE;
+  virtual void SetKeyboardState(bool shown) OVERRIDE;
+  virtual void SetClientAreaSize(int width, int height) OVERRIDE;
   virtual void ShowDeviceResetScreen() OVERRIDE;
 
   // Handlers for JS WebUI messages.
@@ -106,6 +108,12 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   // Updates the device requisition string on the UI side.
   void UpdateDeviceRequisition();
+
+  // Updates virtual keyboard state.
+  void UpdateKeyboardState();
+
+  // Updates client area size based on the primary screen size.
+  void UpdateClientAreaSize();
 
   // Notification of a change in the accessibility settings.
   void OnAccessibilityStatusChanged(

@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -51,7 +52,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public chromeos::SessionManagerClient::Observer,
                              public chromeos::CrasAudioHandler::AudioObserver,
                              public ash::VirtualKeyboardStateObserver,
-                             public keyboard::KeyboardControllerObserver {
+                             public keyboard::KeyboardControllerObserver,
+                             public gfx::DisplayObserver {
  public:
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
   virtual ~LoginDisplayHostImpl();
@@ -128,6 +130,12 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Overridden from keyboard::KeyboardControllerObserver:
   virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE;
+
+  // Overridden from gfx::DisplayObserver:
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t changed_metrics) OVERRIDE;
 
  private:
   // Way to restore if renderer have crashed.

@@ -173,6 +173,12 @@ cr.define('cr.ui.login', function() {
     forceKeyboardFlow_: false,
 
     /**
+     * Whether virtual keyboard is shown.
+     * @type {boolean}
+     */
+    virtualKeyboardShown_: false,
+
+    /**
      * Type of UI.
      * @type {string}
      */
@@ -223,6 +229,29 @@ cr.define('cr.ui.login', function() {
 
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
+    },
+
+    /**
+     * Virtual keyboard state (hidden/shown).
+     * @param {boolean} hidden Whether keyboard is shown.
+     */
+    get virtualKeyboardShown() {
+      return this.virtualKeyboardShown_;
+    },
+
+    set virtualKeyboardShown(shown) {
+      this.virtualKeyboardShown_ = shown;
+    },
+
+    /**
+     * Sets the current size of the client area (display size).
+     * @param {number} width client area width
+     * @param {number} height client area height
+     */
+    setClientAreaSize: function(width, height) {
+      var clientArea = $('outer-container');
+      var bottom = parseInt(window.getComputedStyle(clientArea).bottom);
+      clientArea.style.minHeight = (height - bottom) + 'px';
     },
 
     /**

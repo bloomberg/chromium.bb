@@ -320,6 +320,22 @@ cr.define('cr.ui', function() {
     Oobe.getInstance().headerHidden = !show;
   };
 
+  /**
+   * Sets the current state of the virtual keyboard (shown/hidden).
+   */
+  Oobe.setKeyboardState = function(shown) {
+    Oobe.getInstance().virtualKeyboardShown = shown;
+  };
+
+  /**
+   * Sets the current size of the client area (display size).
+   * @param {number} width client area width
+   * @param {number} height client area height
+   */
+  Oobe.setClientAreaSize = function(width, height) {
+    Oobe.getInstance().setClientAreaSize(width, height);
+  };
+
   // Export
   return {
     Oobe: Oobe

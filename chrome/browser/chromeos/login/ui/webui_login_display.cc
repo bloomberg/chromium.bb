@@ -214,6 +214,16 @@ void WebUILoginDisplay::ShowControlBar(bool show) {
     webui_handler_->ShowControlBar(show);
 }
 
+void WebUILoginDisplay::SetKeyboardState(bool shown) {
+  if (webui_handler_)
+    webui_handler_->SetKeyboardState(shown);
+}
+
+void WebUILoginDisplay::SetClientAreaSize(int width, int height) {
+  if (webui_handler_)
+    webui_handler_->SetClientAreaSize(width, height);
+}
+
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
   return parent_window();

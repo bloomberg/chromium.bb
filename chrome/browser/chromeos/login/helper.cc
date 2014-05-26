@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/login/helper.h"
 
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -48,6 +50,11 @@ std::string CanonicalizeUserID(const std::string& user_id) {
   if (user_id == UserManager::kGuestUserName)
     return user_id;
   return gaia::CanonicalizeEmail(user_id);
+}
+
+bool LoginScrollIntoViewEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableLoginScrollIntoView);
 }
 
 NetworkStateHelper::NetworkStateHelper() {}

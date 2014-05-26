@@ -86,6 +86,8 @@ class LoginDisplayWebUIHandler {
   virtual void ShowGaiaPasswordChanged(const std::string& username) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
   virtual void ShowControlBar(bool show) = 0;
+  virtual void SetKeyboardState(bool shown) = 0;
+  virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
   // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
@@ -282,6 +284,8 @@ class SigninScreenHandler
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
   virtual void ShowSigninUI(const std::string& email) OVERRIDE;
   virtual void ShowControlBar(bool show) OVERRIDE;
+  virtual void SetKeyboardState(bool shown) OVERRIDE;
+  virtual void SetClientAreaSize(int width, int height) OVERRIDE;
   virtual void ShowPasswordChangedDialog(bool show_password_error) OVERRIDE;
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,

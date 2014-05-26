@@ -905,6 +905,14 @@ void SigninScreenHandler::ShowControlBar(bool show) {
   core_oobe_actor_->ShowControlBar(show);
 }
 
+void SigninScreenHandler::SetKeyboardState(bool shown) {
+  core_oobe_actor_->SetKeyboardState(shown);
+}
+
+void SigninScreenHandler::SetClientAreaSize(int width, int height) {
+  core_oobe_actor_->SetClientAreaSize(width, height);
+}
+
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);

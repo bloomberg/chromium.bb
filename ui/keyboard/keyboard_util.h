@@ -38,6 +38,13 @@ enum KeyboardControlEvent {
   KEYBOARD_CONTROL_MAX,
 };
 
+// An enumeration of keyboard overscroll override value.
+enum KeyboardOverscrolOverride {
+  KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED = 0,
+  KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED,
+  KEYBOARD_OVERSCROLL_OVERRIDE_NONE,
+};
+
 // Gets the default keyboard bounds from |window_bounds|.
 KEYBOARD_EXPORT gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
     const gfx::Rect& window_bounds);
@@ -70,6 +77,10 @@ KEYBOARD_EXPORT bool IsKeyboardUsabilityExperimentEnabled();
 
 // Returns true if keyboard overscroll mode is enabled.
 KEYBOARD_EXPORT bool IsKeyboardOverscrollEnabled();
+
+// Sets temporary keyboard overscroll override.
+KEYBOARD_EXPORT void SetKeyboardOverscrollOverride(
+    KeyboardOverscrolOverride override);
 
 // Returns true if an IME extension can specify a custom input view for the
 // virtual keyboard window.

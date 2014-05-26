@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/shell.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -23,6 +25,10 @@
 #include "chromeos/chromeos_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
+#include "ui/gfx/size.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace {
 
@@ -103,6 +109,8 @@ void CoreOobeHandler::Initialize() {
   version_info_updater_.StartUpdate(false);
 #endif
   UpdateDeviceRequisition();
+  UpdateKeyboardState();
+  UpdateClientAreaSize();
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -212,6 +220,14 @@ void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
 
 void CoreOobeHandler::ShowControlBar(bool show) {
   CallJS("showControlBar", show);
+}
+
+void CoreOobeHandler::SetKeyboardState(bool shown) {
+  CallJS("setKeyboardState", shown);
+}
+
+void CoreOobeHandler::SetClientAreaSize(int width, int height) {
+  CallJS("setClientAreaSize", width, height);
 }
 
 void CoreOobeHandler::HandleInitialized() {
@@ -343,6 +359,22 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   CallJS("updateDeviceRequisition",
          connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition());
+}
+
+void CoreOobeHandler::UpdateKeyboardState() {
+  if (login::LoginScrollIntoViewEnabled()) {
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller) {
+      gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
+      SetKeyboardState(!bounds.IsEmpty());
+    }
+  }
+}
+
+void CoreOobeHandler::UpdateClientAreaSize() {
+  const gfx::Size& size = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
+  SetClientAreaSize(size.width(), size.height());
 }
 
 void CoreOobeHandler::OnAccessibilityStatusChanged(

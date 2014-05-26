@@ -47,6 +47,13 @@ cr.define('login', function() {
   var POD_ROW_PADDING = 10;
 
   /**
+   * Minimal padding between user pod and virtual keyboard.
+   * @type {number}
+   * @const
+   */
+  var USER_POD_KEYBOARD_MIN_PADDING = 20;
+
+  /**
    * Whether to preselect the first pod automatically on login screen.
    * @type {boolean}
    * @const
@@ -1560,6 +1567,29 @@ cr.define('login', function() {
     },
 
     /**
+     * Scrolls focused user pod into view.
+     */
+    scrollFocusedPodIntoView: function() {
+      var pod = this.focusedPod_;
+      if (!pod)
+        return;
+
+      // First check whether focused pod is already fully visible.
+      var visibleArea = $('scroll-container');
+      var scrollTop = visibleArea.scrollTop;
+      var clientHeight = visibleArea.clientHeight;
+      var podTop = $('oobe').offsetTop + pod.offsetTop;
+      var padding = USER_POD_KEYBOARD_MIN_PADDING;
+      if (podTop + pod.height + padding <= scrollTop + clientHeight &&
+          podTop - padding >= scrollTop) {
+        return;
+      }
+
+      // Scroll so that user pod is as centered as possible.
+      visibleArea.scrollTop = podTop - (clientHeight - pod.offsetHeight) / 2;
+    },
+
+    /**
      * Rebuilds pod row using users_ and apps_ that were previously set or
      * updated.
      */
@@ -1734,6 +1764,9 @@ cr.define('login', function() {
       var layout = this.calculateLayout_();
       if (layout.columns != this.columns || layout.rows != this.rows)
         this.placePods_();
+
+      if (Oobe.getInstance().virtualKeyboardShown)
+        this.scrollFocusedPodIntoView();
     },
 
     /**
@@ -1829,7 +1862,7 @@ cr.define('login', function() {
       this.setAttribute('ncolumns', columns);
     },
     get columns() {
-      return this.getAttribute('ncolumns');
+      return parseInt(this.getAttribute('ncolumns'));
     },
 
     /**
@@ -1841,7 +1874,7 @@ cr.define('login', function() {
       this.setAttribute('nrows', rows);
     },
     get rows() {
-      return this.getAttribute('nrows');
+      return parseInt(this.getAttribute('nrows'));
     },
 
     /**
@@ -1907,6 +1940,9 @@ cr.define('login', function() {
           chrome.send('focusPod', [podToFocus.user.username]);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
+
+        if (Oobe.getInstance().virtualKeyboardShown)
+          this.scrollFocusedPodIntoView();
       }
       this.insideFocusPod_ = false;
       this.keyboardActivated_ = false;
