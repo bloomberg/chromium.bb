@@ -250,11 +250,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
               DoBrowserLaunch(testing_profile_.get(),
                               mock_login_display_host_.get()))
       .Times(1);
-  EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kUsername))
-      .Times(1);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
-      .Times(1);
-  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizardPtr(WizardController::kTermsOfServiceScreenName, NULL))
@@ -270,8 +266,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizardPtr(WizardController::kEnrollmentScreenName,
                              _))
-      .Times(1);
-  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
@@ -321,10 +315,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
                             &base::Callback<void(void)>::Run),
           InvokeWithoutArgs(&profile_prepared_cb_,
                             &base::Callback<void(void)>::Run)));
-  EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kNewUsername))
-      .Times(1);
-  EXPECT_CALL(*mock_login_display_, OnFadeOut())
-      .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
   EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
@@ -454,11 +444,7 @@ class ExistingUserControllerPublicSessionTest
                 DoBrowserLaunch(testing_profile_.get(),
                                 mock_login_display_host_.get()))
         .Times(1);
-    EXPECT_CALL(*mock_login_display_, OnLoginSuccess(username))
-        .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
-        .Times(1);
-    EXPECT_CALL(*mock_login_display_, OnFadeOut())
         .Times(1);
     EXPECT_CALL(*mock_login_display_host_,
                 StartWizardPtr(WizardController::kTermsOfServiceScreenName,
