@@ -510,8 +510,11 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGridTemplate: return 452;
     case CSSPropertyGrid: return 453;
 
-    // Add new features above this line (don't change the assigned numbers of the existing
-    // items) and update maximumCSSSampleId() with the new maximum value.
+    // 1. Add new features above this line (don't change the assigned numbers of the existing
+    // items).
+    // 2. Update maximumCSSSampleId() with the new maximum value.
+    // 3. Run the update_use_counter_css.py script in
+    // chromium/src/tools/metrics/histograms to update the UMA histogram names.
 
     // Internal properties should not be counted.
     case CSSPropertyInternalMarqueeDirection:
