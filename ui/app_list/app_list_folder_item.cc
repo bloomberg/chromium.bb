@@ -36,6 +36,9 @@ class FolderImageSource : public gfx::CanvasImageSource {
                 const gfx::ImageSkia& icon,
                 const gfx::Size icon_size,
                 int x, int y) {
+    if (icon.isNull())
+      return;
+
     gfx::ImageSkia resized(
         gfx::ImageSkiaOperations::CreateResizedImage(
             icon, skia::ImageOperations::RESIZE_BEST, icon_size));

@@ -43,6 +43,8 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
 
   app_list_folder_view_ =
       new AppListFolderView(this, model, app_list_main_view);
+  // The folder view is initially hidden.
+  app_list_folder_view_->SetVisible(false);
   AddChildView(app_list_folder_view_);
 
   apps_grid_view_->SetModel(model_);
@@ -209,6 +211,9 @@ void AppsContainerView::CreateViewsForFolderTopItemsAnimation(
   top_icon_animation_pending_count_ =
       std::min(kNumFolderTopItems, active_folder->item_list()->item_count());
   for (size_t i = 0; i < top_icon_animation_pending_count_; ++i) {
+    if (active_folder->GetTopIcon(i).isNull())
+      continue;
+
     TopIconAnimationView* icon_view = new TopIconAnimationView(
         active_folder->GetTopIcon(i), top_items_bounds[i], open_folder);
     icon_view->AddObserver(this);

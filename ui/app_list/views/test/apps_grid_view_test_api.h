@@ -28,6 +28,8 @@ class AppsGridViewTestApi {
 
   void SetPageFlipDelay(int page_flip_delay_in_ms);
 
+  void PressItemAt(int index);
+
  private:
   AppsGridView* view_;
 

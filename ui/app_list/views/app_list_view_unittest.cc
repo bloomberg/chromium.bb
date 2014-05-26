@@ -12,9 +12,13 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/apps_container_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
@@ -40,6 +44,10 @@ class AppListViewTestContext {
   // top level views. Then closes the window.
   void RunDisplayTest();
 
+  // Hides and reshows the app list with a folder open, expecting the main grid
+  // view to be shown.
+  void RunReshowWithOpenFolderTest();
+
   // A standard set of checks on a view, e.g., ensuring it is drawn and visible.
   static void CheckView(views::View* subview);
 
@@ -55,6 +63,12 @@ class AppListViewTestContext {
   bool is_landscape() const { return is_landscape_; }
 
  private:
+  // Shows the app list and waits until a paint occurs.
+  void Show();
+
+  // Closes the app list. This sets |view_| to NULL.
+  void Close();
+
   const bool is_landscape_;
   scoped_ptr<base::RunLoop> run_loop_;
   PaginationModel pagination_model_;
@@ -119,18 +133,30 @@ void AppListViewTestContext::CheckView(views::View* subview) {
   EXPECT_TRUE(subview->IsDrawn());
 }
 
-void AppListViewTestContext::RunDisplayTest() {
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, pagination_model_.total_pages());
+void AppListViewTestContext::Show() {
   view_->GetWidget()->Show();
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-
   run_loop_.reset(new base::RunLoop);
   view_->SetNextPaintCallback(run_loop_->QuitClosure());
   run_loop_->Run();
 
   EXPECT_TRUE(view_->GetWidget()->IsVisible());
+}
 
+void AppListViewTestContext::Close() {
+  view_->GetWidget()->Close();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+
+  // |view_| should have been deleted and set to NULL via ViewClosing().
+  EXPECT_FALSE(view_);
+}
+
+void AppListViewTestContext::RunDisplayTest() {
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, pagination_model_.total_pages());
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  Show();
   if (is_landscape_)
     EXPECT_EQ(2, pagination_model_.total_pages());
   else
@@ -143,12 +169,51 @@ void AppListViewTestContext::RunDisplayTest() {
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->search_box_view()));
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
 
-  view_->GetWidget()->Close();
-  run_loop_.reset(new base::RunLoop);
-  run_loop_->Run();
+  Close();
+}
 
-  // |view_| should have been deleted and set to NULL via ViewClosing().
-  EXPECT_FALSE(view_);
+void AppListViewTestContext::RunReshowWithOpenFolderTest() {
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, pagination_model_.total_pages());
+
+  AppListTestModel* model = delegate_->GetTestModel();
+  model->PopulateApps(kInitialItems);
+  const std::string folder_id =
+      model->MergeItems(model->top_level_item_list()->item_at(0)->id(),
+                        model->top_level_item_list()->item_at(1)->id());
+
+  AppListFolderItem* folder_item = model->FindFolderItem(folder_id);
+  EXPECT_TRUE(folder_item);
+
+  Show();
+
+  // The main grid view should be showing initially.
+  AppListMainView* main_view = view_->app_list_main_view();
+  AppsContainerView* container_view =
+      main_view->contents_view()->apps_container_view();
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->apps_grid_view()));
+  EXPECT_FALSE(container_view->app_list_folder_view()->visible());
+
+  AppsGridViewTestApi test_api(container_view->apps_grid_view());
+  test_api.PressItemAt(0);
+
+  // After pressing the folder item, the folder view should be showing.
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->app_list_folder_view()));
+  EXPECT_FALSE(container_view->apps_grid_view()->visible());
+
+  view_->GetWidget()->Hide();
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+
+  Show();
+
+  // The main grid view should be showing after a reshow.
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->apps_grid_view()));
+  EXPECT_FALSE(container_view->app_list_folder_view()->visible());
+
+  Close();
 }
 
 class AppListViewTestAura : public views::ViewsTestBase,
@@ -243,6 +308,16 @@ TEST_P(AppListViewTestAura, Display) {
 // use the regular root window.
 TEST_P(AppListViewTestDesktop, Display) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunDisplayTest());
+}
+
+// Tests that the main grid view is shown after hiding and reshowing the app
+// list with a folder view open. This is a regression test for crbug.com/357058.
+TEST_P(AppListViewTestAura, ReshowWithOpenFolder) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunReshowWithOpenFolderTest());
+}
+
+TEST_P(AppListViewTestDesktop, ReshowWithOpenFolder) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunReshowWithOpenFolderTest());
 }
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,

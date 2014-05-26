@@ -4,7 +4,9 @@
 
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 
+#include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/events/event.h"
 
 namespace app_list {
 namespace test {
@@ -27,6 +29,11 @@ void AppsGridViewTestApi::LayoutToIdealBounds() {
 
 void AppsGridViewTestApi::SetPageFlipDelay(int page_flip_delay_in_ms) {
   view_->page_flip_delay_in_ms_ = page_flip_delay_in_ms;
+}
+
+void AppsGridViewTestApi::PressItemAt(int index) {
+  GetViewAtModelIndex(index)->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false));
 }
 
 }  // namespace test

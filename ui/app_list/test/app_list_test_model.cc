@@ -6,6 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace app_list {
 namespace test {
@@ -21,6 +23,7 @@ AppListTestModel::AppListTestItem::AppListTestItem(
     : AppListItem(id),
       model_(model) {
 }
+
 AppListTestModel::AppListTestItem::~AppListTestItem() {
 }
 
@@ -54,7 +57,7 @@ AppListItem* AppListTestModel::AddItemToFolder(AppListItem* item,
 }
 
 void AppListTestModel::MoveItemToFolder(AppListItem* item,
-                                          const std::string& folder_id) {
+                                        const std::string& folder_id) {
   AppListModel::MoveItemToFolder(item, folder_id);
 }
 

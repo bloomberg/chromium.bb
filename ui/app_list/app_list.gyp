@@ -185,6 +185,7 @@
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../resources/ui_resources.gyp:ui_resources',
         'app_list',
       ],
       'sources': [
