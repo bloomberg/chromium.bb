@@ -631,6 +631,7 @@
             ],
             'sources!': [
               'common/net/x509_certificate_model.cc',
+              'common/net/x509_certificate_model_openssl.cc',
             ],
         }],
         ['use_openssl==1', {

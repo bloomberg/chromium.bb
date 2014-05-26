@@ -4,12 +4,15 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include <openssl/bio.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
 #include <openssl/x509v3.h>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "crypto/openssl_bio_string.h"
+#include "crypto/openssl_util.h"
 #include "net/cert/x509_util_openssl.h"
 
 namespace x509_util = net::x509_util;
@@ -44,8 +47,19 @@ namespace x509_certificate_model {
 using net::X509Certificate;
 
 std::string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  std::string name =
+      ProcessIDN(GetSubjectCommonName(cert_handle, std::string()));
+  if (!name.empty())
+    return name;
+
+  crypto::ScopedOpenSSL<BIO, BIO_free_all> bio(crypto::BIO_new_string(&name));
+  if (!bio.get())
+    return name;
+  X509_NAME_print_ex(bio.get(),
+                     X509_get_subject_name(cert_handle),
+                     0 /* indent */,
+                     XN_FLAG_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
+  return name;
 }
 
 std::string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
@@ -140,8 +154,22 @@ bool GetTimes(X509Certificate::OSCertHandle cert_handle,
 }
 
 std::string GetTitle(net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  // TODO(mattm): merge GetTitle and GetCertNameOrNickname?
+  // Is there any reason GetCertNameOrNickname calls ProcessIDN and this
+  // doesn't?
+  std::string title =
+      GetSubjectCommonName(cert_handle, std::string());
+  if (!title.empty())
+    return title;
+
+  crypto::ScopedOpenSSL<BIO, BIO_free_all> bio(crypto::BIO_new_string(&title));
+  if (!bio.get())
+    return title;
+  X509_NAME_print_ex(bio.get(),
+                     X509_get_subject_name(cert_handle),
+                     0 /* indent */,
+                     XN_FLAG_RFC2253 & ~ASN1_STRFLGS_ESC_MSB);
+  return title;
 }
 
 std::string GetIssuerName(net::X509Certificate::OSCertHandle cert_handle) {
