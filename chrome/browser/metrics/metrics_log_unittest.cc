@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -63,29 +64,14 @@ class TestMetricsLog : public MetricsLog {
   TestMetricsLog(const std::string& client_id,
                  int session_id,
                  LogType log_type,
-                 metrics::MetricsServiceClient* client)
-      : MetricsLog(client_id, session_id, log_type, client),
-        prefs_(&scoped_prefs_) {
-    chrome::RegisterLocalState(scoped_prefs_.registry());
-    InitPrefs();
-  }
-
-  // Creates a TestMetricsLog that will use |prefs| as the fake local state.
-  // Useful for tests that need to re-use the local state prefs between logs.
-  TestMetricsLog(const std::string& client_id,
-                 int session_id,
-                 LogType log_type,
                  metrics::MetricsServiceClient* client,
                  TestingPrefServiceSimple* prefs)
-      : MetricsLog(client_id, session_id, log_type, client), prefs_(prefs) {
+      : MetricsLog(client_id, session_id, log_type, client, prefs),
+        prefs_(prefs) {
     InitPrefs();
   }
 
   virtual ~TestMetricsLog() {}
-
-  virtual PrefService* GetPrefService() OVERRIDE {
-    return prefs_;
-  }
 
   const metrics::ChromeUserMetricsExtension& uma_proto() const {
     return *MetricsLog::uma_proto();
@@ -112,8 +98,6 @@ class TestMetricsLog : public MetricsLog {
     }
   }
 
-  // Scoped PrefsService, which may not be used if |prefs_ != &scoped_prefs|.
-  TestingPrefServiceSimple scoped_prefs_;
   // Weak pointer to the PrefsService used by this log.
   TestingPrefServiceSimple* prefs_;
 
@@ -124,7 +108,7 @@ class TestMetricsLog : public MetricsLog {
 
 class MetricsLogTest : public testing::Test {
  public:
-  MetricsLogTest() {}
+  MetricsLogTest() { MetricsService::RegisterPrefs(prefs_.registry()); }
 
  protected:
   // Check that the values in |system_values| correspond to the test data
@@ -163,6 +147,9 @@ class MetricsLogTest : public testing::Test {
     // of this call.
   }
 
+ protected:
+  TestingPrefServiceSimple prefs_;
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -171,7 +158,8 @@ class MetricsLogTest : public testing::Test {
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
   metrics::TestMetricsServiceClient client;
-  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
 
   std::vector<variations::ActiveGroupId> synthetic_trials;
   // Add two synthetic trials.
@@ -184,9 +172,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   CheckSystemProfile(log.system_profile());
 
   // Check that the system profile has also been written to prefs.
-  PrefService* local_state = log.GetPrefService();
   const std::string base64_system_profile =
-      local_state->GetString(prefs::kStabilitySavedSystemProfile);
+      prefs_.GetString(prefs::kStabilitySavedSystemProfile);
   EXPECT_FALSE(base64_system_profile.empty());
   std::string serialied_system_profile;
   EXPECT_TRUE(base::Base64Decode(base64_system_profile,
@@ -201,42 +188,40 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
   const char* kSystemProfileHashPref = prefs::kStabilitySavedSystemProfileHash;
 
   metrics::TestMetricsServiceClient client;
-  TestingPrefServiceSimple prefs;
-  chrome::RegisterLocalState(prefs.registry());
 
   // The pref value is empty, so loading it from prefs should fail.
   {
     TestMetricsLog log(
-        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
   }
 
   // Do a RecordEnvironment() call and check whether the pref is recorded.
   {
     TestMetricsLog log(
-        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
                           std::vector<variations::ActiveGroupId>());
-    EXPECT_FALSE(prefs.GetString(kSystemProfilePref).empty());
-    EXPECT_FALSE(prefs.GetString(kSystemProfileHashPref).empty());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
 
   {
     TestMetricsLog log(
-        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs());
     // Check some values in the system profile.
     EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
     EXPECT_EQ(kEnabledDateExpected, log.system_profile().uma_enabled_date());
     // Ensure that the call cleared the prefs.
-    EXPECT_TRUE(prefs.GetString(kSystemProfilePref).empty());
-    EXPECT_TRUE(prefs.GetString(kSystemProfileHashPref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
 
   // Ensure that a non-matching hash results in the pref being invalid.
   {
     TestMetricsLog log(
-        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
                           std::vector<variations::ActiveGroupId>());
@@ -244,20 +229,23 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
 
   {
     // Set the hash to a bad value.
-    prefs.SetString(kSystemProfileHashPref, "deadbeef");
+    prefs_.SetString(kSystemProfileHashPref, "deadbeef");
     TestMetricsLog log(
-        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs);
+        kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
     // Ensure that the prefs are cleared, even if the call failed.
-    EXPECT_TRUE(prefs.GetString(kSystemProfilePref).empty());
-    EXPECT_TRUE(prefs.GetString(kSystemProfileHashPref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
 }
 
 TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   metrics::TestMetricsServiceClient client;
-  TestMetricsLog log(
-      kClientId, kSessionId, MetricsLog::INITIAL_STABILITY_LOG, &client);
+  TestMetricsLog log(kClientId,
+                     kSessionId,
+                     MetricsLog::INITIAL_STABILITY_LOG,
+                     &client,
+                     &prefs_);
   std::vector<metrics::MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>());
@@ -278,7 +266,8 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
 
 TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   metrics::TestMetricsServiceClient client;
-  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   std::vector<metrics::MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>());
@@ -306,7 +295,8 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
             metrics::HashMetricName("birth_thread*"));
 
   metrics::TestMetricsServiceClient client;
-  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
+  TestMetricsLog log(
+      kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   EXPECT_EQ(0, log.uma_proto().profiler_event_size());
 
   {
@@ -469,6 +459,6 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
 TEST_F(MetricsLogTest, ChromeChannelWrittenToProtobuf) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log(
-      "user@test.com", kSessionId, MetricsLog::ONGOING_LOG, &client);
+      "user@test.com", kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   EXPECT_TRUE(log.uma_proto().system_profile().has_channel());
 }

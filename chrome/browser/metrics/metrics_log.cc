@@ -181,13 +181,15 @@ int64 RoundSecondsToHour(int64 time_in_seconds) {
 MetricsLog::MetricsLog(const std::string& client_id,
                        int session_id,
                        LogType log_type,
-                       metrics::MetricsServiceClient* client)
+                       metrics::MetricsServiceClient* client,
+                       PrefService* local_state)
     : MetricsLogBase(client_id,
                      session_id,
                      log_type,
                      client->GetVersionString()),
       client_(client),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      local_state_(local_state) {
   uma_proto()->mutable_system_profile()->set_channel(client_->GetChannel());
 }
 
@@ -201,7 +203,7 @@ void MetricsLog::RecordStabilityMetrics(
   DCHECK(HasEnvironment());
   DCHECK(!HasStabilityMetrics());
 
-  PrefService* pref = GetPrefService();
+  PrefService* pref = local_state_;
   DCHECK(pref);
 
   // Get stability attributes out of Local State, zeroing out stored values.
@@ -257,10 +259,6 @@ void MetricsLog::RecordGeneralMetrics(
     const std::vector<metrics::MetricsProvider*>& metrics_providers) {
   for (size_t i = 0; i < metrics_providers.size(); ++i)
     metrics_providers[i]->ProvideGeneralMetrics(uma_proto());
-}
-
-PrefService* MetricsLog::GetPrefService() {
-  return g_browser_process->local_state();
 }
 
 void MetricsLog::GetFieldTrialIds(
@@ -329,14 +327,14 @@ void MetricsLog::RecordEnvironment(
     system_profile->set_brand_code(brand_code);
 
   int enabled_date;
-  bool success = base::StringToInt(GetMetricsEnabledDate(GetPrefService()),
-                                   &enabled_date);
+  bool success =
+      base::StringToInt(GetMetricsEnabledDate(local_state_), &enabled_date);
   DCHECK(success);
 
   // Reduce granularity of the enabled_date field to nearest hour.
   system_profile->set_uma_enabled_date(RoundSecondsToHour(enabled_date));
 
-  int64 install_date = GetPrefService()->GetInt64(prefs::kInstallDate);
+  int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
 
   // Reduce granularity of the install_date field to nearest hour.
   system_profile->set_install_date(RoundSecondsToHour(install_date));
@@ -385,7 +383,7 @@ void MetricsLog::RecordEnvironment(
   std::string base64_system_profile;
   if (system_profile->SerializeToString(&serialied_system_profile)) {
     base::Base64Encode(serialied_system_profile, &base64_system_profile);
-    PrefService* local_state = GetPrefService();
+    PrefService* local_state = local_state_;
     local_state->SetString(prefs::kStabilitySavedSystemProfile,
                            base64_system_profile);
     local_state->SetString(prefs::kStabilitySavedSystemProfileHash,
@@ -394,7 +392,7 @@ void MetricsLog::RecordEnvironment(
 }
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs() {
-  PrefService* local_state = GetPrefService();
+  PrefService* local_state = local_state_;
   const std::string base64_system_profile =
       local_state->GetString(prefs::kStabilitySavedSystemProfile);
   if (base64_system_profile.empty())

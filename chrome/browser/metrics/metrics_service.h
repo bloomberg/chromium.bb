@@ -44,6 +44,7 @@ namespace base {
 class DictionaryValue;
 class HistogramSamples;
 class MessageLoopProxy;
+class PrefService;
 }
 
 namespace variations {
@@ -103,12 +104,13 @@ class MetricsService
     SHUTDOWN_COMPLETE = 700,
   };
 
-  // Creates the MetricsService with the given |state_manager| and |client|.
-  // Does not take ownership of |state_manager| or |client|; instead stores a
-  // weak pointer to each. Caller should ensure that |state_manager| and
-  // |client| are valid for the lifetime of this class.
+  // Creates the MetricsService with the given |state_manager|, |client|, and
+  // |local_state|.  Does not take ownership of the paramaters; instead stores
+  // a weak pointer to each. Caller should ensure that the parameters are valid
+  // for the lifetime of this class.
   MetricsService(metrics::MetricsStateManager* state_manager,
-                 metrics::MetricsServiceClient* client);
+                 metrics::MetricsServiceClient* client,
+                 PrefService* local_state);
   virtual ~MetricsService();
 
   // Initializes metrics recording state. Updates various bookkeeping values in
@@ -188,10 +190,11 @@ class MetricsService
   void OnAppEnterForeground();
 #else
   // Set the dirty flag, which will require a later call to LogCleanShutdown().
-  static void LogNeedForCleanShutdown();
+  static void LogNeedForCleanShutdown(PrefService* local_state);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-  static void SetExecutionPhase(ExecutionPhase execution_phase);
+  static void SetExecutionPhase(ExecutionPhase execution_phase,
+                                PrefService* local_state);
 
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.
@@ -418,6 +421,8 @@ class MetricsService
 
   // Registered metrics providers.
   ScopedVector<metrics::MetricsProvider> metrics_providers_;
+
+  PrefService* local_state_;
 
   base::ActionCallback action_callback_;
 

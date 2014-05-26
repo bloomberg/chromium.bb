@@ -1221,7 +1221,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Profile creation ----------------------------------------------------------
 
-  MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
+  MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE,
+                                    g_browser_process->local_state());
   profile_ = CreatePrimaryProfile(parameters(),
                                   user_data_dir_,
                                   parsed_command_line());
@@ -1395,7 +1396,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.
-  MetricsService::SetExecutionPhase(MetricsService::STARTUP_TIMEBOMB_ARM);
+  MetricsService::SetExecutionPhase(MetricsService::STARTUP_TIMEBOMB_ARM,
+                                    g_browser_process->local_state());
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // On mobile, need for clean shutdown arises only when the application comes
@@ -1403,7 +1405,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/179143
 #if !defined(OS_ANDROID)
   // Start watching for a hang.
-  MetricsService::LogNeedForCleanShutdown();
+  MetricsService::LogNeedForCleanShutdown(g_browser_process->local_state());
 #endif
 
 #if defined(ENABLE_FULL_PRINTING)
@@ -1417,7 +1419,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   // Start watching all browser threads for responsiveness.
-  MetricsService::SetExecutionPhase(MetricsService::THREAD_WATCHER_START);
+  MetricsService::SetExecutionPhase(MetricsService::THREAD_WATCHER_START,
+                                    g_browser_process->local_state());
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
 #if defined(OS_ANDROID)
@@ -1579,7 +1582,8 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
-  MetricsService::SetExecutionPhase(MetricsService::MAIN_MESSAGE_LOOP_RUN);
+  MetricsService::SetExecutionPhase(MetricsService::MAIN_MESSAGE_LOOP_RUN,
+                                    g_browser_process->local_state());
   run_loop.Run();
 
   return true;
@@ -1596,7 +1600,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
-  MetricsService::SetExecutionPhase(MetricsService::SHUTDOWN_TIMEBOMB_ARM);
+  MetricsService::SetExecutionPhase(MetricsService::SHUTDOWN_TIMEBOMB_ARM,
+                                    g_browser_process->local_state());
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.

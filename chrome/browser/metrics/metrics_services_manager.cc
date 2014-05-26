@@ -29,8 +29,8 @@ MetricsServicesManager::~MetricsServicesManager() {
 MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_service_) {
-    metrics_service_.reset(
-        new MetricsService(GetMetricsStateManager(), &metrics_service_client_));
+    metrics_service_.reset(new MetricsService(
+        GetMetricsStateManager(), &metrics_service_client_, local_state_));
     metrics_service_client_.set_service(metrics_service_.get());
     metrics_service_->RegisterMetricsProvider(
         scoped_ptr<metrics::MetricsProvider>(

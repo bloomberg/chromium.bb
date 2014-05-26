@@ -45,13 +45,15 @@ class MetricsLog : public metrics::MetricsLogBase {
   // |client_id| is the identifier for this profile on this installation
   // |session_id| is an integer that's incremented on each application launch
   // |client| is used to interact with the embedder.
+  // |local_state| is the PrefService that this instance should use.
   // Note: |this| instance does not take ownership of the |client|, but rather
   // stores a weak pointer to it. The caller should ensure that the |client| is
   // valid for the lifetime of this class.
   MetricsLog(const std::string& client_id,
              int session_id,
              LogType log_type,
-             metrics::MetricsServiceClient* client);
+             metrics::MetricsServiceClient* client,
+             PrefService* local_state);
   virtual ~MetricsLog();
 
   // Records the current operating environment, including metrics provided by
@@ -101,9 +103,6 @@ class MetricsLog : public metrics::MetricsLogBase {
  protected:
   // Exposed for the sake of mocking in test code.
 
-  // Returns the PrefService from which to log metrics data.
-  virtual PrefService* GetPrefService();
-
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
@@ -137,6 +136,8 @@ class MetricsLog : public metrics::MetricsLogBase {
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
+
+  PrefService* local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };
