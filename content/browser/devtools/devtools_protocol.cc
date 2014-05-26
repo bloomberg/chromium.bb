@@ -259,11 +259,10 @@ DevToolsProtocol::ParseResponse(
   if (!response_dict->GetInteger(kIdParam, &id))
     id = kNoId;
 
-  int error_code;
-  if (!response_dict->GetInteger(kErrorCodeParam, &error_code))
-    return new Response(id, kErrorInternalError, "Invalid response");
-
-  if (error_code) {
+  const base::DictionaryValue* error_dict;
+  if (response_dict->GetDictionary(kErrorParam, &error_dict)) {
+    int error_code = kErrorInternalError;
+    response_dict->GetInteger(kErrorCodeParam, &error_code);
     std::string error_message;
     response_dict->GetString(kErrorMessageParam, &error_message);
     return new Response(id, error_code, error_message);
