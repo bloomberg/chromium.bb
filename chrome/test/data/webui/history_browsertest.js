@@ -506,9 +506,9 @@ TEST_F('HistoryWebUITest', 'DISABLED_bulkDeletion', function() {
 
 /**
  * Test selecting multiple entries using shift click.
- * Disabled due to time out on win: crbug/375910
+ * Disabled due to time out on win and mac: crbug/375910
  */
-GEN('#if defined(OS_WIN)');
+GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
 GEN('#define MAYBE_multipleSelect DISABLED_multipleSelect');
 GEN('#else');
 GEN('#define MAYBE_multipleSelect multipleSelect');
