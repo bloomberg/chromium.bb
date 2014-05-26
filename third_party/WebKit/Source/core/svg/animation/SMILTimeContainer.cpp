@@ -301,7 +301,7 @@ void SMILTimeContainer::updateDocumentOrderIndexes()
 
 struct PriorityCompare {
     PriorityCompare(SMILTime elapsed) : m_elapsed(elapsed) {}
-    bool operator()(const RefPtr<SVGSMILElement>& a, const RefPtr<SVGSMILElement>& b)
+    bool operator()(const RefPtrWillBeMember<SVGSMILElement>& a, const RefPtrWillBeMember<SVGSMILElement>& b)
     {
         // FIXME: This should also consider possible timing relations between the elements.
         SMILTime aBegin = a->intervalBegin();
@@ -376,7 +376,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     if (m_documentOrderIndexesDirty)
         updateDocumentOrderIndexes();
 
-    Vector<RefPtr<SVGSMILElement> >  animationsToApply;
+    WillBeHeapVector<RefPtrWillBeMember<SVGSMILElement> >  animationsToApply;
     GroupedAnimationsMap::iterator end = m_scheduledAnimations.end();
     for (GroupedAnimationsMap::iterator it = m_scheduledAnimations.begin(); it != end; ++it) {
         AnimationsVector* scheduled = it->value.get();
@@ -436,8 +436,8 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
     for (unsigned i = 0; i < animationsToApplySize; ++i) {
         if (animationsToApply[i]->inDocument() && animationsToApply[i]->isSVGDiscardElement()) {
-            RefPtr<SVGSMILElement> animDiscard = animationsToApply[i];
-            RefPtr<SVGElement> targetElement = animDiscard->targetElement();
+            RefPtrWillBeRawPtr<SVGSMILElement> animDiscard = animationsToApply[i];
+            RefPtrWillBeRawPtr<SVGElement> targetElement = animDiscard->targetElement();
             if (targetElement && targetElement->inDocument()) {
                 targetElement->remove(IGNORE_EXCEPTION);
                 ASSERT(!targetElement->inDocument());

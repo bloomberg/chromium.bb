@@ -29,6 +29,7 @@
 #include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SMILTime.h"
+#include "platform/heap/Heap.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {
@@ -163,7 +164,8 @@ private:
 
     // This represents conditions on elements begin or end list that need to be resolved on runtime
     // for example <animate begin="otherElement.begin + 8s; button.click" ... />
-    struct Condition {
+    class Condition : public NoBaseWillBeGarbageCollectedFinalized<Condition> {
+    public:
         enum Type {
             EventBase,
             Syncbase,
@@ -171,13 +173,32 @@ private:
         };
 
         Condition(Type, BeginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1);
+        static PassOwnPtrWillBeRawPtr<Condition> create(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1)
+        {
+            return adoptPtrWillBeNoop(new Condition(type, beginOrEnd, baseID, name, offset, repeat));
+        }
+        ~Condition();
+        void trace(Visitor*);
+
+        Type type() const { return m_type; }
+        BeginOrEnd beginOrEnd() const { return m_beginOrEnd; }
+        String baseID() const { return m_baseID; }
+        String name() const { return m_name; }
+        SMILTime offset() const { return m_offset; }
+        int repeat() const { return m_repeat; }
+        Element* syncBase() const { return m_syncBase.get(); }
+        void setSyncBase(Element* element) { m_syncBase = element; }
+        ConditionEventListener* eventListener() const { return m_eventListener.get(); }
+        void setEventListener(PassRefPtr<ConditionEventListener>);
+
+    private:
         Type m_type;
         BeginOrEnd m_beginOrEnd;
         String m_baseID;
         String m_name;
         SMILTime m_offset;
         int m_repeat;
-        RefPtr<Element> m_syncbase;
+        RefPtrWillBeMember<Element> m_syncBase;
         RefPtr<ConditionEventListener> m_eventListener;
     };
     bool parseCondition(const String&, BeginOrEnd beginOrEnd);
@@ -209,13 +230,13 @@ private:
 
     RawPtrWillBeMember<SVGElement> m_targetElement;
 
-    Vector<Condition> m_conditions;
+    WillBeHeapVector<OwnPtrWillBeMember<Condition> > m_conditions;
     bool m_syncBaseConditionsConnected;
     bool m_hasEndEventConditions;
 
     bool m_isWaitingForFirstInterval;
 
-    typedef HashSet<SVGSMILElement*> TimeDependentSet;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement> > TimeDependentSet;
     TimeDependentSet m_syncBaseDependents;
 
     // Instance time lists
