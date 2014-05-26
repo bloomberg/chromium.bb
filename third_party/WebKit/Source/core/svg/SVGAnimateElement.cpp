@@ -143,10 +143,10 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
 
 namespace {
 
-Vector<SVGElement*> findElementInstances(SVGElement* targetElement)
+WillBeHeapVector<RawPtrWillBeMember<SVGElement> > findElementInstances(SVGElement* targetElement)
 {
     ASSERT(targetElement);
-    Vector<SVGElement*> animatedElements;
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > animatedElements;
 
     animatedElements.append(targetElement);
 
@@ -179,8 +179,8 @@ void SVGAnimateElement::resetAnimatedType()
         m_animatedElements = findElementInstances(targetElement);
         ASSERT(!m_animatedElements.isEmpty());
 
-        Vector<SVGElement*>::const_iterator end = m_animatedElements.end();
-        for (Vector<SVGElement*>::const_iterator it = m_animatedElements.begin(); it != end; ++it)
+        WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator end = m_animatedElements.end();
+        for (WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator it = m_animatedElements.begin(); it != end; ++it)
             document().accessSVGExtensions().addElementReferencingTarget(this, *it);
 
         if (!m_animatedProperty)
@@ -404,6 +404,15 @@ SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()
         m_animator = SVGAnimatedTypeAnimator::create(m_animatedPropertyType, this, targetElement());
     ASSERT(m_animatedPropertyType == m_animator->type());
     return m_animator.get();
+}
+
+void SVGAnimateElement::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_animatedElements);
+#endif
+    visitor->trace(m_animator);
+    SVGAnimationElement::trace(visitor);
 }
 
 }

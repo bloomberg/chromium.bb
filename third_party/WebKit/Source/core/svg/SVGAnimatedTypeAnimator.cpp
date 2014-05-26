@@ -158,10 +158,10 @@ namespace {
 
 typedef void (SVGAnimatedPropertyBase::*SVGAnimatedPropertyMethod)();
 
-void invokeMethodOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, SVGAnimatedPropertyMethod method)
+void invokeMethodOnAllTargetProperties(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list, const QualifiedName& attributeName, SVGAnimatedPropertyMethod method)
 {
-    Vector<SVGElement*>::const_iterator it = list.begin();
-    Vector<SVGElement*>::const_iterator itEnd = list.end();
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator it = list.begin();
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
         RefPtr<SVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
@@ -169,12 +169,12 @@ void invokeMethodOnAllTargetProperties(const Vector<SVGElement*>& list, const Qu
     }
 }
 
-void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, const QualifiedName& attributeName, PassRefPtr<SVGPropertyBase> passValue)
+void setAnimatedValueOnAllTargetProperties(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list, const QualifiedName& attributeName, PassRefPtr<SVGPropertyBase> passValue)
 {
     RefPtr<SVGPropertyBase> value = passValue;
 
-    Vector<SVGElement*>::const_iterator it = list.begin();
-    Vector<SVGElement*>::const_iterator itEnd = list.end();
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator it = list.begin();
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator itEnd = list.end();
     for (; it != itEnd; ++it) {
         RefPtr<SVGAnimatedPropertyBase> animatedProperty = (*it)->propertyFromAttribute(attributeName);
         if (animatedProperty)
@@ -184,7 +184,7 @@ void setAnimatedValueOnAllTargetProperties(const Vector<SVGElement*>& list, cons
 
 }
 
-PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list)
 {
     ASSERT(isAnimatingSVGDom());
     RefPtr<SVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
@@ -194,7 +194,7 @@ PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimation(const Vector
     return animatedValue.release();
 }
 
-PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
@@ -204,7 +204,7 @@ PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::startAnimValAnimation(const
     return resetAnimation(list);
 }
 
-void SVGAnimatedTypeAnimator::stopAnimValAnimation(const Vector<SVGElement*>& list)
+void SVGAnimatedTypeAnimator::stopAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
@@ -212,7 +212,7 @@ void SVGAnimatedTypeAnimator::stopAnimValAnimation(const Vector<SVGElement*>& li
     invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &SVGAnimatedPropertyBase::animationEnded);
 }
 
-PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const Vector<SVGElement*>& list)
+PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >& list)
 {
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
@@ -260,6 +260,12 @@ float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const
     RefPtr<SVGPropertyBase> fromValue = createPropertyForAnimation(fromString);
     RefPtr<SVGPropertyBase> toValue = createPropertyForAnimation(toString);
     return fromValue->calculateDistance(toValue, m_contextElement);
+}
+
+void SVGAnimatedTypeAnimator::trace(Visitor* visitor)
+{
+    visitor->trace(m_animationElement);
+    visitor->trace(m_contextElement);
 }
 
 }

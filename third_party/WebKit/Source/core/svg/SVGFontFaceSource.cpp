@@ -22,10 +22,16 @@ SVGFontFaceSource::SVGFontFaceSource(SVGFontFaceElement* element)
 PassRefPtr<SimpleFontData> SVGFontFaceSource::createFontData(const FontDescription& fontDescription)
 {
     return SimpleFontData::create(
-        SVGFontData::create(m_svgFontFaceElement),
+        SVGFontData::create(m_svgFontFaceElement.get()),
         fontDescription.effectiveFontSize(),
         fontDescription.isSyntheticBold(),
         fontDescription.isSyntheticItalic());
+}
+
+void SVGFontFaceSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_svgFontFaceElement);
+    CSSFontFaceSource::trace(visitor);
 }
 
 } // namespace WebCore

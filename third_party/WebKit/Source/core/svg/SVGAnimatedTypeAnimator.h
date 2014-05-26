@@ -22,6 +22,7 @@
 #define SVGAnimatedTypeAnimator_h
 
 #include "core/svg/properties/SVGPropertyInfo.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -34,20 +35,20 @@ class SVGPropertyBase;
 class SVGElement;
 class SVGAnimationElement;
 
-class SVGAnimatedTypeAnimator FINAL {
-    WTF_MAKE_FAST_ALLOCATED;
+class SVGAnimatedTypeAnimator FINAL : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<SVGAnimatedTypeAnimator> create(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* targetElement)
+    static PassOwnPtrWillBeRawPtr<SVGAnimatedTypeAnimator> create(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* targetElement)
     {
-        return adoptPtr(new SVGAnimatedTypeAnimator(type, animationElement, targetElement));
+        return adoptPtrWillBeNoop(new SVGAnimatedTypeAnimator(type, animationElement, targetElement));
     }
     ~SVGAnimatedTypeAnimator();
 
     PassRefPtr<SVGPropertyBase> constructFromString(const String&);
 
-    PassRefPtr<SVGPropertyBase> startAnimValAnimation(const Vector<SVGElement*>&);
-    void stopAnimValAnimation(const Vector<SVGElement*>&);
-    PassRefPtr<SVGPropertyBase> resetAnimValToBaseVal(const Vector<SVGElement*>&);
+    PassRefPtr<SVGPropertyBase> startAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    void stopAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtr<SVGPropertyBase> resetAnimValToBaseVal(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
 
     void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
     float calculateDistance(const String& fromString, const String& toString);
@@ -58,19 +59,21 @@ public:
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
 
+    void trace(Visitor*);
+
 private:
     SVGAnimatedTypeAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);
 
     friend class ParsePropertyFromString;
     PassRefPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
-    PassRefPtr<SVGPropertyBase> resetAnimation(const Vector<SVGElement*>&);
+    PassRefPtr<SVGPropertyBase> resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
 
     bool isAnimatingSVGDom() const { return m_animatedProperty; }
     bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
 
     AnimatedPropertyType m_type;
-    SVGAnimationElement* m_animationElement;
-    SVGElement* m_contextElement;
+    RawPtrWillBeMember<SVGAnimationElement> m_animationElement;
+    RawPtrWillBeMember<SVGElement> m_contextElement;
     RefPtr<SVGAnimatedPropertyBase> m_animatedProperty;
 };
 

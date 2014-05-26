@@ -491,8 +491,8 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
             renderer->setNeedsLayoutAndFullRepaint(MarkContainingBlockChain, layoutScope);
     }
 
-    HashSet<SVGElement*>::iterator end = m_elementsWithRelativeLengths.end();
-    for (HashSet<SVGElement*>::iterator it = m_elementsWithRelativeLengths.begin(); it != end; ++it) {
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::iterator end = m_elementsWithRelativeLengths.end();
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::iterator it = m_elementsWithRelativeLengths.begin(); it != end; ++it) {
         if (*it != this)
             (*it)->invalidateRelativeLengthClients(layoutScope);
     }
@@ -1191,4 +1191,11 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
     return animatableAttributes.contains(name);
 }
 #endif
+
+void SVGElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_elementsWithRelativeLengths);
+    Element::trace(visitor);
+}
+
 }

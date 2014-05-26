@@ -178,6 +178,8 @@ public:
 
     void invalidateInstances();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -224,7 +226,7 @@ private:
 
     bool supportsSpatialNavigationFocus() const;
 
-    HashSet<SVGElement*> m_elementsWithRelativeLengths;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementsWithRelativeLengths;
 
     typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_newAttributeToPropertyMap;
