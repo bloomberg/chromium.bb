@@ -83,6 +83,7 @@ class DriveBackendSyncTest : public testing::Test,
         NULL, NULL, NULL));
     remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->Initialize(base_dir_.path(),
+                                     NULL,
                                      base::MessageLoopProxy::current(),
                                      in_memory_env_.get());
     remote_sync_service_->SetSyncEnabled(true);

@@ -75,6 +75,8 @@ class TaskManagerClient
     last_operation_status_ = last_operation_status;
   }
 
+  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) OVERRIDE {}
+
   void ScheduleTask(SyncStatusCode status_to_return,
                     const SyncStatusCallback& callback) {
     task_manager_->ScheduleTask(

@@ -1088,6 +1088,10 @@ void DriveFileSyncService::NotifyLastOperationStatus(
   UpdateServiceStateFromLastOperationStatus(sync_status, last_gdata_error_);
 }
 
+void DriveFileSyncService::RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> log) {
+  // V1 backend doesn't support per-task logging.
+}
+
 // static
 std::string DriveFileSyncService::PathToTitle(const base::FilePath& path) {
   if (!IsSyncFSDirectoryOperationEnabled())

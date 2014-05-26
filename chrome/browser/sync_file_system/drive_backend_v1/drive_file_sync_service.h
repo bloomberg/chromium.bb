@@ -126,6 +126,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void NotifyLastOperationStatus(
       SyncStatusCode sync_status,
       bool used_network) OVERRIDE;
+  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> log) OVERRIDE;
 
   static std::string PathToTitle(const base::FilePath& path);
   static base::FilePath TitleToPath(const std::string& title);

@@ -37,6 +37,7 @@ namespace sync_file_system {
 class FileStatusObserver;
 class LocalChangeProcessor;
 class RemoteChangeProcessor;
+class TaskLogger;
 
 enum RemoteServiceState {
   // Remote service is up and running, or has not seen any errors yet.
@@ -130,7 +131,8 @@ class RemoteFileSyncService {
   // for |context|.
   static scoped_ptr<RemoteFileSyncService> CreateForBrowserContext(
       BackendVersion version,
-      content::BrowserContext* context);
+      content::BrowserContext* context,
+      TaskLogger* task_logger);
 
   // Returns BrowserContextKeyedServiceFactory's an instance of
   // RemoteFileSyncService for backend |version| depends on.

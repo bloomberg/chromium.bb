@@ -65,10 +65,10 @@ KeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     remote_file_service = mock_remote_file_service_.Pass();
   } else if (IsV2Enabled()) {
     remote_file_service = RemoteFileSyncService::CreateForBrowserContext(
-        RemoteFileSyncService::V2, context);
+        RemoteFileSyncService::V2, context, service->task_logger());
   } else {
     remote_file_service = RemoteFileSyncService::CreateForBrowserContext(
-        RemoteFileSyncService::V1, context);
+        RemoteFileSyncService::V1, context, service->task_logger());
   }
 
   service->Initialize(local_file_service.Pass(),

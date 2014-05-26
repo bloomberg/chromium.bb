@@ -798,7 +798,7 @@ RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
 
   if (!v2_remote_service_) {
     v2_remote_service_ = RemoteFileSyncService::CreateForBrowserContext(
-        RemoteFileSyncService::V2, profile_);
+        RemoteFileSyncService::V2, profile_, &task_logger_);
     scoped_ptr<RemoteSyncRunner> v2_remote_syncer(
         new RemoteSyncRunner(kRemoteSyncNameV2, this,
                              v2_remote_service_.get()));

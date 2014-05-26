@@ -119,6 +119,7 @@ class SyncEngineTest
         extension_service_.get(),
         NULL /* signin_manager */));
     sync_engine_->Initialize(profile_dir_.path(),
+                             NULL,
                              base::MessageLoopProxy::current(),
                              in_memory_env_.get());
     sync_engine_->SetSyncEnabled(true);

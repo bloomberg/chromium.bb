@@ -190,6 +190,8 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
     token->clear_blocking_factor();
   }
 
+  // TODO(tzik): Record TaskLog to |client_| here.
+
   scoped_ptr<SyncTask> task;
   SyncStatusCallback callback = token->callback();
   token->clear_callback();

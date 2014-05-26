@@ -2438,6 +2438,8 @@
         'browser/sync_file_system/sync_status_code.h',
         'browser/sync_file_system/syncable_file_system_util.cc',
         'browser/sync_file_system/syncable_file_system_util.h',
+        'browser/sync_file_system/task_logger.cc',
+        'browser/sync_file_system/task_logger.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
         'browser/tab_contents/navigation_metrics_recorder.cc',

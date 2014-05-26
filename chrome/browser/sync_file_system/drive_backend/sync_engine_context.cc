@@ -13,6 +13,7 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
+#include "chrome/browser/sync_file_system/task_logger.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -20,11 +21,15 @@ namespace drive_backend {
 SyncEngineContext::SyncEngineContext(
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    TaskLogger* task_logger,
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SequencedTaskRunner* worker_task_runner,
     base::SequencedTaskRunner* file_task_runner)
     : drive_service_(drive_service.Pass()),
       drive_uploader_(drive_uploader.Pass()),
+      task_logger_(task_logger
+                   ? task_logger->AsWeakPtr()
+                   : base::WeakPtr<TaskLogger>()),
       remote_change_processor_(NULL),
       ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
@@ -38,6 +43,10 @@ drive::DriveServiceInterface* SyncEngineContext::GetDriveService() {
 
 drive::DriveUploaderInterface* SyncEngineContext::GetDriveUploader() {
   return drive_uploader_.get();
+}
+
+base::WeakPtr<TaskLogger> SyncEngineContext::GetTaskLogger() {
+  return task_logger_;
 }
 
 MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {

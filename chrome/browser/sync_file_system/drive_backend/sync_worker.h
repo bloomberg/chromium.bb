@@ -18,6 +18,7 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
+#include "chrome/browser/sync_file_system/task_logger.h"
 #include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
@@ -88,6 +89,7 @@ class SyncWorker : public SyncTaskManager::Client {
   virtual void MaybeScheduleNextTask() OVERRIDE;
   virtual void NotifyLastOperationStatus(
       SyncStatusCode sync_status, bool used_network) OVERRIDE;
+  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) OVERRIDE;
 
   void RegisterOrigin(const GURL& origin, const SyncStatusCallback& callback);
   void EnableOrigin(const GURL& origin, const SyncStatusCallback& callback);

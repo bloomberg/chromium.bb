@@ -317,6 +317,14 @@ void SyncWorker::NotifyLastOperationStatus(
   }
 }
 
+void SyncWorker::RecordTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) {
+  context_->GetUITaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&TaskLogger::RecordLog,
+                 context_->GetTaskLogger(),
+                 base::Passed(&task_log)));
+}
+
 void SyncWorker::OnNotificationReceived() {
   if (service_state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE)
     UpdateServiceState(REMOTE_SERVICE_OK, "Got push notification for Drive.");

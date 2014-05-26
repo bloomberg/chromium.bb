@@ -59,13 +59,15 @@ class SyncEngine : public RemoteFileSyncService,
   typedef Observer SyncServiceObserver;
 
   static scoped_ptr<SyncEngine> CreateForBrowserContext(
-      content::BrowserContext* context);
+      content::BrowserContext* context,
+      TaskLogger* task_logger);
   static void AppendDependsOnFactories(
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
   virtual ~SyncEngine();
 
   void Initialize(const base::FilePath& base_dir,
+                  TaskLogger* task_logger,
                   base::SequencedTaskRunner* file_task_runner,
                   leveldb::Env* env_override);
 

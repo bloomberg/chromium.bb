@@ -21,6 +21,7 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
+#include "chrome/browser/sync_file_system/task_logger.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -73,13 +74,11 @@ class SyncFileSystemService
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
 
-  ConflictResolutionPolicy GetConflictResolutionPolicy(const GURL& origin);
-  SyncStatusCode SetConflictResolutionPolicy(const GURL& origin,
-                                             ConflictResolutionPolicy policy);
-
   LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
 
   void OnSyncIdle();
+
+  TaskLogger* task_logger() { return &task_logger_; }
 
  private:
   friend class SyncFileSystemServiceFactory;
@@ -187,6 +186,7 @@ class SyncFileSystemService
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;
 
+  TaskLogger task_logger_;
   ObserverList<SyncEventObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);

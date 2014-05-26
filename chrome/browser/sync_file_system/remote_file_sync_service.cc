@@ -12,14 +12,15 @@ namespace sync_file_system {
 scoped_ptr<RemoteFileSyncService>
 RemoteFileSyncService::CreateForBrowserContext(
     BackendVersion version,
-    content::BrowserContext* context) {
+    content::BrowserContext* context,
+    TaskLogger* task_logger) {
   switch (version) {
     case V1:
       return DriveFileSyncService::Create(
           Profile::FromBrowserContext(context)).PassAs<RemoteFileSyncService>();
     case V2:
       return drive_backend::SyncEngine::CreateForBrowserContext(
-          context).PassAs<RemoteFileSyncService>();
+          context, task_logger).PassAs<RemoteFileSyncService>();
   }
   NOTREACHED() << "Unknown version " << version;
   return scoped_ptr<RemoteFileSyncService>();
