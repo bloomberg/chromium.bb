@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Nehmen Sie witzige Bilder mit Ihrer Webcam auf.",
+    "message": "Nehmen Sie witzige und ausgefallene Bilder mit Ihrer Webcam auf.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -100,15 +100,15 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Möglicherweise wird sie von einer anderen App verwendet.",
+    "message": "Möglicherweise wird sie bereits von einer anderen App verwendet.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Bild kann nicht in der Galerie gespeichert werden.",
+    "message": "Das Bild kann nicht in der Galerie gespeichert werden.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Galerie kann nicht geladen werden.",
+    "message": "Die Galerie kann nicht geladen werden.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Filter aktivieren/deaktivieren",
+    "message": "Filter an/aus",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -168,28 +168,40 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Timer aktivieren/deaktivieren",
+    "message": "Timer an/aus",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Mehrfachaufnahme aktivieren/deaktivieren",
+    "message": "Mehrfachaufnahme an/aus",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Spiegelung an/aus",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
-    "message": "Timer aktiv",
+    "message": "Timer aktiviert",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Timer inaktiv",
+    "message": "Timer deaktiviert",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Mehrfachaufnahme aktiv",
+    "message": "Mehrfachaufnahme aktiviert",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Mehrfachaufnahme inaktiv",
+    "message": "Mehrfachaufnahme deaktiviert",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Spiegelung aktiviert",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Spiegelung deaktiviert",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Ja",

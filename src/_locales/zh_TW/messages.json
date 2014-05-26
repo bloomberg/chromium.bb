@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "普通",
+    "message": "標準",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -52,7 +52,7 @@
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "深褐色",
+    "message": "懷舊色調",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
@@ -175,6 +175,10 @@
     "message": "切換連拍功能",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "切換鏡像功能",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "計時器已啟用",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "連拍功能已停用",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "鏡像功能已啟用",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "鏡像功能已停用",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "是",

@@ -124,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "คอมพิวเตอร์ของคุณอาจมีการ์ดจอที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
+    "message": "คอมพิวเตอร์ของคุณอาจมีการ์ดจที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -175,6 +175,10 @@
     "message": "สลับมัลติช็อต",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "สลับการมิเรอร์",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "ใช้เครื่องจับเวลา",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "ไม่ใช้มัลติช็อต",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "ใช้การมิเรอร์",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "ไม่ใช้การมิเรอร์",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "ใช่",

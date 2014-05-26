@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Photo Lab",
+    "message": "Phòng xử lý ảnh",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -175,8 +175,12 @@
     "message": "Chuyển đổi tính năng chụp nhiều ảnh",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Chuyển đổi phản chiếu",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
-    "message": "Bộ tính giờ hoạt động",
+    "message": "Bộ tính giờ đang hoạt động",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
@@ -184,12 +188,20 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Tính năng chụp nhiều ảnh hoạt động",
+    "message": "Tính năng chụp nhiều ảnh đang hoạt động",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
     "message": "Tính năng chụp nhiều ảnh không hoạt động",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Phản chiếu đang hoạt động",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Phản chiếu không hoạt động",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Có",

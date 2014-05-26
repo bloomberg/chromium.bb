@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Grįžti atgal",
+    "message": "Grįžti",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,6 +175,10 @@
     "message": "Perjungti kelių nuotraukų funkciją",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Perjungti ekrano vaizdo bendrinimą",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Laikmatis aktyvus",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Kelių nuotraukų funkcija neaktyvi",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Ekrano vaizdo bendrinimas aktyvus",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Ekrano vaizdo bendrinimas neaktyvus",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Taip",

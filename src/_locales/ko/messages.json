@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "뒤로",
+    "message": "돌아가기",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,12 +175,16 @@
     "message": "연속 촬영 전환",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "미러링 전환",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "타이머 사용 중",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "타이머 사용하지 않음",
+    "message": "타이머 사용 안함",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
@@ -188,8 +192,16 @@
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "연속 촬영 사용하지 않음",
+    "message": "연속 촬영 사용 안함",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "미러링 사용 중",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "미러링 사용 안함",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "예",

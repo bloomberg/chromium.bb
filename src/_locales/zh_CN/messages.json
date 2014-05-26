@@ -4,11 +4,11 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用您的摄像头拍摄绝佳的照片。",
+    "message": "使用您的相机拍摄绝佳的照片。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "Andy效果",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -175,6 +175,10 @@
     "message": "切换连拍功能",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "切换镜像",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "计时器已启用",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "连拍功能已停用",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "镜像已启用",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "镜像已停用",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "是",

@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Neobično",
+    "message": "Pomaknuto",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Normalno",
+    "message": "Uobičajeno",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -175,6 +175,10 @@
     "message": "Prikaži/sakrij višestruko snimanje",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Prikaži/sakrij zrcaljenje",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Odbrojavanje je aktivno",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Višestruko snimanje nije aktivno",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Zrcaljenje je aktivno",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Zrcaljenje nije aktivno",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Da",

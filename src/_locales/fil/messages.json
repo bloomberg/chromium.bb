@@ -8,15 +8,15 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy ",
+    "message": "Andy",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "Malalaking Mata",
+    "message": "Big Eyes",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Kagandahan",
+    "message": "Beauty",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
@@ -68,15 +68,15 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Photo Lab",
+    "message": "Photo L",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Moderno",
+    "message": "Modern",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "I-swirl",
+    "message": "Swirl",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -92,11 +92,11 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Multo",
+    "message": "Ghost",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kasalukuyang hindi available ang iyong camera. ",
+    "message": "Kasalukuyang hindi available ang iyong camera.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
@@ -136,7 +136,7 @@
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "Tanggalin",
+    "message": "I-delete",
     "description": "Label for the delete button."
   },
   "exportButton": {
@@ -175,6 +175,10 @@
     "message": "I-toggle ang maramihang pagkuha",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "I-toggle ang pagmi-mirror",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Aktibo ang orasan",
     "description": "Message shown when activating the timer."
@@ -184,12 +188,20 @@
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Aktibo ang maramihang pagkuha",
+    "message": "Aktibo ang multi-shot",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
     "message": "Di-aktibo ang maramihang pagkuha",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Aktibo ang pagmi-mirror",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Di-aktibo ang pagmi-mirror",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Oo",

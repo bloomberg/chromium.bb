@@ -168,15 +168,19 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Activer/Désactiver le retardateur",
+    "message": "Activer/Désactiver le minuteur",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Activer/Désactiver le mode rafale",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Activer/Désactiver la mise en miroir",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
-    "message": "Retardateur activé",
+    "message": "Minuteur activé",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Mode rafale désactivé",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Mise en miroir activée",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Mise en miroir désactivée",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Oui",

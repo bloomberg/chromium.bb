@@ -96,7 +96,7 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Kameraet er for øyeblikket utilgjengelig.",
+    "message": "Kameraet ditt er for øyeblikket utilgjengelig.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Slå filtre av og på",
+    "message": "Slå filtre av eller på",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -175,6 +175,10 @@
     "message": "Slå flerbildefunksjonen av eller på",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Slå speiling av eller på",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Tidtakeren er aktiv",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Flerbildefunksjonen er inaktiv",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Speiling er aktiv",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Speiling er inaktiv",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Ja",
