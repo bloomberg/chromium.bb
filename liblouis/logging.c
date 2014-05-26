@@ -60,7 +60,10 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
   free(logMsg);
 }
 
-static void defaultLogCallback(int level, const char *message);
+static void defaultLogCallback(int level, const char *message)
+{
+  lou_logPrint("%s", message); // lou_logPrint takes formatting, protect against % in message
+}
 
 static logcallback logCallbackFunction = defaultLogCallback;
 void EXPORT_CALL lou_registerLogCallback(logcallback callback)
@@ -126,16 +129,22 @@ lou_logFile (const char *fileName)
     }
 }
 
-static void
-defaultLogCallback (logLevels level, const char *message)
+void EXPORT_CALL
+lou_logPrint (const char *format, ...)
 {
-  if (message == NULL)
+#ifndef __SYMBIAN32__
+  va_list argp;
+  if (format == NULL)
     return;
   if (logFile == NULL && initialLogFileName[0] != 0)
     logFile = fopen (initialLogFileName, "wb");
   if (logFile == NULL)
     logFile = stderr;
-  fprintf (logFile, "%s\n", message);
+  va_start (argp, format);
+  vfprintf (logFile, format, argp);
+  fprintf (logFile, "\n");
+  va_end (argp);
+#endif
 }
 
 void EXPORT_CALL

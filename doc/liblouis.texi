@@ -2473,7 +2473,7 @@ will be printed to the file given in this call. The entire path name of
 the file must be given.
 
 @node lou_logPrint, lou_logEnd, lou_logFile, Programming with liblouis
-@section lou_logPrint
+@section lou_logPrint (deprecated)
 @findex lou_logPrint
 
 @example
@@ -2484,6 +2484,8 @@ This function is called like @code{fprint}. It can be used by other
 libraries to print messages to the file specified by the call to
 @code{lou_logFile}. In particular, it is used by the companion
 library liblouisxml.
+
+This function is deprecated as of version 2.6.0.
 
 @node lou_logEnd, lou_setDataPath, lou_logPrint, Programming with liblouis
 @section lou_logEnd

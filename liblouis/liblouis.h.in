@@ -116,6 +116,10 @@ mode);
 				     int *outlen, formtype *typeform,
 				     char *spacing, int *outputPos,
 				     int *inputPos, int *cursorPos, int mode);
+  void EXPORT_CALL lou_logPrint (const char *format, ...);
+/* Prints error messages to a file
+   @deprecated As of 2.6.0, applications using liblouis should implement
+               their own logging system. */
 
   void EXPORT_CALL lou_logFile (const char *filename);
 /* Specifies the name of the file to be used by lou_logPrint. If it is 

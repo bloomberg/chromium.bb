@@ -11,6 +11,7 @@ EXPORTS
 	lou_charToDots
 	lou_backTranslateString
 	lou_backTranslate
+	lou_logPrint
 	lou_logFile
 	lou_logEnd
 	lou_compileString
