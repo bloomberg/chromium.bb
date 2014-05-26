@@ -37,6 +37,7 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class ServiceWorkerContextObserver;
+class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
 class ServiceWorkerJobCoordinator;
 class ServiceWorkerProviderHost;
@@ -91,7 +92,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       base::MessageLoopProxy* disk_cache_thread,
       quota::QuotaManagerProxy* quota_manager_proxy,
       ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
-      scoped_ptr<ServiceWorkerProcessManager> process_manager);
+      ServiceWorkerContextWrapper* wrapper);
   virtual ~ServiceWorkerContextCore();
 
   // ServiceWorkerVersion::Listener overrides.
@@ -111,9 +112,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                       const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
-  ServiceWorkerProcessManager* process_manager() {
-    return process_manager_.get();
-  }
+  ServiceWorkerProcessManager* process_manager();
   EmbeddedWorkerRegistry* embedded_worker_registry() {
     return embedded_worker_registry_.get();
   }
@@ -159,12 +158,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     return weak_factory_.GetWeakPtr();
   }
 
-  // Allows tests to change how processes are created.
-  void SetProcessManagerForTest(
-      scoped_ptr<ServiceWorkerProcessManager> new_process_manager) {
-    process_manager_ = new_process_manager.Pass();
-  }
-
  private:
   typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
@@ -184,11 +177,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               ServiceWorkerStatusCode status);
 
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
+  // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|
+  // because the Wrapper::Shutdown call that hops threads to destroy |this| uses
+  // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
+  ServiceWorkerContextWrapper* wrapper_;
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
-  scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;
