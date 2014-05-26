@@ -331,6 +331,18 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   return guest;
 }
 
+// static
+bool BrowserPluginGuest::IsGuest(WebContentsImpl* web_contents) {
+  return web_contents && web_contents->GetBrowserPluginGuest();
+}
+
+// static
+bool BrowserPluginGuest::IsGuest(RenderViewHostImpl* render_view_host) {
+  return render_view_host && IsGuest(
+      static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(
+          render_view_host)));
+}
+
 RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
   if (!attached())
     return NULL;

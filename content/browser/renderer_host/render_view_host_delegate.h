@@ -20,7 +20,6 @@
 
 class GURL;
 class SkBitmap;
-class WebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct ViewMsg_PostMessage_Params;

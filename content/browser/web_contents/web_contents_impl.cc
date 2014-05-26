@@ -1322,7 +1322,7 @@ void WebContentsImpl::CreateNewWindow(
   // script-related windows), by passing in the current SiteInstance.  However,
   // if the opener is being suppressed (in a non-guest), we create a new
   // SiteInstance in its own BrowsingInstance.
-  bool is_guest = GetRenderProcessHost()->IsGuest();
+  bool is_guest = BrowserPluginGuest::IsGuest(this);
 
   // If the opener is to be suppressed, the new window can be in any process.
   // Since routing ids are process specific, we must not have one passed in
@@ -1591,7 +1591,7 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
   RemoveDestructionObserver(new_contents);
 
   // Don't initialize the guest WebContents immediately.
-  if (new_contents->GetRenderProcessHost()->IsGuest())
+  if (BrowserPluginGuest::IsGuest(new_contents))
     return new_contents;
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||

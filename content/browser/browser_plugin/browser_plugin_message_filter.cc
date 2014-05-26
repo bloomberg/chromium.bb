@@ -19,11 +19,9 @@
 
 namespace content {
 
-BrowserPluginMessageFilter::BrowserPluginMessageFilter(int render_process_id,
-                                                       bool is_guest)
+BrowserPluginMessageFilter::BrowserPluginMessageFilter(int render_process_id)
     : BrowserMessageFilter(BrowserPluginMsgStart),
-      render_process_id_(render_process_id),
-      is_guest_(is_guest) {
+      render_process_id_(render_process_id) {
 }
 
 BrowserPluginMessageFilter::~BrowserPluginMessageFilter() {

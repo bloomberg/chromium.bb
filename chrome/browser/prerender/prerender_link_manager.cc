@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -165,11 +166,13 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
   DCHECK_EQ(static_cast<LinkPrerender*>(NULL),
             FindByLauncherChildIdAndPrerenderId(launcher_child_id,
                                                 prerender_id));
-  content::RenderProcessHost* rph =
-      content::RenderProcessHost::FromID(launcher_child_id);
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(launcher_child_id, render_view_route_id);
+  content::WebContents* web_contents =
+      rvh ? content::WebContents::FromRenderViewHost(rvh) : NULL;
   // Guests inside <webview> do not support cross-process navigation and so we
   // do not allow guests to prerender content.
-  if (rph && rph->IsGuest())
+  if (GuestViewBase::IsGuest(web_contents))
     return;
 
   // Check if the launcher is itself an unswapped prerender.

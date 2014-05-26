@@ -630,13 +630,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
   scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
-      new BrowserPluginMessageFilter(GetID(), IsGuest()));
+      new BrowserPluginMessageFilter(GetID()));
   AddFilter(bp_message_filter.get());
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(),
-          IsGuest(),
 #if defined(ENABLE_PLUGINS)
           PluginServiceImpl::GetInstance(),
 #else
@@ -724,7 +723,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
   AddFilter(new SpeechRecognitionDispatcherHost(
-      IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext()));
+      GetID(), storage_partition_impl_->GetURLRequestContext()));
   AddFilter(new FileAPIMessageFilter(
       GetID(),
       storage_partition_impl_->GetURLRequestContext(),

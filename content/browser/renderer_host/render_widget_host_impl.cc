@@ -26,6 +26,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -238,7 +239,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   SetOverscrollControllerEnabled(overscroll_enabled);
 #endif
 
-  if (GetProcess()->IsGuest() || !CommandLine::ForCurrentProcess()->HasSwitch(
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      IsRenderView() ? RenderViewHost::From(this) : NULL);
+  if (BrowserPluginGuest::IsGuest(rvh) ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
     hang_monitor_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,

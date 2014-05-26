@@ -101,6 +101,11 @@ GuestViewBase* GuestViewBase::From(int embedder_process_id,
 }
 
 // static
+bool GuestViewBase::IsGuest(WebContents* web_contents) {
+  return !!GuestViewBase::FromWebContents(web_contents);
+}
+
+// static
 bool GuestViewBase::GetGuestPartitionConfigForSite(
     const GURL& site,
     std::string* partition_domain,

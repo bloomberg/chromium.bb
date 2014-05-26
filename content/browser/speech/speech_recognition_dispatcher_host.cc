@@ -21,11 +21,9 @@
 namespace content {
 
 SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
-    bool is_guest,
     int render_process_id,
     net::URLRequestContextGetter* context_getter)
     : BrowserMessageFilter(SpeechRecognitionMsgStart),
-      is_guest_(is_guest),
       render_process_id_(render_process_id),
       context_getter_(context_getter),
       weak_factory_(this) {
@@ -86,15 +84,14 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
 
   int embedder_render_process_id = 0;
   int embedder_render_view_id = MSG_ROUTING_NONE;
-  if (is_guest_) {
+  RenderViewHostImpl* render_view_host =
+      RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(render_view_host));
+  BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
+  if (guest) {
     // If the speech API request was from a guest, save the context of the
     // embedder since we will use it to decide permission.
-    RenderViewHostImpl* render_view_host =
-        RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
-    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-        WebContents::FromRenderViewHost(render_view_host));
-    BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
-
     embedder_render_process_id =
         guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
     DCHECK_NE(embedder_render_process_id, 0);

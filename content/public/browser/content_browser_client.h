@@ -485,7 +485,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                bool opener_suppressed,
                                content::ResourceContext* context,
                                int render_process_id,
-                               bool is_guest,
                                int opener_id,
                                bool* no_javascript_access);
 

@@ -60,6 +60,7 @@ namespace content {
 
 class BrowserPluginGuestManager;
 class BrowserPluginHostFactory;
+class RenderViewHostImpl;
 class RenderWidgetHostView;
 class SiteInstance;
 class WebCursor;
@@ -95,6 +96,12 @@ class CONTENT_EXPORT BrowserPluginGuest
       WebContentsImpl* web_contents,
       scoped_ptr<base::DictionaryValue> extra_params,
       BrowserPluginGuest* opener);
+
+  // Returns whether the given WebContents is a BrowserPlugin guest.
+  static bool IsGuest(WebContentsImpl* web_contents);
+
+  // Returns whether the given RenderviewHost is a BrowserPlugin guest.
+  static bool IsGuest(RenderViewHostImpl* render_view_host);
 
   // Returns a WeakPtr to this BrowserPluginGuest.
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();

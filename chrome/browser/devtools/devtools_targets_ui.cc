@@ -163,7 +163,9 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
     // Revisit this when multiple OOP frames are supported.
     RenderFrameHost* rfh = rvh->GetMainFrame();
     rfh_to_descriptor[rfh] = descriptor;
-    if (rvh->GetProcess()->IsGuest() || rfh->IsCrossProcessSubframe()) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    if (GuestViewBase::IsGuest(web_contents) || rfh->IsCrossProcessSubframe()) {
       nested_frames.push_back(rfh);
     } else {
       list_value->Append(descriptor);

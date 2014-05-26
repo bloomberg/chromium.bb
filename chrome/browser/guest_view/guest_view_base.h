@@ -52,6 +52,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
 
   static GuestViewBase* From(int embedder_process_id, int instance_id);
 
+  static bool IsGuest(content::WebContents* web_contents);
+
   // For GuestViewBases, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
   // A GuestViewBase can specify both the partition name and whether the storage

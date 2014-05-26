@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -113,9 +114,11 @@ RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
   if (!view || RenderViewHostFactory::has_factory())
     return NULL;  // Can't cast to RenderWidgetHostViewAura in unit tests.
-  RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
-      view->GetRenderWidgetHost()->GetProcess());
-  if (process->IsGuest())
+
+  RenderViewHost* rvh = RenderViewHost::From(view->GetRenderWidgetHost());
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
+  if (BrowserPluginGuest::IsGuest(web_contents))
     return NULL;
   return static_cast<RenderWidgetHostViewAura*>(view);
 }
@@ -1080,7 +1083,7 @@ void WebContentsViewAura::CreateView(
   // The use cases for WindowObserver do not apply to Browser Plugins:
   // 1) guests do not support NPAPI plugins.
   // 2) guests' window bounds are supposed to come from its embedder.
-  if (!web_contents_->GetRenderProcessHost()->IsGuest())
+  if (!BrowserPluginGuest::IsGuest(web_contents_))
     window_observer_.reset(new WindowObserver(this));
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
