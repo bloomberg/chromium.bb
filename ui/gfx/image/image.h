@@ -52,10 +52,8 @@ class ImageStorage;
 class GFX_EXPORT Image {
  public:
   enum RepresentationType {
-    kImageRepGdk,
     kImageRepCocoa,
     kImageRepCocoaTouch,
-    kImageRepCairo,
     kImageRepSkia,
     kImageRepPNG,
   };
