@@ -39,7 +39,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchEventResult,
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(status_code)
   IPC_STRUCT_TRAITS_MEMBER(status_text)
-  IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(headers)
 IPC_STRUCT_TRAITS_END()
 

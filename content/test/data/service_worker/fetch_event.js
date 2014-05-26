@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 this.onfetch = function(event) {
-    response = new Response({
-        statusCode: 200,
-        statusText: 'OK',
-        method: 'GET',
-        headers: {
-            'Content-Language': 'fi',
-            'Content-Type': 'text/html; charset=UTF-8'
-        }
+    var headers = new HeaderMap;
+    headers.set('Content-Language', 'fi');
+    headers.set('Content-Type', 'text/html; charset=UTF-8');
+    var response = new Response({
+        status: 301,
+        statusText: 'Moved Permanently',
+        headers: headers
     });
 
     event.respondWith(new Promise(function(r) {

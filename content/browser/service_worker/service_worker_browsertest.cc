@@ -463,15 +463,19 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
+// TODO(kinuko): Re-enable this test once blink-side patch is rolled for
+// http://crbug.com/376733
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       DISABLED_FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   FetchTestHelper("/service_worker/fetch_event.js", &result, &response);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
-  EXPECT_EQ(200, response.status_code);
-  EXPECT_EQ("OK", response.status_text);
-  EXPECT_EQ("GET", response.method);
+  EXPECT_EQ(301, response.status_code);
+  EXPECT_EQ("Moved Permanently", response.status_text);
   std::map<std::string, std::string> expected_headers;
+  expected_headers["Content-Language"] = "fi";
+  expected_headers["Content-Type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response.headers);
 }
 
@@ -509,7 +513,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
+// TODO(kinuko): Re-enable this test once blink-side patch is rolled for
+// http://crbug.com/376733
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       DISABLED_SyncEventHandled) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kEnableServiceWorkerSync);
 

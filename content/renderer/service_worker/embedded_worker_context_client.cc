@@ -7,6 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
@@ -245,10 +247,25 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
     int request_id,
     const blink::WebServiceWorkerResponse& web_response) {
   DCHECK(script_context_);
+#ifdef NEW_SERVICE_WORKER_RESPONSE_INTERFACE
+  std::map<std::string, std::string> headers;
+  const blink::WebVector<blink::WebString>& header_keys =
+      web_response.getHeaderKeys();
+  for (size_t i = 0; i < header_keys.size(); ++i) {
+    const base::string16& key = header_keys[i];
+    headers[base::UTF16ToUTF8(key)] =
+        base::UTF16ToUTF8(web_response.getHeader(key));
+  }
+  ServiceWorkerResponse response(web_response.status(),
+                                 web_response.statusText().utf8(),
+                                 headers);
+#else
+  // TODO(kinuko): Cleanup this once blink side patch is rolled.
   ServiceWorkerResponse response(web_response.statusCode(),
                                  web_response.statusText().utf8(),
                                  web_response.method().utf8(),
                                  std::map<std::string, std::string>());
+#endif
   script_context_->DidHandleFetchEvent(
       request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
 }
