@@ -18,6 +18,12 @@ Service* ServiceFactory::Get(content::BrowserContext* context) {
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+// static
+Service* ServiceFactory::FindExisting(content::BrowserContext* context) {
+  return static_cast<Service*>(
+      GetInstance()->GetServiceForBrowserContext(context, false));
+}
+
 ServiceFactory* ServiceFactory::GetInstance() {
   return Singleton<ServiceFactory>::get();
 }

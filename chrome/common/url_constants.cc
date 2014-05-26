@@ -177,6 +177,7 @@ const char kChromeUIExtensionIconHost[] = "extension-icon";
 const char kChromeUIExtensionInfoHost[] = "extension-info";
 const char kChromeUIExtensionsFrameHost[] = "extensions-frame";
 const char kChromeUIExtensionsHost[] = "extensions";
+const char kChromeUIFSPInternalsHost[] = "fsp-internals";
 const char kChromeUIFaviconHost[] = "favicon";
 const char kChromeUIFeedbackHost[] = "feedback";
 const char kChromeUIFlagsHost[] = "flags";

@@ -21,7 +21,14 @@ class Service;
 // Creates services per profile.
 class ServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
+  // Returns a service instance singleton, after creating it (if necessary).
   static Service* Get(content::BrowserContext* context);
+
+  // Returns a service instance for the context if exists. Otherwise, returns
+  // NULL.
+  static Service* FindExisting(content::BrowserContext* context);
+
+  // Gets a singleton instance of the factory.
   static ServiceFactory* GetInstance();
 
  private:

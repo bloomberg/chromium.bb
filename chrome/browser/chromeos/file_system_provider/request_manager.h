@@ -67,6 +67,10 @@ class RequestManager {
   // new requests
   void SetTimeoutForTests(const base::TimeDelta& timeout);
 
+  // Gets number of active requests for logging purposes.
+  // TODO(mtomasz): Introduce a logger class to gather more information
+  size_t GetActiveRequestsForLogging() const;
+
  private:
   struct Request {
     Request();

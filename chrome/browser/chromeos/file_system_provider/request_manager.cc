@@ -107,6 +107,10 @@ void RequestManager::OnRequestTimeout(int request_id) {
   RejectRequest(request_id, base::File::FILE_ERROR_ABORT);
 }
 
+size_t RequestManager::GetActiveRequestsForLogging() const {
+  return requests_.size();
+}
+
 RequestManager::Request::Request() {}
 
 RequestManager::Request::~Request() {}

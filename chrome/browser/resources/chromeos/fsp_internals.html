@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <title>File System Provider API - internals</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="fsp_internals.css">
+    <script src="chrome://fsp-internals/fsp_internals.js"></script>
+  </head>
+  <body>
+    <polymer-element name="file-systems">
+      <template>
+        <link rel="stylesheet"
+              href="chrome://fsp-internals/fsp_internals.css"></link>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Extension ID</th>
+              <th>Active Requests</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template id="file-system" repeat="{{item in model}}">
+              <tr>
+                <td>{{item.id}}</td>
+                <td>{{item.name}}</td>
+                <td>
+                  <div class="icon" style="background-image: -webkit-image-set(
+                      url(chrome://extension-icon/{{item.extensionId}}/24/1) 1x,
+                      url(chrome://extension-icon/{{item.extensionId}}/48/1)
+                      2x)"></div>
+                  {{item.extensionId}}
+                </td>
+                <td>{{item.activeRequests}}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </template>
+    </polymer-element>
+
+    <h1>Mounted provided file systems</h1>
+    <file-systems id="mounted-file-systems">
+    </file-systems>
+  </body>
+</html>

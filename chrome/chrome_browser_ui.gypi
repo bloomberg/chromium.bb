@@ -2022,6 +2022,8 @@
         'browser/ui/webui/chromeos/first_run/first_run_handler.h',
         'browser/ui/webui/chromeos/first_run/first_run_ui.cc',
         'browser/ui/webui/chromeos/first_run/first_run_ui.h',
+        'browser/ui/webui/chromeos/fsp_internals_ui.cc',
+        'browser/ui/webui/chromeos/fsp_internals_ui.h',
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.cc',
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.h',
         'browser/ui/webui/chromeos/keyboard_overlay_ui.cc',

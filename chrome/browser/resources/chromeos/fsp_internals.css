@@ -1,0 +1,41 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  font-family: 'Verdana', 'Arial';
+  font-size: 14px;
+  margin: 20px;
+}
+
+h1 {
+  font-size: 20px;
+  font-weight: normal;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th {
+  background-color: rgb(92, 107, 192);
+  color: white;
+  font-weight: normal;
+  height: 50px;
+}
+
+table td {
+  border-bottom: 1px solid #eee;
+  height: 40px;
+  line-height: 24px;
+  text-align: center;
+}
+
+table td .icon {
+  display: inline-block;
+  height: 24px;
+  vertical-align: middle;
+  width: 24px;
+}
