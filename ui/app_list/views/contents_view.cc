@@ -58,6 +58,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListViewDelegate* view_delegate)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
+      start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
@@ -79,10 +80,10 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     content::WebContents* start_page_contents =
         view_delegate->GetStartPageContents();
-    StartPageView* start_page_view =
+    start_page_view_ =
         new StartPageView(app_list_main_view, start_page_contents);
-    AddChildView(start_page_view);
-    view_model_->Add(start_page_view, kIndexStartPage);
+    AddChildView(start_page_view_);
+    view_model_->Add(start_page_view_, kIndexStartPage);
   }
 
   GetSearchResultListView(view_model_.get())->SetResults(model->results());

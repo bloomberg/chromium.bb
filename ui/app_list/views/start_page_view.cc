@@ -72,8 +72,9 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
   instant_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, kTopMargin, kInstantContainerSpacing));
 
-  views::WebView* web_view =
-      new views::WebView(start_page_web_contents->GetBrowserContext());
+  views::WebView* web_view = new views::WebView(
+      start_page_web_contents ? start_page_web_contents->GetBrowserContext()
+                              : NULL);
   web_view->SetPreferredSize(gfx::Size(kWebViewWidth, kWebViewHeight));
   web_view->SetWebContents(start_page_web_contents);
 

@@ -18,6 +18,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -30,6 +31,18 @@ namespace test {
 
 namespace {
 
+enum TestType {
+  TEST_TYPE_START = 0,
+  NORMAL = TEST_TYPE_START,
+  LANDSCAPE,
+  EXPERIMENTAL,
+  TEST_TYPE_END,
+};
+
+bool IsViewAtOrigin(views::View* view) {
+  return view->bounds().origin().IsOrigin();
+}
+
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
 const int kInitialItems = 34;
 
@@ -37,7 +50,7 @@ const int kInitialItems = 34;
 // root window or a desktop window tree host.
 class AppListViewTestContext {
  public:
-  AppListViewTestContext(bool is_landscape, aura::Window* parent);
+  AppListViewTestContext(int test_type, aura::Window* parent);
   ~AppListViewTestContext();
 
   // Test displaying the app list and performs a standard set of checks on its
@@ -47,6 +60,9 @@ class AppListViewTestContext {
   // Hides and reshows the app list with a folder open, expecting the main grid
   // view to be shown.
   void RunReshowWithOpenFolderTest();
+
+  // Tests displaying of the experimental app list and shows the start page.
+  void RunStartPageTest();
 
   // A standard set of checks on a view, e.g., ensuring it is drawn and visible.
   static void CheckView(views::View* subview);
@@ -60,7 +76,9 @@ class AppListViewTestContext {
   }
 
   // Whether the experimental "landscape" app launcher UI is being tested.
-  bool is_landscape() const { return is_landscape_; }
+  bool is_landscape() const {
+    return test_type_ == LANDSCAPE || test_type_ == EXPERIMENTAL;
+  }
 
  private:
   // Shows the app list and waits until a paint occurs.
@@ -69,7 +87,7 @@ class AppListViewTestContext {
   // Closes the app list. This sets |view_| to NULL.
   void Close();
 
-  const bool is_landscape_;
+  const TestType test_type_;
   scoped_ptr<base::RunLoop> run_loop_;
   PaginationModel pagination_model_;
   app_list::AppListView* view_;  // Owned by native widget.
@@ -99,12 +117,23 @@ class UnitTestViewDelegate : public app_list::test::AppListTestViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(UnitTestViewDelegate);
 };
 
-AppListViewTestContext::AppListViewTestContext(bool is_landscape,
+AppListViewTestContext::AppListViewTestContext(int test_type,
                                                aura::Window* parent)
-    : is_landscape_(is_landscape) {
-  if (is_landscape_) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableCenteredAppList);
+    : test_type_(static_cast<TestType>(test_type)) {
+  switch (test_type_) {
+    case NORMAL:
+      break;
+    case LANDSCAPE:
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableCenteredAppList);
+      break;
+    case EXPERIMENTAL:
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableExperimentalAppList);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   delegate_ = new UnitTestViewDelegate(this);
@@ -157,7 +186,7 @@ void AppListViewTestContext::RunDisplayTest() {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
-  if (is_landscape_)
+  if (is_landscape())
     EXPECT_EQ(2, pagination_model_.total_pages());
   else
     EXPECT_EQ(3, pagination_model_.total_pages());
@@ -216,8 +245,44 @@ void AppListViewTestContext::RunReshowWithOpenFolderTest() {
   Close();
 }
 
+void AppListViewTestContext::RunStartPageTest() {
+  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  EXPECT_EQ(-1, pagination_model_.total_pages());
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  Show();
+
+  AppListMainView* main_view = view_->app_list_main_view();
+  StartPageView* start_page_view =
+      main_view->contents_view()->start_page_view();
+  // Checks on the main view.
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
+  if (test_type_ == EXPERIMENTAL) {
+    EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
+
+    main_view->contents_view()->SetShowState(ContentsView::SHOW_START_PAGE);
+    main_view->contents_view()->Layout();
+    EXPECT_FALSE(main_view->search_box_view()->visible());
+    EXPECT_TRUE(IsViewAtOrigin(start_page_view));
+    EXPECT_FALSE(
+        IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+
+    main_view->contents_view()->SetShowState(ContentsView::SHOW_APPS);
+    main_view->contents_view()->Layout();
+    EXPECT_TRUE(main_view->search_box_view()->visible());
+    EXPECT_FALSE(IsViewAtOrigin(start_page_view));
+    EXPECT_TRUE(
+        IsViewAtOrigin(main_view->contents_view()->apps_container_view()));
+  } else {
+    EXPECT_EQ(NULL, start_page_view);
+  }
+
+  Close();
+}
+
 class AppListViewTestAura : public views::ViewsTestBase,
-                            public ::testing::WithParamInterface<bool> {
+                            public ::testing::WithParamInterface<int> {
  public:
   AppListViewTestAura() {}
   virtual ~AppListViewTestAura() {}
@@ -241,7 +306,7 @@ class AppListViewTestAura : public views::ViewsTestBase,
 };
 
 class AppListViewTestDesktop : public views::ViewsTestBase,
-                               public ::testing::WithParamInterface<bool> {
+                               public ::testing::WithParamInterface<int> {
  public:
   AppListViewTestDesktop() {}
   virtual ~AppListViewTestDesktop() {}
@@ -320,13 +385,22 @@ TEST_P(AppListViewTestDesktop, ReshowWithOpenFolder) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunReshowWithOpenFolderTest());
 }
 
+// Tests that the start page view operates correctly.
+TEST_P(AppListViewTestAura, StartPageTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunStartPageTest());
+}
+
+TEST_P(AppListViewTestDesktop, StartPageTest) {
+  EXPECT_NO_FATAL_FAILURE(test_context_->RunStartPageTest());
+}
+
 INSTANTIATE_TEST_CASE_P(AppListViewTestAuraInstance,
                         AppListViewTestAura,
-                        ::testing::Bool());
+                        ::testing::Range<int>(TEST_TYPE_START, TEST_TYPE_END));
 
 INSTANTIATE_TEST_CASE_P(AppListViewTestDesktopInstance,
                         AppListViewTestDesktop,
-                        ::testing::Bool());
+                        ::testing::Range<int>(TEST_TYPE_START, TEST_TYPE_END));
 
 }  // namespace test
 }  // namespace app_list
