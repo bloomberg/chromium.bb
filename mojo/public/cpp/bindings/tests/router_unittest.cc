@@ -42,16 +42,11 @@ class MessageAccumulator : public MessageReceiver {
     return true;
   }
 
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE {
-    return false;
-  }
-
  private:
   internal::MessageQueue* queue_;
 };
 
-class ResponseGenerator : public MessageReceiver {
+class ResponseGenerator : public MessageReceiverWithResponder {
  public:
   ResponseGenerator() {
   }

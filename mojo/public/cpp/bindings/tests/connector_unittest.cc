@@ -27,11 +27,6 @@ class MessageAccumulator : public MessageReceiver {
     return true;
   }
 
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
-      MOJO_OVERRIDE {
-    return false;
-  }
-
   bool IsEmpty() const {
     return queue_.IsEmpty();
   }

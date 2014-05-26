@@ -287,12 +287,12 @@ class ServiceImpl : public Service {
 
 class ServiceProxyImpl : public ServiceProxy {
  public:
-  explicit ServiceProxyImpl(mojo::MessageReceiver* receiver)
+  explicit ServiceProxyImpl(mojo::MessageReceiverWithResponder* receiver)
       : ServiceProxy(receiver) {
   }
 };
 
-class SimpleMessageReceiver : public mojo::MessageReceiver {
+class SimpleMessageReceiver : public mojo::MessageReceiverWithResponder {
  public:
   virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE {
     // Imagine some IPC happened here.

@@ -86,13 +86,6 @@ bool Connector::Accept(Message* message) {
   return true;
 }
 
-bool Connector::AcceptWithResponder(Message* message,
-                                    MessageReceiver* responder) {
-  // TODO(darin): Implement this!
-  assert(false);
-  return false;
-}
-
 // static
 void Connector::CallOnHandleReady(void* closure, MojoResult result) {
   Connector* self = static_cast<Connector*>(closure);

@@ -14,7 +14,7 @@
 namespace mojo {
 namespace internal {
 
-class Router : public MessageReceiver {
+class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
@@ -23,7 +23,7 @@ class Router : public MessageReceiver {
 
   // Sets the receiver to handle messages read from the message pipe that do
   // not have the kMessageIsResponse flag set.
-  void set_incoming_receiver(MessageReceiver* receiver) {
+  void set_incoming_receiver(MessageReceiverWithResponder* receiver) {
     incoming_receiver_ = receiver;
   }
 
@@ -67,8 +67,7 @@ class Router : public MessageReceiver {
 
     // MessageReceiver implementation:
     virtual bool Accept(Message* message) MOJO_OVERRIDE;
-    virtual bool AcceptWithResponder(Message* message,
-                                     MessageReceiver* responder) MOJO_OVERRIDE;
+
    private:
     Router* router_;
   };
@@ -79,7 +78,7 @@ class Router : public MessageReceiver {
   FilterChain filters_;
   Connector connector_;
   SharedData<Router*> weak_self_;
-  MessageReceiver* incoming_receiver_;
+  MessageReceiverWithResponder* incoming_receiver_;
   ResponderMap responders_;
   uint64_t next_request_id_;
 };

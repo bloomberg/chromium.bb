@@ -24,11 +24,6 @@ class MessageFilter : public MessageReceiver {
 
  protected:
   MessageReceiver* sink_;
-
- private:
-  // MessageReceiver method that shouldn't be reached.
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) MOJO_OVERRIDE;
 };
 
 // A trivial filter that simply forwards every message it receives to |sink_|.

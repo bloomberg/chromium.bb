@@ -1,7 +1,7 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
 class {{interface.name}}Proxy : public {{interface.name}} {
  public:
-  explicit {{interface.name}}Proxy(mojo::MessageReceiver* receiver);
+  explicit {{interface.name}}Proxy(mojo::MessageReceiverWithResponder* receiver);
 
 {%- for method in interface.methods %}
   virtual void {{method.name}}(
@@ -10,5 +10,5 @@ class {{interface.name}}Proxy : public {{interface.name}} {
 {%- endfor %}
 
  private:
-  mojo::MessageReceiver* receiver_;
+  mojo::MessageReceiverWithResponder* receiver_;
 };

@@ -1,4 +1,4 @@
-class {{interface.name}}Stub : public mojo::MessageReceiver {
+class {{interface.name}}Stub : public mojo::MessageReceiverWithResponder {
  public:
   {{interface.name}}Stub();
   void set_sink({{interface.name}}* sink) { sink_ = sink; }

@@ -4,20 +4,12 @@
 
 #include "mojo/public/cpp/bindings/message_filter.h"
 
-#include <assert.h>
-
 namespace mojo {
 
 MessageFilter::MessageFilter(MessageReceiver* sink) : sink_(sink) {
 }
 
 MessageFilter::~MessageFilter() {
-}
-
-bool MessageFilter::AcceptWithResponder(Message* message,
-                                        MessageReceiver* responder) {
-  assert(false);  // Not reached!
-  return false;
 }
 
 PassThroughFilter::PassThroughFilter(MessageReceiver* sink)

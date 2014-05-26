@@ -96,11 +96,6 @@ class DummyMessageReceiver : public MessageReceiver {
   virtual bool Accept(Message* message) MOJO_OVERRIDE {
     return true;  // Any message is OK.
   }
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) MOJO_OVERRIDE {
-    assert(false);
-    return false;
-  }
 };
 
 std::string DumpMessageHeader(Message* message) {

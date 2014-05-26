@@ -34,7 +34,7 @@ class NoInterfaceProxy : public NoInterface {
   explicit NoInterfaceProxy(MessageReceiver* receiver) {}
 };
 
-class NoInterfaceStub : public MessageReceiver {
+class NoInterfaceStub : public MessageReceiverWithResponder {
  public:
   NoInterfaceStub() {}
   void set_sink(NoInterface* sink) {}

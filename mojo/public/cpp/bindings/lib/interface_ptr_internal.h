@@ -62,7 +62,7 @@ class InterfacePtrState {
  private:
   class ProxyWithStub : public Interface::Proxy_ {
    public:
-    explicit ProxyWithStub(MessageReceiver* receiver)
+    explicit ProxyWithStub(MessageReceiverWithResponder* receiver)
         : Interface::Proxy_(receiver) {
     }
     typename Interface::Client::Stub_ stub;

@@ -30,12 +30,6 @@ class ResponderThunk : public MessageReceiver {
     return result;
   }
 
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) MOJO_OVERRIDE {
-    assert(false);  // not reached!
-    return false;
-  }
-
  private:
   SharedData<Router*> router_;
 };
@@ -51,13 +45,6 @@ Router::HandleIncomingMessageThunk::~HandleIncomingMessageThunk() {
 
 bool Router::HandleIncomingMessageThunk::Accept(Message* message) {
   return router_->HandleIncomingMessage(message);
-}
-
-bool Router::HandleIncomingMessageThunk::AcceptWithResponder(
-    Message* message,
-    MessageReceiver* responder) {
-  assert(false);  // not reached!
-  return false;
 }
 
 // ----------------------------------------------------------------------------
