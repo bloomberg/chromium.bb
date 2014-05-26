@@ -1,7 +1,7 @@
 Noto Sans Font:
 
 1. Source Origin
-Google's Internationalisation team's: 
+Google's Internationalisation team's:
     a) https://code.google.com/p/noto/
     b) https://code.google.com/p/noto/source/browse/trunk/fonts/individual/
 
@@ -13,7 +13,7 @@ Font file included as a real-world example for testing fonts with same script bu
 with LayoutTests/fast/text/shaping/same_script_different_lang.html test case
 
 Command to generate subset font:
-$ pyftsubset ./NotoSansDevanagari-Regular.ttf <Unicode>
+$ pyftsubset ./NotoSansDevanagari-Regular.ttf uni091D
 
 where pyftsubset comes from https://github.com/behdad/fonttools
 
