@@ -93,8 +93,8 @@ interface HTMLInputElement : HTMLElement {
                            optional DOMString direction);
 
     // Non-standard attributes
-    [Reflect] attribute boolean webkitdirectory;
-    [Reflect] attribute boolean incremental;
+    [Reflect, MeasureAs=PrefixedDirectoryAttribute] attribute boolean webkitdirectory;
+    [Reflect, MeasureAs=IncrementalAttribute] attribute boolean incremental;
 
     // See http://www.w3.org/TR/html-media-capture/
     [Conditional=MEDIA_CAPTURE, Reflect] attribute boolean capture;
