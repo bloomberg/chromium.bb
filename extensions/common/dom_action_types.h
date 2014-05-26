@@ -21,6 +21,6 @@ struct DomActionType {
   };
 };
 
-}  // namespace
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_DOM_ACTION_TYPES_H_

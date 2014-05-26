@@ -43,6 +43,6 @@ struct InstallWarning {
 // Let gtest print InstallWarnings.
 void PrintTo(const InstallWarning&, ::std::ostream* os);
 
-}  // namespace
+}  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_INSTALL_WARNING_H_
