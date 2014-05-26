@@ -184,7 +184,6 @@ void Canvas::SaveLayerAlpha(uint8 alpha) {
   canvas_->saveLayerAlpha(NULL, alpha);
 }
 
-
 void Canvas::SaveLayerAlpha(uint8 alpha, const Rect& layer_bounds) {
   SkRect bounds(RectToSkRect(layer_bounds));
   canvas_->saveLayerAlpha(&bounds, alpha);
@@ -198,8 +197,8 @@ void Canvas::ClipRect(const Rect& rect) {
   canvas_->clipRect(RectToSkRect(rect));
 }
 
-void Canvas::ClipPath(const SkPath& path) {
-  canvas_->clipPath(path);
+void Canvas::ClipPath(const SkPath& path, bool do_anti_alias) {
+  canvas_->clipPath(path, SkRegion::kIntersect_Op, do_anti_alias);
 }
 
 bool Canvas::IsClipEmpty() const {

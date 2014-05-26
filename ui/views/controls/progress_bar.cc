@@ -228,7 +228,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
           kCornerRadius,
           0,
           &inner_path);
-      canvas->ClipPath(inner_path);
+      canvas->ClipPath(inner_path, false);
 
       const SkColor bar_colors[] = {
         kBarTopColor,

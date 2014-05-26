@@ -649,7 +649,7 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
   gfx::Path window_mask;
   window_mask.addRoundRect(gfx::RectToSkRect(rect),
                            kCornerRadius, kCornerRadius);
-  canvas->ClipPath(window_mask);
+  canvas->ClipPath(window_mask, false);
 
   OnPaintBackground(canvas);
 

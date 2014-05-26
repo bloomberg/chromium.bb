@@ -201,8 +201,9 @@ class GFX_EXPORT Canvas {
   // Adds |rect| to the current clip.
   void ClipRect(const Rect& rect);
 
-  // Adds |path| to the current clip.
-  void ClipPath(const SkPath& path);
+  // Adds |path| to the current clip. |do_anti_alias| is true if the clip
+  // should be antialiased.
+  void ClipPath(const SkPath& path, bool do_anti_alias);
 
   // Returns true if the current clip is empty.
   bool IsClipEmpty() const;

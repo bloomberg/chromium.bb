@@ -39,6 +39,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -185,13 +187,11 @@ class EditableProfilePhoto : public views::ImageView {
     SetImage(image.ToImageSkia());
     SetBoundsRect(bounds);
 
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* frame_overlay = new views::ImageView();
-    frame_overlay->SetImage(rb->GetImageNamed(
-        IDR_ICON_PROFILES_AVATAR_PHOTO_FRAME).ToImageSkia());
-    frame_overlay->SetVerticalAlignment(views::ImageView::CENTER);
-    frame_overlay->SetBoundsRect(bounds);
-    AddChildView(frame_overlay);
+    // Calculate the circular mask that will be used to display the photo.
+    gfx::Point center = bounds.CenterPoint();
+    circular_mask_.addCircle(SkIntToScalar(center.x()),
+                             SkIntToScalar(center.y()),
+                             SkIntToScalar(bounds.width() / 2));
 
     if (!is_editing_allowed)
       return;
@@ -207,11 +207,25 @@ class EditableProfilePhoto : public views::ImageView {
     change_photo_button_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
     change_photo_button_->SetImage(views::LabelButton::STATE_NORMAL,
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_CAMERA));
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_ICON_PROFILES_EDIT_CAMERA));
 
     change_photo_button_->SetBoundsRect(bounds);
     change_photo_button_->SetVisible(false);
     AddChildView(change_photo_button_);
+  }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    // Display the profile picture as a circle.
+    canvas->ClipPath(circular_mask_, true);
+    views::ImageView::OnPaint(canvas);
+  }
+
+  virtual void PaintChildren(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) OVERRIDE {
+    // Display any children (the "change photo" overlay) as a circle.
+    canvas->ClipPath(circular_mask_, true);
+    View::PaintChildren(canvas, cull_set);
   }
 
   views::LabelButton* change_photo_button() { return change_photo_button_; }
@@ -227,6 +241,8 @@ class EditableProfilePhoto : public views::ImageView {
     if (change_photo_button_)
       change_photo_button_->SetVisible(false);
   }
+
+  gfx::Path circular_mask_;
 
   // Button that is shown when hovering over the image view. Can be NULL if
   // the photo isn't allowed to be edited (e.g. for guest profiles).

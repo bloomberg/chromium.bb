@@ -49,7 +49,7 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
   // Contents corner radius is 1px smaller than border corner radius.
   SkScalar radius = SkIntToScalar(corner_radius_ - 1);
   path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-  canvas->ClipPath(path);
+  canvas->ClipPath(path, false);
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
