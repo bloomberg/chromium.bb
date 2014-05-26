@@ -80,6 +80,38 @@ bool TestAutoMountForURLRequest(
   return true;
 }
 
+class FileSystemURLRequestJobFactory : public net::URLRequestJobFactory {
+ public:
+  FileSystemURLRequestJobFactory(const std::string& storage_domain,
+                                 FileSystemContext* context)
+      : storage_domain_(storage_domain), file_system_context_(context) {
+  }
+
+  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+      const std::string& scheme,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new fileapi::FileSystemURLRequestJob(
+        request, network_delegate, storage_domain_, file_system_context_);
+  }
+
+  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+    return true;
+  }
+
+  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+    return true;
+  }
+
+  virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE {
+    return false;
+  }
+
+ private:
+  std::string storage_domain_;
+  FileSystemContext* file_system_context_;
+};
+
 }  // namespace
 
 class FileSystemURLRequestJobTest : public testing::Test {
@@ -101,18 +133,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
         base::Bind(&FileSystemURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
-
-    net::URLRequest::Deprecated::RegisterProtocolFactory(
-        "filesystem", &FileSystemURLRequestJobFactory);
   }
 
   virtual void TearDown() OVERRIDE {
-    net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
-    ClearUnusedJob();
-    if (pending_job_.get()) {
-      pending_job_->Kill();
-      pending_job_ = NULL;
-    }
     // FileReader posts a task to close the file in destructor.
     base::RunLoop().RunUntilIdle();
   }
@@ -150,14 +173,15 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
+
+    job_factory_.reset(new FileSystemURLRequestJobFactory(
+        url.GetOrigin().host(), file_system_context));
+    empty_context_.set_job_factory(job_factory_.get());
+
     request_ = empty_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, delegate_.get(), NULL);
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
-    ASSERT_TRUE(!job_);
-    job_ = new FileSystemURLRequestJob(
-        request_.get(), NULL, url.GetOrigin().host(), file_system_context);
-    pending_job_ = job_;
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
@@ -207,23 +231,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
     return GURL(kFileSystemURLPrefix + path);
   }
 
-  static net::URLRequestJob* FileSystemURLRequestJobFactory(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const std::string& scheme) {
-    DCHECK(job_);
-    net::URLRequestJob* temp = job_;
-    job_ = NULL;
-    return temp;
-  }
-
-  static void ClearUnusedJob() {
-    if (job_) {
-      scoped_refptr<net::URLRequestJob> deleter = job_;
-      job_ = NULL;
-    }
-  }
-
   // Put the message loop at the top, so that it's the last thing deleted.
   base::MessageLoopForIO message_loop_;
 
@@ -232,17 +239,12 @@ class FileSystemURLRequestJobTest : public testing::Test {
   base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;
 
   net::URLRequestContext empty_context_;
+  scoped_ptr<FileSystemURLRequestJobFactory> job_factory_;
 
   // NOTE: order matters, request must die before delegate
   scoped_ptr<net::TestDelegate> delegate_;
   scoped_ptr<net::URLRequest> request_;
-
-  scoped_refptr<net::URLRequestJob> pending_job_;
-  static net::URLRequestJob* job_;
 };
-
-// static
-net::URLRequestJob* FileSystemURLRequestJobTest::job_ = NULL;
 
 namespace {
 
