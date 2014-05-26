@@ -37,10 +37,9 @@
 namespace WebCore {
 
 class AnimationPlayer;
-class Element;
 
-// Manages the start and cancellation of animations on the compositor
-// deferred until a compositing update.
+// Manages the starting of pending animations on the compositor following a
+// compositing update.
 // For CSS Animations, used to synchronize the start of main-thread animations
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc
@@ -48,18 +47,16 @@ class CompositorPendingAnimations FINAL {
     DISALLOW_ALLOCATION();
 public:
     void add(AnimationPlayer*);
-    void cancel(Element&, int animationId);
     // Returns whether we are waiting for an animation to start and should
     // service again on the next frame.
-    bool startAndCancelPendingAnimations();
+    bool startPendingAnimations();
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
     void trace(Visitor*);
 
 private:
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_pendingStart;
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_pending;
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_waitingForCompositorAnimationStart;
-    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, int> > m_pendingCancellation;
 };
 
 } // namespace WebCore

@@ -87,7 +87,7 @@ bool DocumentAnimations::needsOutdatedAnimationPlayerUpdate(const Document& docu
 void DocumentAnimations::startPendingAnimations(Document& document)
 {
     ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
-    if (document.compositorPendingAnimations().startAndCancelPendingAnimations()) {
+    if (document.compositorPendingAnimations().startPendingAnimations()) {
         ASSERT(document.view());
         document.view()->scheduleAnimation();
     }

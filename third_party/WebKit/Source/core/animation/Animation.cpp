@@ -283,12 +283,16 @@ bool Animation::affects(CSSPropertyID property) const
 
 void Animation::cancelAnimationOnCompositor()
 {
+    // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
+    // This queries compositingState, which is not necessarily up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
+    DisableCompositingQueryAsserts disabler;
     if (!hasActiveAnimationsOnCompositor())
         return;
     if (!m_target || !m_target->renderer())
         return;
     for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
-        m_target->document().compositorPendingAnimations().cancel(*m_target, m_compositorAnimationIds[i]);
+        CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, m_compositorAnimationIds[i]);
     m_compositorAnimationIds.clear();
 }
 
