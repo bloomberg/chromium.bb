@@ -54,11 +54,6 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
  public:
   MAYBE_AudioInputDeviceManagerTest() {}
 
-  // Returns true iff machine has an audio input device.
-  bool CanRunAudioInputDeviceTests() {
-    return audio_manager_->HasAudioInputDevices();
-  }
-
  protected:
   virtual void SetUp() OVERRIDE {
     // The test must run on Browser::IO.
@@ -73,6 +68,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
         &base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
+    manager_->UseFakeDevice();
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),
                        message_loop_->message_loop_proxy().get());
@@ -106,8 +102,6 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
 // Opens and closes the devices.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
 
   ASSERT_FALSE(devices_.empty());
 
@@ -137,9 +131,6 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
 
 // Opens multiple devices at one time and closes them later.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-
   ASSERT_FALSE(devices_.empty());
 
   InSequence s;
@@ -183,8 +174,6 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenMultipleDevices) {
 
 // Opens a non-existing device.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenNotExistingDevice) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
   InSequence s;
 
   MediaStreamType stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
@@ -206,9 +195,6 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenNotExistingDevice) {
 
 // Opens default device twice.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-
   ASSERT_FALSE(devices_.empty());
 
   InSequence s;
@@ -242,9 +228,6 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenDeviceTwice) {
 
 // Accesses then closes the sessions after opening the devices.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
-
   ASSERT_FALSE(devices_.empty());
 
   InSequence s;
@@ -278,8 +261,6 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessAndCloseSession) {
 
 // Access an invalid session.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, AccessInvalidSession) {
-  if (!CanRunAudioInputDeviceTests())
-    return;
   InSequence s;
 
   // Opens the first device.
