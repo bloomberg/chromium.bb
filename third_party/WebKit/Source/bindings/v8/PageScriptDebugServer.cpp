@@ -121,7 +121,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     if (!m_listenersMap.size()) {
         ensureDebuggerScriptCompiled();
         ASSERT(!debuggerScript->IsUndefined());
-        v8::Debug::SetDebugEventListener2(&PageScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
+        v8::Debug::SetDebugEventListener(&PageScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
     }
     m_listenersMap.set(page, listener);
 
@@ -151,7 +151,7 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* 
     m_listenersMap.remove(page);
 
     if (m_listenersMap.isEmpty())
-        v8::Debug::SetDebugEventListener2(0);
+        v8::Debug::SetDebugEventListener(0);
     // FIXME: Remove all breakpoints set by the agent.
 }
 

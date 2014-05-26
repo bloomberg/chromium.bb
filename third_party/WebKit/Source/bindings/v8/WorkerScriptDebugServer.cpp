@@ -62,7 +62,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     ensureDebuggerScriptCompiled();
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
     ASSERT(!debuggerScript->IsUndefined());
-    v8::Debug::SetDebugEventListener2(&WorkerScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
+    v8::Debug::SetDebugEventListener(&WorkerScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
 
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getWorkerScripts")));
     v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, 0, 0, m_isolate);
@@ -79,7 +79,7 @@ void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
     ASSERT(m_listener == listener);
     continueProgram();
     m_listener = 0;
-    v8::Debug::SetDebugEventListener2(0);
+    v8::Debug::SetDebugEventListener(0);
 }
 
 void WorkerScriptDebugServer::interruptAndRunTask(PassOwnPtr<Task> task)
