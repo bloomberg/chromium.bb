@@ -200,8 +200,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
 // Test to verify that after reloading the initiator, it creates a new print
 // preview dialog.
+// http://crbug.com/377337
+#if defined(OS_WIN)
+#define MAYBE_ReloadInitiatorTab DISABLED_ReloadInitiatorTab
+#else
+#define MAYBE_ReloadInitiatorTab ReloadInitiatorTab
+#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       ReloadInitiatorTab) {
+                       MAYBE_ReloadInitiatorTab) {
   // print for the first time.
   PrintPreview();
 
