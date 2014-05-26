@@ -43,24 +43,23 @@ function onload()
 
 function test()
 {
-    var messagesElement = WebInspector.ConsolePanel._view()._messagesContainer;
+    var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
 
     function dumpVisibleMessages(root)
     {
-        var root = WebInspector.ConsolePanel._view()._messagesContainer; // .console-group
-        var children = root.childNodes;
-        for (var i = 0; i < children.length; ++i) {
-            var viewMessage = children[i].message;
+        var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+        for (var i = 0; i < messages.length; ++i) {
+            var viewMessage = messages[i];
             var delimeter = viewMessage.consoleMessage().isGroupStartMessage() ? ">" : "";
             var indent = "";
             for (var j = 0; j < viewMessage.nestingLevel(); ++j)
                 indent += "  ";
-            InspectorTest.addResult(indent + delimeter + children[i].textContent);
+            InspectorTest.addResult(indent + delimeter + viewMessage.toMessageElement().textContent);
         }
     }
 
-    var url1 = messagesElement.childNodes[0].message.consoleMessage().url;
-    var url2 = messagesElement.childNodes[1].message.consoleMessage().url;
+    var url1 = messages[0].consoleMessage().url;
+    var url2 = messages[1].consoleMessage().url;
 
     InspectorTest.runTestSuite([
         function beforeFilter(next)

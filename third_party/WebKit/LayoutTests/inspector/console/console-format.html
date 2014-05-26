@@ -74,6 +74,7 @@ function onload()
 
 function test()
 {
+    InspectorTest.hideInspectorView();
     InspectorTest.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
 
     function loopOverGlobals(current, total)
@@ -81,12 +82,15 @@ function test()
         function advance()
         {
             var next = current + 1;
-            if (next == total.description) {
-                InspectorTest.expandConsoleMessages();
-                InspectorTest.runAfterPendingDispatches(finish);
-            } else {
+            if (next == total.description)
+                InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
+            else
                 loopOverGlobals(next, total);
-            }
+        }
+
+        function onRemoteObjectsLoaded()
+        {
+            InspectorTest.expandConsoleMessages(finish);
         }
 
         function finish()

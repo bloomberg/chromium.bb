@@ -4,19 +4,15 @@ CONSOLE MESSAGE: line 11: [object XPathResult]
 CONSOLE MESSAGE: line 21: [object Object]
 Tests that console logging dumps proper messages.
 
-
-
 Array[2]
     0: "test1"
     1: "test2"
     length: 2
     __proto__: Array[0] console-dir.html:9
-
 NodeList[1]
     0: html
     length: 1
     __proto__: NodeList console-dir.html:10
-
 XPathResult
     booleanValue: [Exception: TypeError]
     invalidIteratorState: false
@@ -26,7 +22,6 @@ XPathResult
     snapshotLength: [Exception: TypeError]
     stringValue: [Exception: TypeError]
     __proto__: XPathResult console-dir.html:11
-
 Object
     "": ""
     "  ": "  "

@@ -26,10 +26,10 @@ function test()
 {
     function dumpVisibleMessages()
     {
-        var children = WebInspector.ConsolePanel._view()._messagesContainer.childNodes;
+        var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
 
-        for (var i = 0; i < children.length; i++)
-            InspectorTest.addResult(">" + children[i].textContent);
+        for (var i = 0; i < messages.length; i++)
+            InspectorTest.addResult(">" + messages[i].toMessageElement().textContent);
     }
 
     var testSuite = [

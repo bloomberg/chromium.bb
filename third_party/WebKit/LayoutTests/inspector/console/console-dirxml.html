@@ -18,9 +18,13 @@ function logToConsole()
 
 function test()
 {
-    InspectorTest.evaluateInPage("logToConsole()");
-    InspectorTest.runAfterPendingDispatches(callback);
-    function callback()
+    InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
+    function onLoggedToConsole()
+    {
+        InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded)
+    }
+
+    function onRemoteObjectsLoaded()
     {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();

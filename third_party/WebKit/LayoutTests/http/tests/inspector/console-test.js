@@ -18,10 +18,20 @@ InspectorTest.prepareConsoleMessageText = function(messageElement)
     return messageText;
 }
 
-InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
+InspectorTest.disableConsoleViewport = function()
+{
+    var viewport = WebInspector.ConsolePanel._view()._viewport;
+    viewport.invalidate();
+    viewport.element.style.height = "2000px";
+    viewport.element.style.position = "absolute";
+}
+
+InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames, formatter)
 {
     WebInspector.inspectorView.panel("console");
+    formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
+    InspectorTest.disableConsoleViewport();
     var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
@@ -40,7 +50,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             if (dumpClassNames)
                 InspectorTest.addResult(classNames.join(" > "));
         } else {
-            var messageText = InspectorTest.prepareConsoleMessageText(element);
+            var messageText = formatter(element);
             InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
@@ -52,6 +62,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 
 InspectorTest.dumpConsoleTableMessage = function(viewMessage)
 {
+    WebInspector.ConsolePanel._view()._viewport.invalidate();
     var table = viewMessage.contentElement();
     var headers = table.querySelectorAll("th div");
     if (!headers.length)
@@ -128,6 +139,14 @@ InspectorTest.expandConsoleMessages = function(callback)
     }
     if (callback)
         InspectorTest.runAfterPendingDispatches(callback);
+}
+
+InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
+{
+    var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    for (var i = 0; i < messages.length; ++i)
+        messages[i].toMessageElement();
+    InspectorTest.runAfterPendingDispatches(callback);
 }
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()

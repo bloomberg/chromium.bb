@@ -1,0 +1,239 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function populateConsoleWithMessages(count)
+{
+    for (var i = 0; i < count; ++i)
+        console.log("Message #" + i);
+}
+
+function test()
+{
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
+    var consoleView = WebInspector.ConsolePanel._view();
+    var viewport = consoleView._viewport;
+    const minimumViewportMessagesCount = 10;
+    const messagesCount = 150;
+    const middleMessage = messagesCount / 2;
+    var testSuite = [
+        function verifyViewportIsTallEnough(next)
+        {
+            viewport.invalidate();
+            var viewportMessagesCount = viewport._lastVisibleIndex - viewport._firstVisibleIndex;
+            if (viewportMessagesCount < minimumViewportMessagesCount) {
+                InspectorTest.addResult(String.sprintf("Test cannot be run as viewport is not tall enough. It is required to contain at least %d messages, but %d only fit", minimumViewportMessagesCount, viewportMessagesCount));
+                InspectorTest.completeTest();
+                return;
+            }
+            next();
+        },
+
+        function testSelectionSingleLineText(next)
+        {
+            selectMessages(middleMessage, 2, middleMessage, 7);
+            dumpSelectionText();
+            next();
+        },
+
+        function testReversedSelectionSingleLineText(next)
+        {
+            selectMessages(middleMessage, 7, middleMessage, 2);
+            dumpSelectionText();
+            next();
+        },
+
+        function testSelectionMultiLineText(next)
+        {
+            selectMessages(middleMessage - 1, 4, middleMessage + 1, 7);
+            dumpSelectionText();
+            next();
+        },
+
+        function testSimpleVisibleSelection(next)
+        {
+            selectMessages(middleMessage - 3, 6, middleMessage + 2, 6);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testHalfScrollSelectionUp(next)
+        {
+            viewport.forceScrollItemToBeFirst(middleMessage);
+            dumpSelectionModel();
+            dumpTop();
+            next();
+        },
+
+        function testHalfScrollSelectionDown(next)
+        {
+            viewport.forceScrollItemToBeLast(middleMessage);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testScrollSelectionAwayUp(next)
+        {
+            viewport.forceScrollItemToBeFirst(0);
+            dumpSelectionModel();
+            dumpTop();
+            next();
+        },
+
+        function testScrollSelectionAwayDown(next)
+        {
+            viewport.forceScrollItemToBeLast(messagesCount - 1);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testShiftClickSelectionOver(next)
+        {
+            emulateShiftClickOnMessage(minimumViewportMessagesCount);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testShiftClickSelectionBelow(next)
+        {
+            emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testRemoveSelection(next)
+        {
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testReversedVisibleSelection(next)
+        {
+            selectMessages(middleMessage + 1, 6, middleMessage - 4, 6);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testShiftClickReversedSelectionOver(next)
+        {
+            emulateShiftClickOnMessage(minimumViewportMessagesCount);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+
+        function testShiftClickReversedSelectionBelow(next)
+        {
+            emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
+            dumpSelectionModel();
+            dumpBottom();
+            next();
+        },
+    ];
+
+    var awaitingMessagesCount = messagesCount;
+    function messageAdded()
+    {
+        if (!--awaitingMessagesCount)
+            InspectorTest.runTestSuite(testSuite);
+    }
+
+    InspectorTest.addConsoleSniffer(messageAdded, true);
+    InspectorTest.evaluateInConsole(String.sprintf("populateConsoleWithMessages(%d)", messagesCount));
+
+    function dumpSelectionModelElement(model)
+    {
+        if (!model)
+            return "null";
+        return String.sprintf("{item: %d, offset: %d}", model.item, model.offset);
+    }
+
+    function dumpSelectionModel()
+    {
+        viewport.refresh();
+        var text = String.sprintf("anchor = %s, head = %s", dumpSelectionModelElement(viewport._anchorSelection), dumpSelectionModelElement(viewport._headSelection));
+        InspectorTest.addResult(text);
+    }
+
+    function dumpSelectionText()
+    {
+        var text = viewport._selectedText();
+        InspectorTest.addResult("Selected text:<<<EOL\n" + text + "\nEOL");
+    }
+
+    function dumpTop()
+    {
+        viewport.refresh();
+        InspectorTest.addResult("first visible message index: " + viewport.firstVisibleIndex());
+    }
+
+    function dumpBottom()
+    {
+        viewport.refresh();
+        InspectorTest.addResult("last visible message index: " + viewport.lastVisibleIndex());
+    }
+
+    function emulateShiftClickOnMessage(messageIndex)
+    {
+        var selection = window.getSelection();
+        if (!selection || !selection.rangeCount) {
+            InspectorTest.addResult("FAILURE: There's no selection");
+            return;
+        }
+        viewport.forceScrollItemToBeFirst(Math.max(messageIndex - minimumViewportMessagesCount / 2, 0));
+        viewport.refresh();
+        var element = consoleView.itemElement(messageIndex).element();
+        selection.setBaseAndExtent(selection.anchorNode, selection.anchorOffset, element, 0);
+        viewport.refresh();
+    }
+
+    function selectionContainerAndOffset(container, offset)
+    {
+        var charCount = 0;
+        var node = container;
+        while (node = node.traverseNextTextNode(true)) {
+            var length = node.textContent.length;
+            if (charCount + length >= offset) {
+                return {
+                    container: node,
+                    offset: offset - charCount
+                };
+            }
+            charCount += length;
+        }
+        return null;
+    }
+
+    function selectMessages(fromMessage, fromTextOffset, toMessage, toTextOffset)
+    {
+        if (Math.abs(toMessage - fromMessage) > minimumViewportMessagesCount) {
+            InspectorTest.addResult(String.sprintf("FAILURE: Cannot select more then %d messages (requested to select from %d to %d", minimumViewportMessagesCount, fromMessage, toMessage));
+            InspectorTest.completeTest();
+            return;
+        }
+        viewport.forceScrollItemToBeLast(Math.max(fromMessage, toMessage));
+        viewport.refresh();
+
+        var from = selectionContainerAndOffset(consoleView.itemElement(fromMessage).element(), fromTextOffset);
+        var to = selectionContainerAndOffset(consoleView.itemElement(toMessage).element(), toTextOffset);
+        window.getSelection().setBaseAndExtent(from.container, from.offset, to.container, to.offset);
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+    Tests that console viewport handles selection properly.
+</p>
+</body>
+</html>

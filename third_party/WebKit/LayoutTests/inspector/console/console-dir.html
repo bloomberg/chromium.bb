@@ -29,7 +29,7 @@ function test()
 
     function dumpConsoleMessages()
     {
-        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(WebInspector.ConsolePanel._view()._messagesContainer));
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
         InspectorTest.completeTest();
     }
 }

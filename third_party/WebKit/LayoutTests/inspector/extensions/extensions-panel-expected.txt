@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 8: hello
+CONSOLE MESSAGE: line 9: hello
 Tests WebInspector extension API
 
 Started extension.

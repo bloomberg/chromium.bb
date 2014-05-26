@@ -2,6 +2,7 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script type="text/javascript">
 function logMessage()
 {
@@ -45,8 +46,8 @@ function initialize_extensionsPanelTest()
     InspectorTest.clickOnURL = function()
     {
         WebInspector.inspectorView.showPanel("console");
-        var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]",
-                                            WebInspector.inspectorView.panel("console").element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+        InspectorTest.disableConsoleViewport();
+        var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", WebInspector.ConsolePanel._view()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
         var click = document.createEvent("MouseEvent");
         click.initMouseEvent("click", true, true);
         xpathResult.singleNodeValue.dispatchEvent(click);

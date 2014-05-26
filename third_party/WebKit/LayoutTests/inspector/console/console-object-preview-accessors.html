@@ -41,24 +41,34 @@ function test()
     InspectorTest.evaluateInConsole("console.log(objectWithAccessors)");
     InspectorTest.evaluateInConsole("console.table(tableObject)");
     InspectorTest.evaluateInConsole("console.dir(objectWithAccessors)");
-    InspectorTest.runAfterPendingDispatches(step0);
+    InspectorTest.runAfterPendingDispatches(onMessagesLogged);
 
-    function step0()
+    function onMessagesLogged()
     {
-        InspectorTest.expandConsoleMessages(step1);
+        InspectorTest.waitForRemoteObjectsConsoleMessages(onRemoteObjectsRendered);
     }
 
-    function step1()
+    function onRemoteObjectsRendered()
+    {
+        InspectorTest.expandConsoleMessages(onMessagesExpanded);
+    }
+
+    function onMessagesExpanded()
     {
         InspectorTest.addResult("Before expanding accessors:");
         InspectorTest.dumpConsoleMessages(false, false);
 
-        var buttons = document.getElementsByClassName("properties-calculate-value-button");
-        var buttonsCount = buttons.length;
-        InspectorTest.addResult("\nAccessor property buttons count: " + buttonsCount);
-        for (var i = 0; i < buttonsCount; ++i)
+        var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+        var buttons = [];
+        for (var i = 0; i < messages.length; ++i) {
+            var element = messages[i].toMessageElement();
+            var getters = element.getElementsByClassName("properties-calculate-value-button");
+            for (var j = 0; j < getters.length; ++j)
+                buttons.push(getters[j]);
+        }
+        InspectorTest.addResult("\nAccessor property buttons count: " + buttons.length);
+        for (var i = 0; i < buttons.length; ++i)
             buttons[i].click();
-
         InspectorTest.runAfterPendingDispatches(step2);
     }
 

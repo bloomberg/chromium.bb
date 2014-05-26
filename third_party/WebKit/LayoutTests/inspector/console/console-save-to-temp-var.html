@@ -37,7 +37,7 @@ function test()
     {
         var expression = expressions.shift();
         if (!expression) {
-            dumpConsoleMessages();
+            InspectorTest.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
             return;
         }
 
