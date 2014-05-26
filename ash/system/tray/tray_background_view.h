@@ -9,6 +9,7 @@
 #include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/system/tray/actionable_view.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
@@ -18,12 +19,13 @@ class TrayEventFilter;
 class TrayBackground;
 
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray,
-// LogoutButtonTray.
+// LogoutButtonTray, OverviewButtonTray.
 // This class handles setting and animating the background when the Launcher
 // his shown/hidden. It also inherits from ActionableView so that the tray
 // items can override PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
-                                      public BackgroundAnimatorDelegate {
+                                      public BackgroundAnimatorDelegate,
+                                      public ui::ImplicitAnimationObserver {
  public:
   static const char kViewClassName[];
 
@@ -38,11 +40,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
     void set_size(const gfx::Size& size) { size_ = size; }
 
-    // Overridden from views::View.
+    // views::View:
     virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
    protected:
-    // Overridden from views::View.
+    // views::View:
     virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
     virtual void ChildVisibilityChanged(View* child) OVERRIDE;
     virtual void ViewHierarchyChanged(
@@ -63,7 +65,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called after the tray has been added to the widget containing it.
   virtual void Initialize();
 
-  // Overridden from views::View.
+  // views::View:
+  virtual void SetVisible(bool visible) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
@@ -71,11 +74,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
-  // Overridden from ActionableView.
+  // ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
   virtual gfx::Rect GetFocusBounds() OVERRIDE;
 
-  // Overridden from BackgroundAnimatorDelegate.
+  // BackgroundAnimatorDelegate:
   virtual void UpdateBackground(int alpha) OVERRIDE;
 
   // Called whenever the shelf alignment changes.
@@ -151,6 +154,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called from Initialize after all status area trays have been created.
   // Sets the border based on the position of the view.
   void SetTrayBorder();
+
+  // ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
+  // Applies transformations to the |layer()| to animate the view when
+  // SetVisible(false) is called.
+  void HideTransformation();
 
   // Unowned pointer to parent widget.
   StatusAreaWidget* status_area_widget_;

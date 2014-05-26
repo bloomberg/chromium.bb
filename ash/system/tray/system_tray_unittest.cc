@@ -21,6 +21,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -481,6 +482,27 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
           test::kSettingsTrayItemViewId);
   ASSERT_TRUE(settings);
   EXPECT_TRUE(settings->visible());
+}
+
+// Tests that if SetVisible(true) is called while animating to hidden that the
+// tray becomes visible, and stops animating to hidden.
+TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
+  SystemTray* tray = GetSystemTray();
+  ASSERT_TRUE(tray->visible());
+
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration;
+  animation_duration.reset(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  tray->SetVisible(false);
+  EXPECT_TRUE(tray->visible());
+  EXPECT_EQ(0.0f, tray->layer()->GetTargetOpacity());
+
+  tray->SetVisible(true);
+  animation_duration.reset();
+  tray->layer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(tray->visible());
+  EXPECT_EQ(1.0f, tray->layer()->GetTargetOpacity());
 }
 
 }  // namespace test

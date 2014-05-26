@@ -10,14 +10,42 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+const int kAnimationDurationMs = 250;
+
+class StatusAreaWidgetDelegateAnimationSettings
+    : public ui::ScopedLayerAnimationSettings {
+ public:
+  explicit StatusAreaWidgetDelegateAnimationSettings(ui::Layer* layer)
+      : ui::ScopedLayerAnimationSettings(layer->GetAnimator()) {
+    SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+    SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    SetTweenType(gfx::Tween::EASE_IN_OUT);
+  }
+
+  virtual ~StatusAreaWidgetDelegateAnimationSettings() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegateAnimationSettings);
+};
+
+}  // namespace
 
 namespace ash {
 
@@ -27,6 +55,8 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
 }
 
 StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
@@ -117,12 +147,17 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       layout->AddView(child);
     }
   }
+
+  layer()->GetAnimator()->StopAnimating();
+  StatusAreaWidgetDelegateAnimationSettings settings(layer());
+
   Layout();
   UpdateWidgetSize();
 }
 
 void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
   // Need to resize the window when trays or items are added/removed.
+  StatusAreaWidgetDelegateAnimationSettings settings(layer());
   UpdateWidgetSize();
 }
 
