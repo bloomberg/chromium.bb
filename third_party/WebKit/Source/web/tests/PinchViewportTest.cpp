@@ -15,6 +15,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebContextMenuData.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebInputEvent.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
@@ -65,6 +68,19 @@
 
 using namespace WebCore;
 using namespace blink;
+
+using ::testing::_;
+using ::testing::PrintToString;
+using ::testing::Mock;
+
+namespace blink {
+::std::ostream& operator<<(::std::ostream& os, const WebContextMenuData& data)
+{
+    return os << "Context menu location: ["
+        << data.mousePosition.x << ", " << data.mousePosition.y << "]";
+}
+}
+
 
 namespace {
 
@@ -640,6 +656,73 @@ TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
     frame()->view()->resize(IntSize(500, 200));
 
     EXPECT_TRUE(navbar->needsLayout());
+}
+
+class MockWebFrameClient : public blink::WebFrameClient {
+public:
+    MOCK_METHOD1(showContextMenu, void(const WebContextMenuData&));
+};
+
+MATCHER_P2(ContextMenuAtLocation, x, y,
+    std::string(negation ? "is" : "isn't")
+    + " at expected location ["
+    + PrintToString(x) + ", " + PrintToString(y) + "]")
+{
+    return arg.mousePosition.x == x && arg.mousePosition.y == y;
+}
+
+// Test that the context menu's location is correct in the presence of pinch
+// viewport offset.
+TEST_F(PinchViewportTest, TestContextMenuShownInCorrectLocation)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(200, 300));
+
+    registerMockedHttpURLLoad("200-by-300.html");
+    navigateTo(m_baseURL + "200-by-300.html");
+
+    WebMouseEvent mouseDownEvent;
+    mouseDownEvent.type = WebInputEvent::MouseDown;
+    mouseDownEvent.x = 10;
+    mouseDownEvent.y = 10;
+    mouseDownEvent.windowX = 10;
+    mouseDownEvent.windowY = 10;
+    mouseDownEvent.globalX = 110;
+    mouseDownEvent.globalY = 210;
+    mouseDownEvent.clickCount = 1;
+    mouseDownEvent.button = WebMouseEvent::ButtonRight;
+
+    // Corresponding release event (Windows shows context menu on release).
+    WebMouseEvent mouseUpEvent(mouseDownEvent);
+    mouseUpEvent.type = WebInputEvent::MouseUp;
+
+    WebFrameClient* oldClient = webViewImpl()->mainFrameImpl()->client();
+    MockWebFrameClient mockWebFrameClient;
+    EXPECT_CALL(mockWebFrameClient, showContextMenu(ContextMenuAtLocation(mouseDownEvent.x, mouseDownEvent.y)));
+
+    // Do a sanity check with no scale applied.
+    webViewImpl()->mainFrameImpl()->setClient(&mockWebFrameClient);
+    webViewImpl()->handleInputEvent(mouseDownEvent);
+    webViewImpl()->handleInputEvent(mouseUpEvent);
+
+    Mock::VerifyAndClearExpectations(&mockWebFrameClient);
+    mouseDownEvent.button = WebMouseEvent::ButtonLeft;
+    webViewImpl()->handleInputEvent(mouseDownEvent);
+
+    // Now pinch zoom into the page and move the pinch viewport. The context
+    // menu should still appear at the location of the event, relative to the
+    // WebView.
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    webViewImpl()->setPageScaleFactor(2);
+    pinchViewport.setLocation(FloatPoint(60, 80));
+    EXPECT_CALL(mockWebFrameClient, showContextMenu(ContextMenuAtLocation(mouseDownEvent.x, mouseDownEvent.y)));
+
+    mouseDownEvent.button = WebMouseEvent::ButtonRight;
+    webViewImpl()->handleInputEvent(mouseDownEvent);
+    webViewImpl()->handleInputEvent(mouseUpEvent);
+
+    // Reset the old client so destruction can occur naturally.
+    webViewImpl()->mainFrameImpl()->setClient(oldClient);
 }
 
 } // namespace
