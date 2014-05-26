@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Väritä",
+    "message": "Väritetty",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Siirry takaisin",
+    "message": "Takaisin",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,6 +175,10 @@
     "message": "Ota moniotos käyttöön tai poista se käytöstä",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Ota peilikuva käyttöön tai poista se käytöstä",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Ajastin käytössä",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Moniotos ei käytössä",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Peilikuva käytössä",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Peilikuva ei käytössä",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Kyllä",

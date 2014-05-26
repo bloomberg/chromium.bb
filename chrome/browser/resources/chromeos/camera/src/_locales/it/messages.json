@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Indietro",
+    "message": "Torna indietro",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,6 +175,10 @@
     "message": "Attiva/disattiva scatto multiplo",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Attiva/disattiva mirroring",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Timer attivo",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Scatto multiplo non attivo",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Mirroring attivo",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Mirroring non attivo",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Sì",

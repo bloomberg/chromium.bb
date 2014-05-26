@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Vista de miniatura",
+    "message": "Miniatura",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -100,7 +100,7 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Poderá estar a ser utilizado/a por outra aplicação.",
+    "message": "Poderá estar a ser utilizado(a) por outra aplicação.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -175,6 +175,10 @@
     "message": "Ativar/desativar múltiplas fotografias",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Ativar/desativar espelhamento",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Temporizador ativo",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Modo de múltiplas fotografias inativo",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Espelhamento ativo",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Espelhamento inativo",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Sim",

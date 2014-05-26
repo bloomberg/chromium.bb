@@ -168,12 +168,16 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Alternar temporizador",
+    "message": "Altenar temporizador",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Alternar recurso de múltiplas fotos",
+    "message": "Alternar recurso de múltipla fotos",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleMirrorButton": {
+    "message": "Alternar espelhamento",
+    "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
     "message": "Temporizador ativo",
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Recurso de múltiplas fotos inativo",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Espelhamento ativo",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Espelhamento inativo",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Sim",

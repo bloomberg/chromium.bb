@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Повернутися",
+    "message": "Назад",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -168,28 +168,40 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Увімкнути/вимкнути таймер",
+    "message": "Увімкнути або вимкнути таймер",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Увімкнути/вимкнути серійну зйомку",
+    "message": "Увімкнути або вимкнути серійну зйомку",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Увімкнути або вимкнути дзеркальне відображення",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
-    "message": "Таймер активний",
+    "message": "Таймер увімкнено",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Таймер неактивний",
+    "message": "Таймер вимкнено",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Серійна зйомка активна",
+    "message": "Серійну зйомку ввімкнено",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Серійна зйомка неактивна",
+    "message": "Серійну зйомку вимкнено",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Дзеркальне відображення ввімкнено",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Дзеркальне відображення вимкнено",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Так",
@@ -200,7 +212,7 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "ОК",
+    "message": "OK",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {

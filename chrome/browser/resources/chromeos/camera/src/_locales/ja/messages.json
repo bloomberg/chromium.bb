@@ -16,7 +16,7 @@
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "ビューティ",
+    "message": "ビューティー",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
@@ -175,6 +175,10 @@
     "message": "マルチショットを切り替える",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "ミラーリングを切り替える",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "タイマーは有効です",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "マルチショットは無効です",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "ミラーリングは有効です",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "ミラーリングは無効です",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "はい",

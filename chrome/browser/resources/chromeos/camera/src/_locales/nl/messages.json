@@ -175,6 +175,10 @@
     "message": "Meervoudige opname in-/uitschakelen",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Mirroring in-/uitschakelen",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Timer actief",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Meervoudige opname inactief",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Mirroring actief",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Mirroring inactief",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Ja",

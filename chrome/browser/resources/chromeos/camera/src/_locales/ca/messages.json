@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Torna",
+    "message": "Torna enrere",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -168,19 +168,23 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Commuta el cronometrador",
+    "message": "Commuta el cronòmetre",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Commuta el disparament múltiple",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Commuta la rèplica",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
-    "message": "Cronometrador actiu",
+    "message": "Cronòmetre actiu",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Cronometrador inactiu",
+    "message": "Cronòmetre inactiu",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
@@ -191,6 +195,14 @@
     "message": "Disparament múltiple inactiu",
     "description": "Message shown when inactivating the multi-shot feature."
   },
+  "toggleMirrorActiveMessage": {
+    "message": "Rèplica activa",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Rèplica inactiva",
+    "description": "Message shown when inactivating the preview mirroring."
+  },
   "dialogYesButton": {
     "message": "Sí",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -200,7 +212,7 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "D'acord",
+    "message": "Accepta",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {

@@ -8,7 +8,7 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "اندی",
+    "message": "Andy",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "روزنامه",
+    "message": "روزنامه‌ای",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "آزمایشگاه عکس",
+    "message": "عکسخانه‌ای",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -175,6 +175,10 @@
     "message": "فعال یا غیرفعال کردن ویژگی گرفتن چند عکس",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "فعال یا غیرفعال کردن نمایش صفحه نمایش روی دستگاه دیگر",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "تایمر فعال",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "ویژگی چند عکس غیرفعال",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "نمایش صفحه نمایش روی دستگاه دیگر، فعال",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "نمایش صفحه نمایش روی دستگاه دیگر، غیرفعال",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "بله",

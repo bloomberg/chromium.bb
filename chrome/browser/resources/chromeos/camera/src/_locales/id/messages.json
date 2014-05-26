@@ -132,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Aktifkan/Nonaktifkan filter",
+    "message": "Aktifkan/matikan filter",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -168,12 +168,16 @@
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Aktifkan/nonaktifkan pewaktu",
+    "message": "Aktifkan/matikan pewaktu",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Beralih multi-jepret",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleMirrorButton": {
+    "message": "Aktifkan/matikan pencerminan",
+    "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
     "message": "Pewaktu aktif",
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Multi-jepret tidak aktif",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Pencerminan aktif",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Pencerminan tidak aktif",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Ya",

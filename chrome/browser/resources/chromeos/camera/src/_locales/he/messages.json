@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "חזור אחורה",
+    "message": "חזרה",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -172,8 +172,12 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "הצג/הסתר צילומים ברצף",
+    "message": "הפעל/כבה צילומים ברצף",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleMirrorButton": {
+    "message": "הפעל/כבה שיקוף",
+    "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
     "message": "הטיימר פועל",
@@ -191,6 +195,14 @@
     "message": "מצב צילומים ברצף הופסק",
     "description": "Message shown when inactivating the multi-shot feature."
   },
+  "toggleMirrorActiveMessage": {
+    "message": "שיקוף פועל",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "שיקוף הופסק",
+    "description": "Message shown when inactivating the preview mirroring."
+  },
   "dialogYesButton": {
     "message": "כן",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -204,7 +216,7 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "האם אתה באמת רוצה להסיר את התמונה הזו מהגלריה שלך?",
+    "message": "האם אתה בטוח שברצונך להסיר את התמונה הזו מהגלריה שלך?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

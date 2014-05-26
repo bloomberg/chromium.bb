@@ -148,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Atpakaļ",
+    "message": "Atgriezties",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -175,6 +175,10 @@
     "message": "Pārslēgt uz vairāku attēlu uzņemšanu",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Pārslēgt uz spoguļošanu",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Taimera ieslēgšana",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Vairāku attēlu uzņemšanas izslēgšana",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Spoguļošanas ieslēgšana",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Spoguļošanas izslēgšana",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Jā",

@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Фото-лабораторија",
+    "message": "Фото лабораторија",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -104,7 +104,7 @@
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Није могуће сачувати слику у галерију.",
+    "message": "Није могуће сачувати слику у галерији.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -175,6 +175,10 @@
     "message": "Укључи/искључи вишеструко снимање",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleMirrorButton": {
+    "message": "Укључи/искључи пресликавање",
+    "description": "Label for the button to toggle the preview mirroring."
+  },
   "toggleTimerActiveMessage": {
     "message": "Тајмер је активан",
     "description": "Message shown when activating the timer."
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Вишеструко снимање није активно",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Пресликавање је активно",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Пресликавање није активно",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Да",

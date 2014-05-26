@@ -76,7 +76,7 @@
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "Keerlev",
+    "message": "Keeris",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -172,8 +172,12 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Mitme pildi funktsioon sisse/välja",
+    "message": "Lülita mitme pildi funktsioon sisse/välja",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleMirrorButton": {
+    "message": "Lülita peegeldamine sisse/välja",
+    "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
     "message": "Taimer on aktiivne",
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Mitme pildi funktsioon pole aktiivne",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Peegeldamine on aktiivne",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Peegeldamine pole aktiivne",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Jah",

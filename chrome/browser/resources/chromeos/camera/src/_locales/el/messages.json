@@ -172,8 +172,12 @@
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Εναλλαγή πολλαπλής λήψης",
+    "message": "Εναλλαγή πολλαπλών λήψεων",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleMirrorButton": {
+    "message": "Εναλλαγή κατοπτρισμού",
+    "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
     "message": "Χρονόμετρο ενεργό",
@@ -190,6 +194,14 @@
   "toggleMultiInactiveMessage": {
     "message": "Πολλαπλή λήψη ανενεργή",
     "description": "Message shown when inactivating the multi-shot feature."
+  },
+  "toggleMirrorActiveMessage": {
+    "message": "Ενεργός κατοπτρισμός",
+    "description": "Message shown when activating the preview mirroring."
+  },
+  "toggleMirrorInactiveMessage": {
+    "message": "Ανενεργός κατοπτρισμός",
+    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Ναι",
