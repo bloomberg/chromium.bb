@@ -14,15 +14,19 @@ window.jsTestIsAsync = true;
 var resolve;
 var promise = new Promise(function(r) { resolve = r; });
 var newPromise = window.internals.addOneToPromise(promise);
-console.log("Got a new promise: " + newPromise);
-newPromise.then(function(presult) {
-    result = presult;
+debug("Got a new promise: " + newPromise);
+
+newPromise.then(function(result) {
+    window.result = result;
     shouldBe('result', '11');
-    finishJSTest();
+    return window.internals.addOneToPromise(result);
+}).then(function(result) {
+    window.result = result;
+    shouldBe('result', '12');
+    testPassed('DONE');
 }, function() {
-    testFailed("New promise rejected");
-    finishJSTest();
-});
+    testFailed("rejected");
+}).then(finishJSTest, finishJSTest);
 
 resolve(10);
 

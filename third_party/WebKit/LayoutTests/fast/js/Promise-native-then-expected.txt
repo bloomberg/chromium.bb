@@ -1,9 +1,11 @@
-CONSOLE MESSAGE: line 17: Got a new promise: [object Object]
 Test Promise native then.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+Got a new promise: [object Object]
 PASS result is 11
+PASS result is 12
+PASS DONE
 PASS successfullyParsed is true
 
 TEST COMPLETE
