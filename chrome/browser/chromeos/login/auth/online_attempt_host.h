@@ -12,7 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
@@ -36,7 +38,8 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   // check result (whether authentication was successful). Note, only one
   // checking at a time (the newest call stops the old one, if called with
   // another username and password combination).
-  void Check(Profile* profile, const UserContext& user_context);
+  void Check(content::BrowserContext* auth_context,
+             const UserContext& user_context);
 
   // Resets the checking process.
   void Reset();

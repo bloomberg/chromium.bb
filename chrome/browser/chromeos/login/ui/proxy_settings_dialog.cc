@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/shill_property_util.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -51,11 +52,12 @@ namespace chromeos {
 // static
 int ProxySettingsDialog::instance_count_ = 0;
 
-ProxySettingsDialog::ProxySettingsDialog(Profile* profile,
-                                         const NetworkState& network,
-                                         LoginWebDialog::Delegate* delegate,
-                                         gfx::NativeWindow window)
-    : LoginWebDialog(profile,
+ProxySettingsDialog::ProxySettingsDialog(
+    content::BrowserContext* browser_context,
+    const NetworkState& network,
+    LoginWebDialog::Delegate* delegate,
+    gfx::NativeWindow window)
+    : LoginWebDialog(browser_context,
                      delegate,
                      window,
                      base::string16(),

@@ -17,7 +17,10 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class GaiaAuthFetcher;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 class AuthAttemptState;
@@ -34,7 +37,7 @@ class OnlineAttempt
   // Status will be recorded in |current_attempt|, and resolver_->Resolve() will
   // be called on the IO thread when useful state is available.
   // Must be called on the UI thread.
-  void Initiate(Profile* auth_profile);
+  void Initiate(content::BrowserContext* auth_context);
 
   // GaiaAuthConsumer overrides. Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(

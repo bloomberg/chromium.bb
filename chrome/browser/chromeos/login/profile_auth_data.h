@@ -8,20 +8,22 @@
 #include <string>
 #include "base/callback.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
-// Helper class for transferring authentication related data from one profile
-// to another: proxy authentication cache, cookies, server bound certs.
+// Helper class for transferring authentication related data from one
+// BrowserContext to another: proxy auth cache, cookies, server bound certs.
 class ProfileAuthData {
  public:
   // Transfers proxy authentication cache and optionally |transfer_cookies| and
-  // server bound certs from the profile that was used for authentication.
-  // |completion_callback| will be called on UI thread after the operation is
-  // completed.
-  static void Transfer(Profile* from_profile,
-                       Profile* to_profile,
+  // server bound certs from the BrowserContext that was used for
+  // authentication. |completion_callback| will be called on UI thread after
+  // the operation is completed.
+  static void Transfer(content::BrowserContext* from_context,
+                       content::BrowserContext* to_context,
                        bool transfer_cookies,
                        const base::Closure& completion_callback);
 

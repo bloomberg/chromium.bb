@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/auth/online_attempt.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -22,7 +22,7 @@ OnlineAttemptHost::~OnlineAttemptHost() {
   Reset();
 }
 
-void OnlineAttemptHost::Check(Profile* profile,
+void OnlineAttemptHost::Check(content::BrowserContext* auth_context,
                               const UserContext& user_context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string attempt_hash = base::SHA1HashString(
@@ -38,7 +38,7 @@ void OnlineAttemptHost::Check(Profile* profile,
                                       false,    // online_complete
                                       false));  // user_is_new
     online_attempt_.reset(new OnlineAttempt(state_.get(), this));
-    online_attempt_->Initiate(profile);
+    online_attempt_->Initiate(auth_context);
   }
 }
 

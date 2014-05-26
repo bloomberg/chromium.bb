@@ -9,9 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -46,13 +45,13 @@ static base::LazyInstance<std::deque<content::WebContents*> >
 void LoginWebDialog::Delegate::OnDialogClosed() {
 }
 
-LoginWebDialog::LoginWebDialog(Profile* profile,
+LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
                                Delegate* delegate,
                                gfx::NativeWindow parent_window,
                                const base::string16& title,
                                const GURL& url,
                                Style style)
-    : profile_(profile),
+    : browser_context_(browser_context),
       parent_window_(parent_window),
       delegate_(delegate),
       title_(title),
@@ -69,9 +68,7 @@ LoginWebDialog::~LoginWebDialog() {
 }
 
 void LoginWebDialog::Show() {
-  chrome::ShowWebDialog(parent_window_,
-                        profile_,
-                        this);
+  chrome::ShowWebDialog(parent_window_, browser_context_, this);
   is_open_ = true;
 }
 

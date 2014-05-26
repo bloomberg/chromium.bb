@@ -35,11 +35,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,6 +47,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -165,7 +163,7 @@ void ScreenLocker::Init() {
   ScreenlockIconSource* screenlock_icon_source =
       new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
   content::URLDataSource::Add(
-      Profile::FromWebUI(GetAssociatedWebUI()),
+      GetAssociatedWebUI()->GetWebContents()->GetBrowserContext(),
       screenlock_icon_source);
 }
 

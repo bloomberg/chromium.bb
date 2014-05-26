@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -25,8 +25,8 @@ namespace {
 class ProfileAuthDataTransferer {
  public:
   ProfileAuthDataTransferer(
-      Profile* from_profile,
-      Profile* to_profile,
+      content::BrowserContext* from_context,
+      content::BrowserContext* to_context,
       bool transfer_cookies,
       const base::Closure& completion_callback);
 
@@ -58,12 +58,12 @@ class ProfileAuthDataTransferer {
 };
 
 ProfileAuthDataTransferer::ProfileAuthDataTransferer(
-    Profile* from_profile,
-    Profile* to_profile,
+    content::BrowserContext* from_context,
+    content::BrowserContext* to_context,
     bool transfer_cookies,
     const base::Closure& completion_callback)
-    : from_context_(from_profile->GetRequestContext()),
-      to_context_(to_profile->GetRequestContext()),
+    : from_context_(from_context->GetRequestContext()),
+      to_context_(to_context->GetRequestContext()),
       transfer_cookies_(transfer_cookies),
       completion_callback_(completion_callback),
       got_cookies_(false),
@@ -132,7 +132,7 @@ void ProfileAuthDataTransferer::Finish() {
 // Callback for transferring |cookies_to_transfer_| into |to_context_|'s
 // CookieMonster if its jar is completely empty.  If authentication was
 // performed by an extension, then the set of cookies that was acquired through
-// such that process will be automatically transfered into the profile.
+// such that process will be automatically transfered into the BrowserContext.
 void ProfileAuthDataTransferer::OnTransferCookiesIfEmptyJar(
     const net::CookieList& cookies_in_jar) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -211,12 +211,12 @@ void ProfileAuthDataTransferer::TransferDefaultAuthCache() {
 }  // namespace
 
 void ProfileAuthData::Transfer(
-    Profile* from_profile,
-    Profile* to_profile,
+    content::BrowserContext* from_context,
+    content::BrowserContext* to_context,
     bool transfer_cookies,
     const base::Closure& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  (new ProfileAuthDataTransferer(from_profile, to_profile, transfer_cookies,
+  (new ProfileAuthDataTransferer(from_context, to_context, transfer_cookies,
                                  completion_callback))->BeginTransfer();
 }
 

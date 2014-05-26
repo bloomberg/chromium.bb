@@ -15,7 +15,9 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
@@ -40,7 +42,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
     STYLE_BUBBLE   // Use chromeos::BubbleWindow as a host.
   };
 
-  LoginWebDialog(Profile* profile,
+  LoginWebDialog(content::BrowserContext* browser_context,
                  Delegate* delegate,
                  gfx::NativeWindow parent_window,
                  const base::string16& title,
@@ -89,7 +91,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   gfx::NativeWindow parent_window_;
   // Notifications receiver.
   Delegate* delegate_;

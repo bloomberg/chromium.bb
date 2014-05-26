@@ -13,8 +13,7 @@
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -45,11 +44,11 @@ OnlineAttempt::~OnlineAttempt() {
     client_fetcher_->CancelRequest();
 }
 
-void OnlineAttempt::Initiate(Profile* auth_profile) {
+void OnlineAttempt::Initiate(content::BrowserContext* auth_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   client_fetcher_.reset(
       new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
-                          auth_profile->GetRequestContext()));
+                          auth_context->GetRequestContext()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttempt::TryClientLogin, weak_factory_.GetWeakPtr()));

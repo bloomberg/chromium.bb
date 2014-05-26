@@ -8,7 +8,9 @@
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
@@ -20,7 +22,7 @@ class ProxySettingsDialog : public LoginWebDialog {
   // Returns whether the dialog is being shown.
   static bool IsShown();
 
-  ProxySettingsDialog(Profile* profile,
+  ProxySettingsDialog(content::BrowserContext* browser_context,
                       const NetworkState& network,
                       LoginWebDialog::Delegate* delegate,
                       gfx::NativeWindow window);
