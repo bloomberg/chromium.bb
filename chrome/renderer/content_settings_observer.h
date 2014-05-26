@@ -52,7 +52,6 @@ class ContentSettingsObserver
   virtual bool allowDatabase(const blink::WebString& name,
                              const blink::WebString& display_name,
                              unsigned long estimated_size);
-  virtual bool allowFileSystem();
   virtual void requestFileSystemAccessAsync(
       const blink::WebPermissionCallbacks& callbacks);
   virtual bool allowImage(bool enabled_per_settings,

@@ -266,19 +266,6 @@ bool ContentSettingsObserver::allowDatabase(const WebString& name,
   return result;
 }
 
-bool ContentSettingsObserver::allowFileSystem() {
-  WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->document().securityOrigin().isUnique())
-    return false;
-
-  bool result = false;
-  Send(new ChromeViewHostMsg_RequestFileSystemAccessSync(
-      routing_id(), GURL(frame->document().securityOrigin().toString()),
-      GURL(frame->top()->document().securityOrigin().toString()), &result));
-  return result;
-}
-
 void ContentSettingsObserver::requestFileSystemAccessAsync(
     const WebPermissionCallbacks& callbacks) {
   WebFrame* frame = render_frame()->GetWebFrame();

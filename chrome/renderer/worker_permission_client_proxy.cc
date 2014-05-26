@@ -42,16 +42,6 @@ bool WorkerPermissionClientProxy::allowDatabase(
   return result;
 }
 
-bool WorkerPermissionClientProxy::allowFileSystem() {
-  if (is_unique_origin_)
-    return false;
-
-  bool result = false;
-  sync_message_filter_->Send(new ChromeViewHostMsg_RequestFileSystemAccessSync(
-      routing_id_, document_origin_url_, top_frame_origin_url_, &result));
-  return result;
-}
-
 bool WorkerPermissionClientProxy::requestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
