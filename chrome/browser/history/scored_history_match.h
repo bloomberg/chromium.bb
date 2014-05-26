@@ -25,7 +25,7 @@ class ScoredHistoryMatchTest;
 // history item's URL and/or page title matches have occurred.
 class ScoredHistoryMatch : public history::HistoryMatch {
  public:
-  // The maximum number of recent visits to examine in GetFrecency().
+  // The maximum number of recent visits to examine in GetFrequency().
   // Public so url_index_private_data.cc knows how many visits it is
   // expected to deliver (at minimum) to this class.
   static const size_t kMaxVisitsToScore;
@@ -123,15 +123,15 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   // how often those visits are typed navigations (i.e., explicitly
   // invoked by the user).  |now| is passed in to avoid unnecessarily
   // recomputing it frequently.
-  static float GetFrecency(const base::Time& now,
-                           const bool bookmarked,
-                           const VisitInfoVector& visits);
+  static float GetFrequency(const base::Time& now,
+                            const bool bookmarked,
+                            const VisitInfoVector& visits);
 
   // Combines the two component scores into a final score that's
   // an appropriate value to use as a relevancy score.
   static float GetFinalRelevancyScore(
       float topicality_score,
-      float frecency_score);
+      float frequency_score);
 
   // Sets |also_do_hup_like_scoring_|,
   // |max_assigned_score_for_non_inlineable_matches_|, |bookmark_value_|,

@@ -118,7 +118,7 @@ bool UpdateRecentVisitsFromHistoryDBTask::RunOnDBThread(
     HistoryBackend* backend,
     HistoryDatabase* db) {
   // Make sure the private data is going to get as many recent visits as
-  // ScoredHistoryMatch::GetFrecency() hopes to use.
+  // ScoredHistoryMatch::GetFrequency() hopes to use.
   DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
   succeeded_ = db->GetMostRecentVisitsForURL(url_id_,
                                              kMaxVisitsToStoreInCache,
@@ -489,7 +489,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {
   //    pre_filter_item_count_
   //    post_filter_item_count_
   //    post_scoring_item_count_
-};
+}
 
 bool URLIndexPrivateData::Empty() const {
   return history_info_map_.empty();
@@ -723,7 +723,7 @@ bool URLIndexPrivateData::IndexRow(
     // So we don't do any thread checks.
     VisitVector recent_visits;
     // Make sure the private data is going to get as many recent visits as
-    // ScoredHistoryMatch::GetFrecency() hopes to use.
+    // ScoredHistoryMatch::GetFrequency() hopes to use.
     DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
     if (history_db->GetMostRecentVisitsForURL(row_id,
                                               kMaxVisitsToStoreInCache,
