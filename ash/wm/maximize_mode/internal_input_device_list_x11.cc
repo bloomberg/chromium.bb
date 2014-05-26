@@ -44,8 +44,11 @@ InternalInputDeviceListX11::~InternalInputDeviceListX11() {
 
 bool InternalInputDeviceListX11::IsEventFromInternalDevice(
     const ui::Event* event) {
-  if (!event->HasNativeEvent())
+  if (!event->HasNativeEvent() ||
+      event->native_event()->type != GenericEvent) {
     return false;
+  }
+
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(
       event->native_event()->xcookie.data);
   return internal_device_ids_.find(xiev->sourceid) !=
