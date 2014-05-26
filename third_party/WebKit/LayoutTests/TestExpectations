@@ -886,6 +886,8 @@ crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/rtl
 crbug.com/356780 [ Win ] virtual/windows-directwrite/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
 
 crbug.com/363772 [ Linux Mac Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
+crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ ImageOnlyFailure Pass ]
+crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ ImageOnlyFailure Pass ]
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
 crbug.com/362992 fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
