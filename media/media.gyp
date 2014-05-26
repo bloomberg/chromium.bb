@@ -37,7 +37,7 @@
         'use_pulseaudio%': 0,
       }],
       ['sysroot!=""', {
-        'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+        'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
       }, {
         'pkg-config': 'pkg-config'
       }],

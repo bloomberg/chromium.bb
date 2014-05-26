@@ -10,7 +10,7 @@
     'variables': {
       'conditions': [
         ['sysroot!=""', {
-          'pkg-config': '<(chroot_cmd) ../../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+          'pkg-config': '<(chroot_cmd) ../../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
         }, {
           'pkg-config': 'pkg-config'
         }],

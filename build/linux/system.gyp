@@ -6,7 +6,7 @@
   'variables': {
     'conditions': [
       ['sysroot!=""', {
-        'pkg-config': '<(chroot_cmd) ./pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+        'pkg-config': '<(chroot_cmd) ./pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
         # libgcrypt-config-wrapper invokes libgcrypt-config directly from the 
         # sysroot, so there's no need to prefix it with <(chroot_cmd).
         'libgcrypt-config': './libgcrypt-config-wrapper "<(sysroot)"',
