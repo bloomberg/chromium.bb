@@ -28,10 +28,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
-#if defined(OS_MACOSX)
-#include "apps/app_shim/app_shim_mac.h"
-#endif
-
 using extensions::Extension;
 
 namespace {
@@ -110,11 +106,6 @@ void AppShortcutManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALLED_DEPRECATED: {
-#if defined(OS_MACOSX)
-      if (!apps::IsAppShimsEnabled())
-        break;
-#endif  // defined(OS_MACOSX)
-
       const extensions::InstalledExtensionInfo* installed_info =
           content::Details<const extensions::InstalledExtensionInfo>(details)
               .ptr();
@@ -152,21 +143,10 @@ void AppShortcutManager::OnProfileWillBeRemoved(
 }
 
 void AppShortcutManager::OnceOffCreateShortcuts() {
-  bool was_enabled = prefs_->GetBoolean(prefs::kAppShortcutsHaveBeenCreated);
-
-  // Creation of shortcuts on Mac currently can be disabled with
-  // --disable-app-shims, so check the flag, and set the pref accordingly.
-#if defined(OS_MACOSX)
-  bool is_now_enabled = apps::IsAppShimsEnabled();
-#else
-  bool is_now_enabled = true;
-#endif  // defined(OS_MACOSX)
-
-  if (was_enabled != is_now_enabled)
-    prefs_->SetBoolean(prefs::kAppShortcutsHaveBeenCreated, is_now_enabled);
-
-  if (was_enabled || !is_now_enabled)
+  if (prefs_->GetBoolean(prefs::kAppShortcutsHaveBeenCreated))
     return;
+
+  prefs_->SetBoolean(prefs::kAppShortcutsHaveBeenCreated, true);
 
   // Check if extension system/service are available. They might not be in
   // tests.

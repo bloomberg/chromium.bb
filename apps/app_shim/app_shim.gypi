@@ -24,8 +24,6 @@
         'app_shim_host_mac.h',
         'app_shim_host_manager_mac.h',
         'app_shim_host_manager_mac.mm',
-        'app_shim_mac.cc',
-        'app_shim_mac.h',
         'chrome_main_app_mode_mac.mm',
         'extension_app_shim_handler_mac.cc',
         'extension_app_shim_handler_mac.h',

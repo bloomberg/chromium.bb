@@ -7,7 +7,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
-#include "apps/app_shim/app_shim_mac.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"

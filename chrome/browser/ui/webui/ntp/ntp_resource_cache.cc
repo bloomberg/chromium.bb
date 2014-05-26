@@ -509,12 +509,6 @@ void NTPResourceCache::CreateNewTabHTML() {
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
   }
 
-#if defined(OS_MACOSX)
-  load_time_data.SetBoolean(
-      "disableCreateAppShortcut",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppShims));
-#endif
-
 #if defined(OS_CHROMEOS)
   load_time_data.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));

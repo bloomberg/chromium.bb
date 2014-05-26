@@ -6224,12 +6224,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_DESCRIPTION" desc="Description for the flag to prevent Chrome from quitting when Chrome Apps are open.">
           Prevent Chrome from quitting when Chrome Apps are open.
         </message>
-        <message name="IDS_FLAGS_DISABLE_APP_SHIMS_NAME" desc="Title for the flag to disable shortcuts for packaged apps from being added to Applications and from appearing in the dock.">
-          Disable packaged app shortcuts.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_APP_SHIMS_DESCRIPTION" desc="Description for the flag to disable packaged apps appearing in the dock in OSX.">
-          Disables packaged app shortcuts from being added to Applications and from appearing in the dock.
-        </message>
         <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME" desc="Title for the flag to enable a simplified Mac fullscreen interface.">
           Enables simplified fullscreen.
         </message>

@@ -1344,9 +1344,6 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAlive[]           = "apps-keep-chrome-alive";
 
-// Disables the creation and launch of app shims for platform apps.
-const char kDisableAppShims[]               = "disable-app-shims";
-
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.
 const char kDisableSystemFullscreenForTesting[] =

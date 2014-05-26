@@ -378,20 +378,6 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
 
   dictionary->Set("apps", list);
 
-  // TODO(estade): remove these settings when the old NTP is removed. The new
-  // NTP does it in js.
-#if defined(OS_MACOSX)
-  // App windows are not yet implemented on mac.
-  dictionary->SetBoolean("disableAppWindowLaunch", true);
-  dictionary->SetBoolean("disableCreateAppShortcut", true);
-#endif
-
-#if defined(OS_CHROMEOS)
-  // Making shortcut does not make sense on ChromeOS because it does not have
-  // a desktop.
-  dictionary->SetBoolean("disableCreateAppShortcut", true);
-#endif
-
   const base::ListValue* app_page_names =
       prefs->GetList(prefs::kNtpAppPageNames);
   if (!app_page_names || !app_page_names->GetSize()) {

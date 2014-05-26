@@ -150,12 +150,9 @@ cr.define('ntp', function() {
       if (cr.isMac) {
         // On Windows and Linux, these should always be visible. On ChromeOS,
         // they are never created. On Mac, shortcuts can only be created for
-        // new-style packaged apps, so hide the menu item. Also check if
-        // loadTimeData explicitly disables this as the feature is not yet
-        // enabled by default on Mac.
+        // new-style packaged apps, so hide the menu item.
         this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
-            !app.appData.packagedApp ||
-            loadTimeData.getBoolean('disableCreateAppShortcut');
+            !app.appData.packagedApp;
       }
     },
 

@@ -7,7 +7,6 @@
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
-#include "apps/app_shim/app_shim_mac.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -135,6 +134,12 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
   OSErr result = SetIconFamilyData(icon_family, icon_type, raw_data.Get());
   DCHECK_EQ(noErr, result);
   return result == noErr;
+}
+
+bool AppShimsDisabledForTest() {
+  // Disable app shims in tests because shims created in ~/Applications will not
+  // be cleaned up.
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType);
 }
 
 base::FilePath GetWritableApplicationsDirectory() {
@@ -849,7 +854,7 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
 }
 
 void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info) {
-  if (!apps::IsAppShimsEnabled())
+  if (AppShimsDisabledForTest())
     return;
 
   content::BrowserThread::PostTask(
@@ -919,6 +924,9 @@ bool CreatePlatformShortcuts(
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  if (AppShimsDisabledForTest())
+    return true;
+
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, file_handlers_info);
   return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
@@ -938,6 +946,9 @@ void UpdatePlatformShortcuts(
     const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  if (AppShimsDisabledForTest())
+    return;
+
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, file_handlers_info);
   shortcut_creator.UpdateShortcuts();

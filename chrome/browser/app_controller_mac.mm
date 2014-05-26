@@ -4,7 +4,6 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
-#include "apps/app_shim/app_shim_mac.h"
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/app_window_registry.h"
 #include "base/auto_reset.h"

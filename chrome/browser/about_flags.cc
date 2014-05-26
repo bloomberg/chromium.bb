@@ -1353,13 +1353,6 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_MACOSX)
   {
-    "disable-app-shims",
-    IDS_FLAGS_DISABLE_APP_SHIMS_NAME,
-    IDS_FLAGS_DISABLE_APP_SHIMS_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kDisableAppShims)
-  },
-  {
     "enable-simplified-fullscreen",
     IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME,
     IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_DESCRIPTION,
