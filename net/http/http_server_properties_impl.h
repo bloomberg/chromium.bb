@@ -65,6 +65,10 @@ class NET_EXPORT HttpServerPropertiesImpl
   static void ForceAlternateProtocol(const PortAlternateProtocolPair& pair);
   static void DisableForcedAlternateProtocol();
 
+  // Returns the canonical host suffix for |server|, or std::string() if none
+  // exists.
+  std::string GetCanonicalSuffix(const net::HostPortPair& server);
+
   // Changes the number of host/port pairs we remember pipelining capability
   // for. A larger number means we're more likely to be able to pipeline
   // immediately if a host is known good, but uses more memory. This function
@@ -117,6 +121,12 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   // Returns all Alternate-Protocol mappings.
   virtual const AlternateProtocolMap& alternate_protocol_map() const OVERRIDE;
+
+  virtual void SetAlternateProtocolExperiment(
+      AlternateProtocolExperiment experiment) OVERRIDE;
+
+  virtual AlternateProtocolExperiment GetAlternateProtocolExperiment()
+      const OVERRIDE;
 
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
@@ -187,6 +197,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   AlternateProtocolMap alternate_protocol_map_;
   BrokenAlternateProtocolList broken_alternate_protocol_list_;
   BrokenAlternateProtocolMap broken_alternate_protocol_map_;
+  AlternateProtocolExperiment alternate_protocol_experiment_;
 
   SpdySettingsMap spdy_settings_map_;
   ServerNetworkStatsMap server_network_stats_map_;

@@ -31,9 +31,20 @@ COMPILE_ASSERT(
 
 }  // namespace
 
-void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage) {
+void HistogramAlternateProtocolUsage(
+    AlternateProtocolUsage usage,
+    AlternateProtocolExperiment alternate_protocol_experiment) {
   UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
                             ALTERNATE_PROTOCOL_USAGE_MAX);
+  if (alternate_protocol_experiment ==
+      ALTERNATE_PROTOCOL_TRUNCATED_200_SERVERS) {
+    UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage.200Truncated", usage,
+                              ALTERNATE_PROTOCOL_USAGE_MAX);
+  } else if (alternate_protocol_experiment ==
+      ALTERNATE_PROTOCOL_TRUNCATED_1000_SERVERS) {
+    UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage.1000Truncated", usage,
+                              ALTERNATE_PROTOCOL_USAGE_MAX);
+  }
 }
 
 void HistogramBrokenAlternateProtocolLocation(

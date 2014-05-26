@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -39,12 +40,15 @@ const int64 kUpdatePrefsDelayMs = 5000;
 const int kMissingVersion = 0;
 
 // The version number of persisted http_server_properties.
-const int kVersionNumber = 2;
+const int kVersionNumber = 3;
 
 typedef std::vector<std::string> StringVector;
 
-// Persist 200 MRU AlternateProtocolHostPortPairs.
-const int kMaxAlternateProtocolHostsToPersist = 200;
+// Load either 200 or 1000 servers based on a coin flip.
+const int k200AlternateProtocolHostsToLoad = 200;
+const int k1000AlternateProtocolHostsToLoad = 1000;
+// Persist 1000 MRU AlternateProtocolHostPortPairs.
+const int kMaxAlternateProtocolHostsToPersist = 1000;
 
 // Persist 200 MRU SpdySettingsHostPortPairs.
 const int kMaxSpdySettingsHostsToPersist = 200;
@@ -213,6 +217,16 @@ HttpServerPropertiesManager::alternate_protocol_map() const {
   return http_server_properties_impl_->alternate_protocol_map();
 }
 
+void HttpServerPropertiesManager::SetAlternateProtocolExperiment(
+    net::AlternateProtocolExperiment experiment) {
+  http_server_properties_impl_->SetAlternateProtocolExperiment(experiment);
+}
+
+net::AlternateProtocolExperiment
+HttpServerPropertiesManager::GetAlternateProtocolExperiment() const {
+  return http_server_properties_impl_->GetAlternateProtocolExperiment();
+}
+
 const net::SettingsMap&
 HttpServerPropertiesManager::GetSpdySettings(
     const net::HostPortPair& host_port_pair) {
@@ -345,7 +359,24 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       new net::PipelineCapabilityMap);
   scoped_ptr<net::AlternateProtocolMap> alternate_protocol_map(
       new net::AlternateProtocolMap(kMaxAlternateProtocolHostsToPersist));
+  // TODO(rtenneti): Delete the following code after the experiment.
+  int alternate_protocols_to_load = k200AlternateProtocolHostsToLoad;
+  net::AlternateProtocolExperiment alternate_protocol_experiment =
+      net::ALTERNATE_PROTOCOL_NOT_PART_OF_EXPERIMENT;
+  if (version == kVersionNumber) {
+    if (base::RandInt(0, 99) == 0) {
+      alternate_protocol_experiment =
+          net::ALTERNATE_PROTOCOL_TRUNCATED_200_SERVERS;
+    } else {
+      alternate_protocols_to_load = k1000AlternateProtocolHostsToLoad;
+      alternate_protocol_experiment =
+          net::ALTERNATE_PROTOCOL_TRUNCATED_1000_SERVERS;
+    }
+    DVLOG(1) << "# of servers that support alternate_protocol: "
+             << alternate_protocols_to_load;
+  }
 
+  int count = 0;
   for (base::DictionaryValue::Iterator it(*servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's host/pair.
@@ -418,6 +449,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       continue;
     }
 
+    if (count >= alternate_protocols_to_load)
+      continue;
     do {
       int port = 0;
       if (!port_alternate_protocol_dict->GetIntegerWithoutPathExpansion(
@@ -446,6 +479,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       port_alternate_protocol.protocol = protocol;
 
       alternate_protocol_map->Put(server, port_alternate_protocol);
+      ++count;
     } while (false);
   }
 
@@ -459,6 +493,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
                  base::Owned(spdy_settings_map.release()),
                  base::Owned(alternate_protocol_map.release()),
                  base::Owned(pipeline_capability_map.release()),
+                 alternate_protocol_experiment,
                  detected_corrupted_prefs));
 }
 
@@ -467,6 +502,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
     net::SpdySettingsMap* spdy_settings_map,
     net::AlternateProtocolMap* alternate_protocol_map,
     net::PipelineCapabilityMap* pipeline_capability_map,
+    net::AlternateProtocolExperiment alternate_protocol_experiment,
     bool detected_corrupted_prefs) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
@@ -475,17 +511,19 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
   UMA_HISTOGRAM_COUNTS("Net.CountOfSpdyServers", spdy_servers->size());
   http_server_properties_impl_->InitializeSpdyServers(spdy_servers, true);
 
-  // Clear the cached data and use the new spdy_settings from preferences.
+  // Update the cached data and use the new spdy_settings from preferences.
   UMA_HISTOGRAM_COUNTS("Net.CountOfSpdySettings", spdy_settings_map->size());
   http_server_properties_impl_->InitializeSpdySettingsServers(
       spdy_settings_map);
 
-  // Clear the cached data and use the new Alternate-Protocol server list from
+  // Update the cached data and use the new Alternate-Protocol server list from
   // preferences.
   UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers",
                        alternate_protocol_map->size());
   http_server_properties_impl_->InitializeAlternateProtocolServers(
       alternate_protocol_map);
+  http_server_properties_impl_->SetAlternateProtocolExperiment(
+      alternate_protocol_experiment);
 
   UMA_HISTOGRAM_COUNTS("Net.CountOfPipelineCapableServers",
                        pipeline_capability_map->size());
@@ -547,10 +585,21 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO(
   const net::AlternateProtocolMap& map =
       http_server_properties_impl_->alternate_protocol_map();
   count = 0;
+  typedef std::map<std::string, bool> CanonicalHostPersistedMap;
+  CanonicalHostPersistedMap persisted_map;
   for (net::AlternateProtocolMap::const_iterator it = map.begin();
        it != map.end() && count < kMaxAlternateProtocolHostsToPersist;
-       ++it, ++count) {
-    alternate_protocol_map->Put(it->first, it->second);
+       ++it) {
+    const net::HostPortPair& server = it->first;
+    std::string canonical_suffix =
+        http_server_properties_impl_->GetCanonicalSuffix(server);
+    if (!canonical_suffix.empty()) {
+      if (persisted_map.find(canonical_suffix) != persisted_map.end())
+        continue;
+      persisted_map[canonical_suffix] = true;
+    }
+    alternate_protocol_map->Put(server, it->second);
+    ++count;
   }
 
   net::PipelineCapabilityMap* pipeline_capability_map =

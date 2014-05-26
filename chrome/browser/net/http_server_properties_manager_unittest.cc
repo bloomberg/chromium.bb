@@ -61,11 +61,12 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   MOCK_METHOD0(UpdateCacheFromPrefsOnUI, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnIO, void(const base::Closure&));
-  MOCK_METHOD5(UpdateCacheFromPrefsOnIO,
+  MOCK_METHOD6(UpdateCacheFromPrefsOnIO,
                void(std::vector<std::string>* spdy_servers,
                     net::SpdySettingsMap* spdy_settings_map,
                     net::AlternateProtocolMap* alternate_protocol_map,
                     net::PipelineCapabilityMap* pipeline_capability_map,
+                    net::AlternateProtocolExperiment experiment,
                     bool detected_corrupted_prefs));
   MOCK_METHOD4(UpdatePrefsOnUI,
                void(base::ListValue* spdy_server_list,

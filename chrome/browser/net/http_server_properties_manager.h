@@ -129,6 +129,12 @@ class HttpServerPropertiesManager
   virtual const net::AlternateProtocolMap&
       alternate_protocol_map() const OVERRIDE;
 
+  virtual void SetAlternateProtocolExperiment(
+      net::AlternateProtocolExperiment experiment) OVERRIDE;
+
+  virtual net::AlternateProtocolExperiment GetAlternateProtocolExperiment()
+      const OVERRIDE;
+
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
   virtual const net::SettingsMap& GetSpdySettings(
@@ -193,6 +199,7 @@ class HttpServerPropertiesManager
       net::SpdySettingsMap* spdy_settings_map,
       net::AlternateProtocolMap* alternate_protocol_map,
       net::PipelineCapabilityMap* pipeline_capability_map,
+      net::AlternateProtocolExperiment alternate_protocol_experiment,
       bool detected_corrupted_prefs);
 
   // These are used to delay updating the preferences when cached data in

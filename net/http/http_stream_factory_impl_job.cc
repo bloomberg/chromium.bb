@@ -1472,17 +1472,28 @@ bool HttpStreamFactoryImpl::Job::IsOrphaned() const {
 }
 
 void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
+  net::AlternateProtocolExperiment alternate_protocol_experiment =
+      ALTERNATE_PROTOCOL_NOT_PART_OF_EXPERIMENT;
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session_->http_server_properties();
+  if (http_server_properties) {
+    alternate_protocol_experiment =
+        http_server_properties->GetAlternateProtocolExperiment();
+  }
   if (using_existing_quic_session_) {
     // If an existing session was used, then no TCP connection was
     // started.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE);
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE,
+                                    alternate_protocol_experiment);
   } else if (original_url_) {
     // This job was the alternate protocol job, and hence won the race.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE);
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE,
+                                    alternate_protocol_experiment);
   } else {
     // This job was the normal job, and hence the alternate protocol job lost
     // the race.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE,
+                                    alternate_protocol_experiment);
   }
 }
 

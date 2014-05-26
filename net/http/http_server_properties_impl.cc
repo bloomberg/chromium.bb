@@ -29,6 +29,8 @@ const uint64 kBrokenAlternateProtocolDelaySecs = 300;
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
     : spdy_servers_map_(SpdyServerHostPortMap::NO_AUTO_EVICT),
       alternate_protocol_map_(AlternateProtocolMap::NO_AUTO_EVICT),
+      alternate_protocol_experiment_(
+          ALTERNATE_PROTOCOL_NOT_PART_OF_EXPERIMENT),
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       pipeline_capability_map_(
           new CachedPipelineCapabilityMap(kDefaultNumHostsToRemember)),
@@ -220,6 +222,19 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
   return GetCanonicalHost(server) != canonical_host_to_origin_map_.end();
 }
 
+std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
+    const HostPortPair& server) {
+  // If this host ends with a canonical suffix, then return the canonical
+  // suffix.
+  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canoncial_suffixes_[i];
+    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+      return canonical_suffix;
+    }
+  }
+  return std::string();
+}
+
 PortAlternateProtocolPair
 HttpServerPropertiesImpl::GetAlternateProtocol(
     const HostPortPair& server) {
@@ -275,7 +290,8 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
     // TODO(rch): Consider the case where multiple requests are started
     // before the first completes. In this case, only one of the jobs
     // would reach this code, whereas all of them should should have.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING);
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
+                                    alternate_protocol_experiment_);
   }
 
   alternate_protocol_map_.Put(server, alternate);
@@ -338,6 +354,16 @@ void HttpServerPropertiesImpl::ClearAlternateProtocol(
 const AlternateProtocolMap&
 HttpServerPropertiesImpl::alternate_protocol_map() const {
   return alternate_protocol_map_;
+}
+
+void HttpServerPropertiesImpl::SetAlternateProtocolExperiment(
+    AlternateProtocolExperiment experiment) {
+  alternate_protocol_experiment_ = experiment;
+}
+
+AlternateProtocolExperiment
+HttpServerPropertiesImpl::GetAlternateProtocolExperiment() const {
+  return alternate_protocol_experiment_;
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(

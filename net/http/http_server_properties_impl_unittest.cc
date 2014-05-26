@@ -415,6 +415,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
       impl_.GetAlternateProtocol(test_host_port_pair);
   EXPECT_EQ(canonical_protocol.port, alternate.port);
   EXPECT_EQ(canonical_protocol.protocol, alternate.protocol);
+
+  // Verify the canonical suffix.
+  EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(test_host_port_pair));
+  EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(canonical_port_pair));
 }
 
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
