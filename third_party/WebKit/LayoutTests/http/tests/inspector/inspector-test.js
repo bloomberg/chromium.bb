@@ -36,6 +36,12 @@ InspectorTest.Output = {   // override in window.initialize_yourName
     }
 };
 
+InspectorTest.startDumpingProtocolMessages = function()
+{
+    InspectorBackendClass.Connection.prototype._dumpProtocolMessage = testRunner.logToStderr.bind(testRunner);
+    InspectorBackendClass.Options.dumpInspectorProtocolMessages = 1;
+}
+
 InspectorTest.completeTest = function()
 {
     InspectorTest.Output.testComplete();
