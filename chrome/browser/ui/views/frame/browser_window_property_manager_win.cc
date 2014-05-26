@@ -15,14 +15,9 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_win.h"
 #include "chrome/common/pref_names.h"
-#include "extensions/browser/extension_registry.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
-
-using extensions::ExtensionRegistry;
 
 BrowserWindowPropertyManager::BrowserWindowPropertyManager(BrowserView* view)
     : view_(view) {
@@ -57,19 +52,6 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
   base::string16 pinned_name;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileShortcutManager* shortcut_manager = NULL;
-
-  // Apps set their relaunch details based on app's details.
-  if (browser->is_app()) {
-    ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-    const extensions::Extension* extension = registry->GetExtensionById(
-        web_app::GetExtensionIdFromApplicationName(browser->app_name()),
-        ExtensionRegistry::EVERYTHING);
-    if (extension) {
-      ui::win::SetAppIdForWindow(app_id, hwnd);
-      web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
-      return;
-    }
-  }
 
   // The profile manager may be NULL in testing.
   if (profile_manager)
