@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/common/chrome_version_info.h"
@@ -51,11 +50,8 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
 // Makes a call and checks that there's encryption or not in the SDP offer.
 IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
                        VerifyEncryption) {
-// Flaky timeout on a webrtc Win XP bot. http://crbug.com/368163.
-#if defined (OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
+  if (!OnWinXp())
+    return;  // Flaky timeout on a webrtc Win XP bot. http://crbug.com/368163.
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -94,4 +90,5 @@ IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
             ExecuteJavascript("hasSeenCryptoInSdp()", left_tab));
 
   HangUp(left_tab);
+  HangUp(right_tab);
 }

@@ -10,7 +10,6 @@
 #include "base/process/launch.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
@@ -350,13 +349,10 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
                        MAYBE_MANUAL_TestAudioQuality) {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    // It would take work to implement this on XP; not prioritized right now.
+  if (OnWinXp()) {
     LOG(ERROR) << "This test is not implemented for Windows XP.";
     return;
   }
-#endif
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

@@ -32,11 +32,6 @@
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"
 
-// For fine-grained suppression on flaky tests.
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("frame_analyzer.exe");
@@ -320,12 +315,8 @@ INSTANTIATE_TEST_CASE_P(
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQuality) {
-
-#if defined(OS_WIN)
-  // Fails on XP. http://crbug.com/353078
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
+  if (OnWinXp())
+    return;  // Fails on XP. http://crbug.com/353078.
 
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "

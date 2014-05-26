@@ -20,6 +20,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_WIN)
+// For fine-grained suppression.
+#include "base/win/windows_version.h"
+#endif
+
 const char WebRtcTestBase::kAudioVideoCallConstraints[] =
     "'{audio: true, video: true}'";
 const char WebRtcTestBase::kAudioVideoCallConstraintsQVGA[] =
@@ -346,4 +351,12 @@ bool WebRtcTestBase::HasWebcamAvailableOnSystem(
   std::string result =
       ExecuteJavascript("HasVideoSourceOnSystem();", tab_contents);
   return result == "has-video-source";
+}
+
+bool WebRtcTestBase::OnWinXp() const {
+#if defined(OS_WIN)
+  return base::win::GetVersion() <= base::win::VERSION_XP;
+#else
+  return false;
+#endif
 }

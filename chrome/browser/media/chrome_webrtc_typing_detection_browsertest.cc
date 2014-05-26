@@ -134,4 +134,5 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   test::SleepInJavascript(left_tab, 10000);
 
   HangUp(left_tab);
+  HangUp(right_tab);
 }

@@ -1254,6 +1254,7 @@
         'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
         'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
+        'browser/media/chrome_webrtc_perf_browsertest.cc',
         'browser/media/chrome_webrtc_typing_detection_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
         'browser/media/chrome_webrtc_webcam_browsertest.cc',
