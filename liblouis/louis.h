@@ -565,7 +565,7 @@ extern "C"
 void outOfMemory ();
 /* Priknts an out-of-memory message and exits*/
 
-void logWidecharBuf(int level, const char *msg, const widechar *wbuf, int wlen);
+void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int wlen);
 /* Helper for logging a widechar buffer */
 
 void logMessage(logLevels level, const char *format, ...);
