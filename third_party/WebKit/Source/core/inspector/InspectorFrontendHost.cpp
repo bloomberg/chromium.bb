@@ -31,7 +31,6 @@
 #include "core/inspector/InspectorFrontendHost.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -191,11 +190,8 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
 
     ASSERT(m_frontendPage);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->mainFrame());
-    ScriptValue frontendApiObject;
-    if (!ScriptGlobalObject::get(frontendScriptState, "InspectorFrontendAPI", frontendApiObject)) {
-        ASSERT_NOT_REACHED();
-        return;
-    }
+    ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
+    ASSERT(frontendApiObject.isObject());
     RefPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
     m_frontendPage->contextMenuController().showContextMenu(event, menuProvider);
     m_menuProvider = menuProvider.get();

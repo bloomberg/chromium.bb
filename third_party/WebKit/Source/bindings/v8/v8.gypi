@@ -65,8 +65,6 @@
             'ScriptGCEvent.h',
             'ScriptHeapSnapshot.cpp',
             'ScriptHeapSnapshot.h',
-            'ScriptObject.cpp',
-            'ScriptObject.h',
             'ScriptPreprocessor.cpp',
             'ScriptPreprocessor.h',
             'ScriptProfiler.cpp',

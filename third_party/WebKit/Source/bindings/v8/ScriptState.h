@@ -16,6 +16,7 @@ class DOMWindow;
 class DOMWrapperWorld;
 class ExecutionContext;
 class LocalFrame;
+class ScriptValue;
 
 // ScriptState is created when v8::Context is created.
 // ScriptState is destroyed when v8::Context is garbage-collected and
@@ -80,6 +81,7 @@ public:
 
     bool evalEnabled() const;
     void setEvalEnabled(bool);
+    ScriptValue getFromGlobalObject(const char* name);
 
 private:
     ScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);

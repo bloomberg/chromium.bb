@@ -55,6 +55,13 @@ void ScriptState::setEvalEnabled(bool enabled)
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 
+ScriptValue ScriptState::getFromGlobalObject(const char* name)
+{
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Value> v8Value = context()->Global()->Get(v8AtomicString(isolate(), name));
+    return ScriptValue(this, v8Value);
+}
+
 ExecutionContext* ScriptState::executionContext() const
 {
     v8::HandleScope scope(m_isolate);
