@@ -142,8 +142,13 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         // selected, do not pass the event to control element.
         // Note: a click event may be not a mouse event if created by
         // document.createEvent().
-        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated() && document().frame()->selection().selection().isRange())
-            return;
+        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated()) {
+            if (LocalFrame* frame = document().frame()) {
+                if (frame->selection().selection().isRange())
+                    return;
+            }
+        }
+
 
         RefPtrWillBeRawPtr<HTMLElement> element = control();
 
