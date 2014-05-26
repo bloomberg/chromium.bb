@@ -6,7 +6,13 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -20,6 +26,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,6 +40,13 @@ const char kJsScreenPath[] = "login.ResetScreen";
 const char kResetScreen[] = "reset";
 
 const int kErrorUIStateRollback = 7;
+
+static const char kRollbackFlagFile[] = "/tmp/.enable_rollback_ui";
+
+void CheckRollbackFlagFileExists(bool *file_exists) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  *file_exists = base::PathExists(base::FilePath(kRollbackFlagFile));
+}
 
 }  // namespace
 
@@ -94,6 +108,10 @@ void ResetScreenHandler::Show() {
     return;
   }
 
+  ChooseAndApplyShowScenario();
+}
+
+void ResetScreenHandler::ChooseAndApplyShowScenario() {
   PrefService* prefs = g_browser_process->local_state();
   restart_required_ = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kFirstExecAfterBoot);
@@ -101,12 +119,34 @@ void ResetScreenHandler::Show() {
   rollback_available_ = false;
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+
+  // Check Rollback flag-file.
+  scoped_ptr<bool> file_exists(new bool(false));
+  base::Closure checkfile_closure = base::Bind(
+      &CheckRollbackFlagFileExists,
+      base::Unretained(file_exists.get()));
+  base::Closure on_check_done = base::Bind(
+      &ResetScreenHandler::OnRollbackFlagFileCheckDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(file_exists.Pass()));
+  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
+          FROM_HERE,
+          checkfile_closure,
+          on_check_done)) {
+    LOG(WARNING) << "Failed to check flag file for Rollback reset option";
+    on_check_done.Run();
+  }
+}
+
+void ResetScreenHandler::OnRollbackFlagFileCheckDone(
+    scoped_ptr<bool> file_exists) {
+  if (!file_exists && !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRollbackOption)) {
     rollback_available_ = false;
     ShowWithParams();
   } else if (!restart_required_ && reboot_was_requested_) {
     // First exec after boot.
+    PrefService* prefs = g_browser_process->local_state();
     rollback_available_ = prefs->GetBoolean(prefs::kRollbackRequested);
     ShowWithParams();
   } else {

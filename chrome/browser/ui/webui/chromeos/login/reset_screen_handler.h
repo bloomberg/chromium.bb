@@ -50,6 +50,8 @@ class ResetScreenHandler : public ResetScreenActor,
   void HandleOnPowerwash(bool rollback_checked);
   void HandleOnLearnMore();
 
+  void ChooseAndApplyShowScenario();
+  void OnRollbackFlagFileCheckDone(scoped_ptr<bool> file_exists);
   void ShowWithParams();
 
   Delegate* delegate_;
