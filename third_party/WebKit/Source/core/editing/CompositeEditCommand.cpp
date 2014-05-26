@@ -1104,6 +1104,8 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
     Position start = startOfParagraphToMove.deepEquivalent().downstream();
     Position end = startOfParagraphToMove == endOfParagraphToMove ? start : endOfParagraphToMove.deepEquivalent().upstream();
+    if (comparePositions(start, end) > 0)
+        end = start;
 
     cloneParagraphUnderNewElement(start, end, outerNode, blockElement);
 
