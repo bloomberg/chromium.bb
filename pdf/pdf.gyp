@@ -126,18 +126,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'pdfium_test',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../third_party/pdfium/pdfium.gyp:fpdfsdk',
-      ],
-      'sources': [
-        'pdfium/pdfium_test.cc',
-      ],
-    }
   ],
   'conditions': [
     # CrOS has a separate step to do this.
