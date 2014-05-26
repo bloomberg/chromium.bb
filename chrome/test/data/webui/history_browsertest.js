@@ -665,7 +665,15 @@ RangeHistoryWebUITest.prototype = {
   },
 };
 
-TEST_F('RangeHistoryWebUITest', 'allView', function() {
+/**
+ * Disabled due to timeout on Mac http://crbug.com/377338
+ */
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_allView DISABLED_allView');
+GEN('#else');
+GEN('#define MAYBE_allView allView');
+GEN('#endif');
+TEST_F('RangeHistoryWebUITest', 'MAYBE_allView', function() {
   // Check that we start off in the all time view.
   expectTrue($('timeframe-filter-all').checked);
   // See if the correct number of days is shown.
