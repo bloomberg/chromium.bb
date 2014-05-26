@@ -59,10 +59,6 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [
 crbug.com/316604 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
-crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
-crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
-crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
-crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
