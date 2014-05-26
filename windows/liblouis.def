@@ -11,7 +11,6 @@ EXPORTS
 	lou_charToDots
 	lou_backTranslateString
 	lou_backTranslate
-	lou_logPrint
 	lou_logFile
 	lou_logEnd
 	lou_compileString
@@ -20,7 +19,6 @@ EXPORTS
 	lou_getDataPath
 	lou_registerLogCallback
 	lou_setLogLevel
-	lou_log
 	lou_free
 	getDotsForChar
 	getCharFromDots
