@@ -33,6 +33,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/animation/CompositorAnimations.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
@@ -46,14 +47,26 @@ void CompositorPendingAnimations::add(AnimationPlayer* player)
     if (!player->hasStartTime() && !visible)
         player->setStartTimeInternal(player->timeline()->currentTimeInternal(), true);
 
-    m_pending.append(player);
+    m_pendingStart.append(player);
 }
 
-bool CompositorPendingAnimations::startPendingAnimations()
+void CompositorPendingAnimations::cancel(Element& element, int animationId)
 {
+    m_pendingCancellation.append(std::make_pair(&element, animationId));
+}
+
+bool CompositorPendingAnimations::startAndCancelPendingAnimations()
+{
+    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, int> > pendingCancellation;
+    pendingCancellation.swap(m_pendingCancellation);
+    for (size_t i = 0; i < pendingCancellation.size(); ++i)
+        CompositorAnimations::instance()->cancelAnimationOnCompositor(*pendingCancellation[i].first, pendingCancellation[i].second);
+
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > pendingStart;
+    pendingStart.swap(m_pendingStart);
     bool startedSynchronizedOnCompositor = false;
-    for (size_t i = 0; i < m_pending.size(); ++i) {
-        if (!m_pending[i]->hasActiveAnimationsOnCompositor() && m_pending[i]->maybeStartAnimationOnCompositor() && !m_pending[i]->hasStartTime())
+    for (size_t i = 0; i < pendingStart.size(); ++i) {
+        if (!pendingStart[i]->hasActiveAnimationsOnCompositor() && pendingStart[i]->maybeStartAnimationOnCompositor() && !pendingStart[i]->hasStartTime())
             startedSynchronizedOnCompositor = true;
     }
 
@@ -61,19 +74,19 @@ bool CompositorPendingAnimations::startPendingAnimations()
     // remaning synchronized animations need to wait for the synchronized
     // start time. Otherwise they may start immediately.
     if (startedSynchronizedOnCompositor) {
-        for (size_t i = 0; i < m_pending.size(); ++i) {
-            if (!m_pending[i]->hasStartTime()) {
-                m_waitingForCompositorAnimationStart.append(m_pending[i]);
+        for (size_t i = 0; i < pendingStart.size(); ++i) {
+            if (!pendingStart[i]->hasStartTime()) {
+                m_waitingForCompositorAnimationStart.append(pendingStart[i]);
             }
         }
     } else {
-        for (size_t i = 0; i < m_pending.size(); ++i) {
-            if (!m_pending[i]->hasStartTime()) {
-                m_pending[i]->setStartTimeInternal(m_pending[i]->timeline()->currentTimeInternal(), true);
+        for (size_t i = 0; i < pendingStart.size(); ++i) {
+            if (!pendingStart[i]->hasStartTime()) {
+                pendingStart[i]->setStartTimeInternal(pendingStart[i]->timeline()->currentTimeInternal(), true);
             }
         }
     }
-    m_pending.clear();
+    pendingStart.clear();
 
     if (startedSynchronizedOnCompositor || m_waitingForCompositorAnimationStart.isEmpty())
         return !m_waitingForCompositorAnimationStart.isEmpty();
@@ -101,8 +114,9 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
 
 void CompositorPendingAnimations::trace(Visitor* visitor)
 {
-    visitor->trace(m_pending);
+    visitor->trace(m_pendingStart);
     visitor->trace(m_waitingForCompositorAnimationStart);
+    visitor->trace(m_pendingCancellation);
 }
 
 } // namespace
