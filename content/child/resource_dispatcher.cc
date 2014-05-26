@@ -84,8 +84,6 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE;
 
  private:
-  RequestPeer* peer_;
-
   // The resource dispatcher for this loader.  The bridge doesn't own it, but
   // it's guaranteed to outlive the bridge.
   ResourceDispatcher* dispatcher_;
@@ -109,8 +107,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     ResourceDispatcher* dispatcher,
     const RequestInfo& request_info)
-    : peer_(NULL),
-      dispatcher_(dispatcher),
+    : dispatcher_(dispatcher),
       request_id_(-1),
       routing_id_(request_info.routing_id),
       is_synchronous_request_(false) {
@@ -177,10 +174,8 @@ bool IPCResourceLoaderBridge::Start(RequestPeer* peer) {
     return false;
   }
 
-  peer_ = peer;
-
   // generate the request ID, and append it to the message
-  request_id_ = dispatcher_->AddPendingRequest(peer_,
+  request_id_ = dispatcher_->AddPendingRequest(peer,
                                                request_.resource_type,
                                                request_.origin_pid,
                                                frame_origin_,
