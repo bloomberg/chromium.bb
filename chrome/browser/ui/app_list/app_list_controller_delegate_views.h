@@ -17,9 +17,10 @@ class AppListControllerDelegateViews : public AppListControllerDelegateImpl {
   virtual ~AppListControllerDelegateViews();
 
   // AppListControllerDelegate overrides:
+  virtual gfx::Rect GetAppListBounds() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
-  virtual void OnShowExtensionPrompt() OVERRIDE;
-  virtual void OnCloseExtensionPrompt() OVERRIDE;
+  virtual void OnShowChildDialog() OVERRIDE;
+  virtual void OnCloseChildDialog() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
 
  private:

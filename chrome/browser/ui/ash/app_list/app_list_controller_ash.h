@@ -19,11 +19,14 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   // AppListControllerDelegate overrides:
   virtual void DismissView() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
+  virtual gfx::Rect GetAppListBounds() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE;
   virtual void PinApp(const std::string& extension_id) OVERRIDE;
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
   virtual Pinnable GetPinnable() OVERRIDE;
+  virtual void OnShowChildDialog() OVERRIDE;
+  virtual void OnCloseChildDialog() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) OVERRIDE;

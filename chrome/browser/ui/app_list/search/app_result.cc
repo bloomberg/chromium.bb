@@ -139,7 +139,7 @@ bool AppResult::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    controller_->OnShowExtensionPrompt();
+    controller_->OnShowChildDialog();
 
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile_, app_id_, this));
@@ -171,7 +171,7 @@ void AppResult::ExecuteLaunchCommand(int event_flags) {
 
 void AppResult::ExtensionEnableFlowFinished() {
   extension_enable_flow_.reset();
-  controller_->OnCloseExtensionPrompt();
+  controller_->OnCloseChildDialog();
 
   // Automatically open app after enabling.
   Open(ui::EF_NONE);
@@ -179,7 +179,7 @@ void AppResult::ExtensionEnableFlowFinished() {
 
 void AppResult::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
-  controller_->OnCloseExtensionPrompt();
+  controller_->OnCloseChildDialog();
 }
 
 void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {

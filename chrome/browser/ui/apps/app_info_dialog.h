@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
 #define CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -14,9 +14,14 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class Rect;
+}
+
 // Shows the chrome app information dialog box.
 // |close_callback| may be null.
 void ShowAppInfoDialog(gfx::NativeWindow parent_window,
+                       const gfx::Rect& dialog_widget_bounds,
                        Profile* profile,
                        const extensions::Extension* app,
                        const base::Closure& close_callback);

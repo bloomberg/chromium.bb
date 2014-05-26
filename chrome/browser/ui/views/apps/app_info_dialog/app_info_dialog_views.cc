@@ -17,12 +17,15 @@
 #include "ui/views/window/dialog_delegate.h"
 
 void ShowAppInfoDialog(gfx::NativeWindow parent_window,
+                       const gfx::Rect& dialog_widget_bounds,
                        Profile* profile,
                        const extensions::Extension* app,
                        const base::Closure& close_callback) {
-  CreateBrowserModalDialogViews(
+  views::Widget* dialog = CreateBrowserModalDialogViews(
       new AppInfoDialog(parent_window, profile, app, close_callback),
-      parent_window)->Show();
+      parent_window);
+  dialog->SetBounds(dialog_widget_bounds);
+  dialog->Show();
 }
 
 AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,

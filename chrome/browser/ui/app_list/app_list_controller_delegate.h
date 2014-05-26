@@ -24,6 +24,7 @@ class InstallTracker;
 
 namespace gfx {
 class ImageSkia;
+class Rect;
 }
 
 // Interface to allow the view delegate to call out to whatever is controlling
@@ -60,6 +61,11 @@ class AppListControllerDelegate {
   // Get app list window.
   virtual gfx::NativeWindow GetAppListWindow() = 0;
 
+  // Get the content bounds of the app list in the screen. On platforms that
+  // use views, this returns the bounds of the AppListView. Without views, this
+  // returns a 0x0 rectangle.
+  virtual gfx::Rect GetAppListBounds();
+
   // Get the application icon to be used, if any, for the app list.
   virtual gfx::ImageSkia GetWindowIcon() = 0;
 
@@ -69,9 +75,10 @@ class AppListControllerDelegate {
   virtual void UnpinApp(const std::string& extension_id) = 0;
   virtual Pinnable GetPinnable() = 0;
 
-  // Be aware of the extension prompt (either uninstalling flow or enable flow).
-  virtual void OnShowExtensionPrompt();
-  virtual void OnCloseExtensionPrompt();
+  // Called before and after a dialog opens in the app list. For example,
+  // displays an overlay that disables the app list while the dialog is open.
+  virtual void OnShowChildDialog();
+  virtual void OnCloseChildDialog();
 
   // Whether the controller supports a Create Shortcuts flow.
   virtual bool CanDoCreateShortcutsFlow() = 0;

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "extensions/common/extension.h"
+#include "ui/app_list/views/app_list_view.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
 
@@ -21,6 +22,14 @@ void AppListControllerDelegateAsh::DismissView() {
 gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
   DCHECK(ash::Shell::HasInstance());
   return ash::Shell::GetInstance()->GetAppListWindow();
+}
+
+gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (app_list_view)
+    return app_list_view->GetBoundsInScreen();
+  return gfx::Rect();
 }
 
 gfx::ImageSkia AppListControllerDelegateAsh::GetWindowIcon() {
@@ -44,6 +53,20 @@ AppListControllerDelegate::Pinnable
     AppListControllerDelegateAsh::GetPinnable() {
   return ChromeLauncherController::instance()->CanPin() ? PIN_EDITABLE :
       PIN_FIXED;
+}
+
+void AppListControllerDelegateAsh::OnShowChildDialog() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (app_list_view)
+    app_list_view->SetAppListOverlayVisible(true);
+}
+
+void AppListControllerDelegateAsh::OnCloseChildDialog() {
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (app_list_view)
+    app_list_view->SetAppListOverlayVisible(false);
 }
 
 bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow() {

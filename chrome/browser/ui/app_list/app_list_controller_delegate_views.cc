@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_views.h"
 
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
+#include "ui/app_list/views/app_list_view.h"
 
 AppListControllerDelegateViews::AppListControllerDelegateViews(
     AppListServiceViews* service)
@@ -14,15 +15,29 @@ AppListControllerDelegateViews::AppListControllerDelegateViews(
 
 AppListControllerDelegateViews::~AppListControllerDelegateViews() {}
 
+gfx::Rect AppListControllerDelegateViews::GetAppListBounds() {
+  // We use the bounds of the app list view here because the bounds of the app
+  // list window include the shadow behind it (and the shadow size varies across
+  // platforms).
+  app_list::AppListView* app_list_view = service_->shower().app_list();
+  if (app_list_view)
+    return app_list_view->GetBoundsInScreen();
+  return gfx::Rect();
+}
+
 void AppListControllerDelegateViews::ViewClosing() {
   service_->OnViewBeingDestroyed();
 }
 
-void AppListControllerDelegateViews::OnShowExtensionPrompt() {
+void AppListControllerDelegateViews::OnShowChildDialog() {
+  DCHECK(service_->shower().app_list());
+  service_->shower().app_list()->SetAppListOverlayVisible(true);
   service_->set_can_dismiss(false);
 }
 
-void AppListControllerDelegateViews::OnCloseExtensionPrompt() {
+void AppListControllerDelegateViews::OnCloseChildDialog() {
+  DCHECK(service_->shower().app_list());
+  service_->shower().app_list()->SetAppListOverlayVisible(false);
   service_->set_can_dismiss(true);
 }
 

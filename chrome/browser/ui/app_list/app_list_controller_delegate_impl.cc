@@ -71,7 +71,7 @@ void AppListControllerDelegateImpl::DoCreateShortcutsFlow(
   gfx::NativeWindow parent_window = GetAppListWindow();
   if (!parent_window)
     return;
-  OnShowExtensionPrompt();
+  OnShowChildDialog();
   chrome::ShowCreateChromeAppShortcutsDialog(
       parent_window, profile, extension,
       base::Bind(&AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt,
@@ -130,5 +130,5 @@ void AppListControllerDelegateImpl::FillLaunchParams(AppLaunchParams* params) {}
 
 void AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt(
     bool created) {
-  OnCloseExtensionPrompt();
+  OnCloseChildDialog();
 }

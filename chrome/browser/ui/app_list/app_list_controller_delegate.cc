@@ -55,8 +55,14 @@ bool AppListControllerDelegate::ForceNativeDesktop() const {
 
 void AppListControllerDelegate::ViewClosing() {}
 
-void AppListControllerDelegate::OnShowExtensionPrompt() {}
-void AppListControllerDelegate::OnCloseExtensionPrompt() {}
+gfx::Rect AppListControllerDelegate::GetAppListBounds() {
+  return gfx::Rect();
+}
+
+void AppListControllerDelegate::OnShowChildDialog() {
+}
+void AppListControllerDelegate::OnCloseChildDialog() {
+}
 
 std::string AppListControllerDelegate::AppListSourceToString(
     AppListSource source) {
@@ -99,13 +105,23 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
   if (!parent_window)
     return;
 
-  OnShowExtensionPrompt();
-  ShowAppInfoDialog(
-      parent_window,
-      profile,
-      extension,
-      base::Bind(&AppListControllerDelegate::OnCloseExtensionPrompt,
-                 base::Unretained(this)));
+  // For the centered app list, inset the dialog further so it appears as a
+  // vertical column in the center of the app list.
+  const int kAppListDialogHorizontalBorderInsets =
+      app_list::switches::IsCenteredAppListEnabled() ? 110 : 10;
+  const int kAppListDialogVerticalBorderInsets = 10;
+
+  gfx::Rect dialog_bounds = GetAppListBounds();
+  dialog_bounds.Inset(kAppListDialogHorizontalBorderInsets,
+                      kAppListDialogVerticalBorderInsets);
+
+  OnShowChildDialog();
+  ShowAppInfoDialog(parent_window,
+                    dialog_bounds,
+                    profile,
+                    extension,
+                    base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
+                               base::Unretained(this)));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,
