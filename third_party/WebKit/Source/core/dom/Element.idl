@@ -20,8 +20,6 @@
 
 [
     SpecialWrapFor=HTMLElement|SVGElement,
-    // FIXME: Oilpan: remove once Node adds WillBeGarbageCollected.
-    WillBeGarbageCollected,
 ] interface Element : Node {
 
     // DOM Level 1 Core

@@ -52,16 +52,16 @@ public:
 
     // Public DOM interface.
 
-    PassRefPtr<Node> getNamedItem(const AtomicString&) const;
-    PassRefPtr<Node> removeNamedItem(const AtomicString& name, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> getNamedItem(const AtomicString&) const;
+    PassRefPtrWillBeRawPtr<Node> removeNamedItem(const AtomicString& name, ExceptionState&);
 
-    PassRefPtr<Node> getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
-    PassRefPtr<Node> removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
+    PassRefPtrWillBeRawPtr<Node> removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
 
-    PassRefPtr<Node> setNamedItem(Node*, ExceptionState&);
-    PassRefPtr<Node> setNamedItemNS(Node*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> setNamedItem(Node*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> setNamedItemNS(Node*, ExceptionState&);
 
-    PassRefPtr<Node> item(unsigned index) const;
+    PassRefPtrWillBeRawPtr<Node> item(unsigned index) const;
     size_t length() const;
 
     Element* element() const { return m_element; }

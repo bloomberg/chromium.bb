@@ -343,7 +343,19 @@ enum PageshowEventPersistence {
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();
 
-        RefPtr<Document> m_document;
+        // FIXME: Oilpan: the need for this internal method will fall
+        // away when EventTargets are no longer using refcounts and
+        // window properties are also on the heap. Inline the minimal
+        // do-not-broadcast handling then and remove the enum +
+        // removeAllEventListenersInternal().
+        enum BroadcastListenerRemoval {
+            DoNotBroadcastListenerRemoval,
+            DoBroadcastListenerRemoval
+        };
+
+        void removeAllEventListenersInternal(BroadcastListenerRemoval);
+
+        RefPtrWillBeMember<Document> m_document;
 
         bool m_shouldPrintWhenFinishedLoading;
 #if ASSERT_ENABLED

@@ -258,7 +258,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, updateEventHandlersDuringTeardown)
 
     // Simulate detaching the document from its DOM window. This should not
     // cause a crash when the WebViewImpl is closed by the test runner.
-    frame()->document()->clearDOMWindow();
+    frame()->document()->prepareForDestruction();
 }
 
 TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)

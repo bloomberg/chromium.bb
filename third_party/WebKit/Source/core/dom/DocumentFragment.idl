@@ -20,8 +20,6 @@
 [
     Constructor,
     ConstructorCallWith=Document,
-    // FIXME: Oilpan: remove once Node adds WillBeGarbageCollected.
-    WillBeGarbageCollected,
 ] interface DocumentFragment : Node {
     // NonElementParentNode API.
     Element getElementById(DOMString elementId);

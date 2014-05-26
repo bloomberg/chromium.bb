@@ -348,7 +348,7 @@ void DOMWindow::clearDocument()
         m_document->detach();
     }
 
-    // FIXME: This should be part of ActiveDOM Object shutdown
+    // FIXME: This should be part of ActiveDOMObject shutdown
     clearEventQueue();
 
     m_document->clearDOMWindow();
@@ -489,15 +489,20 @@ DOMWindow::~DOMWindow()
     ASSERT(m_hasBeenReset);
     reset();
 
-    removeAllEventListeners();
-
 #if ENABLE(OILPAN)
-    ASSERT(m_document->isDisposed());
-#else
-    ASSERT(m_document->isStopped());
-#endif
+    // Oilpan: the frame host and document objects are
+    // also garbage collected; cannot notify these
+    // when removing event listeners.
+    removeAllEventListenersInternal(DoNotBroadcastListenerRemoval);
 
+    // Cleared when detaching document.
+    ASSERT(!m_eventQueue);
+#else
+    removeAllEventListenersInternal(DoBroadcastListenerRemoval);
+
+    ASSERT(m_document->isStopped());
     clearDocument();
+#endif
 }
 
 const AtomicString& DOMWindow::interfaceName() const
@@ -1613,20 +1618,27 @@ bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr
     return result;
 }
 
-void DOMWindow::removeAllEventListeners()
+void DOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mode)
 {
     EventTarget::removeAllEventListeners();
 
     lifecycleNotifier().notifyRemoveAllEventListeners(this);
 
-    if (m_frame && m_frame->host())
-        m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
+    if (mode == DoBroadcastListenerRemoval) {
+        if (m_frame && m_frame->host())
+            m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 
-    if (Document* document = this->document())
-        document->didClearTouchEventHandlers(document);
+        if (Document* document = this->document())
+            document->didClearTouchEventHandlers(document);
+    }
 
     removeAllUnloadEventListeners(this);
     removeAllBeforeUnloadEventListeners(this);
+}
+
+void DOMWindow::removeAllEventListeners()
+{
+    removeAllEventListenersInternal(DoBroadcastListenerRemoval);
 }
 
 void DOMWindow::finishedLoading()
@@ -1875,6 +1887,7 @@ PassOwnPtr<LifecycleNotifier<DOMWindow> > DOMWindow::createLifecycleNotifier()
 
 void DOMWindow::trace(Visitor* visitor)
 {
+    visitor->trace(m_document);
     visitor->trace(m_screen);
     visitor->trace(m_history);
     visitor->trace(m_locationbar);

@@ -925,13 +925,13 @@ bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, Pass
     return true;
 }
 
-PassRefPtr<Node> Document::importNode(Node* importedNode, ExceptionState& ec)
+PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, ExceptionState& ec)
 {
     UseCounter::countDeprecation(this, UseCounter::DocumentImportNodeOptionalArgument);
     return importNode(importedNode, true, ec);
 }
 
-PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     if (!importedNode) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
@@ -2251,6 +2251,16 @@ void Document::detach(const AttachContext& context)
     // really shouldn't clear anything at this point. It should just
     // die with the document when the document is no longer reachable.
     dispose();
+
+    // This mirrors the clearing of the document object's touch
+    // handlers that happens when the DOMWindow is destructed in a
+    // non-Oilpan setting (DOMWindow::removeAllEventListeners()),
+    // except that it is now done during detach instead.
+    didClearTouchEventHandlers(this);
+
+    // Done with the window, explicitly clear to hasten its
+    // destruction.
+    clearDOMWindow();
 #endif
 }
 
@@ -5771,6 +5781,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_nodeIterators);
     visitor->trace(m_styleEngine);
     visitor->trace(m_formController);
+    visitor->trace(m_domWindow);
     visitor->trace(m_fetcher);
     visitor->trace(m_parser);
     visitor->trace(m_contextFeatures);

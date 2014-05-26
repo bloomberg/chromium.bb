@@ -323,8 +323,8 @@ public:
     PassRefPtrWillBeRawPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
     PassRefPtrWillBeRawPtr<Attr> createAttribute(const AtomicString& name, ExceptionState&);
     PassRefPtrWillBeRawPtr<Attr> createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
-    PassRefPtr<Node> importNode(Node* importedNode, ExceptionState&);
-    PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> importNode(Node* importedNode, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElement(const QualifiedName&, bool createdByParser);
 
@@ -686,7 +686,7 @@ public:
     void didMergeTextNodes(Text& oldNode, unsigned offset);
     void didSplitTextNode(Text& oldNode);
 
-    void clearDOMWindow() { m_domWindow = 0; }
+    void clearDOMWindow() { m_domWindow = nullptr; }
     DOMWindow* domWindow() const { return m_domWindow; }
 
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
@@ -1192,7 +1192,7 @@ private:
     PendingSheetLayout m_pendingSheetLayout;
 
     LocalFrame* m_frame;
-    DOMWindow* m_domWindow;
+    RawPtrWillBeMember<DOMWindow> m_domWindow;
     HTMLImportsController* m_importsController;
 
     RefPtrWillBeMember<ResourceFetcher> m_fetcher;
