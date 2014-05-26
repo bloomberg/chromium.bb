@@ -6,11 +6,6 @@ crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Fail
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
-crbug.com/371359 [ Mac ] scrollbars/rtl/overflow-scroll-rtl.html [ NeedsRebaseline ]
-crbug.com/371359 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/rtl/overflow-scroll-rtl.html [ NeedsRebaseline ]
-crbug.com/371359 [ Mac ] fast/block/float/026.html [ NeedsRebaseline ]
-crbug.com/371359 [ Mac ] fast/block/float/028.html [ NeedsRebaseline ]
-
 # Transient - XHR mixed content type revert will be restored.
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked.html [ Failure Pass ]
