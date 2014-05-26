@@ -232,19 +232,19 @@
       ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/blink',
-        '<(bindings_output_dir)',
         '<@(webcore_include_dirs)',
 
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
-        '<(bindings_v8_dir)/custom',
+        '<(bindings_output_dir)',
+        '<(bindings_v8_custom_dir)',
         'html',
         'html/shadow',
         'inspector',
         'svg',
       ],
       'sources': [
-        '<@(bindings_files)',
+        '<@(bindings_v8_files)',
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
         '<@(bindings_core_generated_aggregate_files)',
