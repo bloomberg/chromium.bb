@@ -22,8 +22,9 @@
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
+    TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count)
-        : pref_hash_store_(pref_hash_store.Pass()) {
+    : pref_hash_store_(pref_hash_store.Pass()) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
 
@@ -34,15 +35,19 @@ PrefHashFilter::PrefHashFilter(
     switch (metadata.strategy) {
       case TRACKING_STRATEGY_ATOMIC:
         tracked_preference.reset(
-            new TrackedAtomicPreference(metadata.name, metadata.reporting_id,
+            new TrackedAtomicPreference(metadata.name,
+                                        metadata.reporting_id,
                                         reporting_ids_count,
-                                        metadata.enforcement_level));
+                                        metadata.enforcement_level,
+                                        delegate));
         break;
       case TRACKING_STRATEGY_SPLIT:
         tracked_preference.reset(
-            new TrackedSplitPreference(metadata.name, metadata.reporting_id,
+            new TrackedSplitPreference(metadata.name,
+                                       metadata.reporting_id,
                                        reporting_ids_count,
-                                       metadata.enforcement_level));
+                                       metadata.enforcement_level,
+                                       delegate));
         break;
     }
     DCHECK(tracked_preference);

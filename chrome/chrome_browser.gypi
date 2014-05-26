@@ -1603,6 +1603,7 @@
         'browser/prefs/tracked/tracked_preference.h',
         'browser/prefs/tracked/tracked_preference_helper.cc',
         'browser/prefs/tracked/tracked_preference_helper.h',
+        'browser/prefs/tracked/tracked_preference_validation_delegate.h',
         'browser/prefs/tracked/tracked_preferences_migration.cc',
         'browser/prefs/tracked/tracked_preferences_migration.h',
         'browser/prefs/tracked/tracked_split_preference.cc',

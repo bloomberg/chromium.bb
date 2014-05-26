@@ -18,6 +18,7 @@
 
 class PrefService;
 class PrefStore;
+class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class DictionaryValue;
@@ -56,12 +57,14 @@ class PrefHashFilter : public InterceptablePrefFilter {
   };
 
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
-  // using |pref_hash_store| to check/store hashes.
+  // using |pref_hash_store| to check/store hashes. An optional |delegate| is
+  // notified of the status of each preference as it is checked.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
   // than |tracked_preferences.size()|).
   PrefHashFilter(
       scoped_ptr<PrefHashStore> pref_hash_store,
       const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
+      TrackedPreferenceValidationDelegate* delegate,
       size_t reporting_ids_count);
 
   virtual ~PrefHashFilter();

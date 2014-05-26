@@ -182,6 +182,7 @@ void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
   if (succeeded && pre_update_version < PrefHashStoreImpl::VERSION_LATEST) {
     PrefHashFilter(pref_hash_store_impl_.PassAs<PrefHashStore>(),
                    tracking_configuration_,
+                   NULL,
                    reporting_ids_count_).Initialize(*pref_store_);
     UMA_HISTOGRAM_ENUMERATION(
         "Settings.TrackedPreferencesAlternateStoreVersionUpdatedFrom",
@@ -259,7 +260,8 @@ void ProfilePrefStoreManager::ResetPrefHashStore() {
 }
 
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+    TrackedPreferenceValidationDelegate* validation_delegate) {
   scoped_ptr<PrefFilter> pref_filter;
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
@@ -289,10 +291,12 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   scoped_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                          unprotected_configuration,
+                         validation_delegate,
                          reporting_ids_count_));
   scoped_ptr<PrefHashFilter> protected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                          protected_configuration,
+                         validation_delegate,
                          reporting_ids_count_));
 
   PrefHashFilter* raw_unprotected_pref_hash_filter =
@@ -377,6 +381,7 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
         new DictionaryPrefStore(&master_prefs));
     PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                    tracking_configuration_,
+                   NULL,
                    reporting_ids_count_).Initialize(*pref_store);
   }
 
@@ -392,6 +397,7 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
     pref_filter.reset(
         new PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                            tracking_configuration_,
+                           NULL,
                            reporting_ids_count_));
   }
   return new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),

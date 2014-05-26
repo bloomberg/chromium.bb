@@ -1161,6 +1161,8 @@
         'browser/prefs/chrome_pref_service_unittest.cc',
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
+        'browser/prefs/mock_validation_delegate.cc',
+        'browser/prefs/mock_validation_delegate.h',
         'browser/prefs/pref_hash_calculator_unittest.cc',
         'browser/prefs/pref_hash_filter_unittest.cc',
         'browser/prefs/pref_hash_store_impl_unittest.cc',

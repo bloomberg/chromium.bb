@@ -26,6 +26,7 @@ class PrefService;
 class PrefServiceSyncable;
 class ShortcutsBackend;
 class SSLConfigServiceManager;
+class TrackedPreferenceValidationDelegate;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -241,6 +242,10 @@ class ProfileImpl : public Profile {
   scoped_ptr<policy::CloudPolicyManager> cloud_policy_manager_;
 #endif
   scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
+
+  // Keep |pref_validation_delegate_| above |prefs_| so that the former outlives
+  // the latter.
+  scoped_ptr<TrackedPreferenceValidationDelegate> pref_validation_delegate_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |io_data_| and others store pointers to |prefs_| and

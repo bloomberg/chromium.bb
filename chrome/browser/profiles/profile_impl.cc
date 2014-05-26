@@ -61,6 +61,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -464,6 +465,7 @@ ProfileImpl::ProfileImpl(
       path_, sequenced_task_runner, create_mode == CREATE_MODE_SYNCHRONOUS);
 #endif
 
+  // TODO(grt): construct pref_validation_delegate_.
   {
     // On startup, preference loading is always synchronous so a scoped timer
     // will work here.
@@ -472,6 +474,7 @@ ProfileImpl::ProfileImpl(
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_,
         sequenced_task_runner,
+        pref_validation_delegate_.get(),
         profile_policy_connector_->policy_service(),
         managed_user_settings,
         new ExtensionPrefStore(

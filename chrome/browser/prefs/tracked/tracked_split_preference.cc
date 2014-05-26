@@ -9,14 +9,17 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
+#include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 
 TrackedSplitPreference::TrackedSplitPreference(
     const std::string& pref_path,
     size_t reporting_id,
     size_t reporting_ids_count,
-    PrefHashFilter::EnforcementLevel enforcement_level)
+    PrefHashFilter::EnforcementLevel enforcement_level,
+    TrackedPreferenceValidationDelegate* delegate)
     : pref_path_(pref_path),
-      helper_(pref_path, reporting_id, reporting_ids_count, enforcement_level) {
+      helper_(pref_path, reporting_id, reporting_ids_count, enforcement_level),
+      delegate_(delegate) {
 }
 
 void TrackedSplitPreference::OnNewValue(
@@ -52,6 +55,10 @@ bool TrackedSplitPreference::EnforceAndReport(
 
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);
+  if (delegate_) {
+    delegate_->OnSplitPreferenceValidation(
+        pref_path_, dict_value, invalid_keys, value_state, reset_action);
+  }
   helper_.ReportAction(reset_action);
 
   bool was_reset = false;

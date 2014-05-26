@@ -17,6 +17,7 @@
 class PersistentPrefStore;
 class PrefHashStoreImpl;
 class PrefService;
+class TrackedPreferenceValidationDelegate;
 
 namespace base {
 class DictionaryValue;
@@ -81,9 +82,11 @@ class ProfilePrefStoreManager {
   void ResetPrefHashStore();
 
   // Creates a PersistentPrefStore providing access to the user preferences of
-  // the managed profile.
+  // the managed profile. An optional |validation_delegate| will be notified
+  // of the status of each tracked preference as they are checked.
   PersistentPrefStore* CreateProfilePrefStore(
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      TrackedPreferenceValidationDelegate* validation_delegate);
 
   // Checks the presence/version of the hash store for the managed profile and
   // creates or updates it if necessary. Completes asynchronously and is safe if
