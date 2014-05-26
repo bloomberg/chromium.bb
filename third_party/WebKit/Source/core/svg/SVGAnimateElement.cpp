@@ -49,6 +49,7 @@ PassRefPtrWillBeRawPtr<SVGAnimateElement> SVGAnimateElement::create(Document& do
 
 SVGAnimateElement::~SVGAnimateElement()
 {
+    // FIXME: Oilpan: Below prevent stopAnimValAnimation being called on |targetElement|. This should be moved to |removeFrom| equivalent.
 #if !ENABLE(OILPAN)
     if (targetElement())
         clearAnimatedType(targetElement());
@@ -287,8 +288,7 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
     for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = *it)
-            notifyTargetAboutAnimValChange(shadowTreeElement, attributeName);
+        notifyTargetAboutAnimValChange(*it, attributeName);
     }
 }
 

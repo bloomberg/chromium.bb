@@ -45,6 +45,7 @@ SVGCursorElement::SVGCursorElement(Document& document)
 SVGCursorElement::~SVGCursorElement()
 {
     // The below teardown is all handled by weak pointer processing in oilpan.
+    // FIXME: Oilpan: Replace cursorElementRemoved with weak pointer processing in oilpan.
 #if !ENABLE(OILPAN)
     HashSet<RawPtr<SVGElement> >::iterator end = m_clients.end();
     for (HashSet<RawPtr<SVGElement> >::iterator it = m_clients.begin(); it != end; ++it)
