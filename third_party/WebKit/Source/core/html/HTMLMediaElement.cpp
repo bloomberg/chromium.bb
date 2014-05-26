@@ -403,11 +403,6 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
-bool HTMLMediaElement::hasCustomFocusLogic() const
-{
-    return true;
-}
-
 bool HTMLMediaElement::supportsFocus() const
 {
     if (ownerDocument()->isMediaDocument())

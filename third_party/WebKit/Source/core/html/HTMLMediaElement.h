@@ -301,7 +301,6 @@ private:
     virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE FINAL { return true; }
     virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
-    virtual bool hasCustomFocusLogic() const OVERRIDE FINAL;
     virtual bool supportsFocus() const OVERRIDE FINAL;
     virtual bool isMouseFocusable() const OVERRIDE FINAL;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
