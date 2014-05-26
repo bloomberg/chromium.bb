@@ -43,7 +43,7 @@ crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakey
 crbug.com/354785 svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
 # ~HTMLScriptRunner timing issue by r174697
-Bug(tkent) http/tests/misc/write-while-waiting.html [ Crash Pass ]
+Bug(tkent) http/tests/misc/write-while-waiting.html [ Crash Pass Timeout ]
 # Binding issue? by r174676
 Bug(tkent) fast/xsl/import-non-document-node.xhtml [ Failure ]
 Bug(tkent) fast/xsl/transform-xhr-doc.xhtml [ Failure ]
@@ -54,3 +54,9 @@ Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/international/text-combi
 Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
 Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
 Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/orientation-sideways.html [ NeedsRebaseline ]
+
+crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] http/tests/media/media-source/mediasource-closed-on-htmlmediaelement-destruction.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] media/audio-delete-while-slider-thumb-clicked.html [ Timeout Pass ]
