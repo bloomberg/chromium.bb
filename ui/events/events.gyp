@@ -117,6 +117,7 @@
         'gestures/gesture_recognizer.h',
         'gestures/gesture_recognizer_impl.cc',
         'gestures/gesture_recognizer_impl.h',
+        'gestures/gesture_recognizer_impl_mac.cc',
         'gestures/gesture_sequence.cc',
         'gestures/gesture_sequence.h',
         'gestures/gesture_types.h',

@@ -124,6 +124,7 @@ typedef UIEvent* NativeEvent;
 typedef NSCursor* NativeCursor;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
+typedef void* NativeRegion;
 typedef NSEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
