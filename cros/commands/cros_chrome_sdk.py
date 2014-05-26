@@ -70,7 +70,7 @@ class SDKFetcher(object):
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
-               sdk_path=None, silent=False):
+               sdk_path=None, toolchain_path=None, silent=False):
     """Initialize the class.
 
     Args:
@@ -81,6 +81,8 @@ class SDKFetcher(object):
         cwd is presumed to be within a chrome checkout.
       sdk_path: The path (whether a local directory or a gs:// path) to fetch
         SDK components from.
+      toolchain_path: The path (whether a local directory or a gs:// path) to
+        fetch toolchain components from.
       silent: If set, the fetcher prints less output.
     """
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
@@ -98,6 +100,7 @@ class SDKFetcher(object):
     self.clear_cache = clear_cache
     self.chrome_src = chrome_src
     self.sdk_path = sdk_path
+    self.toolchain_path = toolchain_path
     self.silent = silent
 
     # For external configs, there is no need to run 'gsutil config', because
@@ -107,6 +110,9 @@ class SDKFetcher(object):
 
     if self.sdk_path is None:
       self.sdk_path = os.environ.get(self.SDK_PATH_ENV)
+
+    if self.toolchain_path is None:
+      self.toolchain_path = 'gs://%s' % constants.SDK_GS_BUCKET
 
   def _UpdateTarball(self, url, ref):
     """Worker function to fetch tarballs"""
@@ -340,8 +346,7 @@ class SDKFetcher(object):
     # Fetch toolchains from separate location.
     if self.TARGET_TOOLCHAIN_KEY in components:
       fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
-          'gs://', constants.SDK_GS_BUCKET,
-          toolchain_url % {'target': target_tc})
+          self.toolchain_path, toolchain_url % {'target': target_tc})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
 
     version_base = self._GetVersionGSBase(version)
@@ -432,12 +437,6 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   @classmethod
   def AddParser(cls, parser):
-    def ExpandGSPath(path):
-      """Expand a path, possibly a gs:// URL."""
-      if path.startswith(gs.BASE_GS_URL):
-        return path
-      return osutils.ExpandPath(path)
-
     super(ChromeSDKCommand, cls).AddParser(parser)
     parser.add_argument(
         '--board', required=True, help='The board SDK to use.')
@@ -468,9 +467,13 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
-        '--sdk-path', type=ExpandGSPath,
+        '--sdk-path', type='local_or_gs_path',
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull SDK components from.')
+    parser.add_argument(
+        '--toolchain-path', type='local_or_gs_path',
+        help='Provides a path, whether a local directory or a gs:// path, to '
+             'pull toolchain components from.')
     parser.add_argument(
         '--nogoma', action='store_false', default=True, dest='goma',
         help="Disables Goma in the shell by removing it from the PATH.")
@@ -801,6 +804,7 @@ class ChromeSDKCommand(cros.CrosCommand):
                           clear_cache=self.options.clear_sdk_cache,
                           chrome_src=self.options.chrome_src,
                           sdk_path=self.options.sdk_path,
+                          toolchain_path=self.options.toolchain_path,
                           silent=self.silent)
 
     prepare_version = self.options.version
