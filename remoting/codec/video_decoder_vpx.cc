@@ -12,6 +12,7 @@
 #include "media/base/media.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/util.h"
+#include "third_party/libyuv/include/libyuv/convert_argb.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -177,83 +178,127 @@ void VideoDecoderVpx::RenderFrame(const webrtc::DesktopSize& view_size,
   webrtc::DesktopRect source_clip =
       webrtc::DesktopRect::MakeWH(last_image_->d_w, last_image_->d_h);
 
-  // ScaleYUVToRGB32WithRect does not currently support up-scaling.  We won't
-  // be asked to up-scale except during resizes or if page zoom is >100%, so
-  // we work-around the limitation by using the slower ScaleYUVToRGB32.
-  // TODO(wez): Remove this hack if/when ScaleYUVToRGB32WithRect can up-scale.
-  if (!updated_region_.is_empty() &&
-      (source_clip.width() < view_size.width() ||
-       source_clip.height() < view_size.height())) {
-    // We're scaling only |clip_area| into the |image_buffer|, so we need to
-    // work out which source rectangle that corresponds to.
-    webrtc::DesktopRect source_rect =
-        ScaleRect(clip_area, view_size, screen_size_);
-    source_rect = webrtc::DesktopRect::MakeLTRB(
-        RoundToTwosMultiple(source_rect.left()),
-        RoundToTwosMultiple(source_rect.top()),
-        source_rect.right(),
-        source_rect.bottom());
+  // VP8 only outputs I420 frames, but VP9 can also produce I444.
+  switch (last_image_->fmt) {
+    case VPX_IMG_FMT_I444: {
+      // TODO(wez): Add scaling support to the I444 conversion path.
+      if (view_size.equals(screen_size_)) {
+        for (webrtc::DesktopRegion::Iterator i(updated_region_);
+             !i.IsAtEnd(); i.Advance()) {
+          // Determine the scaled area affected by this rectangle changing.
+          webrtc::DesktopRect rect = i.rect();
+          rect.IntersectWith(source_clip);
+          rect.IntersectWith(clip_area);
+          if (rect.is_empty())
+            continue;
 
-    // If there were no changes within the clip source area then don't render.
-    webrtc::DesktopRegion intersection(source_rect);
-    intersection.IntersectWith(updated_region_);
-    if (intersection.is_empty())
+          int image_offset = image_stride * rect.top() +
+                             rect.left() * VideoDecoder::kBytesPerPixel;
+          int y_offset = last_image_->stride[0] * rect.top() + rect.left();
+          int u_offset = last_image_->stride[1] * rect.top() + rect.left();
+          int v_offset = last_image_->stride[2] * rect.top() + rect.left();
+          libyuv::I444ToARGB(last_image_->planes[0] + y_offset,
+                             last_image_->stride[0],
+                             last_image_->planes[1] + u_offset,
+                             last_image_->stride[1],
+                             last_image_->planes[2] + v_offset,
+                             last_image_->stride[2],
+                             image_buffer + image_offset, image_stride,
+                             rect.width(), rect.height());
+
+          output_region->AddRect(rect);
+        }
+      }
+      break;
+    }
+    case VPX_IMG_FMT_I420: {
+      // ScaleYUVToRGB32WithRect does not currently support up-scaling.  We
+      // won't be asked to up-scale except during resizes or if page zoom is
+      // >100%, so we work-around the limitation by using the slower
+      // ScaleYUVToRGB32.
+      // TODO(wez): Remove this hack if/when ScaleYUVToRGB32WithRect can
+      // up-scale.
+      if (!updated_region_.is_empty() &&
+          (source_clip.width() < view_size.width() ||
+           source_clip.height() < view_size.height())) {
+        // We're scaling only |clip_area| into the |image_buffer|, so we need to
+        // work out which source rectangle that corresponds to.
+        webrtc::DesktopRect source_rect =
+            ScaleRect(clip_area, view_size, screen_size_);
+        source_rect = webrtc::DesktopRect::MakeLTRB(
+            RoundToTwosMultiple(source_rect.left()),
+            RoundToTwosMultiple(source_rect.top()),
+            source_rect.right(),
+            source_rect.bottom());
+
+        // If there were no changes within the clip source area then don't
+        // render.
+        webrtc::DesktopRegion intersection(source_rect);
+        intersection.IntersectWith(updated_region_);
+        if (intersection.is_empty())
+          return;
+
+        // Scale & convert the entire clip area.
+        int y_offset = CalculateYOffset(source_rect.left(), source_rect.top(),
+                                        last_image_->stride[0]);
+        int uv_offset = CalculateUVOffset(source_rect.left(), source_rect.top(),
+                                          last_image_->stride[1]);
+        ScaleYUVToRGB32(last_image_->planes[0] + y_offset,
+                        last_image_->planes[1] + uv_offset,
+                        last_image_->planes[2] + uv_offset,
+                        image_buffer,
+                        source_rect.width(),
+                        source_rect.height(),
+                        clip_area.width(),
+                        clip_area.height(),
+                        last_image_->stride[0],
+                        last_image_->stride[1],
+                        image_stride,
+                        media::YV12,
+                        media::ROTATE_0,
+                        media::FILTER_BILINEAR);
+
+        output_region->AddRect(clip_area);
+        updated_region_.Subtract(source_rect);
+        return;
+      }
+
+      for (webrtc::DesktopRegion::Iterator i(updated_region_);
+           !i.IsAtEnd(); i.Advance()) {
+        // Determine the scaled area affected by this rectangle changing.
+        webrtc::DesktopRect rect = i.rect();
+        rect.IntersectWith(source_clip);
+        if (rect.is_empty())
+          continue;
+        rect = ScaleRect(rect, screen_size_, view_size);
+        rect.IntersectWith(clip_area);
+        if (rect.is_empty())
+          continue;
+
+        ConvertAndScaleYUVToRGB32Rect(last_image_->planes[0],
+                                      last_image_->planes[1],
+                                      last_image_->planes[2],
+                                      last_image_->stride[0],
+                                      last_image_->stride[1],
+                                      screen_size_,
+                                      source_clip,
+                                      image_buffer,
+                                      image_stride,
+                                      view_size,
+                                      clip_area,
+                                      rect);
+
+        output_region->AddRect(rect);
+      }
+
+      updated_region_.Subtract(ScaleRect(clip_area, view_size, screen_size_));
+      break;
+    }
+    default: {
+      LOG(ERROR) << "Unsupported image format:" << last_image_->fmt;
       return;
-
-    // Scale & convert the entire clip area.
-    int y_offset = CalculateYOffset(source_rect.left(), source_rect.top(),
-                                    last_image_->stride[0]);
-    int uv_offset = CalculateUVOffset(source_rect.left(), source_rect.top(),
-                                      last_image_->stride[1]);
-    ScaleYUVToRGB32(last_image_->planes[0] + y_offset,
-                    last_image_->planes[1] + uv_offset,
-                    last_image_->planes[2] + uv_offset,
-                    image_buffer,
-                    source_rect.width(),
-                    source_rect.height(),
-                    clip_area.width(),
-                    clip_area.height(),
-                    last_image_->stride[0],
-                    last_image_->stride[1],
-                    image_stride,
-                    media::YV12,
-                    media::ROTATE_0,
-                    media::FILTER_BILINEAR);
-
-    output_region->AddRect(clip_area);
-    updated_region_.Subtract(source_rect);
-    return;
+    }
   }
-
-  for (webrtc::DesktopRegion::Iterator i(updated_region_);
-       !i.IsAtEnd(); i.Advance()) {
-    // Determine the scaled area affected by this rectangle changing.
-    webrtc::DesktopRect rect = i.rect();
-    rect.IntersectWith(source_clip);
-    if (rect.is_empty())
-      continue;
-    rect = ScaleRect(rect, screen_size_, view_size);
-    rect.IntersectWith(clip_area);
-    if (rect.is_empty())
-      continue;
-
-    ConvertAndScaleYUVToRGB32Rect(last_image_->planes[0],
-                                  last_image_->planes[1],
-                                  last_image_->planes[2],
-                                  last_image_->stride[0],
-                                  last_image_->stride[1],
-                                  screen_size_,
-                                  source_clip,
-                                  image_buffer,
-                                  image_stride,
-                                  view_size,
-                                  clip_area,
-                                  rect);
-
-    output_region->AddRect(rect);
-  }
-
-  updated_region_.Subtract(ScaleRect(clip_area, view_size, screen_size_));
 
   for (webrtc::DesktopRegion::Iterator i(transparent_region_);
        !i.IsAtEnd(); i.Advance()) {
