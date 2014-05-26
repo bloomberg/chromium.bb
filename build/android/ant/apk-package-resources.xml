@@ -51,6 +51,20 @@
   <property name="version.code" value="${APP_MANIFEST_VERSION_CODE}"/>
   <property name="version.name" value="${APP_MANIFEST_VERSION_NAME}"/>
 
+  <property name="aapt.resource.filter" value="" />
+  <!-- 'aapt.ignore.assets' is the list of file patterns to ignore under /res and /assets.
+         Default is "!.svn:!.git:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~"
+
+         Overall patterns syntax is:
+           [!][<dir>|<file>][*suffix-match|prefix-match*|full-match]:more:patterns...
+
+         - The first character flag ! avoids printing a warning.
+         - Pattern can have the flag "<dir>" to match only directories
+           or "<file>" to match only files. Default is to match both.
+         - Match is not case-sensitive.
+  -->
+  <property name="aapt.ignore.assets" value="" />
+
   <!--
       Include additional resource folders in the apk, e.g. content/.../res.  We
       list the res folders in project.library.res.folder.path and the
@@ -82,7 +96,19 @@
   <!-- Intermediate files -->
   <property name="resource.package.file.name" value="${APK_NAME}.ap_" />
 
-  <target name="-package-resources">
+  <target name="-crunch">
+    <!-- Updates the pre-processed PNG cache -->
+    <exec executable="${aapt}" taskName="crunch">
+      <arg value="crunch" />
+      <arg value="-v" />
+      <arg value="-S" />
+      <arg path="${resource.absolute.dir}" />
+      <arg value="-C" />
+      <arg path="${out.res.absolute.dir}" />
+    </exec>
+  </target>
+
+  <target name="-package-resources" depends="-crunch">
     <aapt
         executable="${aapt}"
         command="package"
@@ -95,13 +121,13 @@
         apkfolder="${out.absolute.dir}"
         nocrunch="${build.packaging.nocrunch}"
         resourcefilename="${resource.package.file.name}"
-        resourcefilter=""
+        resourcefilter="${aapt.resource.filter}"
         libraryResFolderPathRefid="project.library.res.folder.path"
         libraryPackagesRefid="project.library.packages"
         libraryRFileRefid="project.library.bin.r.file.path"
         previousBuildType=""
         buildType="${build.target}"
-        ignoreAssets="">
+        ignoreAssets="${aapt.ignore.assets}">
       <res path="${out.res.absolute.dir}" />
       <res path="${resource.absolute.dir}" />
       <!-- <nocompress /> forces no compression on any files in assets or res/raw -->

@@ -59,7 +59,7 @@ def CheckOptions(options, parser, required=None):
   if not required:
     return
   for option_name in required:
-    if getattr(options, option_name) is None:
+    if not getattr(options, option_name):
       parser.error('--%s is required' % option_name.replace('_', '-'))
 
 def WriteJson(obj, path, only_if_changed=False):
