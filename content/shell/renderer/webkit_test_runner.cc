@@ -33,8 +33,8 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
+#include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
@@ -476,7 +476,7 @@ void WebKitTestRunner::testFinished() {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
-  if (interfaces->testRunner()->shouldDumpBackForwardList()) {
+  if (interfaces->testRunner()->ShouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
     RenderView::ForEach(&visitor);
     Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
@@ -617,16 +617,16 @@ void WebKitTestRunner::CaptureDump() {
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   TRACE_EVENT0("shell", "WebKitTestRunner::CaptureDump");
 
-  if (interfaces->testRunner()->shouldDumpAsAudio()) {
+  if (interfaces->testRunner()->ShouldDumpAsAudio()) {
     std::vector<unsigned char> vector_data;
-    interfaces->testRunner()->getAudioData(&vector_data);
+    interfaces->testRunner()->GetAudioData(&vector_data);
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
   } else {
     Send(new ShellViewHostMsg_TextDump(routing_id(),
                                        proxy()->CaptureTree(false)));
 
     if (test_config_.enable_pixel_dumping &&
-        interfaces->testRunner()->shouldGeneratePixelResults()) {
+        interfaces->testRunner()->ShouldGeneratePixelResults()) {
       CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
       proxy()->CapturePixelsAsync(base::Bind(
           &WebKitTestRunner::CaptureDumpPixels, base::Unretained(this)));

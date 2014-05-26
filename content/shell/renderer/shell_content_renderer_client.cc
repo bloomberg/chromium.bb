@@ -18,7 +18,6 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "content/test/mock_webclipboard_impl.h"

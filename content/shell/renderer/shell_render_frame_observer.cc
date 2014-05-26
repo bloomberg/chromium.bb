@@ -9,7 +9,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebTestRunner.h"
+#include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {
@@ -20,7 +20,7 @@ ShellRenderFrameObserver::ShellRenderFrameObserver(RenderFrame* render_frame)
     return;
   render_frame->GetWebFrame()->setPermissionClient(
       ShellRenderProcessObserver::GetInstance()->test_interfaces()->
-          testRunner()->webPermissions());
+          testRunner()->GetWebPermissions());
 }
 
 }  // namespace content

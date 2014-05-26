@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "content/shell/renderer/test_runner/WebTestRunner.h"
+#include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -61,12 +61,12 @@ class TestRunner : public WebTestRunner,
   void InvokeCallback(scoped_ptr<InvokeCallbackTask> callback);
 
   // WebTestRunner implementation.
-  virtual bool shouldGeneratePixelResults() OVERRIDE;
-  virtual bool shouldDumpAsAudio() const OVERRIDE;
-  virtual void getAudioData(std::vector<unsigned char>* bufferView) const
-      OVERRIDE;
-  virtual bool shouldDumpBackForwardList() const OVERRIDE;
-  virtual blink::WebPermissionClient* webPermissions() const OVERRIDE;
+  virtual bool ShouldGeneratePixelResults() OVERRIDE;
+  virtual bool ShouldDumpAsAudio() const OVERRIDE;
+  virtual void GetAudioData(
+      std::vector<unsigned char>* buffer_view) const OVERRIDE;
+  virtual bool ShouldDumpBackForwardList() const OVERRIDE;
+  virtual blink::WebPermissionClient* GetWebPermissions() const OVERRIDE;
 
   // Methods used by WebTestProxyBase.
   bool shouldDumpSelectionRect() const;

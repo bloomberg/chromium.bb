@@ -1537,7 +1537,7 @@ void TestRunner::setCustomTextOutput(std::string text) {
   has_custom_text_output_ = true;
 }
 
-bool TestRunner::shouldGeneratePixelResults() {
+bool TestRunner::ShouldGeneratePixelResults() {
   CheckResponseMimeType();
   return generate_pixel_results_;
 }
@@ -1554,12 +1554,12 @@ bool TestRunner::shouldDumpChildFramesAsText() const {
   return dump_child_frames_as_text_;
 }
 
-bool TestRunner::shouldDumpAsAudio() const {
+bool TestRunner::ShouldDumpAsAudio() const {
   return dump_as_audio_;
 }
 
-void TestRunner::getAudioData(std::vector<unsigned char>* bufferView) const {
-  *bufferView = audio_data_;
+void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
+  *buffer_view = audio_data_;
 }
 
 bool TestRunner::shouldDumpFrameLoadCallbacks() const {
@@ -1614,7 +1614,7 @@ bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
   return test_is_running_ && dump_resource_reqponse_mime_types_;
 }
 
-WebPermissionClient* TestRunner::webPermissions() const {
+WebPermissionClient* TestRunner::GetWebPermissions() const {
   return web_permissions_.get();
 }
 
@@ -1630,7 +1630,7 @@ bool TestRunner::shouldDumpSpellCheckCallbacks() const {
   return dump_spell_check_callbacks_;
 }
 
-bool TestRunner::shouldDumpBackForwardList() const {
+bool TestRunner::ShouldDumpBackForwardList() const {
   return dump_back_forward_list_;
 }
 

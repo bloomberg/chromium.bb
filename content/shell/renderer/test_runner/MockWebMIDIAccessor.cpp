@@ -6,8 +6,8 @@
 
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
-#include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
+#include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
 using namespace blink;
