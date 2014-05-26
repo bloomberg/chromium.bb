@@ -50,7 +50,6 @@ const char kAuthHeaderOAuth[] = "OAuth ";
 
 const char kListAccountsResponseFormat[] =
     "[\"gaia.l.a.r\",[[\"gaia.l.a\",1,\"\",\"%s\",\"\",1,1,0]]]";
-const char kPeopleGetResponseFormat[] = "{\"id\":\"%s\"}";
 
 typedef std::map<std::string, std::string> CookieMap;
 
@@ -177,10 +176,6 @@ void FakeGaia::Initialize() {
   // Handles /ListAccounts GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->list_accounts_url(), HandleListAccounts);
-
-  // Handles /plus/v1/people/me
-  REGISTER_RESPONSE_HANDLER(
-      gaia_urls->people_get_url(), HandlePeopleGet);
 }
 
 scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
@@ -532,13 +527,5 @@ void FakeGaia::HandleListAccounts(const HttpRequest& request,
                                  BasicHttpResponse* http_response) {
   http_response->set_content(base::StringPrintf(
       kListAccountsResponseFormat, merge_session_params_.email.c_str()));
-  http_response->set_code(net::HTTP_OK);
-}
-
-
-void FakeGaia::HandlePeopleGet(const HttpRequest& request,
-                                 BasicHttpResponse* http_response) {
-  http_response->set_content(base::StringPrintf(
-      kPeopleGetResponseFormat, "name"));
   http_response->set_code(net::HTTP_OK);
 }

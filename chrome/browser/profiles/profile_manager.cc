@@ -982,7 +982,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       StartDeferredTaskRunners();
 
-  AccountReconcilorFactory::GetForProfile(profile);
+  if (switches::IsNewProfileManagement())
+    AccountReconcilorFactory::GetForProfile(profile);
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
