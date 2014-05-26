@@ -1,4 +1,4 @@
-Test that webkitpointerlockchange event is dispatched when lock is lost.
+Test that pointerlockchange event is dispatched when lock is lost.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

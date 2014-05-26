@@ -25,8 +25,8 @@
       testFailed("Events must not bubble to the window.");
       finishJSTest();
     }
-    window.addEventListener("webkitpointerlockchange", errorIfEventsBubble);
-    window.addEventListener("webkitpointerlockerror", errorIfEventsBubble);
+    window.addEventListener("pointerlockchange", errorIfEventsBubble);
+    window.addEventListener("pointerlockerror", errorIfEventsBubble);
 
     todo = [
         function () {

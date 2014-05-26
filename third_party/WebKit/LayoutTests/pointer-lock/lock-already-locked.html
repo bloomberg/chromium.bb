@@ -27,14 +27,6 @@
     document.onpointerlockerror =
         function () { testFailed("document.onpointerlockerror event received."); finishJSTest(); };
 
-    var expectTarget1Unlock = false;
-    targetdiv1.addEventListener("webkitpointerlocklost",
-        function () { shouldBe("expectTarget1Unlock", "true"); });
-
-    var expectTarget2Unlock = false;
-    targetdiv2.addEventListener("webkitpointerlocklost",
-        function () { shouldBe("expectTarget2Unlock", "true"); });
-
     todo = [
         function () {
             shouldBe("document.pointerLockElement", "null");
@@ -51,7 +43,6 @@
         },
         function () {
             debug("     Locking targetdiv2.")
-            expectTarget1Unlock = true;
             targetdiv2.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv2";
             // doNextStep() called by onpointerlockchange handler.
