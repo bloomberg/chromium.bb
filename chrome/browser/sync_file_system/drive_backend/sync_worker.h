@@ -74,12 +74,10 @@ class SyncWorker : public SyncTaskManager::Client {
     virtual ~Observer() {}
   };
 
-  static scoped_ptr<SyncWorker> CreateOnWorker(
-      const base::FilePath& base_dir,
-      Observer* observer,
-      const base::WeakPtr<ExtensionServiceInterface>& extension_service,
-      scoped_ptr<SyncEngineContext> sync_engine_context,
-      leveldb::Env* env_override);
+  SyncWorker(const base::FilePath& base_dir,
+             const base::WeakPtr<ExtensionServiceInterface>& extension_service,
+             scoped_ptr<SyncEngineContext> sync_engine_context,
+             leveldb::Env* env_override);
 
   virtual ~SyncWorker();
 
@@ -141,11 +139,6 @@ class SyncWorker : public SyncTaskManager::Client {
  private:
   friend class DriveBackendSyncTest;
   friend class SyncEngineTest;
-
-  SyncWorker(const base::FilePath& base_dir,
-             const base::WeakPtr<ExtensionServiceInterface>& extension_service,
-             scoped_ptr<SyncEngineContext> sync_engine_context,
-             leveldb::Env* env_override);
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);

@@ -207,7 +207,13 @@ SyncEngine::~SyncEngine() {
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
 
-  // TODO(tzik): Destroy |sync_worker_| and |worker_observer_| on the worker.
+  WorkerObserver* worker_observer = worker_observer_.release();
+  if (!worker_task_runner_->DeleteSoon(FROM_HERE, worker_observer))
+    delete worker_observer;
+
+  SyncWorker* sync_worker = sync_worker_.release();
+  if (!worker_task_runner_->DeleteSoon(FROM_HERE, sync_worker))
+    delete sync_worker;
 }
 
 void SyncEngine::Initialize(const base::FilePath& base_dir,
@@ -240,13 +246,16 @@ void SyncEngine::Initialize(const base::FilePath& base_dir,
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
-  // TODO(peria): Use PostTask on |worker_task_runner_| to call this function.
-  sync_worker_ = SyncWorker::CreateOnWorker(
+  sync_worker_.reset(new SyncWorker(
       base_dir,
-      worker_observer_.get(),
       extension_service_weak_ptr,
       sync_engine_context.Pass(),
-      env_override);
+      env_override));
+  sync_worker_->AddObserver(worker_observer_.get());
+  worker_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncWorker::Initialize,
+                 base::Unretained(sync_worker_.get())));
 
   if (notification_manager_)
     notification_manager_->AddObserver(this);
