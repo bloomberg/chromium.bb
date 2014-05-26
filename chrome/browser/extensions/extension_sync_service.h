@@ -112,6 +112,8 @@ class ExtensionSyncService : public syncer::SyncableService,
   // sync_start_util for more.
   void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
 
+  Profile* profile() { return profile_; }
+
  private:
   // Return true if the sync type of |extension| matches |type|.
   bool IsCorrectSyncType(const extensions::Extension& extension,

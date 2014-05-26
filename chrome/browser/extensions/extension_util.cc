@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest.h"
@@ -151,6 +152,11 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
                                     content::BrowserContext* context) {
   return ExtensionRegistry::Get(context)->GetExtensionById(
       extension_id, ExtensionRegistry::ENABLED) != NULL;
+}
+
+bool ShouldSyncApp(const Extension* app, content::BrowserContext* context) {
+  return sync_helper::IsSyncableApp(app) &&
+      !util::IsEphemeralApp(app->id(), context);
 }
 
 bool IsExtensionIdle(const std::string& extension_id,
