@@ -39,6 +39,7 @@
         'color_analysis_unittest.cc',
         'color_utils_unittest.cc',
         'display_unittest.cc',
+        'font_list_unittest.cc',
         'geometry/box_unittest.cc',
         'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',
@@ -109,6 +110,7 @@
         }],
         ['use_ozone==1 and use_pango==0', {
           'sources!': [
+            'font_list_unittest.cc',
             'font_unittest.cc',
             'text_elider_unittest.cc',
           ],

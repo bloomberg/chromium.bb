@@ -69,7 +69,6 @@
         'base/webui/web_ui_util_unittest.cc',
         'gfx/canvas_unittest.cc',
         'gfx/canvas_unittest_mac.mm',
-        'gfx/font_list_unittest.cc',
         'gfx/platform_font_mac_unittest.mm',
         'gfx/render_text_unittest.cc',
       ],
@@ -201,7 +200,6 @@
         ['use_ozone==1 and use_pango==0', {
           'sources!': [
             'gfx/canvas_unittest.cc',
-            'gfx/font_list_unittest.cc',
             'gfx/render_text_unittest.cc',
           ],
         }],
