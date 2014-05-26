@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "5.5",
+  "version": "5.6",
   "entries": [
     {
       "id": 1,
@@ -985,6 +985,29 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_egl_khr_fence_sync"
+      ]
+    },
+    {
+      "id": 75,
+      "description": "Mali-400 support of EXT_multisampled_render_to_texture is buggy on Android < 4.3",
+      "cr_bugs": [362435],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "4.3"
+        }
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ARM"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "Mali-400"
+      },
+      "features": [
+        "disable_multisampling"
       ]
     }
   ]
