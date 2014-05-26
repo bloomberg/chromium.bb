@@ -868,6 +868,7 @@ crbug.com/366387 [ Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-n
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
+crbug.com/377573 inspector/console/console-format-table.html [ Pass Timeout ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
