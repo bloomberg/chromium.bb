@@ -164,8 +164,14 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
 
 // Test to verify that when a initiator navigates, we can create a new preview
 // dialog for the new tab contents.
+// http://crbug.com/377337
+#if defined(OS_WIN)
+#define MAYBE_NavigateFromInitiatorTab DISABLED_NavigateFromInitiatorTab
+#else
+#define MAYBE_NavigateFromInitiatorTab NavigateFromInitiatorTab
+#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       NavigateFromInitiatorTab) {
+                       MAYBE_NavigateFromInitiatorTab) {
   // print for the first time.
   PrintPreview();
 
