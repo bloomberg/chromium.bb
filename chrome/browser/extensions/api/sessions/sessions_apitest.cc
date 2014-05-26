@@ -226,6 +226,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
   for (size_t i = 0; i < devices->GetSize(); ++i) {
     EXPECT_TRUE(devices->GetDictionary(i, &device));
     EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
+    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
     EXPECT_TRUE(device->GetList("sessions", &sessions));
     EXPECT_EQ(0u, sessions->GetSize());
   }
@@ -247,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesMaxResults) {
   for (size_t i = 0; i < devices->GetSize(); ++i) {
     EXPECT_TRUE(devices->GetDictionary(i, &device));
     EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
+    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
     EXPECT_TRUE(device->GetList("sessions", &sessions));
     EXPECT_EQ(1u, sessions->GetSize());
   }

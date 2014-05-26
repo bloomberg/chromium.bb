@@ -349,6 +349,7 @@ scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
 
   scoped_ptr<api::sessions::Device> device_struct(new api::sessions::Device);
   device_struct->info = session->session_name;
+  device_struct->device_name = session->session_name;
 
   for (browser_sync::SyncedSession::SyncedWindowMap::const_iterator it =
        session->windows.begin(); it != session->windows.end() &&
