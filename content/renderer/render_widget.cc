@@ -1707,6 +1707,12 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
       IncrementOutstandingImeEventAcks();
     text_field_is_dirty_ = false;
 #endif
+#if defined(USE_AURA)
+    Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
+                                              new_type,
+                                              text_input_mode_,
+                                              new_can_compose_inline));
+#endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;
