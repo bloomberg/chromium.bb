@@ -558,8 +558,6 @@ bool RemotePageTarget::Activate() const {
 }
 
 bool RemotePageTarget::Close() const {
-  if (IsAttached())
-    return false;
   std::string request = base::StringPrintf(kClosePageRequest,
                                            remote_id_.c_str());
   browser_->SendJsonRequest(request, base::Bind(&NoOp));

@@ -379,7 +379,7 @@ function populateRemoteTargets(devices) {
         }
         if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
           addActionLink(row, 'close',
-              sendTargetCommand.bind(null, 'close', page), page.attached);
+              sendTargetCommand.bind(null, 'close', page), false);
         }
       }
     }
@@ -419,7 +419,7 @@ function addToWorkersList(data) {
   var row =
       addTargetToList(data, $('workers-list'), ['name', 'description', 'url']);
   addActionLink(row, 'terminate',
-      sendTargetCommand.bind(null, 'close', data), data.attached);
+      sendTargetCommand.bind(null, 'close', data), false);
 }
 
 function addToOthersList(data) {
