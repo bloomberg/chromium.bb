@@ -3645,6 +3645,15 @@ bool HTMLMediaElement::isInteractiveContent() const
     return fastHasAttribute(controlsAttr);
 }
 
+void HTMLMediaElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::focusin) {
+        if (hasMediaControls())
+            mediaControls()->mediaElementFocused();
+    }
+    HTMLElement::defaultEventHandler(event);
+}
+
 void HTMLMediaElement::trace(Visitor* visitor)
 {
     visitor->trace(m_error);

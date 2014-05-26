@@ -66,6 +66,8 @@ public:
 
     void updateTextTrackDisplay();
 
+    void mediaElementFocused();
+
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
@@ -78,7 +80,12 @@ private:
 
     void updatePlayState();
 
-    bool shouldHideMediaControls();
+    enum HideBehaviorFlags {
+        IgnoreVideoHover = 1 << 0,
+        IgnoreFocus = 1 << 1
+    };
+
+    bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
     void hideMediaControlsTimerFired(Timer<MediaControls>*);
     void startHideMediaControlsTimer();
     void stopHideMediaControlsTimer();

@@ -191,6 +191,12 @@ void MediaControls::show()
     m_panel->show();
 }
 
+void MediaControls::mediaElementFocused()
+{
+    show();
+    stopHideMediaControlsTimer();
+}
+
 void MediaControls::hide()
 {
     m_panel->setIsDisplayed(false);
@@ -207,9 +213,22 @@ void MediaControls::makeTransparent()
     m_panel->makeTransparent();
 }
 
-bool MediaControls::shouldHideMediaControls()
+bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
 {
-    return !m_panel->hovered() && mediaElement().hasVideo();
+    // Never hide for a media element without visual representation.
+    if (!mediaElement().hasVideo())
+        return false;
+    // Don't hide if the controls are hovered or the mouse is over the video area.
+    const bool ignoreVideoHover = behaviorFlags & IgnoreVideoHover;
+    if (m_panel->hovered() || (!ignoreVideoHover && m_isMouseOverControls))
+        return false;
+    // Don't hide if focus is on the HTMLMediaElement or within the
+    // controls/shadow tree. (Perform the checks separately to avoid going
+    // through all the potential ancestor hosts for the focused element.)
+    const bool ignoreFocus = behaviorFlags & IgnoreFocus;
+    if (!ignoreFocus && (mediaElement().focused() || contains(document().focusedElement())))
+        return false;
+    return true;
 }
 
 void MediaControls::playbackStarted()
@@ -229,7 +248,7 @@ void MediaControls::playbackProgressed()
     m_timeline->setPosition(mediaElement().currentTime());
     updateCurrentTimeDisplay();
 
-    if (!m_isMouseOverControls && mediaElement().hasVideo())
+    if (shouldHideMediaControls())
         makeTransparent();
 }
 
@@ -358,7 +377,7 @@ void MediaControls::defaultEventHandler(Event* event)
         // When we get a mouse move, show the media controls, and start a timer
         // that will hide the media controls after a 3 seconds without a mouse move.
         makeOpaque();
-        if (shouldHideMediaControls())
+        if (shouldHideMediaControls(IgnoreVideoHover))
             startHideMediaControlsTimer();
         return;
     }
@@ -369,7 +388,7 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
     if (mediaElement().togglePlayStateWillPlay())
         return;
 
-    if (!shouldHideMediaControls())
+    if (!shouldHideMediaControls(IgnoreFocus | IgnoreVideoHover))
         return;
 
     makeTransparent();

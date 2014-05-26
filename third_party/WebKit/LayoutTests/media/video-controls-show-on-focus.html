@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<title>Test visibiblity of controls when focusing of &lt;video></title>
+<script src=video-test.js></script>
+<script src=media-controls.js></script>
+<p>
+Test that video controls re-appear when the media (&lt;video>) element is focused.
+</p>
+<video controls autoplay src="content/test.ogv"></video>
+<script>
+var controls;
+var waitingForFade = false;
+var fadeinTime = 300;
+
+document.querySelector("video").addEventListener("timeupdate", function(event)
+{
+    var video = event.target;
+    if (video.currentTime < 4 || waitingForFade)
+        return;
+    controls = mediaControlsButton(video, "panel");
+
+    testExpected("getComputedStyle(controls).opacity", 0);
+
+    video.focus();
+
+    waitingForFade = true;
+    setTimeout(function() {
+        testExpected("getComputedStyle(controls).opacity", 1);
+
+        consoleWrite("");
+        endTest();
+    }, fadeinTime);
+});
+
+</script>
