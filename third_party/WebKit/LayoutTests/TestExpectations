@@ -327,6 +327,7 @@ crbug.com/248938 [ Release ] virtual/threaded/transitions/change-duration-during
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/cubic-bezier-overflow-transform.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/default-timing-function.html [ Pass Failure Timeout ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-shorthands.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/hang-with-bad-transition-list.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
