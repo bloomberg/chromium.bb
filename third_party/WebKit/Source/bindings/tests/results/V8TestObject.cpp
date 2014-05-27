@@ -2753,7 +2753,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Prop
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->location());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->location());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -2785,7 +2785,7 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithException());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithException());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -2817,7 +2817,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithCallWith());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithCallWith());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -2849,7 +2849,7 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -2881,7 +2881,7 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
@@ -3823,7 +3823,7 @@ static void locationReplaceableAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toNative(holder);
-    RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationReplaceable());
+    RefPtrWillBeRawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationReplaceable());
     if (!impl)
         return;
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);

@@ -41,7 +41,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfaceNode* ob
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::derefObject, 0, V8TestInterfaceNode::toEventTarget, 0, V8TestInterfaceNode::installPerContextEnabledMethods, &V8Node::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::derefObject, 0, V8TestInterfaceNode::toEventTarget, 0, V8TestInterfaceNode::installPerContextEnabledMethods, &V8Node::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceNodeV8Internal {
 
@@ -358,7 +358,7 @@ EventTarget* V8TestInterfaceNode::toEventTarget(v8::Handle<v8::Object> object)
     return toNative(object);
 }
 
-v8::Handle<v8::Object> V8TestInterfaceNode::createWrapper(PassRefPtr<TestInterfaceNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceNode::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceNode>(impl.get(), isolate));
@@ -380,7 +380,9 @@ v8::Handle<v8::Object> V8TestInterfaceNode::createWrapper(PassRefPtr<TestInterfa
 
 void V8TestInterfaceNode::derefObject(void* object)
 {
+#if !ENABLE(OILPAN)
     fromInternalPointer(object)->deref();
+#endif // !ENABLE(OILPAN)
 }
 
 template<>

@@ -37,7 +37,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestNode* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNode::domTemplate, V8TestNode::derefObject, 0, V8TestNode::toEventTarget, 0, V8TestNode::installPerContextEnabledMethods, &V8Node::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNode::domTemplate, V8TestNode::derefObject, 0, V8TestNode::toEventTarget, 0, V8TestNode::installPerContextEnabledMethods, &V8Node::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestNodeV8Internal {
 
@@ -135,7 +135,7 @@ static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    RefPtr<TestNode> impl = TestNode::create();
+    RefPtrWillBeRawPtr<TestNode> impl = TestNode::create();
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestNode>(impl.release(), &V8TestNode::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
@@ -219,7 +219,7 @@ EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
     return toNative(object);
 }
 
-v8::Handle<v8::Object> V8TestNode::createWrapper(PassRefPtr<TestNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestNode::createWrapper(PassRefPtrWillBeRawPtr<TestNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestNode>(impl.get(), isolate));
@@ -241,7 +241,9 @@ v8::Handle<v8::Object> V8TestNode::createWrapper(PassRefPtr<TestNode> impl, v8::
 
 void V8TestNode::derefObject(void* object)
 {
+#if !ENABLE(OILPAN)
     fromInternalPointer(object)->deref();
+#endif // !ENABLE(OILPAN)
 }
 
 template<>

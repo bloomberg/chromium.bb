@@ -56,7 +56,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         TOSTRING_VOID_INTERNAL(name, info[0]);
     }
     bool result0Enabled = false;
-    RefPtr<Node> result0;
+    RefPtrWillBeRawPtr<Node> result0;
     bool result1Enabled = false;
     RefPtrWillBeRawPtr<NodeList> result1;
     impl->getItem(name, result0Enabled, result0, result1Enabled, result1);
@@ -83,7 +83,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     bool result0Enabled = false;
-    RefPtr<Node> result0;
+    RefPtrWillBeRawPtr<Node> result0;
     bool result1Enabled = false;
     RefPtrWillBeRawPtr<NodeList> result1;
     impl->getItem(propertyName, result0Enabled, result0, result1Enabled, result1);

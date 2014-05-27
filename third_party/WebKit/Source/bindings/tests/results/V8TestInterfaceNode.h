@@ -29,7 +29,8 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 0;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static inline void* toInternalPointer(TestInterfaceNode* impl)
     {
         return V8Node::toInternalPointer(impl);
@@ -44,7 +45,7 @@ public:
 
 private:
     friend v8::Handle<v8::Object> wrap(TestInterfaceNode*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfaceNode>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceNode>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
 inline v8::Handle<v8::Object> wrap(TestInterfaceNode* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -104,25 +105,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfaceNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtrWillBeRawPtr<TestInterfaceNode> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNode> impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtrWillBeRawPtr<TestInterfaceNode> impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNode> impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtrWillBeRawPtr<TestInterfaceNode> impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNode> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtrWillBeRawPtr<TestInterfaceNode> impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
