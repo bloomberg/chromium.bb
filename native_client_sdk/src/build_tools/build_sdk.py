@@ -57,7 +57,7 @@ CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
 PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 1289
+NACLPORTS_REV = 1290
 
 GYPBUILD_DIR = 'gypbuild'
 
