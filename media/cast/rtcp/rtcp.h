@@ -5,16 +5,15 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_H_
 #define MEDIA_CAST_RTCP_RTCP_H_
 
-#include <list>
 #include <map>
 #include <queue>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/base/clock_drift_smoother.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -94,27 +93,39 @@ class Rtcp {
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
+
+  // TODO(miu): Clean up this method and downstream code: Only VideoSender uses
+  // this (for congestion control), and only the |rtt| and |avg_rtt| values, and
+  // it's not clear that any of the downstream code is doing the right thing
+  // with this data.
   bool Rtt(base::TimeDelta* rtt,
            base::TimeDelta* avg_rtt,
            base::TimeDelta* min_rtt,
            base::TimeDelta* max_rtt) const;
+
   bool is_rtt_available() const { return number_of_rtt_in_avg_ > 0; }
-  bool RtpTimestampInSenderTime(int frequency,
-                                uint32 rtp_timestamp,
-                                base::TimeTicks* rtp_timestamp_in_ticks) const;
+
+  // If available, returns true and sets the output arguments to the latest
+  // lip-sync timestamps gleaned from the sender reports.  While the sender
+  // provides reference NTP times relative to its own wall clock, the
+  // |reference_time| returned here has been translated to the local
+  // CastEnvironment clock.
+  bool GetLatestLipSyncTimes(uint32* rtp_timestamp,
+                             base::TimeTicks* reference_time) const;
 
   // Set the history size to record Cast receiver events. The event history is
   // used to remove duplicates. The history will store at most |size| events.
   void SetCastReceiverEventHistorySize(size_t size);
 
-  // Update the target delay. Will be added to every sender report.
+  // Update the target delay. Will be added to every report sent back to the
+  // sender.
+  // TODO(miu): Remove this deprecated functionality. The sender ignores this.
   void SetTargetDelay(base::TimeDelta target_delay);
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
 
  protected:
-  int CheckForWrapAround(uint32 new_timestamp, uint32 old_timestamp) const;
-
+  void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);
   void OnReceivedLipSyncInfo(uint32 rtp_timestamp,
                              uint32 ntp_seconds,
                              uint32 ntp_fraction);
@@ -122,13 +133,6 @@ class Rtcp {
  private:
   friend class LocalRtcpRttFeedback;
   friend class LocalRtcpReceiverFeedback;
-
-  void SendRtcp(const base::TimeTicks& now,
-                uint32 packet_type_flags,
-                uint32 media_ssrc,
-                const RtcpCastMessage* cast_message);
-
-  void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);
 
   void OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
                                       uint32 last_report,
@@ -164,18 +168,32 @@ class Rtcp {
   base::TimeTicks next_time_to_send_rtcp_;
   RtcpSendTimeMap last_reports_sent_map_;
   RtcpSendTimeQueue last_reports_sent_queue_;
-  base::TimeTicks time_last_report_received_;
-  uint32 last_report_received_;
 
-  uint32 last_received_rtp_timestamp_;
-  uint32 last_received_ntp_seconds_;
-  uint32 last_received_ntp_fraction_;
+  // The truncated (i.e., 64-->32-bit) NTP timestamp provided in the last report
+  // from the remote peer, along with the local time at which the report was
+  // received.  These values are used for ping-pong'ing NTP timestamps between
+  // the peers so that they can estimate the network's round-trip time.
+  uint32 last_report_truncated_ntp_;
+  base::TimeTicks time_last_report_received_;
+
+  // Maintains a smoothed offset between the local clock and the remote clock.
+  // Calling this member's Current() method is only valid if
+  // |time_last_report_received_| is not "null."
+  ClockDriftSmoother local_clock_ahead_by_;
+
+  // Latest "lip sync" info from the sender.  The sender provides the RTP
+  // timestamp of some frame of its choosing and also a corresponding reference
+  // NTP timestamp sampled from a clock common to all media streams.  It is
+  // expected that the sender will update this data regularly and in a timely
+  // manner (e.g., about once per second).
+  uint32 lip_sync_rtp_timestamp_;
+  uint64 lip_sync_ntp_timestamp_;
 
   base::TimeDelta rtt_;
   base::TimeDelta min_rtt_;
   base::TimeDelta max_rtt_;
   int number_of_rtt_in_avg_;
-  float avg_rtt_ms_;
+  double avg_rtt_ms_;
   uint16 target_delay_ms_;
   bool is_audio_;
 

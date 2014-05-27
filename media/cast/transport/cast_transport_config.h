@@ -31,8 +31,7 @@ enum AudioCodec {
   kFakeSoftwareAudio,
   kOpus,
   kPcm16,
-  kExternalAudio,
-  kAudioCodecLast = kExternalAudio
+  kAudioCodecLast = kPcm16
 };
 
 struct RtpConfig {

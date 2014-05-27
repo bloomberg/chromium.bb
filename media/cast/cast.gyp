@@ -33,6 +33,8 @@
         'cast_defines.h',
         'cast_environment.cc',
         'cast_environment.h',
+        'base/clock_drift_smoother.cc',
+        'base/clock_drift_smoother.h',
         'logging/encoding_event_subscriber.cc',
         'logging/encoding_event_subscriber.h',
         'logging/log_deserializer.cc',

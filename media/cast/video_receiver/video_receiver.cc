@@ -17,8 +17,6 @@
 
 namespace {
 const int kMinSchedulingDelayMs = 1;
-const int kMinTimeBetweenOffsetUpdatesMs = 1000;
-const int kTimeOffsetMaxCounter = 10;
 }  // namespace
 
 namespace media {
@@ -31,10 +29,11 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       cast_environment_(cast_environment),
       event_subscriber_(kReceiverRtcpEventHistorySize, VIDEO_EVENT),
       codec_(video_config.codec),
-      target_delay_delta_(
+      target_playout_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       expected_frame_duration_(
           base::TimeDelta::FromSeconds(1) / video_config.max_frame_rate),
+      reports_are_scheduled_(false),
       framer_(cast_environment->Clock(),
               this,
               video_config.incoming_ssrc,
@@ -52,10 +51,8 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
             video_config.incoming_ssrc,
             video_config.rtcp_c_name,
             false),
-      time_offset_counter_(0),
-      time_incoming_packet_updated_(false),
-      incoming_rtp_timestamp_(0),
       is_waiting_for_consecutive_frame_(false),
+      lip_sync_drift_(ClockDriftSmoother::GetDefaultTimeConstant()),
       weak_factory_(this) {
   DCHECK_GT(video_config.rtp_max_delay_ms, 0);
   DCHECK_GT(video_config.max_frame_rate, 0);
@@ -63,7 +60,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
     video_decoder_.reset(new VideoDecoder(cast_environment, video_config));
   }
   decryptor_.Initialize(video_config.aes_key, video_config.aes_iv_mask);
-  rtcp_.SetTargetDelay(target_delay_delta_);
+  rtcp_.SetTargetDelay(target_playout_delay_);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
@@ -71,12 +68,6 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
 VideoReceiver::~VideoReceiver() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
-}
-
-void VideoReceiver::InitializeTimers() {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  ScheduleNextRtcpReport();
-  ScheduleNextCastMessage();
 }
 
 void VideoReceiver::GetRawVideoFrame(
@@ -166,7 +157,7 @@ void VideoReceiver::EmitAvailableEncodedFrames() {
 
     const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
     const base::TimeTicks playout_time =
-        GetPlayoutTime(now, encoded_frame->rtp_timestamp);
+        GetPlayoutTime(encoded_frame->rtp_timestamp);
 
     // If we have multiple decodable frames, and the current frame is
     // too old, then skip it and decode the next frame instead.
@@ -237,72 +228,13 @@ void VideoReceiver::EmitAvailableEncodedFramesAfterWaiting() {
   EmitAvailableEncodedFrames();
 }
 
-base::TimeTicks VideoReceiver::GetPlayoutTime(base::TimeTicks now,
-                                              uint32 rtp_timestamp) {
-  // TODO(miu): This and AudioReceiver::GetPlayoutTime() need to be reconciled!
-
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  // Senders time in ms when this frame was captured.
-  // Note: the senders clock and our local clock might not be synced.
-  base::TimeTicks rtp_timestamp_in_ticks;
-
-  // Compute the time offset_in_ticks based on the incoming_rtp_timestamp_.
-  if (time_offset_counter_ == 0) {
-    // Check for received RTCP to sync the stream play it out asap.
-    if (rtcp_.RtpTimestampInSenderTime(kVideoFrequency,
-                                       incoming_rtp_timestamp_,
-                                       &rtp_timestamp_in_ticks)) {
-       ++time_offset_counter_;
-    }
-  } else if (time_incoming_packet_updated_) {
-    if (rtcp_.RtpTimestampInSenderTime(kVideoFrequency,
-                                       incoming_rtp_timestamp_,
-                                       &rtp_timestamp_in_ticks)) {
-      // Time to update the time_offset.
-      base::TimeDelta time_offset =
-          time_incoming_packet_ - rtp_timestamp_in_ticks;
-      // Taking the minimum of the first kTimeOffsetMaxCounter values. We are
-      // assuming that we are looking for the minimum offset, which will occur
-      // when network conditions are the best. This should occur at least once
-      // within the first kTimeOffsetMaxCounter samples. Any drift should be
-      // very slow, and negligible for this use case.
-      if (time_offset_counter_ == 1)
-        time_offset_ = time_offset;
-      else if (time_offset_counter_ < kTimeOffsetMaxCounter) {
-        time_offset_ = std::min(time_offset_, time_offset);
-      }
-      if (time_offset_counter_ < kTimeOffsetMaxCounter)
-        ++time_offset_counter_;
-    }
-  }
-  // Reset |time_incoming_packet_updated_| to enable a future measurement.
-  time_incoming_packet_updated_ = false;
-  // Compute the actual rtp_timestamp_in_ticks based on the current timestamp.
-  if (!rtcp_.RtpTimestampInSenderTime(
-           kVideoFrequency, rtp_timestamp, &rtp_timestamp_in_ticks)) {
-    // This can fail if we have not received any RTCP packets in a long time.
-    // BUG: These calculations are a placeholder, and to be revisited in a
-    // soon-upcoming change.  http://crbug.com/356942
-    const int frequency_khz = kVideoFrequency / 1000;
-    const base::TimeDelta delta_based_on_rtp_timestamps =
-        base::TimeDelta::FromMilliseconds(
-            static_cast<int32>(rtp_timestamp - incoming_rtp_timestamp_) /
-                frequency_khz);
-    return time_incoming_packet_ + delta_based_on_rtp_timestamps;
-  }
-
-  base::TimeTicks render_time =
-      rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_;
-  // TODO(miu): This is broken since this "getter" method may be called on
-  // frames received out-of-order, which means the playout times for earlier
-  // frames will be computed incorrectly.
-#if 0
-  if (last_render_time_ > render_time)
-    render_time = last_render_time_;
-  last_render_time_ = render_time;
-#endif
-
-  return render_time;
+base::TimeTicks VideoReceiver::GetPlayoutTime(uint32 rtp_timestamp) const {
+  return lip_sync_reference_time_ +
+      lip_sync_drift_.Current() +
+      RtpDeltaToTimeDelta(
+          static_cast<int32>(rtp_timestamp - lip_sync_rtp_timestamp_),
+          kVideoFrequency) +
+      target_playout_delay_;
 }
 
 void VideoReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
@@ -312,6 +244,11 @@ void VideoReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
   } else {
     ReceivedPacket(&packet->front(), packet->size());
   }
+  if (!reports_are_scheduled_) {
+    ScheduleNextRtcpReport();
+    ScheduleNextCastMessage();
+    reports_are_scheduled_ = true;
+  }
 }
 
 void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
@@ -319,21 +256,7 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
                                           const RtpCastHeader& rtp_header) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  if (time_incoming_packet_.is_null() ||
-      now - time_incoming_packet_ >
-          base::TimeDelta::FromMilliseconds(kMinTimeBetweenOffsetUpdatesMs)) {
-    if (time_incoming_packet_.is_null())
-      InitializeTimers();
-    incoming_rtp_timestamp_ = rtp_header.rtp_timestamp;
-    // The following incoming packet info is used for syncing sender and
-    // receiver clock. Use only the first packet of every frame to obtain a
-    // minimal value.
-    if (rtp_header.packet_id == 0) {
-      time_incoming_packet_ = now;
-      time_incoming_packet_updated_ = true;
-    }
-  }
+  const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
       rtp_header.rtp_timestamp;
@@ -354,6 +277,36 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
   // Duplicate packets are ignored.
   if (duplicate)
     return;
+
+  // Update lip-sync values upon receiving the first packet of each frame, or if
+  // they have never been set yet.
+  if (rtp_header.packet_id == 0 || lip_sync_reference_time_.is_null()) {
+    RtpTimestamp fresh_sync_rtp;
+    base::TimeTicks fresh_sync_reference;
+    if (!rtcp_.GetLatestLipSyncTimes(&fresh_sync_rtp, &fresh_sync_reference)) {
+      // HACK: The sender should have provided Sender Reports before the first
+      // frame was sent.  However, the spec does not currently require this.
+      // Therefore, when the data is missing, the local clock is used to
+      // generate reference timestamps.
+      VLOG(2) << "Lip sync info missing.  Falling-back to local clock.";
+      fresh_sync_rtp = rtp_header.rtp_timestamp;
+      fresh_sync_reference = now;
+    }
+    // |lip_sync_reference_time_| is always incremented according to the time
+    // delta computed from the difference in RTP timestamps.  Then,
+    // |lip_sync_drift_| accounts for clock drift and also smoothes-out any
+    // sudden/discontinuous shifts in the series of reference time values.
+    if (lip_sync_reference_time_.is_null()) {
+      lip_sync_reference_time_ = fresh_sync_reference;
+    } else {
+      lip_sync_reference_time_ += RtpDeltaToTimeDelta(
+          static_cast<int32>(fresh_sync_rtp - lip_sync_rtp_timestamp_),
+          kVideoFrequency);
+    }
+    lip_sync_rtp_timestamp_ = fresh_sync_rtp;
+    lip_sync_drift_.Update(
+        now, fresh_sync_reference - lip_sync_reference_time_);
+  }
 
   // Video frame not complete; wait for more packets.
   if (!complete)

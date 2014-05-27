@@ -27,7 +27,6 @@ namespace media {
 namespace cast {
 
 namespace {
-static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint8 kPixelValue = 123;
 static const int kWidth = 320;
 static const int kHeight = 240;
@@ -107,8 +106,7 @@ class VideoSenderTest : public ::testing::Test {
  protected:
   VideoSenderTest() {
     testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),

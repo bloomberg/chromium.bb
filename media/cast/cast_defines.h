@@ -135,13 +135,22 @@ inline base::TimeDelta ConvertFromNtpDiff(uint32 ntp_delay) {
   return base::TimeDelta::FromMilliseconds(delay_ms);
 }
 
-inline void ConvertTimeToFractions(int64 time_us,
+inline void ConvertTimeToFractions(int64 ntp_time_us,
                                    uint32* seconds,
                                    uint32* fractions) {
-  DCHECK_GE(time_us, 0) << "Time must NOT be negative";
-  *seconds = static_cast<uint32>(time_us / base::Time::kMicrosecondsPerSecond);
+  DCHECK_GE(ntp_time_us, 0) << "Time must NOT be negative";
+  const int64 seconds_component =
+      ntp_time_us / base::Time::kMicrosecondsPerSecond;
+  // NTP time will overflow in the year 2036.  Also, make sure unit tests don't
+  // regress and use an origin past the year 2036.  If this overflows here, the
+  // inverse calculation fails to compute the correct TimeTicks value, throwing
+  // off the entire system.
+  DCHECK_LT(seconds_component, INT64_C(4263431296))
+      << "One year left to fix the NTP year 2036 wrap-around issue!";
+  *seconds = static_cast<uint32>(seconds_component);
   *fractions = static_cast<uint32>(
-      (time_us % base::Time::kMicrosecondsPerSecond) * kMagicFractionalUnit);
+      (ntp_time_us % base::Time::kMicrosecondsPerSecond) *
+          kMagicFractionalUnit);
 }
 
 inline void ConvertTimeTicksToNtp(const base::TimeTicks& time,
@@ -167,6 +176,11 @@ inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
       ntp_time_us -
       (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
   return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
+}
+
+inline base::TimeDelta RtpDeltaToTimeDelta(int64 rtp_delta, int rtp_timebase) {
+  DCHECK_GT(rtp_timebase, 0);
+  return rtp_delta * base::TimeDelta::FromSeconds(1) / rtp_timebase;
 }
 
 inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {

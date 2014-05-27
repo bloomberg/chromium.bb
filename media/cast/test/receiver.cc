@@ -424,14 +424,21 @@ class NaivePlayer : public InProcessReceiver,
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
 
     if (is_being_skipped) {
-      VLOG(1) << "VideoFrame[" << num_video_frames_processed_ << "]: Skipped.";
+      VLOG(1) << "VideoFrame[" << num_video_frames_processed_
+              << " (dt=" << (video_playout_queue_.front().first -
+                             last_popped_video_playout_time_).InMicroseconds()
+              << " usec)]: Skipped.";
     } else {
-      VLOG(1) << "VideoFrame[" << num_video_frames_processed_ << "]: Playing "
+      VLOG(1) << "VideoFrame[" << num_video_frames_processed_
+              << " (dt=" << (video_playout_queue_.front().first -
+                             last_popped_video_playout_time_).InMicroseconds()
+              << " usec)]: Playing "
               << (cast_env()->Clock()->NowTicks() -
                       video_playout_queue_.front().first).InMicroseconds()
               << " usec later than intended.";
     }
 
+    last_popped_video_playout_time_ = video_playout_queue_.front().first;
     const scoped_refptr<VideoFrame> ret = video_playout_queue_.front().second;
     video_playout_queue_.pop_front();
     ++num_video_frames_processed_;
@@ -442,14 +449,21 @@ class NaivePlayer : public InProcessReceiver,
     audio_lock_.AssertAcquired();
 
     if (was_skipped) {
-      VLOG(1) << "AudioFrame[" << num_audio_frames_processed_ << "]: Skipped";
+      VLOG(1) << "AudioFrame[" << num_audio_frames_processed_
+              << " (dt=" << (audio_playout_queue_.front().first -
+                             last_popped_audio_playout_time_).InMicroseconds()
+              << " usec)]: Skipped.";
     } else {
-      VLOG(1) << "AudioFrame[" << num_audio_frames_processed_ << "]: Playing "
+      VLOG(1) << "AudioFrame[" << num_audio_frames_processed_
+              << " (dt=" << (audio_playout_queue_.front().first -
+                             last_popped_audio_playout_time_).InMicroseconds()
+              << " usec)]: Playing "
               << (cast_env()->Clock()->NowTicks() -
                       audio_playout_queue_.front().first).InMicroseconds()
               << " usec later than intended.";
     }
 
+    last_popped_audio_playout_time_ = audio_playout_queue_.front().first;
     scoped_ptr<AudioBus> ret(audio_playout_queue_.front().second);
     audio_playout_queue_.pop_front();
     ++num_audio_frames_processed_;
@@ -501,6 +515,7 @@ class NaivePlayer : public InProcessReceiver,
   typedef std::pair<base::TimeTicks, scoped_refptr<VideoFrame> >
       VideoQueueEntry;
   std::deque<VideoQueueEntry> video_playout_queue_;
+  base::TimeTicks last_popped_video_playout_time_;
   int64 num_video_frames_processed_;
 
   base::OneShotTimer<NaivePlayer> video_playout_timer_;
@@ -509,6 +524,7 @@ class NaivePlayer : public InProcessReceiver,
   base::Lock audio_lock_;
   typedef std::pair<base::TimeTicks, AudioBus*> AudioQueueEntry;
   std::deque<AudioQueueEntry> audio_playout_queue_;
+  base::TimeTicks last_popped_audio_playout_time_;
   int64 num_audio_frames_processed_;
 
   // These must only be used on the audio thread calling OnMoreData().

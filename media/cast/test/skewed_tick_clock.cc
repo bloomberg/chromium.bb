@@ -25,8 +25,9 @@ base::TimeTicks SkewedTickClock::SkewTicks(base::TimeTicks now) {
 
 void SkewedTickClock::SetSkew(double skew, base::TimeDelta offset) {
   base::TimeTicks now = clock_->NowTicks();
-  last_skew_set_time_ = now;
   skew_clock_at_last_set_ = SkewTicks(now) + offset;
+  skew_ = skew;
+  last_skew_set_time_ = now;
 }
 
 base::TimeTicks SkewedTickClock::NowTicks() {

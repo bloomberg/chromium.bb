@@ -14,6 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/base/clock_drift_smoother.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
@@ -39,10 +40,6 @@ class AudioDecoder;
 // each step of the pipeline (i.e., encode frame, then transmit/retransmit from
 // the sender, then receive and re-order packets on the receiver, then decode
 // frame) can vary in duration and is typically very hard to predict.
-// Heuristics will determine when the targeted playout delay is insufficient in
-// the current environment; and the receiver can then increase the playout
-// delay, notifying the sender, to account for the extra variance.
-// TODO(miu): Make the last sentence true.  http://crbug.com/360111
 //
 // Two types of frames can be requested: 1) A frame of decoded audio data; or 2)
 // a frame of still-encoded audio data, to be passed into an external audio
@@ -81,10 +78,6 @@ class AudioReceiver : public RtpReceiver,
   // Deliver another packet, possibly a duplicate, and possibly out-of-order.
   void IncomingPacket(scoped_ptr<Packet> packet);
 
-  // Update target audio delay used to compute the playout time. Rtcp
-  // will also be updated (will be included in all outgoing reports).
-  void SetTargetDelay(base::TimeDelta target_delay);
-
  protected:
   friend class AudioReceiverTest;  // Invokes OnReceivedPayloadData().
 
@@ -112,10 +105,10 @@ class AudioReceiver : public RtpReceiver,
       const AudioFrameDecodedCallback& callback,
       scoped_ptr<transport::EncodedFrame> encoded_frame);
 
-  // Return the playout time based on the current time and rtp timestamp.
-  base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
-
-  void InitializeTimers();
+  // Computes the playout time for a frame with the given |rtp_timestamp|.
+  // Because lip-sync info is refreshed regularly, calling this method with the
+  // same argument may return different results.
+  base::TimeTicks GetPlayoutTime(uint32 rtp_timestamp) const;
 
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
@@ -149,15 +142,39 @@ class AudioReceiver : public RtpReceiver,
   // Processes raw audio events to be sent over to the cast sender via RTCP.
   ReceiverRtcpEventSubscriber event_subscriber_;
 
+  // Configured audio codec.
   const transport::AudioCodec codec_;
+
+  // RTP timebase: The number of RTP units advanced per one second.  For audio,
+  // this is the sampling rate.
   const int frequency_;
-  base::TimeDelta target_delay_delta_;
+
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
+  // a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  const base::TimeDelta target_playout_delay_;
+
+  // Set to false initially, then set to true after scheduling the periodic
+  // sending of reports back to the sender.  Reports are first scheduled just
+  // after receiving a first packet (since the first packet identifies the
+  // sender for the remainder of the session).
+  bool reports_are_scheduled_;
+
+  // Assembles packets into frames, providing this receiver with complete,
+  // decodable EncodedFrames.
   Framer framer_;
+
+  // Decodes frames into raw audio for playback.
   scoped_ptr<AudioDecoder> audio_decoder_;
+
+  // Manages sending/receiving of RTCP packets, including sender/receiver
+  // reports.
   Rtcp rtcp_;
-  base::TimeDelta time_offset_;
-  base::TimeTicks time_first_incoming_packet_;
-  uint32 first_incoming_rtp_timestamp_;
+
+  // Decrypts encrypted frames.
   transport::TransportEncryptionHandler decryptor_;
 
   // Outstanding callbacks to run to deliver on client requests for frames.
@@ -170,6 +187,13 @@ class AudioReceiver : public RtpReceiver,
   // This mapping allows us to log AUDIO_ACK_SENT as a frame event. In addition
   // it allows the event to be transmitted via RTCP.
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
+
+  // Lip-sync values used to compute the playout time of each frame from its RTP
+  // timestamp.  These are updated each time the first packet of a frame is
+  // received.
+  RtpTimestamp lip_sync_rtp_timestamp_;
+  base::TimeTicks lip_sync_reference_time_;
+  ClockDriftSmoother lip_sync_drift_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<AudioReceiver> weak_factory_;

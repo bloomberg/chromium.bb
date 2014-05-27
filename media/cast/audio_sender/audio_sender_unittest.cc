@@ -22,8 +22,6 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = INT64_C(12345678900000);
-
 class TestPacketSender : public transport::PacketSender {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
@@ -60,8 +58,7 @@ class AudioSenderTest : public ::testing::Test {
   AudioSenderTest() {
     InitializeMediaLibraryForTesting();
     testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),

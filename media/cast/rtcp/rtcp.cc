@@ -19,10 +19,7 @@ namespace media {
 namespace cast {
 
 static const int kMaxRttMs = 10000;  // 10 seconds.
-static const uint16 kMaxDelay = 2000;
-
-// Time limit for received RTCP messages when we stop using it for lip-sync.
-static const int64 kMaxDiffSinceReceivedRtcpMs = 100000;  // 100 seconds.
+static const int kMaxDelay = 2000;
 
 class LocalRtcpRttFeedback : public RtcpRttFeedback {
  public:
@@ -95,10 +92,10 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
       rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
                                   local_ssrc, c_name)),
-      last_report_received_(0),
-      last_received_rtp_timestamp_(0),
-      last_received_ntp_seconds_(0),
-      last_received_ntp_fraction_(0),
+      last_report_truncated_ntp_(0),
+      local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
+      lip_sync_rtp_timestamp_(0),
+      lip_sync_ntp_timestamp_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
       number_of_rtt_in_avg_(0),
       is_audio_(is_audio) {
@@ -184,7 +181,7 @@ void Rtcp::SendRtcpFromRtpReceiver(
           &report_block.extended_high_sequence_number, &report_block.jitter);
     }
 
-    report_block.last_sr = last_report_received_;
+    report_block.last_sr = last_report_truncated_ntp_;
     if (!time_last_report_received_.is_null()) {
       uint32 delay_seconds = 0;
       uint32 delay_fraction = 0;
@@ -220,7 +217,7 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
   transport::RtcpDlrrReportBlock dlrr;
   if (!time_last_report_received_.is_null()) {
     packet_type_flags |= transport::kRtcpDlrr;
-    dlrr.last_rr = last_report_received_;
+    dlrr.last_rr = last_report_truncated_ntp_;
     uint32 delay_seconds = 0;
     uint32 delay_fraction = 0;
     base::TimeDelta delta = current_time - time_last_report_received_;
@@ -237,17 +234,59 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
-  last_report_received_ = (ntp_seconds << 16) + (ntp_fraction >> 16);
+  last_report_truncated_ntp_ = ConvertToNtpDiff(ntp_seconds, ntp_fraction);
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   time_last_report_received_ = now;
+
+  // TODO(miu): This clock offset calculation does not account for packet
+  // transit time over the network.  End2EndTest.EvilNetwork confirms that this
+  // contributes a very significant source of error here.  Fix this along with
+  // the RTT clean-up.
+  const base::TimeDelta measured_offset =
+      now - ConvertNtpToTimeTicks(ntp_seconds, ntp_fraction);
+  local_clock_ahead_by_.Update(now, measured_offset);
+  if (measured_offset < local_clock_ahead_by_.Current()) {
+    // Logically, the minimum offset between the clocks has to be the correct
+    // one.  For example, the time it took to transmit the current report may
+    // have been lower than usual, and so some of the error introduced by the
+    // transmission time can be eliminated.
+    local_clock_ahead_by_.Reset(now, measured_offset);
+  }
+  VLOG(1) << "Local clock is ahead of the remote clock by: "
+          << "measured=" << measured_offset.InMicroseconds() << " usec, "
+          << "filtered=" << local_clock_ahead_by_.Current().InMicroseconds()
+          << " usec.";
 }
 
 void Rtcp::OnReceivedLipSyncInfo(uint32 rtp_timestamp, uint32 ntp_seconds,
                                  uint32 ntp_fraction) {
-  last_received_rtp_timestamp_ = rtp_timestamp;
-  last_received_ntp_seconds_ = ntp_seconds;
-  last_received_ntp_fraction_ = ntp_fraction;
+  if (ntp_seconds == 0) {
+    NOTREACHED();
+    return;
+  }
+  lip_sync_rtp_timestamp_ = rtp_timestamp;
+  lip_sync_ntp_timestamp_ =
+      (static_cast<uint64>(ntp_seconds) << 32) | ntp_fraction;
+}
+
+bool Rtcp::GetLatestLipSyncTimes(uint32* rtp_timestamp,
+                                 base::TimeTicks* reference_time) const {
+  if (!lip_sync_ntp_timestamp_)
+    return false;
+
+  const base::TimeTicks local_reference_time =
+      ConvertNtpToTimeTicks(static_cast<uint32>(lip_sync_ntp_timestamp_ >> 32),
+                            static_cast<uint32>(lip_sync_ntp_timestamp_)) +
+      local_clock_ahead_by_.Current();
+
+  // Sanity-check: Getting regular lip sync updates?
+  DCHECK((cast_environment_->Clock()->NowTicks() - local_reference_time) <
+             base::TimeDelta::FromMinutes(1));
+
+  *rtp_timestamp = lip_sync_rtp_timestamp_;
+  *reference_time = local_reference_time;
+  return true;
 }
 
 void Rtcp::OnReceivedSendReportRequest() {
@@ -257,47 +296,13 @@ void Rtcp::OnReceivedSendReportRequest() {
   next_time_to_send_rtcp_ = now;
 }
 
-bool Rtcp::RtpTimestampInSenderTime(int frequency, uint32 rtp_timestamp,
-                                    base::TimeTicks* rtp_timestamp_in_ticks)
-    const {
-  if (last_received_ntp_seconds_ == 0)
-    return false;
-
-  int wrap = CheckForWrapAround(rtp_timestamp, last_received_rtp_timestamp_);
-  int64 rtp_timestamp_int64 = rtp_timestamp;
-  int64 last_received_rtp_timestamp_int64 = last_received_rtp_timestamp_;
-
-  if (wrap == 1) {
-    rtp_timestamp_int64 += (1LL << 32);
-  } else if (wrap == -1) {
-    last_received_rtp_timestamp_int64 += (1LL << 32);
-  }
-  // Time since the last RTCP message.
-  // Note that this can be negative since we can compare a rtp timestamp from
-  // a frame older than the last received RTCP message.
-  int64 rtp_timestamp_diff =
-      rtp_timestamp_int64 - last_received_rtp_timestamp_int64;
-
-  int frequency_khz = frequency / 1000;
-  int64 rtp_time_diff_ms = rtp_timestamp_diff / frequency_khz;
-
-  // Sanity check.
-  if (std::abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs)
-    return false;
-
-  *rtp_timestamp_in_ticks = ConvertNtpToTimeTicks(last_received_ntp_seconds_,
-                                                  last_received_ntp_fraction_) +
-                            base::TimeDelta::FromMilliseconds(rtp_time_diff_ms);
-  return true;
-}
-
 void Rtcp::SetCastReceiverEventHistorySize(size_t size) {
   rtcp_receiver_->SetCastReceiverEventHistorySize(size);
 }
 
 void Rtcp::SetTargetDelay(base::TimeDelta target_delay) {
+  DCHECK(target_delay.InMilliseconds() < kMaxDelay);
   target_delay_ms_ = static_cast<uint16>(target_delay.InMilliseconds());
-  DCHECK(target_delay_ms_ < kMaxDelay);
 }
 
 void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
@@ -342,17 +347,21 @@ void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
 void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
                      const base::TimeDelta& receiver_delay) {
   base::TimeDelta rtt = sender_delay - receiver_delay;
+  // TODO(miu): Find out why this must be >= 1 ms, and remove the fudge if it's
+  // bogus.
   rtt = std::max(rtt, base::TimeDelta::FromMilliseconds(1));
   rtt_ = rtt;
   min_rtt_ = std::min(min_rtt_, rtt);
   max_rtt_ = std::max(max_rtt_, rtt);
 
+  // TODO(miu): Replace "average for all time" with an EWMA, or suitable
+  // "average over recent past" mechanism.
   if (number_of_rtt_in_avg_ != 0) {
-    float ac = static_cast<float>(number_of_rtt_in_avg_);
+    const double ac = static_cast<double>(number_of_rtt_in_avg_);
     avg_rtt_ms_ = ((ac / (ac + 1.0)) * avg_rtt_ms_) +
-                  ((1.0 / (ac + 1.0)) * rtt.InMilliseconds());
+                  ((1.0 / (ac + 1.0)) * rtt.InMillisecondsF());
   } else {
-    avg_rtt_ms_ = rtt.InMilliseconds();
+    avg_rtt_ms_ = rtt.InMillisecondsF();
   }
   number_of_rtt_in_avg_++;
 }
@@ -367,26 +376,10 @@ bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
   if (number_of_rtt_in_avg_ == 0) return false;
 
   *rtt = rtt_;
-  *avg_rtt = base::TimeDelta::FromMilliseconds(avg_rtt_ms_);
+  *avg_rtt = base::TimeDelta::FromMillisecondsD(avg_rtt_ms_);
   *min_rtt = min_rtt_;
   *max_rtt = max_rtt_;
   return true;
-}
-
-int Rtcp::CheckForWrapAround(uint32 new_timestamp, uint32 old_timestamp) const {
-  if (new_timestamp < old_timestamp) {
-    // This difference should be less than -2^31 if we have had a wrap around
-    // (e.g. |new_timestamp| = 1, |rtcp_rtp_timestamp| = 2^32 - 1). Since it is
-    // cast to a int32_t, it should be positive.
-    if (static_cast<int32>(new_timestamp - old_timestamp) > 0) {
-      return 1;  // Forward wrap around.
-    }
-  } else if (static_cast<int32>(old_timestamp - new_timestamp) > 0) {
-    // This difference should be less than -2^31 if we have had a backward wrap
-    // around. Since it is cast to a int32, it should be positive.
-    return -1;
-  }
-  return 0;
 }
 
 void Rtcp::UpdateNextTimeToSendRtcp() {
