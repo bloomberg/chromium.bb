@@ -14,9 +14,8 @@ class FrameView;
 
 class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollected<ScreenOrientationController>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(ScreenOrientationController);
 public:
-    virtual ~ScreenOrientationController();
-
     blink::WebScreenOrientationType orientation() const;
 
     // DocumentSupplement API.

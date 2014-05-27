@@ -15,9 +15,7 @@
 
 namespace WebCore {
 
-ScreenOrientationController::~ScreenOrientationController()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScreenOrientationController)
 
 ScreenOrientationController& ScreenOrientationController::from(Document& document)
 {
