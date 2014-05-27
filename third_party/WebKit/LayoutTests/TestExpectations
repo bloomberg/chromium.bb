@@ -788,6 +788,7 @@ crbug.com/349015 fast/notifications/notifications-constructor-with-permission.ht
 crbug.com/350543 [ Linux ] svg/animations/reset-animation-crash.html [ Crash Pass ]
 crbug.com/350827 svg/animations/svglengthlist-animation-3.html [ Failure Pass ]
 crbug.com/350828 svg/custom/animate-initial-pause-unpause.html [ Failure Pass ]
+crbug.com/377660 svg/custom/repaint-moving-svg-and-div.xhtml [ Failure Pass ]
 crbug.com/350543 [ Linux ] svg/as-image/image-change-with-equal-sizes.html [ Crash Pass ]
 crbug.com/356742 svg/as-image/animated-svg-animation-control.html [ Pass ImageOnlyFailure ]
 crbug.com/350829 [ Linux ] virtual/threaded/animations/missing-keyframe-properties-repeating.html [ Timeout Pass ]
