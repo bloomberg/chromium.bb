@@ -454,7 +454,7 @@ function createPeerConnection(stun_server, useRtpDataChannels) {
   servers = {iceServers: [{url: 'stun:' + stun_server}]};
   try {
     var constraints = { optional: [{ RtpDataChannels: useRtpDataChannels }]};
-    peerConnection = new webkitRTCPeerConnection(servers, constraints);
+    peerConnection = new RTCPeerConnection(servers, constraints);
   } catch (exception) {
     error_('Failed to create peer connection: ' + exception);
   }
@@ -501,7 +501,7 @@ function createDtmfSender(peerConnection) {
   if (global.dtmfSender != null)
     error_('Creating DTMF sender, but we already have one.');
 
-  var localStream = global.localStream();
+  var localStream = global.localStream;
   if (localStream == null)
     error_('Creating DTMF sender but local stream is null.');
   local_audio_track = localStream.getAudioTracks()[0];
