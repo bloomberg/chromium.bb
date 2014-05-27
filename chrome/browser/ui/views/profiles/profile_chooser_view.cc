@@ -101,16 +101,14 @@ gfx::ImageSkia CreateSquarePlaceholderImage(int size) {
 }
 
 bool HasAuthError(Profile* profile) {
-  SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-          signin_error_controller();
+  const SigninErrorController* error =
+      profiles::GetSigninErrorController(profile);
   return error && error->HasError();
 }
 
 std::string GetAuthErrorAccountId(Profile* profile) {
-  SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-          signin_error_controller();
+  const SigninErrorController* error =
+      profiles::GetSigninErrorController(profile);
   if (!error)
     return std::string();
 
@@ -118,9 +116,8 @@ std::string GetAuthErrorAccountId(Profile* profile) {
 }
 
 std::string GetAuthErrorUsername(Profile* profile) {
-  SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-          signin_error_controller();
+  const SigninErrorController* error =
+      profiles::GetSigninErrorController(profile);
   if (!error)
     return std::string();
 

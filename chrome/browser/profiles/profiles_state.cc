@@ -122,4 +122,10 @@ void UpdateGaiaProfilePhotoIfNeeded(Profile* profile) {
   GAIAInfoUpdateServiceFactory::GetInstance()->GetForProfile(profile)->Update();
 }
 
+SigninErrorController* GetSigninErrorController(Profile* profile) {
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  return token_service ? token_service->signin_error_controller() : NULL;
+}
+
 }  // namespace profiles

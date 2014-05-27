@@ -104,12 +104,14 @@ NewAvatarButton::NewAvatarButton(
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 
   // Subscribe to authentication error changes so that the avatar button
-  // can update itself.
+  // can update itself.  Note that guest mode profiles won't have a token
+  // service.
   SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
-          signin_error_controller();
-  error->AddObserver(this);
-  OnErrorChanged();
+      profiles::GetSigninErrorController(browser_->profile());
+  if (error) {
+    error->AddObserver(this);
+    OnErrorChanged();
+  }
 
   SchedulePaint();
 }
@@ -118,9 +120,9 @@ NewAvatarButton::~NewAvatarButton() {
   g_browser_process->profile_manager()->
       GetProfileInfoCache().RemoveObserver(this);
   SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
-          signin_error_controller();
-  error->RemoveObserver(this);
+      profiles::GetSigninErrorController(browser_->profile());
+  if (error)
+    error->RemoveObserver(this);
 }
 
 void NewAvatarButton::OnPaintText(gfx::Canvas* canvas, PaintButtonMode mode) {
@@ -159,10 +161,9 @@ void NewAvatarButton::OnErrorChanged() {
   gfx::ImageSkia icon;
 
   // If there is an error, show an warning icon.
-  SigninErrorController* error =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())->
-          signin_error_controller();
-  if (error->HasError()) {
+  const SigninErrorController* error =
+      profiles::GetSigninErrorController(browser_->profile());
+  if (error && error->HasError()) {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     icon = *rb->GetImageNamed(IDR_WARNING).ToImageSkia();
   }
