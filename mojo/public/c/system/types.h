@@ -4,15 +4,13 @@
 
 // This file contains types and constants/macros common to different Mojo system
 // APIs.
+//
+// Note: This header should be compilable as C.
 
 #ifndef MOJO_PUBLIC_C_SYSTEM_TYPES_H_
 #define MOJO_PUBLIC_C_SYSTEM_TYPES_H_
 
-// Note: This header should be compilable as C.
-
 #include <stdint.h>
-
-// Types/constants -------------------------------------------------------------
 
 // TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
 // (typically they'll be ignored), not necessarily an error.

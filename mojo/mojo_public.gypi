@@ -27,6 +27,7 @@
       },
       'sources': [
         'public/c/system/core.h',
+        'public/c/system/functions.h',
         'public/c/system/macros.h',
         'public/c/system/system_export.h',
         'public/c/system/types.h',
