@@ -36,88 +36,10 @@
 {
   'includes': [
     'bindings.gypi',
-    '../core/core.gypi',
-    '../modules/modules.gypi',
+    'idl.gypi',
   ],
 
   'variables': {
-    # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
-    #
-    # Interface IDL files / Dependency IDL files
-    # Interface IDL files: generate individual bindings (includes testing)
-    'interface_idl_files': [
-      '<@(static_interface_idl_files)',
-      '<@(generated_interface_idl_files)',
-    ],
-    # Dependency IDL files: don't generate individual bindings, but do process
-    # in IDL dependency computation, and count as build dependencies
-    'dependency_idl_files': [
-      '<@(static_dependency_idl_files)',
-      '<@(generated_dependency_idl_files)',
-    ],
-    # Main interface IDL files (excluding dependencies and testing)
-    # are included as properties on global objects, and in aggregate bindings
-    'main_interface_idl_files': [
-      '<@(core_idl_files)',
-      '<@(modules_idl_files)',
-    ],
-    # Write lists of main IDL files to a file, so that the command lines don't
-    # exceed OS length limits.
-    'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
-    'core_idl_files_list': '<|(core_idl_files_list.tmp <@(core_idl_files))',
-    'modules_idl_files_list': '<|(modules_idl_files_list.tmp <@(modules_idl_files))',
-
-    # Static IDL files / Generated IDL files
-    # Paths need to be passed separately for static and generated files, as
-    # static files are listed in a temporary file (b/c too long for command
-    # line), but generated files must be passed at the command line, as their
-    # paths are not fixed at GYP time, when the temporary file is generated,
-    # because their paths depend on the build directory, which varies.
-    'static_idl_files': [
-      '<@(static_interface_idl_files)',
-      '<@(static_dependency_idl_files)',
-    ],
-    'static_idl_files_list': '<|(static_idl_files_list.tmp <@(static_idl_files))',
-    'generated_idl_files': [
-      '<@(generated_interface_idl_files)',
-      '<@(generated_dependency_idl_files)',
-    ],
-
-    # Static IDL files
-    'static_interface_idl_files': [
-      '<@(core_idl_files)',
-      '<@(webcore_testing_idl_files)',
-      '<@(modules_idl_files)',
-    ],
-    'static_dependency_idl_files': [
-      '<@(core_dependency_idl_files)',
-      '<@(modules_dependency_idl_files)',
-      '<@(modules_testing_dependency_idl_files)',
-    ],
-
-    # Generated IDL files
-    'generated_interface_idl_files': [
-      '<@(generated_webcore_testing_idl_files)',  # interfaces
-    ],
-    'generated_dependency_idl_files': [
-      '<@(generated_global_constructors_idl_files)',  # partial interfaces
-    ],
-
-    'generated_global_constructors_idl_files': [
-      '<(blink_output_dir)/WindowConstructors.idl',
-      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
-      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.idl',
-      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.idl',
-    ],
-
-    'generated_global_constructors_header_files': [
-      '<(blink_output_dir)/WindowConstructors.h',
-      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.h',
-      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.h',
-      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.h',
-    ],
-
-
     # Python source
     'jinja_module_files': [
       # jinja2/__init__.py contains version string, so sufficient for package
@@ -169,6 +91,8 @@
   'targets': [
 ################################################################################
   {
+    # FIXME: Global constructors are used by bindings_core (e.g., V8Window.cpp)
+    # but depend on modules, which violates layering http://crbug.com/358074
     'target_name': 'global_constructors_idls',
     'type': 'none',
     'actions': [{
@@ -207,6 +131,9 @@
   },
 ################################################################################
   {
+    # FIXME: interfaces_info is used by bindings_core, but depend on modules,
+    # which violates layering http://crbug.com/358074
+    # Generate separate interfaces_info_core and interfaces_info_modules
     'target_name': 'interfaces_info',
     'type': 'none',
     'dependencies': [
@@ -358,57 +285,10 @@
   },
 ################################################################################
   {
-    'target_name': 'bindings_core_generated_aggregate',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'generate_aggregate_bindings_core',
-      'inputs': [
-        'scripts/aggregate_generated_bindings.py',
-        '<(core_idl_files_list)',
-      ],
-      'outputs': [
-        '<@(bindings_core_generated_aggregate_files)',
-      ],
-      'action': [
-        'python',
-        'scripts/aggregate_generated_bindings.py',
-        '<(core_idl_files_list)',
-        '--',
-        '<@(bindings_core_generated_aggregate_files)',
-      ],
-      'message': 'Generating aggregate generated core bindings files',
-    }],
-  },
-################################################################################
-  {
-    'target_name': 'bindings_modules_generated_aggregate',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'generate_aggregate_bindings_modules',
-      'inputs': [
-        'scripts/aggregate_generated_bindings.py',
-        '<(modules_idl_files_list)',
-      ],
-      'outputs': [
-        '<@(bindings_modules_generated_aggregate_files)',
-      ],
-      'action': [
-        'python',
-        'scripts/aggregate_generated_bindings.py',
-        '<(modules_idl_files_list)',
-        '--',
-        '<@(bindings_modules_generated_aggregate_files)',
-      ],
-      'message': 'Generating aggregate generated modules bindings files',
-    }],
-  },
-################################################################################
-  {
-    'target_name': 'generated_bindings',
+    'target_name': 'bindings_generated',
     'type': 'none',
     'dependencies': [
-      'bindings_core_generated_aggregate',
-      'bindings_modules_generated_aggregate',
+      # FIXME: split into core and modules http://crbug.com/358074
       'individual_generated_bindings',
     ],
   },

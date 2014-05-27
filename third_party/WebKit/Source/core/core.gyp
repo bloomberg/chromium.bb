@@ -33,7 +33,7 @@
     '../build/win/precompile.gypi',
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
-    '../bindings/bindings.gypi',
+    '../bindings/core/core.gypi',  # core can depend on bindings/core, but not on bindings
     'core.gypi',
   ],
 
@@ -44,6 +44,8 @@
       '../..',
       '..',
       '<(SHARED_INTERMEDIATE_DIR)/blink',
+      # FIXME: Remove this once the bindings script generates qualified
+      # includes correctly: http://crbug.com/377364
       '<(bindings_output_dir)',
     ],
 
@@ -214,7 +216,8 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        '../bindings/generated_bindings.gyp:generated_bindings',
+        # FIXME: should be bindings_core only http://crbug.com/358074
+        '../bindings/generated.gyp:bindings_generated',
         '../platform/platform_generated.gyp:make_platform_generated',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/gin/gin.gyp:gin',
@@ -231,12 +234,11 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/blink',
         '<@(webcore_include_dirs)',
 
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
-        '<(bindings_output_dir)',
+        # http://crbug.com/377364
         '<(bindings_v8_custom_dir)',
         'html',
         'html/shadow',
@@ -244,6 +246,7 @@
         'svg',
       ],
       'sources': [
+        # FIXME: should be bindings_core_v8_files http://crbug.com/358074
         '<@(bindings_v8_files)',
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
@@ -359,8 +362,12 @@
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
-        '../bindings/generated_bindings.gyp:generated_bindings',
         'core_generated.gyp:make_core_generated',
+        # FIXME: split into core and modules http://crbug.com/358074
+        '../bindings/generated.gyp:bindings_generated',
+        '../bindings/core/v8/generated.gyp:bindings_core_generated',
+        # FIXME: don't depend on bindings_modules http://crbug.com/358074
+        '../bindings/modules/v8/generated.gyp:bindings_modules_generated',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',
