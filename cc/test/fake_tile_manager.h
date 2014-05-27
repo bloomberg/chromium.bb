@@ -16,9 +16,6 @@ class FakeTileManager : public TileManager {
  public:
   explicit FakeTileManager(TileManagerClient* client);
   FakeTileManager(TileManagerClient* client, ResourcePool* resource_pool);
-  FakeTileManager(TileManagerClient* client,
-                  ResourcePool* resource_pool,
-                  bool allow_on_demand_raster);
   virtual ~FakeTileManager();
 
   bool HasBeenAssignedMemory(Tile* tile);

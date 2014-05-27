@@ -232,7 +232,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE;
-  virtual void NotifyTileInitialized(const Tile* tile) OVERRIDE;
+  virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
 
   // ScrollbarAnimationControllerClient implementation.
   virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
