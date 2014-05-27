@@ -11,6 +11,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
@@ -21,6 +22,40 @@ using std::max;
 using std::min;
 
 namespace wm {
+namespace {
+
+// Sets the scaling for the transform applied to a layer.  The left, top,
+// right and bottom layers are stretched to the height or width of the
+// center image.
+
+void ScaleWidth(gfx::Size center, ui::Layer* layer, gfx::Transform& transform) {
+  float layer_width = layer->bounds().width() * layer->device_scale_factor();
+  float scale = static_cast<float>(center.width()) / layer_width;
+  transform.Scale(scale, 1.0);
+}
+
+void ScaleHeight(gfx::Size center,
+                 ui::Layer* layer,
+                 gfx::Transform& transform) {
+  float layer_height = layer->bounds().height() * layer->device_scale_factor();
+  float scale = static_cast<float>(center.height()) / layer_height;
+  transform.Scale(1.0, scale);
+}
+
+// Returns the dimensions of |image| if non-NULL or gfx::Size(0, 0) otherwise.
+gfx::Size GetImageSize(const gfx::Image* image) {
+  return image ? gfx::Size(image->ToImageSkia()->width(),
+                           image->ToImageSkia()->height())
+               : gfx::Size();
+}
+
+// Returns true if |layer|'s bounds don't fit within |size|.
+bool LayerExceedsSize(const ui::Layer* layer, const gfx::Size& size) {
+  return layer->bounds().width() > size.width() ||
+         layer->bounds().height() > size.height();
+}
+
+}  // namespace
 
 gfx::RectF ImageGrid::TestAPI::GetTransformedLayerBounds(
     const ui::Layer& layer) {
@@ -53,15 +88,16 @@ void ImageGrid::SetImages(const gfx::Image* top_left_image,
                           const gfx::Image* bottom_left_image,
                           const gfx::Image* bottom_image,
                           const gfx::Image* bottom_right_image) {
-  SetImage(top_left_image, &top_left_layer_, &top_left_painter_);
-  SetImage(top_image, &top_layer_, &top_painter_);
-  SetImage(top_right_image, &top_right_layer_, &top_right_painter_);
-  SetImage(left_image, &left_layer_, &left_painter_);
-  SetImage(center_image, &center_layer_, &center_painter_);
-  SetImage(right_image, &right_layer_, &right_painter_);
-  SetImage(bottom_left_image, &bottom_left_layer_, &bottom_left_painter_);
-  SetImage(bottom_image, &bottom_layer_, &bottom_painter_);
-  SetImage(bottom_right_image, &bottom_right_layer_, &bottom_right_painter_);
+  SetImage(top_left_image, &top_left_layer_, &top_left_painter_, NONE);
+  SetImage(top_image, &top_layer_, &top_painter_, HORIZONTAL);
+  SetImage(top_right_image, &top_right_layer_, &top_right_painter_, NONE);
+  SetImage(left_image, &left_layer_, &left_painter_, VERTICAL);
+  SetImage(center_image, &center_layer_, &center_painter_, NONE);
+  SetImage(right_image, &right_layer_, &right_painter_, VERTICAL);
+  SetImage(bottom_left_image, &bottom_left_layer_, &bottom_left_painter_, NONE);
+  SetImage(bottom_image, &bottom_layer_, &bottom_painter_, HORIZONTAL);
+  SetImage(
+      bottom_right_image, &bottom_right_layer_, &bottom_right_painter_, NONE);
 
   top_image_height_ = GetImageSize(top_image).height();
   bottom_image_height_ = GetImageSize(bottom_image).height();
@@ -233,7 +269,7 @@ void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
 void ImageGrid::ImagePainter::OnPaintLayer(gfx::Canvas* canvas) {
   if (!clip_rect_.IsEmpty())
     canvas->ClipRect(clip_rect_);
-  canvas->DrawImageInt(*(image_->ToImageSkia()), 0, 0);
+  canvas->DrawImageInt(image_, 0, 0);
 }
 
 void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
@@ -245,23 +281,15 @@ base::Closure ImageGrid::ImagePainter::PrepareForLayerBoundsChange() {
   return base::Closure();
 }
 
-// static
-gfx::Size ImageGrid::GetImageSize(const gfx::Image* image) {
-  return image ?
-      gfx::Size(image->ToImageSkia()->width(), image->ToImageSkia()->height()) :
-      gfx::Size();
-}
-
-// static
-bool ImageGrid::LayerExceedsSize(const ui::Layer* layer,
-                                 const gfx::Size& size) {
-  return layer->bounds().width() > size.width() ||
-      layer->bounds().height() > size.height();
-}
-
 void ImageGrid::SetImage(const gfx::Image* image,
                          scoped_ptr<ui::Layer>* layer_ptr,
-                         scoped_ptr<ImagePainter>* painter_ptr) {
+                         scoped_ptr<ImagePainter>* painter_ptr,
+                         ImageType type) {
+  // Minimum width (for HORIZONTAL) or height (for VERTICAL) of the
+  // |image| so that layers are scaled property if the device scale
+  // factor is non integral.
+  const int kMinimumSize = 20;
+
   // Clean out old layers and painters.
   if (layer_ptr->get())
     layer_->Remove(layer_ptr->get());
@@ -272,35 +300,39 @@ void ImageGrid::SetImage(const gfx::Image* image,
   if (!image)
     return;
 
+  gfx::ImageSkia image_skia = image->AsImageSkia();
+  switch (type) {
+    case HORIZONTAL:
+      if (image_skia.width() < kMinimumSize) {
+        image_skia = gfx::ImageSkiaOperations::CreateResizedImage(
+            image_skia,
+            skia::ImageOperations::RESIZE_GOOD,
+            gfx::Size(kMinimumSize, image_skia.height()));
+      }
+      break;
+    case VERTICAL:
+      if (image_skia.height() < kMinimumSize) {
+        image_skia = gfx::ImageSkiaOperations::CreateResizedImage(
+            image_skia,
+            skia::ImageOperations::RESIZE_GOOD,
+            gfx::Size(image_skia.width(), kMinimumSize));
+      }
+      break;
+    case NONE:
+      break;
+  }
+
   // Set up the new layer and painter.
   layer_ptr->reset(new ui::Layer(ui::LAYER_TEXTURED));
 
-  const gfx::Size size = GetImageSize(image);
+  const gfx::Size size = image_skia.size();
   layer_ptr->get()->SetBounds(gfx::Rect(0, 0, size.width(), size.height()));
 
-  painter_ptr->reset(new ImagePainter(image));
+  painter_ptr->reset(new ImagePainter(image_skia));
   layer_ptr->get()->set_delegate(painter_ptr->get());
   layer_ptr->get()->SetFillsBoundsOpaquely(false);
   layer_ptr->get()->SetVisible(true);
   layer_->Add(layer_ptr->get());
-}
-
-void ImageGrid::ScaleWidth(gfx::Size center,
-                           ui::Layer* layer,
-                           gfx::Transform& transform) {
-  int layer_width = ConvertSizeToPixel(layer,
-                                       layer->bounds().size()).width();
-  float scale = static_cast<float>(center.width()) / layer_width;
-  transform.Scale(scale, 1.0);
-}
-
-void ImageGrid::ScaleHeight(gfx::Size center,
-                            ui::Layer* layer,
-                            gfx::Transform& transform) {
-  int layer_height = ConvertSizeToPixel(layer,
-                                       layer->bounds().size()).height();
-  float scale = static_cast<float>(center.height()) / layer_height;
-  transform.Scale(1.0, scale);
 }
 
 }  // namespace wm

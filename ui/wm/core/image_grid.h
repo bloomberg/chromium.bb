@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/wm/wm_export.h"
@@ -128,7 +129,7 @@ class WM_EXPORT ImageGrid {
   // Delegate responsible for painting a specific image on a layer.
   class ImagePainter : public ui::LayerDelegate {
    public:
-    ImagePainter(const gfx::Image* image) : image_(image) {}
+    ImagePainter(const gfx::ImageSkia& image) : image_(image) {}
     virtual ~ImagePainter() {}
 
     // Clips |layer| to |clip_rect|.  Triggers a repaint if the clipping
@@ -143,35 +144,29 @@ class WM_EXPORT ImageGrid {
    private:
     friend class TestAPI;
 
-    const gfx::Image* image_;  // not owned
+    const gfx::ImageSkia image_;
 
     gfx::Rect clip_rect_;
 
     DISALLOW_COPY_AND_ASSIGN(ImagePainter);
   };
 
-  // Returns the dimensions of |image| if non-NULL or gfx::Size(0, 0) otherwise.
-  static gfx::Size GetImageSize(const gfx::Image* image);
-
-  // Returns true if |layer|'s bounds don't fit within |size|.
-  static bool LayerExceedsSize(const ui::Layer* layer, const gfx::Size& size);
+  enum ImageType {
+    HORIZONTAL,
+    VERTICAL,
+    NONE,
+  };
 
   // Sets |layer_ptr| and |painter_ptr| to display |image| and adds the
   // passed-in layer to |layer_|.  If image is NULL resets |layer_ptr| and
   // |painter_ptr| and removes any existing layer from |layer_|.
+  // If |type| is either HORIZONTAL or VERTICAL, it may resize the image to
+  // guarantee that it has minimum size in order for scaling work properly
+  // with fractional device scale factors. crbug.com/376519.
   void SetImage(const gfx::Image* image,
                 scoped_ptr<ui::Layer>* layer_ptr,
-                scoped_ptr<ImagePainter>* painter_ptr);
-
-  // Sets the scaling for the transform applied to a layer.  The left, top,
-  // right and bottom layers are stretched to the height or width of the
-  // center image.
-  void ScaleWidth(gfx::Size center,
-                  ui::Layer* layer,
-                  gfx::Transform& transform);
-  void ScaleHeight(gfx::Size center,
-                   ui::Layer* layer,
-                   gfx::Transform& transform);
+                scoped_ptr<ImagePainter>* painter_ptr,
+                ImageType type);
 
   // Layer that contains all of the image layers.
   scoped_ptr<ui::Layer> layer_;
