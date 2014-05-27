@@ -122,6 +122,13 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     return test::PollingWaitUntil(javascript, "1", tab_contents);
   }
 
+  bool WaitForCallToHangUp(content::WebContents* tab_contents) {
+    // Apprtc will set remoteVideo.style.opacity to 1 when the call comes up.
+    std::string javascript =
+        "window.domAutomationController.send(remoteVideo.style.opacity)";
+    return test::PollingWaitUntil(javascript, "0", tab_contents);
+  }
+
   bool EvalInJavascriptFile(content::WebContents* tab_contents,
                             const base::FilePath& path) {
     std::string javascript;
@@ -150,6 +157,11 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     StartDetectingVideo(tab_contents, "remoteVideo");
     WaitForVideoToPlay(tab_contents);
     return true;
+  }
+
+  bool HangUpApprtcCall(content::WebContents* tab_contents) {
+    // This is the same as clicking the Hangup button in the AppRTC call.
+    return content::ExecuteScript(tab_contents, "onHangup()");
   }
 
   base::FilePath GetSourceDir() {
@@ -231,6 +243,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
   ASSERT_TRUE(DetectRemoteVideoPlaying(left_tab));
   ASSERT_TRUE(DetectRemoteVideoPlaying(right_tab));
+
+  ASSERT_TRUE(HangUpApprtcCall(left_tab));
+
+  ASSERT_TRUE(WaitForCallToHangUp(left_tab));
+  ASSERT_TRUE(WaitForCallToHangUp(right_tab));
 }
 
 #if defined(OS_LINUX)
