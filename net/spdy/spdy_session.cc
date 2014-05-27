@@ -458,8 +458,7 @@ SpdySession::SpdySession(
     TimeFunc time_func,
     const HostPortPair& trusted_spdy_proxy,
     NetLog* net_log)
-    : weak_factory_(this),
-      in_io_loop_(false),
+    : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
       pool_(NULL),
       http_server_properties_(http_server_properties),
@@ -513,7 +512,8 @@ SpdySession::SpdySession(
       hung_interval_(
           base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       trusted_spdy_proxy_(trusted_spdy_proxy),
-      time_func_(time_func) {
+      time_func_(time_func),
+      weak_factory_(this) {
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
   DCHECK(HttpStreamFactory::spdy_enabled());

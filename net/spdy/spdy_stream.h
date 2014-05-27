@@ -488,8 +488,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   const SpdyStreamType type_;
 
-  base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
-
   SpdyStreamId stream_id_;
   const GURL url_;
   const RequestPriority priority_;
@@ -561,6 +559,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // TODO(jgraettinger): Consider removing after crbug.com/35511 is tracked
   // down.
   bool write_handler_guard_;
+
+  base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStream);
 };

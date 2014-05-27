@@ -1798,15 +1798,15 @@ HostResolverImpl::HostResolverImpl(
       proc_params_(proc_params),
       net_log_(net_log),
       default_address_family_(ADDRESS_FAMILY_UNSPECIFIED),
-      weak_ptr_factory_(this),
-      probe_weak_ptr_factory_(this),
       received_dns_config_(false),
       num_dns_failures_(0),
       probe_ipv6_support_(true),
       use_local_ipv6_(false),
       resolved_known_ipv6_hostname_(false),
       additional_resolver_flags_(0),
-      fallback_to_proctask_(true) {
+      fallback_to_proctask_(true),
+      weak_ptr_factory_(this),
+      probe_weak_ptr_factory_(this) {
 
   DCHECK_GE(dispatcher_.num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
 

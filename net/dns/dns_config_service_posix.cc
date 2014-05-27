@@ -202,8 +202,8 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
 class DnsConfigServicePosix::Watcher {
  public:
   explicit Watcher(DnsConfigServicePosix* service)
-      : weak_factory_(this),
-        service_(service) {}
+      : service_(service),
+        weak_factory_(this) {}
   ~Watcher() {}
 
   bool Watch() {
@@ -246,10 +246,11 @@ class DnsConfigServicePosix::Watcher {
     service_->OnHostsChanged(!error);
   }
 
-  base::WeakPtrFactory<Watcher> weak_factory_;
   DnsConfigServicePosix* service_;
   DnsConfigWatcher config_watcher_;
   base::FilePathWatcher hosts_watcher_;
+
+  base::WeakPtrFactory<Watcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };

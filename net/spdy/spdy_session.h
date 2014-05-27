@@ -180,7 +180,6 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
   void Reset();
 
-  base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
   SpdyStreamType type_;
   base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
@@ -188,6 +187,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   RequestPriority priority_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
+
+  base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyStreamRequest);
 };
@@ -931,12 +932,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // or NULL, if the transport is not SSL.
   SSLClientSocket* GetSSLClientSocket() const;
 
-  // Used for posting asynchronous IO tasks.  We use this even though
-  // SpdySession is refcounted because we don't need to keep the SpdySession
-  // alive if the last reference is within a RunnableMethod.  Just revoke the
-  // method.
-  base::WeakPtrFactory<SpdySession> weak_factory_;
-
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
   bool in_io_loop_;
@@ -1132,6 +1127,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   HostPortPair trusted_spdy_proxy_;
 
   TimeFunc time_func_;
+
+  // Used for posting asynchronous IO tasks.  We use this even though
+  // SpdySession is refcounted because we don't need to keep the SpdySession
+  // alive if the last reference is within a RunnableMethod.  Just revoke the
+  // method.
+  base::WeakPtrFactory<SpdySession> weak_factory_;
 };
 
 }  // namespace net

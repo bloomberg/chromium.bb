@@ -27,8 +27,7 @@ namespace net {
 
 SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
                                bool direct)
-    : weak_factory_(this),
-      spdy_session_(spdy_session),
+    : spdy_session_(spdy_session),
       is_reused_(spdy_session_->IsReused()),
       stream_closed_(false),
       closed_stream_status_(ERR_FAILED),
@@ -41,7 +40,8 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       request_body_buf_size_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
-      direct_(direct) {
+      direct_(direct),
+      weak_factory_(this) {
   DCHECK(spdy_session_.get());
 }
 

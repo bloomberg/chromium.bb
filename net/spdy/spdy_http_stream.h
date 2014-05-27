@@ -109,8 +109,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool DoBufferedReadCallback();
   bool ShouldWaitForMoreBufferedData() const;
 
-  base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
-
   const base::WeakPtr<SpdySession> spdy_session_;
   bool is_reused_;
   SpdyStreamRequest stream_request_;
@@ -160,6 +158,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // Is this spdy stream direct to the origin server (or to a proxy).
   bool direct_;
+
+  base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyHttpStream);
 };

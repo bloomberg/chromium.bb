@@ -85,7 +85,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
                        int32 initial_recv_window_size,
                        const BoundNetLog& net_log)
     : type_(type),
-      weak_ptr_factory_(this),
       stream_id_(0),
       url_(url),
       priority_(priority),
@@ -104,7 +103,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       raw_received_bytes_(0),
       send_bytes_(0),
       recv_bytes_(0),
-      write_handler_guard_(false) {
+      write_handler_guard_(false),
+      weak_ptr_factory_(this) {
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||
         type_ == SPDY_PUSH_STREAM);

@@ -45,9 +45,9 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
       write_buffer_len_(0),
       was_ever_used_(false),
       redirect_has_load_timing_info_(false),
-      weak_factory_(this),
       net_log_(BoundNetLog::Make(spdy_stream->net_log().net_log(),
-                                 NetLog::SOURCE_PROXY_CLIENT_SOCKET)) {
+                                 NetLog::SOURCE_PROXY_CLIENT_SOCKET)),
+      weak_factory_(this) {
   request_.method = "CONNECT";
   request_.url = url;
   if (!user_agent.empty())

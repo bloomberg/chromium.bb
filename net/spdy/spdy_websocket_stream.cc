@@ -19,10 +19,10 @@ namespace net {
 
 SpdyWebSocketStream::SpdyWebSocketStream(
     const base::WeakPtr<SpdySession>& spdy_session, Delegate* delegate)
-    : weak_ptr_factory_(this),
-      spdy_session_(spdy_session),
+    : spdy_session_(spdy_session),
       pending_send_data_length_(0),
-      delegate_(delegate) {
+      delegate_(delegate),
+      weak_ptr_factory_(this) {
   DCHECK(spdy_session_.get());
   DCHECK(delegate_);
 }

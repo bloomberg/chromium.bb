@@ -260,10 +260,6 @@ class NET_EXPORT HostResolverImpl
   // Address family to use when the request doesn't specify one.
   AddressFamily default_address_family_;
 
-  base::WeakPtrFactory<HostResolverImpl> weak_ptr_factory_;
-
-  base::WeakPtrFactory<HostResolverImpl> probe_weak_ptr_factory_;
-
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   scoped_ptr<DnsClient> dns_client_;
 
@@ -291,6 +287,10 @@ class NET_EXPORT HostResolverImpl
 
   // Allow fallback to ProcTask if DnsTask fails.
   bool fallback_to_proctask_;
+
+  base::WeakPtrFactory<HostResolverImpl> weak_ptr_factory_;
+
+  base::WeakPtrFactory<HostResolverImpl> probe_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImpl);
 };
