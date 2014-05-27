@@ -417,8 +417,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideNavigatorContentUtilsTo(*m_page, NavigatorContentUtilsClientImpl::create(this));
 
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
-    if (RuntimeEnabledFeatures::deviceOrientationEnabled())
-        DeviceOrientationInspectorAgent::provideTo(*m_page);
+    DeviceOrientationInspectorAgent::provideTo(*m_page);
     provideGeolocationTo(*m_page, m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 

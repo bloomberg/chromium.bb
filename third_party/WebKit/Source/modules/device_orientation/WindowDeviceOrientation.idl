@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=DeviceOrientation,
     ImplementedAs=DOMWindowDeviceOrientation
 ] partial interface Window {
     attribute EventHandler ondeviceorientation;

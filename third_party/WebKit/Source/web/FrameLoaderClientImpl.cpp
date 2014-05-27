@@ -121,12 +121,10 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
         Document* document = m_webFrame->frame()->document();
         if (document) {
             WheelController::from(*document);
+            DeviceMotionController::from(*document);
+            DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
-            if (RuntimeEnabledFeatures::deviceMotionEnabled())
-                DeviceMotionController::from(*document);
-            if (RuntimeEnabledFeatures::deviceOrientationEnabled())
-                DeviceOrientationController::from(*document);
             if (RuntimeEnabledFeatures::screenOrientationEnabled())
                 ScreenOrientationController::from(*document);
             if (RuntimeEnabledFeatures::gamepadEnabled())

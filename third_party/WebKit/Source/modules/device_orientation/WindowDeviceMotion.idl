@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=DeviceMotion,
     ImplementedAs=DOMWindowDeviceMotion
 ] partial interface Window {
     attribute EventHandler ondevicemotion;
