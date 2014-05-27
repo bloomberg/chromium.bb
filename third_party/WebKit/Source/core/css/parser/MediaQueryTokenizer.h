@@ -41,8 +41,10 @@ private:
     String consumeName();
     UChar consumeEscape();
 
-    bool nextTwoCharsAreValidEscape(unsigned offset);
+    bool nextTwoCharsAreValidEscape();
+    bool nextCharsAreNumber(UChar);
     bool nextCharsAreNumber();
+    bool nextCharsAreIdentifier(UChar);
     bool nextCharsAreIdentifier();
     MediaQueryToken blockStart(MediaQueryTokenType);
     MediaQueryToken blockStart(MediaQueryTokenType blockType, MediaQueryTokenType, String);

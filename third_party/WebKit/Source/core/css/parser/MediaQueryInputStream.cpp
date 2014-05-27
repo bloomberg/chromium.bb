@@ -32,7 +32,7 @@ void MediaQueryInputStream::advance(unsigned offset)
 void MediaQueryInputStream::pushBack(UChar cc)
 {
     --m_offset;
-    ASSERT(currentInputChar() == cc);
+    ASSERT(nextInputChar() == cc);
 }
 
 unsigned long long MediaQueryInputStream::getUInt(unsigned start, unsigned end)

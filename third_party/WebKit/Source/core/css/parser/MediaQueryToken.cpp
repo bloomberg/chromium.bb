@@ -84,11 +84,11 @@ String MediaQueryToken::textForUnitTests() const
         return String(" ");
 
     if (m_delimiter) {
-        sprintf(buffer, "%c", m_delimiter);
+        sprintf(buffer, "'%c'", m_delimiter);
         return String(buffer, strlen(buffer));
     }
     if (m_numericValue) {
-        static const unsigned maxUnitBufferLength = 5;
+        static const unsigned maxUnitBufferLength = 6;
         char unitBuffer[maxUnitBufferLength] = {0};
         if (m_unit == CSSPrimitiveValue::CSS_PERCENTAGE)
             sprintf(unitBuffer, "%s", "%");
@@ -96,6 +96,8 @@ String MediaQueryToken::textForUnitTests() const
             sprintf(unitBuffer, "%s", "px");
         else if (m_unit == CSSPrimitiveValue::CSS_EMS)
             sprintf(unitBuffer, "%s", "em");
+        else if (m_unit != CSSPrimitiveValue::CSS_NUMBER)
+            sprintf(unitBuffer, "%s", "other");
         if (m_numericValueType == IntegerValueType)
             sprintf(buffer, "%d%s", static_cast<int>(m_numericValue), unitBuffer);
         else

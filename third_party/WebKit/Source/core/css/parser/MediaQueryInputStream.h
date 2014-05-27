@@ -16,7 +16,7 @@ public:
     MediaQueryInputStream(String input);
 
     UChar peek(unsigned);
-    inline UChar currentInputChar()
+    inline UChar nextInputChar()
     {
         return peek(0);
     }

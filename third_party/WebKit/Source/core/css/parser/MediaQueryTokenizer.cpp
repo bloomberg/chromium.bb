@@ -49,7 +49,7 @@ void MediaQueryTokenizer::reconsume(UChar c)
 
 UChar MediaQueryTokenizer::consume()
 {
-    UChar current = m_input.currentInputChar();
+    UChar current = m_input.nextInputChar();
     m_input.advance();
     return current;
 }
@@ -127,7 +127,7 @@ MediaQueryToken MediaQueryTokenizer::rightBrace(UChar cc)
 
 MediaQueryToken MediaQueryTokenizer::plusOrFullStop(UChar cc)
 {
-    if (nextCharsAreNumber()) {
+    if (nextCharsAreNumber(cc)) {
         reconsume(cc);
         return consumeNumericToken();
     }
@@ -146,11 +146,11 @@ MediaQueryToken MediaQueryTokenizer::comma(UChar cc)
 
 MediaQueryToken MediaQueryTokenizer::hyphenMinus(UChar cc)
 {
-    if (nextCharsAreNumber()) {
+    if (nextCharsAreNumber(cc)) {
         reconsume(cc);
         return consumeNumericToken();
     }
-    if (nextCharsAreIdentifier()) {
+    if (nextCharsAreIdentifier(cc)) {
         reconsume(cc);
         return consumeIdentLikeToken();
     }
@@ -179,7 +179,7 @@ MediaQueryToken MediaQueryTokenizer::semiColon(UChar cc)
 
 MediaQueryToken MediaQueryTokenizer::reverseSolidus(UChar cc)
 {
-    if (twoCharsAreValidEscape(cc, m_input.currentInputChar())) {
+    if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {
         reconsume(cc);
         return consumeIdentLikeToken();
     }
@@ -258,7 +258,7 @@ MediaQueryToken MediaQueryTokenizer::nextToken()
 static int getSign(MediaQueryInputStream& input, unsigned& offset)
 {
     int sign = 1;
-    if (input.currentInputChar() == '+') {
+    if (input.nextInputChar() == '+') {
         ++offset;
     } else if (input.peek(offset) == '-') {
         sign = -1;
@@ -379,9 +379,9 @@ MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoi
             return MediaQueryToken(BadStringToken);
         }
         if (cc == '\\') {
-            if (m_input.currentInputChar() == kEndOfFileMarker)
+            if (m_input.nextInputChar() == kEndOfFileMarker)
                 continue;
-            if (isNewLine(m_input.currentInputChar()))
+            if (isNewLine(m_input.nextInputChar()))
                 consume();
             else
                 output.append(consumeEscape());
@@ -394,7 +394,7 @@ MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoi
 void MediaQueryTokenizer::consumeUntilNonWhitespace()
 {
     // Using HTML space here rather than CSS space since we don't do preprocessing
-    while (isHTMLSpace<UChar>(m_input.currentInputChar()))
+    while (isHTMLSpace<UChar>(m_input.nextInputChar()))
         consume();
 }
 
@@ -417,7 +417,7 @@ bool MediaQueryTokenizer::consumeUntilCommentEndFound()
 
 bool MediaQueryTokenizer::consumeIfNext(UChar character)
 {
-    if (m_input.currentInputChar() == character) {
+    if (m_input.nextInputChar() == character) {
         consume();
         return true;
     }
@@ -436,7 +436,7 @@ String MediaQueryTokenizer::consumeName()
             result.append(cc);
             continue;
         }
-        if (twoCharsAreValidEscape(cc, m_input.currentInputChar())) {
+        if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {
             result.append(consumeEscape());
             continue;
         }
@@ -454,7 +454,7 @@ UChar MediaQueryTokenizer::consumeEscape()
         unsigned consumedHexDigits = 1;
         StringBuilder hexChars;
         hexChars.append(cc);
-        while (consumedHexDigits < 6 && isASCIIHexDigit(m_input.currentInputChar())) {
+        while (consumedHexDigits < 6 && isASCIIHexDigit(m_input.nextInputChar())) {
             cc = consume();
             hexChars.append(cc);
             consumedHexDigits++;
@@ -472,41 +472,56 @@ UChar MediaQueryTokenizer::consumeEscape()
     return cc;
 }
 
-bool MediaQueryTokenizer::nextTwoCharsAreValidEscape(unsigned offset)
+bool MediaQueryTokenizer::nextTwoCharsAreValidEscape()
 {
-    if (m_input.leftChars() < offset + 1)
+    if (m_input.leftChars() < 1)
         return false;
-    return twoCharsAreValidEscape(m_input.peek(offset), m_input.peek(offset + 1));
+    return twoCharsAreValidEscape(m_input.nextInputChar(), m_input.peek(1));
 }
 
 // http://www.w3.org/TR/css3-syntax/#starts-with-a-number
-bool MediaQueryTokenizer::nextCharsAreNumber()
+bool MediaQueryTokenizer::nextCharsAreNumber(UChar first)
 {
-    UChar first = m_input.currentInputChar();
-    UChar second = m_input.peek(1);
+    UChar second = m_input.nextInputChar();
     if (isASCIIDigit(first))
         return true;
     if (first == '+' || first == '-')
-        return ((isASCIIDigit(second)) || (second == '.' && isASCIIDigit(m_input.peek(2))));
+        return ((isASCIIDigit(second)) || (second == '.' && isASCIIDigit(m_input.peek(1))));
     if (first =='.')
         return (isASCIIDigit(second));
     return false;
 }
 
-// http://www.w3.org/TR/css3-syntax/#would-start-an-identifier
-bool MediaQueryTokenizer::nextCharsAreIdentifier()
+bool MediaQueryTokenizer::nextCharsAreNumber()
 {
-    UChar firstChar = m_input.currentInputChar();
-    if (isNameStart(firstChar) || nextTwoCharsAreValidEscape(0))
+    UChar first = consume();
+    bool areNumber = nextCharsAreNumber(first);
+    reconsume(first);
+    return areNumber;
+}
+
+// http://www.w3.org/TR/css3-syntax/#would-start-an-identifier
+bool MediaQueryTokenizer::nextCharsAreIdentifier(UChar first)
+{
+    UChar second = m_input.nextInputChar();
+    if (isNameStart(first) || twoCharsAreValidEscape(first, second))
         return true;
 
-    if (firstChar == '-') {
-        if (isNameStart(m_input.peek(1)))
+    if (first == '-') {
+        if (isNameStart(m_input.nextInputChar()))
             return true;
-        return nextTwoCharsAreValidEscape(1);
+        return nextTwoCharsAreValidEscape();
     }
 
     return false;
+}
+
+bool MediaQueryTokenizer::nextCharsAreIdentifier()
+{
+    UChar first = consume();
+    bool areIdentifier = nextCharsAreIdentifier(first);
+    reconsume(first);
+    return areIdentifier;
 }
 
 } // namespace WebCore

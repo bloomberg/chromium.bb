@@ -35,7 +35,7 @@ TEST(MediaQueryTokenizerTest, Basic)
         { "(max-width: /** *commen*t **/70px)", "(max-width: 70px)" },
         { "(max-width: /** *commen*t **//**/80px)", "(max-width: 80px)" },
         { "(max-width: /*/ **/90px)", "(max-width: 90px)" },
-        { "(max-width: /*/ **/*100px)", "(max-width: *100px)" },
+        { "(max-width: /*/ **/*100px)", "(max-width: '*'100px)" },
         { "(max-width: 110px/*)", "(max-width: 110px" },
         { "(max-width: 120px)/*", "(max-width: 120px)" },
         { "(max-width: 130px)/**", "(max-width: 130px)" },
@@ -48,6 +48,15 @@ TEST(MediaQueryTokenizerTest, Basic)
         { "(max-width: '40px\\\n')", "(max-width: 40px)" },
         { "(max-width: '40\\70\\78')", "(max-width: 40px)" },
         { "(max-width: '40\\\npx')", "(max-width: 40px)" },
+        { "(max-aspect-ratio: 5)", "(max-aspect-ratio: 5)" },
+        { "(max-aspect-ratio: +5)", "(max-aspect-ratio: 5)" },
+        { "(max-aspect-ratio: -5)", "(max-aspect-ratio: -5)" },
+        { "(max-aspect-ratio: -+5)", "(max-aspect-ratio: '-'5)" },
+        { "(max-aspect-ratio: +-5)", "(max-aspect-ratio: '+'-5)" },
+        { "(max-aspect-ratio: +bla5)", "(max-aspect-ratio: '+'bla5)" },
+        { "(max-aspect-ratio: +5bla)", "(max-aspect-ratio: 5other)" },
+        { "(max-aspect-ratio: -bla)", "(max-aspect-ratio: -bla)" },
+        { "(max-aspect-ratio: --bla)", "(max-aspect-ratio: '-'-bla)" },
         { 0, 0 } // Do not remove the terminator line.
     };
 
