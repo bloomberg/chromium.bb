@@ -32,6 +32,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -2382,7 +2383,9 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
       views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser_.get());
 }
 
-void BrowserView::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
+void BrowserView::ShowAvatarBubbleFromAvatarButton(
+    AvatarBubbleMode mode,
+    signin::GAIAServiceType service_type) {
   if (switches::IsNewAvatarMenu()) {
     NewAvatarButton* button = frame_->GetNewAvatarMenuButton();
     if (button) {
@@ -2405,9 +2408,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
           view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
           break;
       }
-
       ProfileChooserView::ShowBubble(
-          view_mode, button, views::BubbleBorder::TOP_RIGHT,
+          view_mode, service_type, button, views::BubbleBorder::TOP_RIGHT,
           views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser());
     }
   } else {

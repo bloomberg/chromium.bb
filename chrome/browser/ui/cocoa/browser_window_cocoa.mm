@@ -20,6 +20,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -704,11 +705,13 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
 }
 
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
-    AvatarBubbleMode mode) {
+    AvatarBubbleMode mode, signin::GAIAServiceType service_type) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
     anchor = [[controller_ toolbarController] wrenchButton];
+  // TODO(mlerman): pass |service_type| to profile_chooser_controller to
+  // implement UMA instrumentation of the menu.
   [controller showAvatarBubble:anchor withMode:mode];
 }
 

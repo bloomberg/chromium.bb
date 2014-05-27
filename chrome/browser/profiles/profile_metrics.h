@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 
 class Profile;
 class ProfileManager;
@@ -98,6 +99,21 @@ class ProfileMetrics {
     NUM_PROFILE_ENROLLMENT_METRICS,
   };
 
+  // Enum for tracking user interactions with the user menu and user manager.
+  // Interactions initiated from the content area are logged into a different
+  // histogram from those that were initiated from the avatar button.
+  // An example of the interaction beginning in the content area is
+  // clicking "Manage Accounts" within account selection on a Google property.
+  enum ProfileDesktopMenu {
+    // User opened the user menu, and clicked lock.
+    PROFILE_DESKTOP_MENU_LOCK = 0,
+    // User opened the user menu, and removed an account.
+    PROFILE_DESKTOP_MENU_REMOVE_ACCT,
+    // User opened the user menu, and started adding an account.
+    PROFILE_DESKTOP_MENU_ADD_ACCT,
+    NUM_PROFILE_DESKTOP_MENU_METRICS,
+  };
+
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
@@ -110,6 +126,8 @@ class ProfileMetrics {
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
   static void LogProfileUpgradeEnrollment(ProfileUpgradeEnrollment metric);
+  static void LogProfileDesktopMenu(ProfileDesktopMenu metric,
+                                    signin::GAIAServiceType gaia_service);
 
   // These functions should only be called on the UI thread because they hook
   // into g_browser_process through a helper function.

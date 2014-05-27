@@ -145,8 +145,8 @@ class TestBrowserWindow : public BrowserWindow {
       GetWebContentsModalDialogHost() OVERRIDE;
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE {}
-  virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode)
-      OVERRIDE {}
+  virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
+      signin::GAIAServiceType service_type) OVERRIDE {}
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
       const autofill::PasswordForm& form,

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -351,7 +352,8 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Close();
   } else if (sender == new_avatar_button()) {
     browser_view()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
+        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+        signin::GAIA_SERVICE_TYPE_NONE);
   }
 }
 

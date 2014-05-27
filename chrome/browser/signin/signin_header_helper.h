@@ -19,12 +19,24 @@ class ProfileIOData;
 namespace signin {
 
 // Profile mode flags.
-enum PROFILE_MODE {
+enum ProfileMode {
   PROFILE_MODE_DEFAULT = 0,
   // Incognito mode disabled by enterprise policy or by parental controls.
   PROFILE_MODE_INCOGNITO_DISABLED = 1 << 0,
   // Adding account disabled in the Android-for-EDU mode.
   PROFILE_MODE_ADD_ACCOUNT_DISABLED = 1 << 1
+};
+
+// The ServiceType specified by GAIA in the response header accompanying the 204
+// response. This indicates the action Chrome is supposed to lead the user to
+// perform.
+enum GAIAServiceType {
+  GAIA_SERVICE_TYPE_NONE = 0,                 // No GAIA response header.
+  GAIA_SERVICE_TYPE_SIGNOUT,                  // Logout all existing sessions.
+  GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO, // Open an incognito tab.
+  GAIA_SERVICE_TYPE_ADDSESSION,               // Add a secondary account.
+  GAIA_SERVICE_TYPE_REAUTH,                   // Re-authenticate an account.
+  GAIA_SERVICE_TYPE_DEFAULT,                  // All other cases.
 };
 
 // Add X-Chrome-Connected header to all Gaia requests from a connected profile,

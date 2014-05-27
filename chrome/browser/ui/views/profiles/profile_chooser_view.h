@@ -10,6 +10,7 @@
 
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -51,6 +52,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
   static void ShowBubble(profiles::BubbleViewMode view_mode,
+                         signin::GAIAServiceType service_type,
                          views::View* anchor_view,
                          views::BubbleBorder::Arrow arrow,
                          views::BubbleBorder::BubbleAlignment border_alignment,
@@ -78,7 +80,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
                      views::BubbleBorder::Arrow arrow,
                      const gfx::Rect& anchor_rect,
                      Browser* browser,
-                     profiles::BubbleViewMode view_mode);
+                     profiles::BubbleViewMode view_mode,
+                     signin::GAIAServiceType service_type);
   virtual ~ProfileChooserView();
 
   // views::BubbleDelegateView:
@@ -180,6 +183,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   views::View* CreateEndPreviewView();
 
+  // Clean-up done after an action was performed in the ProfileChooser.
+  void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
+
   scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
 
@@ -231,6 +237,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // The current tutorial mode.
   profiles::TutorialMode tutorial_mode_;
+
+  // The GAIA service type provided in the response header.
+  signin::GAIAServiceType gaia_service_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

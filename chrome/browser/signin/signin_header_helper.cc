@@ -30,10 +30,26 @@ namespace {
 
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
-const char kGaiaSignoutOptionsIncognito[] = "SIGNOUTOPTIONS_INCOGNITO";
 const char kGaiaIdAttrName[] = "id";
 const char kProfileModeAttrName[] = "mode";
 const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
+
+// Determine the service type that has been passed from GAIA in the header.
+signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
+    const std::string& header_value) {
+  if (header_value == "SIGNOUT")
+    return signin::GAIA_SERVICE_TYPE_SIGNOUT;
+  else if (header_value == "SIGNOUTOPTIONS_INCOGNITO")
+    return signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO;
+  else if (header_value == "ADDSESSION")
+    return signin::GAIA_SERVICE_TYPE_ADDSESSION;
+  else if (header_value == "REAUTH")
+    return signin::GAIA_SERVICE_TYPE_REAUTH;
+  else if (header_value == "DEFAULT")
+    return signin::GAIA_SERVICE_TYPE_DEFAULT;
+  else
+    return signin::GAIA_SERVICE_TYPE_NONE;
+}
 
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
@@ -47,22 +63,28 @@ void ProcessMirrorHeaderUIThread(
   if (!web_contents)
     return;
 
+  signin::GAIAServiceType service_type =
+      GetGAIAServiceTypeFromHeader(header_value);
+
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
-    if (header_value == kGaiaSignoutOptionsIncognito) {
+    if (service_type == signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO) {
       chrome::NewIncognitoWindow(browser);
     } else {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT);
+          BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT,
+          service_type);
     }
   }
 #else  // defined(OS_ANDROID)
-  if (header_value == kGaiaSignoutOptionsIncognito) {
+  if (service_type == signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO) {
     web_contents->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUINativeNewTabURL), content::Referrer(),
         OFF_THE_RECORD, content::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
+    // TODO(mlerman): pass service_type to android logic for UMA metrics
+    // that will eventually be installed there.
     AccountManagementScreenHelper::OpenAccountManagementScreen(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   }

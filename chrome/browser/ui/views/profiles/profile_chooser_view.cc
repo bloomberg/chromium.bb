@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
@@ -432,6 +433,7 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 // static
 void ProfileChooserView::ShowBubble(
     profiles::BubbleViewMode view_mode,
+    signin::GAIAServiceType service_type,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
@@ -441,7 +443,7 @@ void ProfileChooserView::ShowBubble(
     return;
 
   profile_bubble_ = new ProfileChooserView(anchor_view, arrow, anchor_rect,
-                                           browser, view_mode);
+                                           browser, view_mode, service_type);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);
@@ -464,11 +466,13 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        const gfx::Rect& anchor_rect,
                                        Browser* browser,
-                                       profiles::BubbleViewMode view_mode)
+                                       profiles::BubbleViewMode view_mode,
+                                       signin::GAIAServiceType service_type)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       view_mode_(view_mode),
-      tutorial_mode_(profiles::TUTORIAL_MODE_NONE) {
+      tutorial_mode_(profiles::TUTORIAL_MODE_NONE),
+      gaia_service_type_(service_type) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
 
@@ -624,6 +628,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
       profiles::CloseGuestProfileWindows();
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
   } else if (sender == tutorial_ok_button_) {
     // If the user manually dismissed the tutorial, never show it again by
     // setting the number of times shown to the maximum plus 1, so that later we
@@ -708,8 +713,10 @@ void ProfileChooserView::RemoveAccount() {
   MutableProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
       browser_->profile());
-  if (oauth2_token_service)
+  if (oauth2_token_service) {
     oauth2_token_service->RevokeCredentials(account_id_to_remove_);
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT);
+  }
   account_id_to_remove_.clear();
 
   ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
@@ -727,6 +734,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
         avatar_menu_.get());
   } else if (sender == add_account_link_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT);
   } else if (sender == tutorial_learn_more_link_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
         ProfileMetrics::PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE);
@@ -776,6 +784,12 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
     return true;
   }
   return false;
+}
+
+void ProfileChooserView::PostActionPerformed(
+    ProfileMetrics::ProfileDesktopMenu action_performed) {
+  ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
+  gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -99,7 +100,8 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
 
   if (switches::IsNewProfileManagement()) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH);
+        BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
+        signin::GAIA_SERVICE_TYPE_NONE);
   } else {
     chrome::ShowSingletonTab(
         browser,

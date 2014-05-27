@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/avatar_label.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/generated_resources.h"
@@ -105,7 +106,8 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
     return false;
 
   browser_view_->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT);
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
+      signin::GAIA_SERVICE_TYPE_NONE);
   return true;
 }
 

@@ -21232,6 +21232,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.DesktopMenu" enum="ProfileDesktopMenu">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Track user interactions that can be performed in the user menu and user
+    manager. The origin of the action, whether the an interaction in the content
+    area or some other source, is noted in the histogram suffix.
+  </summary>
+</histogram>
+
 <histogram name="Profile.ExtensionSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the extension cookies database.</summary>
@@ -40960,6 +40969,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Canceled"/>
 </enum>
 
+<enum name="ProfileDesktopMenu" type="int">
+  <int value="0" label="Locked In Menu from Button">
+    User opened the user menu, and clicked lock.
+  </int>
+  <int value="1" label="Remove Account in Menu from Button.">
+    User opened the user menu, and removed an account.
+  </int>
+  <int value="2" label="Add Account in Menu from Button">
+    User opened the user menu, and started adding an account.
+  </int>
+</enum>
+
 <enum name="ProfileErrorType" type="int">
   <int value="0" label="History error"/>
   <int value="1" label="Preferences error"/>
@@ -46463,6 +46484,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Prerender.TimeBetweenPrerenderRequests"/>
   <affected-histogram name="Prerender.TimeSinceLastRecentVisit"/>
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Profile.DesktopMenu" separator=".">
+  <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
+  <suffix name="GAIASignout"
+      label="GAIA-initiated interaction indicating a service type of Signout"/>
+  <suffix name="GAIASignoutIncognito"
+      label="GAIA-initiated interaction indicating a service type of Signout
+             and go Incogntio"/>
+  <suffix name="GAIAAddSession"
+      label="GAIA-initiated interaction indicating a service type of Add a
+             Session"/>
+  <suffix name="GAIAReAuth"
+      label="GAIA-initiated interaction indicating a service type of
+             Reauthenticate this user"/>
+  <suffix name="GAIADefault"
+      label="GAIA-initiated interaction indicating the default service type"/>
+  <affected-histogram name="Profile.DesktopMenu"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ProfilePictureDownload" separator=".">

@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -521,7 +522,8 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
     DCHECK(error_controller->HasError());
     if (switches::IsNewProfileManagement()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH);
+          BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
+          signin::GAIA_SERVICE_TYPE_NONE);
     } else {
       url = signin::GetReauthURL(browser->profile(),
                                  error_controller->error_account_id());
@@ -529,7 +531,8 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   } else {
     if (switches::IsNewProfileManagement()) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN);
+          BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+          signin::GAIA_SERVICE_TYPE_NONE);
     } else {
       url = signin::GetPromoURL(signin::SOURCE_SETTINGS, true);
     }

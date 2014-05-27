@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
@@ -293,6 +294,40 @@ void ProfileMetrics::LogProfileUpgradeEnrollment(
     ProfileUpgradeEnrollment metric) {
   UMA_HISTOGRAM_ENUMERATION("Profile.UpgradeEnrollment", metric,
                             NUM_PROFILE_ENROLLMENT_METRICS);
+}
+
+void ProfileMetrics::LogProfileDesktopMenu(
+    ProfileDesktopMenu metric,
+    signin::GAIAServiceType gaia_service) {
+  // The first parameter to the histogram needs to be literal, because of the
+  // optimized implementation of |UMA_HISTOGRAM_ENUMERATION|. Do not attempt
+  // to refactor.
+  switch (gaia_service) {
+    case signin::GAIA_SERVICE_TYPE_NONE:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.NonGAIA", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_SIGNOUT:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignout", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_SIGNOUTOPTIONS_INCOGNITO:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignoutIncognito",
+                                metric, NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_ADDSESSION:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAAddSession", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_REAUTH:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAReAuth", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_DEFAULT:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIADefault", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
+  }
 }
 
 void ProfileMetrics::LogProfileLaunch(Profile* profile) {
