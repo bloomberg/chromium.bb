@@ -129,21 +129,29 @@ AffineTransform SVGGraphicsElement::animatedLocalTransform() const
 
     // If CSS property was set, use that, otherwise fallback to attribute (if set).
     if (style && style->hasTransform()) {
+        TransformationMatrix transform;
+        float zoom = style->effectiveZoom();
+
+        // CSS transforms operate with pre-scaled lengths. To make this work with SVG
+        // (which applies the zoom factor globally, at the root level) we
+        //
+        //   * pre-scale the bounding box (to bring it into the same space as the other CSS values)
+        //   * invert the zoom factor (to effectively compute the CSS transform under a 1.0 zoom)
+        //
         // Note: objectBoundingBox is an emptyRect for elements like pattern or clipPath.
         // See the "Object bounding box units" section of http://dev.w3.org/csswg/css3-transforms/
-        TransformationMatrix transform;
-        style->applyTransform(transform, renderer()->objectBoundingBox());
+        if (zoom != 1) {
+            FloatRect scaledBBox = renderer()->objectBoundingBox();
+            scaledBBox.scale(zoom);
+            transform.scale(1 / zoom);
+            style->applyTransform(transform, scaledBBox);
+            transform.scale(zoom);
+        } else {
+            style->applyTransform(transform, renderer()->objectBoundingBox());
+        }
 
         // Flatten any 3D transform.
         matrix = transform.toAffineTransform();
-
-        // CSS bakes the zoom factor into lengths, including translation components.
-        // In order to align CSS & SVG transforms, we need to invert this operation.
-        float zoom = style->effectiveZoom();
-        if (zoom != 1) {
-            matrix.setE(matrix.e() / zoom);
-            matrix.setF(matrix.f() / zoom);
-        }
     } else {
         m_transform->currentValue()->concatenate(matrix);
     }
