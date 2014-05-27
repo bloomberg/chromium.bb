@@ -328,12 +328,6 @@ class BuilderStatus(object):
     self.message = message
     self.dashboard_url = dashboard_url
 
-  @staticmethod
-  def GetMissingMessage(builder, version):
-    """Return the MISSING message to use for given |builder| and |version|."""
-    args = {'builder': builder, 'version': version}
-    return BuilderStatus.MISSING_MESSAGE % args
-
   # Helper methods to make checking the status object easy.
 
   def Failed(self):
@@ -601,8 +595,7 @@ class BuildSpecsManager(object):
     try:
       output = ctx.Cat(url).output
     except gs.GSNoSuchKey:
-      msg = BuilderStatus.GetMissingMessage(builder, version)
-      return BuilderStatus(BuilderStatus.STATUS_MISSING, msg)
+      return BuilderStatus(BuilderStatus.STATUS_MISSING, None)
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
 
