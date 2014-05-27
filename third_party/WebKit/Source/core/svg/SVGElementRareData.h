@@ -50,24 +50,6 @@ public:
     {
     }
 
-    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<const SVGElement>, RawPtrWillBeMember<SVGElementRareData> > SVGElementRareDataMap;
-
-    static SVGElementRareDataMap& rareDataMap()
-    {
-#if ENABLE(OILPAN)
-        DEFINE_STATIC_LOCAL(Persistent<SVGElementRareDataMap>, rareDataMap, (new SVGElementRareDataMap));
-        return *rareDataMap;
-#else
-        DEFINE_STATIC_LOCAL(SVGElementRareDataMap, rareDataMap, ());
-        return rareDataMap;
-#endif
-    }
-
-    static SVGElementRareData* rareDataFromMap(const SVGElement* element)
-    {
-        return rareDataMap().get(element);
-    }
-
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
 
@@ -111,31 +93,23 @@ public:
 
     void trace(Visitor* visitor)
     {
+#if ENABLE(OILPAN)
         visitor->trace(m_animatedSMILStyleProperties);
         visitor->trace(m_elementInstances);
+        visitor->trace(m_owner);
         visitor->registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
+#endif
     }
 
     void processWeakMembers(Visitor* visitor)
     {
 #if ENABLE(OILPAN)
-        if (!visitor->isAlive(m_owner)) {
-            // If the owning SVGElement is dead this raraData element will be collected ASAP.
-            // The owning SVGElement will also be automatically removed from the SVGCursorElement's
-            // HashSet so no need to call out and clear anything.
-            // It should not be necessary, but just in case we clear the internal members to
-            // ensure we don't have a stale pointer.
-            m_owner = nullptr;
-            m_cursorElement = nullptr;
-            m_cursorImageValue = nullptr;
-            return;
-        }
         ASSERT(m_owner);
         if (!visitor->isAlive(m_cursorElement))
             m_cursorElement = nullptr;
 
         if (!visitor->isAlive(m_cursorImageValue)) {
-            // If the owning SVGElement is still alive and it is pointing to an SVGCursorElement
+            // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
             // we unregister it when the CSSCursorImageValue dies.
             if (m_cursorElement) {
                 m_cursorElement->removeReferencedElement(m_owner);
@@ -150,7 +124,7 @@ public:
 
 private:
 #if ENABLE(OILPAN)
-    RawPtrWillBeWeakMember<SVGElement> m_owner;
+    Member<SVGElement> m_owner;
 #endif
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;

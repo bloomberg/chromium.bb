@@ -201,12 +201,14 @@ protected:
 
     virtual bool selfHasRelativeLengths() const { return false; }
 
-    SVGElementRareData* svgRareData() const;
     SVGElementRareData* ensureSVGRareData();
 
-    bool hasSVGRareData() const { return m_hasSVGRareData; }
-    void setHasSVGRareData() { m_hasSVGRareData = true; }
-    void clearHasSVGRareData() { m_hasSVGRareData = false; }
+    inline bool hasSVGRareData() const { return m_SVGRareData; }
+    inline SVGElementRareData* svgRareData() const
+    {
+        ASSERT(m_SVGRareData);
+        return m_SVGRareData.get();
+    }
 
     // SVGFitToViewBox::parseAttribute uses reportAttributeParsingError.
     friend class SVGFitToViewBox;
@@ -235,8 +237,8 @@ private:
     bool m_inRelativeLengthClientsInvalidation;
 #endif
     unsigned m_isContextElement : 1;
-    unsigned m_hasSVGRareData : 1;
 
+    OwnPtrWillBeMember<SVGElementRareData> m_SVGRareData;
     RefPtr<SVGAnimatedString> m_className;
 };
 
