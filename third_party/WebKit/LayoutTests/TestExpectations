@@ -155,6 +155,8 @@ crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.sv
 
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 
+crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
+
 # Flaky on Linux ASAN and debug bots.
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
