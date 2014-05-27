@@ -36,7 +36,6 @@ public:
 
         CSSValue* value() const { return m_value.get(); }
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const OVERRIDE FINAL {
-            ASSERT(m_animatableValueCache);
             return m_animatableValueCache.get();
         }
 

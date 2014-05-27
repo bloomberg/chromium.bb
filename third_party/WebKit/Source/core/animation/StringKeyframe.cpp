@@ -7,6 +7,7 @@
 
 #include "core/animation/css/CSSAnimations.h"
 #include "core/animation/interpolation/DefaultStyleInterpolation.h"
+#include "core/animation/interpolation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include "core/animation/interpolation/LengthStyleInterpolation.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -113,12 +114,15 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         break;
     }
 
+    if (DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*fromCSSValue) || DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*toCSSValue))
+        return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+
     // FIXME: Remove the use of AnimatableValues, RenderStyles and Elements here.
     // FIXME: Remove this cache
     if (!m_animatableValueCache)
-        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue);
+        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(*element, property, *fromCSSValue);
 
-    RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue);
+    RefPtrWillBeRawPtr<AnimatableValue> to = StyleResolver::createAnimatableValueSnapshot(*element, property, *toCSSValue);
     toStringPropertySpecificKeyframe(end)->m_animatableValueCache = to;
 
     return LegacyStyleInterpolation::create(m_animatableValueCache.get(), to.release(), property);

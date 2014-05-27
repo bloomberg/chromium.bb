@@ -191,6 +191,7 @@ public:
             || m_primitiveUnitType == CSS_REMS
             || m_primitiveUnitType == CSS_CHS;
     }
+    bool isViewportPercentageLength() const { return isViewportPercentageLength(static_cast<UnitType>(m_primitiveUnitType)); }
     static bool isViewportPercentageLength(UnitType type) { return type >= CSS_VW && type <= CSS_VMAX; }
     static bool isLength(UnitType type)
     {

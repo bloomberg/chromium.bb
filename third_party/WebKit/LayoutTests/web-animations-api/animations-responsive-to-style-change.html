@@ -13,7 +13,7 @@ var container = document.getElementById('container');
 test(function() {
     element.style.fontSize = '10px';
     container.style.width = '1000px';
-    var player = element.animate([{left: 'calc(100px + 80%)', offset: 0}, {left: '10em', offset: 1}], 10);
+    var player = element.animate([{left: 'calc(100px + 80%)'}, {left: '10em'}], 10);
     player.pause();
     player.currentTime = 5;
     assert_equals(getComputedStyle(element).left, '500px');
@@ -25,7 +25,7 @@ test(function() {
 
 test(function() {
     container.style.width = '1000px';
-    var player = element.animate([{paddingTop: '30%', offset: 0}, {paddingTop: '50%', offset: 1}], 10);
+    var player = element.animate([{paddingTop: '30%'}, {paddingTop: '50%'}], 10);
     player.pause();
     player.currentTime = 5;
     container.style.width = '700px';
@@ -34,7 +34,7 @@ test(function() {
 
 test(function() {
     element.style.fontSize = '1px';
-    var player = element.animate([{lineHeight: '9', offset: 0}, {lineHeight: '13', offset: 1}], 10);
+    var player = element.animate([{lineHeight: '9'}, {lineHeight: '13'}], 10);
     player.pause();
     player.currentTime = 2.5;
     element.style.fontSize = '7px';

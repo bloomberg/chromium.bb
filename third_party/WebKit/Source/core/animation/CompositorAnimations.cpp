@@ -143,7 +143,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         ASSERT(frames.size() >= 2);
         for (size_t i = 0; i < frames.size(); ++i) {
             const Keyframe::PropertySpecificKeyframe *frame = frames[i].get();
-            if (frame->composite() != AnimationEffect::CompositeReplace)
+            // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
+            if (frame->composite() != AnimationEffect::CompositeReplace || !frame->getAnimatableValue())
                 return false;
 
             switch (*it) {

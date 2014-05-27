@@ -752,15 +752,23 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue* value)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value)
 {
-    // We use a fresh RenderStyle here because certain values (eg. background-position) won't always completely replace the previously applied property.
-    RefPtr<RenderStyle> style = element.renderStyle() ? RenderStyle::clone(element.renderStyle()) : RenderStyle::create();
+    RefPtr<RenderStyle> style;
+    if (element.renderStyle())
+        style = RenderStyle::clone(element.renderStyle());
+    else
+        style = RenderStyle::create();
+    return createAnimatableValueSnapshot(element, property, value, *style);
+}
+
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value, RenderStyle& style)
+{
     StyleResolverState state(element.document(), &element);
-    state.setStyle(style.get());
+    state.setStyle(&style);
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
-    StyleBuilder::applyProperty(property, state, value);
-    return CSSAnimatableValueFactory::create(property, *style);
+    StyleBuilder::applyProperty(property, state, &value);
+    return CSSAnimatableValueFactory::create(property, style);
 }
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
