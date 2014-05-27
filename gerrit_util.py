@@ -15,14 +15,33 @@ import logging
 import netrc
 import os
 import re
+import stat
+import sys
 import time
 import urllib
 from cStringIO import StringIO
 
+_netrc_file = '_netrc' if sys.platform.startswith('win') else '.netrc'
+_netrc_file = os.path.join(os.environ['HOME'], _netrc_file)
 try:
-  NETRC = netrc.netrc()
-except (IOError, netrc.NetrcParseError):
+  NETRC = netrc.netrc(_netrc_file)
+except IOError:
+  print >> sys.stderr, 'WARNING: Could not read netrc file %s' % _netrc_file
   NETRC = netrc.netrc(os.devnull)
+except netrc.NetrcParseError as e:
+  _netrc_stat = os.stat(e.filename)
+  if _netrc_stat.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
+    print >> sys.stderr, (
+        'WARNING: netrc file %s cannot be used because its file permissions '
+        'are insecure.  netrc file permissions should be 600.' % _netrc_file)
+  else:
+    print >> sys.stderr, ('ERROR: Cannot use netrc file %s due to a parsing '
+                          'error.' % _netrc_file)
+    raise
+  del _netrc_stat
+  NETRC = netrc.netrc(os.devnull)
+del _netrc_file
+
 LOGGER = logging.getLogger()
 TRY_LIMIT = 5
 
