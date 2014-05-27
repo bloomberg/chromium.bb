@@ -180,7 +180,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // actual origin, which has a plausible alternate protocol mapping.
   CanonicalHostMap canonical_host_to_origin_map_;
   // Contains list of suffixes (for exmaple ".c.youtube.com",
-  // ".googlevideo.com") of canoncial hostnames.
+  // ".googlevideo.com", ".googleusercontent.com") of canoncial hostnames.
   CanonicalSufficList canoncial_suffixes_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;

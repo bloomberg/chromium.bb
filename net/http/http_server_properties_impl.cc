@@ -29,6 +29,7 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       weak_ptr_factory_(this) {
   canoncial_suffixes_.push_back(".c.youtube.com");
   canoncial_suffixes_.push_back(".googlevideo.com");
+  canoncial_suffixes_.push_back(".googleusercontent.com");
 }
 
 HttpServerPropertiesImpl::~HttpServerPropertiesImpl() {
