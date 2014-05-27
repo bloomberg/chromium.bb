@@ -1415,6 +1415,10 @@
               'sources': [
                 'android/linker/linker_jni.cc',
               ],
+              # The crazy linker is never instrumented.
+              'cflags!': [
+                '-finstrument-functions',
+              ],
               'dependencies': [
                 '<(android_ndk_root)/crazy_linker.gyp:crazy_linker',
               ],

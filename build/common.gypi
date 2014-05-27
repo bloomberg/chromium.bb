@@ -3918,7 +3918,9 @@
           }],
           ['order_profiling!=0 and (chromeos==1 or OS=="linux" or OS=="android")', {
             'target_conditions' : [
-              ['_toolset=="target"', {
+              # crazy_linker has an upstream gyp file we can't edit, and we
+              # don't want to instrument it.
+              ['_toolset=="target" and _target_name!="crazy_linker"', {
                 'cflags': [
                   '-finstrument-functions',
                   # Allow mmx intrinsics to inline, so that the
