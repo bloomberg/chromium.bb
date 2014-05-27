@@ -4,7 +4,7 @@
 
 #include "mojo/shell/view_manager_loader.h"
 
-#include "mojo/public/cpp/application/application.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
 
@@ -17,14 +17,13 @@ ViewManagerLoader::ViewManagerLoader() {
 ViewManagerLoader::~ViewManagerLoader() {
 }
 
-void ViewManagerLoader::LoadService(
-    ServiceManager* manager,
-    const GURL& url,
-    ScopedMessagePipeHandle service_provider_handle) {
-  scoped_ptr<Application> app(new Application(service_provider_handle.Pass()));
+void ViewManagerLoader::LoadService(ServiceManager* manager,
+                                    const GURL& url,
+                                    ScopedMessagePipeHandle shell_handle) {
+  scoped_ptr<Application> app(new Application(shell_handle.Pass()));
   if (!root_node_manager_.get()) {
     root_node_manager_.reset(
-        new view_manager::service::RootNodeManager(app->service_provider()));
+        new view_manager::service::RootNodeManager(app->shell()));
   }
   app->AddService<view_manager::service::ViewManagerConnection>(
       root_node_manager_.get());

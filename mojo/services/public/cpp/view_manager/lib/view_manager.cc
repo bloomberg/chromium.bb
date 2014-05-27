@@ -11,8 +11,8 @@
 namespace mojo {
 namespace view_manager {
 
-ViewManager::ViewManager(ServiceProvider* service_provider)
-    : service_provider_(service_provider) {}
+ViewManager::ViewManager(Shell* shell)
+    : shell_(shell) {}
 
 ViewManager::~ViewManager() {
   while (!nodes_.empty()) {

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
@@ -25,8 +25,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     explicit TestAPI(ServiceManager* manager);
     ~TestAPI();
 
-    // Returns a handle to a unique ServiceProvider instance.
-    ScopedMessagePipeHandle GetServiceProviderHandle();
+    // Returns a handle to a unique shell instance.
+    ScopedMessagePipeHandle GetShellHandle();
 
     // Returns true if the shared instance has been created.
     static bool HasCreatedInstance();
@@ -34,10 +34,10 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     bool HasFactoryForURL(const GURL& url) const;
 
    private:
-    class TestServiceProviderConnection;
+    class TestShellConnection;
 
     ServiceManager* manager_;
-    scoped_ptr<TestServiceProviderConnection> service_provider_;
+    scoped_ptr<TestShellConnection> shell_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -58,7 +58,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   static ServiceManager* GetInstance();
 
   // Loads a service if necessary and establishes a new client connection.
-  void ConnectToService(const GURL& url, ScopedMessagePipeHandle client_handle);
+  void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().

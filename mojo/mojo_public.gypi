@@ -364,10 +364,10 @@
       ],
     },
     {
-      'target_name': 'mojo_service_provider_bindings',
+      'target_name': 'mojo_shell_bindings',
       'type': 'static_library',
       'sources': [
-        'public/interfaces/service_provider/service_provider.mojom',
+        'public/interfaces/shell/shell.mojom',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -381,20 +381,20 @@
       ],
     },
     {
-      'target_name': 'mojo_application',
+      'target_name': 'mojo_shell_client',
       'type': 'static_library',
       'sources': [
-        'public/cpp/application/application.h',
-        'public/cpp/application/connect.h',
-        'public/cpp/application/lib/application.cc',
-        'public/cpp/application/lib/service_connector.cc',
-        'public/cpp/application/lib/service_connector.h',
+        'public/cpp/shell/application.h',
+        'public/cpp/shell/connect.h',
+        'public/cpp/shell/lib/application.cc',
+        'public/cpp/shell/lib/service_connector.cc',
+        'public/cpp/shell/lib/service_connector.h',
       ],
       'dependencies': [
-        'mojo_service_provider_bindings',
+        'mojo_shell_bindings',
       ],
       'export_dependent_settings': [
-        'mojo_service_provider_bindings',
+        'mojo_shell_bindings',
       ],
     },
   ],

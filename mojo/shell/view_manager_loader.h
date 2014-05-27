@@ -28,10 +28,9 @@ class ViewManagerLoader : public ServiceLoader {
 
  private:
   // ServiceLoader overrides:
-  virtual void LoadService(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle service_provider_handle) OVERRIDE;
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 

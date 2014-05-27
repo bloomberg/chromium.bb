@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace base {
 class MessageLoop;
@@ -56,10 +56,9 @@ class WebSocketDispatcher;
 struct RequestInfo;
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThread
-    : public IPC::Listener,
-      public IPC::Sender,
-      public NON_EXPORTED_BASE(mojo::ServiceProvider) {
+class CONTENT_EXPORT ChildThread : public IPC::Listener,
+                                   public IPC::Sender,
+                                   public NON_EXPORTED_BASE(mojo::ShellClient) {
  public:
   // Creates the thread.
   ChildThread();
@@ -171,7 +170,7 @@ class CONTENT_EXPORT ChildThread
   virtual void OnChannelError() OVERRIDE;
 
   // mojo::ShellClient implementation:
-  virtual void ConnectToService(
+  virtual void AcceptConnection(
       const mojo::String& service_name,
       mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
 

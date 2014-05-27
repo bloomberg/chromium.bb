@@ -38,10 +38,9 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundServiceLoader
   // to |background_loader_| to do the actual loading.
   // TODO: having this code take a |manager| is fragile (as ServiceManager isn't
   // thread safe).
-  void LoadServiceOnBackgroundThread(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle* service_provider_handle);
+  void LoadServiceOnBackgroundThread(ServiceManager* manager,
+                                     const GURL& url,
+                                     ScopedMessagePipeHandle* shell_handle);
   void OnServiceErrorOnBackgroundThread(ServiceManager* manager,
                                         const GURL& url);
   void ShutdownOnBackgroundThread();

@@ -11,7 +11,7 @@ define([
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',
     'mojo/services/native_viewport/native_viewport.mojom',
-    'mojo/public/interfaces/service_provider/service_provider.mojom',
+    'mojo/public/interfaces/shell/shell.mojom',
 ], function(console,
             monotonicClock,
             timer,
@@ -20,7 +20,7 @@ define([
             gljs,
             threading,
             nativeViewport,
-            service_provider) {
+            shell) {
 
   const VERTEX_SHADER_SOURCE = [
     'uniform mat4 u_mvpMatrix;',
@@ -276,12 +276,11 @@ define([
     return cubeIndices.length;
   }
 
-  function SampleApp(service_provider) {
-    this.service_provider_ = service_provider;
+  function SampleApp(shell) {
+    this.shell_ = shell;
 
     var pipe = new core.createMessagePipe();
-    this.service_provider_.connect('mojo:mojo_native_viewport_service',
-                                   pipe.handle1);
+    this.shell_.connect('mojo:mojo_native_viewport_service', pipe.handle1);
     new connection.Connection(pipe.handle0, NativeViewportClientImpl,
                               nativeViewport.NativeViewportProxy);
   }
@@ -289,8 +288,7 @@ define([
   // have a 'client' object that contains both the sending and receiving bits of
   // the client side of the interface. Since JS is loosely typed, we do not need
   // a separate base class to inherit from to receive callbacks.
-  SampleApp.prototype =
-      Object.create(service_provider.ServiceProviderStub.prototype);
+  SampleApp.prototype = Object.create(shell.ShellClientStub.prototype);
 
 
   function NativeViewportClientImpl(remote) {
@@ -392,7 +390,6 @@ define([
 
 
   return function(handle) {
-    new connection.Connection(
-        handle, SampleApp, service_provider.ServiceProviderProxy);
+    new connection.Connection(handle, SampleApp, shell.ShellProxy);
   };
 });

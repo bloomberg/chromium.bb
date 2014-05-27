@@ -7,7 +7,7 @@
 
 #include "ipc/ipc_platform_file.h"
 #include "mojo/common/channel_init.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace IPC {
 class Message;
@@ -24,21 +24,19 @@ class MojoApplication {
  public:
   // The ShellClient pointer must remain valid for the lifetime of the
   // MojoApplication instance.
-  explicit MojoApplication(mojo::ServiceProvider* service_provider);
+  explicit MojoApplication(mojo::ShellClient* shell_client);
   ~MojoApplication();
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  mojo::ServiceProvider* host_service_provider() {
-    return host_service_provider_.get();
-  }
+  mojo::Shell* shell() { return shell_.get(); }
 
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);
 
   mojo::common::ChannelInit channel_init_;
-  mojo::ServiceProviderPtr host_service_provider_;
-  mojo::ServiceProvider* service_provider_;
+  mojo::ShellPtr shell_;
+  mojo::ShellClient* shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplication);
 };

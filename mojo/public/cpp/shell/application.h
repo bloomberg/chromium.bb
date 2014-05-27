@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_APPLICATION_APPLICATION_H_
-#define MOJO_PUBLIC_APPLICATION_APPLICATION_H_
+#ifndef MOJO_PUBLIC_SHELL_APPLICATION_H_
+#define MOJO_PUBLIC_SHELL_APPLICATION_H_
 
 #include <vector>
 
-#include "mojo/public/cpp/application/connect.h"
-#include "mojo/public/cpp/application/lib/service_connector.h"
+#include "mojo/public/cpp/shell/connect.h"
+#include "mojo/public/cpp/shell/lib/service_connector.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace mojo {
 
-// Utility class for creating ServiceProviders that vend service instances.
+// Utility class for creating ShellClients that vend service instances.
 // To use define a class that implements your specific server api, e.g. FooImpl
 // to implement a service named Foo.
 // That class must subclass an InterfaceImpl specialization.
@@ -40,7 +40,7 @@ namespace mojo {
 //
 // Create an Application instance that collects any service implementations.
 //
-// Application app(service_provider_handle);
+// Application app(shell_handle);
 // app.AddService<FooImpl>();
 //
 // BarContext context;
@@ -49,8 +49,8 @@ namespace mojo {
 //
 class Application : public internal::ServiceConnectorBase::Owner {
  public:
-  explicit Application(ScopedMessagePipeHandle service_provider_handle);
-  explicit Application(MojoHandle service_provider_handle);
+  explicit Application(ScopedMessagePipeHandle shell_handle);
+  explicit Application(MojoHandle shell_handle);
   virtual ~Application();
 
   template <typename Impl, typename Context>
@@ -64,16 +64,15 @@ class Application : public internal::ServiceConnectorBase::Owner {
   }
 
   template <typename Interface>
-  void ConnectTo(const std::string& url,
-                 InterfacePtr<Interface>* ptr) {
-    mojo::ConnectToService(service_provider(), url, ptr);
+  void ConnectTo(const std::string& url, InterfacePtr<Interface>* ptr) {
+    mojo::ConnectTo(shell(), url, ptr);
   }
 
  protected:
-  // ServiceProvider methods.
+  // ShellClient methods.
   // Override this to dispatch to correct service when there's more than one.
   // TODO(davemoore): Augment this with name registration.
-  virtual void ConnectToService(const mojo::String& url,
+  virtual void AcceptConnection(const mojo::String& url,
                                 ScopedMessagePipeHandle client_handle)
       MOJO_OVERRIDE;
 
@@ -91,4 +90,4 @@ class Application : public internal::ServiceConnectorBase::Owner {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_APPLICATION_APPLICATION_H_
+#endif  // MOJO_PUBLIC_SHELL_APPLICATION_H_

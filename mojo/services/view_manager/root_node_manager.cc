@@ -34,12 +34,12 @@ RootNodeManager::Context::Context() {
 RootNodeManager::Context::~Context() {
 }
 
-RootNodeManager::RootNodeManager(ServiceProvider* service_provider)
+RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
       next_server_change_id_(1),
       change_source_(kRootConnection),
       is_processing_delete_node_(false),
-      root_view_manager_(service_provider, this),
+      root_view_manager_(shell, this),
       root_(this, RootNodeId()) {
 }
 

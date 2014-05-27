@@ -25,7 +25,7 @@ class Screen;
 
 namespace mojo {
 
-class ServiceProvider;
+class Shell;
 
 namespace view_manager {
 namespace service {
@@ -35,8 +35,7 @@ class RootNodeManager;
 // RootViewManager binds the root node to an actual display.
 class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
  public:
-  RootViewManager(ServiceProvider* service_provider,
-                  RootNodeManager* root_node);
+  RootViewManager(Shell* shell, RootNodeManager* root_node);
   virtual ~RootViewManager();
 
   // See description above field for details.
@@ -45,7 +44,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
  private:
   void OnCompositorCreated();
 
-  ServiceProvider* service_provider_;
+  Shell* shell_;
   RootNodeManager* root_node_manager_;
 
   GLES2Initializer gles_initializer_;

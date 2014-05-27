@@ -16,7 +16,7 @@
         'mojo_geometry_bindings',
         'mojo_gles2',
         'mojo_native_viewport_bindings',
-        'mojo_application',
+        'mojo_shell_client',
         'mojo_system',
         'mojo_utility',
       ],
@@ -50,7 +50,7 @@
         'mojo_geometry_lib',
         'mojo_gles2',
         'mojo_native_viewport_bindings',
-        'mojo_application',
+        'mojo_shell_client',
         'mojo_system_impl',
       ],
       'sources': [
@@ -80,7 +80,7 @@
         'mojo_geometry_bindings',
         'mojo_gles2',
         'mojo_native_viewport_bindings',
-        'mojo_application',
+        'mojo_shell_client',
         'mojo_system_impl',
       ],
       'defines': [
@@ -180,7 +180,7 @@
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_gles2',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_system_impl'
           ],
           'sources': [
@@ -233,7 +233,7 @@
             'mojo_geometry_lib',
             'mojo_gles2',
             'mojo_launcher_bindings',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_system_impl',
           ],
           'sources': [
@@ -261,7 +261,7 @@
             'mojo_geometry_bindings',
             'mojo_gles2',
             'mojo_view_manager_lib',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_system_impl',
             'mojo_utility',
           ],
@@ -281,7 +281,7 @@
             'mojo_cpp_bindings',
             'mojo_environment_standalone',
             'mojo_echo_bindings',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_system',
             'mojo_utility',
           ],

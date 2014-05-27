@@ -7,13 +7,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/dbus_echo/echo.mojom.h"
 
 #if defined(WIN32)
@@ -31,8 +31,7 @@ namespace examples {
 
 class DBusEchoApp : public Application {
  public:
-  explicit DBusEchoApp(MojoHandle service_provider_handle)
-      : Application(service_provider_handle) {
+  explicit DBusEchoApp(MojoHandle shell_handle) : Application(shell_handle) {
     ConnectTo("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
               &echo_service_);
 
@@ -56,11 +55,11 @@ class DBusEchoApp : public Application {
 }  // namespace mojo
 
 extern "C" DBUS_ECHO_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
+    MojoHandle shell_handle) {
   mojo::Environment env;
   mojo::RunLoop loop;
 
-  mojo::examples::DBusEchoApp app(service_provider_handle);
+  mojo::examples::DBusEchoApp app(shell_handle);
   loop.Run();
   return MOJO_RESULT_OK;
 }

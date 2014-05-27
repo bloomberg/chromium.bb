@@ -30,7 +30,7 @@ MojoApplicationHost::~MojoApplicationHost() {
 }
 
 bool MojoApplicationHost::Init() {
-  DCHECK(!child_service_provider_.get()) << "Already initialized!";
+  DCHECK(!shell_.get()) << "Already initialized!";
 
   mojo::embedder::PlatformChannelPair channel_pair;
 
@@ -43,8 +43,7 @@ bool MojoApplicationHost::Init() {
   // Forward this to the client once we know its process handle.
   client_handle_ = channel_pair.PassClientHandle();
 
-  child_service_provider_.reset(
-      BindToPipe(new ServiceProviderImpl(), message_pipe.Pass()));
+  shell_.reset(BindToPipe(new ShellImpl(), message_pipe.Pass()));
   return true;
 }
 
@@ -60,7 +59,7 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
   return did_activate_;
 }
 
-void MojoApplicationHost::ServiceProviderImpl::ConnectToService(
+void MojoApplicationHost::ShellImpl::Connect(
     const mojo::String& url,
     mojo::ScopedMessagePipeHandle handle) {
   // TODO(darin): Provide something meaningful here.

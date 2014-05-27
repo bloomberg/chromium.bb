@@ -6,8 +6,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -31,9 +31,9 @@ namespace examples {
 
 class SampleApp : public Application {
  public:
-  explicit SampleApp(MojoHandle service_provider_handle)
-      : Application(service_provider_handle) {
-    view_manager_.reset(new view_manager::ViewManager(service_provider()));
+  explicit SampleApp(MojoHandle shell_handle)
+      : Application(shell_handle) {
+    view_manager_.reset(new view_manager::ViewManager(shell()));
     view_manager_->Init();
     view_manager::ViewTreeNode* node1 =
         view_manager::ViewTreeNode::Create(view_manager_.get());
@@ -67,10 +67,10 @@ class SampleApp : public Application {
 }  // namespace mojo
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
+    MojoHandle shell_handle) {
   base::MessageLoop loop;
 
-  mojo::examples::SampleApp app(service_provider_handle);
+  mojo::examples::SampleApp app(shell_handle);
   loop.Run();
   return MOJO_RESULT_OK;
 }

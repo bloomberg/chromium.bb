@@ -8,7 +8,7 @@
 #include "base/process/process_handle.h"
 #include "mojo/common/channel_init.h"
 #include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace IPC {
 class Sender;
@@ -34,29 +34,27 @@ class MojoApplicationHost {
 
   bool did_activate() const { return did_activate_; }
 
-  mojo::ServiceProvider* service_provider() {
-    DCHECK(child_service_provider_.get());
-    return child_service_provider_->client();
+  mojo::ShellClient* shell_client() {
+    DCHECK(shell_.get());
+    return shell_->client();
   }
 
  private:
-  class ServiceProviderImpl
-      : public mojo::InterfaceImpl<mojo::ServiceProvider> {
+  class ShellImpl : public mojo::InterfaceImpl<mojo::Shell> {
    public:
     virtual void OnConnectionError() OVERRIDE {
       // TODO(darin): How should we handle this error?
     }
 
-    // mojo::ServiceProvider methods:
-    virtual void ConnectToService(
-        const mojo::String& url,
-        mojo::ScopedMessagePipeHandle handle) OVERRIDE;
+    // mojo::Shell methods:
+    virtual void Connect(const mojo::String& url,
+                         mojo::ScopedMessagePipeHandle handle) OVERRIDE;
   };
 
   mojo::common::ChannelInit channel_init_;
   mojo::embedder::ScopedPlatformHandle client_handle_;
 
-  scoped_ptr<ServiceProviderImpl> child_service_provider_;
+  scoped_ptr<ShellImpl> shell_;
 
   bool did_activate_;
 

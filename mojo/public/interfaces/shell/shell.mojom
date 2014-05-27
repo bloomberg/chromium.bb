@@ -4,13 +4,15 @@
 
 module mojo {
 
-// ServiceProviders can forward requests to their clients. The relationship
-// is symetrical.
-[Client=ServiceProvider]
-interface ServiceProvider {
+[Client=ShellClient]
+interface Shell {
   // Loads url. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  ConnectToService(string url, handle<message_pipe> client_handle);
+  Connect(string url, handle<message_pipe> client_handle);
+};
+
+interface ShellClient {
+  AcceptConnection(string url, handle<message_pipe> client_handle);
 };
 
 }

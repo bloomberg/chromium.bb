@@ -353,7 +353,7 @@ void ChildThread::OnChannelError() {
   base::MessageLoop::current()->Quit();
 }
 
-void ChildThread::ConnectToService(
+void ChildThread::AcceptConnection(
     const mojo::String& service_name,
     mojo::ScopedMessagePipeHandle message_pipe) {
   // By default, we don't expect incoming connections.

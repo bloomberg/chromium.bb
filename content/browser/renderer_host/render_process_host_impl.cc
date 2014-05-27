@@ -2074,8 +2074,8 @@ void RenderProcessHostImpl::ConnectTo(
   MaybeActivateMojo();
 
   mojo::AllocationScope scope;
-  mojo_application_host_->service_provider()->ConnectToService(service_name,
-                                                               handle.Pass());
+  mojo_application_host_->shell_client()->AcceptConnection(service_name,
+                                                           handle.Pass());
 }
 
 }  // namespace content

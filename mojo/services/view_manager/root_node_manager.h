@@ -16,7 +16,7 @@
 
 namespace mojo {
 
-class ServiceProvider;
+class Shell;
 
 namespace view_manager {
 namespace service {
@@ -52,7 +52,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  explicit RootNodeManager(ServiceProvider* service_provider);
+  explicit RootNodeManager(Shell* shell);
   virtual ~RootNodeManager();
 
   // Returns the id for the next ViewManagerConnection.

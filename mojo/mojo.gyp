@@ -422,7 +422,7 @@
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
         'mojo_environment_chromium',
-        'mojo_service_provider_bindings',
+        'mojo_shell_bindings',
         'mojo_system_impl',
       ],
       'sources': [
@@ -435,7 +435,7 @@
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_service_provider_bindings',
+        'mojo_shell_bindings',
       ],
     },
     {
@@ -484,7 +484,7 @@
         'mojo_external_service_bindings',
         'mojo_gles2_impl',
         'mojo_service_manager',
-        'mojo_service_provider_bindings',
+        'mojo_shell_bindings',
         'mojo_system_impl',
         'mojo_native_viewport_service',
         'mojo_spy',
@@ -549,7 +549,7 @@
             # These are only necessary as long as we hard code use of ViewManager.
             '../skia/skia.gyp:skia',
             'mojo_gles2',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_view_manager',
             'mojo_view_manager_bindings',
           ],
@@ -606,7 +606,7 @@
         'mojo_environment_chromium',
         'mojo_run_all_unittests',
         'mojo_service_manager',
-        'mojo_application',
+        'mojo_shell_client',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -730,7 +730,7 @@
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_jni_headers',
-            'mojo_service_provider_bindings',
+            'mojo_shell_bindings',
             'mojo_shell_lib',
           ],
           'sources': [
@@ -810,7 +810,7 @@
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_jni_headers',
-            'mojo_service_provider_bindings',
+            'mojo_shell_bindings',
             'mojo_shell_lib',
           ],
           'sources': [
@@ -849,7 +849,7 @@
             '../dbus/dbus.gyp:dbus',
             'mojo_common_lib',
             'mojo_external_service_bindings',
-            'mojo_application',
+            'mojo_shell_client',
             'mojo_system_impl',
           ],
           'sources': [

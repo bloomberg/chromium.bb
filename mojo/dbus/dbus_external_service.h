@@ -8,8 +8,8 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "mojo/common/channel_init.h"
-#include "mojo/public/cpp/application/application.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/cpp/shell/application.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
 
 namespace mojo {
@@ -72,9 +72,8 @@ class DBusExternalService : public DBusExternalServiceBase {
     virtual void OnConnectionError() OVERRIDE {
       service_->Disconnect();
     }
-    virtual void Activate(ScopedMessagePipeHandle service_provider_handle)
-        OVERRIDE {
-      app_.reset(new Application(service_provider_handle.Pass()));
+    virtual void Activate(ScopedMessagePipeHandle shell_handle) OVERRIDE {
+      app_.reset(new Application(shell_handle.Pass()));
       app_->AddService<ServiceImpl>();
     }
    private:

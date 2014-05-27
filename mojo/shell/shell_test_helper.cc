@@ -19,7 +19,7 @@ namespace shell {
 struct ShellTestHelper::State {
   scoped_ptr<Context> context;
   scoped_ptr<ServiceManager::TestAPI> test_api;
-  ScopedMessagePipeHandle service_provider_handle;
+  ScopedMessagePipeHandle shell_handle;
 };
 
 namespace {
@@ -28,28 +28,28 @@ void StartShellOnShellThread(ShellTestHelper::State* state) {
   state->context.reset(new Context);
   state->test_api.reset(
       new ServiceManager::TestAPI(state->context->service_manager()));
-  state->service_provider_handle = state->test_api->GetServiceProviderHandle();
+  state->shell_handle = state->test_api->GetShellHandle();
 }
 
 }  // namespace
 
-class ShellTestHelper::TestServiceProvider : public ServiceProvider {
+class ShellTestHelper::TestShellClient : public ShellClient {
  public:
-  TestServiceProvider() {}
-  virtual ~TestServiceProvider() {}
+  TestShellClient() {}
+  virtual ~TestShellClient() {}
 
-  // ServiceProvider:
-  virtual void ConnectToService(
+  // ShellClient:
+  virtual void AcceptConnection(
       const mojo::String& url,
       ScopedMessagePipeHandle client_handle) OVERRIDE {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestServiceProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestShellClient);
 };
 
 ShellTestHelper::ShellTestHelper()
-    : service_provider_thread_("shell_test_helper"),
+    : shell_thread_("shell_test_helper"),
       state_(NULL) {
   base::CommandLine::Init(0, NULL);
   mojo::shell::InitializeLogging();
@@ -59,7 +59,7 @@ ShellTestHelper::~ShellTestHelper() {
   if (state_) {
     // |state_| contains data created on the background thread. Destroy it
     // there so that there aren't any race conditions.
-    service_provider_thread_.message_loop()->DeleteSoon(FROM_HERE, state_);
+    shell_thread_.message_loop()->DeleteSoon(FROM_HERE, state_);
     state_ = NULL;
   }
 }
@@ -67,23 +67,20 @@ ShellTestHelper::~ShellTestHelper() {
 void ShellTestHelper::Init() {
   DCHECK(!state_);
   state_ = new State;
-  service_provider_thread_.Start();
-  base::MessageLoopProxy* message_loop_proxy =
-      service_provider_thread_.message_loop()->message_loop_proxy();
-  message_loop_proxy->PostTaskAndReply(
+  shell_thread_.Start();
+  shell_thread_.message_loop()->message_loop_proxy()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&StartShellOnShellThread, state_),
-      base::Bind(&ShellTestHelper::OnServiceProviderStarted,
-                 base::Unretained(this)));
+      base::Bind(&ShellTestHelper::OnShellStarted, base::Unretained(this)));
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
 }
 
-void ShellTestHelper::OnServiceProviderStarted() {
+void ShellTestHelper::OnShellStarted() {
   DCHECK(state_);
-  local_service_provider_.reset(new TestServiceProvider);
-  service_provider_.Bind(state_->service_provider_handle.Pass());
-  service_provider_.set_client(local_service_provider_.get());
+  shell_client_.reset(new TestShellClient);
+  shell_.Bind(state_->shell_handle.Pass());
+  shell_.set_client(shell_client_.get());
   run_loop_->Quit();
 }
 

@@ -16,8 +16,8 @@ class BackgroundServiceLoader::BackgroundLoader {
 
   void LoadService(ServiceManager* manager,
                    const GURL& url,
-                   ScopedMessagePipeHandle service_provider_handle) {
-    loader_->LoadService(manager, url, service_provider_handle.Pass());
+                   ScopedMessagePipeHandle shell_handle) {
+    loader_->LoadService(manager, url, shell_handle.Pass());
   }
 
   void OnServiceError(ServiceManager* manager, const GURL& url) {
@@ -80,11 +80,10 @@ void BackgroundServiceLoader::OnServiceError(ServiceManager* manager,
 void BackgroundServiceLoader::LoadServiceOnBackgroundThread(
     ServiceManager* manager,
     const GURL& url,
-    ScopedMessagePipeHandle* service_provider_handle) {
+    ScopedMessagePipeHandle* shell_handle) {
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
-  background_loader_->LoadService(
-      manager, url, service_provider_handle->Pass());
+  background_loader_->LoadService(manager, url, shell_handle->Pass());
 }
 
 void BackgroundServiceLoader::OnServiceErrorOnBackgroundThread(

@@ -15,11 +15,11 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/examples/launcher/launcher.mojom.h"
-#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -266,7 +266,7 @@ class LauncherImpl : public InterfaceImpl<Launcher>,
 }  // namespace mojo
 
 extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle) {
+    MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::i18n::InitializeICU();
@@ -285,7 +285,7 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance(true);
 
-  mojo::Application app(service_provider_handle);
+  mojo::Application app(shell_handle);
   app.AddService<mojo::examples::LauncherImpl>(&app);
 
   loop.Run();
