@@ -120,6 +120,36 @@ public:
         return *this;
     }
 
+#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
+    Length(Length&& length)
+    {
+        memcpy(this, &length, sizeof(Length));
+
+        // Reset |length|'s type to Auto to make sure its destructor
+        // won't call decrementCalculatedRef() as we don't call
+        // incrementCalculatedRef() here.
+        length.m_type = Auto;
+    }
+
+    Length& operator=(Length&& length)
+    {
+        if (this == &length)
+            return *this;
+
+        if (isCalculated())
+            decrementCalculatedRef();
+
+        memcpy(this, &length, sizeof(Length));
+
+        // Reset |length|'s type to Auto to make sure its destructor
+        // won't call decrementCalculatedRef() as we don't call
+        // incrementCalculatedRef() here.
+        length.m_type = Auto;
+
+        return *this;
+    }
+#endif
+
     ~Length()
     {
         if (isCalculated())
