@@ -35,4 +35,22 @@ void URLRequestContextGetter::OnDestruct() const {
   // This is also true if the IO thread is gone.
 }
 
+TrivialURLRequestContextGetter::TrivialURLRequestContextGetter(
+    net::URLRequestContext* context,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
+    : context_(context), main_task_runner_(main_task_runner) {}
+
+TrivialURLRequestContextGetter::~TrivialURLRequestContextGetter() {}
+
+net::URLRequestContext*
+TrivialURLRequestContextGetter::GetURLRequestContext() {
+  return context_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+TrivialURLRequestContextGetter::GetNetworkTaskRunner() const {
+  return main_task_runner_;
+}
+
+
 }  // namespace net

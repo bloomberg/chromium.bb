@@ -150,32 +150,6 @@ BuildURLRequestContext(net::NetLog* net_log) {
   return context.Pass();
 }
 
-class SingleThreadRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  // Since there's only a single thread, there's no need to worry
-  // about when |context_| gets created.
-  SingleThreadRequestContextGetter(
-      net::NetLog* net_log,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
-      : context_(BuildURLRequestContext(net_log)),
-        main_task_runner_(main_task_runner) {}
-
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    return context_.get();
-  }
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetNetworkTaskRunner() const OVERRIDE {
-    return main_task_runner_;
-  }
-
- private:
-  virtual ~SingleThreadRequestContextGetter() {}
-
-  const scoped_ptr<net::URLRequestContext> context_;
-  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-};
-
 // Assuming that the time |server_time| was received from a server,
 // that the request for the server was started on |start_ticks|, and
 // that it ended on |end_ticks|, fills |server_now| with an estimate
@@ -251,15 +225,19 @@ int main(int argc, char* argv[]) {
   net::NetLog net_log;
   PrintingLogObserver printing_log_observer;
   net_log.AddThreadSafeObserver(&printing_log_observer, net::NetLog::LOG_ALL);
-  scoped_refptr<SingleThreadRequestContextGetter> context_getter(
-      new SingleThreadRequestContextGetter(&net_log,
-                                           main_loop.message_loop_proxy()));
 
   QuitDelegate delegate;
   scoped_ptr<net::URLFetcher> fetcher(
       net::URLFetcher::Create(url, net::URLFetcher::HEAD, &delegate));
-  fetcher->SetRequestContext(context_getter.get());
-
+  scoped_ptr<net::URLRequestContext> url_request_context(
+      BuildURLRequestContext(&net_log));
+  fetcher->SetRequestContext(
+      // Since there's only a single thread, there's no need to worry
+      // about when the URLRequestContext gets created.
+      // The URLFetcher will take a reference on the object, and hence
+      // implicitly take ownership.
+      new net::TrivialURLRequestContextGetter(url_request_context.get(),
+                                              main_loop.message_loop_proxy()));
   const base::Time start_time = base::Time::Now();
   const base::TimeTicks start_ticks = base::TimeTicks::Now();
 

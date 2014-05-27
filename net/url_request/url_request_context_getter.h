@@ -53,6 +53,29 @@ struct URLRequestContextGetterTraits {
   }
 };
 
+// For use in shimming a URLRequestContext into a URLRequestContextGetter.
+class NET_EXPORT TrivialURLRequestContextGetter
+    : public URLRequestContextGetter {
+public:
+  TrivialURLRequestContextGetter(
+      net::URLRequestContext* context,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
+
+  // net::URLRequestContextGetter implementation:
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE;
+
+private:
+  virtual ~TrivialURLRequestContextGetter();
+
+  net::URLRequestContext* context_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrivialURLRequestContextGetter);
+};
+
 }  // namespace net
 
 #endif  // NET_URL_REQUEST_URL_REQUEST_CONTEXT_GETTER_H_

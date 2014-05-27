@@ -23,33 +23,6 @@ bool OnIOThread() {
   return content::BrowserThread::CurrentlyOn(content::BrowserThread::IO);
 }
 
-// Shamelessly stolen from net/tools/get_server_time/get_server_time.cc.
-// TODO(ttuttle): Merge them, if possible.
-class TrivialURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  TrivialURLRequestContextGetter(
-      net::URLRequestContext* context,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
-      : context_(context),
-        main_task_runner_(main_task_runner) {}
-
-  // net::URLRequestContextGetter implementation:
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    return context_;
-  }
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetNetworkTaskRunner() const OVERRIDE {
-    return main_task_runner_;
-  }
-
- private:
-  virtual ~TrivialURLRequestContextGetter() {}
-
-  net::URLRequestContext* context_;
-  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-};
-
 }  // namespace
 
 namespace domain_reliability {
@@ -59,7 +32,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string)
     : time_(new ActualTime()),
       url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
-          new TrivialURLRequestContextGetter(
+          new net::TrivialURLRequestContextGetter(
               url_request_context,
               content::BrowserThread::GetMessageLoopProxyForThread(
                   content::BrowserThread::IO)))),
@@ -80,7 +53,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
     scoped_ptr<MockableTime> time)
     : time_(time.Pass()),
       url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
-          new TrivialURLRequestContextGetter(
+          new net::TrivialURLRequestContextGetter(
               url_request_context,
               content::BrowserThread::GetMessageLoopProxyForThread(
                   content::BrowserThread::IO)))),
