@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/examples/content_client/examples_main_delegate.h"
+#include "ui/views_content_client/views_content_main_delegate.h"
 
 #include <string>
 
@@ -13,32 +13,33 @@
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/views/examples/content_client/examples_content_browser_client.h"
+#include "ui/views_content_client/views_content_browser_client.h"
 
 #if defined(OS_WIN)
 #include "base/logging_win.h"
 #endif
 
-namespace views {
-namespace examples {
+namespace ui {
 namespace {
 
 #if defined(OS_WIN)
 // {83FAC8EE-7A0E-4dbb-A3F6-6F500D7CAB1A}
-const GUID kViewsExamplesProviderName =
+const GUID kViewsContentClientProviderName =
     { 0x83fac8ee, 0x7a0e, 0x4dbb,
         { 0xa3, 0xf6, 0x6f, 0x50, 0xd, 0x7c, 0xab, 0x1a } };
 #endif
 
 }  // namespace
 
-ExamplesMainDelegate::ExamplesMainDelegate() {
+ViewsContentMainDelegate::ViewsContentMainDelegate(
+    ViewsContentClient* views_content_client)
+    : views_content_client_(views_content_client) {
 }
 
-ExamplesMainDelegate::~ExamplesMainDelegate() {
+ViewsContentMainDelegate::~ViewsContentMainDelegate() {
 }
 
-bool ExamplesMainDelegate::BasicStartupComplete(int* exit_code) {
+bool ViewsContentMainDelegate::BasicStartupComplete(int* exit_code) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
@@ -50,23 +51,22 @@ bool ExamplesMainDelegate::BasicStartupComplete(int* exit_code) {
   bool success = logging::InitLogging(settings);
   CHECK(success);
 #if defined(OS_WIN)
-  logging::LogEventProvider::Initialize(kViewsExamplesProviderName);
+  logging::LogEventProvider::Initialize(kViewsContentClientProviderName);
 #endif
 
   return false;
 }
 
-void ExamplesMainDelegate::PreSandboxStartup() {
+void ViewsContentMainDelegate::PreSandboxStartup() {
   base::FilePath ui_test_pak_path;
   DCHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 }
 
 content::ContentBrowserClient*
-    ExamplesMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new ExamplesContentBrowserClient);
+    ViewsContentMainDelegate::CreateContentBrowserClient() {
+  browser_client_.reset(new ViewsContentBrowserClient(views_content_client_));
   return browser_client_.get();
 }
 
-}  // namespace examples
-}  // namespace views
+}  // namespace ui
