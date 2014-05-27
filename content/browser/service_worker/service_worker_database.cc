@@ -241,9 +241,7 @@ ServiceWorkerDatabase::ServiceWorkerDatabase(const base::FilePath& path)
       next_avail_registration_id_(0),
       next_avail_resource_id_(0),
       next_avail_version_id_(0),
-      is_disabled_(false),
-      was_corruption_detected_(false),
-      is_initialized_(false) {
+      state_(UNINITIALIZED) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -637,7 +635,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   // Do not try to open a database if we tried and failed once.
-  if (is_disabled_)
+  if (state_ == DISABLED)
     return STATUS_ERROR_FAILED;
   if (IsOpen())
     return STATUS_OK;
@@ -678,7 +676,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
     return status;
   DCHECK_LE(0, db_version);
   if (db_version > 0)
-    is_initialized_ = true;
+    state_ = INITIALIZED;
   return STATUS_OK;
 }
 
@@ -686,7 +684,7 @@ bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
     ServiceWorkerDatabase::Status status) {
   if (status == STATUS_ERROR_NOT_FOUND)
     return true;
-  if (status == STATUS_OK && !is_initialized_)
+  if (status == STATUS_OK && state_ == UNINITIALIZED)
     return true;
   return false;
 }
@@ -925,12 +923,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
     leveldb::WriteBatch* batch) {
   DCHECK(batch);
-  DCHECK(!is_disabled_);
+  DCHECK_NE(DISABLED, state_);
 
-  if (!is_initialized_) {
+  if (state_ == UNINITIALIZED) {
     // Write the database schema version.
     batch->Put(kDatabaseVersionKey, base::Int64ToString(kCurrentSchemaVersion));
-    is_initialized_ = true;
+    state_ = INITIALIZED;
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch);
@@ -958,7 +956,7 @@ void ServiceWorkerDatabase::BumpNextVersionIdIfNeeded(
 }
 
 bool ServiceWorkerDatabase::IsOpen() {
-  return db_.get() != NULL;
+  return db_ != NULL;
 }
 
 void ServiceWorkerDatabase::HandleError(
@@ -967,9 +965,7 @@ void ServiceWorkerDatabase::HandleError(
   // TODO(nhiroki): Add an UMA histogram.
   DLOG(ERROR) << "Failed at: " << from_here.ToString()
               << " with error: " << status.ToString();
-  is_disabled_ = true;
-  if (status.IsCorruption())
-    was_corruption_detected_ = true;
+  state_ = DISABLED;
   db_.reset();
 }
 

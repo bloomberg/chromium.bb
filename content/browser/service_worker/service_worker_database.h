@@ -180,9 +180,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const GURL& origin,
       std::vector<int64>* newly_purgeable_resources);
 
-  bool is_disabled() const { return is_disabled_; }
-  bool was_corruption_detected() const { return was_corruption_detected_; }
-
  private:
   // Opens the database at the |path_|. This is lazily called when the first
   // database API is called. Returns OK if the database is successfully opened.
@@ -276,16 +273,12 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   int64 next_avail_resource_id_;
   int64 next_avail_version_id_;
 
-  // True if a database error has occurred (e.g. cannot read data).
-  // If true, all database accesses will fail.
-  bool is_disabled_;
-
-  // True if a database corruption was detected.
-  bool was_corruption_detected_;
-
-  // True if a database was initialized, that is, the schema version was written
-  // in the database.
-  bool is_initialized_;
+  enum State {
+    UNINITIALIZED,
+    INITIALIZED,
+    DISABLED,
+  };
+  State state_;
 
   base::SequenceChecker sequence_checker_;
 
