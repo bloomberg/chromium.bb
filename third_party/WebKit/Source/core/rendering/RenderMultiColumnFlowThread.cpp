@@ -139,37 +139,33 @@ LayoutSize RenderMultiColumnFlowThread::columnOffset(const LayoutPoint& point) c
 
 void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    // Update the dimensions of our regions before we lay out the flow thread.
-    // FIXME: Eventually this is going to get way more complicated, and we will be destroying regions
-    // instead of trying to keep them around.
-    bool shouldInvalidateRegions = false;
-    for (RenderMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet()) {
-        if (relayoutChildren || columnSet->needsLayout()) {
-            if (!m_inBalancingPass)
-                columnSet->prepareForLayout();
-            shouldInvalidateRegions = true;
-        }
-    }
-
-    if (shouldInvalidateRegions)
-        invalidateRegions();
-
     if (relayoutChildren)
         layoutScope.setChildNeedsLayout(this);
 
-    if (requiresBalancing()) {
-        // At the end of multicol layout, relayoutForPagination() is called unconditionally, but if
-        // no children are to be laid out (e.g. fixed width with layout already being up-to-date),
-        // we want to prevent it from doing any work, so that the column balancing machinery doesn't
-        // kick in and trigger additional unnecessary layout passes. Actually, it's not just a good
-        // idea in general to not waste time on balancing content that hasn't been re-laid out; we
-        // are actually required to guarantee this. The calculation of implicit breaks needs to be
-        // preceded by a proper layout pass, since it's layout that sets up content runs, and the
-        // runs get deleted right after every pass.
-        m_needsColumnHeightsRecalculation = shouldInvalidateRegions || needsLayout();
+    if (!needsLayout()) {
+        // Just before the multicol container (our parent RenderBlockFlow) finishes laying out, it
+        // will call recalculateColumnHeights() on us unconditionally, but we only want that method
+        // to do any work if we actually laid out the flow thread. Otherwise, the balancing
+        // machinery would kick in needlessly, and trigger additional layout passes. Furthermore, we
+        // actually depend on a proper flowthread layout pass in order to do balancing, since it's
+        // flowthread layout that sets up content runs.
+        m_needsColumnHeightsRecalculation = false;
+        return;
     }
 
-    layoutIfNeeded();
+    for (RenderMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet()) {
+        if (!m_inBalancingPass) {
+            // This is the initial layout pass. We need to reset the column height, because contents
+            // typically have changed.
+            columnSet->resetColumnHeight();
+
+            columnSet->setComputedColumnWidthAndCount(columnWidth(), columnCount());
+        }
+    }
+
+    invalidateRegions();
+    m_needsColumnHeightsRecalculation = requiresBalancing();
+    layout();
 }
 
 bool RenderMultiColumnFlowThread::computeColumnCountAndWidth()
@@ -205,6 +201,9 @@ bool RenderMultiColumnFlowThread::computeColumnCountAndWidth()
 
 bool RenderMultiColumnFlowThread::recalculateColumnHeights()
 {
+    // All column sets that needed layout have now been laid out, so we can finally validate them.
+    validateRegions();
+
     if (!m_needsColumnHeightsRecalculation)
         return false;
 
@@ -215,9 +214,13 @@ bool RenderMultiColumnFlowThread::recalculateColumnHeights()
     // columns, unless we have a bug.
     bool needsRelayout = false;
     for (RenderMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
-        if (multicolSet->recalculateColumnHeight(!m_inBalancingPass)) {
+        needsRelayout |= multicolSet->recalculateColumnHeight(m_inBalancingPass ? RenderMultiColumnSet::StretchBySpaceShortage : RenderMultiColumnSet::GuessFromFlowThreadPortion);
+        if (needsRelayout) {
+            // Once a column set gets a new column height, that column set and all successive column
+            // sets need to be laid out over again, since their logical top will be affected by
+            // this, and therefore their column heights may change as well, at least if the multicol
+            // height is constrained.
             multicolSet->setChildNeedsLayout(MarkOnlyThis);
-            needsRelayout = true;
         }
     }
 

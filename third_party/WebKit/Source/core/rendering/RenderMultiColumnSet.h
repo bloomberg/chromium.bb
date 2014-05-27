@@ -52,6 +52,8 @@ namespace WebCore {
 // placed in between the column sets that come before and after the span.
 class RenderMultiColumnSet FINAL : public RenderRegion {
 public:
+    enum BalancedHeightCalculation { GuessFromFlowThreadPortion, StretchBySpaceShortage };
+
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
 
     virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
@@ -64,6 +66,7 @@ public:
     }
 
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
+    RenderMultiColumnSet* previousSiblingMultiColumnSet() const;
 
     LayoutUnit logicalTopInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().y() : flowThreadPortionRect().x(); }
     LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
@@ -95,10 +98,8 @@ public:
     // height.
     void addContentRun(LayoutUnit endOffsetFromFirstPage);
 
-    // (Re-)calculate the column height if it's auto. If 'initial' is set, guess an initial column
-    // height; otherwise, stretch the column height a tad. Return true if column height changed and
-    // another layout pass is required.
-    bool recalculateColumnHeight(bool initial);
+    // (Re-)calculate the column height if it's auto.
+    bool recalculateColumnHeight(BalancedHeightCalculation);
 
     // Record space shortage (the amount of space that would have been enough to prevent some
     // element from being moved to the next column) at a column break. The smallest amount of space
@@ -106,9 +107,8 @@ public:
     // after layout that the columns weren't tall enough.
     void recordSpaceShortage(LayoutUnit spaceShortage);
 
-    virtual void updateLogicalWidth() OVERRIDE;
-
-    void prepareForLayout();
+    // Reset previously calculated column height. Will mark for layout if needed.
+    void resetColumnHeight();
 
     // Expand this set's flow thread portion rectangle to contain all trailing flow thread
     // overflow. Only to be called on the last set.
@@ -117,7 +117,6 @@ public:
 private:
     RenderMultiColumnSet(RenderFlowThread*);
 
-    virtual void layout() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
     virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) OVERRIDE;
@@ -133,10 +132,13 @@ private:
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) OVERRIDE;
 
+    virtual void addOverflowFromChildren() OVERRIDE;
+
     virtual const char* renderName() const OVERRIDE;
 
     void paintColumnRules(PaintInfo&, const LayoutPoint& paintOffset);
 
+    LayoutUnit calculateMaxColumnHeight() const;
     LayoutUnit columnGap() const;
     LayoutRect columnRectAt(unsigned index) const;
     unsigned columnCount() const;
@@ -161,7 +163,7 @@ private:
     // and store the results. This is needed in order to balance the columns.
     void distributeImplicitBreaks();
 
-    LayoutUnit calculateColumnHeight(bool initial) const;
+    LayoutUnit calculateColumnHeight(BalancedHeightCalculation) const;
 
     unsigned m_computedColumnCount; // Used column count (the resulting 'N' from the pseudo-algorithm in the multicol spec)
     LayoutUnit m_computedColumnWidth; // Used column width (the resulting 'W' from the pseudo-algorithm in the multicol spec)
