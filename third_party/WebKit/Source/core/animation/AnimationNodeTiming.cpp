@@ -3,35 +3,35 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/AnimationSourceTiming.h"
+#include "core/animation/AnimationNodeTiming.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationSource.h"
+#include "core/animation/AnimationNode.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<AnimationSourceTiming> AnimationSourceTiming::create(AnimationSource* parent)
+PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNodeTiming::create(AnimationNode* parent)
 {
-    return adoptRefWillBeNoop(new AnimationSourceTiming(parent));
+    return adoptRefWillBeNoop(new AnimationNodeTiming(parent));
 }
 
-AnimationSourceTiming::AnimationSourceTiming(AnimationSource* parent)
+AnimationNodeTiming::AnimationNodeTiming(AnimationNode* parent)
 : m_parent(parent)
 {
 }
 
-double AnimationSourceTiming::delay()
+double AnimationNodeTiming::delay()
 {
     return m_parent->specifiedTiming().startDelay * 1000;
 }
 
-double AnimationSourceTiming::endDelay()
+double AnimationNodeTiming::endDelay()
 {
     return m_parent->specifiedTiming().endDelay * 1000;
 }
 
-String AnimationSourceTiming::fill()
+String AnimationNodeTiming::fill()
 {
     Timing::FillMode fillMode = m_parent->specifiedTiming().fillMode;
     switch (fillMode) {
@@ -50,12 +50,12 @@ String AnimationSourceTiming::fill()
     return "auto";
 }
 
-double AnimationSourceTiming::iterationStart()
+double AnimationNodeTiming::iterationStart()
 {
     return m_parent->specifiedTiming().iterationStart;
 }
 
-double AnimationSourceTiming::iterations()
+double AnimationNodeTiming::iterations()
 {
     return m_parent->specifiedTiming().iterationCount;
 }
@@ -64,7 +64,7 @@ double AnimationSourceTiming::iterations()
 // and bindings/tests/results/V8TestInterface.cpp.
 // FIXME: It might be possible to have 'duration' defined as an attribute in the idl.
 // If possible, fix will be in a follow-up patch.
-void AnimationSourceTiming::getDuration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1)
+void AnimationNodeTiming::getDuration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1)
 {
     if (propertyName != "duration")
         return;
@@ -79,12 +79,12 @@ void AnimationSourceTiming::getDuration(String propertyName, bool& element0Enabl
     return;
 }
 
-double AnimationSourceTiming::playbackRate()
+double AnimationNodeTiming::playbackRate()
 {
     return m_parent->specifiedTiming().playbackRate;
 }
 
-String AnimationSourceTiming::direction()
+String AnimationNodeTiming::direction()
 {
     Timing::PlaybackDirection direction = m_parent->specifiedTiming().direction;
     switch (direction) {
@@ -101,47 +101,47 @@ String AnimationSourceTiming::direction()
     return "normal";
 }
 
-String AnimationSourceTiming::easing()
+String AnimationNodeTiming::easing()
 {
     return m_parent->specifiedTiming().timingFunction->toString();
 }
 
-void AnimationSourceTiming::setDelay(double delay)
+void AnimationNodeTiming::setDelay(double delay)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setStartDelay(timing, delay);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setEndDelay(double endDelay)
+void AnimationNodeTiming::setEndDelay(double endDelay)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setEndDelay(timing, endDelay);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setFill(String fill)
+void AnimationNodeTiming::setFill(String fill)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setFillMode(timing, fill);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setIterationStart(double iterationStart)
+void AnimationNodeTiming::setIterationStart(double iterationStart)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setIterationStart(timing, iterationStart);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setIterations(double iterations)
+void AnimationNodeTiming::setIterations(double iterations)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setIterationCount(timing, iterations);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-bool AnimationSourceTiming::setDuration(String name, double duration)
+bool AnimationNodeTiming::setDuration(String name, double duration)
 {
     if (name != "duration")
         return false;
@@ -151,28 +151,28 @@ bool AnimationSourceTiming::setDuration(String name, double duration)
     return true;
 }
 
-void AnimationSourceTiming::setPlaybackRate(double playbackRate)
+void AnimationNodeTiming::setPlaybackRate(double playbackRate)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setPlaybackRate(timing, playbackRate);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setDirection(String direction)
+void AnimationNodeTiming::setDirection(String direction)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setPlaybackDirection(timing, direction);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::setEasing(String easing)
+void AnimationNodeTiming::setEasing(String easing)
 {
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setTimingFunction(timing, easing);
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationSourceTiming::trace(Visitor* visitor)
+void AnimationNodeTiming::trace(Visitor* visitor)
 {
     visitor->trace(m_parent);
 }

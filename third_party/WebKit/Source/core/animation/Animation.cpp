@@ -89,7 +89,7 @@ PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* element, const Vect
 }
 
 Animation::Animation(Element* target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
-    : AnimationSource(timing, eventDelegate)
+    : AnimationNode(timing, eventDelegate)
     , m_target(target)
     , m_effect(effect)
     , m_sampledEffect(nullptr)
@@ -115,7 +115,7 @@ void Animation::attach(AnimationPlayer* player)
         m_target->ensureActiveAnimations().addPlayer(player);
         m_target->setNeedsAnimationStyleRecalc();
     }
-    AnimationSource::attach(player);
+    AnimationNode::attach(player);
 }
 
 void Animation::detach()
@@ -124,7 +124,7 @@ void Animation::detach()
         m_target->activeAnimations()->removePlayer(player());
     if (m_sampledEffect)
         clearEffects();
-    AnimationSource::detach();
+    AnimationNode::detach();
 }
 
 void Animation::specifiedTimingChanged()
@@ -310,7 +310,7 @@ void Animation::trace(Visitor* visitor)
     visitor->trace(m_target);
     visitor->trace(m_effect);
     visitor->trace(m_sampledEffect);
-    AnimationSource::trace(visitor);
+    AnimationNode::trace(visitor);
 }
 
 } // namespace WebCore

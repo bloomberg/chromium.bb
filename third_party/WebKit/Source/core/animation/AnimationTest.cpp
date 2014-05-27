@@ -8,7 +8,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationHelpers.h"
-#include "core/animation/AnimationSourceTiming.h"
+#include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -227,7 +227,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
 
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationSourceTiming> specified = animation->timing();
+    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
     EXPECT_EQ(2, specified->delay());
     EXPECT_EQ(0.5, specified->endDelay());
     EXPECT_EQ("backwards", specified->fill());
@@ -248,7 +248,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtrWillBeRawPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationSourceTiming> specifiedWithDuration = animationWithDuration->timing();
+    RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedWithDuration = animationWithDuration->timing();
     bool isNumber = false;
     double numberDuration = std::numeric_limits<double>::quiet_NaN();
     bool isString = false;
@@ -265,7 +265,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtrWillBeRawPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationSourceTiming> specifiedNoDuration = animationNoDuration->timing();
+    RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedNoDuration = animationNoDuration->timing();
     isNumber = false;
     numberDuration = std::numeric_limits<double>::quiet_NaN();
     isString = false;
@@ -284,7 +284,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationSourceTiming> specified = animation->timing();
+    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
 
     EXPECT_EQ(0, specified->delay());
     specified->setDelay(2);
@@ -326,7 +326,7 @@ TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
     Dictionary timingInputDictionary = Dictionary(v8::Handle<v8::Value>::Cast(timingInput), m_isolate);
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
 
-    RefPtrWillBeRawPtr<AnimationSourceTiming> specified = animation->timing();
+    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
 
     bool isNumber = false;
     double numberDuration = std::numeric_limits<double>::quiet_NaN();

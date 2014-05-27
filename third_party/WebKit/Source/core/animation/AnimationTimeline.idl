@@ -7,5 +7,5 @@
     WillBeGarbageCollected,
 ] interface AnimationTimeline {
     readonly attribute double? currentTime;
-    AnimationPlayer play(AnimationSource source);
+    AnimationPlayer play(AnimationNode source);
 };

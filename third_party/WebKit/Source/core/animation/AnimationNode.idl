@@ -31,7 +31,7 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
     WillBeGarbageCollected,
-] interface AnimationSource {
+] interface AnimationNode {
     // Playback state
     readonly attribute double? localTime;
     readonly attribute unsigned long? currentIteration;

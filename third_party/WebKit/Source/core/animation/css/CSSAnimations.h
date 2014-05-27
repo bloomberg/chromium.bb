@@ -217,37 +217,37 @@ private:
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
 
-    class AnimationEventDelegate FINAL : public AnimationSource::EventDelegate {
+    class AnimationEventDelegate FINAL : public AnimationNode::EventDelegate {
     public:
         AnimationEventDelegate(Element* target, const AtomicString& name)
             : m_target(target)
             , m_name(name)
-            , m_previousPhase(AnimationSource::PhaseNone)
+            , m_previousPhase(AnimationNode::PhaseNone)
             , m_previousIteration(nullValue())
         {
         }
-        virtual void onEventCondition(const AnimationSource*) OVERRIDE;
+        virtual void onEventCondition(const AnimationNode*) OVERRIDE;
     private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
         Element* m_target;
         const AtomicString m_name;
-        AnimationSource::Phase m_previousPhase;
+        AnimationNode::Phase m_previousPhase;
         double m_previousIteration;
     };
 
-    class TransitionEventDelegate FINAL : public AnimationSource::EventDelegate {
+    class TransitionEventDelegate FINAL : public AnimationNode::EventDelegate {
     public:
         TransitionEventDelegate(Element* target, CSSPropertyID property)
             : m_target(target)
             , m_property(property)
-            , m_previousPhase(AnimationSource::PhaseNone)
+            , m_previousPhase(AnimationNode::PhaseNone)
         {
         }
-        virtual void onEventCondition(const AnimationSource*) OVERRIDE;
+        virtual void onEventCondition(const AnimationNode*) OVERRIDE;
     private:
         Element* m_target;
         const CSSPropertyID m_property;
-        AnimationSource::Phase m_previousPhase;
+        AnimationNode::Phase m_previousPhase;
     };
 };
 

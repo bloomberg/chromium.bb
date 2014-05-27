@@ -8,7 +8,7 @@ PASS document.timeline should not be exposed without experimental web platform f
 This test is expected to fail in LayouTests/webexposed. 
 PASS Timing should not be exposed without experimental web platform features enabled.
 This test is expected to fail in LayouTests/webexposed. 
-PASS AnimationSource should not be exposed without experimental web platform features enabled.
+PASS AnimationNode should not be exposed without experimental web platform features enabled.
 This test is expected to fail in LayouTests/webexposed. 
 Harness: the test ran to completion.
 

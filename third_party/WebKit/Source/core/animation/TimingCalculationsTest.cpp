@@ -45,31 +45,31 @@ TEST(AnimationTimingCalculationsTest, ActiveTime)
 
     // Before Phase
     timing.startDelay = 10;
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 0, AnimationSource::PhaseActive, AnimationSource::PhaseBefore, timing)));
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 0, AnimationSource::PhaseActive, AnimationSource::PhaseBefore, timing)));
-    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBackwards, 0, AnimationSource::PhaseActive, AnimationSource::PhaseBefore, timing));
-    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBoth, 0, AnimationSource::PhaseActive, AnimationSource::PhaseBefore, timing));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 0, AnimationNode::PhaseActive, AnimationNode::PhaseBefore, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 0, AnimationNode::PhaseActive, AnimationNode::PhaseBefore, timing)));
+    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBackwards, 0, AnimationNode::PhaseActive, AnimationNode::PhaseBefore, timing));
+    EXPECT_EQ(0, calculateActiveTime(20, Timing::FillModeBoth, 0, AnimationNode::PhaseActive, AnimationNode::PhaseBefore, timing));
 
     // Active Phase
     timing.startDelay = 10;
     // Active, and parent Before
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, AnimationSource::PhaseBefore, AnimationSource::PhaseActive, timing)));
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 15, AnimationSource::PhaseBefore, AnimationSource::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, AnimationNode::PhaseBefore, AnimationNode::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeForwards, 15, AnimationNode::PhaseBefore, AnimationNode::PhaseActive, timing)));
     // Active, and parent After
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, AnimationSource::PhaseAfter, AnimationSource::PhaseActive, timing)));
-    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeBackwards, 15, AnimationSource::PhaseAfter, AnimationSource::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeNone, 15, AnimationNode::PhaseAfter, AnimationNode::PhaseActive, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(20, Timing::FillModeBackwards, 15, AnimationNode::PhaseAfter, AnimationNode::PhaseActive, timing)));
     // Active, and parent Active
-    EXPECT_EQ(5, calculateActiveTime(20, Timing::FillModeForwards, 15, AnimationSource::PhaseActive, AnimationSource::PhaseActive, timing));
+    EXPECT_EQ(5, calculateActiveTime(20, Timing::FillModeForwards, 15, AnimationNode::PhaseActive, AnimationNode::PhaseActive, timing));
 
     // After Phase
     timing.startDelay = 10;
-    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeForwards, 45, AnimationSource::PhaseActive, AnimationSource::PhaseAfter, timing));
-    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeBoth, 45, AnimationSource::PhaseActive, AnimationSource::PhaseAfter, timing));
-    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeBackwards, 45, AnimationSource::PhaseActive, AnimationSource::PhaseAfter, timing)));
-    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeNone, 45, AnimationSource::PhaseActive, AnimationSource::PhaseAfter, timing)));
+    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeForwards, 45, AnimationNode::PhaseActive, AnimationNode::PhaseAfter, timing));
+    EXPECT_EQ(21, calculateActiveTime(21, Timing::FillModeBoth, 45, AnimationNode::PhaseActive, AnimationNode::PhaseAfter, timing));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeBackwards, 45, AnimationNode::PhaseActive, AnimationNode::PhaseAfter, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(21, Timing::FillModeNone, 45, AnimationNode::PhaseActive, AnimationNode::PhaseAfter, timing)));
 
     // None
-    EXPECT_TRUE(isNull(calculateActiveTime(32, Timing::FillModeNone, nullValue(), AnimationSource::PhaseNone, AnimationSource::PhaseNone, timing)));
+    EXPECT_TRUE(isNull(calculateActiveTime(32, Timing::FillModeNone, nullValue(), AnimationNode::PhaseNone, AnimationNode::PhaseNone, timing)));
 }
 
 TEST(AnimationTimingCalculationsTest, ScaledActiveTime)

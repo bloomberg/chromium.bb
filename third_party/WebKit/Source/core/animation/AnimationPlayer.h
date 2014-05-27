@@ -31,7 +31,7 @@
 #ifndef AnimationPlayer_h
 #define AnimationPlayer_h
 
-#include "core/animation/AnimationSource.h"
+#include "core/animation/AnimationNode.h"
 #include "core/events/EventTarget.h"
 #include "wtf/RefPtr.h"
 
@@ -45,7 +45,7 @@ class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<
 public:
 
     ~AnimationPlayer();
-    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, AnimationSource*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(AnimationTimeline&, AnimationNode*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);
@@ -94,10 +94,10 @@ public:
     void setStartTime(double startTime) { setStartTimeInternal(startTime / 1000); }
     void setStartTimeInternal(double, bool isUpdateFromCompositor = false);
 
-    const AnimationSource* source() const { return m_content.get(); }
-    AnimationSource* source() { return m_content.get(); }
-    AnimationSource* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
-    void setSource(AnimationSource*);
+    const AnimationNode* source() const { return m_content.get(); }
+    AnimationNode* source() { return m_content.get(); }
+    AnimationNode* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
+    void setSource(AnimationNode*);
 
     double timeLag() { return timeLagInternal() * 1000; }
     double timeLagInternal() { return currentTimeWithoutLag() - currentTimeInternal(); }
@@ -150,7 +150,7 @@ public:
     void trace(Visitor*);
 
 private:
-    AnimationPlayer(AnimationTimeline&, AnimationSource*);
+    AnimationPlayer(AnimationTimeline&, AnimationNode*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
     double currentTimeWithoutLag() const;
@@ -165,7 +165,7 @@ private:
 
     SortInfo m_sortInfo;
 
-    RefPtrWillBeMember<AnimationSource> m_content;
+    RefPtrWillBeMember<AnimationNode> m_content;
     RawPtrWillBeMember<AnimationTimeline> m_timeline;
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;

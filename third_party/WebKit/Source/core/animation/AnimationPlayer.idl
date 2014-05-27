@@ -33,7 +33,7 @@
     NoInterfaceObject,
     WillBeGarbageCollected,
 ] interface AnimationPlayer : EventTarget {
-    [RuntimeEnabled=WebAnimationsAPI]          attribute AnimationSource? source;
+    [RuntimeEnabled=WebAnimationsAPI]          attribute AnimationNode? source;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     startTime;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     currentTime;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute double     timeLag;

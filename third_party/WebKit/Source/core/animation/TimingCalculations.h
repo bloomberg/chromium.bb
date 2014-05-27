@@ -31,7 +31,7 @@
 #ifndef TimingCalculations_h
 #define TimingCalculations_h
 
-#include "core/animation/AnimationSource.h"
+#include "core/animation/AnimationNode.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
@@ -45,26 +45,26 @@ static inline double multiplyZeroAlwaysGivesZero(double x, double y)
     return x && y ? x * y : 0;
 }
 
-static inline AnimationSource::Phase calculatePhase(double activeDuration, double localTime, const Timing& specified)
+static inline AnimationNode::Phase calculatePhase(double activeDuration, double localTime, const Timing& specified)
 {
     ASSERT(activeDuration >= 0);
     if (isNull(localTime))
-        return AnimationSource::PhaseNone;
+        return AnimationNode::PhaseNone;
     if (localTime < specified.startDelay)
-        return AnimationSource::PhaseBefore;
+        return AnimationNode::PhaseBefore;
     if (localTime >= specified.startDelay + activeDuration)
-        return AnimationSource::PhaseAfter;
-    return AnimationSource::PhaseActive;
+        return AnimationNode::PhaseAfter;
+    return AnimationNode::PhaseActive;
 }
 
-static inline bool isActiveInParentPhase(AnimationSource::Phase parentPhase, Timing::FillMode fillMode)
+static inline bool isActiveInParentPhase(AnimationNode::Phase parentPhase, Timing::FillMode fillMode)
 {
     switch (parentPhase) {
-    case AnimationSource::PhaseBefore:
+    case AnimationNode::PhaseBefore:
         return fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth;
-    case AnimationSource::PhaseActive:
+    case AnimationNode::PhaseActive:
         return true;
-    case AnimationSource::PhaseAfter:
+    case AnimationNode::PhaseAfter:
         return fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth;
     default:
         ASSERT_NOT_REACHED();
@@ -72,25 +72,25 @@ static inline bool isActiveInParentPhase(AnimationSource::Phase parentPhase, Tim
     }
 }
 
-static inline double calculateActiveTime(double activeDuration, Timing::FillMode fillMode, double localTime, AnimationSource::Phase parentPhase, AnimationSource::Phase phase, const Timing& specified)
+static inline double calculateActiveTime(double activeDuration, Timing::FillMode fillMode, double localTime, AnimationNode::Phase parentPhase, AnimationNode::Phase phase, const Timing& specified)
 {
     ASSERT(activeDuration >= 0);
     ASSERT(phase == calculatePhase(activeDuration, localTime, specified));
 
     switch (phase) {
-    case AnimationSource::PhaseBefore:
+    case AnimationNode::PhaseBefore:
         if (fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth)
             return 0;
         return nullValue();
-    case AnimationSource::PhaseActive:
+    case AnimationNode::PhaseActive:
         if (isActiveInParentPhase(parentPhase, fillMode))
             return localTime - specified.startDelay;
         return nullValue();
-    case AnimationSource::PhaseAfter:
+    case AnimationNode::PhaseAfter:
         if (fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth)
             return activeDuration;
         return nullValue();
-    case AnimationSource::PhaseNone:
+    case AnimationNode::PhaseNone:
         ASSERT(isNull(localTime));
         return nullValue();
     default:

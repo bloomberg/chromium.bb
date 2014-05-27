@@ -44,7 +44,7 @@
 namespace WebCore {
 
 class Document;
-class AnimationSource;
+class AnimationNode;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
 class AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline> {
@@ -66,8 +66,8 @@ public:
     void serviceAnimations(TimingUpdateReason);
 
     // Creates a player attached to this timeline, but without a start time.
-    AnimationPlayer* createAnimationPlayer(AnimationSource*);
-    AnimationPlayer* play(AnimationSource*);
+    AnimationPlayer* createAnimationPlayer(AnimationNode*);
+    AnimationPlayer* play(AnimationNode*);
 
 #if !ENABLE(OILPAN)
     void playerDestroyed(AnimationPlayer* player)

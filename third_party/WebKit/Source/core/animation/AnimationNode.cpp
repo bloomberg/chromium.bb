@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/animation/AnimationSource.h"
+#include "core/animation/AnimationNode.h"
 
+#include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationPlayer.h"
-#include "core/animation/AnimationSourceTiming.h"
 #include "core/animation/TimingCalculations.h"
 
 namespace WebCore {
@@ -50,7 +50,7 @@ Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 
 } // namespace
 
-AnimationSource::AnimationSource(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
+AnimationNode::AnimationNode(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
     : m_parent(nullptr)
     , m_startTime(0)
     , m_player(nullptr)
@@ -63,21 +63,21 @@ AnimationSource::AnimationSource(const Timing& timing, PassOwnPtr<EventDelegate>
     m_timing.assertValid();
 }
 
-double AnimationSource::iterationDuration() const
+double AnimationNode::iterationDuration() const
 {
     double result = std::isnan(m_timing.iterationDuration) ? intrinsicIterationDuration() : m_timing.iterationDuration;
     ASSERT(result >= 0);
     return result;
 }
 
-double AnimationSource::repeatedDuration() const
+double AnimationNode::repeatedDuration() const
 {
     const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_timing.iterationCount);
     ASSERT(result >= 0);
     return result;
 }
 
-double AnimationSource::activeDurationInternal() const
+double AnimationNode::activeDurationInternal() const
 {
     const double result = m_timing.playbackRate
         ? repeatedDuration() / std::abs(m_timing.playbackRate)
@@ -86,7 +86,7 @@ double AnimationSource::activeDurationInternal() const
     return result;
 }
 
-void AnimationSource::updateSpecifiedTiming(const Timing& timing)
+void AnimationNode::updateSpecifiedTiming(const Timing& timing)
 {
     // FIXME: Test whether the timing is actually different?
     m_timing = timing;
@@ -96,7 +96,7 @@ void AnimationSource::updateSpecifiedTiming(const Timing& timing)
     specifiedTimingChanged();
 }
 
-void AnimationSource::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
+void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
 {
     bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
     m_needsUpdate = false;
@@ -109,7 +109,7 @@ void AnimationSource::updateInheritedTime(double inheritedTime, TimingUpdateReas
 
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_timing);
         // FIXME: parentPhase depends on groups being implemented.
-        const AnimationSource::Phase parentPhase = AnimationSource::PhaseActive;
+        const AnimationNode::Phase parentPhase = AnimationNode::PhaseActive;
         const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_timing);
 
         double currentIteration;
@@ -135,7 +135,7 @@ void AnimationSource::updateInheritedTime(double inheritedTime, TimingUpdateReas
             const double localActiveDuration = m_timing.playbackRate ? localRepeatedDuration / std::abs(m_timing.playbackRate) : std::numeric_limits<double>::infinity();
             ASSERT(localActiveDuration >= 0);
             const double localLocalTime = localTime < m_timing.startDelay ? localTime : localActiveDuration + m_timing.startDelay;
-            const AnimationSource::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
+            const AnimationNode::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
             const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
             const double startOffset = m_timing.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
@@ -171,7 +171,7 @@ void AnimationSource::updateInheritedTime(double inheritedTime, TimingUpdateReas
     }
 }
 
-const AnimationSource::CalculatedTiming& AnimationSource::ensureCalculated() const
+const AnimationNode::CalculatedTiming& AnimationNode::ensureCalculated() const
 {
     if (!m_player)
         return m_calculated;
@@ -181,12 +181,12 @@ const AnimationSource::CalculatedTiming& AnimationSource::ensureCalculated() con
     return m_calculated;
 }
 
-PassRefPtrWillBeRawPtr<AnimationSourceTiming> AnimationSource::timing()
+PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNode::timing()
 {
-    return AnimationSourceTiming::create(this);
+    return AnimationNodeTiming::create(this);
 }
 
-void AnimationSource::trace(Visitor* visitor)
+void AnimationNode::trace(Visitor* visitor)
 {
     visitor->trace(m_parent);
     visitor->trace(m_player);

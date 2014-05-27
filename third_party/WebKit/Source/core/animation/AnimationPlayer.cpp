@@ -48,12 +48,12 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(AnimationTimeline& timeline, AnimationSource* content)
+PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(AnimationTimeline& timeline, AnimationNode* content)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayer(timeline, content));
 }
 
-AnimationPlayer::AnimationPlayer(AnimationTimeline& timeline, AnimationSource* content)
+AnimationPlayer::AnimationPlayer(AnimationTimeline& timeline, AnimationNode* content)
     : m_playbackRate(1)
     , m_startTime(nullValue())
     , m_holdTime(nullValue())
@@ -193,7 +193,7 @@ void AnimationPlayer::setStartTimeInternal(double newStartTime, bool isUpdateFro
     }
 }
 
-void AnimationPlayer::setSource(AnimationSource* newSource)
+void AnimationPlayer::setSource(AnimationNode* newSource)
 {
     if (m_content == newSource)
         return;

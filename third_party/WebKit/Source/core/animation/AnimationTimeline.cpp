@@ -69,7 +69,7 @@ AnimationTimeline::~AnimationTimeline()
 #endif
 }
 
-AnimationPlayer* AnimationTimeline::createAnimationPlayer(AnimationSource* child)
+AnimationPlayer* AnimationTimeline::createAnimationPlayer(AnimationNode* child)
 {
     RefPtrWillBeRawPtr<AnimationPlayer> player = AnimationPlayer::create(*this, child);
     AnimationPlayer* result = player.get();
@@ -78,7 +78,7 @@ AnimationPlayer* AnimationTimeline::createAnimationPlayer(AnimationSource* child
     return result;
 }
 
-AnimationPlayer* AnimationTimeline::play(AnimationSource* child)
+AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
 {
     if (!m_document)
         return 0;
@@ -207,9 +207,9 @@ size_t AnimationTimeline::numberOfActiveAnimationsForTesting() const
     // are current or in effect.
     size_t count = 0;
     for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
-        const AnimationSource* animationSource = (*it)->source();
+        const AnimationNode* animationNode = (*it)->source();
         if ((*it)->hasStartTime())
-            count += (animationSource && (animationSource->isCurrent() || animationSource->isInEffect()));
+            count += (animationNode && (animationNode->isCurrent() || animationNode->isInEffect()));
     }
     return count;
 }

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationSourceTiming_h
-#define AnimationSourceTiming_h
+#ifndef AnimationNodeTiming_h
+#define AnimationNodeTiming_h
 
-#include "core/animation/AnimationSource.h"
+#include "core/animation/AnimationNode.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class AnimationSourceTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationSourceTiming> {
+class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming> {
 public:
-    static PassRefPtrWillBeRawPtr<AnimationSourceTiming> create(AnimationSource* parent);
+    static PassRefPtrWillBeRawPtr<AnimationNodeTiming> create(AnimationNode* parent);
     double delay();
     double endDelay();
     String fill();
@@ -37,8 +37,8 @@ public:
     void trace(Visitor*);
 
 private:
-    RefPtrWillBeMember<AnimationSource> m_parent;
-    explicit AnimationSourceTiming(AnimationSource*);
+    RefPtrWillBeMember<AnimationNode> m_parent;
+    explicit AnimationNodeTiming(AnimationNode*);
 };
 
 } // namespace WebCore
