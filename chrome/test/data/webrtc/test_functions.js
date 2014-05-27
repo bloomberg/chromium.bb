@@ -33,6 +33,7 @@ function returnToTest(message) {
  * @return {!Error}
  */
 function failTest(reason) {
-  returnToTest('Test failed: ' + reason);
-  return new Error(reason);
+  var error = new Error(reason);
+  returnToTest('Test failed: ' + error.stack);
+  return error;
 }

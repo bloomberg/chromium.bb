@@ -45,23 +45,17 @@ $ = function(id) {
  * appears in Chrome, which will run either the OK or failed callback as a
  * a result. To see which callback was called, use obtainGetUserMediaResult().
  *
- * @param {string} constraints Defines what to be requested, with mandatory
+ * @param {!object} constraints Defines what to be requested, with mandatory
  *     and optional constraints defined. The contents of this parameter depends
- *     on the WebRTC version. This should be JavaScript code that we eval().
+ *     on the WebRTC version.
  */
 function doGetUserMedia(constraints) {
   if (!getUserMedia) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
-  try {
-    var evaluatedConstraints;
-    eval('evaluatedConstraints = ' + constraints);
-  } catch (exception) {
-    throw failTest('Not valid JavaScript expression: ' + constraints);
-  }
   debug('Requesting doGetUserMedia: constraints: ' + constraints);
-  getUserMedia(evaluatedConstraints,
+  getUserMedia(constraints,
                function(stream) {
                  ensureGotAllExpectedStreams_(stream, constraints);
                  getUserMediaOkCallback_(stream);
@@ -131,19 +125,17 @@ function getLocalStream() {
 
 /**
  * @private
- * @param {MediaStream} stream Media stream from getUserMedia.
- * @param {String} constraints The constraints passed
+ * @param {!MediaStream} stream Media stream from getUserMedia.
+ * @param {!object} constraints The getUserMedia constraints object.
  */
 function ensureGotAllExpectedStreams_(stream, constraints) {
-  var requestedVideo = /video\s*:\s*true/i;
-  if (requestedVideo.test(constraints) && stream.getVideoTracks().length == 0) {
+  if (constraints['video'] && stream.getVideoTracks().length == 0) {
     gRequestWebcamAndMicrophoneResult = 'failed-to-get-video';
     throw ('Requested video, but did not receive a video stream from ' +
            'getUserMedia. Perhaps the machine you are running on ' +
            'does not have a webcam.');
   }
-  var requestedAudio = /audio\s*:\s*true/i;
-  if (requestedAudio.test(constraints) && stream.getAudioTracks().length == 0) {
+  if (constraints['audio'] && stream.getAudioTracks().length == 0) {
     gRequestWebcamAndMicrophoneResult = 'failed-to-get-audio';
     throw ('Requested audio, but did not receive an audio stream ' +
            'from getUserMedia. Perhaps the machine you are running ' +

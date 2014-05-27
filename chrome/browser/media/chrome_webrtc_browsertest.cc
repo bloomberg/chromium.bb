@@ -50,6 +50,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
+  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* left_tab =

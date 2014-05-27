@@ -1,16 +1,8 @@
 /**
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-// This file requires these functions to be defined globally by someone else:
-// function createPeerConnection(stun_server, useRtpDataChannel)
-// function createOffer(peerConnection, constraints, callback)
-// function receiveOffer(peerConnection, offer, constraints, callback)
-// function receiveAnswer(peerConnection, answer, callback)
-
-// Currently these functions are supplied by jsep01_call.js.
 
 /**
  * We need a STUN server for some API calls.
@@ -19,22 +11,22 @@
 var STUN_SERVER = 'stun.l.google.com:19302';
 
 /**
- * This object represents the call.
+ * The one and only peer connection in this page.
  * @private
  */
 var gPeerConnection = null;
-
-/**
- * If true, any created peer connection will use RTP data
- * channels. Otherwise it will use SCTP data channels.
- */
-var gUseRtpDataChannels = true;
 
 /**
  * This stores ICE candidates generated on this side.
  * @private
  */
 var gIceCandidates = [];
+
+/**
+ * Keeps track of whether we have seen crypto information in the SDP.
+ * @private
+ */
+var gHasSeenCryptoInSdp = 'no-crypto-seen';
 
 // Public interface to tests. These are expected to be called with
 // ExecuteJavascript invocations from the browser tests and will return answers
@@ -48,7 +40,7 @@ function preparePeerConnection() {
   if (gPeerConnection != null)
     throw failTest('creating peer connection, but we already have one.');
 
-  gPeerConnection = createPeerConnection(STUN_SERVER, gUseRtpDataChannels);
+  gPeerConnection = createPeerConnection_(STUN_SERVER);
   returnToTest('ok-peerconnection-created');
 }
 
@@ -57,17 +49,18 @@ function preparePeerConnection() {
  *
  * Returns a string on the format ok-(JSON encoded session description).
  *
- * @param {!object} constraints Any createOffer constraints.
+ * @param {!Object} constraints Any createOffer constraints.
  */
 function createLocalOffer(constraints) {
-  if (gPeerConnection == null)
-    throw failTest('Negotiating call, but we have no peer connection.');
+  peerConnection_().createOffer(
+      function(localOffer) {
+        success_('createOffer');
+        setLocalDescription(peerConnection, localOffer);
 
-  // TODO(phoglund): move jsep01.call stuff into this file and remove need
-  // of the createOffer method, etc.
-  createOffer(gPeerConnection, constraints, function(localOffer) {
-    returnToTest('ok-' + JSON.stringify(localOffer));
-  });
+        returnToTest('ok-' + JSON.stringify(localOffer));
+      },
+      function() { failure_('createOffer'); },
+      constraints);
 }
 
 /**
@@ -77,21 +70,29 @@ function createLocalOffer(constraints) {
  *
  * @param {!string} sessionDescJson A JSON-encoded session description of type
  *     'offer'.
- * @param {!object} constraints Any createAnswer constraints.
+ * @param {!Object} constraints Any createAnswer constraints.
  */
 function receiveOfferFromPeer(sessionDescJson, constraints) {
-  if (gPeerConnection == null)
-    throw failTest('Receiving offer, but we have no peer connection.');
-
   offer = parseJson_(sessionDescJson);
   if (!offer.type)
     failTest('Got invalid session description from peer: ' + sessionDescJson);
   if (offer.type != 'offer')
     failTest('Expected to receive offer from peer, got ' + offer.type);
 
-  receiveOffer(gPeerConnection, offer , constraints, function(answer) {
-    returnToTest('ok-' + JSON.stringify(answer));
-  });
+  var sessionDescription = new RTCSessionDescription(offer);
+  peerConnection_().setRemoteDescription(
+      sessionDescription,
+      function() { success_('setRemoteDescription'); },
+      function() { failure_('setRemoteDescription'); });
+
+  peerConnection_().createAnswer(
+      function(answer) {
+        success_('createAnswer');
+        setLocalDescription(peerConnection, answer);
+        returnToTest('ok-' + JSON.stringify(answer));
+      },
+      function() { failure_('createAnswer'); },
+      constraints);
 }
 
 /**
@@ -104,18 +105,20 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
  *     'answer'.
  */
 function receiveAnswerFromPeer(sessionDescJson) {
-  if (gPeerConnection == null)
-    throw failTest('Receiving offer, but we have no peer connection.');
-
   answer = parseJson_(sessionDescJson);
   if (!answer.type)
     failTest('Got invalid session description from peer: ' + sessionDescJson);
   if (answer.type != 'answer')
     failTest('Expected to receive answer from peer, got ' + answer.type);
 
-  receiveAnswer(gPeerConnection, answer, function() {
-    returnToTest('ok-accepted-answer');
-  });
+  var sessionDescription = new RTCSessionDescription(answer);
+  peerConnection_().setRemoteDescription(
+      sessionDescription,
+      function() {
+        success_('setRemoteDescription');
+        returnToTest('ok-accepted-answer');
+      },
+      function() { failure_('setRemoteDescription'); });
 }
 
 /**
@@ -123,10 +126,7 @@ function receiveAnswerFromPeer(sessionDescJson) {
  * the call for this to take effect in the call.
  */
 function addLocalStream() {
-  if (gPeerConnection == null)
-    throw failTest('adding local stream, but we have no peer connection.');
-
-  addLocalStreamToPeerConnection(gPeerConnection);
+  addLocalStreamToPeerConnection(peerConnection_());
   returnToTest('ok-added');
 }
 
@@ -143,10 +143,7 @@ function addLocalStream() {
  *     relative to this directory (e.g. ../pyauto_private/webrtc/file.wav).
  */
 function addAudioFile(url) {
-  if (gPeerConnection == null)
-    throw failTest('adding audio file, but we have no peer connection.');
-
-  loadAudioAndAddToPeerConnection(url, gPeerConnection);
+  loadAudioAndAddToPeerConnection(url, peerConnection_());
 }
 
 /**
@@ -161,22 +158,17 @@ function addAudioFile(url) {
  * peer connection.
  */
 function mixLocalStreamWithPreviouslyLoadedAudioFile() {
-  if (gPeerConnection == null)
-    throw failTest('trying to mix in stream, but we have no peer connection.');
   if (getLocalStream() == null)
     throw failTest('trying to mix in stream, but we have no stream to mix in.');
 
-  mixLocalStreamIntoPeerConnection(gPeerConnection, getLocalStream());
+  mixLocalStreamIntoPeerConnection(peerConnection_(), getLocalStream());
 }
 
 /**
  * Must be called after addAudioFile.
  */
 function playAudioFile() {
-  if (gPeerConnection == null)
-    throw failTest('trying to play file, but we have no peer connection.');
-
-  playPreviouslyLoadedAudioFile(gPeerConnection);
+  playPreviouslyLoadedAudioFile(peerConnection_());
   returnToTest('ok-playing');
 }
 
@@ -184,9 +176,7 @@ function playAudioFile() {
  * Hangs up a started call. Returns ok-call-hung-up on success.
  */
 function hangUp() {
-  if (gPeerConnection == null)
-    throw failTest('hanging up, but has no peer connection');
-  gPeerConnection.close();
+  peerConnection_().close();
   gPeerConnection = null;
   returnToTest('ok-call-hung-up');
 }
@@ -200,10 +190,7 @@ function hangUp() {
  * Returns a JSON-encoded array of RTCIceCandidate instances to the test.
  */
 function getAllIceCandidates() {
-  if (gPeerConnection == null)
-    throw failTest('Trying to get ICE candidates, but has no peer connection.');
-
-  if (gPeerConnection.iceGatheringState != 'complete') {
+  if (peerConnection_().iceGatheringState != 'complete') {
     console.log('Still ICE gathering - waiting...');
     setTimeout(getAllIceCandidates, 100);
     return;
@@ -220,9 +207,6 @@ function getAllIceCandidates() {
  * @param iceCandidatesJson a JSON-encoded array of RTCIceCandidate instances.
  */
 function receiveIceCandidates(iceCandidatesJson) {
-  if (gPeerConnection == null)
-    throw failTest('Received ICE candidate, but has no peer connection');
-
   var iceCandidates = parseJson_(iceCandidatesJson);
   if (!iceCandidates.length)
     throw failTest('Received invalid ICE candidate list from peer: ' +
@@ -233,21 +217,81 @@ function receiveIceCandidates(iceCandidatesJson) {
       failTest('Received invalid ICE candidate from peer: ' +
         iceCandidatesJson);
 
-    gPeerConnection.addIceCandidate(new RTCIceCandidate(iceCandidate));
+    peerConnection_().addIceCandidate(new RTCIceCandidate(iceCandidate));
   });
 
   returnToTest('ok-received-candidates');
 }
 
-// Public interface to signaling implementations, such as JSEP.
-
 /**
- * Enqueues an ICE candidate for sending to the peer.
- *
- * @param {!RTCIceCandidate} The ICE candidate to send.
+ * Returns
  */
-function sendIceCandidate(message) {
-  gIceCandidates.push(message);
+function hasSeenCryptoInSdp() {
+  returnToTest(gHasSeenCryptoInSdp);
+}
+
+// Internals.
+
+/** @private */
+function createPeerConnection_(stun_server) {
+  servers = {iceServers: [{url: 'stun:' + stun_server}]};
+  try {
+    peerConnection = new RTCPeerConnection(servers, {});
+  } catch (exception) {
+    throw failTest('Failed to create peer connection: ' + exception);
+  }
+  peerConnection.onaddstream = addStreamCallback_;
+  peerConnection.onremovestream = removeStreamCallback_;
+  peerConnection.onicecandidate = iceCallback_;
+  return peerConnection;
+}
+
+/** @private */
+function peerConnection_() {
+  if (gPeerConnection == null)
+    throw failTest('Trying to use peer connection, but none was created.');
+  return gPeerConnection;
+}
+
+/** @private */
+function success_(method) {
+  debug(method + '(): success.');
+}
+
+/** @private */
+function failure_(method, error) {
+  throw failTest(method + '() failed: ' + error);
+}
+
+/** @private */
+function iceCallback_(event) {
+  if (event.candidate)
+    gIceCandidates.push(event.candidate);
+}
+
+/** @private */
+function setLocalDescription(peerConnection, sessionDescription) {
+  if (sessionDescription.sdp.search('a=crypto') != -1 ||
+      sessionDescription.sdp.search('a=fingerprint') != -1)
+    gHasSeenCryptoInSdp = 'crypto-seen';
+
+  peerConnection.setLocalDescription(
+    sessionDescription,
+    function() { success_('setLocalDescription'); },
+    function() { failure_('setLocalDescription'); });
+}
+
+/** @private */
+function addStreamCallback_(event) {
+  debug('Receiving remote stream...');
+  var videoTag = document.getElementById('remote-view');
+  attachMediaStream(videoTag, event.stream);
+}
+
+/** @private */
+function removeStreamCallback_(event) {
+  debug('Call ended.');
+  document.getElementById('remote-view').src = '';
 }
 
 /**
