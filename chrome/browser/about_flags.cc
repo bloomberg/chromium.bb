@@ -439,13 +439,6 @@ const Experiment::Choice kExtensionContentVerificationChoices[] = {
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
   {
-    "conflicting-modules-check",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CONFLICTS_CHECK_NAME,
-    IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kConflictingModulesCheck)
-  },
-  {
     "ignore-gpu-blacklist",
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,

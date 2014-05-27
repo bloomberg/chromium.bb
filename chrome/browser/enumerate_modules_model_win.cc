@@ -987,8 +987,7 @@ void EnumerateModulesModel::MaybePostScanningTask() {
     done = true;
 
     const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-    if (cmd_line.HasSwitch(switches::kConflictingModulesCheck) ||
-        base::win::GetVersion() == base::win::VERSION_XP) {
+    if (base::win::GetVersion() == base::win::VERSION_XP) {
       check_modules_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kModuleCheckDelayMs),
           this, &EnumerateModulesModel::ScanNow);
@@ -1028,18 +1027,6 @@ void EnumerateModulesModel::DoneScanning() {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-      content::Source<EnumerateModulesModel>(this),
-      content::NotificationService::NoDetails());
-
-  // Command line flag must be enabled for the notification to get sent out.
-  // Otherwise we'd get the badge (while the feature is disabled) when we
-  // navigate to about:conflicts and find confirmed matches.
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  if (!cmd_line.HasSwitch(switches::kConflictingModulesCheck))
-    return;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
       content::Source<EnumerateModulesModel>(this),
       content::NotificationService::NoDetails());
 }

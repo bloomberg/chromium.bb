@@ -174,10 +174,6 @@ const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
 // for the browser process.
 const char kComponentUpdater[]              = "component-updater";
 
-// Causes the browser process to inspect loaded and registered DLLs for known
-// conflicts and warn the user.
-const char kConflictingModulesCheck[]       = "conflicting-modules-check";
-
 // Comma-separated list of BrowserThreads that cause browser process to crash
 // if the given browser thread is not responsive. UI,IO,DB,FILE,CACHE are the
 // list of BrowserThreads that are supported.

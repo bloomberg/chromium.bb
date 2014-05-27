@@ -62,7 +62,6 @@ extern const char kCloudPrintFileType[];
 extern const char kCloudPrintPrintTicket[];
 extern const char kCloudPrintSetupProxy[];
 extern const char kComponentUpdater[];
-extern const char kConflictingModulesCheck[];
 extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
 extern const char kDebugEnableFrameToggle[];
