@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
 
+#include <map>
 #include <string>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "content/public/browser/geolocation_permission_context.h"
@@ -15,6 +17,7 @@ namespace content {
 class WebContents;
 }
 
+class GeolocationPermissionRequest;
 class PermissionRequestID;
 class Profile;
 
@@ -87,6 +90,8 @@ class ChromeGeolocationPermissionContext
   virtual PermissionQueueController* CreateQueueController();
 
  private:
+  friend class GeolocationPermissionRequest;
+
   // Removes any pending InfoBar request.
   void CancelPendingInfobarRequest(const PermissionRequestID& id);
 
@@ -97,10 +102,16 @@ class ChromeGeolocationPermissionContext
                             const std::string accept_button_label,
                             base::Callback<void(bool)> callback);
 
+  // Notify the context that a particular request object is no longer needed.
+  void RequestFinished(GeolocationPermissionRequest* request);
+
   // These must only be accessed from the UI thread.
   Profile* const profile_;
   bool shutting_down_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
+
+  base::ScopedPtrHashMap<std::string, GeolocationPermissionRequest>
+      pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContext);
 };

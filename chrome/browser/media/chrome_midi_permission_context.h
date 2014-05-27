@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_CHROME_MIDI_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_MEDIA_CHROME_MIDI_PERMISSION_CONTEXT_H_
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
@@ -14,6 +15,7 @@ class WebContents;
 }
 
 class GURL;
+class MidiPermissionRequest;
 class PermissionQueueController;
 class PermissionRequestID;
 class Profile;
@@ -52,6 +54,8 @@ class ChromeMidiPermissionContext : public KeyedService {
       bool allowed);
 
  private:
+  friend class MidiPermissionRequest;
+
   // Decide whether the permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an infobar.
@@ -77,9 +81,14 @@ class ChromeMidiPermissionContext : public KeyedService {
   // Removes any pending InfoBar request.
   void CancelPendingInfobarRequest(const PermissionRequestID& id);
 
+  // Notify the context that a particular request object is no longer needed.
+  void RequestFinished(MidiPermissionRequest* request);
+
   Profile* const profile_;
   bool shutting_down_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
+
+  base::ScopedPtrHashMap<std::string, MidiPermissionRequest> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMidiPermissionContext);
 };

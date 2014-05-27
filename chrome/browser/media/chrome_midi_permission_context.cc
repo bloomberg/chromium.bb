@@ -50,6 +50,7 @@ class MidiPermissionRequest : public PermissionBubbleRequest {
   bool user_gesture_;
   std::string display_languages_;
   const content::BrowserContext::MidiSysExPermissionCallback& callback_;
+  bool is_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionRequest);
 };
@@ -66,9 +67,12 @@ MidiPermissionRequest::MidiPermissionRequest(
       requesting_frame_(requesting_frame),
       user_gesture_(user_gesture),
       display_languages_(display_languages),
-      callback_(callback) {}
+      callback_(callback),
+      is_finished_(false) {}
 
-MidiPermissionRequest::~MidiPermissionRequest() {}
+MidiPermissionRequest::~MidiPermissionRequest() {
+  DCHECK(is_finished_);
+}
 
 int MidiPermissionRequest::GetIconID() const {
   return IDR_ALLOWED_MIDI_SYSEX;
@@ -101,11 +105,12 @@ void MidiPermissionRequest::PermissionDenied() {
 }
 
 void MidiPermissionRequest::Cancelled() {
-  context_->NotifyPermissionSet(id_, requesting_frame_, callback_, false);
 }
 
 void MidiPermissionRequest::RequestFinished() {
-  delete this;
+  is_finished_ = true;
+  // Deletes 'this'.
+  context_->RequestFinished(this);
 }
 
 ChromeMidiPermissionContext::ChromeMidiPermissionContext(Profile* profile)
@@ -116,6 +121,7 @@ ChromeMidiPermissionContext::ChromeMidiPermissionContext(Profile* profile)
 
 ChromeMidiPermissionContext::~ChromeMidiPermissionContext() {
   DCHECK(!permission_queue_controller_);
+  DCHECK(pending_requests_.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -200,10 +206,16 @@ void ChromeMidiPermissionContext::DecidePermission(
         PermissionBubbleManager* bubble_manager =
             PermissionBubbleManager::FromWebContents(web_contents);
         if (bubble_manager) {
-          bubble_manager->AddRequest(new MidiPermissionRequest(
-              this, id, requesting_frame, user_gesture,
-              profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-              callback));
+          scoped_ptr<MidiPermissionRequest> request_ptr(
+              new MidiPermissionRequest(
+                  this, id, requesting_frame, user_gesture,
+                  profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+                  callback));
+          MidiPermissionRequest* request = request_ptr.get();
+          bool inserted = pending_requests_.add(
+              id.ToString(), request_ptr.Pass()).second;
+          DCHECK(inserted) << "Duplicate id " << id.ToString();
+          bubble_manager->AddRequest(request);
         }
         return;
       }
@@ -256,11 +268,36 @@ PermissionQueueController* ChromeMidiPermissionContext::GetQueueController() {
   return permission_queue_controller_.get();
 }
 
+void ChromeMidiPermissionContext::RequestFinished(
+    MidiPermissionRequest* request) {
+  base::ScopedPtrHashMap<std::string, MidiPermissionRequest>::iterator it;
+  for (it = pending_requests_.begin(); it != pending_requests_.end(); it++) {
+    if (it->second == request) {
+      pending_requests_.take_and_erase(it);
+      return;
+    }
+  }
+
+  NOTREACHED() << "Missing request";
+}
+
 void ChromeMidiPermissionContext::CancelPendingInfobarRequest(
     const PermissionRequestID& id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
     return;
-  // TODO(gbillock): Add support for cancellation to permission bubbles.
+
+  if (PermissionBubbleManager::Enabled()) {
+    MidiPermissionRequest* cancelling = pending_requests_.get(id.ToString());
+    content::WebContents* web_contents = tab_util::GetWebContentsByID(
+        id.render_process_id(), id.render_view_id());
+    if (cancelling != NULL && web_contents != NULL &&
+        PermissionBubbleManager::FromWebContents(web_contents) != NULL) {
+      PermissionBubbleManager::FromWebContents(web_contents)->
+          CancelRequest(cancelling);
+    }
+    return;
+  }
+
   GetQueueController()->CancelInfoBarRequest(id);
 }
