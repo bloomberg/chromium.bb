@@ -370,7 +370,7 @@ static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 
     v8::Context::Scope scope(v8Context);
     DOMWindow* window = frame->domWindow();
-    v8::Handle<v8::Value> global = toV8(window, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> global = toV8(window, v8Context->Global(), v8Context->GetIsolate());
     ASSERT(global->IsObject());
 
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(global), window, isolate);
@@ -408,7 +408,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     v8::Context::Scope scope(v8Context);
 
     DOMWindow* window = m_frame->domWindow();
-    v8::Handle<v8::Value> v8plugin = toV8(plugin, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> v8plugin = toV8(plugin, v8Context->Global(), v8Context->GetIsolate());
     if (!v8plugin->IsObject())
         return createNoScriptObject();
 
