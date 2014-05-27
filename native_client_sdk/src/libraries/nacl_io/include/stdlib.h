@@ -6,7 +6,6 @@
 #define LIBRARIES_NACL_IO_INCLUDE_STDLIB_H_
 
 #include <sys/cdefs.h>
-#include_next <stdlib.h>
 
 __BEGIN_DECLS
 
@@ -15,3 +14,5 @@ char* realpath(const char* path, char* resolved_path);
 __END_DECLS
 
 #endif
+
+#include_next <stdlib.h>
