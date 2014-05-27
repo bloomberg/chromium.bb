@@ -25,9 +25,7 @@
 
 class BookmarkExpandedStateTracker;
 class BookmarkIndex;
-class BookmarkLoadDetails;
 class BookmarkModelObserver;
-class BookmarkStorage;
 struct BookmarkMatch;
 class PrefService;
 class ScopedGroupBookmarkActions;
@@ -38,6 +36,8 @@ class SequencedTaskRunner;
 }
 
 namespace bookmarks {
+class BookmarkLoadDetails;
+class BookmarkStorage;
 class ScopedGroupBookmarkActions;
 }
 
@@ -285,7 +285,7 @@ class BookmarkModel : public BookmarkService {
  private:
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;
-  friend class BookmarkStorage;
+  friend class bookmarks::BookmarkStorage;
   friend class bookmarks::ScopedGroupBookmarkActions;
   friend class test::TestBookmarkClient;
 
@@ -309,7 +309,7 @@ class BookmarkModel : public BookmarkService {
 
   // Invoked when loading is finished. Sets |loaded_| and notifies observers.
   // BookmarkModel takes ownership of |details|.
-  void DoneLoading(scoped_ptr<BookmarkLoadDetails> details);
+  void DoneLoading(scoped_ptr<bookmarks::BookmarkLoadDetails> details);
 
   // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
@@ -373,7 +373,7 @@ class BookmarkModel : public BookmarkService {
 
   // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
   // delete the returned object.
-  scoped_ptr<BookmarkLoadDetails> CreateLoadDetails(
+  scoped_ptr<bookmarks::BookmarkLoadDetails> CreateLoadDetails(
       const std::string& accept_languages);
 
   BookmarkClient* const client_;
@@ -407,7 +407,7 @@ class BookmarkModel : public BookmarkService {
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Reads/writes bookmarks to disk.
-  scoped_refptr<BookmarkStorage> store_;
+  scoped_refptr<bookmarks::BookmarkStorage> store_;
 
   scoped_ptr<BookmarkIndex> index_;
 

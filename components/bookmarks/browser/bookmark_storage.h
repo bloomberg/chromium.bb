@@ -18,6 +18,8 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace bookmarks {
+
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
 // ownership) to BookmarkStorage. BookmarkStorage loads the bookmarks (and
@@ -162,5 +164,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_

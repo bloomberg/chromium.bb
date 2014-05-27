@@ -20,6 +20,8 @@
 
 using base::TimeTicks;
 
+namespace bookmarks {
+
 namespace {
 
 // Extension used for backup files (copy of main file created during startup).
@@ -185,3 +187,5 @@ bool BookmarkStorage::SaveNow() {
   writer_.WriteNow(data);
   return true;
 }
+
+}  // namespace bookmarks
