@@ -24,13 +24,14 @@ function start()
 
 function test()
 {
+    InspectorTest.disableConsoleViewport();
     InspectorTest.addConsoleSniffer(messageAdded, true);
 
     var count = 4;
     function messageAdded(message)
     {
         if (count === 2 || count === 3)
-            InspectorTest.dumpConsoleTableMessage(message);
+            InspectorTest.dumpConsoleTableMessage(message, true);
 
         if (--count === 0)
             InspectorTest.completeTest();

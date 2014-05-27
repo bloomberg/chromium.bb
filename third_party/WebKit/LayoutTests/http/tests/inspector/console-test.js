@@ -21,9 +21,9 @@ InspectorTest.prepareConsoleMessageText = function(messageElement)
 InspectorTest.disableConsoleViewport = function()
 {
     var viewport = WebInspector.ConsolePanel._view()._viewport;
-    viewport.invalidate();
     viewport.element.style.height = "2000px";
     viewport.element.style.position = "absolute";
+    viewport.invalidate();
 }
 
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames, formatter)
@@ -46,7 +46,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             }
         }
 
-        if (InspectorTest.dumpConsoleTableMessage(uiMessage)) {
+        if (InspectorTest.dumpConsoleTableMessage(uiMessage, false)) {
             if (dumpClassNames)
                 InspectorTest.addResult(classNames.join(" > "));
         } else {
@@ -60,9 +60,10 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
     return result;
 }
 
-InspectorTest.dumpConsoleTableMessage = function(viewMessage)
+InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate)
 {
-    WebInspector.ConsolePanel._view()._viewport.invalidate();
+    if (forceInvalidate)
+        WebInspector.ConsolePanel._view()._viewport.invalidate();
     var table = viewMessage.contentElement();
     var headers = table.querySelectorAll("th div");
     if (!headers.length)
