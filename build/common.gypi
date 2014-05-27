@@ -1455,13 +1455,25 @@
       # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
       # it takes effect here.
       ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-        'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
         'conditions': [
           ['OS=="android"', {
             # We directly set the gcc versions since we know what we use.
             'gcc_version%': 48,
           }, {
             'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
+          }],
+          ['android_webview_build==1', {
+            # Android WebView uses a hermetic toolchain even for host, so set it
+            # manually here.
+            'conditions': [
+              ['host_os=="mac"', {
+                'host_gcc_version%': 42,
+              }, { # linux
+                'host_gcc_version%': 46,
+              }],
+            ],
+          }, {  # android_webview_build!=1
+            'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
           }],
         ],
       }, {
