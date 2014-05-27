@@ -255,6 +255,31 @@ KURL& KURL::operator=(const KURL& other)
     return *this;
 }
 
+#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
+KURL::KURL(KURL&& other)
+    : m_isValid(other.m_isValid)
+    , m_protocolIsInHTTPFamily(other.m_protocolIsInHTTPFamily)
+    , m_parsed(other.m_parsed)
+    // FIXME: Instead of explicitly casting to String&& here, we should use std::move, but that requires us to
+    // have a standard library that supports move semantics.
+    , m_string(static_cast<String&&>(other.m_string))
+    , m_innerURL(other.m_innerURL.release())
+{
+}
+
+KURL& KURL::operator=(KURL&& other)
+{
+    m_isValid = other.m_isValid;
+    m_protocolIsInHTTPFamily = other.m_protocolIsInHTTPFamily;
+    m_parsed = other.m_parsed;
+    // FIXME: Instead of explicitly casting to String&& here, we should use std::move, but that requires us to
+    // have a standard library that supports move semantics.
+    m_string = static_cast<String&&>(other.m_string);
+    m_innerURL = other.m_innerURL.release();
+    return *this;
+}
+#endif
+
 KURL KURL::copy() const
 {
     KURL result;
