@@ -16,11 +16,15 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "cc/base/latency_info_swap_promise.h"
 #include "cc/layers/texture_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/event_conversion.h"
@@ -404,6 +408,23 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   PepperPluginInstanceImpl* plugin_;
 };
 
+void InitLatencyInfo(ui::LatencyInfo* new_latency,
+                     const ui::LatencyInfo* old_latency,
+                     blink::WebInputEvent::Type type,
+                     int64 input_sequence) {
+  new_latency->AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
+      0,
+      input_sequence);
+  new_latency->TraceEventType(WebInputEventTraits::GetName(type));
+  if (old_latency) {
+    new_latency->CopyLatencyFrom(*old_latency,
+                                 ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
+    new_latency->CopyLatencyFrom(*old_latency,
+                                 ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
+  }
+}
+
 }  // namespace
 
 // static
@@ -538,6 +559,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       npp_(new NPP_t),
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
+      last_input_number_(0),
+      is_tracking_latency_(false),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -1099,8 +1122,20 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         pending_user_gesture_token_.setOutOfProcess();
       }
 
+      const ui::LatencyInfo* current_event_latency_info = NULL;
+      if (render_frame_->GetRenderWidget()) {
+        current_event_latency_info =
+            render_frame_->GetRenderWidget()->current_event_latency_info();
+      }
+
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {
+        if (is_tracking_latency_) {
+          InitLatencyInfo(&events[i].latency_info,
+                          current_event_latency_info,
+                          event.type,
+                          last_input_number_++);
+        }
         if (filtered_input_event_mask_ & event_class)
           events[i].is_filtered = true;
         else
@@ -1996,6 +2031,21 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
 
 void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
 
+void PepperPluginInstanceImpl::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  if (render_frame_ && render_frame_->GetRenderWidget()) {
+    RenderWidgetCompositor* compositor =
+        render_frame_->GetRenderWidget()->compositor();
+    if (compositor) {
+      for (size_t i = 0; i < latency_info.size(); i++) {
+        scoped_ptr<cc::SwapPromise> swap_promise(
+            new cc::LatencyInfoSwapPromise(latency_info[i]));
+        compositor->QueueSwapPromise(swap_promise.Pass());
+      }
+    }
+  }
+}
+
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {
   DCHECK(live_plugin_objects_.find(plugin_object) ==
          live_plugin_objects_.end());
@@ -2503,6 +2553,11 @@ void PepperPluginInstanceImpl::ClearInputEventRequest(PP_Instance instance,
   input_event_mask_ &= ~(event_classes);
   filtered_input_event_mask_ &= ~(event_classes);
   RequestInputEventsHelper(event_classes);
+}
+
+void PepperPluginInstanceImpl::StartTrackingLatency(PP_Instance instance) {
+  if (module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
+    is_tracking_latency_ = true;
 }
 
 void PepperPluginInstanceImpl::ZoomChanged(PP_Instance instance,

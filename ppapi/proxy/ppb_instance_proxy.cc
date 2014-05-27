@@ -145,6 +145,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgRequestInputEvents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ClearInputEvents,
                         OnHostMsgClearInputEvents)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_StartTrackingLatency,
+                        OnHostMsgStartTrackingLatency)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LockMouse,
                         OnHostMsgLockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
@@ -478,6 +480,11 @@ void PPB_Instance_Proxy::ClearInputEventRequest(PP_Instance instance,
                                                 uint32_t event_classes) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_ClearInputEvents(
       API_ID_PPB_INSTANCE, instance, event_classes));
+}
+
+void PPB_Instance_Proxy::StartTrackingLatency(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_StartTrackingLatency(
+      API_ID_PPB_INSTANCE, instance));
 }
 
 void PPB_Instance_Proxy::ZoomChanged(PP_Instance instance,
@@ -1002,6 +1009,12 @@ void PPB_Instance_Proxy::OnHostMsgClearInputEvents(PP_Instance instance,
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
+}
+
+void PPB_Instance_Proxy::OnHostMsgStartTrackingLatency(PP_Instance instance) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->StartTrackingLatency(instance);
 }
 
 void PPB_Instance_Proxy::OnHostMsgPostMessage(

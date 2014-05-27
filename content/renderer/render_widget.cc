@@ -388,6 +388,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       is_threaded_compositing_enabled_(false),
+      current_event_latency_info_(NULL),
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
       text_field_is_dirty_(false),
@@ -911,6 +912,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     return;
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
       &handling_event_type_, input_event->type);
+
+  base::AutoReset<const ui::LatencyInfo*> resetter(&current_event_latency_info_,
+                                                   &latency_info);
 
   base::TimeTicks start_time;
   if (base::TimeTicks::IsHighResNowFastAndReliable())

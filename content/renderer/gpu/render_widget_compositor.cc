@@ -396,6 +396,11 @@ RenderWidgetCompositor::CreateLatencyInfoSwapPromiseMonitor(
           latency, layer_tree_host_.get(), NULL));
 }
 
+void RenderWidgetCompositor::QueueSwapPromise(
+    scoped_ptr<cc::SwapPromise> swap_promise) {
+  layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
+}
+
 int RenderWidgetCompositor::GetLayerTreeId() const {
   return layer_tree_host_->id();
 }

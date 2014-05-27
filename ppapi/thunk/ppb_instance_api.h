@@ -109,6 +109,9 @@ class PPB_Instance_API {
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) = 0;
 
+  // InputEventPrivate.
+  virtual void StartTrackingLatency(PP_Instance instance) = 0;
+
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
 

@@ -40223,6 +40223,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1519132417" label="PPB_FileSystem;1.0"/>
   <int value="1520420939" label="PPB_MouseCursor;1.0"/>
   <int value="1528832860" label="PPB_FileChooser(Dev);0.6"/>
+  <int value="1577776196" label="PPB_InputEvent_Private;0.1"/>
   <int value="1641037564" label="PPB_VideoSource_Private;0.1"/>
   <int value="1645591549" label="PPB_Widget(Dev);0.3"/>
   <int value="1677958987" label="PPB_ImageData;1.0"/>

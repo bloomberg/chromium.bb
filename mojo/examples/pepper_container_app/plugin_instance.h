@@ -81,6 +81,7 @@ class PluginInstance : public ppapi::thunk::PPB_Instance_API {
                                               uint32_t event_classes) OVERRIDE;
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) OVERRIDE;
+  virtual void StartTrackingLatency(PP_Instance instance) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
   virtual PP_Bool SetCursor(PP_Instance instance,
                             PP_MouseCursor_Type type,

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "cc/base/swap_promise.h"
 #include "cc/base/swap_promise_monitor.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -63,6 +64,9 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   // into a LatencyInfoSwapPromise.
   scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency);
+  // Calling QueueSwapPromise() to directly queue a SwapPromise into
+  // LayerTreeHost.
+  void QueueSwapPromise(scoped_ptr<cc::SwapPromise> swap_promise);
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;

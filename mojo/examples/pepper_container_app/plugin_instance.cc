@@ -218,6 +218,10 @@ void PluginInstance::ClearInputEventRequest(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
+void PluginInstance::StartTrackingLatency(PP_Instance instance) {
+  NOTIMPLEMENTED();
+}
+
 void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
   NOTIMPLEMENTED();
 }

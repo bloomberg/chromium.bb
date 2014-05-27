@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -158,6 +159,10 @@ class CONTENT_EXPORT RenderWidget
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
 
   RenderWidgetCompositor* compositor() const;
+
+  const ui::LatencyInfo* current_event_latency_info() const {
+    return current_event_latency_info_;
+  }
 
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback);
 
@@ -666,6 +671,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
+
+  const ui::LatencyInfo* current_event_latency_info_;
 
   uint32 next_output_surface_id_;
 

@@ -20,6 +20,8 @@ enum LatencyComponentType {
   // BEGIN COMPONENT is when we show the latency begin in chrome://tracing.
   // Timestamp when the input event is sent from RenderWidgetHost to renderer.
   INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+  // Timestamp when the input event is received in plugin.
+  INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
   // Timestamp when the scroll update gesture event is sent from RWH to
   // renderer. In Aura, touch event's LatencyInfo is carried over to the gesture
@@ -65,7 +67,10 @@ enum LatencyComponentType {
   // This component indicates that the cached LatencyInfo number exceeds the
   // maximal allowed size.
   LATENCY_INFO_LIST_TERMINATED_OVERFLOW_COMPONENT,
-  LATENCY_COMPONENT_TYPE_LAST = LATENCY_INFO_LIST_TERMINATED_OVERFLOW_COMPONENT
+  // Timestamp when the input event is considered not cause any rendering
+  // damage in plugin and thus terminated.
+  INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT,
+  LATENCY_COMPONENT_TYPE_LAST = INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT
 };
 
 struct EVENTS_BASE_EXPORT LatencyInfo {

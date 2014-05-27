@@ -119,6 +119,7 @@
             'link_flags': [
               '-Wl,--start-group',
               '-lirt_browser',
+              '-llatency_info_nacl',
               '-lpnacl_irt_shim_for_irt',
               '-lppapi_proxy_nacl',
               '-lppapi_ipc_nacl',

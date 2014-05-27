@@ -3160,6 +3160,8 @@ static PP_Bool Pnacl_M19_PPB_HostResolver_Private_GetNetAddress(PP_Resource host
 
 /* End wrapper methods for PPB_HostResolver_Private_0_1 */
 
+/* Not generating wrapper methods for PPB_InputEvent_Private_0_1 */
+
 /* Begin wrapper methods for PPB_Instance_Private_0_1 */
 
 static void Pnacl_M13_PPB_Instance_Private_GetWindowObject(struct PP_Var* _struct_result, PP_Instance instance) {
@@ -5106,6 +5108,8 @@ static const struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver
     .GetSize = (uint32_t (*)(PP_Resource host_resolver))&Pnacl_M19_PPB_HostResolver_Private_GetSize,
     .GetNetAddress = (PP_Bool (*)(PP_Resource host_resolver, uint32_t index, struct PP_NetAddress_Private* addr))&Pnacl_M19_PPB_HostResolver_Private_GetNetAddress
 };
+
+/* Not generating wrapper interface for PPB_InputEvent_Private_0_1 */
 
 static const struct PPB_Instance_Private_0_1 Pnacl_Wrappers_PPB_Instance_Private_0_1 = {
     .GetWindowObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M13_PPB_Instance_Private_GetWindowObject,

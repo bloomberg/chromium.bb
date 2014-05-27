@@ -4,6 +4,7 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "+skia",
+  "+ui/events",
   "+webkit/common/webpreferences.h",
   "+webkit/common/fileapi/file_system_types.h",
 
