@@ -76,6 +76,9 @@ class DeviceCloudPolicyStoreChromeOS
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
+  // Ensure that UMA stats are only reported once per browser start.
+  bool uma_done_;
+
   base::WeakPtrFactory<DeviceCloudPolicyStoreChromeOS> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStoreChromeOS);

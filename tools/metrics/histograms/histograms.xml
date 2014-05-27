@@ -4930,6 +4930,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.EnrolledPolicyHasDMToken" enum="Boolean">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Whether loading of device policy from file on an enterprise-enrolled
+    (checked against install_attributes.pb) Chrome OS device yields an
+    enterprise policy with a DM token.  Filled once during session startup,
+    after first successful device policy read.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Enrollment" enum="EnterpriseEnrollmentType">
   <owner>joaodasilva@chromium.org</owner>
   <summary>

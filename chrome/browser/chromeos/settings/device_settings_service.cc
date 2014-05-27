@@ -362,6 +362,10 @@ void DeviceSettingsService::HandleCompletedOperation(
             FROM_HERE,
             base::Bind(&DeviceSettingsService::Load, base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(kLoadRetryDelayMs));
+      } else {
+        // Once we've given up retrying, the validation error is not temporary
+        // anymore.
+        store_status_ = STORE_VALIDATION_ERROR;
       }
     }
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -22,6 +23,7 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
       background_task_runner_(background_task_runner),
+      uma_done_(false),
       weak_factory_(this) {
   device_settings_service_->AddObserver(this);
 }
@@ -131,6 +133,20 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
+  }
+
+  // Fill UMA histogram once per session.  Skip temp validation error because it
+  // is not a definitive result (policy load will be retried).
+  const chromeos::DeviceSettingsService::Status status =
+      device_settings_service_->status();
+  if (!uma_done_ &&
+      status != chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR) {
+    uma_done_ = true;
+    const bool has_dm_token =
+        status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
+        device_settings_service_->policy_data() &&
+        device_settings_service_->policy_data()->has_request_token();
+    UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken", has_dm_token);
   }
 
   switch (device_settings_service_->status()) {
