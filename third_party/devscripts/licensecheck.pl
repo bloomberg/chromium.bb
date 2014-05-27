@@ -630,6 +630,17 @@ sub parselicense($) {
         $license = $license . "Khronos Group";
     }
 
+    if ($licensetext =~ /This file is part of the FreeType project, and may only be used(,)? modified(,)? and distributed under the terms of the FreeType project license, LICENSE\.TXT\. By continuing to use, modify, or distribute this file you indicate that you have read the license and understand and accept it fully/) {
+        $license = "FreeType (BSD like) $license";
+    }
+    if ($licensetext =~ /This software, and all works of authorship, whether in source or object code form as indicated by the copyright notice.*is made available, and may only be used, modified, and distributed under the FreeType Project License, LICENSE\.TXT\. Additionally, subject to the terms and conditions of the FreeType Project License, each contributor to the Work hereby grants to any individual or legal entity exercising permissions granted by the FreeType Project License and this section.*a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable.*patent license to make/) {
+        $license = "FreeType (BSD like) with patent clause $license";
+    }
+
+    if ($licensetext =~ /Anti-Grain Geometry.*Permission to copy, use, modify, sell and distribute this software is granted provided this copyright notice appears in all copies. This software is provided as is without express or impl/) {
+        $license = "Anti-Grain Geometry $license";
+    }
+
     $license = "UNKNOWN" unless $license;
 
     # Remove trailing spaces.

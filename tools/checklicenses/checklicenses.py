@@ -30,6 +30,7 @@ Examples:
 
 
 WHITELISTED_LICENSES = [
+    'Anti-Grain Geometry',
     'Apache (v2.0)',
     'Apache (v2.0) BSD (2 clause)',
     'Apache (v2.0) GPL (v2)',
@@ -53,6 +54,8 @@ WHITELISTED_LICENSES = [
     'BSD-like MIT/X11 (BSD like)',
 
     'BSL (v1.0)',
+    'FreeType (BSD like)',
+    'FreeType (BSD like) with patent clause',
     'GPL (v2) LGPL (v2.1 or later)',
     'GPL (v2 or later) with Bison parser exception',
     'GPL (v2 or later) with libtool exception',
