@@ -749,9 +749,13 @@ void OneClickSigninHelper::LogHistogramValue(
       UMA_HISTOGRAM_ENUMERATION("Signin.DevicesPageActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
       break;
+    case signin::SOURCE_REAUTH:
+      UMA_HISTOGRAM_ENUMERATION("Signin.ReauthActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 12,
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 13,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       UMA_HISTOGRAM_ENUMERATION("Signin.UnknownActions", action,
                                 one_click_signin::HISTOGRAM_MAX);

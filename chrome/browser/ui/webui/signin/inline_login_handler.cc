@@ -47,7 +47,8 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin::Source source = signin::GetSourceForPromoURL(current_url);
   if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
-      source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
+      source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN ||
+      source == signin::SOURCE_REAUTH) {
     // Drop the leading slash in the path.
     params.SetString(
         "gaiaPath",
@@ -59,7 +60,8 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
       signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
   std::string default_email;
-  if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+  if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
+      source != signin::SOURCE_REAUTH) {
     default_email = Profile::FromWebUI(web_ui())->GetPrefs()->GetString(
         prefs::kGoogleServicesLastUsername);
   } else {

@@ -16,8 +16,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/net/url_util.h"
@@ -249,13 +247,12 @@ GURL GetReauthURL(Profile* profile, const std::string& account_id) {
         account_id);
   }
 
-  const std::string primary_account_id =
-    SigninManagerFactory::GetForProfile(profile)->
-        GetAuthenticatedAccountId();
-  signin::Source source = account_id == primary_account_id ?
-      signin::SOURCE_SETTINGS : signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
+  signin::Source source = switches::IsNewProfileManagement() ?
+      signin::SOURCE_REAUTH : signin::SOURCE_SETTINGS;
 
-  GURL url = signin::GetPromoURL(source, true);
+  GURL url = signin::GetPromoURL(
+      source, true /* auto_close */,
+      switches::IsNewProfileManagement() /* is_constrained */);
   url = net::AppendQueryParameter(url, "email", account_id);
   url = net::AppendQueryParameter(url, "validateEmail", "1");
   return net::AppendQueryParameter(url, "readOnlyEmail", "1");

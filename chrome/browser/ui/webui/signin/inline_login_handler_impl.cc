@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -106,7 +107,8 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
   signin::Source source = signin::GetSourceForPromoURL(current_url_);
-  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
+      source == signin::SOURCE_REAUTH) {
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
         UpdateCredentials(email, refresh_token);
 
@@ -137,18 +139,15 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
         choose_what_to_sync_ ?
             OneClickSigninSyncStarter::NO_CONFIRMATION :
             OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-    bool start_signin = true;
 
-    if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
-      start_signin = !OneClickSigninHelper::HandleCrossAccountError(
+    bool start_signin =
+        !OneClickSigninHelper::HandleCrossAccountError(
             contents, "",
             email, password_, refresh_token,
             OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
             source, start_mode,
             base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback,
                        handler_));
-    }
-
     if (start_signin) {
       // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
       // OneClickSigninSyncStarter will delete itself once the job is done.
@@ -252,9 +251,24 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
                            one_click_signin::HISTOGRAM_WITH_DEFAULTS);
 
   OneClickSigninHelper::CanOfferFor can_offer_for =
-      source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ?
-      OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT :
       OneClickSigninHelper::CAN_OFFER_FOR_ALL;
+  switch (source) {
+    case signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT:
+      can_offer_for = OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT;
+      break;
+    case signin::SOURCE_REAUTH: {
+      std::string primary_username =
+          SigninManagerFactory::GetForProfile(
+              Profile::FromWebUI(web_ui()))->GetAuthenticatedUsername();
+      if (!gaia::AreEmailsSame(default_email, primary_username))
+        can_offer_for = OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT;
+      break;
+    }
+    default:
+      // No need to change |can_offer_for|.
+      break;
+  }
+
   std::string error_msg;
   bool can_offer = OneClickSigninHelper::CanOffer(
       contents, can_offer_for, email_, &error_msg);
