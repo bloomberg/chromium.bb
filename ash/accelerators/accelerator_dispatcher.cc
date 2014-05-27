@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/nested_accelerator_delegate.h"
+#include "ash/accelerators/accelerator_dispatcher.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
@@ -35,26 +35,21 @@ bool IsPossibleAcceleratorNotForMenu(const ui::KeyEvent& key_event) {
 
 }  // namespace
 
-NestedAcceleratorDelegate::NestedAcceleratorDelegate() {
-}
-
-NestedAcceleratorDelegate::~NestedAcceleratorDelegate() {
-}
-
-bool NestedAcceleratorDelegate::ShouldProcessEventNow(
+bool AcceleratorDispatcher::MenuClosedForPossibleAccelerator(
     const ui::KeyEvent& key_event) {
   if (!IsPossibleAcceleratorNotForMenu(key_event))
-    return true;
+    return false;
 
   if (views::MenuController* menu_controller =
           views::MenuController::GetActiveInstance()) {
     menu_controller->CancelAll();
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
-bool NestedAcceleratorDelegate::ProcessEvent(const ui::KeyEvent& key_event) {
+bool AcceleratorDispatcher::AcceleratorProcessedForKeyEvent(
+    const ui::KeyEvent& key_event) {
   ash::AcceleratorController* accelerator_controller =
       ash::Shell::GetInstance()->accelerator_controller();
   if (!accelerator_controller)
