@@ -865,26 +865,15 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
 
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      if (wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
-        // AES-KW is a special case, due to NSS's implementation only
-        // supporting C_Wrap/C_Unwrap with AES-KW
-        return WrapKeyRaw(
-            key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
-      }
-      return WrapKeyExportAndEncrypt(
-          format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
-    case blink::WebCryptoKeyFormatJwk:
-      return WrapKeyExportAndEncrypt(
-          format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
-    case blink::WebCryptoKeyFormatSpki:
-    case blink::WebCryptoKeyFormatPkcs8:
-      return Status::ErrorUnsupported();  // TODO(padolph)
-    default:
-      NOTREACHED();
-      return Status::ErrorUnsupported();
+  if (format == blink::WebCryptoKeyFormatRaw &&
+      wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
+    // AES-KW is a special case, due to NSS's implementation only
+    // supporting C_Wrap/C_Unwrap with AES-KW
+    return WrapKeyRaw(key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
   }
+
+  return WrapKeyExportAndEncrypt(
+      format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
 }
 
 Status UnwrapKey(blink::WebCryptoKeyFormat format,
@@ -908,43 +897,27 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  switch (format) {
-    case blink::WebCryptoKeyFormatRaw:
-      if (wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
-        // AES-KW is a special case, due to NSS's implementation only
-        // supporting C_Wrap/C_Unwrap with AES-KW
-        return UnwrapKeyRaw(wrapped_key_data,
-                            wrapping_key,
-                            wrapping_algorithm,
-                            algorithm,
-                            extractable,
-                            usage_mask,
-                            key);
-      }
-      return UnwrapKeyDecryptAndImport(format,
-                                       wrapped_key_data,
-                                       wrapping_key,
-                                       wrapping_algorithm,
-                                       algorithm,
-                                       extractable,
-                                       usage_mask,
-                                       key);
-    case blink::WebCryptoKeyFormatJwk:
-      return UnwrapKeyDecryptAndImport(format,
-                                       wrapped_key_data,
-                                       wrapping_key,
-                                       wrapping_algorithm,
-                                       algorithm,
-                                       extractable,
-                                       usage_mask,
-                                       key);
-    case blink::WebCryptoKeyFormatSpki:
-    case blink::WebCryptoKeyFormatPkcs8:
-      return Status::ErrorUnsupported();  // TODO(padolph)
-    default:
-      NOTREACHED();
-      return Status::ErrorUnsupported();
+  if (format == blink::WebCryptoKeyFormatRaw &&
+      wrapping_algorithm.id() == blink::WebCryptoAlgorithmIdAesKw) {
+    // AES-KW is a special case, due to NSS's implementation only
+    // supporting C_Wrap/C_Unwrap with AES-KW
+    return UnwrapKeyRaw(wrapped_key_data,
+                        wrapping_key,
+                        wrapping_algorithm,
+                        algorithm,
+                        extractable,
+                        usage_mask,
+                        key);
   }
+
+  return UnwrapKeyDecryptAndImport(format,
+                                   wrapped_key_data,
+                                   wrapping_key,
+                                   wrapping_algorithm,
+                                   algorithm,
+                                   extractable,
+                                   usage_mask,
+                                   key);
 }
 
 // Note that this function is called from the target Blink thread.

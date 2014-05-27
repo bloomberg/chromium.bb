@@ -3960,6 +3960,117 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateRsaSsaKeyPairIntersectUsages)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, private_key.usages());
 }
 
+// Generate an AES-CBC key and an RSA key pair. Use the AES-CBC key to wrap the
+// key pair (using SPKI format for public key, PKCS8 format for private key).
+// Then unwrap the wrapped key pair and verify that the key data is the same.
+TEST_F(SharedCryptoTest, MAYBE(WrapUnwrapRoundtripSpkiPkcs8UsingAesCbc)) {
+  // Generate the wrapping key.
+  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(128),
+                              true,
+                              blink::WebCryptoKeyUsageWrapKey |
+                                  blink::WebCryptoKeyUsageUnwrapKey,
+                              &wrapping_key));
+
+  // Generate an RSA key pair to be wrapped.
+  const unsigned int modulus_length = 256;
+  const std::vector<uint8> public_exponent = HexStringToBytes("010001");
+
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ASSERT_EQ(Status::Success(),
+            GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
+                                blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                blink::WebCryptoAlgorithmIdSha256,
+                                modulus_length,
+                                public_exponent),
+                            true,
+                            0,
+                            &public_key,
+                            &private_key));
+
+  // Export key pair as SPKI + PKCS8
+  std::vector<uint8> public_key_spki;
+  ASSERT_EQ(
+      Status::Success(),
+      ExportKey(blink::WebCryptoKeyFormatSpki, public_key, &public_key_spki));
+
+  std::vector<uint8> private_key_pkcs8;
+  ASSERT_EQ(
+      Status::Success(),
+      ExportKey(
+          blink::WebCryptoKeyFormatPkcs8, private_key, &private_key_pkcs8));
+
+  // Wrap the key pair.
+  blink::WebCryptoAlgorithm wrap_algorithm =
+      CreateAesCbcAlgorithm(std::vector<uint8>(16, 0));
+
+  std::vector<uint8> wrapped_public_key;
+  ASSERT_EQ(Status::Success(),
+            WrapKey(blink::WebCryptoKeyFormatSpki,
+                    public_key,
+                    wrapping_key,
+                    wrap_algorithm,
+                    &wrapped_public_key));
+
+  std::vector<uint8> wrapped_private_key;
+  ASSERT_EQ(Status::Success(),
+            WrapKey(blink::WebCryptoKeyFormatPkcs8,
+                    private_key,
+                    wrapping_key,
+                    wrap_algorithm,
+                    &wrapped_private_key));
+
+  // Unwrap the key pair.
+  blink::WebCryptoAlgorithm rsa_import_algorithm =
+      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                     blink::WebCryptoAlgorithmIdSha256);
+
+  blink::WebCryptoKey unwrapped_public_key = blink::WebCryptoKey::createNull();
+
+  ASSERT_EQ(Status::Success(),
+            UnwrapKey(blink::WebCryptoKeyFormatSpki,
+                      CryptoData(wrapped_public_key),
+                      wrapping_key,
+                      wrap_algorithm,
+                      rsa_import_algorithm,
+                      true,
+                      0,
+                      &unwrapped_public_key));
+
+  blink::WebCryptoKey unwrapped_private_key = blink::WebCryptoKey::createNull();
+
+  ASSERT_EQ(Status::Success(),
+            UnwrapKey(blink::WebCryptoKeyFormatPkcs8,
+                      CryptoData(wrapped_private_key),
+                      wrapping_key,
+                      wrap_algorithm,
+                      rsa_import_algorithm,
+                      true,
+                      0,
+                      &unwrapped_private_key));
+
+  // Export unwrapped key pair as SPKI + PKCS8
+  std::vector<uint8> unwrapped_public_key_spki;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatSpki,
+                      unwrapped_public_key,
+                      &unwrapped_public_key_spki));
+
+  std::vector<uint8> unwrapped_private_key_pkcs8;
+  ASSERT_EQ(Status::Success(),
+            ExportKey(blink::WebCryptoKeyFormatPkcs8,
+                      unwrapped_private_key,
+                      &unwrapped_private_key_pkcs8));
+
+  EXPECT_EQ(public_key_spki, unwrapped_public_key_spki);
+  EXPECT_EQ(private_key_pkcs8, unwrapped_private_key_pkcs8);
+
+  EXPECT_NE(public_key_spki, wrapped_public_key);
+  EXPECT_NE(private_key_pkcs8, wrapped_private_key);
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
