@@ -21,6 +21,7 @@
 #ifndef HTMLFrameOwnerElement_h
 #define HTMLFrameOwnerElement_h
 
+#include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/HashCountedSet.h"
 
@@ -32,9 +33,14 @@ class Frame;
 class RenderPart;
 class Widget;
 
-class HTMLFrameOwnerElement : public HTMLElement {
+class HTMLFrameOwnerElement : public FrameOwner, public HTMLElement {
 public:
     virtual ~HTMLFrameOwnerElement();
+
+    // FrameOwner overrides:
+    virtual bool isLocal() const { return true; }
+    virtual SandboxFlags sandboxFlags() const OVERRIDE { return m_sandboxFlags; }
+    virtual void dispatchLoad() OVERRIDE;
 
     Frame* contentFrame() const { return m_contentFrame; }
     DOMWindow* contentWindow() const;
@@ -53,8 +59,6 @@ public:
     Document* getSVGDocument(ExceptionState&) const;
 
     virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
-
-    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
 
     virtual bool loadedNonEmptyDocument() const { return false; }
     virtual void didLoadNonEmptyDocument() { }
@@ -124,6 +128,8 @@ private:
 
     Node& m_root;
 };
+
+DEFINE_TYPE_CASTS(HTMLFrameOwnerElement, FrameOwner, owner, owner->isLocal(), owner.isLocal());
 
 } // namespace WebCore
 

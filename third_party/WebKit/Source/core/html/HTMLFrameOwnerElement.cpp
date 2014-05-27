@@ -25,6 +25,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
@@ -95,6 +96,11 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Docum
     , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
 {
+}
+
+void HTMLFrameOwnerElement::dispatchLoad()
+{
+    dispatchEvent(Event::create(EventTypeNames::load));
 }
 
 RenderPart* HTMLFrameOwnerElement::renderPart() const

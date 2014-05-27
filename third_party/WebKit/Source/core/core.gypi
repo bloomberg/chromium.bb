@@ -1153,6 +1153,7 @@
             'frame/FrameDestructionObserver.h',
             'frame/FrameHost.cpp',
             'frame/FrameHost.h',
+            'frame/FrameOwner.h',
             'frame/FrameView.cpp',
             'frame/History.cpp',
             'frame/History.h',

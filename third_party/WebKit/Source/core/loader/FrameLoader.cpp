@@ -44,7 +44,6 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/editing/UndoStack.h"
-#include "core/events/Event.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -338,8 +337,8 @@ static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
     // Fire a load event, as timing attacks would otherwise reveal that the
     // frame was blocked. This way, it looks like every other cross-origin
     // page.
-    if (HTMLFrameOwnerElement* ownerElement = frame->ownerElement())
-        ownerElement->dispatchEvent(Event::create(EventTypeNames::load));
+    if (FrameOwner* frameOwner = frame->ownerElement())
+        frameOwner->dispatchLoad();
 }
 
 void FrameLoader::didBeginDocument(bool dispatch)
@@ -1441,8 +1440,8 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     SandboxFlags flags = m_forcedSandboxFlags;
     if (LocalFrame* parentFrame = m_frame->tree().parent())
         flags |= parentFrame->document()->sandboxFlags();
-    if (HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement())
-        flags |= ownerElement->sandboxFlags();
+    if (FrameOwner* frameOwner = m_frame->ownerElement())
+        flags |= frameOwner->sandboxFlags();
     return flags;
 }
 
