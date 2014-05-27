@@ -91,7 +91,7 @@
             "type": "string",
             "name": "sessionId",
             "optional": true,
-            "description": "The $(ref:windows.Window.sessionId), or $(ref:tabs.Tab.sessionId) to restore."
+            "description": "The $(ref:windows.Window.sessionId), or $(ref:tabs.Tab.sessionId) to restore. If this parameter is not specified, the most recently closed session is restored."
           },
           {
             "type": "function",
