@@ -68,7 +68,8 @@ const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 
 SuggestionsService::SuggestionsService(Profile* profile)
-    : profile_(profile) {
+    : thumbnail_manager_(new ThumbnailManager(profile)),
+      profile_(profile) {
   // Obtain the URL to use to fetch suggestions data from the Variations param.
   suggestions_url_ = GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam));
 }
@@ -109,6 +110,12 @@ void SuggestionsService::FetchSuggestionsData(
   pending_request_->Start();
 
   last_request_started_time_ = base::TimeTicks::Now();
+}
+
+void SuggestionsService::GetPageThumbnail(
+      const GURL& url,
+      base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+  thumbnail_manager_->GetPageThumbnail(url, callback);
 }
 
 void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -154,6 +161,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     LogResponseState(RESPONSE_EMPTY);
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
+    thumbnail_manager_->InitializeThumbnailMap(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);
   }

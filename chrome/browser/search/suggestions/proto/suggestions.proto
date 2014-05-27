@@ -25,4 +25,10 @@ message ChromeSuggestion {
 
   // Title of the suggestion.
   optional string title = 2;
+
+  // The URL of the favicon associated with this page.
+  optional string favicon_url = 3;
+
+  // The URL of the thumbnail associated with this page.
+  optional string thumbnail = 4;
 }

@@ -13,8 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
+#include "chrome/browser/search/suggestions/thumbnail_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -43,6 +45,12 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // fetch request completes.
   void FetchSuggestionsData(ResponseCallback callback);
 
+  // Retrieves stored thumbnail for website |url| asynchronously. Calls
+  // |callback| with Bitmap pointer if found, and NULL otherwise.
+  void GetPageThumbnail(
+      const GURL& url,
+      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
 
@@ -67,6 +75,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Queue of callbacks. These are flushed when fetch request completes.
   std::vector<ResponseCallback> waiting_requestors_;
+
+  // Used to obtain server thumbnails, if available.
+  scoped_ptr<ThumbnailManager> thumbnail_manager_;
 
   Profile* profile_;
 
