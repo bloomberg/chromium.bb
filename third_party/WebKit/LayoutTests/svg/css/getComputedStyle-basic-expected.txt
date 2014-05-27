@@ -426,7 +426,7 @@ rect: style.getPropertyValue(marker-end) : none
 rect: style.getPropertyCSSValue(marker-end) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(marker-mid) : none
 rect: style.getPropertyCSSValue(marker-mid) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(marker-start) : none
+rect: style.getPropertyValue(marker-start) : url(#pserver)
 rect: style.getPropertyCSSValue(marker-start) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(shape-rendering) : auto
 rect: style.getPropertyCSSValue(shape-rendering) : [object CSSPrimitiveValue]
@@ -890,7 +890,7 @@ g: style.getPropertyValue(marker-end) : none
 g: style.getPropertyCSSValue(marker-end) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(marker-mid) : none
 g: style.getPropertyCSSValue(marker-mid) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(marker-start) : none
+g: style.getPropertyValue(marker-start) : url(#pserver)
 g: style.getPropertyCSSValue(marker-start) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(shape-rendering) : auto
 g: style.getPropertyCSSValue(shape-rendering) : [object CSSPrimitiveValue]

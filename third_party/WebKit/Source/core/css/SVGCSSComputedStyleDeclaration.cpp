@@ -91,6 +91,11 @@ PassRefPtrWillBeRawPtr<SVGPaint> CSSComputedStyleDeclaration::adjustSVGPaintForC
     return paint.release();
 }
 
+static inline String serializeAsFragmentIdentifier(const AtomicString& resource)
+{
+    return "#" + resource;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
 {
     Node* node = m_node.get();
@@ -146,15 +151,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
             return CSSPrimitiveValue::create(svgStyle->writingMode());
         case CSSPropertyClipPath:
             if (!svgStyle->clipperResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->clipperResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->clipperResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyMask:
             if (!svgStyle->maskerResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->maskerResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->maskerResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyFilter:
             if (!svgStyle->filterResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->filterResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->filterResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyFloodColor:
             return currentColorOrValidColor(*style, svgStyle->floodColor());
@@ -166,15 +171,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
             return adjustSVGPaintForCurrentColor(SVGPaint::create(svgStyle->fillPaintType(), svgStyle->fillPaintUri(), svgStyle->fillPaintColor()), *style);
         case CSSPropertyMarkerEnd:
             if (!svgStyle->markerEndResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->markerEndResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->markerEndResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyMarkerMid:
             if (!svgStyle->markerMidResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->markerMidResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->markerMidResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyMarkerStart:
             if (!svgStyle->markerStartResource().isEmpty())
-                return CSSPrimitiveValue::create(svgStyle->markerStartResource(), CSSPrimitiveValue::CSS_URI);
+                return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->markerStartResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyStroke:
             return adjustSVGPaintForCurrentColor(SVGPaint::create(svgStyle->strokePaintType(), svgStyle->strokePaintUri(), svgStyle->strokePaintColor()), *style);
