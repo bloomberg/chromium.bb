@@ -146,7 +146,7 @@
                         }],
                     ],
                 }],
-                ['OS=="android" and gtest_target_type == "shared_library"', {
+                ['OS=="android"', {
                     'type': 'shared_library',
                     'dependencies': [
                         '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
