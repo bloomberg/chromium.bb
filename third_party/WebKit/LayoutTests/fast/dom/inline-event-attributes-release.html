@@ -4,24 +4,29 @@
 
 description('Tests that we do not hold on to any nodes');
 
-gc();
+jsTestIsAsync = true;
 
 function numberOfLiveNodes() {
     return window.internals && window.internals.numberOfLiveNodes && window.internals.numberOfLiveNodes();
 }
 
-var beforeCount = numberOfLiveNodes();
+var afterCount;
+var beforeCount;
 
-var f = document.createElement('form');
-var i = f.appendChild(document.createElement('input'));
-i.setAttribute('onclick', '');
-f.removeChild(i);
-f = null;
-i = null;
-gc();
+asyncGC(function() {
+    beforeCount = numberOfLiveNodes();
+    var f = document.createElement('form');
+    var i = f.appendChild(document.createElement('input'));
+    i.setAttribute('onclick', '');
+    f.removeChild(i);
+    f = null;
+    i = null;
+    asyncGC(function() {
+        afterCount = numberOfLiveNodes();
+        shouldBe('afterCount - beforeCount', '0');
+        finishJSTest();
+    });
+});
 
-var afterCount = numberOfLiveNodes();
-
-shouldBe('afterCount - beforeCount', '0');
 
 </script>
