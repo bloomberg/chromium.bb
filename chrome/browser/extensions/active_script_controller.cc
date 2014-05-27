@@ -107,7 +107,7 @@ void ActiveScriptController::OnActiveTabPermissionGranted(
 }
 
 void ActiveScriptController::OnAdInjectionDetected(
-    const std::vector<std::string> ad_injectors) {
+    const std::set<std::string> ad_injectors) {
   // We're only interested in data if there are ad injectors detected.
   if (ad_injectors.empty())
     return;

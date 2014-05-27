@@ -6036,6 +6036,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.AdInjection.AdType" enum="InjectedAdType">
+  <owner>felt@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>The type of ad that was injected.</summary>
+</histogram>
+
+<histogram name="Extensions.AdInjection.InstallLocation"
+    enum="ExtensionLocation">
+  <owner>felt@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The install location of an ad-injecting extension. Recorded upon page close
+    for any extension that injected ads on that page.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.AllocatePortIdPairOverflow">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -36797,6 +36813,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Save Password"/>
   <int value="2" label="Never for this site (blacklist / exception)"/>
   <int value="3" label="InfoBar dismissed by clicking the 'X'"/>
+</enum>
+
+<enum name="InjectedAdType" type="int">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="IFrame"/>
+  <int value="2" label="Embed"/>
+  <int value="3" label="Anchor"/>
 </enum>
 
 <enum name="InstantControllerEvent" type="int">

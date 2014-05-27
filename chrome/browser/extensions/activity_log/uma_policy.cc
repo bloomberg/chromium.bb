@@ -17,7 +17,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/dom_action_types.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 
 namespace extensions {
 
@@ -194,7 +197,7 @@ void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
       ActiveScriptController::GetForWebContents(web_contents);
   SiteMap::iterator site_lookup = url_status_.find(cleaned_url);
   const ExtensionMap& exts = site_lookup->second;
-  std::vector<std::string> ad_injectors;
+  std::set<std::string> ad_injectors;
   for (ExtensionMap::const_iterator ext_iter = exts.begin();
        ext_iter != exts.end();
        ++ext_iter) {
@@ -205,11 +208,24 @@ void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
         statuses[i-1]++;
     }
 
-    if ((ext_iter->second & kAnyAdActivity) && active_script_controller)
-      ad_injectors.push_back(ext_iter->first);
+    if (ext_iter->second & kAnyAdActivity)
+      ad_injectors.insert(ext_iter->first);
   }
   if (active_script_controller)
     active_script_controller->OnAdInjectionDetected(ad_injectors);
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  for (std::set<std::string>::const_iterator iter = ad_injectors.begin();
+       iter != ad_injectors.end();
+       ++iter) {
+    const Extension* extension =
+        registry->GetExtensionById(*iter, ExtensionRegistry::EVERYTHING);
+    if (extension) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AdInjection.InstallLocation",
+                                extension->location(),
+                                Manifest::NUM_LOCATIONS);
+    }
+  }
 
   std::string prefix = "ExtensionActivity.";
   if (GURL(cleaned_url).host() != "www.google.com") {

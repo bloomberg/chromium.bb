@@ -309,6 +309,24 @@ functions.push(function NewAnchorLikelyAd() {
   return INJECTION_LIKELY_NEW_AD;
 });
 
+// Test that an extension adding an element is not considered likely ad
+// injection if the element has a local resource.
+functions.push(function LocalResourceNotConsideredAd() {
+  var anchor = document.createElement('a');
+  document.body.appendChild(anchor).href = chrome.extension.getURL('foo.html');
+  return NO_AD_INJECTION;
+});
+
+// Test that an extension adding an element with the same host as the current
+// page is not considered ad injection.
+functions.push(function SamePageUrlNotConsideredAd() {
+  var anchor = document.createElement('a');
+  // This source is something like 'http://127.0.0.1:49725/foo.html'.
+  document.body.appendChild(anchor).href = document.URL + 'foo.html';
+  return NO_AD_INJECTION;
+});
+
+
 functions.push(function ModifyExistingAnchorToAdNetwork() {
   var anchor = $('non-ad-anchor');
   anchor.href = kAdNetwork;

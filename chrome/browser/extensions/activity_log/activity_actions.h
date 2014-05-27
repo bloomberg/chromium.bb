@@ -45,7 +45,8 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_ANY = 1001,              // Used for lookups of unspecified type.
   };
 
-  // The type of ad injection an action performed.
+  // The type of ad injection an action performed. Do not delete or reorder
+  // these metrics, as they are used in histogramming.
   enum InjectionType {
     // No ad injection occurred.
     NO_AD_INJECTION = 0,
@@ -64,6 +65,17 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
     // Place any new injection types above this entry.
     NUM_INJECTION_TYPES
+  };
+
+  // The type of ad which was injected.
+  enum AdType {
+    AD_TYPE_NONE,
+    AD_TYPE_IFRAME,
+    AD_TYPE_EMBED,
+    AD_TYPE_ANCHOR,
+
+    // Place any new injection types above this entry.
+    NUM_AD_TYPES
   };
 
   // A useful shorthand for methods that take or return collections of Action
@@ -166,14 +178,24 @@ class Action : public base::RefCountedThreadSafe<Action> {
  private:
   friend class base::RefCountedThreadSafe<Action>;
 
+  // Returns true if a given |url| could be an ad.
+  bool UrlCouldBeAd(const GURL& url) const;
+
   // Uploads the URL to RAPPOR (preserving privacy) if this might have been an
   // ad injection.
   void MaybeUploadUrl(rappor::RapporService* rappor_service) const;
 
-  // Checks an action with the appendChild API for ad injection.
-  InjectionType CheckAppendChild() const;
   // Checks an action that modified the src of an element for ad injection.
   InjectionType CheckSrcModification() const;
+  // Checks an action with the appendChild API for ad injection.
+  // |ad_type_out| is populated with the type of ad which was injected, if there
+  // was an injection.
+  InjectionType CheckAppendChild(AdType* ad_type_out) const;
+  // Checks a DOM object (e.g. an appended child) for ad injection.
+  // |ad_type_out| is populated with the type of ad which was injected, if there
+  // was an injection.
+  InjectionType CheckDomObject(const base::DictionaryValue* object,
+                               AdType* ad_type_out) const;
 
   std::string extension_id_;
   base::Time time_;

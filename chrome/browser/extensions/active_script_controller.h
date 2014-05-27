@@ -62,7 +62,7 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   void OnActiveTabPermissionGranted(const Extension* extension);
 
   // Notifies the ActiveScriptController of detected ad injection.
-  void OnAdInjectionDetected(const std::vector<std::string> ad_injectors);
+  void OnAdInjectionDetected(const std::set<std::string> ad_injectors);
 
   // LocationBarControllerProvider implementation.
   virtual ExtensionAction* GetActionForExtension(
