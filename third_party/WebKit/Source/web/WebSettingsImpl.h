@@ -131,7 +131,6 @@ public:
     virtual void setPinchOverlayScrollbarThickness(int) OVERRIDE;
     virtual void setPinchVirtualViewportEnabled(bool) OVERRIDE;
     virtual void setPluginsEnabled(bool) OVERRIDE;
-    virtual void setPrivilegedWebGLExtensionsEnabled(bool) OVERRIDE;
     virtual void setRenderVSyncNotificationEnabled(bool) OVERRIDE;
     virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) OVERRIDE;
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;

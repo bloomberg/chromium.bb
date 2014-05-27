@@ -394,11 +394,6 @@ void WebSettingsImpl::setOpenGLMultisamplingEnabled(bool enabled)
     m_settings->setOpenGLMultisamplingEnabled(enabled);
 }
 
-void WebSettingsImpl::setPrivilegedWebGLExtensionsEnabled(bool enabled)
-{
-    m_settings->setPrivilegedWebGLExtensionsEnabled(enabled);
-}
-
 void WebSettingsImpl::setRenderVSyncNotificationEnabled(bool enabled)
 {
     m_renderVSyncNotificationEnabled = enabled;

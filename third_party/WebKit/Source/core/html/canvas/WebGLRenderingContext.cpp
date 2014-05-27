@@ -138,6 +138,8 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, EnabledDraftExtension, webkitPrefix);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, EnabledDraftExtension, webkitPrefix);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
+    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
+    registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
     registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
     registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
@@ -147,10 +149,6 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<EXTFragDepth>(m_extFragDepth, DraftExtension);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD, DraftExtension);
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1, DraftExtension);
-
-    // Register privileged extensions.
-    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, WebGLDebugRendererInfoExtension);
-    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, PrivilegedExtension);
 }
 
 } // namespace WebCore

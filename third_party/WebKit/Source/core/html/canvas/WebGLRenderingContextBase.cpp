@@ -639,18 +639,6 @@ void WebGLRenderingContextBase::setupFlags()
     m_isDepthStencilSupported = extensionsUtil()->isExtensionEnabled("GL_OES_packed_depth_stencil");
 }
 
-bool WebGLRenderingContextBase::allowPrivilegedExtensions() const
-{
-    if (Page* p = canvas()->document().page())
-        return p->settings().privilegedWebGLExtensionsEnabled();
-    return false;
-}
-
-bool WebGLRenderingContextBase::allowWebGLDebugRendererInfo() const
-{
-    return true;
-}
-
 void WebGLRenderingContextBase::addCompressedTextureFormat(GLenum format)
 {
     if (!m_compressedTextureFormats.contains(format))
@@ -2128,10 +2116,6 @@ bool WebGLRenderingContextBase::ExtensionTracker::matchesNameWithPrefixes(const 
 
 bool WebGLRenderingContextBase::extensionSupportedAndAllowed(const ExtensionTracker* tracker)
 {
-    if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
-        return false;
-    if (tracker->privileged() && !allowPrivilegedExtensions())
-        return false;
     if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
         return false;
     if (!tracker->supported(this))
