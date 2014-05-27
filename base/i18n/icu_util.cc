@@ -69,13 +69,13 @@ bool InitializeICU() {
 
   HMODULE module = LoadLibrary(data_path.value().c_str());
   if (!module) {
-    DLOG(ERROR) << "Failed to load " << ICU_UTIL_DATA_SHARED_MODULE_NAME;
+    LOG(ERROR) << "Failed to load " << ICU_UTIL_DATA_SHARED_MODULE_NAME;
     return false;
   }
 
   FARPROC addr = GetProcAddress(module, ICU_UTIL_DATA_SYMBOL);
   if (!addr) {
-    DLOG(ERROR) << ICU_UTIL_DATA_SYMBOL << ": not found in "
+    LOG(ERROR) << ICU_UTIL_DATA_SYMBOL << ": not found in "
                << ICU_UTIL_DATA_SHARED_MODULE_NAME;
     return false;
   }
@@ -116,12 +116,12 @@ bool InitializeICU() {
     FilePath data_path =
       base::mac::PathForFrameworkBundleResource(CFSTR(ICU_UTIL_DATA_FILE_NAME));
     if (data_path.empty()) {
-      DLOG(ERROR) << ICU_UTIL_DATA_FILE_NAME << " not found in bundle";
+      LOG(ERROR) << ICU_UTIL_DATA_FILE_NAME << " not found in bundle";
       return false;
     }
 #endif  // OS check
     if (!mapped_file.Initialize(data_path)) {
-      DLOG(ERROR) << "Couldn't mmap " << data_path.AsUTF8Unsafe();
+      LOG(ERROR) << "Couldn't mmap " << data_path.AsUTF8Unsafe();
       return false;
     }
   }
