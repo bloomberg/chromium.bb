@@ -2890,6 +2890,8 @@ void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
 void RenderViewImpl::OnSetRendererPrefs(
     const RendererPreferences& renderer_prefs) {
   double old_zoom_level = renderer_preferences_.default_zoom_level;
+  std::string old_accept_languages = renderer_preferences_.accept_languages;
+
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
 
@@ -2923,6 +2925,11 @@ void RenderViewImpl::OnSetRendererPrefs(
       ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
     webview()->setZoomLevel(renderer_preferences_.default_zoom_level);
     zoomLevelChanged();
+  }
+
+  if (webview() &&
+      old_accept_languages != renderer_preferences_.accept_languages) {
+    webview()->acceptLanguagesChanged();
   }
 }
 
