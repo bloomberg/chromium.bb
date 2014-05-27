@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -423,30 +424,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   BumpNextRegistrationIdIfNeeded(registration.registration_id, &batch);
   BumpNextVersionIdIfNeeded(registration.version_id, &batch);
 
-  // TODO(nhiroki): Skip to add the origin into the unique origin list if it
-  // has already been added.
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
-
   PutRegistrationDataToBatch(registration, &batch);
-
-  // Retrieve a previous version to sweep purgeable resources.
-  RegistrationData old_registration;
-  status = ReadRegistrationData(registration.registration_id,
-                                registration.scope.GetOrigin(),
-                                &old_registration);
-  if (status != STATUS_OK && status != STATUS_ERROR_NOT_FOUND)
-    return status;
-  if (status == STATUS_OK) {
-    DCHECK_LT(old_registration.version_id, registration.version_id);
-    // Currently resource sharing across versions and registrations is not
-    // suppported, so resource ids should not be overlapped between
-    // |registration| and |old_registration|.
-    // TODO(nhiroki): Add DCHECK to make sure the overlap does not exist.
-    status = DeleteResourceRecords(
-        old_registration.version_id, newly_purgeable_resources, &batch);
-    if (status != STATUS_OK)
-      return status;
-  }
 
   // Used for avoiding multiple writes for the same resource id or url.
   std::set<int64> pushed_resources;
@@ -465,6 +444,29 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     // Delete a resource from the uncommitted list.
     batch.Delete(CreateResourceIdKey(
         kUncommittedResIdKeyPrefix, itr->resource_id));
+  }
+
+  // Retrieve a previous version to sweep purgeable resources.
+  RegistrationData old_registration;
+  status = ReadRegistrationData(registration.registration_id,
+                                registration.scope.GetOrigin(),
+                                &old_registration);
+  if (status != STATUS_OK && status != STATUS_ERROR_NOT_FOUND)
+    return status;
+  if (status == STATUS_OK) {
+    DCHECK_LT(old_registration.version_id, registration.version_id);
+    status = DeleteResourceRecords(
+        old_registration.version_id, newly_purgeable_resources, &batch);
+    if (status != STATUS_OK)
+      return status;
+
+    // Currently resource sharing across versions and registrations is not
+    // supported, so resource ids should not be overlapped between
+    // |registration| and |old_registration|.
+    std::set<int64> deleted_resources(newly_purgeable_resources->begin(),
+                                      newly_purgeable_resources->end());
+    DCHECK(base::STLSetIntersection<std::set<int64> >(
+        pushed_resources, deleted_resources).empty());
   }
 
   return WriteBatch(&batch);
