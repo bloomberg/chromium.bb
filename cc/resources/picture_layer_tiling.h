@@ -51,9 +51,7 @@ class CC_EXPORT PictureLayerTiling {
     TilingRasterTileIterator(PictureLayerTiling* tiling, WhichTree tree);
     ~TilingRasterTileIterator();
 
-    operator bool() const {
-      return current_tile_ && TileNeedsRaster(current_tile_);
-    }
+    operator bool() const { return !!current_tile_; }
     Tile* operator*() { return current_tile_; }
     TilePriority::PriorityBin get_type() const { return type_; }
 

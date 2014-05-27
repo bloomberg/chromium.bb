@@ -859,8 +859,10 @@ void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
       ++spiral_iterator_;
     }
 
-    if (!spiral_iterator_ && type_ == TilePriority::EVENTUALLY)
+    if (!spiral_iterator_ && type_ == TilePriority::EVENTUALLY) {
+      current_tile_ = NULL;
       break;
+    }
   } while (!spiral_iterator_);
 }
 
@@ -901,8 +903,10 @@ operator++() {
         break;
       case TilePriority::EVENTUALLY:
         ++spiral_iterator_;
-        if (!spiral_iterator_)
+        if (!spiral_iterator_) {
+          current_tile_ = NULL;
           return *this;
+        }
         next_index = spiral_iterator_.index();
         break;
     }
