@@ -51,29 +51,6 @@ class TempFile;
 // Translation proceeds in two steps:
 // (1) llc translates the bitcode in pexe_url_ to an object in obj_file_.
 // (2) ld links the object code in obj_file_ and produces a nexe in nexe_file_.
-//
-// The coordinator proceeds through several states.  They are
-// OPEN_BITCODE_STREAM
-//       Complete when BitcodeStreamDidOpen is invoked
-// LOAD_TRANSLATOR_BINARIES
-//     Complete when ResourcesDidLoad is invoked.
-// GET_NEXE_FD
-//       Get an FD which contains the cached nexe, or is writeable for
-//       translation output. Complete when NexeFdDidOpen is called.
-//
-// If there was a cache hit, go to OPEN_NEXE_FOR_SEL_LDR, otherwise,
-// continue streaming the bitcode, and:
-// OPEN_TMP_FOR_LLC_TO_LD_COMMUNICATION
-//     Complete when ObjectFileDidOpen is invoked.
-// OPEN_NEXE_FD_FOR_WRITING
-//     Complete when RunTranslate is invoked.
-// START_LD_AND_LLC_SUBPROCESS_AND_INITIATE_TRANSLATION
-//     Complete when RunTranslate returns.
-// TRANSLATION_COMPLETE
-//     Complete when TranslateFinished is invoked.
-//
-// OPEN_NEXE_FOR_SEL_LDR
-//   Complete when NexeReadDidOpen is invoked.
 class PnaclCoordinator: public CallbackSource<FileStreamData> {
  public:
   // Maximum number of object files passable to the translator. Cannot be
@@ -90,7 +67,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // Call this to take ownership of the FD of the translated nexe after
   // BitcodeToNative has completed (and the finish_callback called).
-  nacl::DescWrapper* ReleaseTranslatedFD();
+  PP_FileHandle TakeTranslatedFileHandle();
 
   // Run |translate_notify_callback_| with an error condition that is not
   // PPAPI specific.  Also set ErrorInfo report.
@@ -166,8 +143,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void BitcodeGotCompiled(int32_t pp_error, int64_t bytes_compiled);
   // Invoked when the pexe download finishes (using streaming translation)
   void BitcodeStreamDidFinish(int32_t pp_error);
-  // Invoked when the write descriptor for obj_file_ is created.
-  void ObjectFileDidOpen(int32_t pp_error);
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
   // subprocesses, one for llc and one for ld.

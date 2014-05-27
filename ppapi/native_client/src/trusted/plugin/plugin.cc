@@ -485,10 +485,11 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   }
 
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
-  nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
+  PP_FileHandle handle = pnacl_coordinator_->TakeTranslatedFileHandle();
+  int32_t fd = ConvertFileDescriptor(handle, true);
+  nacl::DescWrapper* wrapper = wrapper_factory()->MakeFileDesc(fd, O_RDONLY);
   LoadNaClModule(
-      wrapper.release(),
+      wrapper,
       false, /* uses_nonsfi_mode */
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */

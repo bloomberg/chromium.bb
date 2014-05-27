@@ -19,32 +19,26 @@
 namespace plugin {
 
 TempFile::TempFile(Plugin* plugin) : plugin_(plugin),
-                                     existing_handle_(PP_kInvalidFileHandle) {
-  PLUGIN_PRINTF(("TempFile::TempFile\n"));
+                                     internal_handle_(PP_kInvalidFileHandle) {
 }
 
-TempFile::~TempFile() {
-  PLUGIN_PRINTF(("TempFile::~TempFile\n"));
-}
+TempFile::~TempFile() { }
 
-void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
-  PLUGIN_PRINTF(("TempFile::Open\n"));
-  PP_FileHandle file_handle;
-  if (existing_handle_ == PP_kInvalidFileHandle) {
-    file_handle =
+int32_t TempFile::Open(bool writeable) {
+  // TODO(teravest): Clean up this Open() behavior; this is really confusing as
+  // written.
+  if (internal_handle_ == PP_kInvalidFileHandle) {
+    internal_handle_ =
         plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
-  } else {
-    file_handle = existing_handle_;
   }
 
-  pp::Core* core = pp::Module::Get()->core();
-  if (file_handle == PP_kInvalidFileHandle) {
+  if (internal_handle_ == PP_kInvalidFileHandle) {
     PLUGIN_PRINTF(("TempFile::Open failed w/ PP_kInvalidFileHandle\n"));
-    core->CallOnMainThread(0, cb, PP_ERROR_FAILED);
+    return PP_ERROR_FAILED;
   }
 
 #if NACL_WINDOWS
-  HANDLE handle = file_handle;
+  HANDLE handle = internal_handle_;
 
   //////// Now try the posix view.
   int rdwr_flag = writeable ? _O_RDWR : _O_RDONLY;
@@ -58,21 +52,19 @@ void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
   }
   int32_t fd = posix_desc;
 #else
-  int32_t fd = file_handle;
+  int32_t fd = internal_handle_;
 #endif
 
   if (fd < 0) {
     PLUGIN_PRINTF(("TempFile::Open failed\n"));
-    core->CallOnMainThread(0, cb, PP_ERROR_FAILED);
-    return;
+    return PP_ERROR_FAILED;
   }
 
   // dup the fd to make allow making separate read and write wrappers.
   int32_t read_fd = DUP(fd);
   if (read_fd == NACL_NO_FILE_DESC) {
     PLUGIN_PRINTF(("TempFile::Open DUP failed\n"));
-    core->CallOnMainThread(0, cb, PP_ERROR_FAILED);
-    return;
+    return PP_ERROR_FAILED;
   }
 
   if (writeable) {
@@ -82,7 +74,7 @@ void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
 
   read_wrapper_.reset(
       plugin_->wrapper_factory()->MakeFileDesc(read_fd, O_RDONLY));
-  core->CallOnMainThread(0, cb, PP_OK);
+  return PP_OK;
 }
 
 bool TempFile::Reset() {
@@ -92,6 +84,14 @@ bool TempFile::Reset() {
   CHECK(read_wrapper_.get() != NULL);
   nacl_off64_t newpos = read_wrapper_->Seek(0, SEEK_SET);
   return newpos == 0;
+}
+
+PP_FileHandle TempFile::TakeFileHandle() {
+  PP_FileHandle to_return = internal_handle_;
+  internal_handle_ = PP_kInvalidFileHandle;
+  read_wrapper_.release();
+  write_wrapper_.release();
+  return to_return;
 }
 
 }  // namespace plugin
