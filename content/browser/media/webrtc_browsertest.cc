@@ -43,8 +43,8 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest,
     WebRtcContentBrowserTest::SetUpCommandLine(command_line);
 
     bool enable_audio_track_processing = GetParam();
-    if (enable_audio_track_processing)
-      command_line->AppendSwitch(switches::kEnableAudioTrackProcessing);
+    if (!enable_audio_track_processing)
+      command_line->AppendSwitch(switches::kDisableAudioTrackProcessing);
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {

@@ -12,6 +12,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -626,14 +627,13 @@ void PeerConnectionDependencyFactory::OnAecDumpFile(
   base::File file = IPC::PlatformFileForTransitToFile(file_handle);
   DCHECK(file.IsValid());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioTrackProcessing)) {
+  if (MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
     EnsureWebRtcAudioDeviceImpl();
     GetWebRtcAudioDevice()->EnableAecDump(file.Pass());
     return;
   }
 
-  // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
+  // TODO(xians): Remove the following code after kDisableAudioTrackProcessing
   // is removed.
   if (PeerConnectionFactoryCreated())
     StartAecDump(file.Pass());
@@ -642,13 +642,12 @@ void PeerConnectionDependencyFactory::OnAecDumpFile(
 }
 
 void PeerConnectionDependencyFactory::OnDisableAecDump() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioTrackProcessing)) {
+  if (MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
     GetWebRtcAudioDevice()->DisableAecDump();
     return;
   }
 
-  // TODO(xians): Remove the following code after kEnableAudioTrackProcessing
+  // TODO(xians): Remove the following code after kDisableAudioTrackProcessing
   // is removed.
   if (aec_dump_file_.IsValid())
     aec_dump_file_.Close();

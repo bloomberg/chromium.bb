@@ -99,8 +99,8 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
         switches::kUseFakeUIForMediaStream));
 
     bool enable_audio_track_processing = GetParam();
-    if (enable_audio_track_processing)
-      command_line->AppendSwitch(switches::kEnableAudioTrackProcessing);
+    if (!enable_audio_track_processing)
+      command_line->AppendSwitch(switches::kDisableAudioTrackProcessing);
   }
 
   void AddAudioFile(const std::string& input_file_relative_url,

@@ -925,9 +925,9 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 const char kZygoteProcess[]                 = "zygote";
 
 #if defined(ENABLE_WEBRTC)
-// Enables audio processing in a MediaStreamTrack. When this flag is on, AEC,
-// NS and AGC will be done per MediaStreamTrack instead of in PeerConnection.
-const char kEnableAudioTrackProcessing[]    = "enable-audio-track-processing";
+// Disables audio processing in a MediaStreamTrack. When this flag is on, AEC,
+// NS and AGC will be done in PeerConnection instead of MediaStreamTrack.
+const char kDisableAudioTrackProcessing[]    = "disable-audio-track-processing";
 
 // Disables WebRTC device enumeration.
 const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
