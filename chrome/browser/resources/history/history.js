@@ -996,6 +996,9 @@ HistoryView.prototype.positionNotificationBar = function() {
  * @private
  */
 HistoryView.prototype.clear_ = function() {
+  if ($('alertOverlay').classList.contains('showing'))
+    hideConfirmationOverlay();
+
   this.resultDiv_.textContent = '';
 
   this.currentVisits_.forEach(function(visit) {
