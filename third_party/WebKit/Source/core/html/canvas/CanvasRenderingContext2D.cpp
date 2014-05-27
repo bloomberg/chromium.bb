@@ -2296,7 +2296,6 @@ void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path, Eleme
     if (!focusRingCallIsValid(path, element))
         return;
 
-    updateFocusRingAccessibility(path, element);
     // Note: we need to check document->focusedElement() rather than just calling
     // element->focused(), because element->focused() isn't updated until after
     // focus events fire.
@@ -2308,8 +2307,6 @@ bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
 {
     if (!focusRingCallIsValid(m_path, element))
         return false;
-
-    updateFocusRingAccessibility(m_path, element);
 
     // Return true if the application should draw the focus ring. The spec allows us to
     // override this for accessibility, but currently Blink doesn't take advantage of this.
@@ -2327,39 +2324,6 @@ bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* e
         return false;
 
     return true;
-}
-
-void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, Element* element)
-{
-    if (!canvas()->renderer())
-        return;
-
-    // If accessibility is already enabled in this frame, associate this path's
-    // bounding box with the accessible object. Do this even if the element
-    // isn't focused because assistive technology might try to explore the object's
-    // location before it gets focus.
-    if (AXObjectCache* axObjectCache = element->document().existingAXObjectCache()) {
-        if (AXObject* obj = axObjectCache->getOrCreate(element)) {
-            // Get the bounding rect and apply transformations.
-            FloatRect bounds = path.boundingRect();
-            AffineTransform ctm = state().m_transform;
-            FloatRect transformedBounds = ctm.mapRect(bounds);
-            LayoutRect elementRect = LayoutRect(transformedBounds);
-
-            // Offset by the canvas rect and set the bounds of the accessible element.
-            IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
-            elementRect.moveBy(canvasRect.location());
-            obj->setElementRect(elementRect);
-
-            // Set the bounds of any ancestor accessible elements, up to the canvas element,
-            // otherwise this element will appear to not be within its parent element.
-            obj = obj->parentObject();
-            while (obj && obj->node() != canvas()) {
-                obj->setElementRect(elementRect);
-                obj = obj->parentObject();
-            }
-        }
-    }
 }
 
 void CanvasRenderingContext2D::drawFocusRing(const Path& path)

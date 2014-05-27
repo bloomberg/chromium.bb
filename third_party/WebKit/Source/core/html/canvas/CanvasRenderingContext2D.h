@@ -332,7 +332,6 @@ private:
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
-    void updateFocusRingAccessibility(const Path&, Element*);
     void drawFocusRing(const Path&);
 
     virtual bool is2d() const OVERRIDE { return true; }

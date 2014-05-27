@@ -96,8 +96,8 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     void stroke();
     [RuntimeEnabled=Path2D] void stroke(Path2D path);
     // Focus rings
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void drawFocusIfNeeded(Element element);
-    [RuntimeEnabled=ExperimentalCanvasFeatures] void drawFocusIfNeeded(Path2D path, Element element);
+    void drawFocusIfNeeded(Element element);
+    [RuntimeEnabled=Path2D] void drawFocusIfNeeded(Path2D path, Element element);
     [RuntimeEnabled=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView();
