@@ -19,7 +19,6 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -88,54 +87,6 @@ namespace views {
 
 namespace internal {
 
-// This event handler receives events in the post-target phase and takes care of
-// the following:
-//   - Generates context menu, or initiates drag-and-drop, from gesture events.
-class PostEventDispatchHandler : public ui::EventHandler {
- public:
-  explicit PostEventDispatchHandler(View* owner)
-      : owner_(owner),
-        touch_dnd_enabled_(switches::IsTouchDragDropEnabled()) {
-  }
-  virtual ~PostEventDispatchHandler() {}
-
- private:
-  // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    DCHECK_EQ(ui::EP_POSTTARGET, event->phase());
-    if (event->handled())
-      return;
-
-    if (touch_dnd_enabled_) {
-      if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
-          (!owner_->drag_controller() ||
-           owner_->drag_controller()->CanStartDragForView(
-              owner_, event->location(), event->location()))) {
-        if (owner_->DoDrag(*event, event->location(),
-            ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
-          event->StopPropagation();
-          return;
-        }
-      }
-    }
-
-    if (owner_->context_menu_controller() &&
-        (event->type() == ui::ET_GESTURE_LONG_PRESS ||
-         event->type() == ui::ET_GESTURE_LONG_TAP ||
-         event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
-      gfx::Point location(event->location());
-      View::ConvertPointToScreen(owner_, &location);
-      owner_->ShowContextMenu(location, ui::MENU_SOURCE_TOUCH);
-      event->StopPropagation();
-    }
-  }
-
-  View* owner_;
-  bool touch_dnd_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(PostEventDispatchHandler);
-};
-
 }  // namespace internal
 
 // static
@@ -171,9 +122,7 @@ View::View()
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
       drag_controller_(NULL),
-      post_dispatch_handler_(new internal::PostEventDispatchHandler(this)),
       native_view_accessibility_(NULL) {
-  AddPostTargetHandler(post_dispatch_handler_.get());
 }
 
 View::~View() {

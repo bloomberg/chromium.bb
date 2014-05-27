@@ -1598,7 +1598,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Input  --------------------------------------------------------------------
 
-  scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
   scoped_ptr<ui::EventTargeter> targeter_;
 
   // Accessibility -------------------------------------------------------------

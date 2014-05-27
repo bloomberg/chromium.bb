@@ -11,10 +11,12 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/drag_controller.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_targeter.h"
@@ -92,6 +94,53 @@ class PreEventDispatchHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);
 };
 
+// This event handler receives events in the post-target phase and takes care of
+// the following:
+//   - Generates context menu, or initiates drag-and-drop, from gesture events.
+class PostEventDispatchHandler : public ui::EventHandler {
+ public:
+  PostEventDispatchHandler()
+      : touch_dnd_enabled_(::switches::IsTouchDragDropEnabled()) {
+  }
+  virtual ~PostEventDispatchHandler() {}
+
+ private:
+  // Overridden from ui::EventHandler:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    DCHECK_EQ(ui::EP_POSTTARGET, event->phase());
+    if (event->handled())
+      return;
+
+    View* target = static_cast<View*>(event->target());
+    gfx::Point location = event->location();
+    if (touch_dnd_enabled_ &&
+        event->type() == ui::ET_GESTURE_LONG_PRESS &&
+        (!target->drag_controller() ||
+         target->drag_controller()->CanStartDragForView(
+             target, location, location))) {
+      if (target->DoDrag(*event, location,
+          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
+        event->StopPropagation();
+        return;
+      }
+    }
+
+    if (target->context_menu_controller() &&
+        (event->type() == ui::ET_GESTURE_LONG_PRESS ||
+         event->type() == ui::ET_GESTURE_LONG_TAP ||
+         event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
+      gfx::Point screen_location(location);
+      View::ConvertPointToScreen(target, &screen_location);
+      target->ShowContextMenu(screen_location, ui::MENU_SOURCE_TOUCH);
+      event->StopPropagation();
+    }
+  }
+
+  bool touch_dnd_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(PostEventDispatchHandler);
+};
+
 // static
 const char RootView::kViewClassName[] = "RootView";
 
@@ -112,12 +161,14 @@ RootView::RootView(Widget* widget)
       gesture_handler_(NULL),
       scroll_gesture_handler_(NULL),
       pre_dispatch_handler_(new internal::PreEventDispatchHandler(this)),
+      post_dispatch_handler_(new internal::PostEventDispatchHandler),
       focus_search_(this, false, false),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL),
       event_dispatch_target_(NULL),
       old_dispatch_target_(NULL) {
   AddPreTargetHandler(pre_dispatch_handler_.get());
+  AddPostTargetHandler(post_dispatch_handler_.get());
   SetEventTargeter(scoped_ptr<ui::EventTargeter>(new ViewTargeter()));
 }
 

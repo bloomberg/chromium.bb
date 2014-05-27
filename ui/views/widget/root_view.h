@@ -194,6 +194,7 @@ class VIEWS_EXPORT RootView : public View,
   View* scroll_gesture_handler_;
 
   scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
+  scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
 
   // Focus ---------------------------------------------------------------------
 
