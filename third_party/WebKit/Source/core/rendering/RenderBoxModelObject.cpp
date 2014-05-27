@@ -2745,18 +2745,8 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
     if (!o)
         return;
 
-    // The point inside a box that's inside a region has its coordinates relative to the region,
-    // not the FlowThread that is its container in the RenderObject tree.
-    if (o->isRenderFlowThread() && isRenderBlock()) {
-        // FIXME: switch to Box instead of Block when we'll have range information for boxes as well, not just for blocks.
-        RenderRegion* startRegion;
-        RenderRegion* ignoredEndRegion;
-        toRenderFlowThread(o)->getRegionRangeForBox(toRenderBlock(this), startRegion, ignoredEndRegion);
-        // If there is no region to use the FlowThread, then there's no region range for the content in that FlowThread.
-        // An API like elementFromPoint might crash without this check.
-        if (startRegion)
-            o = startRegion;
-    }
+    if (o->isRenderFlowThread())
+        transformState.move(o->columnOffset(LayoutPoint(transformState.mappedPoint())));
 
     o->mapAbsoluteToLocalPoint(mode, transformState);
 
