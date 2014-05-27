@@ -1082,7 +1082,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       Send(response.release());
     }
   }
-  ignore_ack_for_mouse_move_from_debugger_ = false;
+  if (input_event->type == WebInputEvent::MouseMove)
+    ignore_ack_for_mouse_move_from_debugger_ = false;
 
 #if defined(OS_ANDROID)
   // Allow the IME to be shown when the focus changes as a consequence
@@ -1520,10 +1521,14 @@ bool RenderWidget::ShouldHandleImeEvent() {
 
 bool RenderWidget::SendAckForMouseMoveFromDebugger() {
   if (handling_event_type_ == WebInputEvent::MouseMove) {
-    InputHostMsg_HandleInputEvent_ACK_Params ack;
-    ack.type = handling_event_type_;
-    ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
-    Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
+    // If we pause multiple times during a single mouse move event, we should
+    // only send ACK once.
+    if (!ignore_ack_for_mouse_move_from_debugger_) {
+      InputHostMsg_HandleInputEvent_ACK_Params ack;
+      ack.type = handling_event_type_;
+      ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+      Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
+    }
     return true;
   }
   return false;
