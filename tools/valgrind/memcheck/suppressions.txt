@@ -4738,8 +4738,6 @@
    fun:nssTrustDomain_FindTrustForCertificate
    fun:STAN_DeleteCertTrustMatchingSlot
    fun:SEC_DeletePermCertificate
-   ...
-   fun:_ZN3net15NSSCertDatabase16DeleteCertAndKeyEPKNS_15X509CertificateE
 }
 {
    bug_177213
