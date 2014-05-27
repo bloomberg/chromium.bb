@@ -2178,3 +2178,12 @@ name=bug_374410
 UNINITIALIZED READ
 name=bug_376814
 *!content::PepperPluginInstanceImpl::UpdateLayer
+
+UNINITIALIZED READ
+name=bug_377728
+...
+*!Hunspell::suggest
+*!HunspellEngine::FillSuggestionList
+*!SpellcheckLanguage::SpellCheckWord
+*!SpellCheck::SpellCheckWord
+*!SpellCheckTest_SpellCheckSuggestions_EN_US_Test::TestBody
