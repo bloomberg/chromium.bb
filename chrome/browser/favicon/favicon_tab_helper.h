@@ -35,7 +35,6 @@ class SkBitmap;
 // downloaded and saved in the history backend.
 //
 class FaviconTabHelper : public content::WebContentsObserver,
-                         public FaviconClient,
                          public FaviconDriver,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
@@ -91,10 +90,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
-  // FaviconClient implementation:
-  virtual FaviconService* GetFaviconService() OVERRIDE;
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
-
  private:
   explicit FaviconTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<FaviconTabHelper>;
@@ -111,6 +106,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
   content::FaviconStatus& GetFaviconStatus();
 
   Profile* profile_;
+
+  scoped_ptr<FaviconClient> client_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 

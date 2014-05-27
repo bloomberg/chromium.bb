@@ -628,6 +628,8 @@
         'browser/extensions/token_cache/token_cache_service_factory.h',
         'browser/external_protocol/external_protocol_handler.cc',
         'browser/external_protocol/external_protocol_handler.h',
+        'browser/favicon/chrome_favicon_client.cc',
+        'browser/favicon/chrome_favicon_client.h',
         'browser/favicon/favicon_changed_details.cc',
         'browser/favicon/favicon_changed_details.h',
         'browser/favicon/favicon_handler.cc',
