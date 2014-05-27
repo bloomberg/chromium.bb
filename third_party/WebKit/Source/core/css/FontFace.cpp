@@ -389,8 +389,10 @@ void FontFace::setLoadStatus(LoadStatus status)
     }
 }
 
-ScriptPromise FontFace::load(ScriptState* scriptState)
+ScriptPromise FontFace::fontStatusPromise(ScriptState* scriptState)
 {
+    // Since we cannot hold a ScriptPromise as a member of FontFace (that will
+    // cause a circular reference), this creates new Promise every time.
     OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (m_status == Loaded || m_status == Error)
@@ -398,8 +400,13 @@ ScriptPromise FontFace::load(ScriptState* scriptState)
     else
         m_readyResolvers.append(resolver.release());
 
-    loadInternal(scriptState->executionContext());
     return promise;
+}
+
+ScriptPromise FontFace::load(ScriptState* scriptState)
+{
+    loadInternal(scriptState->executionContext());
+    return fontStatusPromise(scriptState);
 }
 
 void FontFace::loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback> callback, ExecutionContext* context)

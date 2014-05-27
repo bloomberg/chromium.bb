@@ -53,8 +53,9 @@ function testStep3() {
 
     face3 = new FontFace('Font3', 'url(../../resources/Ahem.ttf)', {});
     shouldBeEqualToString('face3.status', 'unloaded');
-    face3.load().then(testStep4, fail('face3.load() rejected'));
+    face3.load();
     shouldBeEqualToString('face3.status', 'loading');
+    face3.loaded.then(testStep4, fail('face3.load() rejected'));
 }
 
 function testStep4() {
@@ -62,8 +63,9 @@ function testStep4() {
 
     face4 = new FontFace('Font4', 'url(../../resources/DownLoadErrorAhem.otf)', {});
     shouldBeEqualToString('face4.status', 'unloaded');
-    face4.load().then(fail('face4.load() fulfilled'), testStep5);
+    face4.load();
     shouldBeEqualToString('face4.status', 'loading');
+    face4.loaded.then(fail('face4.load() fulfilled'), testStep5);
 }
 
 function testStep5() {
