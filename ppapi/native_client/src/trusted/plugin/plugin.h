@@ -149,13 +149,6 @@ class Plugin : public pp::Instance {
   // event.
   void DispatchProgressEvent(int32_t result);
 
-  // Requests a URL asynchronously, resulting in a call to |callback| with
-  // an error code indicating status. On success, writes file information to
-  // |file_info|.
-  void StreamAsFile(const nacl::string& url,
-                    PP_NaClFileInfo* file_info,
-                    const pp::CompletionCallback& callback);
-
   // A helper function that indicates if |url| can be requested by the document
   // under the same-origin policy. Strictly speaking, it may be possible for the
   // document to request the URL using CORS even if this function returns false.

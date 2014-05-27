@@ -406,7 +406,10 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
 
-  plugin_->StreamAsFile(mapped_url, &open_cont->pp_file_info, stream_cc);
+  GetNaClInterface()->DownloadFile(plugin_->pp_instance(),
+                                   mapped_url.c_str(),
+                                   &open_cont->pp_file_info,
+                                   stream_cc.pp_completion_callback());
   // p is deleted automatically.
 }
 

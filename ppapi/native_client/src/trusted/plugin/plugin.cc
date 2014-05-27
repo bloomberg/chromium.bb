@@ -561,16 +561,6 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
                                        open_callback.pp_completion_callback());
 }
 
-void Plugin::StreamAsFile(const nacl::string& url,
-                          PP_NaClFileInfo* file_info,
-                          const pp::CompletionCallback& callback) {
-  PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
-  nacl_interface_->DownloadFile(pp_instance(),
-                                url.c_str(),
-                                file_info,
-                                callback.pp_completion_callback());
-}
-
 void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
   nacl_interface_->ReportLoadSuccess(
       pp_instance(), program_url_.c_str(), loaded_bytes, total_bytes);
