@@ -833,13 +833,14 @@ class GitRepoPatch(PatchQuery):
         git.RunGit(git_repo, ['reset', '--hard', reset_target],
                    error_code_ok=True)
 
-  def Apply(self, git_repo, upstream, trivial=False):
+  def Apply(self, git_repo, upstream, revision=None, trivial=False):
     """Apply patch into a standalone git repo.
 
     The git repo does not need to be part of a repo checkout.
 
     Args:
       git_repo: The git repository to operate upon.
+      revision: Revision to attach the tracking branch to.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
     """
@@ -848,11 +849,14 @@ class GitRepoPatch(PatchQuery):
 
     cros_build_lib.Info('Attempting to cherry-pick change %s', self)
 
-    if not git.DoesCommitExistInRepo(git_repo, constants.PATCH_BRANCH):
-      cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
+    # If the patch branch exists use it, otherwise create it and switch to it.
+    if git.DoesCommitExistInRepo(git_repo, constants.PATCH_BRANCH):
+      git.RunGit(git_repo, ['checkout', '-f', constants.PATCH_BRANCH])
     else:
-      cmd = ['checkout', '-f', constants.PATCH_BRANCH]
-    git.RunGit(git_repo, cmd)
+      git.RunGit(git_repo,
+                 ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream])
+      if revision:
+        git.RunGit(git_repo, ['reset', '--hard', revision])
 
     # Figure out if we're inflight.  At this point, we assume that the branch
     # is checked out and rebased onto upstream.  If HEAD differs from upstream,
@@ -894,8 +898,16 @@ class GitRepoPatch(PatchQuery):
       ApplyPatchException: If the patch failed to apply.
     """
     checkout = self.GetCheckout(manifest)
+    revision = checkout.get('revision')
+    # revision might be a branch which is written as it would appear on the
+    # remote. If so, rewrite it as a local reference to the remote branch.
+    # For example, refs/heads/master might become refs/remotes/cros/master.
+    if revision and not git.IsSHA1(revision):
+      revision = 'refs/remotes/%s/%s' % \
+          (checkout['remote'], git.StripRefs(revision))
     upstream = checkout['tracking_branch']
-    self.Apply(checkout.GetPath(absolute=True), upstream, trivial=trivial)
+    self.Apply(checkout.GetPath(absolute=True), upstream, revision=revision,
+               trivial=trivial)
 
   def GerritDependencies(self):
     """Returns a list of Gerrit change numbers that this patch depends on.

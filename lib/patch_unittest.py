@@ -438,6 +438,76 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                       git1, cid1, [], 'CQ_DEPEND=1')
 
 
+class TestApplyAgainstManifest(GitRepoPatchTestCase,
+                               cros_test_lib.MockTestCase):
+  """Test applying a patch against a manifest"""
+
+  MANIFEST_TEMPLATE = (
+"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="cros" />
+  <default revision="refs/heads/master" remote="cros" />
+  %(projects)s
+</manifest>
+"""
+  )
+
+  def _CommonRepoSetup(self, *projects):
+    basedir = self.tempdir
+    repodir = os.path.join(basedir, '.repo')
+    manifest_file = os.path.join(repodir, 'manifest.xml')
+    proj_pieces = []
+    for project in projects:
+      proj_pieces.append('<project')
+      for key, val in project.items():
+        if key == 'path':
+          val = os.path.relpath(os.path.realpath(val),
+                                os.path.realpath(self.tempdir))
+        proj_pieces.append(' %s="%s"' % (key, val))
+      proj_pieces.append(' />\n  ')
+    proj_str = ''.join(proj_pieces)
+    content = self.MANIFEST_TEMPLATE % {'projects': proj_str}
+    os.mkdir(repodir)
+    osutils.WriteFile(manifest_file, content)
+    return basedir
+
+  def testApplyAgainstManifest(self):
+    git1, git2, _ = self._CommonGitSetup()
+
+    readme_text = "Dummy README text."
+    readme1 = self.CommitFile(git1, "README", readme_text)
+    readme_text += " Even more dummy README text."
+    readme2 = self.CommitFile(git1, "README", readme_text)
+    readme_text += " Even more README text."
+    readme3 = self.CommitFile(git1, "README", readme_text)
+
+    git1_proj = {'path': git1,
+                 'name': 'chromiumos/chromite',
+                 'revision': str(readme1.sha1),
+                 'upstream': 'refs/heads/master'
+                }
+    git2_proj = {'path': git2,
+                 'name': 'git2'
+                }
+    basedir = self._CommonRepoSetup(git1_proj, git2_proj)
+
+    # pylint: disable=E1101
+    self.PatchObject(git.ManifestCheckout, '_GetManifestsBranch',
+                     return_value=None)
+    self.PatchObject(git.ManifestCheckout, '_GetManifestGroups',
+                     return_value=None)
+    manifest = git.ManifestCheckout(basedir)
+
+    readme2.ApplyAgainstManifest(manifest)
+    readme3.ApplyAgainstManifest(manifest)
+
+    # Verify that both readme2 and readme3 are on the patch branch.
+    shas = self._run(['git', 'log', '--format=%H',
+                      '%s..%s' % (readme1.sha1, constants.PATCH_BRANCH)],
+                     git1).splitlines()
+    self.assertEqual(shas, [str(readme3.sha1), str(readme2.sha1)])
+
+
 class TestLocalPatchGit(GitRepoPatchTestCase):
   """Test Local patch handling."""
 
