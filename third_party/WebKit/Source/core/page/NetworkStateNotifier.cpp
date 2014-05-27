@@ -60,6 +60,16 @@ void NetworkStateNotifier::setOnLine(bool onLine)
 void NetworkStateNotifier::setWebConnectionType(blink::WebConnectionType type)
 {
     ASSERT(isMainThread());
+    if (m_testUpdatesOnly)
+        return;
+
+    setWebConnectionTypeImpl(type);
+}
+
+void NetworkStateNotifier::setWebConnectionTypeImpl(blink::WebConnectionType type)
+{
+    ASSERT(isMainThread());
+    ASSERT(!m_testUpdatesOnly);
 
     MutexLocker locker(m_mutex);
     if (m_type == type)
@@ -104,6 +114,19 @@ void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer, Execut
 
     if (!observerList->iterating && !observerList->zeroedObservers.isEmpty())
         collectZeroedObservers(observerList, context);
+}
+
+void NetworkStateNotifier::setTestUpdatesOnly(bool updatesOnly)
+{
+    ASSERT(isMainThread());
+    m_testUpdatesOnly = updatesOnly;
+}
+
+void NetworkStateNotifier::setWebConnectionTypeForTest(blink::WebConnectionType type)
+{
+    ASSERT(isMainThread());
+    ASSERT(m_testUpdatesOnly);
+    setWebConnectionTypeImpl(type);
 }
 
 void NetworkStateNotifier::notifyObserversOnContext(ExecutionContext* context, blink::WebConnectionType type)

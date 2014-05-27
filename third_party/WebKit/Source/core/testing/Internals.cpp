@@ -2342,6 +2342,11 @@ void Internals::setFocused(bool focused)
     frame()->page()->focusController().setFocused(focused);
 }
 
+void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
+{
+    networkStateNotifier().setTestUpdatesOnly(testOnly);
+}
+
 void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exceptionState)
 {
     blink::WebConnectionType webtype;
@@ -2361,7 +2366,7 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;
     }
-    networkStateNotifier().setWebConnectionType(webtype);
+    networkStateNotifier().setWebConnectionTypeForTest(webtype);
 }
 
 } // namespace WebCore

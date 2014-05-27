@@ -276,5 +276,8 @@
 
     void setFocused(boolean focused);
 
+    // These functions are for testing NetInfo. You must call setNetworkStateNotifierTestOnly(true)
+    // before calling setNetworkConnectionInfo.
+    void setNetworkStateNotifierTestOnly(boolean testOnly);
     [RaisesException] void setNetworkConnectionInfo(DOMString type);
 };

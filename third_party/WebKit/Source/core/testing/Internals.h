@@ -319,6 +319,8 @@ public:
 
     void setFocused(bool);
 
+    void setNetworkStateNotifierTestOnly(bool);
+    // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
 
 private:

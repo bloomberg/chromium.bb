@@ -49,6 +49,7 @@ public:
     NetworkStateNotifier()
         : m_isOnLine(true)
         , m_type(blink::ConnectionTypeOther)
+        , m_testUpdatesOnly(false)
     {
     }
 
@@ -73,6 +74,14 @@ public:
     void addObserver(NetworkStateObserver*, ExecutionContext*);
     void removeObserver(NetworkStateObserver*, ExecutionContext*);
 
+    // The following functions are for testing purposes.
+
+    // When true, setWebConnectionType calls are ignored and only setWebConnectionTypeForTest
+    // can update the connection type. This is used for layout tests (see crbug.com/377736).
+    void setTestUpdatesOnly(bool);
+    // Tests should call this as it will change the type regardless of the value of m_testUpdatesOnly.
+    void setWebConnectionTypeForTest(blink::WebConnectionType);
+
 private:
     struct ObserverList {
         ObserverList()
@@ -83,6 +92,8 @@ private:
         Vector<NetworkStateObserver*> observers;
         Vector<size_t> zeroedObservers; // Indices in observers that are 0.
     };
+
+    void setWebConnectionTypeImpl(blink::WebConnectionType);
 
     typedef HashMap<ExecutionContext*, OwnPtr<ObserverList> > ObserverListMap;
 
@@ -99,6 +110,7 @@ private:
     bool m_isOnLine;
     blink::WebConnectionType m_type;
     ObserverListMap m_observers;
+    bool m_testUpdatesOnly;
 };
 
 NetworkStateNotifier& networkStateNotifier();
