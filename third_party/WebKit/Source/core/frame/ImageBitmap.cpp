@@ -59,7 +59,12 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
-    IntRect videoRect = IntRect(IntPoint(), video->player()->naturalSize());
+    IntSize playerSize;
+
+    if (video->webMediaPlayer())
+        playerSize = video->webMediaPlayer()->naturalSize();
+
+    IntRect videoRect = IntRect(IntPoint(), playerSize);
     IntRect srcRect = intersection(cropRect, videoRect);
     IntRect dstRect(IntPoint(), srcRect.size());
 

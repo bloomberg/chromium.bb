@@ -1859,7 +1859,7 @@ HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
 
 bool HTMLMediaElement::hasAudio() const
 {
-    return m_player ? m_player->hasAudio() : false;
+    return webMediaPlayer() && webMediaPlayer()->hasAudio();
 }
 
 bool HTMLMediaElement::seeking() const
@@ -3277,16 +3277,16 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 
 unsigned HTMLMediaElement::webkitAudioDecodedByteCount() const
 {
-    if (!m_player)
+    if (!webMediaPlayer())
         return 0;
-    return m_player->audioDecodedByteCount();
+    return webMediaPlayer()->audioDecodedByteCount();
 }
 
 unsigned HTMLMediaElement::webkitVideoDecodedByteCount() const
 {
-    if (!m_player)
+    if (!webMediaPlayer())
         return 0;
-    return m_player->videoDecodedByteCount();
+    return webMediaPlayer()->videoDecodedByteCount();
 }
 
 bool HTMLMediaElement::isURLAttribute(const Attribute& attribute) const

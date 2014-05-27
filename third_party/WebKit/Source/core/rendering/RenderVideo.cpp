@@ -97,9 +97,9 @@ LayoutSize RenderVideo::calculateIntrinsicSize()
     // The intrinsic height of a video element's playback area is the intrinsic height
     // of the video resource, if that is available; otherwise it is the intrinsic
     // height of the poster frame, if that is available; otherwise it is 150 CSS pixels.
-    MediaPlayer* player = mediaElement()->player();
-    if (player && video->readyState() >= HTMLVideoElement::HAVE_METADATA) {
-        LayoutSize size = player->naturalSize();
+    blink::WebMediaPlayer* webMediaPlayer = mediaElement()->webMediaPlayer();
+    if (webMediaPlayer && video->readyState() >= HTMLVideoElement::HAVE_METADATA) {
+        IntSize size = webMediaPlayer->naturalSize();
         if (!size.isEmpty())
             return size;
     }

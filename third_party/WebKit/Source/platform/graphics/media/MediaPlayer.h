@@ -45,7 +45,6 @@ namespace WebCore {
 class AudioSourceProvider;
 class GraphicsContext;
 class IntRect;
-class IntSize;
 class KURL;
 class MediaPlayer;
 class TimeRanges;
@@ -117,10 +116,6 @@ public:
     virtual void pause() = 0;
 
     virtual bool supportsSave() const = 0;
-    virtual IntSize naturalSize() const = 0;
-
-    virtual bool hasVideo() const = 0;
-    virtual bool hasAudio() const = 0;
 
     virtual double duration() const = 0;
 
@@ -160,17 +155,9 @@ public:
 
     virtual bool hasSingleSecurityOrigin() const = 0;
 
-    virtual bool didPassCORSAccessCheck() const = 0;
-
     // Time value in the movie's time scale. It is only necessary to override this if the media
     // engine uses rational numbers to represent media time.
     virtual double mediaTimeForTimeValue(double timeValue) const = 0;
-
-    virtual unsigned decodedFrameCount() const = 0;
-    virtual unsigned droppedFrameCount() const = 0;
-    virtual unsigned corruptedFrameCount() const = 0;
-    virtual unsigned audioDecodedByteCount() const = 0;
-    virtual unsigned videoDecodedByteCount() const = 0;
 
 #if ENABLE(WEB_AUDIO)
     virtual AudioSourceProvider* audioSourceProvider() = 0;

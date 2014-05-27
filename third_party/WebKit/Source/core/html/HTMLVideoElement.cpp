@@ -134,16 +134,16 @@ bool HTMLVideoElement::supportsFullscreen() const
 
 unsigned HTMLVideoElement::videoWidth() const
 {
-    if (!player())
+    if (!webMediaPlayer())
         return 0;
-    return player()->naturalSize().width();
+    return webMediaPlayer()->naturalSize().width;
 }
 
 unsigned HTMLVideoElement::videoHeight() const
 {
-    if (!player())
+    if (!webMediaPlayer())
         return 0;
-    return player()->naturalSize().height();
+    return webMediaPlayer()->naturalSize().height;
 }
 
 bool HTMLVideoElement::isURLAttribute(const Attribute& attribute) const
@@ -204,10 +204,10 @@ bool HTMLVideoElement::copyVideoTextureToPlatformTexture(blink::WebGraphicsConte
 
 bool HTMLVideoElement::hasAvailableVideoFrame() const
 {
-    if (!player())
+    if (!webMediaPlayer())
         return false;
 
-    return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
+    return webMediaPlayer()->hasVideo() && webMediaPlayer()->readyState() >= blink::WebMediaPlayer::ReadyStateHaveCurrentData;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
@@ -248,18 +248,18 @@ void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)
 
 unsigned HTMLVideoElement::webkitDecodedFrameCount() const
 {
-    if (!player())
+    if (!webMediaPlayer())
         return 0;
 
-    return player()->decodedFrameCount();
+    return webMediaPlayer()->decodedFrameCount();
 }
 
 unsigned HTMLVideoElement::webkitDroppedFrameCount() const
 {
-    if (!player())
+    if (!webMediaPlayer())
         return 0;
 
-    return player()->droppedFrameCount();
+    return webMediaPlayer()->droppedFrameCount();
 }
 
 KURL HTMLVideoElement::posterImageURL() const
@@ -297,7 +297,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode
 
 bool HTMLVideoElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const
 {
-    return !hasSingleSecurityOrigin() || (!(player() && player()->didPassCORSAccessCheck()) && destinationSecurityOrigin->taintsCanvas(currentSrc()));
+    return !hasSingleSecurityOrigin() || (!(webMediaPlayer() && webMediaPlayer()->didPassCORSAccessCheck()) && destinationSecurityOrigin->taintsCanvas(currentSrc()));
 }
 
 FloatSize HTMLVideoElement::sourceSize() const

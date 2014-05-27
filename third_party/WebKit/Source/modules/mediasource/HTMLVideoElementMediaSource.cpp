@@ -45,11 +45,11 @@ PassRefPtrWillBeRawPtr<VideoPlaybackQuality> HTMLVideoElementMediaSource::getVid
     unsigned total = 0;
     unsigned dropped = 0;
     unsigned corrupted = 0;
-    MediaPlayer* player = videoElement.player();
-    if (player) {
-        total = player->decodedFrameCount();
-        dropped = player->droppedFrameCount();
-        corrupted = player->corruptedFrameCount();
+    blink::WebMediaPlayer* webMediaPlayer = videoElement.webMediaPlayer();
+    if (webMediaPlayer) {
+        total = webMediaPlayer->decodedFrameCount();
+        dropped = webMediaPlayer->droppedFrameCount();
+        corrupted = webMediaPlayer->corruptedFrameCount();
     }
 
     return VideoPlaybackQuality::create(videoElement.document(), total, dropped, corrupted);

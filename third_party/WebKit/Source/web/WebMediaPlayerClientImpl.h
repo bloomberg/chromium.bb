@@ -97,9 +97,6 @@ public:
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
     virtual bool supportsSave() const OVERRIDE;
-    virtual WebCore::IntSize naturalSize() const OVERRIDE;
-    virtual bool hasVideo() const OVERRIDE;
-    virtual bool hasAudio() const OVERRIDE;
     virtual double duration() const OVERRIDE;
     virtual double currentTime() const OVERRIDE;
     virtual void seek(double time) OVERRIDE;
@@ -117,13 +114,7 @@ public:
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
-    virtual bool didPassCORSAccessCheck() const OVERRIDE;
     virtual double mediaTimeForTimeValue(double timeValue) const OVERRIDE;
-    virtual unsigned decodedFrameCount() const OVERRIDE;
-    virtual unsigned droppedFrameCount() const OVERRIDE;
-    virtual unsigned corruptedFrameCount() const OVERRIDE;
-    virtual unsigned audioDecodedByteCount() const OVERRIDE;
-    virtual unsigned videoDecodedByteCount() const OVERRIDE;
     virtual void showFullscreenOverlay() OVERRIDE;
     virtual void hideFullscreenOverlay() OVERRIDE;
     virtual bool canShowFullscreenOverlay() const OVERRIDE;

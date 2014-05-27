@@ -234,27 +234,6 @@ bool WebMediaPlayerClientImpl::canShowFullscreenOverlay() const
     return m_webMediaPlayer && m_webMediaPlayer->canEnterFullscreen();
 }
 
-IntSize WebMediaPlayerClientImpl::naturalSize() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->naturalSize();
-    return IntSize();
-}
-
-bool WebMediaPlayerClientImpl::hasVideo() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->hasVideo();
-    return false;
-}
-
-bool WebMediaPlayerClientImpl::hasAudio() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->hasAudio();
-    return false;
-}
-
 double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
@@ -391,53 +370,11 @@ bool WebMediaPlayerClientImpl::hasSingleSecurityOrigin() const
     return false;
 }
 
-bool WebMediaPlayerClientImpl::didPassCORSAccessCheck() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->didPassCORSAccessCheck();
-    return false;
-}
-
 double WebMediaPlayerClientImpl::mediaTimeForTimeValue(double timeValue) const
 {
     if (m_webMediaPlayer)
         return m_webMediaPlayer->mediaTimeForTimeValue(timeValue);
     return timeValue;
-}
-
-unsigned WebMediaPlayerClientImpl::decodedFrameCount() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->decodedFrameCount();
-    return 0;
-}
-
-unsigned WebMediaPlayerClientImpl::droppedFrameCount() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->droppedFrameCount();
-    return 0;
-}
-
-unsigned WebMediaPlayerClientImpl::corruptedFrameCount() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->corruptedFrameCount();
-    return 0;
-}
-
-unsigned WebMediaPlayerClientImpl::audioDecodedByteCount() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->audioDecodedByteCount();
-    return 0;
-}
-
-unsigned WebMediaPlayerClientImpl::videoDecodedByteCount() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->videoDecodedByteCount();
-    return 0;
 }
 
 #if ENABLE(WEB_AUDIO)
@@ -469,7 +406,7 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     // which is not supported by Skia yet. The bitmap's size needs to be the same as the video and use naturalSize() here.
     // Check if we could reuse existing texture based bitmap.
     // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
-    if (!ensureTextureBackedSkBitmap(provider->grContext(), m_bitmap, naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
+    if (!ensureTextureBackedSkBitmap(provider->grContext(), m_bitmap, m_webMediaPlayer->naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
         return;
 
     // Copy video texture to bitmap texture.

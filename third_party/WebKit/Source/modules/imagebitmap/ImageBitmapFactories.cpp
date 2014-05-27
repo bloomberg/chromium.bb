@@ -60,8 +60,8 @@ static LayoutSize sizeFor(HTMLImageElement* image)
 
 static IntSize sizeFor(HTMLVideoElement* video)
 {
-    if (MediaPlayer* player = video->player())
-        return player->naturalSize();
+    if (blink::WebMediaPlayer* webMediaPlayer = video->webMediaPlayer())
+        return webMediaPlayer->naturalSize();
     return IntSize();
 }
 
@@ -143,7 +143,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
         return ScriptPromise();
     }
-    if (!video->player()->didPassCORSAccessCheck() && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
+    if (!(video->webMediaPlayer() && video->webMediaPlayer()->didPassCORSAccessCheck())
+        && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
         exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
         return ScriptPromise();
     }
