@@ -96,7 +96,7 @@
                 '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
                 '<(DEPTH)/url/url.gyp:url_lib',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                '<(DEPTH)/content/content_shell_and_tests.gyp:content_webkit_unit_test_support',
+                '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
                 'webkit_unit_tests_resources',
             ],
             'sources': [
