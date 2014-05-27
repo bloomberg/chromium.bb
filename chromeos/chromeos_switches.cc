@@ -8,15 +8,15 @@ namespace chromeos {
 namespace switches {
 
 // Path for app's OEM manifest file.
-const char kAppOemManifestFile[]            = "app-mode-oem-manifest";
+const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
 // When wallpaper boot animation is not disabled this switch
 // is used to override OOBE/sign in WebUI init type.
 // Possible values: parallel|postpone. Default: parallel.
-const char kAshWebUIInit[]                  = "ash-webui-init";
+const char kAshWebUIInit[] = "ash-webui-init";
 
 // Specifies the URL of the consumer device management backend.
-const char kConsumerDeviceManagementUrl[]   = "consumer-device-management-url";
+const char kConsumerDeviceManagementUrl[] = "consumer-device-management-url";
 
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
@@ -28,26 +28,26 @@ const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 
 // Disables wallpaper boot animation (except of OOBE case).
-const char kDisableBootAnimation[]          = "disable-boot-animation";
+const char kDisableBootAnimation[] = "disable-boot-animation";
 
 // Disables the ChromeOS demo.
-const char kDisableDemoMode[]               = "disable-demo-mode";
+const char kDisableDemoMode[] = "disable-demo-mode";
 
 // Disable Genius App and use the original Help App instead.
-const char kDisableGeniusApp[]              = "disable-genius-app";
+const char kDisableGeniusApp[] = "disable-genius-app";
 
 // Avoid doing expensive animations upon login.
-const char kDisableLoginAnimations[]        = "disable-login-animations";
+const char kDisableLoginAnimations[] = "disable-login-animations";
 
 // Disable login UI (user pods) scrolling into view on JS side when virtual
 // keyboard is shown.
 const char kDisableLoginScrollIntoView[]    = "disable-login-scroll-into-view";
 
 // Disable new channel switcher UI.
-const char kDisableNewChannelSwitcherUI[]   = "disable-new-channel-switcher-ui";
+const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
 
 // Disables new Kiosk UI when kiosk apps are represented as user pods.
-const char kDisableNewKioskUI[]             = "disable-new-kiosk-ui";
+const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
 
 // Disable Quickoffice component app thus handlers won't be registered so
 // it will be possible to install another version as normal app for testing.
@@ -62,21 +62,25 @@ const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
 // Enables switching between different cellular carriers from the UI.
-const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
+const char kEnableCarrierSwitching[] = "enable-carrier-switching";
 
 // Enables the next generation version of ChromeVox. Only valid with
 // use_chromevox_next=1 within your GYP_DEFINES.
-const char kEnableChromeVoxNext[]           = "enable-chromevox-next";
+const char kEnableChromeVoxNext[] = "enable-chromevox-next";
 
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.
-const char kEnableConsumerManagement[]      = "enable-consumer-management";
+const char kEnableConsumerManagement[] = "enable-consumer-management";
+
+// If this switch is set, Chrome OS login screen uses |EmbeddedSignin| endpoint
+// of GAIA.
+const char kEnableEmbeddedSignin[] = "enable-embedded-signin";
 
 // Enables MTP support in Files.app.
 const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
 
 // Enable explicit HID detection on OOBE.
-const char kEnableHIDDetectionOnOOBE[]     = "enable-hid-detection-on-oobe";
+const char kEnableHIDDetectionOnOOBE[] = "enable-hid-detection-on-oobe";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
@@ -88,13 +92,13 @@ const char kEnableTouchpadThreeFingerClick[]
 
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
-const char kEnableKioskMode[]               = "enable-kiosk-mode";
+const char kEnableKioskMode[] = "enable-kiosk-mode";
 
 // Enables rollback option for resetting ChromeOS.
-const char kEnableRollbackOption[]          = "enable-rollback-option";
+const char kEnableRollbackOption[] = "enable-rollback-option";
 
 // Enables request of tablet site (via user agent override).
-const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
+const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
@@ -121,22 +125,22 @@ const char kFileManagerEnableNewAudioPlayer[] =
 
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
-const char kFirstExecAfterBoot[]            = "first-exec-after-boot";
+const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 
 // Usually in browser tests the usual login manager bringup is skipped so that
 // tests can change how it's brought up. This flag disables that.
-const char kForceLoginManagerInTests[]      = "force-login-manager-in-tests";
+const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
-const char kGuestSession[]                  = "bwsi";
+const char kGuestSession[] = "bwsi";
 
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.
-const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
+const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
 
 // If true, the Chromebook has a keyboard with a diamond key.
-const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
+const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[]           = "homedir";
@@ -149,32 +153,32 @@ const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
 // Path for the screensaver used in Kiosk mode
-const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
+const char kKioskModeScreensaverPath[] = "kiosk-mode-screensaver-path";
 
 // Enables Chrome-as-a-login-manager behavior.
-const char kLoginManager[]                  = "login-manager";
+const char kLoginManager[] = "login-manager";
 
 // Specifies a password to be used to login (along with login-user).
-const char kLoginPassword[]                 = "login-password";
+const char kLoginPassword[] = "login-password";
 
 // Specifies the profile to use once a chromeos user is logged in. This is
 // required unless --multi-profile is set.
-const char kLoginProfile[]                  = "login-profile";
+const char kLoginProfile[] = "login-profile";
 
 // Specifies the user which is already logged in.
-const char kLoginUser[]                     = "login-user";
+const char kLoginUser[] = "login-user";
 
 // Enables natural scroll by default.
-const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
+const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 
 // Skips all other OOBE pages after user login.
-const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
+const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 
 // Interval at which we check for total time on OOBE.
-const char kOobeTimerInterval[]             = "oobe-timer-interval";
+const char kOobeTimerInterval[] = "oobe-timer-interval";
 
 // Indicates that a guest session has been started before OOBE completion.
-const char kOobeGuestSession[]              = "oobe-guest-session";
+const char kOobeGuestSession[] = "oobe-guest-session";
 
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
@@ -196,15 +200,15 @@ const char kPowerStub[] = "power-stub";
 const char kShillStub[] = "shill-stub";
 
 // Sends test messages on first call to RequestUpdate (stub only).
-const char kSmsTestMessages[]               = "sms-test-messages";
+const char kSmsTestMessages[] = "sms-test-messages";
 
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
 // This option is for testing the chromeos build of chrome on the desktop only.
-const char kStubCrosSettings[]              = "stub-cros-settings";
+const char kStubCrosSettings[] = "stub-cros-settings";
 
 // Disables SAML sigin support.
-const char kDisableSamlSignin[]             = "disable-saml-signin";
+const char kDisableSamlSignin[] = "disable-saml-signin";
 
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";

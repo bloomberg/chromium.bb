@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -138,12 +139,16 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.Set("localizedStrings", localized_strings);
   }
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   const GURL gaia_url =
-      CommandLine::ForCurrentProcess()->HasSwitch(::switches::kGaiaUrl)
-          ? GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                ::switches::kGaiaUrl))
+      command_line->HasSwitch(::switches::kGaiaUrl)
+          ? GURL(command_line->GetSwitchValueASCII(::switches::kGaiaUrl))
           : GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
+
+  if (command_line->HasSwitch(chromeos::switches::kEnableEmbeddedSignin))
+    params.SetBoolean("useEmbedded", true);
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);

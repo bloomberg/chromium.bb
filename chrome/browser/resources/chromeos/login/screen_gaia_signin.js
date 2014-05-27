@@ -256,12 +256,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.localizedStrings)
         params.localizedStrings = data.localizedStrings;
 
+      if (data.useEmbedded)
+        params.gaiaPath = 'EmbeddedSignIn';
+
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
         this.error_ = 0;
-        this.gaiaAuthHost_.load(data.useOffline ?
-                                    cr.login.GaiaAuthHost.AuthMode.OFFLINE :
-                                    cr.login.GaiaAuthHost.AuthMode.DEFAULT,
+
+        var authMode = cr.login.GaiaAuthHost.AuthMode.DEFAULT;
+        if (data.useOffline)
+          authMode = cr.login.GaiaAuthHost.AuthMode.OFFLINE;
+        else if (data.useEmbedded)
+          authMode = cr.login.GaiaAuthHost.AuthMode.DESKTOP;
+
+        this.gaiaAuthHost_.load(authMode,
                                 params,
                                 this.onAuthCompleted_.bind(this));
         this.gaiaAuthParams_ = params;
