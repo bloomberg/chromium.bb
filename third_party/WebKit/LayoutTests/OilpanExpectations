@@ -60,3 +60,4 @@ crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-di
 crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] http/tests/media/media-source/mediasource-closed-on-htmlmediaelement-destruction.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] media/audio-delete-while-slider-thumb-clicked.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] media/track/track-removal-crash.html [ Timeout Pass ]
