@@ -15,19 +15,29 @@
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_win.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/extension.h"
 #include "ui/views/win/hwnd_util.h"
+
+typedef ExtensionBrowserTest BrowserWindowPropertyManagerTest;
 
 namespace {
 
@@ -80,6 +90,50 @@ void ValidateBrowserWindowProperties(
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
   EXPECT_EQ(profiles::internal::GetProfileIconPath(
                 browser->profile()->GetPath()).value(),
+            prop_var.get().pwszVal);
+  prop_var.Reset();
+  base::MessageLoop::current()->Quit();
+}
+
+void ValidateHostedAppWindowProperties(const Browser* browser,
+                                       const extensions::Extension* extension) {
+  HWND hwnd = views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
+
+  base::win::ScopedComPtr<IPropertyStore> pps;
+  HRESULT result =
+      SHGetPropertyStoreForWindow(hwnd, IID_IPropertyStore, pps.ReceiveVoid());
+  EXPECT_TRUE(SUCCEEDED(result));
+
+  base::win::ScopedPropVariant prop_var;
+  // The relaunch name should be the extension name.
+  EXPECT_EQ(S_OK,
+            pps->GetValue(PKEY_AppUserModel_RelaunchDisplayNameResource,
+                          prop_var.Receive()));
+  EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
+  EXPECT_EQ(base::UTF8ToWide(extension->name()), prop_var.get().pwszVal);
+  prop_var.Reset();
+
+  // The relaunch command should specify the profile and the app id.
+  EXPECT_EQ(
+      S_OK,
+      pps->GetValue(PKEY_AppUserModel_RelaunchCommand, prop_var.Receive()));
+  EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
+  CommandLine cmd_line(CommandLine::FromString(prop_var.get().pwszVal));
+  EXPECT_EQ(browser->profile()->GetPath().BaseName().value(),
+            cmd_line.GetSwitchValueNative(switches::kProfileDirectory));
+  EXPECT_EQ(base::UTF8ToWide(extension->id()),
+            cmd_line.GetSwitchValueNative(switches::kAppId));
+  prop_var.Reset();
+
+  // The app icon should be set to the extension app icon.
+  base::FilePath web_app_dir = web_app::GetWebAppDataDirectory(
+      browser->profile()->GetPath(), extension->id(), GURL());
+  EXPECT_EQ(S_OK,
+            pps->GetValue(PKEY_AppUserModel_RelaunchIconResource,
+                          prop_var.Receive()));
+  EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
+  EXPECT_EQ(web_app::internals::GetIconFilePath(
+                web_app_dir, base::UTF8ToUTF16(extension->name())).value(),
             prop_var.get().pwszVal);
   prop_var.Reset();
   base::MessageLoop::current()->Quit();
@@ -170,4 +224,44 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
       base::Bind(&ValidateBrowserWindowProperties,
                  profile2_browser,
                  cache.GetNameOfProfileAtIndex(profile2_index)));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, HostedApp) {
+#if defined(USE_ASH)
+  // Disable this test in Metro+Ash where Windows window properties aren't used.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  // This test checks HWND properties that are only available on Win7+.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  // Load an app.
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app/"));
+  EXPECT_TRUE(extension);
+
+  OpenApplication(AppLaunchParams(browser()->profile(),
+                                  extension,
+                                  extensions::LAUNCH_CONTAINER_WINDOW,
+                                  NEW_FOREGROUND_TAB));
+
+  // Check that the new browser has an app name.
+  // The launch should have created a new browser.
+  ASSERT_EQ(2u,
+            chrome::GetBrowserCount(browser()->profile(),
+                                    browser()->host_desktop_type()));
+
+  // Find the new browser.
+  Browser* app_browser = NULL;
+  for (chrome::BrowserIterator it; !it.done() && !app_browser; it.Next()) {
+    if (*it != browser())
+      app_browser = *it;
+  }
+  ASSERT_TRUE(app_browser);
+  ASSERT_TRUE(app_browser != browser());
+
+  WaitAndValidateBrowserWindowProperties(
+      base::Bind(&ValidateHostedAppWindowProperties, app_browser, extension));
 }

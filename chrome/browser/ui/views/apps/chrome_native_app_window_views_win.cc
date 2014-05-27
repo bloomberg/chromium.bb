@@ -35,42 +35,6 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
 
-namespace {
-
-void CreateIconAndSetRelaunchDetails(
-    const base::FilePath& web_app_path,
-    const base::FilePath& icon_file,
-    const web_app::ShortcutInfo& shortcut_info,
-    const HWND hwnd) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  // Set the relaunch data so "Pin this program to taskbar" has the app's
-  // information.
-  CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
-      shortcut_info.url,
-      shortcut_info.extension_id,
-      shortcut_info.profile_path);
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-  command_line.SetProgram(chrome_exe);
-  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
-      shortcut_info.title, hwnd);
-
-  if (!base::PathExists(web_app_path) &&
-      !base::CreateDirectory(web_app_path)) {
-    return;
-  }
-
-  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
-}
-
-}  // namespace
-
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
     : weak_ptr_factory_(this), glass_frame_view_(NULL) {
 }
@@ -90,27 +54,6 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
       chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
     chrome::ActivateMetroChrome();
   }
-}
-
-void ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded(
-    const web_app::ShortcutInfo& shortcut_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  HWND hwnd = GetNativeAppWindowHWND();
-
-  // Set window's icon to the one we're about to create/update in the web app
-  // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id,
-      shortcut_info.url);
-  base::FilePath icon_file = web_app_path
-      .Append(web_app::internals::GetSanitizedFileName(shortcut_info.title))
-      .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&CreateIconAndSetRelaunchDetails,
-                 web_app_path, icon_file, shortcut_info, hwnd));
 }
 
 HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
@@ -176,11 +119,7 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
                                                 profile->GetPath());
   ui::win::SetAppIdForWindow(app_model_id_, hwnd);
 
-  web_app::UpdateShortcutInfoAndIconForApp(
-      extension,
-      profile,
-      base::Bind(&ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+  web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
 
   if (!create_params.transparent_background)
     EnsureCaptionStyleSet();
