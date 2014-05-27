@@ -153,6 +153,8 @@ crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 
 crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.svg [ Failure Pass ]
 
+crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
+
 # Flaky on Linux ASAN and debug bots.
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
