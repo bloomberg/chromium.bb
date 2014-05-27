@@ -76,9 +76,7 @@ class NET_EXPORT HttpNetworkSession
     base::WeakPtr<HttpServerProperties> http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
-    bool force_http_pipelining;
     bool ignore_certificate_errors;
-    bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
 
@@ -193,14 +191,8 @@ class NET_EXPORT HttpNetworkSession
   void CloseAllConnections();
   void CloseIdleConnections();
 
-  bool force_http_pipelining() const { return force_http_pipelining_; }
-
   // Returns the original Params used to construct this session.
   const Params& params() const { return params_; }
-
-  void set_http_pipelining_enabled(bool enable) {
-    params_.http_pipelining_enabled = enable;
-  }
 
   bool IsProtocolEnabled(AlternateProtocol protocol) const;
 
@@ -223,7 +215,6 @@ class NET_EXPORT HttpNetworkSession
   const base::WeakPtr<HttpServerProperties> http_server_properties_;
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
-  bool force_http_pipelining_;
 
   // Not const since it's modified by HttpNetworkSessionPeer for testing.
   ProxyService* proxy_service_;

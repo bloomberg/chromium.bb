@@ -24,9 +24,6 @@ ExtensionServiceTest.*
 # http://crbug.com/180335
 AutocompleteActionPredictorTest.RecommendActionURL
 
-# http://crbug.com/180467
-HttpPipeliningCompatibilityClientTest.*
-
 # http://crbug.com/238964
 CpuInfoProviderTest.*
 

@@ -108,10 +108,6 @@ std::string ChromeAppHostDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }
 
-std::string ChromeAppHostDistribution::GetHttpPipeliningTestServer() const {
-  return chrome_common_net::kPipelineTestServerBaseUrl;
-}
-
 base::string16 ChromeAppHostDistribution::GetUninstallLinkName() {
   const base::string16& link_name =
       installer::GetLocalizedString(IDS_UNINSTALL_APP_LAUNCHER_BASE);

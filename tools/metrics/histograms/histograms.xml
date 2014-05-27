@@ -11707,6 +11707,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CountOfPipelineCapableServers">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The total number of severs that support HTTP pipelining. This counts the
@@ -14780,6 +14783,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.0.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the first pipeline connectivity request.
@@ -14787,6 +14793,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.0.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the first pipeline connectivity response.
@@ -14794,11 +14803,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.0.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the first pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.1.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the second pipeline connectivity request.
@@ -14806,6 +14821,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.1.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the second pipeline connectivity
@@ -14814,11 +14832,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.1.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the second pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.2.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the third pipeline connectivity request.
@@ -14826,6 +14850,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.2.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the third pipeline connectivity response.
@@ -14833,11 +14860,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.2.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the third pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.3.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the fourth pipeline connectivity request.
@@ -14845,6 +14878,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.3.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the fourth pipeline connectivity
@@ -14853,11 +14889,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.3.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the fourth pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.4.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the fifth pipeline connectivity request.
@@ -14865,6 +14907,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.4.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the fifth pipeline connectivity response.
@@ -14872,11 +14917,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.4.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the fifth pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.5.NetworkError" enum="NetErrorCodes">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The network error, if any, of the stats pipeline connectivity request.
@@ -14884,6 +14935,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.5.ResponseCode">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The HTTP response code, if any, of the stats pipeline connectivity response.
@@ -14891,11 +14945,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.5.Status" enum="HttpPipelineStatus">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The result of the stats pipeline connectivity request.</summary>
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.AllHTTP11" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     True if all requests received by the pipelining test server were HTTP/1.1.
@@ -14903,6 +14963,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.CanarySuccess" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     True if the non-pipelined canary request sent immediately before the
@@ -14912,6 +14975,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.Depth">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The maximum depth of pipelined requests received by the test server.
@@ -14919,6 +14985,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NetConnectivity.Pipeline.Success" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 05/2014, related field trial already long expired.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>True if the entire pipeline connectivity trial passed.</summary>
 </histogram>

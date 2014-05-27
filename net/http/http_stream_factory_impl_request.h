@@ -38,12 +38,6 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // before knowing if SPDY is available.
   void SetSpdySessionKey(const SpdySessionKey& spdy_session_key);
 
-  // Called when the Job determines the appropriate |http_pipelining_key| for
-  // the Request. Registers this Request with the factory, so that if an
-  // existing pipeline becomes available, this Request can be late bound to it.
-  // Returns true if this is this key was new to the factory.
-  bool SetHttpPipeliningKey(const HttpPipelinedHost::Key& http_pipelining_key);
-
   // Attaches |job| to this request. Does not mean that Request will use |job|,
   // but Request will own |job|.
   void AttachJob(HttpStreamFactoryImpl::Job* job);
@@ -58,10 +52,6 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // If this Request has a |spdy_session_key_|, remove this session from the
   // SpdySessionRequestMap.
   void RemoveRequestFromSpdySessionRequestMap();
-
-  // If this Request has a |http_pipelining_key_|, remove this session from the
-  // HttpPipeliningRequestMap.
-  void RemoveRequestFromHttpPipeliningRequestMap();
 
   // Called by an attached Job if it sets up a SpdySession.
   void OnNewSpdySessionReady(Job* job,
@@ -137,7 +127,6 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   scoped_ptr<Job> bound_job_;
   std::set<HttpStreamFactoryImpl::Job*> jobs_;
   scoped_ptr<const SpdySessionKey> spdy_session_key_;
-  scoped_ptr<const HttpPipelinedHost::Key> http_pipelining_key_;
 
   bool completed_;
   bool was_npn_negotiated_;

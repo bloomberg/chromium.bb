@@ -40,8 +40,8 @@ namespace net {
 // Times represent when a request starts/stops blocking on an event, not the
 // time the events actually occurred.  In particular, in the case of preconnects
 // and socket reuse, no time may be spent blocking on establishing a connection.
-// In the case of SPDY and HTTP pipelining, PAC scripts are only run once for
-// each shared session, so no time may be spent blocking on them.
+// In the case of SPDY, PAC scripts are only run once for each shared session,
+// so no time may be spent blocking on them.
 //
 // DNS and SSL times are both times for the host, not the proxy, so DNS times
 // when using proxies are null, and only requests to HTTPS hosts (Not proxies)

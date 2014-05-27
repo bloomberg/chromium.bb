@@ -743,7 +743,6 @@ TEST_P(HttpNetworkTransactionTest, StopsReading204) {
 }
 
 // A simple request using chunked encoding with some extra data after.
-// (Like might be seen in a pipelined response.)
 TEST_P(HttpNetworkTransactionTest, ChunkedEncoding) {
   std::string final_chunk = "0\r\n\r\n";
   std::string extra_data = "HTTP/1.1 200 OK\r\n";
@@ -11182,53 +11181,6 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
 }
 #undef MAYBE_UseIPConnectionPoolingWithHostCacheExpiration
 
-TEST_P(HttpNetworkTransactionTest, ReadPipelineEvictionFallback) {
-  MockRead data_reads1[] = {
-    MockRead(SYNCHRONOUS, ERR_PIPELINE_EVICTION),
-  };
-  MockRead data_reads2[] = {
-    MockRead("HTTP/1.0 200 OK\r\n\r\n"),
-    MockRead("hello world"),
-    MockRead(SYNCHRONOUS, OK),
-  };
-  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1), NULL, 0);
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2), NULL, 0);
-  StaticSocketDataProvider* data[] = { &data1, &data2 };
-
-  SimpleGetHelperResult out = SimpleGetHelperForData(data, arraysize(data));
-
-  EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
-  EXPECT_EQ("hello world", out.response_data);
-}
-
-TEST_P(HttpNetworkTransactionTest, SendPipelineEvictionFallback) {
-  MockWrite data_writes1[] = {
-    MockWrite(SYNCHRONOUS, ERR_PIPELINE_EVICTION),
-  };
-  MockWrite data_writes2[] = {
-    MockWrite("GET / HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n\r\n"),
-  };
-  MockRead data_reads2[] = {
-    MockRead("HTTP/1.0 200 OK\r\n\r\n"),
-    MockRead("hello world"),
-    MockRead(SYNCHRONOUS, OK),
-  };
-  StaticSocketDataProvider data1(NULL, 0,
-                                 data_writes1, arraysize(data_writes1));
-  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
-                                 data_writes2, arraysize(data_writes2));
-  StaticSocketDataProvider* data[] = { &data1, &data2 };
-
-  SimpleGetHelperResult out = SimpleGetHelperForData(data, arraysize(data));
-
-  EXPECT_EQ(OK, out.rv);
-  EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
-  EXPECT_EQ("hello world", out.response_data);
-}
-
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   const std::string https_url = "https://www.google.com/";
   const std::string http_url = "http://www.google.com:443/";
@@ -12338,11 +12290,6 @@ class FakeStreamFactory : public HttpStreamFactory {
                                  const SSLConfig& server_ssl_config,
                                  const SSLConfig& proxy_ssl_config) OVERRIDE {
     ADD_FAILURE();
-  }
-
-  virtual base::Value* PipelineInfoToValue() const OVERRIDE {
-    ADD_FAILURE();
-    return NULL;
   }
 
   virtual const HostMappingRules* GetHostMappingRules() const OVERRIDE {

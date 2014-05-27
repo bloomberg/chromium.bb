@@ -67,9 +67,7 @@ HttpNetworkSession::Params::Params()
       network_delegate(NULL),
       net_log(NULL),
       host_mapping_rules(NULL),
-      force_http_pipelining(false),
       ignore_certificate_errors(false),
-      http_pipelining_enabled(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       force_spdy_single_domain(false),
@@ -106,7 +104,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       http_server_properties_(params.http_server_properties),
       cert_verifier_(params.cert_verifier),
       http_auth_handler_factory_(params.http_auth_handler_factory),
-      force_http_pipelining_(params.force_http_pipelining),
       proxy_service_(params.proxy_service),
       ssl_config_service_(params.ssl_config_service),
       normal_socket_pool_manager_(

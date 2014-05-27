@@ -1105,7 +1105,6 @@
         'browser/net/dns_probe_service_unittest.cc',
         'browser/net/evicted_domain_cookie_counter_unittest.cc',
         'browser/net/firefox_proxy_settings_unittest.cc',
-        'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',
         'browser/net/net_error_tab_helper_unittest.cc',
         'browser/net/net_log_temp_file_unittest.cc',

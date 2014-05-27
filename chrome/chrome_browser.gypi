@@ -1287,8 +1287,6 @@
         'browser/net/evicted_domain_cookie_counter.h',
         'browser/net/firefox_proxy_settings.cc',
         'browser/net/firefox_proxy_settings.h',
-        'browser/net/http_pipelining_compatibility_client.cc',
-        'browser/net/http_pipelining_compatibility_client.h',
         'browser/net/http_server_properties_manager.cc',
         'browser/net/http_server_properties_manager.h',
         'browser/net/net_error_tab_helper.cc',

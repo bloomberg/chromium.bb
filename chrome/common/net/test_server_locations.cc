@@ -7,7 +7,5 @@
 namespace chrome_common_net {
 
 const char kEchoTestServerLocation[] = "chrome.googleechotest.com";
-const char kPipelineTestServerBaseUrl[] =
-    "http://pipelining.googleechotest.com/";
 
 }  // namespace chrome_common_net

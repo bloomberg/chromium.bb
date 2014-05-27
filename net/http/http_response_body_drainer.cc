@@ -14,8 +14,7 @@
 namespace net {
 
 HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStreamBase* stream)
-    : read_size_(0),
-      stream_(stream),
+    : stream_(stream),
       next_state_(STATE_NONE),
       total_read_(0),
       session_(NULL) {}
@@ -23,25 +22,7 @@ HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStreamBase* stream)
 HttpResponseBodyDrainer::~HttpResponseBodyDrainer() {}
 
 void HttpResponseBodyDrainer::Start(HttpNetworkSession* session) {
-  StartWithSize(session, kDrainBodyBufferSize);
-}
-
-void HttpResponseBodyDrainer::StartWithSize(HttpNetworkSession* session,
-                                            int num_bytes_to_drain) {
-  DCHECK_LE(0, num_bytes_to_drain);
-  // TODO(simonjam): Consider raising this limit if we're pipelining. If we have
-  // a bunch of responses in the pipeline, we should be less willing to give up
-  // while draining.
-  if (num_bytes_to_drain > kDrainBodyBufferSize) {
-    Finish(ERR_RESPONSE_BODY_TOO_BIG_TO_DRAIN);
-    return;
-  } else if (num_bytes_to_drain == 0) {
-    Finish(OK);
-    return;
-  }
-
-  read_size_ = num_bytes_to_drain;
-  read_buf_ = new IOBuffer(read_size_);
+  read_buf_ = new IOBuffer(kDrainBodyBufferSize);
   next_state_ = STATE_DRAIN_RESPONSE_BODY;
   int rv = DoLoop(OK);
 
@@ -88,7 +69,7 @@ int HttpResponseBodyDrainer::DoDrainResponseBody() {
 
   return stream_->ReadResponseBody(
       read_buf_.get(),
-      read_size_ - total_read_,
+      kDrainBodyBufferSize - total_read_,
       base::Bind(&HttpResponseBodyDrainer::OnIOComplete,
                  base::Unretained(this)));
 }

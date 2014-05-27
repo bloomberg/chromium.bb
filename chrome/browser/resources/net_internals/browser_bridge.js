@@ -75,9 +75,6 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.prerenderInfo =
         new PollableDataHelper('onPrerenderInfoChanged',
                                this.sendGetPrerenderInfo.bind(this));
-    this.pollableDataHelpers_.httpPipeliningStatus =
-        new PollableDataHelper('onHttpPipeliningStatusChanged',
-                               this.sendGetHttpPipeliningStatus.bind(this));
     this.pollableDataHelpers_.extensionInfo =
         new PollableDataHelper('onExtensionInfoChanged',
                                this.sendGetExtensionInfo.bind(this));
@@ -243,10 +240,6 @@ var BrowserBridge = (function() {
 
     sendGetPrerenderInfo: function() {
       this.send('getPrerenderInfo');
-    },
-
-    sendGetHttpPipeliningStatus: function() {
-      this.send('getHttpPipeliningStatus');
     },
 
     sendGetExtensionInfo: function() {
@@ -416,11 +409,6 @@ var BrowserBridge = (function() {
 
     receivedPrerenderInfo: function(prerenderInfo) {
       this.pollableDataHelpers_.prerenderInfo.update(prerenderInfo);
-    },
-
-    receivedHttpPipeliningStatus: function(httpPipeliningStatus) {
-      this.pollableDataHelpers_.httpPipeliningStatus.update(
-          httpPipeliningStatus);
     },
 
     receivedExtensionInfo: function(extensionInfo) {
@@ -677,17 +665,6 @@ var BrowserBridge = (function() {
      */
     addPrerenderInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.prerenderInfo.addObserver(
-          observer, ignoreWhenUnchanged);
-    },
-
-    /**
-     * Adds a listener of HTTP pipelining status. |observer| will be called
-     * back when data is received, through:
-     *
-     *   observer.onHttpPipelineStatusChanged(httpPipeliningStatus)
-     */
-    addHttpPipeliningStatusObserver: function(observer, ignoreWhenUnchanged) {
-      this.pollableDataHelpers_.httpPipeliningStatus.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

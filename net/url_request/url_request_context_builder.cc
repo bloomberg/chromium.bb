@@ -174,7 +174,6 @@ URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() {}
 URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
     : ignore_certificate_errors(false),
       host_mapping_rules(NULL),
-      http_pipelining_enabled(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       trusted_spdy_proxy() {}
@@ -282,8 +281,6 @@ URLRequestContext* URLRequestContextBuilder::Build() {
       http_network_session_params_.ignore_certificate_errors;
   network_session_params.host_mapping_rules =
       http_network_session_params_.host_mapping_rules;
-  network_session_params.http_pipelining_enabled =
-      http_network_session_params_.http_pipelining_enabled;
   network_session_params.testing_fixed_http_port =
       http_network_session_params_.testing_fixed_http_port;
   network_session_params.testing_fixed_https_port =

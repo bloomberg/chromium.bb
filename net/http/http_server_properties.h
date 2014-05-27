@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/http/http_pipelined_host_capability.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
 
@@ -107,8 +106,6 @@ struct NET_EXPORT PortAlternateProtocolPair {
 typedef base::MRUCache<
     HostPortPair, PortAlternateProtocolPair> AlternateProtocolMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
-typedef std::map<HostPortPair,
-        HttpPipelinedHostCapability> PipelineCapabilityMap;
 
 extern const char kAlternateProtocolHeader[];
 
@@ -202,17 +199,6 @@ class NET_EXPORT HttpServerProperties {
 
   virtual const NetworkStats* GetServerNetworkStats(
       const HostPortPair& host_port_pair) const = 0;
-
-  virtual HttpPipelinedHostCapability GetPipelineCapability(
-      const HostPortPair& origin) = 0;
-
-  virtual void SetPipelineCapability(
-      const HostPortPair& origin,
-      HttpPipelinedHostCapability capability) = 0;
-
-  virtual void ClearPipelineCapabilities() = 0;
-
-  virtual PipelineCapabilityMap GetPipelineCapabilityMap() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpServerProperties);

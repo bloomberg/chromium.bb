@@ -100,10 +100,6 @@ std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }
 
-std::string ChromeFrameDistribution::GetHttpPipeliningTestServer() const {
-  return chrome_common_net::kPipelineTestServerBaseUrl;
-}
-
 base::string16 ChromeFrameDistribution::GetUninstallLinkName() {
   return L"Uninstall Chrome Frame";
 }

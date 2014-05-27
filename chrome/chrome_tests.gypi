@@ -1557,7 +1557,6 @@
         'test/data/webui/net_internals/dns_view.js',
         'test/data/webui/net_internals/events_view.js',
         'test/data/webui/net_internals/hsts_view.js',
-        'test/data/webui/net_internals/http_pipeline_view.js',
         'test/data/webui/net_internals/log_util.js',
         'test/data/webui/net_internals/log_view_painter.js',
         'test/data/webui/net_internals/main.js',

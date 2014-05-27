@@ -11,10 +11,6 @@ namespace chrome_common_net {
 // that simply echoes back the request.
 extern const char kEchoTestServerLocation[];
 
-// Base URL for the HttpPipeliningCompatibilityClient test. Should point to a
-// server running server.py from http://code.google.com/p/http-pipelining-test/
-extern const char kPipelineTestServerBaseUrl[];
-
 }  // namespace chrome_common_net
 
 #endif  // CHROME_COMMON_NET_TEST_SERVER_LOCATIONS_H_

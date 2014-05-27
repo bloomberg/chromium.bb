@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_log.h"
-#include "net/http/http_pipelined_host_pool.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/ssl_client_socket.h"
@@ -22,12 +21,9 @@
 namespace net {
 
 class HttpNetworkSession;
-class HttpPipelinedHost;
 class SpdySession;
 
-class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
-    public HttpStreamFactory,
-    public HttpPipelinedHostPool::Delegate {
+class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
  public:
   // RequestStream may only be called if |for_websockets| is false.
   // RequestWebSocketHandshakeStream may only be called if |for_websockets|
@@ -58,12 +54,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
                                  RequestPriority priority,
                                  const SSLConfig& server_ssl_config,
                                  const SSLConfig& proxy_ssl_config) OVERRIDE;
-  virtual base::Value* PipelineInfoToValue() const OVERRIDE;
   virtual const HostMappingRules* GetHostMappingRules() const OVERRIDE;
-
-  // HttpPipelinedHostPool::Delegate interface
-  virtual void OnHttpPipelinedHostHasAdditionalCapacity(
-      HttpPipelinedHost* host) OVERRIDE;
 
   size_t num_orphaned_jobs() const { return orphaned_job_set_.size(); }
 
@@ -74,10 +65,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   class NET_EXPORT_PRIVATE Job;
 
   typedef std::set<Request*> RequestSet;
-  typedef std::vector<Request*> RequestVector;
   typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
-  typedef std::map<HttpPipelinedHost::Key,
-                   RequestVector> HttpPipeliningRequestMap;
 
   HttpStreamRequest* RequestStreamInternal(
       const HttpRequestInfo& info,
@@ -121,11 +109,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   // Called when the Preconnect completes. Used for testing.
   virtual void OnPreconnectsCompleteInternal() {}
 
-  void AbortPipelinedRequestsWithKey(const Job* job,
-                                     const HttpPipelinedHost::Key& key,
-                                     int status,
-                                     const SSLConfig& used_ssl_config);
-
   HttpNetworkSession* const session_;
 
   // All Requests are handed out to clients. By the time HttpStreamFactoryImpl
@@ -134,9 +117,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   std::map<const Job*, Request*> request_map_;
 
   SpdySessionRequestMap spdy_session_request_map_;
-  HttpPipeliningRequestMap http_pipelining_request_map_;
-
-  HttpPipelinedHostPool http_pipelined_host_pool_;
 
   // These jobs correspond to jobs orphaned by Requests and now owned by
   // HttpStreamFactoryImpl. Since they are no longer tied to Requests, they will

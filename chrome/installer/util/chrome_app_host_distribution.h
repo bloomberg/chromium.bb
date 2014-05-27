@@ -46,8 +46,6 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
-  virtual std::string GetHttpPipeliningTestServer() const OVERRIDE;
-
   virtual base::string16 GetUninstallLinkName() OVERRIDE;
 
   virtual base::string16 GetUninstallRegPath() OVERRIDE;

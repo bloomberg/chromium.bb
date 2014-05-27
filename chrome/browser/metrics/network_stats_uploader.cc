@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
-#include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/common/net/test_server_locations.h"
 
@@ -17,11 +16,9 @@
 NetworkStatsUploader::NetworkStatsUploader() {
 #if defined(OS_POSIX)
   network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
-  http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   network_stats_server_ = dist->GetNetworkStatsServer();
-  http_pipelining_test_server_ = dist->GetHttpPipeliningTestServer();
 #endif
 }
 
@@ -34,8 +31,6 @@ void NetworkStatsUploader::CollectAndReportNetworkStats() {
     return;
 
   chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread);
-  chrome_browser_net::CollectPipeliningCapabilityStatsOnUIThread(
-      http_pipelining_test_server_, io_thread);
 #if defined(OS_WIN)
   chrome::CollectTimeTicksStats();
 #endif

@@ -48,7 +48,6 @@
 <include src="logs_view.js"/>
 <include src="prerender_view.js"/>
 <include src="chromeos_view.js"/>
-<include src="http_pipeline_view.js"/>
 <include src="bandwidth_view.js"/>
 <include src="cros_log_visualizer_view.js"/>
 <include src="cros_log_entry.js"/>

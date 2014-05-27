@@ -191,7 +191,6 @@ var MainView = (function() {
       addTab(SocketsView);
       addTab(SpdyView);
       addTab(QuicView);
-      addTab(HttpPipelineView);
       addTab(HttpCacheView);
       addTab(ModulesView);
       addTab(TestView);

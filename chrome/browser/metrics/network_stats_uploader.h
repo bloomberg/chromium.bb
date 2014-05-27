@@ -26,9 +26,6 @@ class NetworkStatsUploader {
   // The TCP/UDP echo server to collect network connectivity stats.
   std::string network_stats_server_;
 
-  // The HTTP pipelining test server.
-  std::string http_pipelining_test_server_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkStatsUploader);
 };
 

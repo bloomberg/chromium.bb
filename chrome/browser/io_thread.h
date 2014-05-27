@@ -34,7 +34,6 @@ class CommandLine;
 
 namespace chrome_browser_net {
 class DnsProbeService;
-class HttpPipeliningCompatibilityClient;
 }
 
 namespace extensions {
@@ -150,12 +149,9 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_refptr<net::CookieStore> system_cookie_store;
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
-    scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>
-        http_pipelining_compatibility_client;
     scoped_ptr<net::HostMappingRules> host_mapping_rules;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     bool ignore_certificate_errors;
-    bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
 

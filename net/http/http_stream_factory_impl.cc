@@ -12,9 +12,6 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_pipelined_connection.h"
-#include "net/http/http_pipelined_host.h"
-#include "net/http/http_pipelined_stream.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
@@ -45,15 +42,11 @@ GURL UpgradeUrlToHttps(const GURL& original_url, int port) {
 HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
                                              bool for_websockets)
     : session_(session),
-      http_pipelined_host_pool_(this, NULL,
-                                session_->http_server_properties(),
-                                session_->force_http_pipelining()),
       for_websockets_(for_websockets) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
   DCHECK(request_map_.empty());
   DCHECK(spdy_session_request_map_.empty());
-  DCHECK(http_pipelining_request_map_.empty());
 
   std::set<const Job*> tmp_job_set;
   tmp_job_set.swap(orphaned_job_set_);
@@ -177,10 +170,6 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   }
   preconnect_job_set_.insert(job);
   job->Preconnect(num_streams);
-}
-
-base::Value* HttpStreamFactoryImpl::PipelineInfoToValue() const {
-  return http_pipelined_host_pool_.PipelineInfoToValue();
 }
 
 const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
@@ -319,42 +308,6 @@ void HttpStreamFactoryImpl::OnPreconnectsComplete(const Job* job) {
   preconnect_job_set_.erase(job);
   delete job;
   OnPreconnectsCompleteInternal();
-}
-
-void HttpStreamFactoryImpl::OnHttpPipelinedHostHasAdditionalCapacity(
-    HttpPipelinedHost* host) {
-  while (ContainsKey(http_pipelining_request_map_, host->GetKey())) {
-    HttpPipelinedStream* stream =
-        http_pipelined_host_pool_.CreateStreamOnExistingPipeline(
-            host->GetKey());
-    if (!stream) {
-      break;
-    }
-
-    Request* request = *http_pipelining_request_map_[host->GetKey()].begin();
-    request->Complete(stream->was_npn_negotiated(),
-                      stream->protocol_negotiated(),
-                      false,  // not using_spdy
-                      stream->net_log());
-    request->OnStreamReady(NULL,
-                           stream->used_ssl_config(),
-                           stream->used_proxy_info(),
-                           stream);
-  }
-}
-
-void HttpStreamFactoryImpl::AbortPipelinedRequestsWithKey(
-    const Job* job, const HttpPipelinedHost::Key& key, int status,
-    const SSLConfig& used_ssl_config) {
-  RequestVector requests_to_fail = http_pipelining_request_map_[key];
-  for (RequestVector::const_iterator it = requests_to_fail.begin();
-       it != requests_to_fail.end(); ++it) {
-    Request* request = *it;
-    if (request == request_map_[job]) {
-      continue;
-    }
-    request->OnStreamFailed(NULL, status, used_ssl_config);
-  }
 }
 
 }  // namespace net

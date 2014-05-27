@@ -305,22 +305,6 @@ TEST_F(HttpResponseBodyDrainerTest, DrainBodyTooLarge) {
   EXPECT_TRUE(result_waiter_.WaitForResult());
 }
 
-TEST_F(HttpResponseBodyDrainerTest, StartBodyTooLarge) {
-  int too_many_chunks =
-      HttpResponseBodyDrainer::kDrainBodyBufferSize / kMagicChunkSize;
-  too_many_chunks += 1;  // Now it's too large.
-
-  mock_stream_->set_num_chunks(0);
-  drainer_->StartWithSize(session_.get(), too_many_chunks * kMagicChunkSize);
-  EXPECT_TRUE(result_waiter_.WaitForResult());
-}
-
-TEST_F(HttpResponseBodyDrainerTest, StartWithNothingToDo) {
-  mock_stream_->set_num_chunks(0);
-  drainer_->StartWithSize(session_.get(), 0);
-  EXPECT_FALSE(result_waiter_.WaitForResult());
-}
-
 }  // namespace
 
 }  // namespace net

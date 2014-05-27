@@ -122,8 +122,7 @@ class NET_EXPORT_PRIVATE HttpChunkedDecoder {
   // Set to true when FilterBuf encounters the final CRLF.
   bool reached_eof_;
 
-  // The number of unfiltered bytes after the final CRLF, either extraneous
-  // data or the first part of the next response in a pipelined stream.
+  // The number of extraneous unfiltered bytes after the final CRLF.
   int bytes_after_eof_;
 };
 

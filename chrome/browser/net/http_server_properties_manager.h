@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
-#include "net/http/http_pipelined_host_capability.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_impl.h"
 
@@ -163,17 +162,6 @@ class HttpServerPropertiesManager
   virtual const NetworkStats* GetServerNetworkStats(
       const net::HostPortPair& host_port_pair) const OVERRIDE;
 
-  virtual net::HttpPipelinedHostCapability GetPipelineCapability(
-      const net::HostPortPair& origin) OVERRIDE;
-
-  virtual void SetPipelineCapability(
-      const net::HostPortPair& origin,
-      net::HttpPipelinedHostCapability capability) OVERRIDE;
-
-  virtual void ClearPipelineCapabilities() OVERRIDE;
-
-  virtual net::PipelineCapabilityMap GetPipelineCapabilityMap() const OVERRIDE;
-
  protected:
   // --------------------
   // SPDY related methods
@@ -198,7 +186,6 @@ class HttpServerPropertiesManager
       std::vector<std::string>* spdy_servers,
       net::SpdySettingsMap* spdy_settings_map,
       net::AlternateProtocolMap* alternate_protocol_map,
-      net::PipelineCapabilityMap* pipeline_capability_map,
       net::AlternateProtocolExperiment alternate_protocol_experiment,
       bool detected_corrupted_prefs);
 
@@ -226,7 +213,6 @@ class HttpServerPropertiesManager
       base::ListValue* spdy_server_list,
       net::SpdySettingsMap* spdy_settings_map,
       net::AlternateProtocolMap* alternate_protocol_map,
-      net::PipelineCapabilityMap* pipeline_capability_map,
       const base::Closure& completion);
 
  private:

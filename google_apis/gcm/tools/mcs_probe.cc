@@ -410,7 +410,6 @@ void MCSProbe::BuildNetworkSession() {
   session_params.network_delegate = NULL;  // TODO(zea): implement?
   session_params.host_mapping_rules = host_mapping_rules_.get();
   session_params.ignore_certificate_errors = true;
-  session_params.http_pipelining_enabled = false;
   session_params.testing_fixed_http_port = 0;
   session_params.testing_fixed_https_port = 0;
   session_params.net_log = &net_log_;

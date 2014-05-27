@@ -34,7 +34,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/dns_probe_service.h"
-#include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -395,7 +394,6 @@ SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
 IOThread::Globals::Globals()
     : system_request_context_leak_checker(this),
       ignore_certificate_errors(false),
-      http_pipelining_enabled(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       enable_user_alternate_protocol_ports(false) {
@@ -935,7 +933,6 @@ void IOThread::InitializeNetworkSessionParams(
   params->network_delegate = globals_->system_network_delegate.get();
   params->host_mapping_rules = globals_->host_mapping_rules.get();
   params->ignore_certificate_errors = globals_->ignore_certificate_errors;
-  params->http_pipelining_enabled = globals_->http_pipelining_enabled;
   params->testing_fixed_http_port = globals_->testing_fixed_http_port;
   params->testing_fixed_https_port = globals_->testing_fixed_https_port;
 

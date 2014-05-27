@@ -1711,8 +1711,8 @@ TEST_F(URLRequestTest, InterceptLoadTimingProxy) {
 
 // Make sure that URLRequest correctly adjusts proxy times when they're before
 // |request_start|, due to already having a connected socket.  This happens in
-// the case of reusing a SPDY session or HTTP pipeline.  The connected socket is
-// not considered reused in this test (May be a preconnect).
+// the case of reusing a SPDY session.  The connected socket is not considered
+// reused in this test (May be a preconnect).
 //
 // To mix things up from the test above, assumes DNS times but no SSL times.
 TEST_F(URLRequestTest, InterceptLoadTimingEarlyProxyResolution) {

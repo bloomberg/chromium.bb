@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// HttpStream provides an abstraction for a basic http streams, http pipelining
-// implementations, and SPDY.  The HttpStream subtype is expected to manage the
-// underlying transport appropriately.  For example, a non-pipelined HttpStream
-// would return the transport socket to the pool for reuse.  SPDY streams on the
-// other hand leave the transport socket management to the SpdySession.
+// HttpStream provides an abstraction for a basic http streams, SPDY, and QUIC.
+// The HttpStream subtype is expected to manage the underlying transport
+// appropriately.  For example, a basic http stream will return the transport
+// socket to the pool for reuse.  SPDY streams on the other hand leave the
+// transport socket management to the SpdySession.
 
 #ifndef NET_HTTP_HTTP_STREAM_H_
 #define NET_HTTP_HTTP_STREAM_H_

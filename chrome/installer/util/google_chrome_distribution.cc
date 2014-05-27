@@ -206,10 +206,6 @@ std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
   return chrome_common_net::kEchoTestServerLocation;
 }
 
-std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
-  return chrome_common_net::kPipelineTestServerBaseUrl;
-}
-
 base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   base::string16 sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");

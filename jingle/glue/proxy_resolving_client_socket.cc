@@ -75,8 +75,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     session_params.host_mapping_rules = reference_params->host_mapping_rules;
     session_params.ignore_certificate_errors =
         reference_params->ignore_certificate_errors;
-    session_params.http_pipelining_enabled =
-        reference_params->http_pipelining_enabled;
     session_params.testing_fixed_http_port =
         reference_params->testing_fixed_http_port;
     session_params.testing_fixed_https_port =

@@ -61,18 +61,16 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   MOCK_METHOD0(UpdateCacheFromPrefsOnUI, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnIO, void(const base::Closure&));
-  MOCK_METHOD6(UpdateCacheFromPrefsOnIO,
+  MOCK_METHOD5(UpdateCacheFromPrefsOnIO,
                void(std::vector<std::string>* spdy_servers,
                     net::SpdySettingsMap* spdy_settings_map,
                     net::AlternateProtocolMap* alternate_protocol_map,
-                    net::PipelineCapabilityMap* pipeline_capability_map,
                     net::AlternateProtocolExperiment experiment,
                     bool detected_corrupted_prefs));
-  MOCK_METHOD4(UpdatePrefsOnUI,
+  MOCK_METHOD3(UpdatePrefsOnUI,
                void(base::ListValue* spdy_server_list,
                     net::SpdySettingsMap* spdy_settings_map,
-                    net::AlternateProtocolMap* alternate_protocol_map,
-                    net::PipelineCapabilityMap* pipeline_capability_map));
+                    net::AlternateProtocolMap* alternate_protocol_map));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
@@ -157,9 +155,6 @@ TEST_F(HttpServerPropertiesManagerTest,
   server_pref_dict->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol);
 
-  // Set pipeline capability for www.google.com:80.
-  server_pref_dict->SetInteger("pipeline_capability", net::PIPELINE_CAPABLE);
-
   // Set the server preference for www.google.com:80.
   base::DictionaryValue* servers_dict = new base::DictionaryValue;
   servers_dict->SetWithoutPathExpansion(
@@ -178,9 +173,6 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   server_pref_dict1->SetWithoutPathExpansion(
       "alternate_protocol", alternate_protocol1);
-
-  // Set pipelining capability for mail.google.com:80
-  server_pref_dict1->SetInteger("pipeline_capability", net::PIPELINE_INCAPABLE);
 
   // Set the server preference for mail.google.com:80.
   servers_dict->SetWithoutPathExpansion(
@@ -225,14 +217,6 @@ TEST_F(HttpServerPropertiesManagerTest,
           net::HostPortPair::FromString("mail.google.com:80"));
   EXPECT_EQ(444, port_alternate_protocol.port);
   EXPECT_EQ(net::NPN_SPDY_3_1, port_alternate_protocol.protocol);
-
-  // Verify pipeline capability.
-  EXPECT_EQ(net::PIPELINE_CAPABLE,
-            http_server_props_manager_->GetPipelineCapability(
-                net::HostPortPair::FromString("www.google.com:80")));
-  EXPECT_EQ(net::PIPELINE_INCAPABLE,
-            http_server_props_manager_->GetPipelineCapability(
-                net::HostPortPair::FromString("mail.google.com:80")));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
@@ -375,33 +359,6 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
   EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
 }
 
-TEST_F(HttpServerPropertiesManagerTest, PipelineCapability) {
-  ExpectPrefsUpdate();
-
-  net::HostPortPair known_pipeliner("pipeline.com", 8080);
-  net::HostPortPair bad_pipeliner("wordpress.com", 80);
-  EXPECT_EQ(net::PIPELINE_UNKNOWN,
-            http_server_props_manager_->GetPipelineCapability(known_pipeliner));
-  EXPECT_EQ(net::PIPELINE_UNKNOWN,
-            http_server_props_manager_->GetPipelineCapability(bad_pipeliner));
-
-  // Post an update task to the IO thread. SetPipelineCapability calls
-  // ScheduleUpdatePrefsOnIO.
-  http_server_props_manager_->SetPipelineCapability(known_pipeliner,
-                                                    net::PIPELINE_CAPABLE);
-  http_server_props_manager_->SetPipelineCapability(bad_pipeliner,
-                                                    net::PIPELINE_INCAPABLE);
-
-  // Run the task.
-  loop_.RunUntilIdle();
-
-  EXPECT_EQ(net::PIPELINE_CAPABLE,
-            http_server_props_manager_->GetPipelineCapability(known_pipeliner));
-  EXPECT_EQ(net::PIPELINE_INCAPABLE,
-            http_server_props_manager_->GetPipelineCapability(bad_pipeliner));
-  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
-}
-
 TEST_F(HttpServerPropertiesManagerTest, Clear) {
   ExpectPrefsUpdate();
 
@@ -415,10 +372,6 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const uint32 value1 = 31337;
   http_server_props_manager_->SetSpdySetting(
       spdy_server_mail, id1, flags1, value1);
-
-  net::HostPortPair known_pipeliner("pipeline.com", 8080);
-  http_server_props_manager_->SetPipelineCapability(known_pipeliner,
-                                                    net::PIPELINE_CAPABLE);
 
   // Run the task.
   loop_.RunUntilIdle();
@@ -437,9 +390,6 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
-  EXPECT_EQ(net::PIPELINE_CAPABLE,
-            http_server_props_manager_->GetPipelineCapability(known_pipeliner));
-
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   ExpectPrefsUpdate();
@@ -455,9 +405,6 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const net::SettingsMap& settings_map2_ret =
       http_server_props_manager_->GetSpdySettings(spdy_server_mail);
   EXPECT_EQ(0U, settings_map2_ret.size());
-
-  EXPECT_EQ(net::PIPELINE_UNKNOWN,
-            http_server_props_manager_->GetPipelineCapability(known_pipeliner));
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
