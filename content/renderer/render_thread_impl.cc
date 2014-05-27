@@ -562,6 +562,11 @@ void RenderThreadImpl::Shutdown() {
     input_event_filter_ = NULL;
   }
 
+  // RemoveEmbeddedWorkerRoute may be called while deleting
+  // EmbeddedWorkerDispatcher. So it must be deleted before deleting
+  // RenderThreadImpl.
+  embedded_worker_dispatcher_.reset();
+
   // Ramp down IDB before we ramp down WebKit (and V8), since IDB classes might
   // hold pointers to V8 objects (e.g., via pending requests).
   main_thread_indexed_db_dispatcher_.reset();
