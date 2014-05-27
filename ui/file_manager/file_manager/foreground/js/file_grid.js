@@ -75,7 +75,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
                                   this.metadataCache_,
                                   this.volumeManager_,
                                   ThumbnailLoader.FillMode.FIT,
-                                  FileGrid.ThumbnailQuality.HIGH);
+                                  FileGrid.ThumbnailQuality.LOW);
   }
 };
 
@@ -121,7 +121,7 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
                                   metadataCache,
                                   volumeManager,
                                   ThumbnailLoader.FillMode.AUTO,
-                                  FileGrid.ThumbnailQuality.HIGH);
+                                  FileGrid.ThumbnailQuality.LOW);
   }
   frame.appendChild(box);
 
