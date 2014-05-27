@@ -36,9 +36,7 @@ namespace WebCore {
 
 RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
     : RenderRegion(0, flowThread)
-    , m_computedColumnCount(1)
-    , m_computedColumnWidth(0)
-    , m_computedColumnHeight(0)
+    , m_columnHeight(0)
     , m_maxColumnHeight(RenderFlowThread::maxLogicalHeight())
     , m_minSpaceShortage(RenderFlowThread::maxLogicalHeight())
     , m_minimumColumnHeight(0)
@@ -103,14 +101,14 @@ LayoutUnit RenderMultiColumnSet::heightAdjustedForSetOffset(LayoutUnit height) c
 LayoutUnit RenderMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) const
 {
     unsigned columnIndex = columnIndexAtOffset(offset, AssumeNewColumns);
-    return logicalTopInFlowThread() + columnIndex * computedColumnHeight();
+    return logicalTopInFlowThread() + columnIndex * pageLogicalHeight();
 }
 
 void RenderMultiColumnSet::setAndConstrainColumnHeight(LayoutUnit newHeight)
 {
-    m_computedColumnHeight = newHeight;
-    if (m_computedColumnHeight > m_maxColumnHeight)
-        m_computedColumnHeight = m_maxColumnHeight;
+    m_columnHeight = newHeight;
+    if (m_columnHeight > m_maxColumnHeight)
+        m_columnHeight = m_maxColumnHeight;
     // FIXME: the height may also be affected by the enclosing pagination context, if any.
 }
 
@@ -152,7 +150,7 @@ void RenderMultiColumnSet::distributeImplicitBreaks()
     // column count by one and shrink its columns' height. Repeat until we have the desired total
     // number of breaks. The largest column height among the runs will then be the initial column
     // height for the balancer to use.
-    while (columnCount < m_computedColumnCount) {
+    while (columnCount < usedColumnCount()) {
         unsigned index = findRunWithTallestColumns();
         m_contentRuns[index].assumeAnotherImplicitBreak();
         columnCount++;
@@ -171,15 +169,15 @@ LayoutUnit RenderMultiColumnSet::calculateColumnHeight(BalancedHeightCalculation
         return std::max<LayoutUnit>(m_contentRuns[index].columnLogicalHeight(startOffset), m_minimumColumnHeight);
     }
 
-    if (columnCount() <= computedColumnCount()) {
+    if (actualColumnCount() <= usedColumnCount()) {
         // With the current column height, the content fits without creating overflowing columns. We're done.
-        return m_computedColumnHeight;
+        return m_columnHeight;
     }
 
-    if (m_contentRuns.size() >= computedColumnCount()) {
+    if (m_contentRuns.size() >= usedColumnCount()) {
         // Too many forced breaks to allow any implicit breaks. Initial balancing should already
         // have set a good height. There's nothing more we should do.
-        return m_computedColumnHeight;
+        return m_columnHeight;
     }
 
     // If the initial guessed column height wasn't enough, stretch it now. Stretch by the lowest
@@ -188,9 +186,9 @@ LayoutUnit RenderMultiColumnSet::calculateColumnHeight(BalancedHeightCalculation
     ASSERT(m_minSpaceShortage > 0); // We should never _shrink_ the height!
     ASSERT(m_minSpaceShortage != RenderFlowThread::maxLogicalHeight()); // If this happens, we probably have a bug.
     if (m_minSpaceShortage == RenderFlowThread::maxLogicalHeight())
-        return m_computedColumnHeight; // So bail out rather than looping infinitely.
+        return m_columnHeight; // So bail out rather than looping infinitely.
 
-    return m_computedColumnHeight + m_minSpaceShortage;
+    return m_columnHeight + m_minSpaceShortage;
 }
 
 void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
@@ -201,7 +199,7 @@ void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
         return;
     // Append another item as long as we haven't exceeded used column count. What ends up in the
     // overflow area shouldn't affect column balancing.
-    if (m_contentRuns.size() < m_computedColumnCount)
+    if (m_contentRuns.size() < usedColumnCount())
         m_contentRuns.append(ContentRun(endOffsetFromFirstPage));
 }
 
@@ -209,7 +207,7 @@ bool RenderMultiColumnSet::recalculateColumnHeight(BalancedHeightCalculation cal
 {
     ASSERT(multiColumnFlowThread()->requiresBalancing());
 
-    LayoutUnit oldColumnHeight = m_computedColumnHeight;
+    LayoutUnit oldColumnHeight = m_columnHeight;
     if (calculationMode == GuessFromFlowThreadPortion) {
         // Post-process the content runs and find out where the implicit breaks will occur.
         distributeImplicitBreaks();
@@ -228,7 +226,7 @@ bool RenderMultiColumnSet::recalculateColumnHeight(BalancedHeightCalculation cal
     // the next layout pass, since each pass will rebuild this.
     m_contentRuns.clear();
 
-    if (m_computedColumnHeight == oldColumnHeight)
+    if (m_columnHeight == oldColumnHeight)
         return false; // No change. We're done.
 
     m_minSpaceShortage = RenderFlowThread::maxLogicalHeight();
@@ -254,14 +252,14 @@ void RenderMultiColumnSet::resetColumnHeight()
 
     m_maxColumnHeight = calculateMaxColumnHeight();
 
-    LayoutUnit oldColumnHeight = computedColumnHeight();
+    LayoutUnit oldColumnHeight = pageLogicalHeight();
 
     if (multiColumnFlowThread()->requiresBalancing())
-        m_computedColumnHeight = 0;
+        m_columnHeight = 0;
     else
         setAndConstrainColumnHeight(heightAdjustedForSetOffset(multiColumnFlowThread()->columnHeightAvailable()));
 
-    if (computedColumnHeight() != oldColumnHeight)
+    if (pageLogicalHeight() != oldColumnHeight)
         setChildNeedsLayout(MarkOnlyThis);
 
     // Content runs are only needed in the initial layout pass, in order to find an initial column
@@ -289,7 +287,7 @@ void RenderMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
 
 void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
-    computedValues.m_extent = m_computedColumnHeight;
+    computedValues.m_extent = m_columnHeight;
     computedValues.m_position = logicalTop;
 }
 
@@ -315,11 +313,11 @@ LayoutUnit RenderMultiColumnSet::columnGap() const
     return parentBlock->style()->columnGap();
 }
 
-unsigned RenderMultiColumnSet::columnCount() const
+unsigned RenderMultiColumnSet::actualColumnCount() const
 {
     // We must always return a value of 1 or greater. Column count = 0 is a meaningless situation,
     // and will confuse and cause problems in other parts of the code.
-    if (!computedColumnHeight())
+    if (!pageLogicalHeight())
         return 1;
 
     // Our portion rect determines our column count. We have as many columns as needed to fit all the content.
@@ -327,15 +325,15 @@ unsigned RenderMultiColumnSet::columnCount() const
     if (!logicalHeightInColumns)
         return 1;
 
-    unsigned count = ceil(logicalHeightInColumns.toFloat() / computedColumnHeight().toFloat());
+    unsigned count = ceil(logicalHeightInColumns.toFloat() / pageLogicalHeight().toFloat());
     ASSERT(count >= 1);
     return count;
 }
 
 LayoutRect RenderMultiColumnSet::columnRectAt(unsigned index) const
 {
-    LayoutUnit colLogicalWidth = computedColumnWidth();
-    LayoutUnit colLogicalHeight = computedColumnHeight();
+    LayoutUnit colLogicalWidth = pageLogicalWidth();
+    LayoutUnit colLogicalHeight = pageLogicalHeight();
     LayoutUnit colLogicalTop = borderBefore() + paddingBefore();
     LayoutUnit colLogicalLeft = borderAndPaddingLogicalLeft();
     LayoutUnit colGap = columnGap();
@@ -362,20 +360,20 @@ unsigned RenderMultiColumnSet::columnIndexAtOffset(LayoutUnit offset, ColumnInde
     if (mode == ClampToExistingColumns) {
         LayoutUnit flowThreadLogicalBottom = isHorizontalWritingMode() ? portionRect.maxY() : portionRect.maxX();
         if (offset >= flowThreadLogicalBottom)
-            return columnCount() - 1;
+            return actualColumnCount() - 1;
     }
 
     // Just divide by the column height to determine the correct column.
-    return (offset - flowThreadLogicalTop).toFloat() / computedColumnHeight().toFloat();
+    return (offset - flowThreadLogicalTop).toFloat() / pageLogicalHeight().toFloat();
 }
 
 LayoutRect RenderMultiColumnSet::flowThreadPortionRectAt(unsigned index) const
 {
     LayoutRect portionRect = flowThreadPortionRect();
     if (isHorizontalWritingMode())
-        portionRect = LayoutRect(portionRect.x(), portionRect.y() + index * computedColumnHeight(), portionRect.width(), computedColumnHeight());
+        portionRect = LayoutRect(portionRect.x(), portionRect.y() + index * pageLogicalHeight(), portionRect.width(), pageLogicalHeight());
     else
-        portionRect = LayoutRect(portionRect.x() + index * computedColumnHeight(), portionRect.y(), computedColumnHeight(), portionRect.height());
+        portionRect = LayoutRect(portionRect.x() + index * pageLogicalHeight(), portionRect.y(), pageLogicalHeight(), portionRect.height());
     return portionRect;
 }
 
@@ -449,7 +447,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
     if (!renderRule)
         return;
 
-    unsigned colCount = columnCount();
+    unsigned colCount = actualColumnCount();
     if (colCount <= 1)
         return;
 
@@ -459,7 +457,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
     LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : contentLogicalWidth();
     LayoutUnit ruleAdd = borderAndPaddingLogicalLeft();
     LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : contentLogicalWidth();
-    LayoutUnit inlineDirectionSize = computedColumnWidth();
+    LayoutUnit inlineDirectionSize = pageLogicalWidth();
     BoxSide boxSide = isHorizontalWritingMode()
         ? leftToRight ? BSLeft : BSRight
         : leftToRight ? BSTop : BSBottom;
@@ -511,7 +509,7 @@ void RenderMultiColumnSet::repaintFlowThreadContent(const LayoutRect& repaintRec
     unsigned endColumn = columnIndexAtOffset(repaintLogicalBottom);
 
     LayoutUnit colGap = columnGap();
-    unsigned colCount = columnCount();
+    unsigned colCount = actualColumnCount();
     for (unsigned i = startColumn; i <= endColumn; i++) {
         LayoutRect colRect = columnRectAt(i);
 
@@ -564,9 +562,9 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
     unsigned startColumn = columnIndexAtOffset(layerLogicalTop);
     unsigned endColumn = columnIndexAtOffset(layerLogicalBottom);
 
-    LayoutUnit colLogicalWidth = computedColumnWidth();
+    LayoutUnit colLogicalWidth = pageLogicalWidth();
     LayoutUnit colGap = columnGap();
-    unsigned colCount = columnCount();
+    unsigned colCount = actualColumnCount();
 
     for (unsigned i = startColumn; i <= endColumn; i++) {
         // Get the portion of the flow thread that corresponds to this column.
@@ -622,7 +620,7 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
 
 void RenderMultiColumnSet::addOverflowFromChildren()
 {
-    unsigned colCount = columnCount();
+    unsigned colCount = actualColumnCount();
     if (!colCount)
         return;
 

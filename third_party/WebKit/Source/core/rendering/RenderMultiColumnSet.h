@@ -58,6 +58,9 @@ public:
 
     virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
 
+    virtual LayoutUnit pageLogicalWidth() const OVERRIDE FINAL { return flowThread()->logicalWidth(); }
+    virtual LayoutUnit pageLogicalHeight() const OVERRIDE FINAL { return m_columnHeight; }
+
     RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
     RenderMultiColumnFlowThread* multiColumnFlowThread() const
     {
@@ -73,15 +76,8 @@ public:
 
     LayoutUnit logicalHeightInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width(); }
 
-    unsigned computedColumnCount() const { return m_computedColumnCount; }
-    LayoutUnit computedColumnWidth() const { return m_computedColumnWidth; }
-    LayoutUnit computedColumnHeight() const { return m_computedColumnHeight; }
-
-    void setComputedColumnWidthAndCount(LayoutUnit width, unsigned count)
-    {
-        m_computedColumnWidth = width;
-        m_computedColumnCount = count;
-    }
+    // The used CSS value of column-count, i.e. how many columns there are room for without overflowing.
+    unsigned usedColumnCount() const { return multiColumnFlowThread()->columnCount(); }
 
     // Find the column that contains the given block offset, and return the translation needed to
     // get from flow thread coordinates to visual coordinates.
@@ -121,9 +117,6 @@ private:
 
     virtual void paintObject(PaintInfo&, const LayoutPoint& paintOffset) OVERRIDE;
 
-    virtual LayoutUnit pageLogicalWidth() const OVERRIDE { return m_computedColumnWidth; }
-    virtual LayoutUnit pageLogicalHeight() const OVERRIDE { return m_computedColumnHeight; }
-
     virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const OVERRIDE;
 
     virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const OVERRIDE { return logicalHeightInFlowThread(); }
@@ -141,7 +134,9 @@ private:
     LayoutUnit calculateMaxColumnHeight() const;
     LayoutUnit columnGap() const;
     LayoutRect columnRectAt(unsigned index) const;
-    unsigned columnCount() const;
+
+    // The "CSS actual" value of column-count. This includes overflowing columns, if any.
+    unsigned actualColumnCount() const;
 
     LayoutRect flowThreadPortionRectAt(unsigned index) const;
     LayoutRect flowThreadPortionOverflowRect(const LayoutRect& flowThreadPortion, unsigned index, unsigned colCount, LayoutUnit colGap) const;
@@ -165,9 +160,7 @@ private:
 
     LayoutUnit calculateColumnHeight(BalancedHeightCalculation) const;
 
-    unsigned m_computedColumnCount; // Used column count (the resulting 'N' from the pseudo-algorithm in the multicol spec)
-    LayoutUnit m_computedColumnWidth; // Used column width (the resulting 'W' from the pseudo-algorithm in the multicol spec)
-    LayoutUnit m_computedColumnHeight;
+    LayoutUnit m_columnHeight;
 
     // The following variables are used when balancing the column set.
     LayoutUnit m_maxColumnHeight; // Maximum column height allowed.

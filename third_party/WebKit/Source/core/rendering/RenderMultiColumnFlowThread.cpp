@@ -32,7 +32,6 @@ namespace WebCore {
 
 RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
     : m_columnCount(1)
-    , m_columnWidth(0)
     , m_columnHeightAvailable(0)
     , m_inBalancingPass(false)
     , m_needsColumnHeightsRecalculation(false)
@@ -137,6 +136,14 @@ LayoutSize RenderMultiColumnFlowThread::columnOffset(const LayoutPoint& point) c
     return toRenderMultiColumnSet(renderRegion)->flowThreadTranslationAtOffset(blockOffset);
 }
 
+bool RenderMultiColumnFlowThread::needsNewWidth() const
+{
+    LayoutUnit newWidth;
+    unsigned dummyColumnCount; // We only care if used column-width changes.
+    calculateColumnCountAndWidth(newWidth, dummyColumnCount);
+    return newWidth != logicalWidth();
+}
+
 void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     if (relayoutChildren)
@@ -158,45 +165,12 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
             // This is the initial layout pass. We need to reset the column height, because contents
             // typically have changed.
             columnSet->resetColumnHeight();
-
-            columnSet->setComputedColumnWidthAndCount(columnWidth(), columnCount());
         }
     }
 
     invalidateRegions();
     m_needsColumnHeightsRecalculation = requiresBalancing();
     layout();
-}
-
-bool RenderMultiColumnFlowThread::computeColumnCountAndWidth()
-{
-    RenderBlock* columnBlock = multiColumnBlockFlow();
-    LayoutUnit oldColumnWidth = m_columnWidth;
-
-    // Calculate our column width and column count.
-    m_columnCount = 1;
-    m_columnWidth = columnBlock->contentLogicalWidth();
-
-    const RenderStyle* columnStyle = columnBlock->style();
-    ASSERT(!columnStyle->hasAutoColumnCount() || !columnStyle->hasAutoColumnWidth());
-
-    LayoutUnit availWidth = m_columnWidth;
-    LayoutUnit colGap = columnBlock->columnGap();
-    LayoutUnit colWidth = max<LayoutUnit>(1, LayoutUnit(columnStyle->columnWidth()));
-    int colCount = max<int>(1, columnStyle->columnCount());
-
-    if (columnStyle->hasAutoColumnWidth() && !columnStyle->hasAutoColumnCount()) {
-        m_columnCount = colCount;
-        m_columnWidth = std::max<LayoutUnit>(0, (availWidth - ((m_columnCount - 1) * colGap)) / m_columnCount);
-    } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
-        m_columnCount = std::max<LayoutUnit>(1, (availWidth + colGap) / (colWidth + colGap));
-        m_columnWidth = ((availWidth + colGap) / m_columnCount) - colGap;
-    } else {
-        m_columnCount = std::max<LayoutUnit>(std::min<LayoutUnit>(colCount, (availWidth + colGap) / (colWidth + colGap)), 1);
-        m_columnWidth = ((availWidth + colGap) / m_columnCount) - colGap;
-    }
-
-    return m_columnWidth != oldColumnWidth;
 }
 
 bool RenderMultiColumnFlowThread::recalculateColumnHeights()
@@ -229,6 +203,28 @@ bool RenderMultiColumnFlowThread::recalculateColumnHeights()
 
     m_inBalancingPass = needsRelayout;
     return needsRelayout;
+}
+
+void RenderMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
+{
+    RenderBlock* columnBlock = multiColumnBlockFlow();
+    const RenderStyle* columnStyle = columnBlock->style();
+    LayoutUnit availableWidth = columnBlock->contentLogicalWidth();
+    LayoutUnit columnGap = columnBlock->columnGap();
+    LayoutUnit computedColumnWidth = max<LayoutUnit>(1, LayoutUnit(columnStyle->columnWidth()));
+    unsigned computedColumnCount = max<int>(1, columnStyle->columnCount());
+
+    ASSERT(!columnStyle->hasAutoColumnCount() || !columnStyle->hasAutoColumnWidth());
+    if (columnStyle->hasAutoColumnWidth() && !columnStyle->hasAutoColumnCount()) {
+        count = computedColumnCount;
+        width = std::max<LayoutUnit>(0, (availableWidth - ((count - 1) * columnGap)) / count);
+    } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
+        count = std::max<LayoutUnit>(1, (availableWidth + columnGap) / (computedColumnWidth + columnGap));
+        width = ((availableWidth + columnGap) / count) - columnGap;
+    } else {
+        count = std::max<LayoutUnit>(std::min<LayoutUnit>(computedColumnCount, (availableWidth + columnGap) / (computedColumnWidth + columnGap)), 1);
+        width = ((availableWidth + columnGap) / count) - columnGap;
+    }
 }
 
 const char* RenderMultiColumnFlowThread::renderName() const
@@ -269,7 +265,9 @@ void RenderMultiColumnFlowThread::computeLogicalHeight(LayoutUnit logicalHeight,
 
 void RenderMultiColumnFlowThread::updateLogicalWidth()
 {
-    setLogicalWidth(columnWidth());
+    LayoutUnit columnWidth;
+    calculateColumnCountAndWidth(columnWidth, m_columnCount);
+    setLogicalWidth(columnWidth);
 }
 
 void RenderMultiColumnFlowThread::layout()
@@ -318,7 +316,7 @@ bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, Render
 bool RenderMultiColumnFlowThread::isPageLogicalHeightKnown() const
 {
     if (RenderMultiColumnSet* columnSet = lastMultiColumnSet())
-        return columnSet->computedColumnHeight();
+        return columnSet->pageLogicalHeight();
     return false;
 }
 

@@ -185,7 +185,7 @@ bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
 {
     bool relayoutChildren = RenderBlock::updateLogicalWidthAndColumnWidth();
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-        if (flowThread->computeColumnCountAndWidth())
+        if (flowThread->needsNewWidth())
             return true;
     }
     return relayoutChildren;

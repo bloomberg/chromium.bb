@@ -109,19 +109,23 @@ public:
     void evacuateAndDestroy();
 
     unsigned columnCount() const { return m_columnCount; }
-    LayoutUnit columnWidth() const { return m_columnWidth; }
     LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
     void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
     bool requiresBalancing() const { return !columnHeightAvailable() || multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance; }
 
     virtual LayoutSize columnOffset(const LayoutPoint&) const OVERRIDE FINAL;
 
+    // Do we need to set a new width and lay out?
+    bool needsNewWidth() const;
+
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
-    bool computeColumnCountAndWidth();
+
     bool recalculateColumnHeights();
 
 private:
     RenderMultiColumnFlowThread();
+
+    void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
 
     virtual const char* renderName() const OVERRIDE;
     virtual void addRegionToThread(RenderRegion*) OVERRIDE;
@@ -136,7 +140,6 @@ private:
     virtual bool isPageLogicalHeightKnown() const OVERRIDE;
 
     unsigned m_columnCount; // The used value of column-count
-    LayoutUnit m_columnWidth; // The used value of column-width
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
     bool m_inBalancingPass; // Set when relayouting for column balancing.
     bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.
