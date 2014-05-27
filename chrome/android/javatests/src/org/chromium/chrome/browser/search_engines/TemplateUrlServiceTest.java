@@ -28,8 +28,7 @@ public class TemplateUrlServiceTest extends ChromeShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
-        launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
     }
 
     @SmallTest

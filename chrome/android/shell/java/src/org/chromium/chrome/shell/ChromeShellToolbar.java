@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.shell.omnibox.SuggestionPopup;
 
 /**
  * A Toolbar {@link View} that shows the URL and navigation buttons.
@@ -117,6 +118,7 @@ public class ChromeShellToolbar extends LinearLayout {
                 }
             }
         });
+        mUrlTextView.addTextChangedListener(new SuggestionPopup(getContext(), mUrlTextView, this));
     }
 
     private void initializeMenuButton() {
@@ -135,7 +137,18 @@ public class ChromeShellToolbar extends LinearLayout {
         });
     }
 
-    private void setKeyboardVisibilityForUrl(boolean visible) {
+    /**
+     * @return Current tab that is shown by ChromeShell.
+     */
+    public ChromeShellTab getCurrentTab() {
+        return mTab;
+    }
+
+    /**
+     * Change the visibility of the software keyboard.
+     * @param visible Whether the keyboard should be shown or hidden.
+     */
+    public void setKeyboardVisibilityForUrl(boolean visible) {
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         if (visible) {
