@@ -841,10 +841,6 @@ void SigninScreenHandler::RefocusCurrentPod() {
   core_oobe_actor_->RefocusCurrentPod();
 }
 
-void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
-  core_oobe_actor_->OnLoginSuccess(username);
-}
-
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
   CallJS("login.AccountPickerScreen.removeUser", username);
   if (delegate_->GetUsers().empty())
