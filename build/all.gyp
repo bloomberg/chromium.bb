@@ -661,6 +661,7 @@
             ['chromeos==0', {
               'dependencies': [
                 '../v8/src/d8.gyp:d8#host',
+                '../third_party/pdfium/samples/samples.gyp:pdfium_test',
               ],
             }],
             ['internal_filter_fuzzer==1', {
