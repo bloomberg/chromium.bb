@@ -28,9 +28,9 @@
 #define DeviceOrientationController_h
 
 #include "core/dom/DocumentSupplementable.h"
-#include "core/events/Event.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/DeviceSensorEventController.h"
+#include "modules/EventModules.h"
 
 namespace WebCore {
 

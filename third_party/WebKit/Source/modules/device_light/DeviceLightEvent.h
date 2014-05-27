@@ -5,7 +5,7 @@
 #ifndef DeviceLightEvent_h
 #define DeviceLightEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 
 namespace WebCore {

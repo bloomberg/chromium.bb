@@ -2,7 +2,11 @@
 {{license()}}
 
 #include "config.h"
+{% if suffix == 'Modules' %}
+#include "modules/{{namespace}}{{suffix}}Factory.h"
+{% else %}
 #include "core/events/{{namespace}}Factory.h"
+{% endif %}
 
 #include "{{namespace}}{{suffix}}Headers.h"
 #include "RuntimeEnabledFeatures.h"

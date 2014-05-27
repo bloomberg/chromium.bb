@@ -31,7 +31,7 @@
 #ifndef CloseEvent_h
 #define CloseEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 
 namespace WebCore {
 

@@ -27,7 +27,7 @@
 #define Coordinates_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 

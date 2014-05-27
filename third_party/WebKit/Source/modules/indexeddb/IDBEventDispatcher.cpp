@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 
 namespace WebCore {

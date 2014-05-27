@@ -24,8 +24,6 @@
 #ifndef Event_h
 #define Event_h
 
-#include "EventModulesNames.h" // TODO: move this to modules http://crbug.com/358074
-
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/events/EventPath.h"

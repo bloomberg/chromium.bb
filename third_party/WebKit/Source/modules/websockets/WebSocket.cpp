@@ -37,7 +37,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"

@@ -5,9 +5,11 @@
 #include "config.h"
 #include "InitModules.h"
 
+#include "EventModulesFactory.h"
 #include "EventModulesNames.h"
 #include "EventTargetModulesNames.h"
 #include "EventTypeNames.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 
@@ -21,6 +23,15 @@ void ModulesInitializer::initEventTargetNames()
 {
     EventTargetNames::init();
     EventTargetNames::initModules();
+}
+
+PassRefPtrWillBeRawPtr<Event> createEventModules(const String& eventType, ExceptionState& exceptionState)
+{
+    RefPtrWillBeRawPtr<Event> event = EventModulesFactory::create(eventType);
+    if (event)
+        return event.release();
+
+    return Document::createEvent(eventType, exceptionState);
 }
 
 } // namespace WebCore

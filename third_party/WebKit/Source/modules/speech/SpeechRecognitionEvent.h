@@ -26,7 +26,7 @@
 #ifndef SpeechRecognitionEvent_h
 #define SpeechRecognitionEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/heap/Handle.h"

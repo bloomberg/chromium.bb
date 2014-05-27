@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/battery/BatteryDispatcher.h"
 
-#include "core/events/Event.h"
 #include "modules/battery/BatteryStatus.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"

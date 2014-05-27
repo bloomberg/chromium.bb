@@ -28,7 +28,7 @@
 
 #include "bindings/v8/Nullable.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/WebIDBTypes.h"

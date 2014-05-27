@@ -30,7 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMStringList.h"
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBMetadata.h"

@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/Event.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
 #include "platform/mediastream/MediaStreamCenter.h"

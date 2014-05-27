@@ -5,7 +5,7 @@
 #ifndef GamepadEvent_h
 #define GamepadEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/gamepad/Gamepad.h"
 
 namespace WebCore {

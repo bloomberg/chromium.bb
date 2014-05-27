@@ -5,7 +5,7 @@
 #ifndef FetchEvent_h
 #define FetchEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 
 namespace WebCore {

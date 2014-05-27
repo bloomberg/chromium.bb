@@ -38,7 +38,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/VoidCallback.h"
 #include "core/loader/FrameLoader.h"

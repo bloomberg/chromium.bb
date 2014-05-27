@@ -35,7 +35,6 @@
 #include "bindings/v8/ScriptPromiseResolverWithContext.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/MessagePort.h"
-#include "core/events/Event.h"
 #include "modules/EventTargetModules.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebMessagePortChannel.h"

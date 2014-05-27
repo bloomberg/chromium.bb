@@ -39,11 +39,6 @@ public:
     static PassRefPtrWillBeRawPtr<Event> create(const String& eventType);
 };
 
-class EventModulesFactory {
-public:
-    static PassRefPtrWillBeRawPtr<Event> create(const String& eventType);
-};
-
 }
 
 #endif

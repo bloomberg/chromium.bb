@@ -30,9 +30,9 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/Event.h"
-#include "platform/audio/AudioUtilities.h"
+#include "modules/EventModules.h"
 #include "modules/webaudio/AudioContext.h"
+#include "platform/audio/AudioUtilities.h"
 #include <algorithm>
 #include "wtf/MathExtras.h"
 

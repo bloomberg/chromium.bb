@@ -6,14 +6,20 @@
 #define InitModules_h
 
 #include "core/Init.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
+
+class Event;
+class ExceptionState;
 
 class ModulesInitializer : public CoreInitializer {
 public:
     virtual void initEventNames() OVERRIDE;
     virtual void initEventTargetNames() OVERRIDE;
 };
+
+PassRefPtrWillBeRawPtr<Event> createEventModules(const String& eventType, ExceptionState&);
 
 } // namespace WebCore
 

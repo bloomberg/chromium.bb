@@ -32,7 +32,7 @@
 #define InstallPhaseEvent_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 
 namespace WebCore {
 

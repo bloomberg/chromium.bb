@@ -37,7 +37,6 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
-#include "core/events/Event.h"
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorController.h"

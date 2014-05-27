@@ -6,7 +6,6 @@
 #include "modules/battery/BatteryManager.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "modules/battery/BatteryStatus.h"
 #include <limits>

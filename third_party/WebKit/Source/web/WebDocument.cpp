@@ -54,6 +54,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
+#include "modules/InitModules.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebAXObject.h"
@@ -241,7 +242,7 @@ WebElement WebDocument::fullScreenElement() const
 WebDOMEvent WebDocument::createEvent(const WebString& eventType)
 {
     TrackExceptionState exceptionState;
-    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, exceptionState));
+    WebDOMEvent event(createEventModules(eventType, exceptionState));
     if (exceptionState.hadException())
         return WebDOMEvent();
     return event;

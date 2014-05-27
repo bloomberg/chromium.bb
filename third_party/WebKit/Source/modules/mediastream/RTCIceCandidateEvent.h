@@ -25,7 +25,7 @@
 #ifndef RTCIceCandidateEvent_h
 #define RTCIceCandidateEvent_h
 
-#include "core/events/Event.h"
+#include "modules/EventModules.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
