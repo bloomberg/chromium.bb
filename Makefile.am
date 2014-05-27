@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 bin_PROGRAMS =
 noinst_PROGRAMS =
 libexec_PROGRAMS =
