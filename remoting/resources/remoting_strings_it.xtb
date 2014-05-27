@@ -17,6 +17,7 @@ Chromoting</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="2124408767156847088">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.</translation>
+<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="4808503597364150972">Inserisci il PIN di <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Le connessioni remote per questo computer sono state disattivate.</translation>
 <translation id="8244400547700556338">Scopri come.</translation>
@@ -27,6 +28,8 @@ Chromoting</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7782471917492991422">Verifica le impostazioni di risparmio energia del computer e verifica che non sia configurata la sospensione per inattività.</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
+<translation id="5925497314631808737">• È stata implementata la modalità immersiva/a schermo intero.
+• È stata migliorata l'icona per nascondere la barra delle azioni.</translation>
 <translation id="2707879711568641861">Mancano alcuni componenti necessari per Chrome Remote Desktop. Verifica che sia installata la versione più recente e riprova.</translation>
 <translation id="2499160551253595098">Aiutaci a migliorare Chrome Remote Desktop consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="7868137160098754906">Inserisci il codice PIN per il computer remoto.</translation>
@@ -134,7 +137,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="4361728918881830843">Per attivare le connessioni remote su un altro computer, installa Chrome Remote Desktop sul computer e fai clic su &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="7444276978508498879">Client connesso: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">In attesa di connessione...</translation>
-<translation id="5714695932513333758">Cronologia connessioni</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
 <translation id="2366718077645204424">Impossibile raggiungere l'host. Il problema potrebbe essere dovuto alla configurazione della rete in uso.</translation>
@@ -189,7 +191,6 @@ Remote Desktop</translation>
 <translation id="5308380583665731573">Connetti</translation>
 <translation id="7319983568955948908">Interrompi condivisione</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Tutti i diritti riservati.</translation>
-<translation id="8038108135592087998">Prima versione di Chrome Remote Desktop per Android.</translation>
 <translation id="6668065415969892472">Il PIN è stato aggiornato.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">Il codice di accesso non è valido. Riprova.</translation>

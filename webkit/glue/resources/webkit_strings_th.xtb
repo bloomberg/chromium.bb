@@ -6,14 +6,12 @@
 <translation id="248395913932153421">วัน</translation>
 <translation id="1729654308190250600">โปรดป้อนที่อยู่อีเมลที่ไม่ว่างเปล่า</translation>
 <translation id="6015796118275082299">ปี</translation>
-<translation id="9186171386827445984">กำลังโหลดเอกสาร: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> หน้า...</translation>
 <translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
 <translation id="7223624360433298498">เวลาที่ผ่านไป</translation>
 <translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="5048533449481078685">ผู้สร้างรายการ</translation>
 <translation id="4202807286478387388">ข้าม</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">โปรดป้อนส่วนหนึ่งโดยตามด้วย &quot;<ph name="ATSIGN"/>&quot; &quot;<ph name="INVALIDADDRESS"/>&quot; นั้นไม่สมบูรณ์</translation>
 <translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME"/> หรือหลังจากนั้น</translation>
 <translation id="2572483411312390101">เล่น</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
 <translation id="8534579021159131403">นาที</translation>
 <translation id="819205353528511139">เล่นภาพยนตร์ในโหมดเต็มหน้าจอ</translation>
-<translation id="8964020114565522021">ลากไฟล์มาที่นี่</translation>
 <translation id="4103419683916926126">มิลลิวินาที</translation>
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="2846343701378493991">1024 (เกรดปานกลาง)</translation>

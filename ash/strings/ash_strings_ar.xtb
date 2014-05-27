@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
+<translation id="6895424601869865703">إضافة حساب لـ <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">تشغيل التناوب (انقر هنا للتغيير)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> و<ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">حالة المدخل</translation>
 <translation id="30155388420722288">زر التدفق</translation>
@@ -45,6 +47,7 @@
 <translation id="6043994281159824495">الخروج الآن</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="3846575436967432996">لا توجد معلومات متاحة حول الشبكة</translation>
+<translation id="4625920103690741805">قفل التناوب (انقر هنا للتغيير)</translation>
 <translation id="3799026279081545374">‏قد يكون الشاحن غير صالح. إذا كنت مقيمًا في الولايات المتحدة، فالرجاء الاتصال بالرقم ‎866-628-1371 للحصول على مساعدة واستبدال الشاحن. وإذا كنت مقيمًا في المملكة المتحدة، فالرجاء الاتصال بالرقم ‎0800-026-0613. وإذا كنت مقيمًا في أيرلندا، فالرجاء الاتصال بالرقم ‎1-800-832-664. وإذا كنت مقيمًا في كندا، فالرجاء الاتصال بالرقم ‎866-628-1372. وإذا كنت مقيمًا في أستراليا، فالرجاء الاتصال بالرقم ‎1-800-067-460.</translation>
 <translation id="3026237328237090306">إعداد بيانات الجوال</translation>
 <translation id="5871632337994001636">إدارة الأجهزة...</translation>
@@ -69,6 +72,7 @@
 <translation id="7170041865419449892">خارج النطاق</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2688477613306174402">تهيئة</translation>
@@ -101,6 +105,7 @@
 <translation id="372094107052732682">‏للإنهاء، اضغط على Ctrl+Shift+Q مرتين.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="1480041086352807611">الوضع التجريبي</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (أساسي)</translation>
 <translation id="3626637461649818317">باقٍ <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
@@ -127,6 +132,7 @@
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="2372145515558759244">جارٍ مزامنة التطبيقات...</translation>
 <translation id="7256405249507348194">خطأ غير معروف: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">الحسابات</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="7925247922861151263">‏أخفق فحص AAA</translation>
 <translation id="8456362689280298700">حتى الاكتمال: <ph name="HOUR"/>:<ph name="MINUTE"/> ‏</translation>
@@ -139,7 +145,6 @@
 <translation id="4527045527269911712">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران.</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
-<translation id="1398853756734560583">تكبير</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: جارٍ التوصيل...</translation>
 <translation id="6062360702481658777">سيتم تسجيل خروجك تلقائيًا في غضون <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
@@ -151,7 +156,9 @@
 <translation id="5097002363526479830">أخفق الاتصال بشبكة &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
+<translation id="3433830597744061105">إدارة الحسابات</translation>
 <translation id="2966449113954629791">يبدو أنك قد استنفدت القدر المتاح لك من بيانات الجوّال. يُمكنك الانتقال إلى منفذ تنشيط <ph name="NAME"/> لشراء مزيد من البيانات.</translation>
+<translation id="742594950370306541">الكاميرا قيد الاستخدام.</translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME"/></translation>
 <translation id="7052914147756339792">تعيين خلفية...</translation>
 <translation id="8678698760965522072">الحالة متصل</translation>
@@ -168,7 +175,6 @@
 <translation id="1602076796624386989">تمكين بيانات الجوال</translation>
 <translation id="68610848741840742">‏ChromeVox (التعليق المنطوق)</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
-<translation id="3157931365184549694">استعادة</translation>
 <translation id="4274292172790327596">خطأ غير معروف</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">سماعة رأس</translation>
@@ -222,6 +228,7 @@
 <translation id="9046895021617826162">أخفق الاتصال</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">ستنتهي هذه الجلسة في <ph name="SESSION_TIME_REMAINING"/>. سيتم الخروج تلقائيًا.</translation>
+<translation id="743058460480092004">الكاميرا والميكروفون قيد الاستخدام.</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="6636709850131805001">حالة غير معروفة</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -237,7 +244,7 @@
 <translation id="520760366042891468">‏مشاركة التحكم في الشاشة عبر Hangouts.</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="4015692727874266537">تسجيل الدخول لحساب آخر...</translation>
-<translation id="5941711191222866238">تصغير</translation>
+<translation id="1044925987639358253">الميكروفون قيد الاستخدام.</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>

@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Giorno</translation>
 <translation id="1729654308190250600">Inserisci un indirizzo email valido.</translation>
 <translation id="6015796118275082299">Anno</translation>
-<translation id="9186171386827445984">Caricamento del documento in corso: pagine <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>...</translation>
 <translation id="1235745349614807883">Cancella ricerche recenti</translation>
 <translation id="7223624360433298498">tempo trascorso</translation>
 <translation id="1171774979989969504">Inserisci un indirizzo email.</translation>
 <translation id="709897737746224366">Rispetta il formato richiesto.</translation>
 <translation id="5048533449481078685">indicatore elenco</translation>
 <translation id="4202807286478387388">vai</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Inserisci una parte seguita da &quot;<ph name="ATSIGN"/>&quot;. Il valore &quot;<ph name="INVALIDADDRESS"/>&quot; è incompleto.</translation>
 <translation id="2746543609216772311">Il valore deve essere <ph name="MINIMUM_DATE_OR_TIME"/> o successivo.</translation>
 <translation id="2572483411312390101">riproduci</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Seleziona questa casella se intendi procedere.</translation>
 <translation id="8534579021159131403">Minuti</translation>
 <translation id="819205353528511139">riproduci filmato in modalità a schermo intero</translation>
-<translation id="8964020114565522021">Trascina il file qui</translation>
 <translation id="4103419683916926126">Millisecondi</translation>
 <translation id="838869780401515933">seleziona</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>

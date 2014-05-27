@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Ημέρα</translation>
 <translation id="1729654308190250600">Καταχωρίστε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="6015796118275082299">Έτος</translation>
-<translation id="9186171386827445984">Φόρτωση εγγράφου: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> σελίδες...</translation>
-<translation id="1235745349614807883">Εκκαθάριση πρόσφατων αναζητήσεων</translation>
+<translation id="1235745349614807883">Διαγραφή πρόσφατων αναζητήσεων</translation>
 <translation id="7223624360433298498">χρόνος που παρήλθε</translation>
 <translation id="1171774979989969504">Εισαγάγετε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="5048533449481078685">δείκτης λίστας</translation>
 <translation id="4202807286478387388">μεταπήδηση</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Καταχωρίστε το τμήμα της διεύθυνσης πριν το σύμβολο &quot;<ph name="ATSIGN"/>&quot;. Η διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; δεν είναι πλήρης.</translation>
 <translation id="2746543609216772311">Η τιμή πρέπει να είναι <ph name="MINIMUM_DATE_OR_TIME"/> ή μεταγενέστερη.</translation>
 <translation id="2572483411312390101">αναπαραγωγή</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Αν θέλετε να συνεχίσετε, επιλέξτε αυτό το πλαίσιο.</translation>
 <translation id="8534579021159131403">Λεπτά</translation>
 <translation id="819205353528511139">αναπαραγωγή ταινίας σε λειτουργία πλήρους οθόνης</translation>
-<translation id="8964020114565522021">Σύρετε το αρχείο εδώ</translation>
 <translation id="4103419683916926126">Χιλιοστά του δευτερολέπτου</translation>
 <translation id="838869780401515933">ενεργοποίηση</translation>
 <translation id="2846343701378493991">1024 (Μέτριος βαθμός)</translation>
@@ -104,7 +101,7 @@
 <translation id="1591562245178063882">Αυτόν το μήνα</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> αρχεία</translation>
-<translation id="6643016212128521049">Εκκαθάριση</translation>
+<translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="7888071071722539607">Συμπεριλάβετε το σύμβολο &quot;<ph name="ATSIGN"/>&quot; στη διεύθυνση ηλεκτρονικού ταχυδρομείου. Από τη διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; λείπει το σύμβολο &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="1088086359088493902">Δευτερόλεπτα</translation>
 <translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>

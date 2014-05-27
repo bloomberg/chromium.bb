@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dzień</translation>
 <translation id="1729654308190250600">Podaj adres e-mail.</translation>
 <translation id="6015796118275082299">Rok</translation>
-<translation id="9186171386827445984">Wczytywanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stron...</translation>
 <translation id="1235745349614807883">Wyczyść ostatnie wyszukiwania</translation>
 <translation id="7223624360433298498">upłynęło czasu</translation>
 <translation id="1171774979989969504">Wprowadź adres e-mail.</translation>
 <translation id="709897737746224366">Podaj wartość w wymaganym formacie.</translation>
 <translation id="5048533449481078685">znacznik listy</translation>
 <translation id="4202807286478387388">przejdź</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Podaj część przed znakiem „<ph name="ATSIGN"/>”. Adres „<ph name="INVALIDADDRESS"/>” jest niepełny.</translation>
 <translation id="2746543609216772311">Musisz podać wartość <ph name="MINIMUM_DATE_OR_TIME"/> lub późniejszą.</translation>
 <translation id="2572483411312390101">odtwórz</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Zaznacz to pole, jeśli chcesz kontynuować.</translation>
 <translation id="8534579021159131403">Minuty</translation>
 <translation id="819205353528511139">odtwórz film w trybie pełnoekranowym</translation>
-<translation id="8964020114565522021">Przeciągnij plik tutaj</translation>
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="838869780401515933">zaznacz</translation>
 <translation id="2846343701378493991">1024 (średni poziom)</translation>

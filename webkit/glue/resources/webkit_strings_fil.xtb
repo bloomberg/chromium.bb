@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Araw</translation>
 <translation id="1729654308190250600">Mangyaring maglagay ng isang non-empty na email address.</translation>
 <translation id="6015796118275082299">Taon</translation>
-<translation id="9186171386827445984">Nilo-load ang dokumento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (na) pahina...</translation>
 <translation id="1235745349614807883">Lisiman ang Kasalukuyang Mga Paghahanap</translation>
 <translation id="7223624360433298498">lumipas na oras</translation>
 <translation id="1171774979989969504">Mangyaring magpasok ng email address.</translation>
 <translation id="709897737746224366">Pakitugma ang hiniling na format.</translation>
 <translation id="5048533449481078685">Ilista ang marker</translation>
 <translation id="4202807286478387388">tumalon</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Mangyaring maglagay ng isang bahagi na sinusundan ng '<ph name="ATSIGN"/>.' Hindi kumpleto ang '<ph name="INVALIDADDRESS"/>.'</translation>
 <translation id="2746543609216772311">Dapat <ph name="MINIMUM_DATE_OR_TIME"/> o mas bago ang value.</translation>
 <translation id="2572483411312390101">i-play</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Pakitingnan ang kahon na ito kung gusto mong magpatuloy.</translation>
 <translation id="8534579021159131403">Minuto</translation>
 <translation id="819205353528511139">i-play ang pelikula sa full screen mode</translation>
-<translation id="8964020114565522021">Kaldkarin dito ang file</translation>
 <translation id="4103419683916926126">Milliseconds</translation>
 <translation id="838869780401515933">I-tsek</translation>
 <translation id="2846343701378493991">1024 (Katamtamang Grado)</translation>

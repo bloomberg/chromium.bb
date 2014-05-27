@@ -101,7 +101,6 @@
           请注意，普通用户设备和企业设备的默认行为有所不同：默认情况下，系统会在普通用户设备上启用受监管用户，而在企业设备上停用受监管用户。</translation>
 <translation id="69525503251220566">用来为默认搜索服务提供商提供图片搜索功能的参数</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
-<translation id="5827231192798670332">选择自动清理时用于释放磁盘空间的策略</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
 <translation id="2482676533225429905">本地消息传递</translation>
 <translation id="6649397154027560979">此政策已弃用，请改用 URLBlacklist。
@@ -138,7 +137,6 @@
       如果 <ph name="PRODUCT_NAME"/> 无法获取撤消状态信息，此类证书将被视为已撤消（“硬性失败”）。
 
       如果不设置此政策，或将其设置为 False，Chrome 将使用现有的在线撤消检查设置。</translation>
-<translation id="1438955478865681012">配置关于扩展程序的政策。用户无法安装列入黑名单的扩展程序（除非相应程序列入了白名单）。您也可以在“<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>”中指定某些扩展程序，从而强制“<ph name="PRODUCT_NAME"/>”自动安装这些扩展程序。黑名单的优先级高于强制安装的扩展程序列表。</translation>
 <translation id="3516856976222674451">限制用户会话长度的上限。
 
       设置此策略后，它将指定多久之后用户将自动退出，同时终止会话。用户可以通过系统任务栏中显示的倒数计时器来了解剩余的时间。
@@ -195,19 +193,6 @@
 <translation id="1096105751829466145">默认搜索服务提供商</translation>
 <translation id="7567380065339179813">在这些网站上允许插件</translation>
 <translation id="4555850956567117258">为该用户启用远程认证</translation>
-<translation id="4418909344122918381">控制<ph name="PRODUCT_OS_NAME"/>设备上多个人资料会话中的用户行为。
-
-      如果此政策设为“MultiProfileUserBehaviorUnrestricted”，用户将能够以主用户或次要用户的身份参加多个人资料会话。
-
-      如果此政策设为“MultiProfileUserBehaviorMustBePrimary”，用户只能以主用户的身份登录多个人资料会话。
-
-      如果此政策设为“MultiProfileUserBehaviorNotAllowed”，用户将不能登录多个人资料会话。
-
-      如果您设置了此政策，用户将无法对其进行更改或覆盖。
-
-      如果此政策在用户登录到多个人资料会话中后发生了更改，系统将根据用户的相应设置对会话中的所有用户进行检查。如有任何用户不再符合登录此会话的资格，会话将关闭。
-
-      如果此政策未设置，则会使用默认值“MultiProfileUserBehaviorUnrestricted”。</translation>
 <translation id="5966615072639944554">允许扩展程序使用 Remote Attestation API</translation>
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
 <translation id="5290940294294002042">指定该用户可启用或停用的插件的列表</translation>
@@ -260,6 +245,7 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="5912364507361265851">允许用户在“密码管理器”中显示密码</translation>
+<translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
 <translation id="510186355068252378">使用 Google 托管的同步服务在 <ph name="PRODUCT_NAME"/>中停用数据同步功能，并禁止用户更改此设置。如果您启用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否使用 Google Sync。</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="4807950475297505572">删除最近使用最少的用户，直到有足够的可用空间</translation>
@@ -289,6 +275,13 @@
 <translation id="382476126209906314">为远程访问主机配置 TalkGadget 前缀</translation>
 <translation id="6561396069801924653">在系统任务栏菜单中显示辅助功能选项</translation>
 <translation id="8104962233214241919">自动选择这些网站的客户端证书</translation>
+<translation id="7983624541020350102">（本文档中可能包含为<ph name="PRODUCT_NAME"/>更高版本制定的政策，这些政策可能会随时变更，恕不另行通知。Chromium和Google Chrome所支持政策的列表完全相同。）
+
+      您无需手动更改这些政策！您可以通过<ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>下载易于使用的模板。
+
+      这些政策只能用于配置您所在单位内部的Chrome实例。在您所在单位之外（例如在公开发布的程序中）使用这些政策时，会导致该程序被视为恶意软件，并可能会被Google及防病毒软件供应商标记为恶意软件。
+
+      请注意：从28版<ph name="PRODUCT_NAME"/>开始，在Windows上，系统将直接通过Group Policy API加载政策。手动写入注册表的政策将被忽略。有关详情，请访问http://crbug.com/259236。</translation>
 <translation id="2906874737073861391">AppPack 扩展程序列表</translation>
 <translation id="4386578721025870401">限制通过SAML验证身份的用户可离线登录的时长。
 
@@ -362,13 +355,6 @@
 
       这些政策可让您配置在用户停止操作一定时间后<ph name="PRODUCT_OS_NAME"/>的行为。</translation>
 <translation id="2565967352111237512">允许向 Google 匿名报告有关 <ph name="PRODUCT_NAME"/>的使用情况和崩溃相关的数据，并禁止用户更改此设置。如果您启用了此设置，系统就会将使用情况和崩溃相关的数据匿名报告给 Google。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，该设置将由用户在安装或首次运行时选择。</translation>
-<translation id="4784220343847172494">控制“<ph name="PRODUCT_OS_NAME"/>”设备上的自动清理行为。当可用磁盘空间不足时，系统就会触发自动清理以释放部分磁盘空间。
-
-      如果该政策设置为“RemoveLRU”，自动清理功能将根据用户的最近登录次数，从次数最少的用户开始，按照顺序从设备上删除用户，直到有足够的可用空间为止。
-
-      如果该政策设置为“RemoveLRUIfDormant”，自动清理功能将根据用户的最近登录次数，从次数最少的用户开始，按照顺序把至少3个月未登录的用户从设备上删除，直到有足够的可用空间为止。
-
-      如果未设置该政策，自动清理功能将会使用默认的内置策略。目前，默认的内置策略是“RemoveLRUIfDormant”。</translation>
 <translation id="6256787297633808491">在 Chrome 启动时应用于整个系统的设置</translation>
 <translation id="2516600974234263142">在 <ph name="PRODUCT_NAME"/> 中启用打印功能，并禁止用户更改此设置。
 
@@ -396,15 +382,6 @@
 <translation id="8906768759089290519">启用访客模式</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
-<translation id="3234167886857176179">这是 <ph name="PRODUCT_NAME"/> 所遵循的政策列表。
-
-      您无需手动更改这些设置！您可以通过 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> 下载易用模板。
-
-      这份受支持政策的列表与 Chromium 和 Google Chrome 的政策列表完全相同。
-
-      以上政策仅适用于配置贵机构内部的 Chrome 实例。在贵机构之外（例如，公开发布的程序）使用这些政策，会被视为恶意软件，并可能被 Google 及防病毒软件供应商标记为恶意软件。
-
-      注意：从 Chrome 28 版开始，系统会直接通过 Group Policy API 在 Windows 上加载政策。系统将忽略手动写入注册文件的政策。有关详情，请访问 http://crbug.com/259236。</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/>可使用 Google 网络服务帮助解决拼写错误问题。如果启用此设置，那么将一直使用此服务。如果停用此设置，则从不使用此服务。
 
       使用已下载的字典，仍然可以进行拼写检查，此策略仅控制在线服务的使用情况。
@@ -431,6 +408,7 @@
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
 <translation id="2144674628322086778">允许企业用户成为一级和二级用户（默认行为）</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
+<translation id="3805659594028420438">启用TLS网域绑定证书扩展程序（已弃用）</translation>
 <translation id="5499375345075963939">此策略仅在零售模式下有效。
 
       当该策略值已设置，且不为零，那么当不活动期达到指定的时间期间后，当前登录的演示用户就会自动退出。
@@ -640,6 +618,7 @@
 
       如果未设置此政策，用户就可以在启动程序中更改固定应用的列表。</translation>
 <translation id="1679420586049708690">用于自动登录的公开会话</translation>
+<translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
 <translation id="2552966063069741410">时区</translation>
 <translation id="3788662722837364290">设备闲置时的电源管理设置</translation>
@@ -662,6 +641,11 @@
           如果未设置此政策，系统将会使用默认命令行。</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME"/>版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
+<translation id="2956777931324644324">此政策自36版<ph name="PRODUCT_NAME"/>起已停止使用。
+
+      用于指定是否启用TLS网域绑定证书扩展程序。
+
+      此政策用于启用TLS网域绑定证书扩展程序，以便进行测试。这一实验性政策日后将会弃用。</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="228659285074633994">指定在使用交流电源供电时用户停止输入后隔多久系统才会显示警告对话框。
@@ -796,7 +780,6 @@
           此政策仅供 Chrome 内部使用。</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
 <translation id="131353325527891113">在登录屏幕上显示用户名</translation>
-<translation id="5317965872570843334">当远程客户端尝试与此计算机建立连接时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。如果未设置此政策，就会启用此设置。</translation>
 <translation id="4057110413331612451">仅允许企业用户成为多用户配置中的一级用户</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
@@ -819,6 +802,15 @@
       无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
+<translation id="7332963785317884918">此政策已被弃用。<ph name="PRODUCT_OS_NAME"/>将始终使用“RemoveLRU”清理策略。
+
+      控制<ph name="PRODUCT_OS_NAME"/>设备上的自动清理行为。当可用磁盘空间的大小达到设定的临界值时，系统会触发自动清理，以便释放部分磁盘空间。
+
+      如果此政策设为“RemoveLRU”，自动清理将按最近最少登录(least-recently-logged-in)顺序从设备中移除用户，直至系统有足够的可用空间。
+
+      如果此政策设为“RemoveLRUIfDormant”，自动清理将按最近最少登录顺序移除至少已有3个月未登录的用户，直至系统有足够的可用空间。
+
+      如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
 <translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="4869787217450099946">指定是否允许使用屏幕唤醒锁定。扩展程序可通过 Power Management Extension API 请求使用屏幕唤醒锁定。
 
@@ -885,6 +877,19 @@
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME"/>”处理以下内容类型。</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
+<translation id="1464848559468748897">控制<ph name="PRODUCT_OS_NAME"/>设备上多个人资料会话中的用户行为。
+
+      如果此政策设为“MultiProfileUserBehaviorUnrestricted”，用户将能够以主用户或次要用户的身份登录多个人资料会话。
+
+      如果此政策设为“MultiProfileUserBehaviorMustBePrimary”，用户只能以主用户的身份登录多个人资料会话。
+
+      如果此政策设为“MultiProfileUserBehaviorNotAllowed”，用户将不能登录多个人资料会话。
+
+      如果您设置了此政策，用户将无法对其进行更改或覆盖。
+
+      如果此政策在用户登录到多个人资料会话中后发生了更改，系统将根据各个用户的相应设置对会话中的所有用户进行检查。如有任何用户不再符合登录此会话的资格，会话将关闭。
+
+      如果此政策未设置，则对于受企业管理的用户，将使用默认值“MultiProfileUserBehaviorMustBePrimary”；对于不受企业管理的用户，则使用“MultiProfileUserBehaviorUnrestricted”。</translation>
 <translation id="243972079416668391">指定当闲置延迟时间已过且使用交流电源供电时执行的操作。
 
           如果设置了此政策，就指定了机器闲置的时间超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME"/>执行的操作；闲置延迟时间可单独配置。
@@ -1014,6 +1019,7 @@
 
           此政策仅供 Chrome 内部使用。</translation>
 <translation id="913195841488580904">阻止访问网址列表</translation>
+<translation id="5461308170340925511">配置与扩展程序相关的政策。用户不能安装任何已被列入黑名单的扩展程序（除非它们被加入白名单）。您也可以通过在<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>中指定扩展程序来强制<ph name="PRODUCT_NAME"/>自动安装这些扩展程序。强制安装的扩展程序均会被安装（无论它们是否包含在黑名单内）。</translation>
 <translation id="3292147213643666827">允许 <ph name="PRODUCT_NAME"/> 作为 <ph name="CLOUD_PRINT_NAME"/>与连接到该计算机的传统打印机之间的代理。
 
       如果已启用或未配置此设置，用户就可以用自己的 Google 帐户进行身份验证，从而启用云打印代理。
@@ -1092,9 +1098,6 @@
 <translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
 <translation id="2006530844219044261">电源管理</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
-<translation id="2431811512983100641">指定是否应启用 TLS 域绑定证书扩展程序。
-
-      此设置用于启用 TLS 域绑定证书扩展程序，以便进行测试。以后将删除这一实验性设置。</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
@@ -1200,6 +1203,7 @@
           如果停用或未设置该设置，那么所有主机都将使用默认的 TalkGadget 域名（“chromoting-host.talkgadget.google.com”）。
 
           远程访问客户端不受此策略设置影响。它们将始终使用“chromoting-client.talkgadget.google.com”访问 TalkGadget。</translation>
+<translation id="1103860406762205913">启用旧版基于网络的登录流程</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="6915442654606973733">启用语音反馈辅助功能。
 
@@ -1398,7 +1402,6 @@
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
 
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
-<translation id="7736666549200541892">启用 TLS 域绑定证书扩展程序</translation>
 <translation id="1796466452925192872">允许您指定哪些网址可安装扩展程序、应用和主题背景。
 
           从 Chrome 浏览器 21 版开始，安装 Chrome 网上应用店以外的扩展程序、应用和用户脚本变得更困难了。以前，用户点击指向 *.crx 文件的链接后，Chrome 浏览器会先显示一些警告，然后询问是否安装相应文件。在 Chrome 浏览器 21 之后的版本中，用户必须下载此类文件并将其拖动到 Chrome 浏览器设置页。此设置可让特定网址重新采用较为简单的旧版安装流程。
@@ -1408,11 +1411,19 @@
           ExtensionInstallBlacklist（扩展程序安装黑名单）的优先级高于此策略。也就是说，黑名单上的扩展程序即使来自此列表中的网站也不能安装。</translation>
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
 <translation id="4224610387358583899">屏幕锁定延迟时间</translation>
+<translation id="5388730678841939057">选择在自动清理期间释放磁盘空间时遵循的策略（已弃用）</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
 <translation id="186719019195685253">当闲置延迟时间已过且使用交流电源供电时执行的操作</translation>
 <translation id="7890264460280019664">将网络接口列表及其类型和硬件地址报告给服务器。
 
       如果未设置此政策，或者此政策的值设为 False，系统将不会报告接口列表。</translation>
+<translation id="197143349065136573">启用旧版基于网络的登录流程。
+
+      此项设置对于正在使用与新版内嵌登录流程不兼容的SSO解决方案的企业客户非常有用。
+      如果您启用了此项设置，系统将使用旧版基于网络的登录流程。
+      如果您停用了此项设置或未对其进行设置，系统将默认采用新版内嵌登录流程。不过，用户仍然可以通过命令行标记“--enable-web-based-signin”来启用旧版基于网络的登录流程。
+
+      将来当内嵌登录能够完全支持所有SSO登录流程时，该项实验性设置就会被移除。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="3973371701361892765">一律不自动隐藏文件架</translation>
@@ -1482,6 +1493,13 @@
 
       如果此政策未设置，系统会为所有设置使用默认值。</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
+<translation id="8071636581296916773">当远程客户端尝试与此机器建立连接时，允许使用中继服务器。
+
+          此设置处于启用状态时，如果远程客户端无法直接连接到此机器（例如：因为受防火墙限制），则可通过中继服务器来建立连接。
+
+          请注意，政策“<ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>”处于停用状态时，系统将忽略此政策。
+
+          如果此政策未设置，系统将启用此政策。</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5781806558783210276">指定在使用电池供电时用户停止输入后隔多久系统才采取闲置操作。
 
@@ -1525,6 +1543,9 @@
           如果启用该设置，那么用户在访问主机时必须提供有效的双重代码。
 
           如果停用或不设置该设置，那么系统将不启用双重身份验证，并采用由用户定义 PIN 这一默认行为。</translation>
+<translation id="6698424063018171973">限制远程访问主机在此机器上使用的UDP端口范围。
+
+          如果此政策未设置或设为空字符串，远程访问主机可以使用任意可用端口，除非政策“<ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>”处于停用状态（在这种情况下，远程访问主机将使用12400-12409范围内的UDP端口）。</translation>
 <translation id="7329842439428490522">指定在使用电池供电时用户停止输入后隔多久关闭屏幕。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到了此处指定的时长，<ph name="PRODUCT_OS_NAME"/>就会关闭屏幕。
@@ -1540,6 +1561,13 @@
 
       已识别的连接类型标识符包括“以太网”、“Wi-Fi”、“WiMax”、“蓝牙”和“蜂窝”网络。</translation>
 <translation id="6652197835259177259">本地托管用户设置</translation>
+<translation id="2808013382476173118">当远程客户端尝试与此机器建立连接时，允许使用STUN服务器。
+
+          此政策处于启用状态时，即使远程客户端被防火墙隔离，也依然能够发现并连接到此机器。
+
+          此政策处于停用状态并且出站UDP连接会被防火墙阻止时，此机器将只允许通过本地网络内的客户端机器建立连接。
+
+          如果此政策未设置，系统将启用此政策。</translation>
 <translation id="3243309373265599239">指定在使用交流电源供电时用户停止输入后隔多久屏幕才变暗。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到了此处指定的时长，<ph name="PRODUCT_OS_NAME"/>就会降低屏幕亮度。

@@ -6,14 +6,12 @@
 <translation id="248395913932153421">நாள்</translation>
 <translation id="1729654308190250600">காலி அல்லாத மின்னஞ்சல் முகவரியை உள்ளிடவும்.</translation>
 <translation id="6015796118275082299">ஆண்டு</translation>
-<translation id="9186171386827445984">ஆவணத்தை ஏற்றுகிறது: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> பக்கங்கள்...</translation>
 <translation id="1235745349614807883">சமீபத்திய தேடல்களை சுத்தமாக்கு</translation>
 <translation id="7223624360433298498">முடிவடைந்த நேரம்</translation>
 <translation id="1171774979989969504">ஒரு மின்னஞ்சல் முகவரியை உள்ளிடவும்.</translation>
 <translation id="709897737746224366">கோரிய வடிவமைப்பில் தருக.</translation>
 <translation id="5048533449481078685">பட்டியல் குறிப்பான்</translation>
 <translation id="4202807286478387388">தாவு</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN"/>' ஐத் தொடர்ந்து ஒரு பகுதியை உள்ளிடவும். '<ph name="INVALIDADDRESS"/>' முழுமைப் பெறாமல் உள்ளது.</translation>
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME"/> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
 <translation id="2572483411312390101">இயக்கு</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="8534579021159131403">நிமிடங்கள்</translation>
 <translation id="819205353528511139">மூவியை முழுத்திரைப் பயன்முறையில் இயக்கு</translation>
-<translation id="8964020114565522021">கோப்பை இங்கே இழுத்து வருக</translation>
 <translation id="4103419683916926126">மில்லிவினாடிகள்</translation>
 <translation id="838869780401515933">சரிபார்</translation>
 <translation id="2846343701378493991">1024 (இடைநிலைத் தரம்)</translation>

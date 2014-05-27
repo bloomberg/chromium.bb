@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="3595596368722241419">Akumulators pilns</translation>
+<translation id="6895424601869865703">Pievienot lietotāja <ph name="GIVEN_NAME"/> kontu</translation>
+<translation id="1057289296854808272">Pagriešana ir ieslēgta (pieskarieties šeit, lai mainītu)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> un <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portāla statuss</translation>
 <translation id="30155388420722288">Pārpildes poga</translation>
@@ -45,6 +47,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6043994281159824495">Izrakstīties tagad</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="3846575436967432996">Tīkla informācija nav pieejama.</translation>
+<translation id="4625920103690741805">Pagriešana ir bloķēta (pieskarieties šeit, lai mainītu)</translation>
 <translation id="3799026279081545374">Iespējams, uzlādes ierīce ir bojāta. Ja dzīvojat ASV, lūdzu, zvaniet 866-628-1371, lai saņemtu palīdzību vai pieprasītu ierīces aizstāšanu. Ja dzīvojat Lielbritānijā, lūdzu, zvaniet 0800-026-0613. Ja dzīvojat Īrijā, lūdzu, zvaniet 1-800-832-664. Ja dzīvojat Kanādā, lūdzu, zvaniet 866-628-1372. Ja dzīvojat Austrālijā, lūdzu, zvaniet 1-800-067-460.</translation>
 <translation id="3026237328237090306">Iestatīt mobilo datu pārraidi</translation>
 <translation id="5871632337994001636">Pārvaldīt ierīces...</translation>
@@ -69,6 +72,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="7170041865419449892">Ārpus diapazona</translation>
 <translation id="4804818685124855865">Atvienot</translation>
 <translation id="2544853746127077729">Tīkls noraidīja autentifikācijas sertifikātu.</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfigurācija</translation>
@@ -101,6 +105,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="372094107052732682">Lai izietu, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="1480041086352807611">Demonstrācijas režīms</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (galvenais)</translation>
 <translation id="3626637461649818317">Atlikums: <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="2372145515558759244">Notiek lietotņu sinhronizēšana...</translation>
 <translation id="7256405249507348194">Neatpazīta kļūda: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Konti</translation>
 <translation id="2894654529758326923">Informācija</translation>
 <translation id="7925247922861151263">AAA pārbaude neizdevās</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> jālādē</translation>
@@ -139,7 +145,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="4527045527269911712">Bluetooth ierīce “<ph name="DEVICE_NAME"/>” vēlas saņemt atļauju, lai izveidotu savienojumu pārī.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automātiskie klikšķi</translation>
-<translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: notiek savienojuma izveide...</translation>
 <translation id="6062360702481658777">Jūs tiksiet automātiski izrakstīts pēc šāda laika: <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Nezināms displejs</translation>
@@ -151,7 +156,9 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="5097002363526479830">Neizdevās izveidot savienojumu ar tīklu <ph name="NAME"/>: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
+<translation id="3433830597744061105">Pārvaldīt kontus</translation>
 <translation id="2966449113954629791">Iespējams, esat jau izmantojis savu mobilo datu atļauju. Lai iegādātos citus datus, apmeklējiet <ph name="NAME"/> aktivizācijas portālu.</translation>
+<translation id="742594950370306541">Kamera tiek lietota.</translation>
 <translation id="8132793192354020517">Savienots ar <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Iestatīt fona tapeti...</translation>
 <translation id="8678698760965522072">Tiešsaistes statuss</translation>
@@ -168,7 +175,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="1602076796624386989">Iespējot mobilo datu pārraidi</translation>
 <translation id="68610848741840742">ChromeVox (balss komentāri)</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
-<translation id="3157931365184549694">Atjaunot</translation>
 <translation id="4274292172790327596">Neatpazīta kļūda</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Austiņas</translation>
@@ -224,6 +230,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="9046895021617826162">Savienojums neizdevās</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING"/>. Jūs tiksiet automātiski izrakstīts.</translation>
+<translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
 <translation id="8372369524088641025">Neatbilstoša WEP atslēga</translation>
 <translation id="6636709850131805001">Neatpazīts stāvoklis</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="520760366042891468">Ekrāna vadības kopīgošana, izmantojot funkciju Hangouts.</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="4015692727874266537">Pierakstīties citā kontā...</translation>
-<translation id="5941711191222866238">Minimizēt</translation>
+<translation id="1044925987639358253">Mikrofons tiek lietots.</translation>
 <translation id="6911468394164995108">Pievienoties citam...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Jūsu “<ph name="NAME"/>” datu pakalpojums ir veiksmīgi aktivizēts, un to var izmantot.</translation>

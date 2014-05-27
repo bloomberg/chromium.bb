@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="3595596368722241419">Aku on täis</translation>
+<translation id="6895424601869865703">Lisage kasutajale <ph name="GIVEN_NAME"/> konto</translation>
+<translation id="1057289296854808272">Pööramine on sisse lülitatud (muutmiseks puudutage siin)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ja <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portaali olek</translation>
 <translation id="30155388420722288">Ülevoolunupp</translation>
@@ -45,6 +47,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6043994281159824495">Logi nüüd välja</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
 <translation id="3846575436967432996">Võrguteave ei ole saadaval</translation>
+<translation id="4625920103690741805">Pööramine on lukustatud (muutmiseks puudutage siin)</translation>
 <translation id="3799026279081545374">Teil võib olla halb laadija. Kui elate Ameerika Ühendriikides, helistage abi saamiseks ja laadija asendamiseks numbril 866-628-1371. Kui elate Ühendkuningriigis, helistage numbril 0800-026-0613. Kui elate Iirimaal, helistage numbril 1-800-832-664. Kui elate Kanadas, helistage numbril 866-628-1372. Kui elate Austraalias, helistage numbril 1-800-067-460.täis</translation>
 <translation id="3026237328237090306">Seadista mobiilne andmeside</translation>
 <translation id="5871632337994001636">Seadmete haldamine ...</translation>
@@ -69,6 +72,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="7170041865419449892">Vahemikust väljas</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="2544853746127077729">Võrk lükkas autentimissertifikaadi tagasi</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfigureerimine</translation>
@@ -101,6 +105,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="372094107052732682">Väljumiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
 <translation id="1480041086352807611">Demorežiim</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (peamine)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% on jäänud</translation>
 <translation id="9089416786594320554">Sisestusviisid</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="2372145515558759244">Rakenduste sünkroonimine ...</translation>
 <translation id="7256405249507348194">Tundmatu viga: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Kontod</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> täislaadimiseni</translation>
@@ -139,7 +145,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks.</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="1923539912171292317">Automaatsed klikid</translation>
-<translation id="1398853756734560583">Maksimeeri</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: ühendamine ...</translation>
 <translation id="6062360702481658777">Teid logitakse automaatselt välja <ph name="LOGOUT_TIME_LEFT"/> pärast.</translation>
 <translation id="252373100621549798">Tundmatu ekraan</translation>
@@ -151,7 +156,9 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="5097002363526479830">Võrguga „<ph name="NAME"/>” ühenduse loomine ebaõnnestus: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
+<translation id="3433830597744061105">Halda kontosid</translation>
 <translation id="2966449113954629791">Võimalik, et olete oma mobiilse andmeside ära kasutanud. Andmesidet saate juurde osta aktiveerimisportaalis <ph name="NAME"/>.</translation>
+<translation id="742594950370306541">Kaamera on kasutusel.</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME"/>iga</translation>
 <translation id="7052914147756339792">Määra taustapilt ...</translation>
 <translation id="8678698760965522072">Võrguühenduse olek</translation>
@@ -168,7 +175,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="1602076796624386989">Luba mobiilne andmeside</translation>
 <translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
-<translation id="3157931365184549694">Taasta</translation>
 <translation id="4274292172790327596">Tundmatu viga</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Kõrvaklapid</translation>
@@ -224,6 +230,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="9046895021617826162">Ühendamine nurjus</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS"/> pärast</translation>
 <translation id="973896785707726617">Selle seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING"/>. Teid logitakse automaatselt välja.</translation>
+<translation id="743058460480092004">Kaamera ja mikrofon on kasutusel.</translation>
 <translation id="8372369524088641025">Halb WEP-võti</translation>
 <translation id="6636709850131805001">Tundmatu olek</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="520760366042891468">Teie ekraani juhtimist jagatakse Hangoutsi kaudu.</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="4015692727874266537">Logige sisse teise kontoga ...</translation>
-<translation id="5941711191222866238">Minimeeri</translation>
+<translation id="1044925987639358253">Mikrofon on kasutusel.</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Õnnitleme! Teie võrgu „<ph name="NAME"/>” andmeteenus on aktiveeritud ja kasutamiseks valmis.</translation>

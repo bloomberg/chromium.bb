@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="1729654308190250600">Ange en e-postadress som inte är tom.</translation>
 <translation id="6015796118275082299">År</translation>
-<translation id="9186171386827445984">Läser in dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sidor...</translation>
 <translation id="1235745349614807883">Rensa senaste sökningar</translation>
 <translation id="7223624360433298498">förfluten tid</translation>
 <translation id="1171774979989969504">Ange en e-postadress.</translation>
 <translation id="709897737746224366">Matcha det format som anges.</translation>
 <translation id="5048533449481078685">listmarkör</translation>
 <translation id="4202807286478387388">fortsätta</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Ange en del följt av <ph name="ATSIGN"/>. <ph name="INVALIDADDRESS"/> är ofullständig.</translation>
 <translation id="2746543609216772311">Värdet måste vara <ph name="MINIMUM_DATE_OR_TIME"/> eller senare.</translation>
 <translation id="2572483411312390101">spela upp</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Markera den här kryssrutan om du vill fortsätta.</translation>
 <translation id="8534579021159131403">Minuter</translation>
 <translation id="819205353528511139">spela upp filmen i helskärmsläge</translation>
-<translation id="8964020114565522021">Dra filen hit</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
 <translation id="838869780401515933">kryssa för</translation>
 <translation id="2846343701378493991">1024 (medel)</translation>

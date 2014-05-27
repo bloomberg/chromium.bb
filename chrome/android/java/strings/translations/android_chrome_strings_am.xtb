@@ -6,7 +6,7 @@
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE"/> ላይ ይፈልጉት</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="7644305409888602715">ገጹን ወደ <ph name="SOURCE_LANGUAGE"/> በመተርጎም ላይ...</translation>
-<translation id="7015922086425404465">መተግበሪያ ከGoogle Play ሱቅ ያግኙ፦ <ph name="APP_ACTION"/></translation>
+<translation id="7015922086425404465">መተግበሪያ ከGoogle Play መደብር ያግኙ፦ <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
 <translation id="641643625718530986">አትም…</translation>
 <translation id="7658239707568436148">ይቅር</translation>
@@ -29,7 +29,9 @@
 <translation id="552553974213252141">ጽሑፉ በትክክል ነው የወጣው?</translation>
 <translation id="8730621377337864115">ተጠናቋል</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
+<translation id="473775607612524610">አዘምን</translation>
 <translation id="8627706565932943526">የማመሳሰል ስህተት</translation>
+<translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>
 <translation id="4043215103217793252">የዕልባት ገጽ አርትዕ ያድርጉ</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/>ን ሁልጊዜ መተርጎም</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
@@ -38,13 +40,13 @@
 <translation id="907015151729920253">ስማርት ካርድ</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
-<translation id="7267430310003164111">መተግበሪያ ከGoogle Play ሱቅ እንዲያገኙ የሚጠይቅ። የመተግበሪያ ስም፦ <ph name="APP_NAME"/>።  መተግበሪያ የተሰጠው አማካኝ ደረጃ፦ <ph name="APP_RATING"/>።</translation>
+<translation id="7267430310003164111">መተግበሪያ ከGoogle Play መደብር እንዲያገኙ የሚጠይቅ። የመተግበሪያ ስም፦ <ph name="APP_NAME"/>።  መተግበሪያ የተሰጠው አማካኝ ደረጃ፦ <ph name="APP_RATING"/>።</translation>
 <translation id="4148957013307229264">በመጫን ላይ...</translation>
 <translation id="3992315671621218278">አገናኝ አስቀምጥ</translation>
 <translation id="8034522405403831421">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE"/> ነው። ወደ <ph name="TARGET_LANGUAGE"/> ይተርጎም?</translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
-<translation id="8725066075913043281">በድጋሚ ሞክር</translation>
+<translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
 <translation id="4510973599275542560">ዳግም አትጫን</translation>

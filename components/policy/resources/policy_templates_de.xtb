@@ -104,7 +104,6 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
           Hinweis: Das Standardverhalten bei Geräten für Kunden und bei Geräten für Unternehmen ist unterschiedlich: Bei Geräten für Kunden sind betreute Nutzer standardmäßig aktiviert, bei Geräten für Unternehmen hingegen sind sie standardmäßig deaktiviert.</translation>
 <translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="5469825884154817306">Bilder auf diesen Websites blockieren</translation>
-<translation id="5827231192798670332">Wählt die Strategie aus, die bei der automatischen Bereinigung zur Freigabe von Festplattenspeicher verwendet wird</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="6649397154027560979">Diese Richtlinie wird nicht mehr verwendet, nutzen Sie stattdessen die Richtlinie &quot;URLBlacklist&quot;.
@@ -141,7 +140,6 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
       Wenn <ph name="PRODUCT_NAME"/> keine Informationen zum Widerrufstatus abrufen kann, werden solche Zertifikate als widerrufen behandelt (&quot;hard-fail&quot;).
 
       Wenn diese Richtlinie nicht festgelegt oder auf &quot;false&quot; gesetzt ist, verwendet Chrome die vorhandenen Online-Einstellungen zur Widerrufprüfung.</translation>
-<translation id="1438955478865681012">Mit dieser Richtlinie können Sie Richtlinien für Erweiterungen konfigurieren. Auf die schwarze Liste gesetzte Erweiterungen können vom Nutzer nur installiert werden, wenn diese in der weißen Liste enthalten sind. Sie können Erweiterungen auch in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> angeben, um ihre automatische Installation durch <ph name="PRODUCT_NAME"/> zu erzwingen. Die schwarze Liste hat Vorrang vor der Liste der auf diese Weise installierten Erweiterungen.</translation>
 <translation id="3516856976222674451">Maximale Dauer einer Nutzersitzung festlegen
 
       Wenn diese Richtlinie festgelegt ist, wird so die maximale Zeitdauer festgelegt, nach der ein Nutzer automatisch abgemeldet und die Sitzung beendet wird. Der Nutzer erfährt über einen Countdown-Zähler in der Taskleiste, wie viel Zeit er noch hat.
@@ -198,19 +196,6 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="1096105751829466145">Standardsuchmaschine</translation>
 <translation id="7567380065339179813">Plug-ins auf diesen Websites zulassen</translation>
 <translation id="4555850956567117258">Remote-Bescheinigung (Remote Attestation) für den Nutzer aktivieren</translation>
-<translation id="4418909344122918381">Steuert das Nutzerverhalten bei Mehrfachprofil-Sitzungen auf <ph name="PRODUCT_OS_NAME"/>-Geräten.
-
-      Ist diese Richtlinie auf &quot;MultiProfileUserBehaviorUnrestricted&quot; gesetzt, darf der Nutzer bei einer Mehrfachprofil-Sitzung entweder der primäre oder der sekundäre Nutzer sein.
-
-      Ist die Richtlinie auf &quot;MultiProfileUserBehaviorMustBePrimary&quot; gesetzt, darf der Nutzer bei einer Mehrfachprofil-Sitzung nur der primäre Nutzer sein.
-
-      Ist die Richtlinie auf &quot;MultiProfileUserBehaviorNotAllowed&quot; gesetzt, darf der Nutzer nicht an einer Mehrfachprofil-Sitzung teilnehmen.
-
-      Wenn Sie diese Einstellung festlegen, können die Nutzer sie nicht ändern oder außer Kraft setzen.
-
-      Wenn die Einstellung geändert wird, während der Nutzer in einer Mehrfachprofil-Sitzung angemeldet ist, werden die Einstellungen aller in der Sitzung befindlichen Nutzer überprüft. Falls mindestens einer der Nutzer nicht mehr an der Sitzung teilnehmen darf, wird die Sitzung beendet.
-
-      Ist die Richtlinie nicht festgelegt, wird der Standardwert &quot;MultiProfileUserBehaviorUnrestricted&quot; verwendet.</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
@@ -263,6 +248,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 
           Diese Richtlinie wird nur angewendet, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="5912364507361265851">Anzeige von Passwörtern im Passwortmanager durch Nutzer zulassen</translation>
+<translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remote-Zugriff gestatten</translation>
 <translation id="510186355068252378">Deaktiviert die Datensynchronisierung in <ph name="PRODUCT_NAME"/> über von Google gehostete Synchronisierungsdienste und verhindert, dass Nutzer diese Einstellung ändern. Wenn Sie diese Einstellung aktivieren, so können Nutzer diese Einstellung in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Sollte die Richtlinie nicht konfiguriert sein, so können die Nutzer entscheiden, ob Sie Google Sync in Anspruch nehmen möchten.</translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
@@ -278,7 +264,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 <translation id="8828766846428537606">Mit dieser Richtlinie wird die Standard-Startseite in <ph name="PRODUCT_NAME"/> konfiguriert und verhindert, dass Nutzer diese ändern. Wenn Sie vollständig verhindern möchten, dass der Nutzer seine Startseiteneinstellungen ändern kann, müssen Sie entweder die &quot;Neuer Tab&quot;-Seite als Startseite festlegen oder angeben, dass Sie eine URL als Startseite festlegen möchten, und dann eine Startseiten-URL angeben. Falls Sie die Startseiten-URL nicht angeben, kann der Nutzer die &quot;Neuer Tab&quot;-Seite zur Startseite machen, indem er &quot;chrome://newtab&quot; eingibt.</translation>
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="1353966721814789986">Startseiten</translation>
-<translation id="7173856672248996428">Ephemeres Profil</translation>
+<translation id="7173856672248996428">Sitzungsspezifisches Profil</translation>
 <translation id="1841130111523795147">Erlaubt dem Nutzer die Anmeldung in <ph name="PRODUCT_NAME"/> und verhindert, dass der Nutzer diese Einstellung ändert.
 
       Durch das Festlegen dieser Richtlinie steuern Sie, ob ein Nutzer sich in <ph name="PRODUCT_NAME"/> anmelden darf oder nicht.</translation>
@@ -292,6 +278,20 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 <translation id="382476126209906314">TalkGadget-Präfix für Remote-Zugriff-Hosts konfigurieren</translation>
 <translation id="6561396069801924653">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
 <translation id="8104962233214241919">Client-Zertifikate für diese Websites automatisch auswählen</translation>
+<translation id="7983624541020350102">Dieses Dokument enthält möglicherweise Richtlinien für spätere
+      Versionen von <ph name="PRODUCT_NAME"/>, die ohne vorherige Ankündigungen
+      geändert werden können. Die Liste der unterstützten Richtlinien
+      ist für Chromium und Google Chrome identisch.
+
+      Sie müssen diese Einstellungen nicht manuell ändern. Unter
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> können Sie benutzerfreundliche Vorlagen herunterladen.
+
+      Diese Richtlinien sind ausschließlich für die Konfiguration interner Chrome-Instanzen Ihrer Organisation vorgesehen. Die Verwendung dieser Richtlinien außerhalb Ihrer Organisation, zum Beispiel in einem öffentlich vertriebenen Programm, wird als Malware angesehen und wird wahrscheinlich seitens Google und durch Anbieter von Antivirenprogrammen entsprechend eingestuft.
+
+      Hinweis: Ab <ph name="PRODUCT_NAME"/> 28 werden Richtlinien
+      direkt aus der Group Policy API unter Windows geladen.
+      Manuell in die Registry eingefügte Richtlinien werden ignoriert.
+      Details finden Sie unter http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Liste der AppPack-Erweiterungen</translation>
 <translation id="4386578721025870401">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann
 
@@ -369,13 +369,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Mit diesen Richtlinien können Sie festlegen, wie <ph name="PRODUCT_OS_NAME"/> sich verhalten soll, wenn der Nutzer für einen bestimmten Zeitraum inaktiv ist.</translation>
 <translation id="2565967352111237512">Aktiviert das anonyme Senden von Nutzungs- und Absturzdaten für <ph name="PRODUCT_NAME"/> an Google und verhindert, dass Nutzer die Einstellung ändern. Wenn Sie diese Einstellung aktivieren, so werden anonyme Nutzungs- und Absturzdaten an Google gesendet. Sollten Sie die Einstellung deaktivieren, so werden keine anonymen Nutzungs- und Absturzdaten an Google gesendet. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME"/> nicht ändern oder außer Kraft setzen. Sollte die Richtlinie nicht konfiguriert sein, so kommt die Einstellung zum Einsatz, die der Nutzer bei der Installation bzw. der ersten Ausführung des Programms angegeben hat.</translation>
-<translation id="4784220343847172494">Legt das Verhalten der automatischen Bereinigung auf <ph name="PRODUCT_OS_NAME"/>-Geräten fest. Die automatische Bereinigung wird ausgelöst, wenn die Menge an freiem Speicherplatz eine kritische Stufe erreicht, und sorgt für die Freigabe von Speicherplatz.
-
-      Wenn diese Richtlinie auf &quot;RemoveLRU&quot; eingestellt ist, entfernt die automatische Bereinigung Nutzer so lange in der Reihenfolge der am längsten zurückliegenden Anmeldung von dem Gerät, bis genügend freier Speicherplatz vorhanden ist.
-
-      Wenn diese Richtlinie auf &quot;RemoveLRUIfDormant&quot; eingestellt ist, entfernt die automatische Bereinigung Nutzer, die sich innerhalb der letzten 3 Monate nicht angemeldet haben, so lange in der Reihenfolge der am längsten zurückliegenden Anmeldung, bis genügend freier Speicherplatz vorhanden ist.
-
-      Wenn diese Richtlinie nicht eingestellt ist, verwendet die automatische Bereinigung die integrierte Standardstrategie. Dies ist derzeit die Strategie &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6256787297633808491">Systemweite Parameter, die beim Starten von Chrome angewendet werden</translation>
 <translation id="2516600974234263142">Aktiviert das Drucken in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer diese Einstellung ändern.
 
@@ -403,16 +396,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
-<translation id="3234167886857176179">Dies ist die Liste der von <ph name="PRODUCT_NAME"/> befolgten Richtlinien.
-
-      Sie brauchen diese Einstellungen nicht manuell zu ändern. Sie können praktische Vorlagen unter
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> herunterladen.
-
-      Die Liste der unterstützten Richtlinien ist dieselbe für Chromium und Google Chrome.
-
-      Diese Richtlinien sind allein für die Konfiguration interner Chrome-Instanzen Ihrer Organisation vorgesehen. Die Verwendung dieser Richtlinien außerhalb Ihrer Organisation, zum Beispiel in einem öffentlich bereitgestellten Programm, wird als Malware betrachtet und wahrscheinlich von Google und Anbietern von Antivirenprogrammen entsprechend eingestuft.
-
-      Hinweis: Ab Chrome 28 werden Richtlinien direkt aus der Group Policy API unter Windows geladen. Manuell in die Registrierung geschriebene Richtlinien werden ignoriert. Details finden Sie unter http://crbug.com/259236.</translation>
 <translation id="2292084646366244343">In <ph name="PRODUCT_NAME"/> können mithilfe eines Google-Webdienstes Rechtschreibfehler korrigiert werden. Wenn diese Einstellung aktiviert ist, wird dieser Dienst immer verwendet. Ist die Einstellung deaktiviert, wird dieser Dienst nie verwendet.
 
       Die Rechtschreibprüfung kann weiterhin mit einem heruntergeladenen Wörterbuch durchgeführt werden. Diese Richtlinie bezieht sich nur auf die Verwendung des Online-Dienstes.
@@ -439,6 +422,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
 <translation id="2144674628322086778">Nutzern in Unternehmen die Verwendung eines primären oder sekundären Mehrfachprofils gestatten (Standardverhalten)</translation>
 <translation id="1022361784792428773">Erweiterungs-IDs, die der Nutzer nicht installieren darf (&quot;*&quot; für alle)</translation>
+<translation id="3805659594028420438">Erweiterung für domaingebundene TLS-Zertifikate aktivieren (veraltet)</translation>
 <translation id="5499375345075963939">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Wenn für diese Richtlinie ein Wert festgelegt wurde und dieser Wert nicht &quot;0&quot; ist, wird der aktuell angemeldete Demo-Nutzer nach der angegebenen Inaktivitätsdauer automatisch abgemeldet.
@@ -569,7 +553,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="2498238926436517902">Ablage immer automatisch ausblenden</translation>
 <translation id="253135976343875019">Inaktivitätsspanne bis zur Warnung im Netzbetrieb</translation>
-<translation id="480987484799365700">Bei Aktivierung erzwingt diese Richtlinie einen Wechsel des Profils in den ephemeren Modus. Falls diese Richtlinie als BS-Richtlinie angegeben wird (wie GPO unter Windows), gilt sie für jedes Profil im System. Wird sie hingegen als Cloud-Richtlinie festgelegt, gilt sie nur für ein bei einem verwalteten Konto angemeldetes Profil.
+<translation id="480987484799365700">Bei Aktivierung erzwingt diese Richtlinie die Nutzung von sitzungsspezifischen Profilen. Falls diese Richtlinie als BS-Richtlinie angegeben wird (wie GPO unter Windows), gilt sie für jedes Profil im System. Wird sie hingegen als Cloud-Richtlinie festgelegt, gilt sie nur für ein bei einem verwalteten Konto angemeldetes Profil.
 
       In diesem Modus werden die Profildaten nur für die Dauer der Nutzersitzung auf der Festplatte behalten. Elemente wie der Browserverlauf, Erweiterungen und ihre Daten, Webdaten wie Cookies und Webdatenbanken werden nach dem Schließen des Browsers nicht beibehalten. Dies hindert den Nutzer jedoch nicht daran, Daten manuell auf die Festplatte herunterzuladen, Seiten zu speichern oder zu drucken.
 
@@ -645,6 +629,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Wird diese Richtlinie nicht konfiguriert, können Nutzer die Liste der in der Übersicht angezeigten Apps ändern.</translation>
 <translation id="1679420586049708690">Öffentliche Sitzung für automatische Anmeldung</translation>
+<translation id="5836064773277134605">Vom Host für den Remote-Zugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="7625444193696794922">Gibt den Release-Kanal an, an den dieses Gerät gebunden werden soll.</translation>
 <translation id="2552966063069741410">Zeitzone</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
@@ -667,6 +652,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
           Wenn diese Richtlinie nicht festgelegt wird, wird die Standardbefehlszeile verwendet.</translation>
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt &quot;AskGeolocation&quot; zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="6394350458541421998">Diese Richtlinie ist ab <ph name="PRODUCT_OS_NAME"/>-Version 29 nicht mehr vorhanden. Verwenden Sie stattdessen die Richtlinie &quot;PresentationScreenDimDelayScale&quot;.</translation>
+<translation id="2956777931324644324">Diese Richtlinie wird seit <ph name="PRODUCT_NAME"/> Version 36 nicht mehr verwendet.
+
+      Sie legt fest, ob die Erweiterung für domaingebundene TLS-Zertifikate aktiviert werden soll.
+
+      Anhand dieser Einstellung wird die Erweiterung für domaingebundene TLS-Zertifikate zu Testzwecken aktiviert. Diese experimentelle Einstellung wird in absehbarer Zukunft entfernt.</translation>
 <translation id="5770738360657678870">Entwicklerkanal (möglicherweise nicht stabil)</translation>
 <translation id="2959898425599642200">Proxy-Umgehungsregeln</translation>
 <translation id="228659285074633994">Diese Richtlinie gibt an, nach welcher Inaktivitätsspanne des Nutzers im Netzbetrieb eine Warnmeldung angezeigt wird.
@@ -804,7 +794,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</translation>
 <translation id="5586942249556966598">Nichts tun</translation>
 <translation id="131353325527891113">Nutzernamen auf Anmeldeseite zeigen</translation>
-<translation id="5317965872570843334">Aktiviert den Einsatz von STUN und Relay-Servern, wenn Remote-Clients versuchen, eine Verbindung mit diesem Computer herzustellen. Wenn diese Einstellung aktiviert wird, so können Remote-Clients diesen Computer finden und eine Verbindung herstellen, selbst wenn er sich hinter einer Firewall befindet. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, erlaubt dieser Computer nur Verbindungen von Client-Computern im lokalen Netzwerk. Wenn diese Richtlinie nicht konfiguriert ist, so wird die Einstellung aktiviert.</translation>
 <translation id="4057110413331612451">Nutzer in Unternehmen dürfen bei Mehrfachprofilen nur der primäre Nutzer sein</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
@@ -827,6 +816,15 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 Speicherinformationen werden unabhängig von der gewählten Option an die Seite weitergegeben, allerdings werden die gemeldeten Größen quantisiert und die Aktualisierungshäufigkeit wird aus Sicherheitsgründen begrenzt. Um genaue Daten in Echtzeit zu erhalten, können Sie Tools wie Telemetry verwenden.</translation>
 <translation id="8731693562790917685">Unter &quot;Inhaltseinstellungen&quot; können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
 <translation id="2411919772666155530">Benachrichtigungen auf diesen Websites blockieren</translation>
+<translation id="7332963785317884918">Diese Richtlinie ist veraltet. <ph name="PRODUCT_OS_NAME"/> verwendet immer die &quot;RemoveLRU&quot;-Bereinigungsstrategie.
+
+      Damit wird das automatische Bereinigungsverhalten auf Geräten mit <ph name="PRODUCT_OS_NAME"/> gesteuert. Die automatische Bereinigungsfunktion wird aktiviert, wenn nur noch wenig freier Speicher zur Verfügung steht, um so Speicherplatz freizugeben.
+
+      Wenn für diese Richtlinie &quot;RemoveLRU&quot; festgelegt wird, entfernt die automatische Bereinigungsfunktion so lange Nutzer in der chronologischen Reihenfolge ihrer letzten Anmeldung vom Gerät, bis wieder genügend freier Speicher vorhanden ist.
+
+      Wenn für diese Richtlinie &quot;RemoveLRUIfDormant&quot; festgelegt ist, entfernt die automatische Bereinigungsfunktion nur diejenigen Nutzer vom Gerät, die seit mindestens drei Monaten nicht mehr angemeldet waren. Diese Nutzer werden in der chronologischen Reihenfolge ihrer letzten Anmeldung vom Gerät gelöscht, bis wieder genügend freier Speicher vorhanden ist.
+
+      Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die &quot;RemoveLRUIfDormant&quot;-Strategie.</translation>
 <translation id="6923366716660828830">Gibt den Namen des Standardsuchanbieters an. Wenn die Richtlinie leer oder nicht konfiguriert ist, so wird der durch die Such-URL angegebene Hostname verwendet. Diese Richtlinie wird nur dann umgesetzt, wenn &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="4869787217450099946">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API angefordert werden.
 
@@ -893,6 +891,19 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie &quot;DefaultJavaScriptSetting&quot;, falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME"/> zulassen</translation>
 <translation id="2312134445771258233">Mit dieser Richtlinie können Sie konfigurieren, welche Seiten beim Start geladen werden. Der Inhalt der Liste &quot;Beim Start zu öffnende URLs&quot; wird ignoriert, sofern die Option &quot;URL-Liste öffnen&quot; unter &quot;Aktion beim Start&quot; nicht ausgewählt ist.</translation>
+<translation id="1464848559468748897">Steuert das Nutzerverhalten in einer Sitzung mit mehreren Profilen auf Geräten mit <ph name="PRODUCT_OS_NAME"/>
+
+      Wenn für diese Richtlinie &quot;MultiProfileUserBehaviorUnrestricted&quot; festgelegt ist, kann der Nutzer entweder primärer oder sekundärer Nutzer in einer Sitzung mit mehreren Profilen sein.
+
+      Wenn für diese Richtlinie &quot;MultiProfileUserBehaviorMustBePrimary&quot; festgelegt ist, kann der Nutzer ausschließlich primärer Nutzer in einer Sitzung mit mehreren Profilen sein.
+
+      Ist die Richtlinie auf &quot;MultiProfileUserBehaviorNotAllowed&quot; festgelegt, kann der Nutzer nicht an einer Sitzung mit mehreren Profilen teilnehmen.
+
+      Wenn Sie diese Einstellung konfigurieren, kann sie von Nutzern nicht geändert oder überschrieben werden.
+
+      Wird die Einstellung geändert, während der Nutzer in einer Sitzung mit mehreren Profilen angemeldet ist, werden alle Nutzer mit ihren jeweiligen Einstellungen abgeglichen. Die Sitzung wird beendet, falls einer der Nutzer nicht mehr länger dazu berechtigt ist, an der Sitzung teilzunehmen.
+
+      Falls die Richtlinie nicht konfiguriert ist, gilt der Standardwert &quot;MultiProfileUserBehaviorMustBePrimary&quot; für alle vom Unternehmen verwalteten Nutzer und &quot;MultiProfileUserBehaviorUnrestricted&quot; für nicht verwaltete Nutzer.</translation>
 <translation id="243972079416668391">Geben Sie die Aktion an, die während des Wechselstrombetriebs beim Erreichen der Leerlaufverzögerung ausgeführt werden soll.
 
           Wenn diese Richtlinie festgelegt ist, gibt sie die Aktion an, die <ph name="PRODUCT_OS_NAME"/> ausführt, wenn der Nutzer für die von der Leerlaufverzögerung angegebene Zeitdauer inaktiv ist. Diese Zeitdauer kann separat konfiguriert werden.
@@ -1020,6 +1031,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
 Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</translation>
 <translation id="913195841488580904">Zugriff auf aufgelistete URLs blockieren</translation>
+<translation id="5461308170340925511">Konfiguriert erweiterungsbezogene Richtlinien. Der Nutzer kann auf der schwarzen Liste befindliche Erweiterungen nur dann installieren, wenn diese sich auf der weißen Liste befinden. Sie können auch erzwingen, dass <ph name="PRODUCT_NAME"/> Erweiterungen automatisch installiert werden, indem Sie die Erweiterungen in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> angeben. Erweiterungen, deren Installation erzwungen wurde, werden immer installiert, unabhängig davon, ob sie sich auf der schwarzen Liste befinden.</translation>
 <translation id="3292147213643666827">Mithilfe dieser Richtlinie kann <ph name="PRODUCT_NAME"/> als Proxy zwischen <ph name="CLOUD_PRINT_NAME"/> und älteren Druckern fungieren, die an den Computer angeschlossen sind.
 
      Wenn diese Einstellung aktiviert ist oder nicht konfiguriert wurde, können Nutzer den Google Cloud Print-Proxy durch die Authentifizierung mit ihrem Google-Konto aktivieren.
@@ -1096,9 +1108,6 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 <translation id="465099050592230505">Unternehmens-Web-Store-URL (veraltet)</translation>
 <translation id="2006530844219044261">Energieverwaltung</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
-<translation id="2431811512983100641">Gibt an, ob die Erweiterung für domaingebundene TLS-Zertifikate aktiviert werden soll.
-
-      Mit dieser Einstellung kann die Erweiterung für domaingebundene TLS-Zertifikate zu Testzwecken aktiviert werden. Diese experimentelle Einstellung wird in Zukunft entfernt.</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
@@ -1203,6 +1212,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
           Ist die Einstellung deaktiviert oder nicht festgelegt, wird der Standard-Domain-Name für das TalkGadget (&quot;chromoting-host.talkgadget.google.com&quot;) für alle Hosts verwendet.
 
           Clients für den Remote-Zugriff sind von dieser Richtlinieneinstellung nicht betroffen. Diese verwenden immer &quot;chromoting-client.talkgadget.google.com&quot; für den Zugriff auf das TalkGadget.</translation>
+<translation id="1103860406762205913">Aktiviert die alte webbasierte Anmeldung</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="6915442654606973733">Hiermit wird die Bedienungshilfefunktion für das gesprochene Feedback aktiviert.
 
@@ -1401,7 +1411,6 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
-<translation id="7736666549200541892">Erweiterung für domaingebundene TLS-Zertifikate aktivieren</translation>
 <translation id="1796466452925192872">Hier können Sie festlegen, bei welchen URLs die Installation von Erweiterungen, Apps und Designs zugelassen werden soll.
 
           Seit Chrome 21 ist die Installation von Erweiterungen, Apps und Nutzerskripten von Quellen außerhalb des Chrome Web Stores schwieriger geworden. In den Vorgängerversionen konnten Nutzer auf den Link zu einer CRX-Datei klicken und die Datei nach einigen Hinweisen in Chrome installieren. In allen Versionen ab Chrome 21 müssen Dateien zuerst heruntergeladen und dann auf die Seite &quot;Einstellungen&quot; in Chrome verschoben werden. Über diese Richtlinie kann bei bestimmten URLs der alte, einfachere Installationsvorgang angewendet werden.
@@ -1411,11 +1420,19 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
           &quot;ExtensionInstallBlacklist&quot; hat Vorrang vor dieser Richtlinie. Eine Erweiterung auf der schwarzen Liste wird folglich nicht installiert, auch wenn sie von einer Website auf dieser Liste stammt.</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="4224610387358583899">Verzögerungen für die Bildschirmsperre</translation>
+<translation id="5388730678841939057">Legt die Strategie fest, die bei der automatischen Bereinigung zur Freigabe von Festplattenspeicher verwendet wird (veraltet)</translation>
 <translation id="7848840259379156480">Mit dieser Richtlinie können Sie die Standardanwendung für die HTML-Darstellung konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME"/> installiert ist. Bei der Standardeinstellung übernimmt der Host-Browser die Darstellung. Sie können dies jedoch wahlweise außer Kraft setzen und festlegen, dass HTML-Seiten standardmäßig mithilfe von <ph name="PRODUCT_FRAME_NAME"/> angezeigt werden sollen.</translation>
 <translation id="186719019195685253">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Wechselstrombetriebs</translation>
 <translation id="7890264460280019664">Liste der Netzwerkschnittstellen mit ihren Typen und Hardware-Adressen dem Server melden
 
       Wenn die Richtlinie nicht festgelegt oder auf &quot;false&quot; gesetzt ist, wird die Schnittstellenliste nicht gemeldet.</translation>
+<translation id="197143349065136573">Aktiviert die alte webbasierte Anmeldung
+
+      Diese Einstellung eignet sich für Unternehmenskunden, die SSO-Lösungen verwenden, die noch nicht mit der neuen Inline-Anmeldung kompatibel sind.
+      Bei Aktivierung dieser Einstellung wird die alte webbasierte Anmeldung verwendet.
+      Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, wird die neue Inline-Anmeldung standardmäßig verwendet. Nutzer können die alte webbasierte Anmeldung weiterhin über die Befehlszeilenmarkierung --enable-web-based-signin aktivieren.
+
+      Die experimentelle Einstellung wird in Zukunft entfernt, sobald die Inline-Anmeldung alle SSO-Anmeldeprozesse vollständig unterstützt.</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der &quot;Neuer Tab&quot;-Seite anzeigen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
@@ -1479,6 +1496,13 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
 
       Wenn die Richtlinie nicht festgelegt wird, gelten für alle Einstellungen Standardwerte.</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
+<translation id="8071636581296916773">Ermöglicht den Einsatz von Relayservern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen
+
+          Ist diese Einstellung aktiviert, können Remote-Clients eine Verbindung zu diesem Computer über Relayserver herstellen, sofern keine direkte Verbindung verfügbar ist, zum Beispiel aufgrund von Firewallbeschränkungen.
+
+          Diese Richtlinie wird ignoriert, falls die Richtlinie <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> deaktiviert ist.
+
+          Falls diese Richtlinie nicht konfiguriert ist, wird die Einstellung aktiviert.</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="5781806558783210276">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe die Inaktivität im Akkubetrieb erfolgt.
 
@@ -1522,6 +1546,9 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
           Wenn diese Einstellung aktiviert ist, müssen Nutzer einen gültigen Zwei-Faktor-Code angeben, wenn sie auf einen Host zugreifen möchten.
 
           Ist diese Einstellung deaktiviert oder nicht festgelegt, wird die Zwei-Faktor-Authentifizierung nicht aktiviert und das Standardverfahren zur Eingabe einer nutzerdefinierten PIN wird verwendet.</translation>
+<translation id="6698424063018171973">Schränkt den vom Host für den Remote-Zugriff verwendeten UDP-Portbereich auf diesem Computer ein
+
+          Wenn diese Richtlinie nicht konfiguriert ist oder auf eine leere Zeichenfolge festgelegt wird, kann der Host für den Remote-Zugriff alle verfügbaren Ports nutzen. Falls die Richtlinie <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> deaktiviert ist, verwendet der Host für den Remote-Zugriff jedoch nur die UDP-Ports im Bereich 12400–12409.</translation>
 <translation id="7329842439428490522">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb abgeschaltet wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME"/> den Bildschirm abschaltet.
@@ -1537,6 +1564,13 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
 
       Die anerkannten Verbindungstypkennungen lauten &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; und &quot;cellular&quot;.</translation>
 <translation id="6652197835259177259">Einstellungen für lokal verwaltete Nutzer</translation>
+<translation id="2808013382476173118">Aktiviert den Einsatz von STUN-Servern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen
+
+          Wenn diese Einstellung aktiviert wird, können Remote-Clients diesen Computer finden und eine Verbindung herstellen, selbst wenn er sich hinter einer Firewall befindet.
+
+          Falls die Einstellung deaktiviert ist und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, erlaubt dieser Computer nur Verbindungen von Clientcomputern im lokalen Netzwerk.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung aktiviert.</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME"/> den Bildschirm abdunkelt.

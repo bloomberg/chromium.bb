@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="3595596368722241419">Accu is vol</translation>
+<translation id="6895424601869865703">Een account toevoegen voor <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Rotatie aan (Tik hier om te wijzigen)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> en <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Status van portal</translation>
 <translation id="30155388420722288">Overloopknop</translation>
@@ -45,6 +47,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="6043994281159824495">Nu uitloggen</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
 <translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
+<translation id="4625920103690741805">Rotatie vergrendeld (Tik hier om te wijzigen)</translation>
 <translation id="3799026279081545374">Je hebt mogelijk een slechte oplader. Als je in de Verenigde Staten woont, bel je 866-628-1371 om ondersteuning en een vervangende lader te ontvangen. Als je in het Verenigd Koninkrijk woont, bel je 0800-026-0613. Als je in Ierland woont, bel je 1-800-832-664. Als je in Canada woont, bel je 866-628-1372. Als je in Australië woont, bel je 1-800-067-460.</translation>
 <translation id="3026237328237090306">Mobiele gegevens instellen</translation>
 <translation id="5871632337994001636">Apparaten beheren...</translation>
@@ -69,6 +72,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="7170041865419449892">Geen bereik</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Configuratie</translation>
@@ -101,6 +105,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="372094107052732682">Druk twee keer op Ctrl+Shift+Q om te stoppen.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="1480041086352807611">Demomodus</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primair)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% resterend</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="2372145515558759244">Apps synchroniseren...</translation>
 <translation id="7256405249507348194">Onbekende fout: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Accounts</translation>
 <translation id="2894654529758326923">Informatie</translation>
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> tot vol</translation>
@@ -139,7 +145,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME"/>' wil toestemming om te koppelen.</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
-<translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: verbinden...</translation>
 <translation id="6062360702481658777">Je wordt automatisch uitgelogd over <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Onbekend display</translation>
@@ -151,7 +156,9 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="5097002363526479830">Kan geen verbinding maken met het netwerk '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
+<translation id="3433830597744061105">Accounts beheren</translation>
 <translation id="2966449113954629791">Je hebt misschien je mobiele gegevensquotum verbruikt. Ga naar de activeringsportal van <ph name="NAME"/> om meer gegevens te kopen.</translation>
+<translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="8132793192354020517">Verbonden met <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
 <translation id="8678698760965522072">Online status</translation>
@@ -168,7 +175,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="1602076796624386989">Mobiele gegevens inschakelen</translation>
 <translation id="68610848741840742">ChromeVox (gesproken feedback)</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
-<translation id="3157931365184549694">Herstellen</translation>
 <translation id="4274292172790327596">Onbekende fout</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
@@ -201,7 +207,7 @@ Melding van de server: <ph name="SERVER_MSG"/></translation>
 <translation id="8300849813060516376">OTASP mislukt</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> bestand(en) synchroniseren</translation>
-<translation id="5958529069007801266">Bewaakte gebruiker</translation>
+<translation id="5958529069007801266">Gebruiker met beperkte rechten</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK is uitgeschakeld</translation>
 <translation id="6248847161401822652">Druk twee keer op Control+Shift+Q om te stoppen.</translation>
@@ -224,6 +230,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="9046895021617826162">Verbinding mislukt</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Deze sessie loopt af over <ph name="SESSION_TIME_REMAINING"/>. Je wordt automatisch uitgelogd.</translation>
+<translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
 <translation id="8372369524088641025">Slechte WEP-sleutel</translation>
 <translation id="6636709850131805001">Niet-herkende staat</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="520760366042891468">Controle over je scherm delen via Hangouts.</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
 <translation id="4015692727874266537">Inloggen op ander account...</translation>
-<translation id="5941711191222866238">Minimaliseren</translation>
+<translation id="1044925987639358253">Microfoon is in gebruik.</translation>
 <translation id="6911468394164995108">Verbinding met ander netwerk maken...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME"/>' is geactiveerd en kan worden gebruikt.</translation>

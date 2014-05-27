@@ -125,7 +125,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           REMARQUE : Le comportement par défaut des appareils grand public diffère de celui des appareils professionnels : sur les appareils grand public, les comptes utilisateur supervisés sont autorisés par défaut, contrairement aux appareils professionnels.</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
-<translation id="5827231192798670332">Sélectionner la stratégie utilisée pour libérer de l'espace disque au cours du nettoyage automatique</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="2482676533225429905">Messagerie native</translation>
 <translation id="6649397154027560979">Cette règle a été abandonnée. Veuillez utiliser URLBlacklist à la place.
@@ -162,7 +161,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       S'il est impossible d'obtenir des informations relatives à l'état de la révocation par le biais de <ph name="PRODUCT_NAME"/>, ces certificats seront considérés comme révoqués (&quot;échec&quot;).
 
       Si cette règle n'est pas définie ou si elle est définie sur &quot;False&quot;, les paramètres de vérification en ligne de la révocation sont alors utilisés dans Chrome.</translation>
-<translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="3516856976222674451">Limite la durée maximale d'une session utilisateur.
 
       Lorsque cette règle est configurée, elle indique au bout de combien de temps un utilisateur est automatiquement déconnecté, ce qui met fin à la session. Un compte à rebours, qui s'affiche dans la barre d'état système, informe l'utilisateur du temps qu'il lui reste.
@@ -229,19 +227,6 @@ Si elle est définie sur &quot;False&quot; ou si elle n'est pas configurée, ces
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
 <translation id="4555850956567117258">Activer l'attestation à distance pour l'utilisateur</translation>
-<translation id="4418909344122918381">Contrôler le comportement des utilisateurs dans une session multicompte sur les appareils <ph name="PRODUCT_OS_NAME"/>
-
-      Si cette règle est définie sur &quot;MultiProfileUserBehaviorUnrestricted&quot;, l'utilisateur peut être l'utilisateur principal ou secondaire dans une session multicompte.
-
-      Si cette règle est définie sur &quot;MultiProfileUserBehaviorMustBePrimary&quot;, l'utilisateur ne peut être que l'utilisateur principal dans une session multicompte.
-
-      Si cette règle est définie sur &quot;MultiProfileUserBehaviorNotAllowed&quot;, l'utilisateur ne peut pas participer à une session multicompte.
-
-      Si vous définissez ce paramètre, les utilisateurs ne peuvent ni le modifier, ni l'ignorer.
-
-      Si vous modifiez ce paramètre pendant que l'utilisateur est connecté à une session multicompte, les paramètres correspondants de l'ensemble des participants de la session sont vérifiés, et la session est fermée si l'un des utilisateurs n'est plus autorisé à y participer.
-
-      Si vous ne définissez pas cette règle, la valeur par défaut &quot;MultiProfileUserBehaviorUnrestricted&quot; est utilisée.</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
 <translation id="1617235075406854669">Activer la suppression de l'historique du navigateur et de l'historique des téléchargements</translation>
 <translation id="5290940294294002042">Répertorier les plug-ins pouvant être activés ou désactivés par l'utilisateur</translation>
@@ -319,6 +304,7 @@ Si cette règle n'est pas configurée, la règle &quot;AllowImages&quot; est uti
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
 <translation id="5912364507361265851">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe.</translation>
+<translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="510186355068252378">Désactive la synchronisation des données dans <ph name="PRODUCT_NAME"/> en utilisant les services de synchronisation hébergés par Google et empêche les utilisateurs de modifier ce paramètre. 
 
 Si vous activez ce paramètre, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME"/>. 
@@ -354,6 +340,19 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
 <translation id="382476126209906314">Configurer le préfixe TalkGadget pour les hôtes d'accès à distance</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
 <translation id="8104962233214241919">Sélectionner automatiquement des certificats client pour ces sites</translation>
+<translation id="7983624541020350102">(Ce document peut contenir des règles destinées à des
+      versions ultérieures de <ph name="PRODUCT_NAME"/>, dont
+      la modification est possible sans préavis. La liste des règles en vigueur est la
+      même pour Chrome et Google Chrome.)
+
+      Il est inutile de modifier manuellement ces paramètres. Vous pouvez télécharger des modèles faciles à utiliser depuis le site
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Ces règles sont strictement destinées à la configuration des instances de Chrome au sein de votre organisation. L'utilisation de ces règles à l'extérieur de votre organisation (par exemple, dans un programme diffusé au public) est considérée comme malveillante et sera très certainement étiquetée comme telle par Google et les éditeurs d'antivirus.
+
+      Remarque : À compter de la version 28 de <ph name="PRODUCT_NAME"/>,
+      les règles sont chargées directement à partir de l'API Group Policy sur Windows. Les règles qui sont écrites manuellement dans le registre sont ignorées. Pour plus de détails, voir le site
+      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Liste des extensions AppPack</translation>
 <translation id="4386578721025870401">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion
 
@@ -443,13 +442,6 @@ Si vous désactivez ce paramètre, la déclaration anonyme des données d'utilis
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME"/>. 
 
 Si cette règle n'est pas configurée, le paramètre est défini sur l'option que l'utilisateur a choisie lors de l'installation ou de la première exécution.</translation>
-<translation id="4784220343847172494">Contrôler le comportement du nettoyage automatique sur les appareils <ph name="PRODUCT_OS_NAME"/>. Ce nettoyage est déclenché lorsque le volume d'espace libre sur le disque atteint un niveau critique nécessitant de récupérer de l'espace disque.
-
-      Si cette règle est paramétrée sur &quot;RemoveLRU&quot;, le nettoyage automatique continue de supprimer les comptes des utilisateurs de l'appareil en commençant par ceux qui se sont connectés le moins récemment, jusqu'à ce que l'espace libre soit suffisant.
-
-      Si cette règle est paramétrée sur &quot;RemoveLRUIfDormant&quot;, le nettoyage automatique continue de supprimer les comptes des utilisateurs qui ne se sont pas connectés au cours des trois derniers mois en commençant par ceux qui se sont connectés le moins récemment. Le nettoyage se poursuit jusqu'à ce que l'espace libre soit suffisant.
-
-      Si cette règle n'est pas paramétrée, la stratégie de nettoyage automatique intégrée par défaut est utilisée. Actuellement, il s'agit de la stratégie &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6256787297633808491">Options système à appliquer au démarrage de Google Chrome</translation>
 <translation id="2516600974234263142">Active les fonctionnalités d'impression pour <ph name="PRODUCT_NAME"/> et interdit à l'utilisateur de changer ce paramètre.
 
@@ -477,16 +469,6 @@ Si cette règle n'est pas configurée, le paramètre est défini sur l'option qu
 <translation id="8906768759089290519">Activer le mode invité</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
-<translation id="3234167886857176179">Voici la liste des règles suivies par <ph name="PRODUCT_NAME"/>.
-
-      Vous n'avez pas besoin de modifier ces paramètres manuellement. Vous pouvez télécharger des modèles faciles à utiliser à l'adresse suivante :
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>
-
-      La liste des règles compatibles est la même pour Chromium et Google Chrome.
-
-      Ces règles sont strictement prévues pour être utilisées dans le cadre de la configuration de copies de Chrome internes à votre entreprise. Si elles sont utilisées à l'extérieur de votre entreprise (dans le cadre d'un programme distribué publiquement, par exemple), cela est considéré comme une activité de logiciel malveillant. Sachez que Google et les distributeurs de logiciels antivirus sont susceptibles de signaler cette activité comme étant le fait d'un logiciel malveillant.
-
-      Remarque : À partir de la version 28 de Chrome, les règles sont chargées directement depuis l'API Group Policy sous Windows. Les règles rédigées manuellement dans le registre sont ignorées. Pour en savoir plus, accédez à l'adresse http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> peut utiliser un service Web de Google pour corriger les erreurs d'orthographe. En cas d'activation de ce paramètre, ce service est toujours utilisé. En cas de désactivation de ce paramètre, il n'est jamais utilisé.
 
       Il reste toutefois possible de procéder à la correction orthographique à l'aide d'un dictionnaire téléchargé. Cette règle ne contrôle que l'utilisation du service en ligne.
@@ -517,6 +499,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
 <translation id="2144674628322086778">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et secondaire (comportement par défaut)</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
+<translation id="3805659594028420438">Activer l'extension des certificats TLS liés au domaine (obsolète)</translation>
 <translation id="5499375345075963939">Cette règle n'est active qu'en mode &quot;point de vente&quot;.
 
       Lorsque sa valeur est configurée, et si elle ne correspond pas à 0, l'utilisateur connecté en mode démonstration est déconnecté automatiquement après la durée d'inactivité définie.
@@ -779,6 +762,7 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 
       Si cette règle n'est pas configurée, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le lanceur d'applications.</translation>
 <translation id="1679420586049708690">Session publique pour la connexion automatique</translation>
+<translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="3788662722837364290">Paramètres de gestion de l'alimentation en cas d'inactivité de l'utilisateur</translation>
@@ -805,6 +789,11 @@ Si cette règle n'est pas configurée, le paramètre &quot;BlockPopups&quot; est
 
 Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME"/>. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
+<translation id="2956777931324644324">Cette règle a été supprimée dès la version 36 de <ph name="PRODUCT_NAME"/>.
+
+      Elle indique si l'extension des certificats TLS liés au domaine doit être activée.
+
+      Ce paramètre permet d'activer ces certificats à des fins de test. Ce paramètre expérimental sera supprimé à l'avenir.</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
 <translation id="228659285074633994">Indique la durée pendant laquelle l'utilisateur doit rester inactif avant qu'une boîte de dialogue d'avertissement ne s'affiche (en cas connexion sur le secteur).
@@ -966,13 +955,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
           Il s'agit d'une règle utilisée en interne par Chrome.</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
 <translation id="131353325527891113">Afficher les noms d'utilisateur sur l'écran de connexion</translation>
-<translation id="5317965872570843334">Permet l'utilisation de serveurs STUN et relais lorsque les clients distants tentent d'établir une connexion à cette machine. 
-
-Si ce paramètre est activé, alors les clients distants peuvent découvrir et se connecter à cette machine, même s'ils sont séparés par un pare-feu. 
-
-Si ce paramètre est désactivé et si les connexions UDP sortantes sont filtrées par le pare-feu, alors cette machine autorise uniquement les connexions des machines clientes au sein du réseau local. 
-
-Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="4057110413331612451">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
@@ -1007,6 +989,15 @@ Si cette règle n'est pas configurée, le moteur de recherche par défaut est ac
       veuillez utiliser un outil tel que Telemetry.</translation>
 <translation id="8731693562790917685">L'option &quot;Paramètres de contenu&quot; permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, Cookies, Images ou JavaScript) est géré.</translation>
 <translation id="2411919772666155530">Bloquer les notifications sur ces sites</translation>
+<translation id="7332963785317884918">Cette règle est obsolète. <ph name="PRODUCT_OS_NAME"/> continuera à utiliser la stratégie de nettoyage &quot;RemoveLRU&quot;.
+
+      Elle contrôle le comportement de nettoyage automatique sur les appareils <ph name="PRODUCT_OS_NAME"/>. Ce nettoyage est déclenché automatiquement lorsque la quantité d'espace libre sur le disque atteint un niveau critique ne permettant plus de récupérer de l'espace disque.
+
+      Si cette règle est définie sur &quot;RemoveLRU&quot;, le nettoyage automatique continue de supprimer les comptes utilisateur de l'appareil en commençant par les utilisateurs qui se sont connectés il y a le plus longtemps jusqu'à ce que l'espace libre soit suffisant.
+
+      Si cette règle est définie sur &quot;RemoveLRUIfDormant&quot;, le nettoyage automatique continue à supprimer les comptes des utilisateurs qui ne se sont pas connectés depuis au moins trois mois en commençant par ceux qui se sont connectés il y a le plus longtemps, et ce jusqu'à ce que l'espace libre soit suffisant.
+
+      Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6923366716660828830">Indique le nom du moteur de recherche par défaut. Si cette règle n'est pas configurée, le nom d'hôte spécifié par l'URL de recherche est utilisé. 
 
 Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderEnabled&quot; est activée.</translation>
@@ -1082,6 +1073,19 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2312134445771258233">Vous permet de configurer les pages chargées au démarrage.
 
       Le contenu de la liste &quot;URL à ouvrir au démarrage&quot; est ignoré, sauf si vous sélectionnez &quot;Ouvrir les pages suivantes&quot; dans &quot;Action au démarrage&quot;.</translation>
+<translation id="1464848559468748897">Contrôle le comportement des utilisateurs dans une session multiprofil sur des appareils <ph name="PRODUCT_OS_NAME"/>.
+
+     Si cette règle est définie sur &quot;MultiProfileUserBehaviorUnrestricted&quot;, l'utilisateur peut être utilisateur principal ou secondaire dans une session multiprofil.
+
+     Si cette règle est définie sur &quot;MultiProfileUserBehaviorMustBePrimary&quot;, l'utilisateur peut uniquement être utilisateur principal dans une session multiprofil.
+
+      Si cette règle est définie sur &quot;MultiProfileUserBehaviorNotAllowed&quot;, l'utilisateur ne peut pas faire partie d'une session multiprofil.
+
+      Si vous définissez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer.
+ 
+      Si ce paramètre est modifié pendant que l'utilisateur est connecté à une session multiprofil, les paramètres de tous les utilisateurs de la session sont vérifiés. La session est fermée si l'un des utilisateurs n'est plus autorisé à y prendre part.
+
+      Si la règle n'est pas définie, la valeur par défaut &quot;MultiProfileUserBehaviorMustBePrimary'' s'applique aux utilisateurs gérés par l'entreprise et la valeur &quot;MultiProfileUserBehaviorUnrestricted&quot; est utilisée pour les utilisateurs non gérés.</translation>
 <translation id="243972079416668391">Définit l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement de l'appareil sur une source d'alimentation CA.
 
           Lorsque la règle est définie, elle indique l'action à effectuer sous <ph name="PRODUCT_OS_NAME"/> lorsque l'utilisateur reste inactif au-delà du délai d'inactivité, qui peut être configuré séparément.
@@ -1250,6 +1254,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Il s'agit d'une règle utilisée en interne par Chrome.</translation>
 <translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
+<translation id="5461308170340925511">Permet de configurer les stratégies relatives aux extensions. L'utilisateur n'est pas autorisé à installer des extensions inscrites sur la liste noire, à moins qu'elles aient été ajoutées à la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer automatiquement des extensions en les spécifiant dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Cette méthode permet d'installer les extensions inscrites sur la liste noire.</translation>
 <translation id="3292147213643666827">Permet à <ph name="PRODUCT_NAME"/> de faire office de proxy entre <ph name="CLOUD_PRINT_NAME"/> et les imprimantes existantes connectées à la machine.
 
       Si ce paramètre est activé ou s'il n'est pas configuré, l'utilisateur peut activer le proxy d'impression sur le cloud en se connectant à son compte Google.
@@ -1334,9 +1339,6 @@ Si cette règle n'est pas configurée, le paramètre &quot;AllowJavaScript&quot;
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="1221359380862872747">Charger les URL spécifiées lors de la connexion à la démonstration</translation>
-<translation id="2431811512983100641">Détermine si l'extension des certificats TLS liés à des domaines doit être activée.
-
-       Ce paramètre est utilisé pour activer l'extension des certificats TLS liés à des domaines afin de les tester. Comme il est expérimental, il sera supprimé ultérieurement.</translation>
 <translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.
 
 Cette règle est facultative. Si elle n'est pas configurée, aucun mot clé n'active le moteur de recherche. 
@@ -1458,6 +1460,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           En cas de désactivation ou de non-configuration de ce paramètre, le nom de domaine TalkGadget par défaut (&quot;chromoting-host.talkgadget.google.com&quot;) est utilisé pour tous les hôtes.
 
           Les clients d'accès à distance ne sont pas concernés par la configuration de cette règle. Ils utilisent toujours &quot;chromoting-client.talkgadget.google.com&quot; pour accéder à TalkGadget.</translation>
+<translation id="1103860406762205913">Active l'ancienne connexion basée sur le Web</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="6915442654606973733">Active la fonctionnalité d'accessibilité de commentaires audio.
 
@@ -1694,7 +1697,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7882585827992171421">Cette règle n'est active qu'en mode &quot;point de vente&quot;.
 
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
-<translation id="7736666549200541892">Activer l'extension des certificats TLS liés à des domaines</translation>
 <translation id="1796466452925192872">Vous permet d'indiquer les URL qui sont autorisées à installer des extensions, des applications et des thèmes.
 
           À partir de Google Chrome 21, il sera plus difficile d'installer des extensions, des applications et des scripts d'utilisateurs en dehors du Chrome Web Store. Auparavant, les utilisateurs pouvaient cliquer sur un lien redirigeant vers un fichier *.crx, et Google Chrome installait le fichier après quelques avertissements. À partir de Google Chrome 21, ces fichiers devront être téléchargés et déplacés vers la page des paramètres Google Chrome. Ceci permet à certaines URL de bénéficier de l'ancienne procédure d'installation, plus facile à suivre.
@@ -1704,6 +1706,7 @@ au maximum si un utilisateur se sert de l'appareil.
           ExtensionInstallBlacklist prévaut sur cette règle : une extension figurant dans la liste noire ne sera pas installée, même si elle provient d'un site mentionné dans cette liste.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="4224610387358583899">Délais de verrouillage de l'écran</translation>
+<translation id="5388730678841939057">Sélectionner la stratégie utilisée pour libérer de l'espace disque au cours du nettoyage automatique</translation>
 <translation id="7848840259379156480">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME"/> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
@@ -1711,6 +1714,13 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7890264460280019664">Génére une liste d'interfaces réseau, avec leur type et leur adresse matérielle sur le serveur.
 
       Si la règle n'est pas définie ou si elle est définie sur &quot;False&quot;, la liste d'interfaces ne sera pas générée.</translation>
+<translation id="197143349065136573">Active l'ancienne connexion basée sur le Web.
+
+      Ce paramètre est utile pour les utilisateurs d'entreprise qui utilisent des solutions à authentification unique qui ne sont pas compatibles avec la nouvelle connexion intégrée.
+      Si vous activez ce paramètre, l'ancienne connexion basée sur le Web sera utilisée.
+      Si vous désactivez ce paramètre ou si vous ne le configurez pas, la nouvelle connexion intégrée sera utilisée par défaut. Les utilisateurs pourront toujours activer la connexion basée sur le Web à l'aide de l'indicateur de ligne de commande --enable-web-based-signin.
+
+      Ce paramètre expérimental sera supprimé lorsque la connexion intégrée sera entièrement compatible avec l'ensemble des connexions à authentification unique.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
@@ -1820,6 +1830,13 @@ Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêm
 
       Si cette règle n'est pas configurée, des valeurs par défaut sont utilisées pour l'ensemble des paramètres.</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
+<translation id="8071636581296916773">Permet l'utilisation de serveurs de relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
+
+     Si ce paramètre est activé, les clients distants peuvent utiliser des serveurs de relais pour se connecter à ce poste lorsqu'aucune connexion directe n'est disponible (par exemple, en raison de restrictions du pare-feu).
+
+     Notez que si la règle <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> est désactivée, cette règle est ignorée.
+
+     Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
 <translation id="5781806558783210276">Indiquer le délai d'inactivité au terme duquel l'action d'inactivité est appliquée en cas d'utilisation de la batterie
 
@@ -1872,6 +1889,9 @@ Si aucun paramètre n'est défini, <ph name="PRODUCT_NAME"/> utilise un nom de b
           En cas d'activation de ce paramètre, tout utilisateur accédant à un hôte doit fournir un code d'authentification forte.
 
           En cas de désactivation ou de non-configuration de ce paramètre, l'authentification forte n'est pas activée. Un code d'accès défini par l'utilisateur est alors demandé.</translation>
+<translation id="6698424063018171973">Limite la plage de ports UDP utilisés par l'hôte d'accès à distance sur ce poste.
+
+          Si cette règle n'est pas configurée, ou si elle est définie sur une chaîne vide, l'hôte d'accès à distance est autorisé à utiliser n'importe quel port disponible, sauf si la règle <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> est désactivée. Dans ce cas, l'hôte d'accès à distance utilise les ports UDP 12400 à 12409.</translation>
 <translation id="7329842439428490522">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de la batterie
 
                       Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME"/> éteigne l'écran.
@@ -1889,6 +1909,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Les identifiants des types de connexion reconnus sont &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; et &quot;mobile&quot;.</translation>
 <translation id="6652197835259177259">Paramètres des utilisateurs gérés en local</translation>
+<translation id="2808013382476173118">Permet l'utilisation de serveurs STUN lorsque les clients distants tentent d'établir une connexion avec ce poste.
+
+          Si ce paramètre est activé, les clients distants peuvent détecter ce poste et s'y connecter même s'ils en sont séparés par un pare-feu.
+
+          Si ce paramètre est désactivé et si les connexions UDP sortantes sont filtrées par le pare-feu, ce poste autorise uniquement les connexions émanant des postes clients au sein du réseau local.
+
+          Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="3243309373265599239">Indiquer le délai d'inactivité au terme duquel l'écran s'assombrit en cas d'utilisation de l'alimentation secteur
 
                       Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME"/> assombrisse l'écran.

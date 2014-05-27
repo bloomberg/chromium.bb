@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="3595596368722241419">Baterija je puna</translation>
+<translation id="6895424601869865703">Dodaj račun za korisnika <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Rotacija je uključena (dodirnite ovdje za promjenu)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Stanje mreže: Portal</translation>
 <translation id="30155388420722288">Gumb padajućeg izbornika</translation>
@@ -45,6 +47,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6043994281159824495">Odjavi se odmah</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
+<translation id="4625920103690741805">Rotacija je zaključana (dodirnite ovdje za promjenu)</translation>
 <translation id="3799026279081545374">Možda imate neispravan punjač. Ako živite u SAD-u, nazovite 866-628-1371 da biste dobili pomoć i zamjenski punjač. Ako živite u Velikoj Britaniji, nazovite 0800-026-0613. Ako živite u Irskoj, nazovite 1-800-832-664. Ako živite u Kanadi, nazovite 866-628-1372. Ako živite u Australiji, nazovite 1-800-067-460.</translation>
 <translation id="3026237328237090306">Postavi mobilne podatke</translation>
 <translation id="5871632337994001636">Upravljanje uređajima...</translation>
@@ -69,6 +72,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="7170041865419449892">Izvan raspona</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="2544853746127077729">Mreža je odbila certifikat za autentifikaciju</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfiguracija</translation>
@@ -101,6 +105,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="372094107052732682">Pritisnite Ctrl + Shift + Q dvaput da biste odustali.</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
 <translation id="1480041086352807611">Demonstracijski način</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primarni)</translation>
 <translation id="3626637461649818317">Preostalo <ph name="PERCENTAGE"/> %</translation>
 <translation id="9089416786594320554">Načini unosa</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="2372145515558759244">Sinkroniziranje aplikacija...</translation>
 <translation id="7256405249507348194">Neprepoznata pogreška: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Računi</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="7925247922861151263">Provjera AAA nije uspjela</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do potpune napunjenosti</translation>
@@ -139,7 +145,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="4527045527269911712">Bluetooth uređaj &quot;<ph name="DEVICE_NAME"/>&quot; traži dopuštenje za uparivanje.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatski klikovi</translation>
-<translation id="1398853756734560583">Maksimiziraj</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: povezivanje...</translation>
 <translation id="6062360702481658777">Automatski ćete se odjaviti za <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Nepoznati zaslon</translation>
@@ -151,7 +156,9 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="5097002363526479830">Neuspješno povezivanje s mrežom &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="2872961005593481000">Isključi</translation>
+<translation id="3433830597744061105">Upravljaj računima</translation>
 <translation id="2966449113954629791">Vjerojatno ste potrošili dopuštenu količinu mobilnih podataka. Posjetite aktivacijski portal <ph name="NAME"/> kako biste kupili još podataka.</translation>
+<translation id="742594950370306541">Fotoaparat je aktivan.</translation>
 <translation id="8132793192354020517">Povezano s <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
 <translation id="8678698760965522072">Stanje na mreži</translation>
@@ -168,7 +175,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>
 <translation id="6981982820502123353">Dostupnost</translation>
-<translation id="3157931365184549694">Vrati</translation>
 <translation id="4274292172790327596">Neprepoznata pogreška</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Slušalice</translation>
@@ -224,6 +230,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="9046895021617826162">Neuspjelo povezivanje</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Sesija će završiti za <ph name="SESSION_TIME_REMAINING"/>. Bit ćete automatski odjavljeni.</translation>
+<translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
 <translation id="8372369524088641025">Neispravan WEP ključ</translation>
 <translation id="6636709850131805001">Neprepoznato stanje</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="520760366042891468">Dijelite kontrolu nad zaslonom putem značajke Hangouts.</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
 <translation id="4015692727874266537">Prijavite se na još jedan račun...</translation>
-<translation id="5941711191222866238">Minimiziraj</translation>
+<translation id="1044925987639358253">Mikrofon je aktivan.</translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Čestitamo! Podatkovna usluga &quot;<ph name="NAME"/>&quot; aktivirana je i spremna za pokret.</translation>

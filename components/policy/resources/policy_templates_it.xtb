@@ -101,7 +101,6 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
           NOTA. Il comportamento predefinito per dispositivi consumer ed enterprise è diverso: sui dispositivi consumer, gli utenti supervisionati sono abilitati per impostazione predefinita, mentre sui dispositivi enterprise sono disabilitati per impostazione predefinita.</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
-<translation id="5827231192798670332">Consente di selezionare la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="6649397154027560979">Questa norma non è più supportata; utilizza la norma URLBlacklist.
@@ -138,7 +137,6 @@ Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente pot
 Se <ph name="PRODUCT_NAME"/> non riesce a ottenere informazioni sullo stato delle revoche, tali certificati vengono considerati revocati (&quot;hard-fail&quot;).
 
 Se questa norma non viene impostata o se viene impostata su false, Chrome utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
-<translation id="1438955478865681012">Configura le norme correlate alle estensioni. L'utente non può installare le estensioni elencate nella blacklist a meno che non siano riportate nella whitelist. Puoi anche imporre a <ph name="PRODUCT_NAME"/> l'installazione automatica delle estensioni, specificandole in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La blacklist ha la precedenza sull'elenco delle estensioni imposte.</translation>
 <translation id="3516856976222674451">Limita la durata massima di una sessione utente.
 
       Quando è impostato, questo criterio specifica il tempo dopo il quale un utente viene automaticamente disconnesso, terminando la sessione. Un conto alla rovescia nell'area di notifica informa l'utente del tempo rimanente.
@@ -195,19 +193,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
 <translation id="7567380065339179813">Consenti plug-in su questi siti</translation>
 <translation id="4555850956567117258">Attivazione dell'attestazione da remoto per l'utente</translation>
-<translation id="4418909344122918381">Controlla il comportamento dell'utente in una sessione a profilo multiplo su dispositivi <ph name="PRODUCT_OS_NAME"/>.
-
-      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorUnrestricted&quot;, l'utente può essere un utente principale o secondario in una sessione a profilo multiplo.
-
-      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorMustBePrimary&quot;, l'utente può essere soltanto l'utente principale in una sessione a profilo multiplo.
-
-      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorNotAllowed&quot;, l'utente non può fare parte della sessione a profilo multiplo.
-
-      Se questa impostazione viene configurata, gli utenti non potranno modificarla o sostituirla.
-
-      Se l'impostazione viene modificata mentre l'utente è collegato a una sessione a profilo multiplo, verranno controllate le impostazioni di tutti gli utenti nella sessione. La sessione verrà chiusa se a uno qualsiasi degli utenti non è più permesso essere presente nella sessione.
-
-      Se la norma non viene impostata, verrà utilizzato il valore predefinito &quot;MultiProfileUserBehaviorUnrestricted&quot;.</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
@@ -260,6 +245,7 @@ Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcun
 
 Questa norma viene rispettata soltanto se viene attivata la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="5912364507361265851">Consenti agli utenti di mostrare le password in Gestione password</translation>
+<translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
 <translation id="510186355068252378">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME"/> tramite servizi di sincronizzazione in hosting su Google e di impedire agli utenti di modificare questa impostazione. Se questa impostazione viene attivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se questa norma non viene impostata, gli utenti potranno scegliere se utilizzare o meno Google Sync.</translation>
 <translation id="7953256619080733119">Host delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="4807950475297505572">Gli utenti utilizzati meno di recente vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
@@ -289,6 +275,13 @@ Questa norma viene rispettata soltanto se viene attivata la norma &quot;DefaultS
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
 <translation id="8104962233214241919">Seleziona automaticamente i certificati client per questi siti</translation>
+<translation id="7983624541020350102">Questo documento potrebbe includere norme destinate a versioni successive di <ph name="PRODUCT_NAME"/> e che sono soggette a modifiche senza preavviso. L'elenco di norme supportate è lo stesso per Chromium e Google Chrome.
+
+      Non è necessario modificare queste impostazioni manualmente. Puoi scaricare modelli di facile utilizzo da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Queste norme devono essere utilizzate esclusivamente per la configurazione delle istanze di Chrome interne all'organizzazione. L'utilizzo di queste norme al di fuori dell'organizzazione (ad esempio in un programma distribuito pubblicamente) viene considerato malware e potrebbe essere contrassegnato come malware da Google e dai fornitori di software antivirus.
+
+      Nota. A partire da <ph name="PRODUCT_NAME"/> 28 le norme vengono caricate direttamente dall'API Group Policy su Windows. Le norme scritte manualmente nel registro di sistema verranno ignorate. Per informazioni dettagliate, visita il sito all'indirizzo http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
 <translation id="4386578721025870401">Consente di limitare il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline.
 
@@ -366,13 +359,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
       Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_NAME"/> quando l'utente rimane inattivo per un determinato periodo di tempo.</translation>
 <translation id="2565967352111237512">Consente di attivare la comunicazione anonima a Google dei dati sull'utilizzo e sugli arresti anomali di <ph name="PRODUCT_NAME"/> e di impedire agli utenti di modificare questa impostazione. Se questa impostazione viene attivata, a Google verranno inviati rapporti anonimi di dati sull'utilizzo e sugli arresti anomali. Se l'impostazione viene disattivata, i rapporti anonimi di dati sull'utilizzo e sugli arresti anomali non verranno mai inviati a Google. Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME"/>. Se questa norma non viene impostata, verrà utilizzata l'impostazione scelta dall'utente in fase di installazione/prima esecuzione.</translation>
-<translation id="4784220343847172494">Consente di controllare il comportamento di pulizia automatica su dispositivi <ph name="PRODUCT_OS_NAME"/>. La pulizia automatica viene attivata per recuperare spazio su disco quando la quantità di spazio libero su disco raggiunge un livello critico.
-
-      Se questa norma viene impostata su &quot;RemoveLRU&quot;, la pulizia automatica continua a rimuovere gli utenti dal dispositivo in ordine di accessi meno recenti fino a liberare spazio sufficiente.
-
-      Se questa norma viene impostata su &quot;RemoveLRUIfDormant&quot;, la pulizia automatica continua a rimuovere gli utenti che non eseguono l'accesso da almeno tre mesi in ordine di accessi meno recenti fino a liberare spazio sufficiente.
-
-      Se questa norma non viene impostata, la pulizia automatica utilizza la strategia integrata predefinita, che attualmente è &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6256787297633808491">Contrassegni a livello di sistema da applicare all'avvio di Chrome</translation>
 <translation id="2516600974234263142">Consente di attivare la stampa in <ph name="PRODUCT_NAME"/> e impedisce agli utenti di modificare questa impostazione.
 
@@ -398,15 +384,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
-<translation id="3234167886857176179">Questo è l'elenco di norme che vengono rispettate da <ph name="PRODUCT_NAME"/>.
-
-Non è necessario modificare queste impostazioni manualmente. Puoi scaricare modelli di facile utilizzo da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-L'elenco di norme supportate è lo stesso per Chromium e Google Chrome.
-
-Queste norme devono essere utilizzate esclusivamente per la configurazione delle istanze di Chrome interne all'organizzazione. L'utilizzo di queste norme al di fuori dell'organizzazione (ad esempio in un programma distribuito pubblicamente) viene considerato malware e potrebbe essere contrassegnato come malware da Google e dai fornitori di software antivirus.
-
-Nota. A partire da Chrome 28 le norme vengono caricate direttamente dall'API Group Policy su Windows. Le norme scritte manualmente nel registro di sistema verranno ignorate. Per informazioni dettagliate, visita il sito all'indirizzo http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -433,6 +410,7 @@ Se l'azione è la sospensione, è possibile configurare separatamente il blocco 
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
 <translation id="2144674628322086778">Permetti all'utente aziendale di essere sia principale che secondario (comportamento predefinito)</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
+<translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="5499375345075963939">Questa norma è attiva soltanto in modalità retail.
 
       Quando il valore di questa norma è impostato e non è 0, l'utente Demo correntemente connesso verrà disconnesso automaticamente dopo che sarà trascorso il tempo di inattività della durata specificata.
@@ -638,6 +616,7 @@ Se questa norma viene configurata, il gruppo di applicazioni è fisso e non può
 
 Se questa norma non viene impostata gli utenti possono modificare l'elenco di applicazioni bloccate in Avvio applicazioni.</translation>
 <translation id="1679420586049708690">Sessione pubblica a cui accedere automaticamente</translation>
+<translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
 <translation id="3788662722837364290">Impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo</translation>
@@ -660,6 +639,11 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 Se questa norma non viene impostata viene utilizzata la riga di comando predefinita.</translation>
 <translation id="2646290749315461919">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica. Se questa norma non viene impostata, verrà utilizzato il valore &quot;AskGeolocation&quot;, che potrà essere modificato dagli utenti.</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME"/>. Utilizza la norma PresentationScreenDimDelayScale.</translation>
+<translation id="2956777931324644324">Questa norma è stata ritirata a partire dalla versione 36 di <ph name="PRODUCT_NAME"/>.
+
+      Consente di specificare se attivare o meno l'estensione di certificati associati al dominio TLS.
+
+      Questa impostazione viene utilizzata per attivare l'estensione di certificati associati al dominio TLS per l'esecuzione di test. Questa impostazione sperimentale verrà rimossa in futuro.</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="2959898425599642200">Regole di bypass proxy</translation>
 <translation id="228659285074633994">Consente di specificare il periodo di tempo senza immissioni da parte dell'utente dopo il quale viene mostrata una finestra di dialogo di avviso quando il computer è collegato a una presa di corrente.
@@ -792,7 +776,6 @@ Questa norma viene applicata per tutti i tipi di ingressi video e non soltanto p
           Questa norma è per uso interno di Chrome.</translation>
 <translation id="5586942249556966598">Non fare niente</translation>
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
-<translation id="5317965872570843334">Consente di attivare l'utilizzo di server relay e STUN quando i client remoti tentano di stabilire una connessione con questo computer. Se questa impostazione viene attivata, i client remoti possono rilevare questo computer e collegarsi a esso anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer consentirà soltanto connessioni da computer client all'interno della rete locale. Se questa norma non viene impostata l'impostazione verrà attivata.</translation>
 <translation id="4057110413331612451">Permetti all'utente aziendale di essere soltanto un utente principale del profilo multiplo</translation>
 <translation id="5365946944967967336">Mostra il pulsante Pagina iniziale nella barra degli strumenti</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
@@ -817,6 +800,15 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
       utilizza strumenti come Telemetry.</translation>
 <translation id="8731693562790917685">Le Impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
+<translation id="7332963785317884918">Questa norma è obsoleta. <ph name="PRODUCT_OS_NAME"/> utilizzerà sempre la strategia di pulizia &quot;RemoveLRU&quot;.
+
+      Consente di stabilire il comportamento di pulizia automatica sui dispositivi <ph name="PRODUCT_OS_NAME"/>. La pulizia automatica viene attivata per recuperare spazio quando la quantità di spazio libero su disco raggiunge un livello critico.
+
+      Se questa norma viene impostata su &quot;RemoveLRU&quot;, la pulizia automatica continua a rimuovere utenti dal dispositivo in ordine di accesso meno recente fino a liberare spazio a sufficienza.
+
+      Se questa norma viene impostata su &quot;RemoveLRUIfDormant&quot;, la pulizia automatica continua a rimuovere gli utenti che non hanno eseguito l'accesso negli ultimi tre mesi in ordine di accesso meno recente fino a liberare spazio a sufficienza.
+
+      Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="4869787217450099946">Specifica se sono consentiti i Wakelock dello schermo. I Wakelock dello schermo possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione.
 
@@ -883,6 +875,19 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma &quot;DefaultJavaScriptSetting&quot;, se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME"/> di gestire i seguenti tipi di contenuto.</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco &quot;Pagine da aprire all'avvio&quot; vengono ignorati a meno che non selezioni &quot;Apri un elenco di URL&quot; in &quot;Azione all'avvio&quot;.</translation>
+<translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME"/>.
+
+      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorUnrestricted&quot;, l'utente può essere l'utente principale o secondario di una sessione multiprofilo.
+
+      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorMustBePrimary&quot;, l'utente può essere soltanto l'utente principale di una sessione multiprofilo.
+
+      Se questa norma viene impostata su &quot;MultiProfileUserBehaviorNotAllowed&quot;, l'utente non può fare parte di una sessione multiprofilo.
+
+      Se questa norma viene impostata, gli utenti non possono cambiarla o sostituirla.
+
+      Se l'impostazione viene cambiata e l'utente ha eseguito l'accesso in una sessione multiprofilo, tutti gli utenti della sessione verranno confrontati con le relative impostazioni corrispondenti. La sessione viene chiusa se uno degli utenti non può più fare parte della sessione.
+
+      Se la norma non viene impostata, per gli utenti gestiti dall'azienda viene applicato il valore predefinito &quot;MultiProfileUserBehaviorMustBePrimary&quot;, mentre per gli utenti non gestiti viene applicato il valore &quot;MultiProfileUserBehaviorUnrestricted&quot;.</translation>
 <translation id="243972079416668391">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività durante l'utilizzo della corrente CA.
 
 Se questa norma viene impostata, consente di specificare l'azione compiuta da <ph name="PRODUCT_OS_NAME"/> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
@@ -1010,6 +1015,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma &quot;DefaultS
 
           Questa norma è per uso interno di Chrome.</translation>
 <translation id="913195841488580904">Blocca l'accesso a un elenco di URL</translation>
+<translation id="5461308170340925511">Consente di configurare le norme relative alle estensioni. L'utente non può installare estensioni non autorizzate a meno che facciano parte della whitelist. Puoi anche forzare l'installazione automatica di estensioni in <ph name="PRODUCT_NAME"/> specificandole in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Le estensioni a installazione forzata vengono installate indipendentemente dal fatto che facciano parte o meno della lista nera.</translation>
 <translation id="3292147213643666827">Consente a <ph name="PRODUCT_NAME"/> di fungere da proxy tra <ph name="CLOUD_PRINT_NAME"/> e le stampanti preesistenti collegate al computer.
 
       Se l'impostazione è attivata o non è configurata, gli utenti possono attivare il proxy Cloud Print attraverso l'autenticazione con il proprio account Google.
@@ -1086,9 +1092,6 @@ Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME"/> può essere configurato 
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
 <translation id="2006530844219044261">Gestione dell'alimentazione</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
-<translation id="2431811512983100641">Consente di specificare se attivare o meno l'estensione dei certificati legati al dominio TLS.
-
-      Questa impostazione consente di attivare l'estensione dei certificati legati al dominio TLS per i test. Questa impostazione sperimentale verrà rimossa in futuro.</translation>
 <translation id="8711086062295757690">Consente di specificare la parola chiave, che è la scorciatoia utilizzata nella omnibox per attivare la ricerca con il provider. Questa norma è facoltativa. Se non viene impostata, nessuna parola chiave attiverà il provider di ricerca. Questa norma viene considerata soltanto se è attiva la norma &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
@@ -1194,6 +1197,7 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
           Se questa impostazione è disabilitata o non è impostata, verrà utilizzato il nome di dominio predefinito di TalkGadget (&quot;chromoting-host.talkgadget.google.com&quot;) per tutti gli host.
 
           I client di accesso remoto non sono interessati da questa impostazione e utilizzeranno sempre &quot;chromoting-client.talkgadget.google.com&quot; per accedere a TalkGadget.</translation>
+<translation id="1103860406762205913">Attiva il vecchio accesso basato sul Web</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="6915442654606973733">Consente di attivare la funzione di accessibilità del feedback vocale.
 
@@ -1393,7 +1397,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
-<translation id="7736666549200541892">Attiva estensione dei certificati legati al dominio TLS</translation>
 <translation id="1796466452925192872">Consente di specificare gli URL che possono installare estensioni, applicazioni e temi.
 
 A partire da Chrome 21 è più complicato installare estensioni, applicazioni e script utente dall'esterno del Chrome Web Store. In precedenza gli utenti potevano fare clic su un link che rimandava a un file *.crx e Chrome si offriva di installare il file dopo alcuni avvisi. Dopo Chrome 21 tali file devono essere scaricati e trascinati nella pagina di impostazioni di Chrome. Questa impostazione consente a URL specifici di avere il precedente flusso di installazione più semplice.
@@ -1403,11 +1406,19 @@ Ogni voce presente in questo elenco è uno schema di corrispondenza in stile di 
 La norma ExtensionInstallBlacklist ha la precedenza su questa norma. Ciò significa che un'estensione presente nella blacklist non verrà installata, anche se è di un sito presente in questo elenco.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="4224610387358583899">Ritardi del blocco schermo</translation>
+<translation id="5388730678841939057">Consente di selezionare la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
 <translation id="7848840259379156480">Consente di configurare il renderer HTML predefinito quando <ph name="PRODUCT_FRAME_NAME"/> è installato. Per impostazione predefinita, il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="7890264460280019664">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware.
 
 Se la norma non viene impostata o viene impostata su false, l'elenco di interfacce non viene comunicato.</translation>
+<translation id="197143349065136573">Consente di attivare il vecchio flusso di accesso basato sul Web.
+
+      Questa impostazione è utile per i clienti aziendali che utilizzano soluzioni SSO non ancora compatibili con il nuovo flusso di accesso incorporato.
+      Se attivi questa impostazione, viene utilizzato il vecchio flusso di accesso basato sul Web.
+     Se disattivi questa impostazione o se la lasci non impostata, per impostazione predefinita viene utilizzato il nuovo flusso di accesso incorporato. Gli utenti potrebbero attivare il vecchio flusso di accesso basato sul Web tramite il flag della riga di comando --enable-web-based-signin.
+
+      In futuro, quando l'accesso incorporato supporterà completamente tutti i flussi di accesso SSO, questa impostazione sperimentale verrà rimossa.</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
@@ -1471,6 +1482,13 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME"/
 
       Se questa norma non viene impostata, vengono utilizzati i valori predefiniti per tutte le impostazioni.</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
+<translation id="8071636581296916773">Consente l'utilizzo dei server relay quando i client remoti cercano di stabilire una connessione con il computer.
+
+          Se questa impostazione viene attivata, i client remoti possono utilizzare server relay per collegarsi al computer quando non è disponibile una connessione diretta (ad esempio a causa di limitazioni del firewall).
+
+          Tieni presente che, se viene disattivata la norma <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>, questa norma viene ignorata.
+
+          Se questa norma non viene impostata, l'impostazione viene attivata.</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
 <translation id="5781806558783210276">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene utilizzata la batteria.
 
@@ -1514,6 +1532,9 @@ I Preferiti gestiti non vengono sincronizzati con l'account utente.</translation
           Se questa impostazione è abilitata, gli utenti devono fornire un codice valido a due fattori quando accedono a un host.
 
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
+<translation id="6698424063018171973">Consente di limitare l'intervallo di porte UDP utilizzate dall'host di accesso remoto in questo computer.
+
+          Se questa norma non viene impostata, o se viene impostata una stringa vuota, l'host di accesso remoto potrà utilizzare qualsiasi porta disponibile, a meno che la norma <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> sia disattivata; in questo caso l'host di accesso remoto utilizzerà l'intervallo di porte UDP 12400-12409.</translation>
 <translation id="7329842439428490522">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la batteria.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME"/> disattivi lo schermo.
@@ -1529,6 +1550,13 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Gli identificatori dei tipi di connessione riconosciuti sono &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; e &quot;cellulare&quot;.</translation>
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
+<translation id="2808013382476173118">Consente di attivare l'utilizzo di server STUN quando i client remoti tentano di stabilire una connessione con questo computer.
+
+          Se questa impostazione viene attivata, i client remoti possono rilevare questo computer e collegarsi a esso anche se sono separati da un firewall.
+
+          Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer consentirà soltanto connessioni da computer client all'interno della rete locale.
+
+          Se questa norma non viene impostata l'impostazione verrà attivata.</translation>
 <translation id="3243309373265599239">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene utilizzata la corrente alternata.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME"/> oscuri lo schermo.

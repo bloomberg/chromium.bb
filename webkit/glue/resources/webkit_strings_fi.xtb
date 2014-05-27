@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Päivä</translation>
 <translation id="1729654308190250600">Kirjoita ei-tyhjä sähköpostiosoite.</translation>
 <translation id="6015796118275082299">Vuosi</translation>
-<translation id="9186171386827445984">Ladataan asiakirjaa: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sivua...</translation>
 <translation id="1235745349614807883">Poista viimeisimmät haut</translation>
 <translation id="7223624360433298498">kulunut aika</translation>
 <translation id="1171774979989969504">Anna sähköpostiosoite.</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="5048533449481078685">luettelon merkitsijä</translation>
 <translation id="4202807286478387388">siirry</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Lisää <ph name="ATSIGN"/>-osaa ennen tuleva osa. <ph name="INVALIDADDRESS"/> on puutteellinen.</translation>
 <translation id="2746543609216772311">Arvon on oltava <ph name="MINIMUM_DATE_OR_TIME"/> tai myöhempi.</translation>
 <translation id="2572483411312390101">toista</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Valitse tämä ruutu jatkaaksesi.</translation>
 <translation id="8534579021159131403">Minuuttia</translation>
 <translation id="819205353528511139">toista elokuva koko näytön tilassa</translation>
-<translation id="8964020114565522021">Vedä tiedosto tähän</translation>
 <translation id="4103419683916926126">Millisekuntia</translation>
 <translation id="838869780401515933">valitse</translation>
 <translation id="2846343701378493991">1024 (keskitaso)</translation>

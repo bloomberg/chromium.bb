@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Hari</translation>
 <translation id="1729654308190250600">Sila masukkan alamat e-mel bukan kosong.</translation>
 <translation id="6015796118275082299">Tahun</translation>
-<translation id="9186171386827445984">Memuatkan dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
 <translation id="1235745349614807883">Kosongkan Carian Baru-baru Ini</translation>
 <translation id="7223624360433298498">masa berlalu</translation>
 <translation id="1171774979989969504">Sila masukkan alamat e-mel.</translation>
 <translation id="709897737746224366">Sila padankan dengan format yang diminta.</translation>
 <translation id="5048533449481078685">penanda senarai</translation>
 <translation id="4202807286478387388">lompat</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Sila masukkan bahagian diikuti oleh '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' tidak lengkap.</translation>
 <translation id="2746543609216772311">Nilai mestilah <ph name="MINIMUM_DATE_OR_TIME"/> atau kemudian.</translation>
 <translation id="2572483411312390101">main</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Sila tandakan kotak ini jika anda mahu teruskan.</translation>
 <translation id="8534579021159131403">Minit</translation>
 <translation id="819205353528511139">mainkan filem dalam mod skrin penuh</translation>
-<translation id="8964020114565522021">Seret fail ke sini</translation>
 <translation id="4103419683916926126">Milisaat</translation>
 <translation id="838869780401515933">periksa</translation>
 <translation id="2846343701378493991">1024 (Gred Sederhana)</translation>

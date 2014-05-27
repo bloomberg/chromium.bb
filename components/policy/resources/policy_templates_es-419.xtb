@@ -107,7 +107,6 @@
           NOTA: El comportamiento predeterminado en dispositivos para consumidores y empresas difiere: en los dispositivos para consumidores, los usuarios supervisados están habilitados de forma predeterminada; en cambio, en los dispositivos para empresas, los usuarios supervisados están inhabilitados de forma predeterminada.</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
-<translation id="5827231192798670332">Selecciona la estrategia utilizada para liberar espacio en el disco durante el proceso de limpieza automática.</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás conectado.</translation>
 <translation id="2482676533225429905">Mensajería nativa</translation>
 <translation id="6649397154027560979">Esta política dejó de estar disponible. Utiliza URLBlacklist en su lugar.
@@ -144,7 +143,6 @@
       Si <ph name="PRODUCT_NAME"/> no puede obtener información sobre el estado de la revocación, estos certificados se considerarán revocados (fallo de hardware).
 
       Si esta política no se establece, o se establece como falsa, Chrome utilizará la configuración de comprobación de revocación en línea existente.</translation>
-<translation id="1438955478865681012">Configura las políticas relacionadas con la extensión. El usuario no está autorizado a instalar las extensiones de la lista negra a menos que se encuentren en la lista blanca. También puede forzar <ph name="PRODUCT_NAME"/> a instalar automáticamente las extensiones al especificarlas en <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La lista negra tiene prioridad sobre la lista de extensiones forzadas.</translation>
 <translation id="3516856976222674451">Permite limitar la duración máxima de la sesión de un usuario.
 
       Si esta política se establece, especificará el tiempo después del cual se cerrará automáticamente la sesión de un usuario. Se informa al usuario del tiempo restante mediante un cronómetro que aparece en la bandeja del sistema.
@@ -201,19 +199,6 @@
 <translation id="1096105751829466145">Proveedor de búsqueda predeterminado</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
 <translation id="4555850956567117258">Habilita la atestación remota para el usuario.</translation>
-<translation id="4418909344122918381">Controla el comportamiento del usuario durante una sesión de perfiles múltiples en dispositivos con <ph name="PRODUCT_OS_NAME"/>.
-
-      Si esta política está establecida en &quot;MultiProfileUserBehaviorUnrestricted&quot;, el usuario puede ser primario o secundario durante una sesión de perfiles múltiples.
-
-      Si esta política está establecida en &quot;MultiProfileUserBehaviorMustBePrimary&quot;, el usuario solo puede ser el primario durante una sesión de perfiles múltiples.
-
-      Si esta política está establecida en &quot;MultiProfileUserBehaviorNotAllowed&quot;, el usuario no puede formar parte de una sesión de perfiles múltiples.
-
-      Si estableces esta configuración, los usuarios no pueden modificarla ni anularla.
-
-      Si la configuración se modifica mientras el usuario es parte de una sesión de perfiles múltiples, se cotejará con la configuración de todos los usuarios dentro de esa sesión. Si se detecta que alguno de los usuarios no tiene permisos para estar en la sesión, esta se cerrará.
-
-      Si la política no se establece, se utilizará el valor predeterminado &quot;MultiProfileUserBehaviorUnrestricted&quot;.</translation>
 <translation id="5966615072639944554">Extensiones que tienen permitido utilizar la API de atestación remota</translation>
 <translation id="1617235075406854669">Habilita la eliminación del historial de descargas y del navegador.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
@@ -266,6 +251,7 @@
 
           Esta política solo se respeta si la política &quot;DefaultSearchProviderEnabled&quot; está habilitada.</translation>
 <translation id="5912364507361265851">Permitir que los usuarios muestren las contraseñas en el Administrador de contraseñas.</translation>
+<translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="510186355068252378">Inhabilita la sincronización de datos en <ph name="PRODUCT_NAME"/> a través de los servicios de sincronización alojados en Google y evita que los usuarios cambien esta configuración. Si se habilita, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME"/>. Si esta política no se configura, Google Sync estará disponible para que el usuario elija si desea utilizarlo o no.</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="4807950475297505572">Elimina los usuarios que más tiempo hace que no se utilizan hasta que se libere espacio suficiente.</translation>
@@ -295,6 +281,20 @@
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
 <translation id="8104962233214241919">Seleccionar automáticamente certificados de clientes para estos sitios</translation>
+<translation id="7983624541020350102">(Este documento puede incluir políticas específicas para
+      versiones futuras de <ph name="PRODUCT_NAME"/> que están
+      sujetas a cambios sin previo aviso. La lista de políticas admitidas
+      es igual para Chromium y Google Chrome).
+
+      No es necesario cambiar esta configuración de forma manual. Puedes descargar plantillas fáciles de utilizar en
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Estas políticas se deben utilizar únicamente para configurar instancias de Chrome internas de tu organización. Utilizar estas políticas fuera de la organización (por ejemplo, en un programa de distribución pública) se considera software malicioso y es posible que Google y los proveedores de antivirus lo califiquen de esa forma.
+
+      Nota: A partir de la versión 28
+      de <ph name="PRODUCT_NAME"/>, las políticas se cargan directamente desde la API de política de grupo en
+      Windows. Se ignorarán las políticas escritas manualmente en el registro. Para obtener más información,
+      consulta http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
 <translation id="4386578721025870401">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.
 
@@ -372,13 +372,6 @@
 
       Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME"/> cuando el usuario permanece inactivo durante cierta cantidad de tiempo.</translation>
 <translation id="2565967352111237512">Habilita la denuncia anónima de datos relacionados con fallos y de datos de uso sobre <ph name="PRODUCT_NAME"/> a Google y evita que los usuarios cambien esta configuración. Si se habilita esta configuración, la denuncia anónima de datos relacionados con fallos y de datos de uso se envía a Google. Si se inhabilita esta opción, la denuncia anónima de datos relacionados con fallos y de datos de uso no se envía a Google. Si se habilita o inhabilita esta configuración, los usuarios no pueden cambiar ni anular esta configuración en <ph name="PRODUCT_NAME"/>. Si esta política no se configura, la configuración será la que el usuario eligió en la instalación o en la primera ejecución.</translation>
-<translation id="4784220343847172494">Controla el comportamiento de la limpieza automática en dispositivos con <ph name="PRODUCT_OS_NAME"/>. La limpieza automática se activa cuando la cantidad de espacio libre en el disco llega a un punto crítico y es necesario liberar más espacio.
-
-      Si se establece esta política en 'RemoveLRU', la limpieza automática seguirá eliminando usuarios del dispositivo, comenzando con los usuarios que no hayan accedido desde hace más tiempo, hasta que se libere suficiente espacio en el disco.
-
-      Si se establece esta política en 'RemoveLRUIfDormant', la limpieza automática seguirá eliminando usuarios, comenzando con los usuarios que no hayan accedido desde hace más tiempo y en los últimos 3 meses, hasta que se libere suficiente espacio en el disco.
-
-      Si no se establece esta política, la limpieza automática utiliza de forma predeterminada la estrategia integrada (actualmente, la estrategia 'RemoveLRUIfDormant').</translation>
 <translation id="6256787297633808491">Marcas de todo el sistema que se aplicarán en el inicio de Chrome</translation>
 <translation id="2516600974234263142">Permite habilitar la impresión en <ph name="PRODUCT_NAME"/> y evitar que los usuarios modifiquen esta configuración.
 
@@ -406,16 +399,6 @@
 <translation id="8906768759089290519">Activar el modo de invitado</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
-<translation id="3234167886857176179">Esta es la lista de políticas que respeta <ph name="PRODUCT_NAME"/>.
-
-      No necesitas cambiar esta configuración manualmente. Puedes descargar plantillas fáciles de utilizar en
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      La lista de políticas compatibles es igual para Chromium y para Google Chrome.
-
-      Estas políticas se deben utilizar únicamente para configurar instancias de Chrome internas de tu organización. Utilizar estas políticas fuera de tu organización (por ejemplo, en un programa distribuido públicamente) se considera software malicioso, y, probablemente, Google y los proveedores de antivirus calificarán esta práctica como software malicioso.
-
-      Nota: A partir de Chrome 28, las políticas se cargan directamente desde la API de política de grupo en Windows. Se ignorarán las políticas escritas manualmente en el registro. Para obtener más información, consulta la página http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> puede utilizar un servicio web de Google para ayudar a corregir los errores ortográficos. Si esta configuración está habilitada, este servicio se utiliza siempre. Por el contrario, si está inhabilitada, este servicio no se utiliza nunca.
 
       Aún así, la revisión ortográfica se puede llevar a cabo utilizando un diccionario descargado, puesto que esta política solo controla el uso del servicio en línea.
@@ -442,6 +425,7 @@
 <translation id="3915395663995367577">URL a un archivo proxy .pac</translation>
 <translation id="2144674628322086778">Permitir que el usuario de empresa sea tanto usuario principal como secundario (comportamiento predeterminado)</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
+<translation id="3805659594028420438">Habilitar la extensión TLS de certificados vinculados al dominio (en desuso)</translation>
 <translation id="5499375345075963939">Esta política solo se encuentra activa en el modo de venta.
 
       Cuando se establece el valor de esta política y este no es 0, la sesión del usuario que haya accedido en ese momento en el modo de demostración se cerrará automáticamente una vez transcurrido el período de inactividad especificado.
@@ -644,6 +628,7 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 
       Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
 <translation id="1679420586049708690">Sesión pública para acceso automático</translation>
+<translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="3788662722837364290">Configuración de la administración de energía cuando el usuario está inactivo</translation>
@@ -666,6 +651,11 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
           Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará &quot;AskGeolocation&quot; y el usuario podrá cambiarla.</translation>
 <translation id="6394350458541421998">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_OS_NAME"/>. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
+<translation id="2956777931324644324">Esta política cayó en desuso a partir de la versión 36 de <ph name="PRODUCT_NAME"/>.
+
+      Especifica si debe habilitarse la extensión TLS de certificados vinculados al dominio.
+
+      Esta configuración se utiliza para habilitar la extensión TLS de certificados vinculados al dominio para realizar pruebas. Es una configuración experimental que se eliminará en el futuro.</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="228659285074633994">Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con CA.
@@ -806,7 +796,6 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
           Esta política es para uso interno de Chrome.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
-<translation id="5317965872570843334">Habilita el uso de servidores STUN y de retransmisión cuando los clientes remotos intentan establecer una conexión con esta máquina. Si se habilita esta configuración, los clientes remotos podrán descubrir y conectarse a estas máquinas incluso si están separados por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo permitirá las conexiones de máquinas de clientes dentro de la red local. Si esta política no se configura, se habilitará la configuración.</translation>
 <translation id="4057110413331612451">Permitir que el usuario de empresa solo sea usuario principal de la función de varios perfiles</translation>
 <translation id="5365946944967967336">Mostrar el botón &quot;Página principal&quot; en la barra de herramientas</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
@@ -831,6 +820,15 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
       utiliza la telemetría u otras herramientas similares.</translation>
 <translation id="8731693562790917685">La configuración del contenido permite especificar de qué manera se manejará el contenido de un tipo específico (por ejemplo, cookies, imágenes o JavaScript).</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
+<translation id="7332963785317884918">Esta política cayó en desuso. <ph name="PRODUCT_OS_NAME"/> siempre utilizará la estrategia de limpieza &quot;RemoveLRU&quot;.
+
+      Controla el comportamiento de limpieza automática en dispositivos con <ph name="PRODUCT_OS_NAME"/>. La limpieza automática se activa para recuperar espacio en el disco cuando el espacio libre alcanza niveles críticos.
+
+       Si se establece el valor &quot;RemoveLRU&quot; en esta política, el proceso de limpieza automática seguirá eliminando usuarios del dispositivo empezando por quienes hayan accedido por última vez hace más tiempo hasta que se libere espacio suficiente.
+
+      Si se establece el valor &quot;RemoveLRUIfDormant&quot; en esta política, el proceso de limpieza automática seguirá eliminando usuarios que no hayan accedido durante al menos 3 meses, empezando por quienes hayan accedido por última vez hace más tiempo hasta que se libere espacio suficiente.
+
+      Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada, que actualmente es &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6923366716660828830">Especifica el nombre del proveedor de búsqueda predeterminado. Si se deja vacío o si no se configura, se usará el nombre de host especificado por la URL de búsqueda. Esta política solo se considera si la política &quot;DefaultSearchProviderEnabled&quot; está habilitada.</translation>
 <translation id="4869787217450099946">Permite especificar si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden ser solicitados por extensiones mediante la API de extensión de administración de energía.
 
@@ -897,6 +895,19 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 <translation id="1454846751303307294">Te permite configurar una lista de patrones de URL que especifican los sitios a los que no se les permite ejecutar JavaScript. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política &quot;DefaultJavaScriptSetting&quot;, si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME"/> maneje los siguientes tipos de contenido.</translation>
 <translation id="2312134445771258233">Te permite configurar las páginas que se cargan al iniciar. El contenido de la lista &quot;Direcciones URL que se abrirán al iniciar&quot; se ignora a menos que se haya seleccionado &quot;Abrir una lista de direcciones URL en acción al iniciar&quot;.</translation>
+<translation id="1464848559468748897">Controla el comportamiento del usuario durante una sesión de perfiles múltiples en dispositivos con <ph name="PRODUCT_OS_NAME"/>.
+
+      Si esta política se establece en &quot;MultiProfileUserBehaviorUnrestricted&quot;, el usuario puede ser primario o secundario durante una sesión de perfiles múltiples.
+
+      Si esta política se establece en &quot;MultiProfileUserBehaviorMustBePrimary&quot;, el usuario solo puede ser el primario durante una sesión de perfiles múltiples.
+
+      Si esta política se establece en &quot;MultiProfileUserBehaviorNotAllowed&quot;, el usuario no puede formar parte de una sesión de perfiles múltiples.
+
+      Si estableces esta configuración, los usuarios no pueden modificarla ni anularla.
+
+      Si la configuración se modifica mientras el usuario es parte de una sesión de perfiles múltiples, se cotejará con la configuración de todos los usuarios dentro de esa sesión. Si se detecta que alguno de los usuarios no tiene permisos para estar en la sesión, esta se cerrará.
+
+      Si esta política no se establece, se aplicará el valor predeterminado &quot;MultiProfileUserBehaviorMustBePrimary&quot; para los usuarios administrados por políticas empresariales y el valor predeterminado &quot;MultiProfileUserBehaviorUnrestricted&quot; para usuarios no administrados.</translation>
 <translation id="243972079416668391">Especifica la acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente.
 
           Si se establece esta política, se especifica la acción que <ph name="PRODUCT_OS_NAME"/> realizará si el usuario se mantiene inactivo durante el período de la demora de inactividad, que se puede configurar de forma independiente.
@@ -1026,6 +1037,7 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 
           Esta política es para uso interno de Chrome.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de las URL</translation>
+<translation id="5461308170340925511">Configura políticas relacionadas con extensiones. El usuario no puede instalar extensiones incluidas en la lista negra a menos que se incluyan en la lista blanca. También puedes forzar <ph name="PRODUCT_NAME"/> para que instale extensiones automáticamente si las especificas en <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Las extensiones con instalación forzada se instalan aunque estén incluidas en la lista negra.</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME"/> funcione como proxy entre <ph name="CLOUD_PRINT_NAME"/> e impresoras anteriores conectadas a la computadora.
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y la computadora no podrá compartir las impresoras con <ph name="CLOUD_PRINT_NAME"/>.</translation>
@@ -1098,9 +1110,6 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 <translation id="465099050592230505">Indica la URL de la tienda web de la empresa (en desuso).</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="1221359380862872747">Cargar las URL especificadas en el inicio de sesión del demo</translation>
-<translation id="2431811512983100641">Especifica si se debe habilitar la extensión TLS de certificados vinculados al dominio.
-
-      Esta configuración se usa para habilitar la extensión TLS de certificados vinculados al dominio para realizar pruebas. Esta configuración experimental se eliminará.</translation>
 <translation id="8711086062295757690">Especifica la palabra clave, que es el acceso directo utilizado en el cuadro multifunción para activar la búsqueda de este proveedor. Esta política es opcional. Si no se configura, ninguna palabra clave activará el proveedor de búsqueda. Esta política solo se considera si la política &quot;DefaultSearchProviderEnabled&quot; está habilitada.</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
 <translation id="4650759511838826572">Inhabilitar los esquemas de protocolo de la dirección URL</translation>
@@ -1206,6 +1215,7 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
           Si esta configuración está inhabilitada o no está establecida, el nombre de dominio de TalkGadget predeterminado (&quot;chromoting-host.talkgadget.google.com&quot;) se utilizará para todos los hosts.
 
           La configuración de esta política no afecta a los clientes de acceso remoto. Ellos siempre utilizarán &quot;chromoting-client.talkgadget.google.com&quot; para acceder a TalkGadget.</translation>
+<translation id="1103860406762205913">Habilita la forma de acceso antigua basada en la Web.</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="6915442654606973733">Habilita la función de accesibilidad de comentarios por voz.
 
@@ -1404,7 +1414,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>
-<translation id="7736666549200541892">Habilitar la extensión TLS de certificados vinculados al dominio</translation>
 <translation id="1796466452925192872">Te permite especificar las URL que pueden instalar extensiones, aplicaciones y temas.
 
           A partir de Chrome 21, es más difícil instalar extensiones, aplicaciones y secuencias de comandos de usuario desde fuera de Chrome Web Store. Anteriormente, los usuarios podían hacer clic en un vínculo a un archivo *.crx y Chrome ofrecía instalar el archivo después de algunas advertencias. Desde Chrome 21, estos archivos deben ser descargados y arrastrados hasta la página de configuración de Chrome. Esta configuración permite que URL específicas tengan el antiguo flujo de instalación más sencillo.
@@ -1414,11 +1423,19 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           ExtensionInstallBlacklist tiene prioridad sobre esta política. Es decir, una extensión que esté en la lista negra no será instalada, incluso si proviene de un sitio en esta lista.</translation>
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="4224610387358583899">Demoras de bloqueo de pantalla</translation>
+<translation id="5388730678841939057">Seleccionar la estrategia utilizada para liberar espacio en el disco durante el proceso de limpieza automática (en desuso)</translation>
 <translation id="7848840259379156480">Te permite configurar el procesador de HTML predeterminado cuando <ph name="PRODUCT_FRAME_NAME"/> está instalado. La configuración predeterminada permite al navegador del host realizar el procesamiento, pero tú puedes omitirlo de manera opcional y tener las páginas HTML del procesador del <ph name="PRODUCT_FRAME_NAME"/> de forma predeterminada.</translation>
 <translation id="186719019195685253">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente</translation>
 <translation id="7890264460280019664">Informa la lista de interfaces de red con sus tipos y sus direcciones de hardware al servidor.
 
       Si la política no se establece o se establece como falsa, la lista de interfaces no se informará.</translation>
+<translation id="197143349065136573">Habilita el flujo de acceso antiguo basado en la Web.
+
+      Esta configuración es útil para clientes empresariales que utilizan soluciones SSO aún no admitidas por nuevo flujo de acceso integrado.
+      Si se habilita esta configuración, se utilizará el flujo de acceso antiguo basado en la Web.
+      Si se inhabilita esta configuración o no se configura, el nuevo flujo de acceso integrado se utilizará de forma predeterminada. Los usuarios podrán seguir habilitando el flujo de acceso antiguo basado en la Web mediante marca de línea de comandos &quot;--enable-web-based-signin&quot;.
+
+      La configuración experimental se eliminará en el futuro, cuando el acceso integrado admita completamente los flujos de acceso SSO.</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="3973371701361892765">Nunca ocultar automáticamente los archivos</translation>
@@ -1482,6 +1499,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si no se establece esta política, se utilizan valores predeterminados para todas las configuraciones.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
+<translation id="8071636581296916773">Habilita el uso de servidores de retransmisión cuando los clientes remotos intentan establecer una conexión con esta computadora.
+
+          Si se habilita esta configuración, los clientes remotos podrán utilizar servidores de retransmisión para conectarse a esta computadora si no hay ninguna conexión directa disponible (por ejemplo, a causa de restricciones del firewall).
+
+          Ten en cuenta que si se inhabilita la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>, esta política se ignorará.
+
+          Si esta política no se establece, la configuración estará habilitada.</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="5781806558783210276">Especifica el período de tiempo sin intervención del usuario después de que se tome la medida de inactividad si se usa alimentación de la batería.
 
@@ -1525,6 +1549,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si esta configuración está habilitada, los usuarios deben proporcionar un código de dos factores válido al acceder a un host.
 
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
+<translation id="6698424063018171973">Restringe el intervalo de puertos UDP que utiliza el host de acceso remoto en esta computadora.
+
+          Si esta política no se establece o se establece en una cadena vacía, el host de acceso remoto podrá utilizar cualquier puerto disponible, a menos que la política <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> esté inhabilitada, en cuyo caso el host de acceso remoto utilizará puertos UDP en el intervalo de 12400 a 12409.</translation>
 <translation id="7329842439428490522">Especifica el período de tiempo sin intervención del usuario luego del cual se apaga la pantalla si se usa alimentación de la batería.
 
            Si esta política se establece en un valor mayor que cero, se especifica el período de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME"/> apague la pantalla.
@@ -1540,6 +1567,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Los identificadores de tipos de conexión reconocidos son &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; y &quot;celular&quot;.</translation>
 <translation id="6652197835259177259">Configuración de los usuarios administrados localmente</translation>
+<translation id="2808013382476173118">Habilita el uso de servidores STUN cuando los clientes remotos intentan establecer una conexión con esta computadora.
+
+          Si se habilita esta configuración, los clientes remotos podrán descubrir estas computadoras y conectarse a ellas aunque estén separados por un firewall.
+
+          Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta computadora solo permitirá las conexiones de computadoras cliente que se encuentren en la red local.
+
+          Si esta política no se establece, la configuración estará habilitada.</translation>
 <translation id="3243309373265599239">Especifica el período de tiempo sin intervención del usuario luego del cual se atenúa la pantalla si se usa alimentación de CA.
 
            Si esta política se establece en un valor mayor que cero, se especifica el período de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME"/> atenúe la pantalla.

@@ -6,14 +6,12 @@
 <translation id="248395913932153421">päev</translation>
 <translation id="1729654308190250600">Sisestage mittetühi e-posti aadress.</translation>
 <translation id="6015796118275082299">Aasta</translation>
-<translation id="9186171386827445984">Dokumendi laadimine: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lehte ...</translation>
 <translation id="1235745349614807883">Kustuta viimased otsingud</translation>
 <translation id="7223624360433298498">möödunud aeg</translation>
 <translation id="1171774979989969504">Sisestage meiliaadress.</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
 <translation id="5048533449481078685">loendilooja</translation>
 <translation id="4202807286478387388">liigu</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Sisestage märgile „<ph name="ATSIGN"/>” eelnev osa. Aadress „<ph name="INVALIDADDRESS"/>” pole täielik.</translation>
 <translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME"/> või hilisem.</translation>
 <translation id="2572483411312390101">esitus</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Märkige see ruut, kui soovite jätkata.</translation>
 <translation id="8534579021159131403">Minutid</translation>
 <translation id="819205353528511139">video esitus täisekraani režiimis</translation>
-<translation id="8964020114565522021">Lohistage fail siia</translation>
 <translation id="4103419683916926126">Millisekundid</translation>
 <translation id="838869780401515933">mrgista</translation>
 <translation id="2846343701378493991">1024 (keskmine)</translation>

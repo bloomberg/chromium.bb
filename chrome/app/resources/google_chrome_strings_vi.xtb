@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="8914504000324227558">Chạy lại Chrome</translation>
 <translation id="8000275528373650868">Google Chrome yêu cầu Windows Vista hoặc Windows XP với SP2 trở lên.</translation>
 <translation id="8485767968786176057">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không phù hợp với địa chỉ của trang web mà trình duyệt của bạn cố truy cập. Một nguyên nhân có thể xảy ra là giao tiếp của bạn đang bị kẻ tấn công, người đang xuất trình chứng chỉ cho trang web khác, chặn lại và gây ra lỗi không khớp. Một nguyên nhân khác có thể là do máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, kể cả trang web mà bạn cố truy cập, mặc dù chứng chỉ đó không có giá trị cho tất cả trang web đó. Google Chrome có thể chắc chắn rằng bạn đã truy cập vào &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; nhưng không thể xác minh đó là trang web tương tự như &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn dự định truy cập. Nếu bạn tiếp tục, Chrome sẽ không kiểm tra thêm bất kỳ sự không phù hợp về tên nào nữa.</translation>
+<translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Chrome OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="5430073640787465221">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. Google Chrome không thể khôi phục cài đặt của bạn.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
-<translation id="7115445779188493842">Để sử dụng trình chạy ứng dụng, bạn phải chạy lại Google Chrome trên máy tính để bàn.</translation>
+<translation id="7952135150021331855">Google Chrome đang chạy ẩn.</translation>
 <translation id="345171907106878721">Thêm chính bạn vào Chrome</translation>
 <translation id="6236285698028833233">Google Chrome đã ngừng cập nhật và không còn hỗ trợ phiên bản này của hệ điều hành của bạn.</translation>
 <translation id="5453904507266736060">Để Google Chrome chạy trên nền</translation>
@@ -15,7 +15,6 @@
 <translation id="4167057906098955729">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích mở rộng và trang web Chrome của bạn tại đây.</translation>
 <translation id="2704356438731803243">Nếu bạn muốn giữ riêng biệt dữ liệu Chrome hiện có, bạn có thể tạo người dùng Chrome mới cho <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
-<translation id="2144822863799338346">Chào mừng bạn đến với Chrome. Hãy kiểm tra lại tại đây để:</translation>
 <translation id="1225016890511909183">Chrome sẽ lưu trữ an toàn thông tin của bạn nên bạn không cần phải nhập lại thông tin nhưng sẽ vẫn phải xác minh mã bảo mật cho thẻ của bạn để thanh toán trong tương lai.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="8838365799985821335">Tiện ích mở rộng đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
@@ -23,12 +22,12 @@
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="7781002470561365167">Hiện đã có phiên bản mới của Google Chrome.</translation>
 <translation id="5251420635869119124">Khách có thể sử dụng Chrome mà không phải thoát khỏi bất cứ nội dung nào.</translation>
-<translation id="7101265395643981223">Khởi động Google Chrome</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="110877069173485804">Đây là Chrome của bạn</translation>
+<translation id="1376881911183620035">Cảm ơn bạn đã dùng thử Chrome mới. Chrome cần khởi động lại để đảm bảo rằng bạn đã lưu mọi công việc đang mở trước khi tiếp tục.</translation>
 <translation id="2896252579017640304">Chạy ứng dụng Chrome</translation>
-<translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
 <translation id="2721687379934343312">Trên máy Mac, mật khẩu được lưu vào Keychain và có thể được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
+<translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="6014844626092547096">Bạn hiện đã đăng nhập vào Chrome! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
 <translation id="7419046106786626209">Chrome OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
@@ -37,31 +36,25 @@
 <translation id="6982337800632491844"><ph name="DOMAIN"/> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Google Chrome OS.</translation>
 <translation id="4309555186815777032">(yêu cầu Chrome <ph name="BEGIN_BUTTON"/>khởi động lại<ph name="END_BUTTON"/>)</translation>
 <translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME"/>...</translation>
+<translation id="8032142183999901390">Sau khi xóa tài khoản khỏi Chrome, bạn có thể cần phải tải lại các tab đang mở của mình để tác vụ có hiệu lực.</translation>
 <translation id="5775197990071433230">Máy tính này đã có phiên bản mới hơn của các cấu phần Google Chrome. Vui lòng sử dụng một trình cài đặt mới hơn.</translation>
-<translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
 <translation id="4987308747895123092">Hãy đóng tất cả cửa sổ Google Chrome (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong trình đơn Chrome hoặc trên thanh dấu trang.</translation>
-<translation id="55271449890419930">Do Google Chrome không kiểm soát cách tiện ích mở rộng xử lý dữ liệu cá nhân của bạn nên tất cả tiện ích mở rộng đều đã bị tắt đối với cửa sổ ẩn danh. Bạn có thể bật từng tiện ích mở rộng trong
-        <ph name="BEGIN_LINK"/>trình quản lý tiện ích mở rộng<ph name="END_LINK"/>.</translation>
 <translation id="8556340503434111824">Hiện đã có phiên bản mới của Google Chrome và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
-<translation id="2082230140685103752">Để sử dụng ứng dụng Chrome, bạn phải chạy lại Google Chrome trên máy tính để bàn.</translation>
 <translation id="3080151273017101988">Tiếp tục chạy các ứng dụng nền khi Google Chrome đóng</translation>
 <translation id="4149882025268051530">Trình cài đặt không thể giải nén lưu trữ được. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="7054640471403081847">Máy tính này sẽ sớm ngừng nhận bản cập nhật của Google Chrome bởi vì phần cứng của máy không được hỗ trợ nữa.</translation>
-<translation id="6326709553577195251">Để xóa tài khoản của bạn, Chrome cần khởi động lại. Hãy đảm bảo rằng bạn đã lưu mọi công việc đang mở trước khi tiếp tục.</translation>
 <translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
 <translation id="7060865993964054389">Trình chạy ứng dụng Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome không thể đọc và ghi vào thư mục dữ liệu:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="4343226815564935778">Thư mục cài đặt Google Chrome dường như đang được dùng. Hãy khởi động lại máy tính của bạn và thử lại.</translation>
 <translation id="8227755444512189073">Google Chrome cần chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Rất tiếc! Google Chrome đã xảy ra lỗi. Chạy lại ngay bây giờ?</translation>
 <translation id="1480489203462860648">Hãy dùng thử, ứng dụng đã được cài đặt</translation>
-<translation id="7831498172068826473">Bạn đăng nhập bằng tài khoản được quản lý do quản trị viên kiểm soát. Nếu bạn ngắt kết nối khỏi tài khoản này thì người dùng Chrome này và tất cả dữ liệu được liên kết trên Chrome như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ bị xóa khỏi máy tính này.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK"/> của Google Chrome</translation>
-<translation id="1393853151966637042">Nhận trợ giúp về cách sử dụng Chrome</translation>
+<translation id="1393853151966637042">Nhận trợ giúp sử dụng Chrome</translation>
 <translation id="7398801000654795464">Bạn đã đăng nhập vào Chrome là <ph name="USER_EMAIL_ADDRESS"/>. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="4513711165509885787">Chi tiết thanh toán của bạn đã được lưu trong Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
@@ -75,7 +68,7 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="1073391069195728457">Chrome - Thông báo</translation>
 <translation id="7339898014177206373">Cửa sổ mới</translation>
-<translation id="3282568296779691940">Đăng nhập vào Chrome</translation>
+<translation id="3282568296779691940">Đăng nhập Chrome</translation>
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
 <translation id="345168553362876363">Trình chạy ứng dụng Google Chrome là một nền tảng độc lập với ứng dụng Chrome.</translation>
@@ -120,14 +113,17 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> đã được thêm vào Chrome.</translation>
 <translation id="1786477462680638703">Bạn đã cố truy cập &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ xuất trình chứng chỉ được cấp bởi một tổ chức không được Google Chrome tin cậy. Điều này có thể có nghĩa là máy chủ đã tạo bằng chức xác thực bảo mật riêng mà Chrome không thể dựa vào đó để có được thông tin nhận dạng hoặc có thể kẻ tấn công đang cố chặn việc liên lạc của bạn.</translation>
+<translation id="7494905215383356681">Giấy phép nguồn mở Chrome</translation>
 <translation id="2346876346033403680">Ai đó trước đây đã đăng nhập vào Chrome trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST"/>. Nếu đó không phải là tài khoản của bạn, hãy tạo người dùng Chrome mới để giữ riêng biệt thông tin của bạn.
 
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chrome như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Cảnh báo:<ph name="END_BOLD"/> Google Chrome không thể ngăn các tiện ích mở rộng ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích mở rộng này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2290014774651636340">Khóa API của Google bị thiếu. Một số chức năng của Google Chrome sẽ bị tắt.</translation>
 <translation id="4794050651896644714">Lưu chi tiết trong Chrome</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
+<translation id="2036562258783619899">Xem trước Chrome mới</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
@@ -144,7 +140,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="4273752058983339720">Google Chrome được định cấu hình để tự động chạy khi bạn khởi động máy tính của mình.</translation>
 <translation id="1104959162601287462">Giới thiệu về &amp;hệ điều hành Chrome</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
-<translation id="1140117203923356735"><ph name="FILE_NAME"/> làm thay đổi cài đặt tương tự phần mềm độc hại nào đó, vì vậy Chrome đã chặn tệp này.</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
 <translation id="1759301979429102118">Chi tiết từ danh bạ của bạn có thể giúp bạn điền vào biểu mẫu trong Chrome nhanh hơn.</translation>
 <translation id="7787950393032327779">Dường như cấu hình này đang được quy trình Google Chrome khác (<ph name="PROCESS_ID"/>) trên máy tính khác (<ph name="HOST_NAME"/>) sử dụng. Chrome đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chrome.</translation>
@@ -154,10 +149,9 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="5788838254726722945">Gỡ cài đặt Trình chạy ứng dụng Google Chrome</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
+<translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK"/> tới Google</translation>
 <translation id="7761834446675418963">Nhấp vào tên của bạn để mở Chrome và bắt đầu duyệt web.</translation>
-<translation id="3248703849416430126">• Chuyển đổi giữa mọi người
-• Khóa nội dung Chrome của bạn
-• Quản lý tài khoản Google của bạn</translation>
+<translation id="4864451188650489141">Bạn có thể thêm tài khoản Google khác và khóa Chromium của bạn bên dưới.</translation>
 <translation id="5875635642195358109">Đi tới
         trình đơn Chrome &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -166,6 +160,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
         và bỏ chọn &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         Nếu thao tác này không giải quyết được sự cố, chúng tôi khuyên bạn chọn lại tùy chọn này
         để cải thiện hiệu suất.</translation>
+<translation id="6235018212288296708">Quy tắc kết nối để Google Chrome cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="61852838583753520">Cập nhật &amp;hệ điều hành Chrome</translation>
 <translation id="5028489144783860647">Google Chrome không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="9026991721384951619">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
@@ -187,21 +182,20 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1399397803214730675">Máy tính này đã có phiên bản Google Chrome mới hơn. Nếu phần mềm hiện không hoạt động, vui lòng gỡ cài đặt Google Chrome và thử lại.</translation>
 <translation id="576822117893741893">Hiển thị trình đơn Chrome</translation>
-<translation id="338432196642384904">Xóa người dùng Chrome</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
-<translation id="4566427205701379461">Bạn đang sử dụng <ph name="PROFILE_EMAIL"/> để đồng bộ hóa nội dung Chrome của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chrome mà không cần tài khoản Google, hãy truy cập cài đặt.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Chạy lại ngay bây giờ?</translation>
 <translation id="2681064822612051220">Đã phát hiện cài đặt Google Chrome xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
 <translation id="1175529839152551794">Bạn hiện đã đăng nhập, bạn có thể nhận tab, dấu trang và các nội dung khác của Chrome trên máy tính xách tay, điện thoại và máy tính bảng của bạn. Bạn cũng sẽ nhận được các tính năng và đề xuất có liên quan hơn cũng trên các dịch vụ của Google.</translation>
+<translation id="8209985377776300429">Bạn đang xem trước Chrome mới.</translation>
 <translation id="6126631249883707068">Bạn có muốn Google Chrome lưu mật khẩu không?</translation>
 <translation id="7773845170078702898">Bạn có muốn Google Chrome lưu mật khẩu của bạn cho trang web này không?</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
 <translation id="7125719106133729027">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chrome theo cách thủ công.</translation>
 <translation id="5940385492829620908">Web, dấu trang và các nội dung khác của bạn trên Chrome đều có ở đây.</translation>
-<translation id="5788515153694509397">Xóa người dùng Chrome được quản lý</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
+<translation id="3039245375609697729">Thử cách mới để sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính dùng chung.</translation>
+<translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome được cải tiến hơn</translation>
-<translation id="8142608456917638009">Google Chrome không thể tạo lối tắt cho ứng dụng.</translation>
 <translation id="174539241580958092">Google Chrome không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="8255190535488645436">Google Chrome đang sử dụng máy ảnh và micrô của bạn.</translation>
 <translation id="2189123953385179981">Hệ điều hành Google ChromeOS không hỗ trợ chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
@@ -225,9 +219,8 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
           &gt;
           Cài đặt mạng LAN
           và bỏ chọn &quot;Sử dụng máy chủ proxy cho mạng LAN của bạn&quot;.</translation>
+<translation id="6598387184982954187">Bạn đang sử dụng <ph name="PROFILE_EMAIL"/> để đồng bộ hóa nội dung Chrome của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chrome mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
-<translation id="1061257178446858647">Bạn hiện đã đăng nhập vào Chrome! Dấu trang, lịch sử và các cài đặt khác sẽ được đồng bộ hóa với tài khoản Google của bạn.</translation>
-<translation id="3335672657969596251">Google Chrome không hỗ trợ <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="8679801911857917785">Tiện ích mở rộng này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
@@ -240,6 +233,8 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
 <translation id="6991142834212251086">Liên kết dữ liệu Chrome của tôi với tài khoản này</translation>
 <translation id="3451115285585441894">Đang thêm vào Chrome...</translation>
+<translation id="6502165024350711060">Được đề xuất bởi Chrome</translation>
+<translation id="3047079729301751317">Ngắt kết nối <ph name="USERNAME"/> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK"/>Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>
@@ -256,7 +251,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3836351788193713666">Gần được cập nhật! Hãy chạy lại Google Chrome để hoàn tất cập nhật.</translation>
 <translation id="884296878221830158">Tiện ích mở rộng này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc nhấp vào nút Trang chủ.</translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
-<translation id="8449380764213232436">Hiện tại, Google Chrome đang nhập các mục sau từ <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3396977131400919238">Đã xảy ra lỗi hệ điều hành trong quá trình cài đặt. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="8037887340639533879">Không tìm thấy bản cài đặt Google Chrome cần cập nhật.</translation>
 <translation id="5495581687705680288">Mô-đun được tải vào Google Chrome</translation>

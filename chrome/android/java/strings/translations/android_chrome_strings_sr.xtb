@@ -25,11 +25,13 @@
 <translation id="3896036286668839683">Приказивач сертификата</translation>
 <translation id="8583805026567836021">Брисање података о налогу</translation>
 <translation id="4250680216510889253">Не</translation>
-<translation id="8073388330009372546">Отвори слику у новој картици</translation>
+<translation id="8073388330009372546">Отвори слику на новој картици</translation>
 <translation id="552553974213252141">Да ли је текст правилно издвојен?</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
+<translation id="473775607612524610">Ажурирај</translation>
 <translation id="8627706565932943526">Грешка при синхронизацији</translation>
+<translation id="8374821112118309944">Морате да ажурирате TalkBack на новију верзију.</translation>
 <translation id="4043215103217793252">Измени обележену страницу</translation>
 <translation id="656628257199996201">Увек преводи <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
@@ -59,7 +61,7 @@
 <translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Језик странице: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Отвори</translation>
-<translation id="6512448926095770873">Напусти ову страницу</translation>
+<translation id="6512448926095770873">Затвори ову страницу</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="6333140779060797560">Дељење преко <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Затвори</translation>

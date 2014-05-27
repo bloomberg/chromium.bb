@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="3595596368722241419">Bateria naładowana</translation>
+<translation id="6895424601869865703">Dodaj konto dla: <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Obracanie włączone (kliknij tutaj, by to zmienić)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Stan portalu</translation>
 <translation id="30155388420722288">Przycisk akcji</translation>
@@ -45,6 +47,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="3846575436967432996">Brak informacji o sieciach</translation>
+<translation id="4625920103690741805">Obracanie zablokowane (kliknij tutaj, by to zmienić)</translation>
 <translation id="3799026279081545374">Możesz mieć niewłaściwą ładowarkę. Jeśli mieszkasz w Stanach Zjednoczonych, aby uzyskać pomoc i zamówić ładowarkę zastępczą, zadzwoń pod numer 866-628-1371. W Wielkiej Brytanii – pod numer 0800-026-0613. W Irlandii – pod numer 1-800-832-664. W Kanadzie – pod numer 866-628-1372. W Australii – pod numer 1-800-067-460.</translation>
 <translation id="3026237328237090306">Skonfiguruj komórkową transmisję danych</translation>
 <translation id="5871632337994001636">Zarządzaj urządzeniami...</translation>
@@ -69,6 +72,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="7170041865419449892">Poza zasięgiem</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfiguracja</translation>
@@ -101,6 +105,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="372094107052732682">Naciśnij dwukrotnie Ctrl+Shift+Q, by zakończyć.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
 <translation id="1480041086352807611">Tryb demo</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (główne)</translation>
 <translation id="3626637461649818317">Pozostało <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="2372145515558759244">Synchronizuję aplikacje...</translation>
 <translation id="7256405249507348194">Nierozpoznany błąd: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Konta</translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>
 <translation id="8456362689280298700">Do naładowania: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
@@ -139,7 +145,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME"/>” chce się sparować.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
-<translation id="1398853756734560583">Maksymalizuj</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: łączę...</translation>
 <translation id="6062360702481658777">Zostaniesz automatycznie wylogowany za <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Nieznany wyświetlacz</translation>
@@ -151,7 +156,9 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="5097002363526479830">Nie udało się połączyć z siecią „<ph name="NAME"/>”: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
+<translation id="3433830597744061105">Zarządzaj kontami</translation>
 <translation id="2966449113954629791">Możliwe, że wykorzystałeś już limit transferu danych przez sieć komórkową. Odwiedź portal aktywacji <ph name="NAME"/>, by zwiększyć limit.</translation>
+<translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
 <translation id="8678698760965522072">Online</translation>
@@ -168,7 +175,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="68610848741840742">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
-<translation id="3157931365184549694">Przywróć</translation>
 <translation id="4274292172790327596">Nierozpoznany błąd</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Słuchawki</translation>
@@ -224,6 +230,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="9046895021617826162">Łączenie nie powiodło się</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Ta sesja zakończy się za <ph name="SESSION_TIME_REMAINING"/>. Nastąpi automatyczne wylogowanie.</translation>
+<translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
 <translation id="8372369524088641025">Błędny klucz WEP</translation>
 <translation id="6636709850131805001">Nierozpoznany stan</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="520760366042891468">Udostępniasz ekran i kontrolę nad komputerem w Hangouts.</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="4015692727874266537">Zaloguj się na kolejne konto...</translation>
-<translation id="5941711191222866238">Minimalizuj</translation>
+<translation id="1044925987639358253">Mikrofon jest używany.</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Gratulacje! Usługa transmisji danych „<ph name="NAME"/>” została aktywowana i można z niej korzystać.</translation>

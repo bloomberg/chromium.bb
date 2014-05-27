@@ -108,7 +108,6 @@
           NAPOMENA: zadano se ponašanje za potrošačke i poslovne uređaje razlikuje: na potrošačkim su uređajima nadzirani korisnici omogućeni prema zadanim postavkama, a na poslovnim su uređajima onemogućeni prema zadanim postavkama.</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="5469825884154817306">Blokiraj slike na ovim web-lokacijama</translation>
-<translation id="5827231192798670332">Odabir strategije kojom se oslobađa prostor na disku tijekom automatskog čišćenja</translation>
 <translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
 <translation id="2482676533225429905">Lokalno slanje poruka</translation>
 <translation id="6649397154027560979">Pravilo je obustavljeno, upotrijebite URLBlacklist.
@@ -145,7 +144,6 @@
       Ako <ph name="PRODUCT_NAME"/> ne može dobiti informaciju o statusu opoziva, s takvim će se certifikatima postupati kao da su opozvani (tzv. &quot;hard-fail&quot;).
 
       Ako to pravilo nije postavljeno ili je postavljeno kao neistinito, tada će Chrome upotrijebiti postojeće mrežne postavke provjere opoziva.</translation>
-<translation id="1438955478865681012">Konfigurira pravila koja se odnose na proširenja. Korisniku nije dopušteno instaliranje proširenja na crnoj listi, osim ako su na bijeloj listi. Također možete navesti <ph name="PRODUCT_NAME"/> na automatsko instaliranje proširenja tako da ih navedete u značajci <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Crna lista ima prednost u odnosu na popis nametnutih proširenja.</translation>
 <translation id="3516856976222674451">Ograniči maksimalnu duljinu sesije korisnika.
 
       Kada je postavljeno to pravilo, određeno je vremensko razdoblje nakon kojeg se korisnik automatski odjavljuje, a sesija se prekida. Korisnik je informiran o preostalom vremenu odbrojavanjem koje se prikazuje na programskoj traci.
@@ -202,19 +200,6 @@
 <translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
 <translation id="7567380065339179813">Omogući dodatke na ovim web-lokacijama</translation>
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
-<translation id="4418909344122918381">Upravljajte korisničkim ponašanjem u sesijama s više profila na uređajima sa sustavom <ph name="PRODUCT_OS_NAME"/>.
-
-      Ako je ovo pravilo postavljeno na 'MultiProfileUserBehaviorUnrestricted', korisnik može biti primarni ili sekundarni korisnik u sesiji s više profila.
-
-      Ako je ovo pravilo postavljeno na 'MultiProfileUserBehaviorMustBePrimary', korisnik može biti samo primarni korisnik u sesiji s više profila.
-
-      Ako je ovo pravilo postavljeno na 'MultiProfileUserBehaviorNotAllowed', korisnik ne može biti dio sesije s više profila.
-
-      Ako odredite ovu postavku, korisnici je ne mogu promijeniti niti nadjačati.
-
-      Ako se postavka promijeni dok je korisnik prijavljen na sesiju s više profila, svi korisnici u toj sesiji provjerit će se u skladu sa svojim odgovarajućim postavkama. Sesija će se zatvoriti ako bilo kojem korisniku više nije dopušteno sudjelovati u sesiji.
-
-      Ako ne postavite ovo pravilo, upotrijebit će se zadana vrijednost 'MultiProfileUserBehaviorUnrestricted'.</translation>
 <translation id="5966615072639944554">Proširenja koja smiju upotrebljavati API za daljinsku ovjeru</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
@@ -267,6 +252,7 @@
 
           Pravilo se primjenjuje samo ako je pravilo &quot;DefaultSearchProviderEnabled&quot; omogućeno.</translation>
 <translation id="5912364507361265851">Omogući korisnicima prikazivanje zaporki u Upravitelju zaporki</translation>
+<translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="510186355068252378">Onemogućuje sinkronizaciju podataka u proizvodu <ph name="PRODUCT_NAME"/> pomoću usluga sinkronizacije s hostingom na Googleu i sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, korisnici ne mogu promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME"/>. Ako se ovo pravilo ne postavi, korisnik će moći odabrati želi li upotrebljavati Google Sinkronizaciju.</translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="4807950475297505572">Uklanjaju se korisnici koji najdulje nisu upotrebljavani dok se ne oslobodi dovoljno prostora</translation>
@@ -300,6 +286,20 @@
 <translation id="382476126209906314">Konfiguriraj prefiks TalkGadget za hostove daljinskog pristupa</translation>
 <translation id="6561396069801924653">Prikaži opcije pristupačnosti u izborniku palete sustava</translation>
 <translation id="8104962233214241919">Automatski odabir certifikata klijenta za ove web-lokacije</translation>
+<translation id="7983624541020350102">(Ovaj dokument može sadržavati pravila koja su predviđena za novije verzije
+      proizvoda <ph name="PRODUCT_NAME"/> i koja se mogu
+      promijeniti bez prethodne najave. Popis podržanih pravila isti je za
+      Chromium i Google Chrome.)
+
+      Postavke ne morate mijenjati ručno! Možete preuzeti praktične predloške s adrese
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Ova su pravila isključivo namijenjena za konfiguriranje Chromeovih instalacija unutar vaše organizacije. Upotreba tih pravila izvan vaše organizacije (primjerice, u javno distribuiranom programu) smatra se zlonamjernom i takvu će upotrebu Google i dobavljači antivirusnih programa vjerojatno označiti kao zlonamjeran softver.
+
+      Napomena: počevši od verzije <ph name="PRODUCT_NAME"/>
+      28, pravila se učitavaju izravno iz Group Policy API-ja u sustavu
+      Windows. Ručno zapisana pravila u registru zanemarit će se. Pojedinosti
+      potražite na stranici http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Popis proširenja AppPack</translation>
 <translation id="4386578721025870401">Ograničite vrijeme tijekom kojeg se korisnik autentificiran putem SAML-a može prijaviti izvanmrežno.
 
@@ -377,13 +377,6 @@
 
       Ova vam pravila omogućuju da konfigurirate kako će se <ph name="PRODUCT_OS_NAME"/> ponašati kad korisnik ne bude aktivan određeno vrijeme.</translation>
 <translation id="2565967352111237512">Omogućuje slanje anonimnih izvješća o upotrebi i podataka o padovima proizvoda <ph name="PRODUCT_NAME"/> Googleu te sprječava korisnike da promijene ovu postavku. Ako omogućite ovu postavku, Googleu se šalju anonimna izvješća o upotrebi i podaci o padovima. Ako onemogućite ovu postavku, Googleu se ne šalju anonimna izvješća o upotrebi i podaci o padovima. Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME"/>. Ako pravilo nije postavljeno, postavka će biti ona koju je korisnik izabrao prilikom instalacije/prvog pokretanja.</translation>
-<translation id="4784220343847172494">Pravilo upravlja postavkama automatskog čišćenja na uređajima sa sustavom <ph name="PRODUCT_OS_NAME"/>. Automatsko čišćenje pokreće se kada količina slobodnog prostora na disku dosegne kritičnu razinu radi oporavljanja određene količine prostora.
-
-      Ako se pravilo postavi na &quot;RemoveLRU&quot;, automatsko čišćenje nastavit će uklanjati korisnike od čije je posljednje prijave proteklo najviše vremena dok se ne oslobodi dovoljno prostora.
-
-      Ako se pravilo postavi na &quot;RemoveLRUIfDormant&quot;, automatsko čišćenje nastavit će uklanjati korisnike koji se nisu prijavili najmanje 3 mjeseca redoslijedom od najdavnije prijavljenog korisnika dok se ne oslobodi dovoljno prostora.
-
-      Ako se pravilo ne postavi, automatsko čišćenje upotrijebit će zadanu ugrađenu strategiju. Trenutačno je to strategija &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6256787297633808491">Oznake na razini sustava koje se primjenjuju prilikom pokretanja Chromea</translation>
 <translation id="2516600974234263142">Omogućuje ispis na proizvodu <ph name="PRODUCT_NAME"/> i onemogućuje korisnicima promjenu ove postavke.
 
@@ -411,16 +404,6 @@
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
-<translation id="3234167886857176179">To je popis pravila kojih se <ph name="PRODUCT_NAME"/> pridržava.
-
-      Te postavke ne morate mijenjati ručno! Možete preuzeti praktične obrasce s adrese
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Popis podržanih pravila isti je za Chromium i Google Chrome.
-
-      Ta su pravila isključivo namijenjena za konfiguriranje Chromeovih instalacija unutar vaše organizacije. Upotreba tih pravila izvan vaše organizacije (primjerice, u javno distribuiranom programu) smatra se zlonamjernom i takvu će upotrebu Google i dobavljači antivirusnih programa vjerojatno označiti kao zlonamjeran softver.
-
-      Napomena: počevši od verzije Chromea 28 pravila se učitavaju izravno iz API-ja Pravila grupe u sustavu Windows. Ručno zapisana pravila u registru bit će zanemarena. Pojedinosti potražite na http://crbug.com/259236.</translation>
 <translation id="2292084646366244343">Proizvod <ph name="PRODUCT_NAME"/> može upotrebljavati Googleovu web-uslugu za ispravljanje pravopisnih pogrešaka. Ako je ta postavka omogućena, ta se usluga uvijek upotrebljava. Ako je ta postavka onemogućena, ta se usluga nikad ne upotrebljava.
 
       Provjera pravopisa još se uvijek može vršiti pomoću preuzetog rječnika; to pravilo upravlja samo upotrebom mrežne usluge.
@@ -447,6 +430,7 @@
 <translation id="3915395663995367577">URL prema proxy .pac datoteci</translation>
 <translation id="2144674628322086778">Dopusti poslovnom korisniku da bude primarni i sekundarni (zadano ponašanje)</translation>
 <translation id="1022361784792428773">ID-jevi proširenja u čijem bi instaliranju korisnik trebao biti spriječen (ili * za sve)</translation>
+<translation id="3805659594028420438">Omogući proširenje TLS certifikata vezanih uz domenu (zastarjelo)</translation>
 <translation id="5499375345075963939">To je pravilo aktivno samo u prodajnom načinu.
 
       Kada je vrijednost tog pravila postavljena i nije 0, trenutačno prijavljeni korisnik demo verzije automatski će biti odjavljen nakon isteka razdoblja neaktivnosti određenog trajanja.
@@ -654,6 +638,7 @@
 
       Ako se to pravilo ne postavi, korisnik može mijenjati popis prikvačenih aplikacija u pokretaču.</translation>
 <translation id="1679420586049708690">Javna sesija za automatsku prijavu</translation>
+<translation id="5836064773277134605">Ograniči raspon UDP priključaka koji upotrebljava host za daljinski pristup</translation>
 <translation id="7625444193696794922">Određuje kanal za izdavanje na koji bi ovaj uređaj trebao biti priključen.</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
 <translation id="3788662722837364290">Postavke upravljanja napajanjem kada korisnik postane neaktivan</translation>
@@ -676,6 +661,11 @@
           Ako se to pravilo ne postavi, upotrebljavat će se zadani naredbeni redak.</translation>
 <translation id="2646290749315461919">Omogućuje da postavite smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili se korisniku može postaviti upit svaki puta kada web-lokacija zahtijeva fizičku lokaciju. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo &quot;AskGeolocation&quot;, a korisnik će to moći promijeniti.</translation>
 <translation id="6394350458541421998">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_OS_NAME"/>. Umjesto toga upotrijebite pravilo PresentationScreenDimDelayScale.</translation>
+<translation id="2956777931324644324">To je pravilo ukinuto od verzije <ph name="PRODUCT_NAME"/> 36.
+
+      Određuje hoće li proširenje TLS certifikata vezanih uz domenu biti omogućeno.
+
+      Ta se postavka upotrebljava za omogućivanje proširenja TLS certifikata vezanih uz domenu za testiranje. Ta će se eksperimentalna postavka ukloniti.</translation>
 <translation id="5770738360657678870">Razvojni kanal (možda je nestabilan)</translation>
 <translation id="2959898425599642200">Pravila zaobilaženja proxyja</translation>
 <translation id="228659285074633994">Određuje koliko vremena treba proći od zadnjeg korisničkog unosa nakon kojeg se prikazuje dijaloški okvir s upozorenjem dok je uređaj priključen na struju.
@@ -813,7 +803,6 @@
           To je pravilo za Chromeovu internu upotrebu.</translation>
 <translation id="5586942249556966598">Ne radi ništa</translation>
 <translation id="131353325527891113">Prikaži korisnička imena na zaslonu prijave</translation>
-<translation id="5317965872570843334">Omogućuje upotrebu STUN i relejnih poslužitelja kada udaljeni klijenti pokušavaju uspostaviti vezu s ovim računalom. Ako je ova postavka omogućena, onda udaljeni klijenti mogu otkriti ovo računalo i povezati se s njime, čak i ako je odvojeno vatrozidom. Ako je ova postavka je onemogućena, a odlazne UDP veze filtrirane su vatrozidom, onda će ovo računalo dopustiti samo veze s klijentskih računala unutar lokalne mreže. Ako ovo pravilo nije postavljeno, postavka će biti omogućena.</translation>
 <translation id="4057110413331612451">Dopusti poslovnom korisniku da bude samo primarni korisnik višestrukog profila</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
@@ -836,6 +825,15 @@
       Neovisno o vrijednosti opcije, informacije o memoriji prijavljuju se za stranicu, ali se prijavljene veličine kvantiziraju, a stopa ažuriranja ograničena je iz sigurnosnih razloga. Za dobivanje preciznih podataka u stvarnom vremenu upotrijebite alate kao što je Telemetrija.</translation>
 <translation id="8731693562790917685">Postavke sadržaja omogućuju određivanje načina postupanja s određenim vrstama sadržaja (kao što su Kolačići, Slike i JavaScript).</translation>
 <translation id="2411919772666155530">Blokiranje obavijesti na ovim web-lokacijama</translation>
+<translation id="7332963785317884918">Pravilo je zastarjelo. Sustav <ph name="PRODUCT_OS_NAME"/> uvijek će upotrebljavati strategiju čišćenja &quot;RemoveLRU&quot;.
+
+      Upravlja ponašanjem automatskog čišćenja na uređajima <ph name="PRODUCT_OS_NAME"/>. Automatsko čišćenje pokreće se kada količina slobodnog prostora na disku dosegne kritičnu razinu kako bi se oslobodio prostor na disku.
+
+      Ako se to pravilo postavi na &quot;RemoveLRU&quot;, automatsko čišćenje uklanjat će korisnike s uređaja počevši od onog koji se najdulje nije prijavljivao, sve dok ne bude dovoljno prostora.
+
+      Ako se to pravilo postavi na &quot;RemoveLRUIfDormant&quot;, automatsko čišćenje uklanjat će korisnike koji se nisu prijavili najmanje 3 mjeseca počevši od onog koji se najdulje nije prijavljivao, sve dok ne bude dovoljno prostora.
+
+      Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno &quot;RemoveLRUIfDormant&quot;.</translation>
 <translation id="6923366716660828830">Određuje naziv zadanog davatelja usluga pretraživanja. Ako naziv ostane prazan ili nije postavljen, upotrebljavat će se naziv hosta određen URL-om pretraživanja. Ovo će pravilo biti uzeto u obzir samo ako je omogućeno pravilo &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="4869787217450099946">Određuje jesu li dopuštena blokiranja aktivacije zaslona. Ta blokiranja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem.
 
@@ -902,6 +900,19 @@
 <translation id="1454846751303307294">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima nije dopušteno pokretanje JavaScripta. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila &quot;DefaultJavaScriptSetting&quot;, ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="538108065117008131">Dopusti da <ph name="PRODUCT_FRAME_NAME"/> rukuje sljedećim vrstama sadržaja.</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa &quot;URL-ovi za otvaranje prilikom pokretanja&quot; zanemaruje se, osim ako odaberete &quot;Otvori popis URL-ova&quot; pod &quot;Radnje prilikom pokretanja&quot;.</translation>
+<translation id="1464848559468748897">Upravlja ponašanjem korisnika u sesiji s više profila na uređajima sa sustavom <ph name="PRODUCT_OS_NAME"/>.
+
+      Ako se to pravilo postavi na &quot;MultiProfileUserBehaviorUnrestricted&quot;, korisnik može biti primarni ili sekundarni korisnik u sesiji s više profila.
+
+      Ako se to pravilo postavi na &quot;MultiProfileUserBehaviorMustBePrimary&quot;, korisnik može biti samo primarni korisnik u sesiji s više profila.
+
+      Ako se to pravilo postavi na &quot;MultiProfileUserBehaviorNotAllowed&quot;, korisnik ne može sudjelovati u sesiji s više profila.
+
+      Ako odredite tu postavku, korisnici je ne mogu promijeniti niti premostiti.
+
+      Ako se postavka promijeni dok je korisnik prijavljen na sesiju s više profila, provjerit će se odgovarajuće postavke svih korisnika u sesiji. Sesija će se zatvoriti ako nekom od korisnika više nije dopušteno biti u sesiji.
+
+      Ako se pravilo ne postavi, zadana vrijednost &quot;MultiProfileUserBehaviorMustBePrimary&quot; primjenjuje se za korisnike kojima upravlja organizacija, a &quot;MultiProfileUserBehaviorUnrestricted&quot; primjenjuje se na korisnike kojima se ne upravlja.</translation>
 <translation id="243972079416668391">Određuje radnju koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok je računalo priključeno na struju.
 
           Kada je to pravilo postavljeno, ono navodi radnju koju <ph name="PRODUCT_OS_NAME"/> poduzima kada je korisnik neaktivan onoliko vremena koliko je određeno u odgodi zbog neaktivnosti koja se može zasebno konfigurirati.
@@ -1029,6 +1040,7 @@
 
           To je pravilo za Chromeovu internu upotrebu.</translation>
 <translation id="913195841488580904">Blokiranje pristupa popisu URL-ova</translation>
+<translation id="5461308170340925511">Konfigurira pravila u vezi s proširenjima. Korisnik ne može instalirati proširenja s popisa nedopuštenih ako nisu navedena na popisu dopuštenih. Također možete prisiliti <ph name="PRODUCT_NAME"/> da automatski instalira proširenja navodeći ih u pravilu <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Prisilno instalirana proširenja instaliraju se bez obzira na to jesu li navedena na popisu nedopuštenih.</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME"/> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME"/> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Onemogućuje automatska ažuriranja kada je postavljeno na &quot;istinito&quot;.
 
@@ -1101,7 +1113,6 @@
 <translation id="465099050592230505">URL web-trgovine tvrtke (obustavljeno)</translation>
 <translation id="2006530844219044261">Upravljanje napajanjem</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
-<translation id="2431811512983100641">Određuje treba li omogućiti proširenje TLS certifikata vezanih uz domenu. Ta postavka upotrebljava se za omogućivanje proširenja TLS certifikata vezanih uz domenu radi testiranja. Ta eksperimentalna postavka u budućnosti će biti uklonjena.</translation>
 <translation id="8711086062295757690">Određuje ključnu riječ koja je prečac u višenamjenskom okviru za pokretanje usluge pretraživanja ovog davatelja usluga. Ovo je pravilo izborno. Ako nije postavljeno, nijedna ključna riječ neće aktivirati davatelja usluga pretraživanja. Ovo se pravilo uzima u obzir samo ako je omogućeno pravilo &quot;DefaultSearchProviderEnabled&quot;.</translation>
 <translation id="5774856474228476867">URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="4650759511838826572">Onemogući sheme URL protokola</translation>
@@ -1207,6 +1218,7 @@
           Ako je ta postavka onemogućena ili ako nije postavljena, zadani naziv domene TalkGadget (&quot;chromoting-host.talkgadget.google.com&quot;) upotrebljavat će se za sve hostove.
 
           Ta postavka pravila ne utječe na klijente daljinskog pristupa. Oni će uvijek upotrebljavati &quot;chromoting-client.talkgadget.google.com&quot; za pristup TalkGadgetu.</translation>
+<translation id="1103860406762205913">Omogućuje staru prijavu na temelju weba</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="6915442654606973733">Omogući značajku pristupačnosti izgovaranja povratnih informacija.
 
@@ -1405,7 +1417,6 @@
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
-<translation id="7736666549200541892">Omogući proširenje TLS certifikata vezanih uz domenu</translation>
 <translation id="1796466452925192872">Omogućuje vam da odredite URL-ove kojima je dopušteno instaliranje proširenja, aplikacija i tema.
 
           Počevši s preglednikom Chrome 21, instaliranje proširenja, aplikacija i korisničkih skripta iz izvora izvan okvira Chrome web-trgovine postalo je teže. Prije su korisnici mogli kliknuti vezu na *.crx datoteku i Chrome bi ponudio instaliranje datoteke nakon nekoliko upozorenja. Od Chromea 21 takve se datoteke moraju preuzeti i povući na stranicu postavki preglednika Chrome. Ta postavka određenim URL-ovima omogućuje stari, jednostavniji tijek instalacije.
@@ -1415,11 +1426,19 @@
           Pravilo ExtensionInstallBlacklist ima prednost nad tim pravilom. To znači da proširenje na popisu zabranjenih proširenja neće biti instalirano čak ni ako dolazi s web-lokacije na tom popisu.</translation>
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
 <translation id="4224610387358583899">Vrijeme do zaključavanja zaslona</translation>
+<translation id="5388730678841939057">Odabir strategije kojom se oslobađa prostor na disku tijekom automatskog čišćenja (zastarjelo)</translation>
 <translation id="7848840259379156480">Omogućuje konfiguriranje zadanog alata za prikazivanje HTML-a kad je <ph name="PRODUCT_FRAME_NAME"/> instaliran. Zadana postavka je dopuštanje pregledniku hosta da obavi prikazivanje, no ovu postavku možete zaobići i kao zadano postaviti <ph name="PRODUCT_FRAME_NAME"/> da prikazuje HTML stranice.</translation>
 <translation id="186719019195685253">Radnja koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok je računalo priključeno na struju</translation>
 <translation id="7890264460280019664">Prijava popisa izvješća mrežnih sučelja s njihovim vrstama i adresama hardvera poslužitelju.
 
       Ako pravilo nije postavljeno ili je postavljeno kao neistinito, popis sučelja neće biti prijavljen.</translation>
+<translation id="197143349065136573">Omogućuje stari tijek prijave na temelju weba.
+
+      Ta je postavka korisna za poslovne korisnike koji upotrebljavaju SSO rješenja koja još nisu kompatibilna s novim, ugrađenim tijekom prijave.
+      Ako omogućite tu postavku, upotrebljavat će se stari tijek prijave na temelju weba.
+      Ako onemogućite tu postavku ili je ne postavite, prema zadanoj postavci upotrebljavat će se novi, ugrađeni tijek prijave. Korisnici i dalje mogu omogućiti stari tijek prijave na temelju weba pomoću oznake naredbenog retka --enable-web-based-signin.
+
+      Ta će se eksperimentalna postavka ukloniti kada ugrađena prijava bude u potpunosti podržavala sve SSO tijekove prijave.</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="3973371701361892765">Nikada nemoj automatski sakriti policu</translation>
@@ -1483,6 +1502,13 @@
 
       Ako se pravilo ne postavi, za sve će se postavke upotrijebiti zadane vrijednosti.</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
+<translation id="8071636581296916773">Omogućuje upotrebu relejnih poslužitelja kada udaljeni klijenti pokušavaju uspostaviti vezu s ovim računalom.
+
+          Ako je ta postavka omogućena, udaljeni klijenti mogu upotrebljavati relejne poslužitelje za povezivanje s ovim računalom kada izravna veza nije dostupna (primjerice, zbog ograničenja vatrozida).
+
+          Ako je pravilo <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> onemogućeno, ovo će se pravilo zanemariti.
+
+          Ako se pravilo ne postavi, postavka će biti omogućena.</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5781806558783210276">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se izvršila radnja neaktivnosti tijekom baterijskog napajanja.
 
@@ -1526,6 +1552,9 @@
           Ako je ta postavka omogućena, korisnici moraju unijeti važeći kôd s dva čimbenika kada pristupaju hostu.
 
           Ako je ta postavka onemogućena ili ako nije postavljena, autentifikacija s dva čimbenika neće biti omogućena i upotrebljavat će se zadani postupak s PIN-om koji određuje korisnik.</translation>
+<translation id="6698424063018171973">Ograničava raspon UDP priključaka koji upotrebljava host za daljinski pristup na ovom računalu.
+
+          Ako se to pravilo ne postavi ili se postavi na prazni niz, host za daljinski pristup moći će upotrebljavati bilo koji dostupni priključak, osim ako se pravilo <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> onemogući, a u tom će slučaju host za daljinski pristup upotrebljavati UDP priključke u rasponu od 12400 do 12409.</translation>
 <translation id="7329842439428490522">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom baterijskog napajanja.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME"/> isključi zaslon.
@@ -1541,6 +1570,13 @@
 
       Prepoznati identifikatori vrste veze jesu &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; i &quot;mobilna&quot;.</translation>
 <translation id="6652197835259177259">Postavke lokalno upravljanih korisnika</translation>
+<translation id="2808013382476173118">Omogućuje upotrebu STUN poslužitelja kada udaljeni klijenti pokušavaju uspostaviti vezu s ovim računalom.
+
+          Ako je ova postavka omogućena, onda udaljeni klijenti mogu otkriti ovo računalo i povezati se s njime, čak i ako je odvojeno vatrozidom.
+
+          Ako je ova postavka onemogućena, a odlazne UDP veze filtrirane su vatrozidom, onda će ovo računalo dopustiti samo veze s klijentskih računala unutar lokalne mreže.
+
+          Ako ovo pravilo nije postavljeno, postavka će biti omogućena.</translation>
 <translation id="3243309373265599239">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zatamnio tijekom napajanja izmjeničnom strujom.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME"/> zatamni zaslon.

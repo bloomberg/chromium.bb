@@ -121,7 +121,6 @@
           TANDAAN: Magkaiba ang default na pagkilos ng mga device ng consumer at enterprise device: sa mga device ng consumer, naka-enable ang mga pinapangasiwaang user bilang default, ngunit sa mga enterprise device, naka-disable sila bilang default.</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
-<translation id="5827231192798670332">Pinipili ang diskarteng gagamitin upang magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="2482676533225429905">Native na Pagmemensahe</translation>
 <translation id="6649397154027560979">Hindi na ginagamit ang patakarang ito, sa halip mangyaring gamitin ang URLBlacklist.
@@ -158,7 +157,6 @@
       Kung hindi makakuha ng impormasyon sa status ng pagbawi ang <ph name="PRODUCT_NAME"/>, ituturing na binawi ang naturang mga certificate ('hard-fail').
 
       Kung hindi nakatakda ang patakarang ito, o nakatakda ito sa hindi totoo, gagamitin ng Chrome ang umiiral nang mga setting ng online na pagsusuri sa pagbawi.</translation>
-<translation id="1438955478865681012">Kino-configure ang mga patakaran na kaugnay ng extension. Hindi pinapayagan ang user na i-install ang mga naka-blackilist na extension maliban kung naka-whitelist ang mga ito. Maaari mo ring pilitin ang <ph name="PRODUCT_NAME"/> na awtomatikong mag-install ng mga extension sa pamamagitan ng pagtukoy sa mga ito sa <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sumusunod ang blacklist sa listahan ng mga pinilit na extension.</translation>
 <translation id="3516856976222674451">Limitahan ang maximum na haba ng isang session ng user.
 
       Kapag nakatakda ang patakarang ito, tinutukoy nito ang tagal ng oras na lilipas bago awtomatikong mala-log out ang isang user, na magwawakas sa session. Ipinapaalam sa user ang nalalabing panahon sa pamamagitan ng isang countdown timer na ipinapakita sa tray ng system.
@@ -225,19 +223,6 @@
 <translation id="1096105751829466145">Default na provider ng paghahanap</translation>
 <translation id="7567380065339179813">Pinapayagan ang mga plugin sa mga site na ito</translation>
 <translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
-<translation id="4418909344122918381">Kontrolin ang gawi ng user sa isang multiprofile na session sa mga <ph name="PRODUCT_OS_NAME"/> device.
-
-      Kung itinakda sa 'MultiProfileUserBehaviorUnrestricted' ang patakarang ito, ang user ay maaaring maging alinman sa pangunahin o pangalawang user sa isang multiprofile na session.
-
-      Kung itinakda sa 'MultiProfileUserBehaviorMustBePrimary' ang patakarang ito, ang user ay maaari lang maging pangunahing user sa isang multiprofile na session.
-
-      Kung itinakda sa 'MultiProfileUserBehaviorNotAllowed' ang patakarang ito, hindi maaaring maging bahagi ng isang multiprofile na session ang user.
-
-      Kung itinakda mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user.
-
-      Kung babaguhin ang setting habang naka-sign in ang user sa isang multiprofile na session, susuriin ang mga kaukulang setting ng lahat ng user sa session. Isasara ang session kung hindi na pinapayagan sa session ang sinuman sa mga user.
-
-      Kung iniwang hindi nakatakda ang patakaran, gagamitin ang default na value na 'MultiProfileUserBehaviorUnrestricted'.</translation>
 <translation id="5966615072639944554">Mga extension na pinapayagang gamitin ang API ng malayuang pagpapatotoo</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
@@ -315,6 +300,7 @@
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="5912364507361265851">Payagan ang mga user na ipakita ang mga password sa Tagapamahala ng Password</translation>
+<translation id="5318185076587284965">I-enable ang paggamit ng mga relay server ng host ng malayuang pag-access</translation>
 <translation id="510186355068252378">Hindi pinapaganana ang pag-synchronize ng data sa <ph name="PRODUCT_NAME"/> gamit ang mga serbisyo ng pag-synchronize na hino-host ng Google at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung pinagana mo ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
@@ -348,6 +334,17 @@
 <translation id="382476126209906314">I-configure ang prefix ng TalkGadget para sa mga host ng malayuang pag-access</translation>
 <translation id="6561396069801924653">Ipakita ang mga pagpipilian sa accessibility sa tray menu ng system</translation>
 <translation id="8104962233214241919">Awtomatikong pumili ng mga certificate ng client para sa mga site na ito</translation>
+<translation id="7983624541020350102">(Maaaring kasama sa dokumentong ito ang mga   patakarang naka-target para sa mga mas bagong bersyon ng <ph name="PRODUCT_NAME"/>, sasailalim sa mga pagbabago ang mga ito
+      nang walang paunawa. Pareho ang listahan ng mga sinusuportahang patakaran para sa Chromium at Google Chrome.)
+
+      Hindi mo kailangang manu-manong baguhin ang mga setting na ito!  Maaari mong i-download ang mga madaling gamitin na template mula sa
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Mahigpit na nilalayon ang mga patakarang ito upang gamitin sa pag-configure ng mga paglitaw ng Chrome sa loob ng iyong organisasyon. Itinuturing na malware ang paggamit ng mga patakarang ito sa labas ng iyong organisasyon (halimbawa, sa program na ibinahagi sa publiko) at malamang na bibigyan ng label bilang malware ng Google at ng mga vendor ng anti-virus.
+
+      Tandaan: Simula sa <ph name="PRODUCT_NAME"/> 28, direktang malo-load ang mga patakaran mula sa Group Policy API sa
+      Windows. Babalewalain ang mga patakarang direktang isusulat sa registry. Tingnan ang
+      http://crbug.com/259236 para sa mga detalye.</translation>
 <translation id="2906874737073861391">Listahan ng mga extension ng AppPack</translation>
 <translation id="4386578721025870401">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML.
 
@@ -437,13 +434,6 @@
       Kung pinagana mo o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Kung hinayaang hindi nakatakda ang patakarang ito ang setting ay magiging kung ano ang pinili ng user sa panahon ng pag-install/ unang pagtakbo.</translation>
-<translation id="4784220343847172494">Kinikontrol ang pag-uugali ng awtomatikong pag-clean-up sa mga <ph name="PRODUCT_OS_NAME"/> na device. Nati-trigger ang awtomatikong pag-clean-up kapag ang laki ng bakanteng espasyo sa disk ay umabot sa kritikal na antas upang makabawi ng ilang espasyo sa disk.
-
-      Kung nakatakda ang patakarang ito na 'RemoveLRU', patuloy na mag-aalis ang awtomatikong pag-clean-up ng mga user sa device sa pagkakasunud-sunod ng pinakahindi nakakapag-log-in kamakailan hangga't magkaroon ng sapat na bakanteng epsasyo.
-
-       Kung nakatakda ang patakarang ito na 'RemoveLRUIfDormant', pananatilihin ng awtomatikong pag-clean-up ang mga user na hindi nakapag-log in sa loob ng hindi bababa sa 3 buwan sa pagkakasunud-sunod na pinakahindi nakakapag-log-in kamakailan hangga't magkaroon ng sapat na bakanteng espasyo.
-
-      Kung hindi nakatakda ang patakarang ito, gagamitin ng awtomatikong pag-clean-up ang default na built-in na diskarte. Kasalukuyan, ito ay ang diskarteng 'RemoveLRUIfDormant'.</translation>
 <translation id="6256787297633808491">Mga flag para sa buong system na ilalapat sa pag-start up ng Chrome</translation>
 <translation id="2516600974234263142">Pinapagana ang pag-print sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -471,16 +461,6 @@
 <translation id="8906768759089290519">Payagan ang mode ng bisita</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
-<translation id="3234167886857176179">Ito ang listahan ng mga patakarang iginagalang ng <ph name="PRODUCT_NAME"/>.
-
-      Hindi mo kailangang baguhin ang mga setting na ito nang manu-mano!  Maaari kang mag-download ng madaling gamiting mga template mula sa
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Ang listahan ng mga sinusuportahang patakaran ay pareho para sa Chromium at Google Chrome.
-
-      Ang mga patakarang ito ay mahigpit na nilalayong gagamitin upang i-configure ang mga pagkakaroon ng Chrome na panloob sa iyong samahan. Ang paggamit sa mga patakarang ito sa labas ng iyong samahan (halimbawa, sa isang program na ipinapamahagi sa publiko) ay itinuturing na malware at malamang na lalagyan ng label ng Google at mga anti-virus vendor bilang malware.
-
-      Tandaan: simula sa Chrome 28, direktang nilo-load ang mga patakaran mula sa Group Policy API sa Windows. Babalewalain ang mga patakarang manu-manong isinulat sa registry. Tingnan ang http://crbug.com/259236 para sa mga detalye.</translation>
 <translation id="2292084646366244343">Makakagamit ang <ph name="PRODUCT_NAME"/> ng serbisyo sa web ng Google upang makatulong na resolbahin ang mga error sa spelling. Kung pinapagana ang setting na ito, palaging gagamitin ang serbisyong ito. Kung hindi pinapagana ang setting na ito, hindi kailanman gagamitin ang serbisyong ito.
 
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
@@ -511,6 +491,7 @@
 <translation id="3915395663995367577">URL sa proxy na .pac file</translation>
 <translation id="2144674628322086778">Pinapayagan ang enterprise user na maging pangunahin at pangalawa  (Default na pag-uugali)</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
+<translation id="3805659594028420438">I-enable ang extension ng TLS domain-bound na mga certificate (hindi na ginagamit)</translation>
 <translation id="5499375345075963939">Sa retail mode lang aktibo ang patakarang ito.
 
       Kapag itinakda ang halaga ng patakarang ito at hindi ito 0, awtomatikong mala-log out ang kasalukuyang naka-log in na user ng demo kapag 
@@ -773,6 +754,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi naitakda ang patakarang ito, maaaring baguhin ng user ang listahan ng mga na-pin na app sa launcher.</translation>
 <translation id="1679420586049708690">Pampublikong session para sa awtomatikong pag-log in</translation>
+<translation id="5836064773277134605">Paghigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access</translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="3788662722837364290">Mga setting ng pamamahala ng power kapag naging idle ang user</translation>
@@ -799,6 +781,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
 <translation id="6394350458541421998">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_OS_NAME"/> bersyon 29. Sa halip, pakigamit ang patakaran ng PresentationScreenDimDelayScale.</translation>
+<translation id="2956777931324644324">Itinigil na ang patakarang ito simula ng bersyon 36 ng <ph name="PRODUCT_NAME"/> .
+
+      Tinutukoy kung dapat i-enable ang mga extension ng TLS domain-bound na certificate.
+
+      Ginagamit ang setting na ito upang i-enable ang extension ng mga TLS domain-bound na certificate para sa pagsusubok.  Aalisin ang pang-eksperimentong setting na ito sa hinaharap.</translation>
 <translation id="5770738360657678870">Dev channel (maaaring hindi stable)</translation>
 <translation id="2959898425599642200">Mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="228659285074633994">Tinutukoy ang haba ng oras nang walang input ng user pagkatapos ipakita ang dialog ng babala kapag gumagamit ng AC power.
@@ -960,13 +947,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Ang patakarang ito ay para sa panloob na paggamit ng Chrome.</translation>
 <translation id="5586942249556966598">Walang gawin</translation>
 <translation id="131353325527891113">Ipakita ang mga username sa screen ng pag-login</translation>
-<translation id="5317965872570843334">Binibigyang-daan ang paggamit ng STUN at mga relay server kapag sinusubukan ng mga malayuang client na bumuo ng isang koneksyon sa machine na ito.
-
-          Kung pinagana ang setting na ito, matutuklasan at makakakonekta ang mga malayuang client sa mga machine na ito kahit na hinihiwalay ang mga ito ng isang firewall.
-
-          Kung hindi pinagana ang setting na ito at pini-filter ng firewall ang mga papalabas na koneksyon ng UDP, papayagan lamang ng machine na ito ang mga koneksyon sa loob ng lokal na network.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito papaganahin ang setting.</translation>
 <translation id="4057110413331612451">Pinapayagan ang enterprise user na maging pangunahing user lang sa multiprofile</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
@@ -1001,6 +981,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       mangyaring gumamit ng mga tool tulad ng Telemetry.</translation>
 <translation id="8731693562790917685">Pinapayagan ka ng Mga Setting ng Nilalaman na tukuyin kung paano pinamamahalaan ang mga nilalaman ng tukoy na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
+<translation id="7332963785317884918">Hindi na ginagamit ang patakarang ito. Palaging gagamitin ng <ph name="PRODUCT_OS_NAME"/> ang 'RemoveLRU' na diskarte ng pag-clean-up.
+
+      Kinokontrol ang awtomatikong gawi ng pag-clean-up sa mga <ph name="PRODUCT_OS_NAME"/> na device. Nati-trigger ang awtomatikong pag-clean-up kapag umabot sa kritikal na antas ang bakanteng espasyo sa disk upang makabawi ng kaunting espasyo sa disk.
+
+      Kung itinakda ang patakarang ito sa 'RemoveLRU', patuloy na aalisin ng awtomatikong pag-clean-up ang mga user mula sa device na nakaayos ayon sa pinakamatagal nang pag-log-in hanggang magkaroon ng sapat na espasyo sa disk.
+
+      Kung itinakda ang patakarang ito sa 'RemoveLRUIfDormant', patuloy na aalisin ng awtomatikong pag-clean-up ang mga user na hindi nag-log in sa nakalipas na tatlong buwan na nakaayos ayon sa pinakamatagal nang pag-log-in hanggang magkaroon ng sapat na espasyo sa disk.
+
+      Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="6923366716660828830">Tinutukoy ang pangalan ng default na provider ng paghahanap. Kung hinayaang walang laman o hindi nakatakda, gagamitin ang pangalan ng host na tinukoy ng URL ng paghahanap.
 
           Isinasaalang-alang lamang sa ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
@@ -1075,6 +1064,19 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME"/> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
+<translation id="1464848559468748897">Kontrolin ang gawi ng user sa isang multiprofile session sa mga <ph name="PRODUCT_OS_NAME"/> device.
+
+      Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorUnrestricted', ang user ay maaaring maging pangunahin o pangalawang user sa isang multiprofile session.
+
+      Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorMustBePrimary', ang user ay maaaring maging pangunahing user lang sa isang multiprofile session.
+
+      Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorNotAllowed', hindi maaaring maging bahagi ang user ng isang multiprofile session.
+
+      Kung itinakda mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user.
+
+      Kung pinalitan ang mga setting habang naka-sign in ang isang user sa isang multiprofile session, susuriin ang lahat ng user sa loob ng session kumpara sa kanilang tumutugmang mga setting. Isasara ang session kung hindi na pinapayagan ang sinumang user na manatili sa session.
+
+      Kung iniwanang hindi nakatakda ang patakaran, malalapat ang default na value na 'MultiProfileUserBehaviorMustBePrimary' para sa mga user na pinapamahalaan ng enterprise at gagamitin ang 'MultiProfileUserBehaviorUnrestricted' para sa mga user na hindi pinapamahalaan.</translation>
 <translation id="243972079416668391">Tukuyin ang pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang AC power.
 
           Kapag nakatakda ang patakarang ito, tinutukoy nito ang pagkilos na gagawin ng <ph name="PRODUCT_OS_NAME"/> kapag nananatiling idle ang user sa loob ng haba ng panahong tinukoy ng pagkaantala ng idle, na mako-configure nang hiwalay.
@@ -1236,6 +1238,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Ang patakarang ito ay para sa panloob na paggamit ng Chrome.</translation>
 <translation id="913195841488580904">I-block ang access sa isang listahan ng mga URL</translation>
+<translation id="5461308170340925511">Nagko-configure ng mga patakarang nauugnay sa extension. Hindi pinapayagan ang user na mag-install ng mga naka-blacklist na extension maliban kung ma-whitelist ang mga ito. Maaari mo ring pilitin ang <ph name="PRODUCT_NAME"/> na awtomatikong mag-install ng mga extension sa pamamagitan ng pagtukoy sa mga ito sa <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Nai-install ang mga sapilitang na-install na extension nasa blacklist man ang mga ito.</translation>
 <translation id="3292147213643666827">Pinapagana ang <ph name="PRODUCT_NAME"/> na magsilbi bilang proxy sa pagitan ng <ph name="CLOUD_PRINT_NAME"/> at mga legacy printer na nakakonekta sa machine.
 
       Kung pinagana o hindi naka-configure ang setting na ito, mapapagana ng mga user ang proxy ng cloud print proxy sa pamamagitan ng pagpapatotoo sa kanilang Google Account.
@@ -1318,9 +1321,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="465099050592230505">URL ng web store na enterprise (hindi na ginagamit)</translation>
 <translation id="2006530844219044261">Pamamahala ng power</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
-<translation id="2431811512983100641">Tinutukoy kung dapat paganahin o hindi ang extension ng mga certificate na patungo sa domain ng TLS.
-
-      Ginagamit ang setting na ito upang paganahin ang extension ng mga certificate na patungo sa domain ng TLS para sa pagsubok.  Aalisin ang pang-eksperimentong setting na ito sa hinaharap.</translation>
 <translation id="8711086062295757690">Tinutukoy ang keyword, ang shortcut na ginamit sa omnibox upang i-trigger ang paghahanap para sa provider na ito.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang keyword ang maa-activate sa provider ng paghahanap.
@@ -1442,6 +1442,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hindi pinapagana o hindi nakatakda ang setting, ang default na domain name ng TalkGadget ('chromoting-host.talkgadget.google.com') ang gagamitin para sa lahat ng host.
 
           Hindi naaapektuhan ng setting ng patakaran na ito ang client ng malayuang pag-access. Palaging gagamitin ng mga ito ang 'chromoting-client.talkgadget.google.com' upang i-access ang TalkGadget.</translation>
+<translation id="1103860406762205913">Ine-enable ang lumang web-based na pag-sign in</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
 <translation id="6915442654606973733">I-enable ang tampok sa pagiging naa-access ng sinasalitang feedback.
 
@@ -1679,7 +1680,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7882585827992171421">Sa retail mode lamang aktibo ang patakarang ito.
 
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
-<translation id="7736666549200541892">Paganahin ang extension ng mga certificate ng patungo sa domain na TLS</translation>
 <translation id="1796466452925192872">Binibigyang-daan kang tukuyin kung aling mga URL ang pinapayagang mag-install ng mga extension, apps at tema.
 
           Simula sa Chrome 21, mas mahirap mag-install ng mga extension, apps, at script ng user mula sa labas ng Chrome Web Store. Dati, makakapag-click ang mga user sa isang link patungo sa isang *.crx file, at mag-aalok ang Chrome na i-install ang file pagkatapos ng ilang babala. Pagkatapos ng Chrome 21, ang mga ganoong file ay dapat i-download at i-drag patungo sa pahina ng mga setting ng Chrome. Binibigyang-daan ng setting na ito ang mga partikular na URL na gamitin ang luma at mas madaling proseso ng pag-install. 
@@ -1689,11 +1689,19 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Mas bibigyang priyoridad ang ExtensionInstallBlacklist kaysa sa patakarang ito. Iyon ay, hindi ma-i-install ang isang extension na nasa blacklist, kahit na mula ito sa isang site sa listahang ito.</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
 <translation id="4224610387358583899">Mga itinakdang oras ng screen lock</translation>
+<translation id="5388730678841939057">Pinipili ang diskarteng gagamitin upang magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
 <translation id="7848840259379156480">Pinapayagan kang i-configure ang default na taga-render ng HTML kapag na-install ang <ph name="PRODUCT_FRAME_NAME"/>. Ang default na setting ay upang payagan ang browser ng host na gawin ang pag-render, ngunit maaari mong i-override ito at i-render ng <ph name="PRODUCT_FRAME_NAME"/> ang mga pahina ng HTML bilang default.</translation>
 <translation id="186719019195685253">Pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang AC power</translation>
 <translation id="7890264460280019664">I-ulat ang listahan ng mga interface ng network kasama ang mga uri at hardware address ng mga ito sa server.
 
       Kung hindi nakatakda ang patakarang ito, o nakatakda sa hindi totoo, hindi i-uulat ang listahan ng interface.</translation>
+<translation id="197143349065136573">Ine-enable ang lumang web-based na flow ng pag-sign in.
+
+      Kapaki-pakinabang ang setting na ito para sa mga enterprise customer na gumagamit ng mga solusyon sa SSO na hindi pa tugma sa bagong inline na flow ng pag-sign in.
+      Kung i-enable mo ang setting na ito, gagamitin ang lumang web-based na flow ng pag-sign in.
+      Kung i-disable mo ang setting na ito o iwan itong hindi nakatakda, gagamitin bilang default ang bagong inline na flow ng pag-sign in. Maaari pa ring i-enable ng mga user ang lumang web-based na flow ng pag-sign in sa pamamagitan ng flag ng linya ng command na --enable-web-based-signin.
+
+      Aalisin ang pang-eksperimentong setting sa hinaharap kapag ganap nang sinusuportahan ng inline na pag-sign in ang lahat ng flow ng SSO na pag-sign in.</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="3973371701361892765">Huwag kailanman awtomatikong itago ang shelf</translation>
@@ -1797,6 +1805,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kapag hindi nakatakda ang patakarang ito, gagamitin ang mga default para sa lahat ng setting.</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
+<translation id="8071636581296916773">Ini-enable ang paggamit ng mga relay server kapag sinusubukan ng mga malayuang kliyente na magtatag ng koneksyon sa makinang ito.
+
+          Kung naka-enable ang setting na ito, magagamit ng mga malayuang kliyente ang mga relay server upang makakonekta sa makinang ito kapag hindi available ang direktang koneksyon (hal. dahil sa mga paghihigpit ng firewall).
+
+          Tandaan na kung naka-disable ang patakarang <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>, babalewalain ang patakarang ito.
+
+          Kung iniwang hindi nakatakda ang patakarang ito, i-e-enable ang setting.</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="5781806558783210276">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay gagawin ang pagkilos kapag idle kapag tumatakbo gamit ang power ng baterya.
 
@@ -1849,6 +1864,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinapagana ang setting na ito, dapat magbigay ang mga user ng wastong code na may dalawang salik kapag nag-a-access ng host.
 
           Kung hindi pinapagana o hindi nakatakda ang setting na ito, hindi papaganahin ang dalawang salik at gagamitin ang default na paggana ng pagkakaroon ng PIN na tinukoy ng user.</translation>
+<translation id="6698424063018171973">Pinaghihigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access sa makinang ito.
+
+          Kung iniwang hindi nakatakda ang patakarang ito, o kung itinakda ito sa walang laman na string, papayagan ang host ng malayuang pag-access na gumamit ng anumang available na port, maliban na lang kung naka-disable ang patakarang <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>, sa kasong ito gagamitin ng host ng malayuang pag-access ang mga UDP port sa loob ng saklaw na 12400-12409.</translation>
 <translation id="7329842439428490522">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay i-o-off ang screen kapag tumatakbo gamit ang power ng baterya.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-off ng <ph name="PRODUCT_OS_NAME"/> screen.
@@ -1866,6 +1884,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Ang mga kilalang tagatukoy ng uri ng koneksyon ay &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; at &quot;cellular.&quot;</translation>
 <translation id="6652197835259177259">Mga setting ng mga lokal na pinapamahalaang user</translation>
+<translation id="2808013382476173118">Ini-enable ang paggamit ng mga STUN server kapag sinusubukan ng mga malayuang kliyente na magtatag ng koneksyon sa makinang ito.
+
+          Kung naka-enable ang setting na ito, makakatuklas at makakakonekta ang mga malayuang kliyente sa mga makinang ito kahit na inihihiwalay sila ng firewall.
+
+          Kung naka-disable ang setting na ito at pini-filter ng firewall ang mga papalabas na UDP na koneksyon, papayagan lang ng makinang ito ang mga koneksyon mula sa mga makina ng kliyente sa loob ng lokal na network.
+
+          Kung iniwang hindi nakatakda ang patakarang ito, i-e-enable ang setting.</translation>
 <translation id="3243309373265599239">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo habang nakasaksak sa kuryente.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-dim ng <ph name="PRODUCT_OS_NAME"/> ang screen.

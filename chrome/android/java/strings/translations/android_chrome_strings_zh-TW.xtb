@@ -29,7 +29,9 @@
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
+<translation id="473775607612524610">更新</translation>
 <translation id="8627706565932943526">同步處理發生錯誤</translation>
+<translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="4043215103217793252">編輯書籤網頁</translation>
 <translation id="656628257199996201">一律翻譯<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">顯示原文</translation>
@@ -51,11 +53,11 @@
 <translation id="1206892813135768548">複製連結文字</translation>
 <translation id="9154176715500758432">停留在此頁</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
-<translation id="4271185234001491831">永遠不要翻譯<ph name="LANGUAGE"/></translation>
+<translation id="4271185234001491831">一律不翻譯<ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">複製圖片</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="2501278716633472235">返回</translation>
-<translation id="1285320974508926690">永遠不要翻譯此網站</translation>
+<translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE"/>網頁嗎？</translation>
 <translation id="8528538445849828817">網頁語言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">開啟</translation>

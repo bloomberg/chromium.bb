@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="3595596368722241419">Bateria carregada</translation>
+<translation id="6895424601869865703">Adicionar uma conta para <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Rotação ativada (toque aqui para alterar)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> e <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Estado do portal</translation>
 <translation id="30155388420722288">Botão de estouro</translation>
@@ -45,6 +47,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6043994281159824495">Sair agora</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="3846575436967432996">Não há informações de rede disponíveis</translation>
+<translation id="4625920103690741805">Rotação bloqueada (toque aqui para alterar)</translation>
 <translation id="3799026279081545374">Seu carregador pode estar com defeito. Se você mora nos EUA, ligue para 866-628-1371 para receber ajuda e uma substituição. Se você mora no Reino Unido, ligue para 0800-026-0613. Se você mora na Irlanda, ligue para 1-800-832-664. Se você mora no Canadá, ligue para 866-628-1372. Se você mora na Austrália, ligue para 1-800-067-460.</translation>
 <translation id="3026237328237090306">Configurar dados móveis</translation>
 <translation id="5871632337994001636">Gerenciar dispositivos...</translation>
@@ -69,6 +72,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="7170041865419449892">Fora de alcance</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Configuração</translation>
@@ -101,6 +105,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="372094107052732682">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
 <translation id="1480041086352807611">Modo de demonstração</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (principal)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% restante</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="2372145515558759244">Sincronizando aplicativos...</translation>
 <translation id="7256405249507348194">Erro não reconhecido: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Contas</translation>
 <translation id="2894654529758326923">Informações</translation>
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> para carga completa</translation>
@@ -139,7 +145,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; deseja permissão para realizar o pareamento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
-<translation id="1398853756734560583">Maximizar</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: conectando...</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
@@ -151,7 +156,9 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5097002363526479830">Falha na conexão à rede &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="3433830597744061105">Gerenciar contas</translation>
 <translation id="2966449113954629791">Você pode ter usado a cota de dados do seu dispositivo móvel. Visite o portal de ativação do <ph name="NAME"/> para comprar mais dados.</translation>
+<translation id="742594950370306541">A câmera está em uso.</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Definir plano de fundo...</translation>
 <translation id="8678698760965522072">Estado on-line</translation>
@@ -168,7 +175,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="68610848741840742">ChromeVox (feedback falado)</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
-<translation id="3157931365184549694">Restaurar</translation>
 <translation id="4274292172790327596">Erro desconhecido</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Fone de ouvido</translation>
@@ -223,6 +229,7 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="9046895021617826162">Falha na conexão</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Esta sessão terminará em <ph name="SESSION_TIME_REMAINING"/>. Você será automaticamente desconectado.</translation>
+<translation id="743058460480092004">A câmera e o microfone estão em uso.</translation>
 <translation id="8372369524088641025">Chave WEP incorreta</translation>
 <translation id="6636709850131805001">Estado não reconhecido</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -240,7 +247,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="520760366042891468">Compartilhando o controle de sua tela por meio do Hangouts.</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="4015692727874266537">Fazer login em outra conta...</translation>
-<translation id="5941711191222866238">Minimizar</translation>
+<translation id="1044925987639358253">O microfone está em uso.</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Parabéns! Seu serviço de dados &quot;<ph name="NAME"/>&quot; foi ativado e está pronto para ser usado.</translation>

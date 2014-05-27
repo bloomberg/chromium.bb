@@ -17,6 +17,7 @@ trên Chrome</translation>
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
+<translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
 <translation id="8244400547700556338">Tìm hiểu cách thức.</translation>
@@ -27,6 +28,8 @@ trên Chrome</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7782471917492991422">Vui lòng kiểm tra cài đặt quản lý nguồn máy tính của bạn và đảm bảo rằng máy tính không được định cấu hình để ngủ khi không hoạt động.</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
+<translation id="5925497314631808737">• Chế độ toàn màn hình / chế độ chìm được triển khai.
+• Biểu tượng ẩn thanh tác vụ được cải thiện.</translation>
 <translation id="2707879711568641861">Thiếu một số thành phần cần thiết cho Chrome Remote Desktop. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất và thử lại.</translation>
 <translation id="2499160551253595098">Giúp chúng tôi cải tiến Chrome Remote Desktop bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
@@ -134,7 +137,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="4361728918881830843">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Ứng dụng khách đã kết nối: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">đang đợi kết nối…</translation>
-<translation id="5714695932513333758">Lịch sử kết nối</translation>
 <translation id="811307782653349804">Truy cập vào máy tính của chính bạn ở mọi nơi.</translation>
 <translation id="2939145106548231838">Xác thực với máy chủ lưu trữ</translation>
 <translation id="2366718077645204424">Không thể kết nối với máy chủ. Điều này có thể do cấu hình của mạng bạn đang sử dụng.</translation>
@@ -189,7 +191,6 @@ Remote Desktop</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="7319983568955948908">Ngừng chia sẻ</translation>
 <translation id="6681800064886881394">Bản quyền 2013 Google Inc. Mọi quyền được bảo lưu.</translation>
-<translation id="8038108135592087998">Lần phát hành đầu tiên của Chrome Remote Desktop dành cho Android.</translation>
 <translation id="6668065415969892472">Mã PIN của bạn đã được cập nhật.</translation>
 <translation id="4513946894732546136">Phản hồi</translation>
 <translation id="4277736576214464567">Mã truy cập không hợp lệ. Vui lòng thử lại.</translation>

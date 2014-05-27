@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dan</translation>
 <translation id="1729654308190250600">Unesite e-adresu koja nije prazna vrijednost.</translation>
 <translation id="6015796118275082299">Godina</translation>
-<translation id="9186171386827445984">Učitavanje dokumenta: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stranica...</translation>
 <translation id="1235745349614807883">Obriši najnovija pretraživanja</translation>
 <translation id="7223624360433298498">proteklo vrijeme</translation>
 <translation id="1171774979989969504">Unesite adresu e-pošte.</translation>
 <translation id="709897737746224366">Udovoljite zadanom formatu.</translation>
 <translation id="5048533449481078685">oznaka popisa</translation>
 <translation id="4202807286478387388">skoči</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Unesite dio adrese ispred znaka &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; nije potpuna e-adresa.</translation>
 <translation id="2746543609216772311">Vrijednost mora biti <ph name="MINIMUM_DATE_OR_TIME"/> ili nakon toga.</translation>
 <translation id="2572483411312390101">reprodukcija</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Označite taj okvir ako želite ići dalje.</translation>
 <translation id="8534579021159131403">Minute</translation>
 <translation id="819205353528511139">reprodukcija filma na cijelom zaslonu</translation>
-<translation id="8964020114565522021">Povucite datoteku ovamo</translation>
 <translation id="4103419683916926126">Milisekunde</translation>
 <translation id="838869780401515933">označi</translation>
 <translation id="2846343701378493991">1024 (srednji)</translation>

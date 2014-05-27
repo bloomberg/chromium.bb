@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Deň</translation>
 <translation id="1729654308190250600">Zadajte e-mailovú adresu, ktorá nie je prázdna hodnota.</translation>
 <translation id="6015796118275082299">Rok</translation>
-<translation id="9186171386827445984">Prebieha načítavanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stránok...</translation>
 <translation id="1235745349614807883">Vyčistiť posledné vyhľadávania</translation>
 <translation id="7223624360433298498">uplynutý čas</translation>
 <translation id="1171774979989969504">Zadajte e-mailovú adresu.</translation>
 <translation id="709897737746224366">Zadajte hodnotu zodpovedajúcu požadovanému formátu.</translation>
 <translation id="5048533449481078685">ukazovateľ v zozname</translation>
 <translation id="4202807286478387388">skok</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/> <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Zadajte časť pred znakom <ph name="ATSIGN"/>. Adresa <ph name="INVALIDADDRESS"/> je neúplná.</translation>
 <translation id="2746543609216772311">Hodnota musí byť <ph name="MINIMUM_DATE_OR_TIME"/> alebo neskôr.</translation>
 <translation id="2572483411312390101">prehrať</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Ak chcete pokračovať, začiarknite toto políčko.</translation>
 <translation id="8534579021159131403">Minúty</translation>
 <translation id="819205353528511139">prehrať film v režime celej obrazovky</translation>
-<translation id="8964020114565522021">Súbor presunúť sem</translation>
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="838869780401515933">označiť</translation>
 <translation id="2846343701378493991">1024 (stredný stupeň)</translation>
@@ -90,7 +87,7 @@
 <translation id="1822429046913737220">dop. / odp.</translation>
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="2908441821576996758">Zadajte zoznam e-mailových adries oddelených čiarkou.</translation>
-<translation id="5939518447894949180">Vynulovať</translation>
+<translation id="5939518447894949180">Obnoviť</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Zadajte platnú hodnotu. Najbližšia platná hodnota je <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>

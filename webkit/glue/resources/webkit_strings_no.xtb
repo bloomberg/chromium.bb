@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="1729654308190250600">Skriv inn en ikke-tom e-postadresse.</translation>
 <translation id="6015796118275082299">År</translation>
-<translation id="9186171386827445984">Laster inn dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sider</translation>
 <translation id="1235745349614807883">Fjern nylige søk</translation>
 <translation id="7223624360433298498">brukt tid</translation>
 <translation id="1171774979989969504">Skriv inn en e-postadresse.</translation>
 <translation id="709897737746224366">Sørg for samsvar med det forespurte formatet.</translation>
 <translation id="5048533449481078685">listemarkør</translation>
 <translation id="4202807286478387388">hopp</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Skriv inn en del etterfulgt av «<ph name="ATSIGN"/>». «<ph name="INVALIDADDRESS"/>» er ufullstendig.</translation>
 <translation id="2746543609216772311">Verdien må være <ph name="MINIMUM_DATE_OR_TIME"/> eller senere.</translation>
 <translation id="2572483411312390101">spill av</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Kryss av denne boksen hvis du vil fortsette.</translation>
 <translation id="8534579021159131403">Minutter</translation>
 <translation id="819205353528511139">spill av filmen i fullskjermmodus</translation>
-<translation id="8964020114565522021">Dra filen hit</translation>
 <translation id="4103419683916926126">Millisekunder</translation>
 <translation id="838869780401515933">merk av</translation>
 <translation id="2846343701378493991">1024 (middels)</translation>

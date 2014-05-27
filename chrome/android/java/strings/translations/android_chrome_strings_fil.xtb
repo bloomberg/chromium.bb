@@ -29,7 +29,9 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
+<translation id="473775607612524610">Mag-update</translation>
 <translation id="8627706565932943526">Error sa pag-sync</translation>
+<translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
 <translation id="4043215103217793252">I-edit ang pahina ng bookmark</translation>
 <translation id="656628257199996201">Palaging isalin ang <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
@@ -57,7 +59,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="5164482624172255778">Gusto mo bang i-alok ng Google Chrome na isalin ang mga pahinang <ph name="LANGUAGE"/> mula sa site na ito sa susunod na pagkakataon?</translation>
-<translation id="8528538445849828817">Wika ng Pahina: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="8528538445849828817">Wika ng Page: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="6512448926095770873">Iwanan ang Pahinang ito</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>

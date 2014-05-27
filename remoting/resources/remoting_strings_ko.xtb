@@ -17,6 +17,7 @@
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
+<translation id="3194245623920924351">Chrome 원격 데스크톱</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
 <translation id="8244400547700556338">자세히 알아보기</translation>
@@ -27,6 +28,8 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7782471917492991422">컴퓨터의 전원 관리 설정을 확인하고 유휴 상태일 때 절전 모드로 전환되도록 설정되지 않았는지 확인하세요.</translation>
 <translation id="7665369617277396874">계정 추가</translation>
+<translation id="5925497314631808737">• 전체 화면/몰입형 모드를 구현했습니다.
+• 작업 표시줄을 숨기는 데 사용되는 아이콘이 개선되었습니다.</translation>
 <translation id="2707879711568641861">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. 최신 버전을 설치했는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="2499160551253595098">사용 통계 및 오류 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
 <translation id="7868137160098754906">원격 컴퓨터의 PIN을 입력하세요.</translation>
@@ -134,7 +137,6 @@
 <translation id="4361728918881830843">다른 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">연결 대기 중...</translation>
-<translation id="5714695932513333758">연결 기록</translation>
 <translation id="811307782653349804">어디서든 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="2939145106548231838">호스트에 대한 인증</translation>
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
@@ -189,7 +191,6 @@
 <translation id="5308380583665731573">연결</translation>
 <translation id="7319983568955948908">공유 중지</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
-<translation id="8038108135592087998">Android용 Chrome 원격 데스크톱의 첫 번째 버전입니다.</translation>
 <translation id="6668065415969892472">PIN이 업데이트되었습니다.</translation>
 <translation id="4513946894732546136">문제 신고</translation>
 <translation id="4277736576214464567">액세스 코드가 잘못되었습니다. 다시 시도해 주세요.</translation>

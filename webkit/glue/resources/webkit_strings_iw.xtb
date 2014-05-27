@@ -6,14 +6,12 @@
 <translation id="248395913932153421">יום</translation>
 <translation id="1729654308190250600">הזן ערך נדרש בשדה של כתובת הדוא&quot;ל.</translation>
 <translation id="6015796118275082299">שנה</translation>
-<translation id="9186171386827445984">טוען מסמך: דפים <ph name="NUMBER_OF_PAGES"/>/<ph name="PAGE_NUMBER"/>...</translation>
 <translation id="1235745349614807883">הסר חיפושים אחרונים</translation>
 <translation id="7223624360433298498">זמן שחלף</translation>
 <translation id="1171774979989969504">הזן כתובת דוא&quot;ל.</translation>
 <translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
 <translation id="5048533449481078685">סמן רשימה</translation>
 <translation id="4202807286478387388">קפוץ</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">הזן חלק ולאחריו '<ph name="ATSIGN"/>'‏. השדה '<ph name="INVALIDADDRESS"/>' אינו מלא.</translation>
 <translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME"/> ומעלה.</translation>
 <translation id="2572483411312390101">הפעל</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">סמן תיבה זו אם אתה רוצה להמשיך.</translation>
 <translation id="8534579021159131403">דקות</translation>
 <translation id="819205353528511139">הפעל את הסרט במצב מסך מלא</translation>
-<translation id="8964020114565522021">גרור את הקובץ לכאן</translation>
 <translation id="4103419683916926126">אלפיות שנייה</translation>
 <translation id="838869780401515933">סמן</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>

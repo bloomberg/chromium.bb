@@ -6,14 +6,12 @@
 <translation id="248395913932153421">日</translation>
 <translation id="1729654308190250600">请输入有效的电子邮件地址。</translation>
 <translation id="6015796118275082299">年</translation>
-<translation id="9186171386827445984">正在加载文档：已加载 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
 <translation id="1235745349614807883">清除最近的搜索</translation>
 <translation id="7223624360433298498">已播放时间</translation>
 <translation id="1171774979989969504">请输入电子邮件地址。</translation>
 <translation id="709897737746224366">请与所请求的格式保持一致。</translation>
 <translation id="5048533449481078685">列表标记</translation>
 <translation id="4202807286478387388">略过</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">请在“<ph name="ATSIGN"/>”前面输入内容。“<ph name="INVALIDADDRESS"/>”不完整。</translation>
 <translation id="2746543609216772311">指定的值不得早于<ph name="MINIMUM_DATE_OR_TIME"/>。</translation>
 <translation id="2572483411312390101">播放</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">如果要继续，请选中此框。</translation>
 <translation id="8534579021159131403">分钟</translation>
 <translation id="819205353528511139">在全屏模式下播放电影</translation>
-<translation id="8964020114565522021">将文件拖到此处</translation>
 <translation id="4103419683916926126">毫秒</translation>
 <translation id="838869780401515933">选中</translation>
 <translation id="2846343701378493991">1024（中等强度）</translation>

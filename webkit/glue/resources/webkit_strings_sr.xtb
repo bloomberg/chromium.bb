@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Дан</translation>
 <translation id="1729654308190250600">Унесите имејл адресу која није празна.</translation>
 <translation id="6015796118275082299">Година</translation>
-<translation id="9186171386827445984">Учитавање документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> странице(а)...</translation>
 <translation id="1235745349614807883">Обриши недавне претраге</translation>
 <translation id="7223624360433298498">протекло време</translation>
 <translation id="1171774979989969504">Унесите имејл адресу.</translation>
 <translation id="709897737746224366">Изаберите захтевани формат.</translation>
 <translation id="5048533449481078685">означивач листе</translation>
 <translation id="4202807286478387388">прескочи</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Унесите неки део пре „<ph name="ATSIGN"/>“. Адреса „<ph name="INVALIDADDRESS"/>“ је непотпуна.</translation>
 <translation id="2746543609216772311">Вредност мора да буде <ph name="MINIMUM_DATE_OR_TIME"/> или новија.</translation>
 <translation id="2572483411312390101">пустите</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
 <translation id="8534579021159131403">Минути</translation>
 <translation id="819205353528511139">пустите филм у режиму целог екрана</translation>
-<translation id="8964020114565522021">Превуците датотеку овде</translation>
 <translation id="4103419683916926126">Милисекунде</translation>
 <translation id="838869780401515933">изабери</translation>
 <translation id="2846343701378493991">1024 (средњи степен)</translation>

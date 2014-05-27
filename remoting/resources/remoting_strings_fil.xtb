@@ -17,6 +17,7 @@ Host</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="2124408767156847088">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.</translation>
+<translation id="3194245623920924351">Remote na Desktop ng Chrome</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
 <translation id="8244400547700556338">Matutunan kung paano.</translation>
@@ -27,6 +28,8 @@ Host</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7782471917492991422">Pakisuri ang mga setting sa pamamahala ng power ng iyong computer at tiyakin na hindi ito naka-configure na mag-sleep kapag idle.</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
+<translation id="5925497314631808737">• Ipinatupad na full-screen / immersive mode.
+• Pinahusay na icon sa pagtatago sa action bar.</translation>
 <translation id="2707879711568641861">Nawawala ang ilang bahagi na kinakailangan para sa Remote na Desktop ng Chrome. Mangyaring tiyakin na na-install mo na ang pinakabagong bersyon at subukang muli.</translation>
 <translation id="2499160551253595098">Tumulong sa amin na pahusayin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="7868137160098754906">Pakilagay ang iyong PIN para sa remote na computer.</translation>
@@ -134,7 +137,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="4361728918881830843">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Nakakonekta ang client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">naghihintay ng koneksyon…</translation>
-<translation id="5714695932513333758">Kasaysayan ng koneksyon</translation>
 <translation id="811307782653349804">I-access ang sarili mong computer mula saanman.</translation>
 <translation id="2939145106548231838">Patunayan upang ma-host</translation>
 <translation id="2366718077645204424">Hindi maabot ang host. Malamang na dahil ito sa configuration ng network na iyong ginagamit.</translation>
@@ -189,7 +191,6 @@ Desktop ng Chrome</translation>
 <translation id="5308380583665731573">Kumunekta</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
-<translation id="8038108135592087998">Unang labas ng Remote na Desktop ng Chrome para sa Android.</translation>
 <translation id="6668065415969892472">Na-update na ang iyong PIN.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">Di-wasto ang access code. Pakisubukang muli.</translation>

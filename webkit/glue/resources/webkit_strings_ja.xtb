@@ -6,14 +6,12 @@
 <translation id="248395913932153421">日</translation>
 <translation id="1729654308190250600">メール アドレスを入力してください。</translation>
 <translation id="6015796118275082299">年</translation>
-<translation id="9186171386827445984">ドキュメントの読み込み中: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ページ...</translation>
 <translation id="1235745349614807883">最近の検索履歴を消去</translation>
 <translation id="7223624360433298498">経過時間</translation>
 <translation id="1171774979989969504">メール アドレスを入力してください。</translation>
 <translation id="709897737746224366">指定されている形式で入力してください。</translation>
 <translation id="5048533449481078685">リスト マーカー</translation>
 <translation id="4202807286478387388">ジャンプ</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">「<ph name="ATSIGN"/>」の前の文字列を入力してください。「<ph name="INVALIDADDRESS"/>」は完全なメール アドレスではありません。</translation>
 <translation id="2746543609216772311"><ph name="MINIMUM_DATE_OR_TIME"/> 以降の値を指定する必要があります。</translation>
 <translation id="2572483411312390101">再生</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
 <translation id="8534579021159131403">分</translation>
 <translation id="819205353528511139">全画面表示モードで再生</translation>
-<translation id="8964020114565522021">ファイルをここにドラッグ</translation>
 <translation id="4103419683916926126">ミリ秒</translation>
 <translation id="838869780401515933">チェックを付ける</translation>
 <translation id="2846343701378493991">1024 (中)</translation>

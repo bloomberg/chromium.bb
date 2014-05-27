@@ -17,6 +17,7 @@ Chromoting</translation>
 <translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="2124408767156847088">Acceder de forma segura a tus computadoras desde el dispositivo Android</translation>
+<translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
 <translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
 <translation id="8244400547700556338">Más información</translation>
@@ -27,6 +28,8 @@ Chromoting</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Configura la administración de energía de tu computadora y asegúrate de que no se habilite el modo de hibernación cuando esté inactiva.</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
+<translation id="5925497314631808737">• Se implementaron el modo de pantalla completa y el modo envolvente.
+• Se mejoró el ícono para ocultar la barra de acciones.</translation>
 <translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7868137160098754906">Ingresa tu PIN para la computadora remota.</translation>
@@ -134,7 +137,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="4361728918881830843">Para habilitar conexiones remotas con otra computadora, instala allí Escritorio remoto de Chrome y haz clic en “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="4913529628896049296">Aguardando la conexión...</translation>
-<translation id="5714695932513333758">Historial de conexiones</translation>
 <translation id="811307782653349804">Accede a tu computadora desde cualquier lugar.</translation>
 <translation id="2939145106548231838">Autenticarse en host</translation>
 <translation id="2366718077645204424">No se puede establecer la conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
@@ -189,7 +191,6 @@ remoto de Chrome</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos los derechos reservados.</translation>
-<translation id="8038108135592087998">Primera versión de Escritorio remoto de Chrome para Android</translation>
 <translation id="6668065415969892472">Se actualizó tu PIN.</translation>
 <translation id="4513946894732546136">Comentario</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>

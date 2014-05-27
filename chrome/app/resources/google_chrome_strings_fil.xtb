@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="8914504000324227558">Muling ilunsad ang Chrome</translation>
 <translation id="8000275528373650868">Kinakailangan ng Google Chrome ang Windows Vista o Windows XP na may SP2 o mas mataas pa.</translation>
 <translation id="8485767968786176057">Sa sitwasyong ito, ang nakalistang address sa certificate ay hindi tumutugma sa address ng website na sinusubukang puntahan ng iyong browser. Ang isang posibleng dahilan para rito ay hinaharang ang iyong mga pakikipag-usap ng isang nang-aatake na nagpapakita ng isang certificate para sa ibang website, na maaaring magdulot ng hindi pagtutugma. Ang isa pang posibleng dahilan ay naka-set up ang server upang ibalik ang parehong certificate para sa maramihang website, kabilang ang tinatangka mong bisitahin, kahit na ang certificate na iyon ay hindi wasto para sa lahat ng website na iyon. Matitiyak ng Google Chrome na naabot mo ang &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ngunit hindi mabe-verify na iyon ang kaparehong site ng &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; na nilayon mong abutin. Kung magpatuloy ka, hindi magsusuri ang Chrome para sa anumang karagdagang mga hindi pagtutugma ng pangalan.</translation>
+<translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Hindi ma-sync ng Chrome OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
 <translation id="5430073640787465221">Sira o di-wasto ang iyong file ng mga kagustuhan.
 
 Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
-<translation id="7115445779188493842">Upang magamit ang app launcher, dapat mong ilunsad muli ang Google Chrome sa desktop.</translation>
+<translation id="7952135150021331855">Tumatakbo ang Google Chrome sa background.</translation>
 <translation id="345171907106878721">Idagdag ang iyong sarili sa Chrome</translation>
 <translation id="6236285698028833233">Huminto na sa pag-update ang Google Chrome at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="5453904507266736060">Hayaan ang Google Chrome na Tumakbo sa Background</translation>
@@ -17,7 +17,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="4167057906098955729">Makikita mo ang lahat ng iyong notification mula sa apps, mga extension, at website ng Chrome dito.</translation>
 <translation id="2704356438731803243">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chrome, maaari kang lumikha ng bagong user ng Chrome para kay <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Mangyaring isara lahat ng mga window ng Google Chrome at muling subukan.</translation>
-<translation id="2144822863799338346">Welcome sa iyong Chrome. Bumalik dito upang:</translation>
 <translation id="1225016890511909183">Secure na iiimbak ng Chrome ang iyong impormasyon upang hindi mo na ito kailangang i-type muli, ngunit kakailanganin mo pa ring i-verify ang panseguridad na code ng iyong card para sa mga pagbabayad sa hinaharap.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="8838365799985821335">Binago ng isang extension kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
@@ -27,12 +26,12 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
 <translation id="7781002470561365167">May magagamit na bagong bersyon ng Google Chrome.</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
-<translation id="7101265395643981223">Magsimula sa Google Chrome</translation>
 <translation id="4891791193823137474">Hayaan ang Google Chrome na tumakbo sa background</translation>
 <translation id="110877069173485804">Ito ang iyong Chrome</translation>
+<translation id="1376881911183620035">Salamat sa pagsubok sa bagong Chrome. Kailangang i-restart ang Chrome upang matiyak na na-save mo ang anumang nakabukas na gawain bago magpatuloy.</translation>
 <translation id="2896252579017640304">Ilunsad ang apps ng Chrome</translation>
-<translation id="2370289711218562573">Ini-import ngayon ng Google Chrome ang Mga Paborito/Bookmark.</translation>
 <translation id="2721687379934343312">Sa Mac, ang mga password ay sine-save sa iyong Keychain at maaaring ma-access o ma-sync ng ibang mga user ng Chrome na nakikihati sa OS X account na ito.</translation>
+<translation id="683440813066116847">Inbound na panuntunan para sa Google Chrome Canary upang payagan ang trapiko ng mDNS.</translation>
 <translation id="4953650215774548573">Itakda ang Google Chrome bilang iyong default na browser</translation>
 <translation id="6014844626092547096">Naka-sign in ka na ngayon sa Chrome! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="7419046106786626209">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
@@ -41,29 +40,23 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6982337800632491844">Kinakailangan ng <ph name="DOMAIN"/> na basahin mo at tanggapin ang sumusunod na Mga Tuntunin ng Serbisyo bago gamitin ang device na ito. Hindi pinapalawak, binabago o nililimitahan ng mga tuntuning ito ang Mga Tuntunin ng Google Chrome OS.</translation>
 <translation id="4309555186815777032">(kinakailangang <ph name="BEGIN_BUTTON"/>i-restart<ph name="END_BUTTON"/> ang Chrome)</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME"/> na channel...</translation>
+<translation id="8032142183999901390">Pagkatapos alisin ang iyong account sa Chrome, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
 <translation id="5775197990071433230">Mayroon nang mas bagong bersyon ng mga component ng Google Chrome ang computer na ito. Mangyaring gumamit ng mas bagong installer.</translation>
-<translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
 <translation id="4987308747895123092">Pakisara ang lahat ng window ng Google Chrome (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="568643307450491754">Hanapin ang iyong mga bookmark sa Chrome menu o sa bookmarks bar.</translation>
-<translation id="55271449890419930">Dahil hindi nakokontrol ng Google Chrome kung paano pangangasiwaan ng mga extension ang iyong personal na data, ang lahat ng extension ay naka-disable para sa mga incognito window. Maaari mong muling i-enable ang mga ito nang paisa-isa sa
-          <ph name="BEGIN_LINK"/>manager ng mga extension<ph name="END_LINK"/>.</translation>
 <translation id="8556340503434111824">May available na bagong bersyon ng Google Chrome, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
-<translation id="2082230140685103752">Upang makagamit ng Chrome apps, dapat mong ilunsad muli ang Google Chrome sa desktop.</translation>
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng apps sa background kapag nakasara ang Google Chrome</translation>
 <translation id="4149882025268051530">Nabigo ang installer sa pag-uncompress ng archive. Paki-download muli ang Google Chrome.</translation>
 <translation id="7054640471403081847">Malapit nang hindi makatanggap ng mga update sa Google Chrome ang computer na ito dahil hindi na sinusuportahan ang hardware nito.</translation>
-<translation id="6326709553577195251">Upang alisin ang iyong account, kailangang mag-restart ng Chrome. Siguraduhing na-save mo ang anumang nakabukas na gawain bago magpatuloy.</translation>
 <translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
 <translation id="7060865993964054389">App Launcher ng Google Chrome</translation>
 <translation id="1682634494516646069">Hindi makapagbasa at makapagsulat ang Google Chrome sa direktoryo nito ng data:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="4343226815564935778">Tila ginagamit ang direktoryo sa pag-install ng Google Chrome. Paki-reboot ang iyong computer at subukan ulit.</translation>
 <translation id="8227755444512189073">Kailangan ng Chrome na maglunsad ng isang panlabas na application upang mahawakan ang mga link <ph name="SCHEME"/>. Ang hiling ng link ay <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Whoa! Nag-crash ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="1480489203462860648">Subukan mo ito, naka-install na ito</translation>
-<translation id="7831498172068826473">Naka-sign in ka sa isang pinamamahalaang account na kinokontrol ng isang administrator. Kung magdidiskonekta ka sa account na ito, ang user na ito ng Chrome at ang lahat ng nauugnay na data ng Chrome, gaya ng mga app, bookmark, kasaysayan, mga password at iba pang mga setting ay aalisin sa computer na ito.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK"/> ng Google Chrome</translation>
 <translation id="1393853151966637042">Kumuha ng tulong sa paggamit ng Chrome</translation>
 <translation id="7398801000654795464">Naka-sign in ka sa Chrome bilang <ph name="USER_EMAIL_ADDRESS"/>. Pakigamit ang parehong account upang mag-sign in muli.</translation>
@@ -93,7 +86,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Luma na ang Chrome</translation>
 <translation id="473775607612524610">Mag-update</translation>
-<translation id="1195935957447623558">Hindi nai-shut down ng wasto ang Google Chrome. Upang muling buksan ang mga pahina na nabuksan mo na, i-click ang Restore.</translation>
+<translation id="1195935957447623558">Hindi nai-shut down ng wasto ang Google Chrome. Upang muling buksan ang pages na binuksan mo, i-click ang Restore.</translation>
 <translation id="2576431527583832481">Naging mas mahusay na ang Chrome! Available na ang bagong bersyon.</translation>
 <translation id="4633000520311261472">Upang gawing mas ligtas ang Chrome, nag-disable kami ng ilang extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> at maaaring naidagdag nang hindi mo nalalaman.</translation>
 <translation id="3656661827369545115">Awtomatikong ilunsad ang Chromium kapag nagbukas ang iyong computer</translation>
@@ -123,14 +116,17 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="7185038942300673794">Naidagdag ang <ph name="EXTENSION_NAME"/> sa Chrome.</translation>
 <translation id="1786477462680638703">Sinubukan mong maabot ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng certificate na ibinigay ng isang entity na hindi pinagkakatiwalaan ng Google Chrome. Maaaring nangangahulugan itong bumuo ang server ng sarili nitong mga kredensyal na pangseguridad, na hindi maaasahan ng Chrome para sa impormasyon sa pagkakakilanlan, o maaaring sinusubukan ng isang nang-aatake na harangin ang iyong mga pakikipag-ugnayan.</translation>
+<translation id="7494905215383356681">Mga lisensya ng open source ng Chrome</translation>
 <translation id="2346876346033403680">May nag-sign in dati sa Chrome sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST"/>. Kung hindi iyon ang iyong account, lumikha ng bagong user ng Chrome upang ihiwalay ang iyong impormasyon.
 
 Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impormasyon sa Chrome gaya ng mga bookmark, kasaysayan, at iba pang mga setting.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Babala:<ph name="END_BOLD"/> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong kasaysayan sa pagba-browse. Upang hindi paganahin ang extension na ito sa mode na incognito, alisin ang pagkakapili sa opsyong ito.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2664962310688259219">Mga lisensya ng open source ng Chrome OS</translation>
 <translation id="2290014774651636340">Nawawala ang mga Google API key. Madi-disable ang ilang pagpapagana ng Google Chrome.</translation>
 <translation id="4794050651896644714">I-save ang mga detalye sa Chrome</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
+<translation id="2036562258783619899">I-preview ang bagong Chrome</translation>
 <translation id="5855036575689098185">Hindi tumutugma ang software na tumatakbo sa iyong computer sa Google Chrome.</translation>
 <translation id="8008534537613507642">Muling i-install ang Chrome</translation>
 <translation id="2044287590254833138">Toolbar ng Google Chrome</translation>
@@ -147,7 +143,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="4273752058983339720">Na-configure ang Google Chrome upang awtomatikong malunsad kapag binuksan mo ang iyong computer.</translation>
 <translation id="1104959162601287462">Tungkol sa &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Mga Google Chrome Binary</translation>
-<translation id="1140117203923356735">Gumagawa ng mga pagbabago sa mga setting ang <ph name="FILE_NAME"/> katulad ng ilang malware, kaya na-block ito ng Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
 <translation id="1759301979429102118">Ang mga detalye mula sa iyong mga contact ay maaaring makatulong sa iyong sumagot ng mga form nang mas mabilis sa Chrome.</translation>
 <translation id="7787950393032327779">Mukhang ginagamit ang profile ng iba pang proseso ng Google Chrome (<ph name="PROCESS_ID"/>) sa iba pang computer (<ph name="HOST_NAME"/>).  Ni-lock ng Chrome ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chrome.</translation>
@@ -157,10 +152,9 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="5788838254726722945">I-uninstall ang Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
+<translation id="2665296953892887393">Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK"/> sa Google</translation>
 <translation id="7761834446675418963">I-click ang iyong pangalan upang buksan ang Chrome at simulan ang pagba-browse.</translation>
-<translation id="3248703849416430126">• Magpalipat-litpat sa mga tao
-• I-lock ang mga bagay-bagay mo sa Chrome
-• Pamahalaan ang iyong Mga Google Account</translation>
+<translation id="4864451188650489141">Maaari mong idagdag ang iyong iba pang Google Accounts at i-lock ang iyong Chromium sa ibaba.</translation>
 <translation id="5875635642195358109">Pumunta sa
         menu ng Chrome &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -169,6 +163,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
         at alisin sa pagkakapili ang &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         Kung hindi nito naresolba ang isyu, inirerekomenda naming piliing muli ang opsyong ito
         para sa mas mahusay na pagganap.</translation>
+<translation id="6235018212288296708">Inbound na panuntunan para sa Google Chrome upang payagan ang trapiko ng mDNS.</translation>
 <translation id="61852838583753520">I-update ang &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Hindi mai-sync ng Google Chrome ang iyong data. Paki-update ang iyong passphrase sa Pag-sync.</translation>
 <translation id="9026991721384951619">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
@@ -190,21 +185,20 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
 <translation id="1399397803214730675">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Google Chrome at subukang muli.</translation>
 <translation id="576822117893741893">Ipakita ang Chrome menu</translation>
-<translation id="338432196642384904">Tanggalin ang user ng Chrome</translation>
 <translation id="3444832043240812445">Ipinapakita lang ng pahinang ito ang impormasyon ng iyong kamakailang mga pag-crash kung <ph name="BEGIN_LINK"/>papaganahin mo ang pag-uulat ng pag-crash<ph name="END_LINK"/>.</translation>
-<translation id="4566427205701379461">Ginagamit mo ang <ph name="PROFILE_EMAIL"/> upang i-sync ang mga gamit mo sa Chrome. Upang i-update ang iyong kagustuhan sa pag-sync o upang gamitin ang Chrome nang walang Google account, bisitahin ang mga setting.</translation>
 <translation id="8614913330719544658">Hindi gumagana ang Google Chrome. Ilunsad muli ngayon?</translation>
 <translation id="2681064822612051220">May nakitang sumasalungat na pag-install ng Google Chrome sa system. Paki-uninstall ito at subukang muli.</translation>
 <translation id="1175529839152551794">Ngayong naka-sign in ka na, maaari mong makuha ang iyong mga tab, bookmark at iba pang mga bagay-bagay sa Chrome sa iyong laptop, telepono at tablet. Makakatanggap ka rin ng higit na nauugnay na mga suhestiyon at feature sa mga serbisyo ng Google.</translation>
+<translation id="8209985377776300429">Pini-preview mo ang bagong Chrome.</translation>
 <translation id="6126631249883707068">Nais mo bang i-save ng Google Chrome ang iyong password?</translation>
 <translation id="7773845170078702898">Nais mo bang i-save ng Google Chrome ang iyong password para sa site na ito?</translation>
 <translation id="4251615635259297716">I-link ang iyong data sa Chrome sa account na ito</translation>
 <translation id="7125719106133729027">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chrome nang manu-mano.</translation>
 <translation id="5940385492829620908">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chrome.</translation>
-<translation id="5788515153694509397">Tanggalin ang pinamamahalaang user ng Chrome</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
+<translation id="3039245375609697729">Subukan ang bagong paraan ng paggamit ng Chrome gamit ang iyong Google Account at sa mga nakabahaging computer.</translation>
+<translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Mas mahusay na ang Chrome</translation>
-<translation id="8142608456917638009">Hindi makagawa ng shortcut ng application ang Google Chrome.</translation>
 <translation id="174539241580958092">Hindi mai-sync ng Google Chrome ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="8255190535488645436">Ginagamit ng Google Chrome ang iyong camera at mikropono.</translation>
 <translation id="2189123953385179981">Hindi sinusuportahan ng Google ChromeOS ang paglunsad ng isang panlabas na application upang pamahalaan ang mga <ph name="SCHEME"/> na link. Ang hiniling na link ay <ph name="PROTOLINK"/>.</translation>
@@ -228,14 +222,13 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
           &gt;
           Mga Setting ng LAN
           at alisin sa pagkakapili ang &quot;Gumamit ng proxy server para sa iyong LAN.&quot;</translation>
+<translation id="6598387184982954187">Ginagamit mo ang <ph name="PROFILE_EMAIL"/> upang i-sync ang iyong bagay sa Chrome. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chrome nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Nabigo ang pag-install dahil sa hindi natukoy na error. Paki-download muli ang Google Chrome.</translation>
-<translation id="1061257178446858647">Naka-sign in ka na ngayon sa Chrome! Isi-sync ang iyong mga bookmark, kasaysayan at iba pang mga setting sa iyong Google Account.</translation>
-<translation id="3335672657969596251">Hindi suportado ng Google Chrome ang <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="6634887557811630702">Napapanahon ang Google Chrome.</translation>
+<translation id="6634887557811630702">Up to date ang Google Chrome.</translation>
 <translation id="4120075327926916474">Gusto mo bang i-save ng Chrome ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form ng web?</translation>
 <translation id="2084710999043359739">Idagdag sa Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -243,6 +236,8 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="7592736734348559088">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>
 <translation id="6991142834212251086">I-link ang aking data sa Chrome sa account na ito</translation>
 <translation id="3451115285585441894">Idinaragdag sa Chrome...</translation>
+<translation id="6502165024350711060">Iminumungkahi ng Chrome</translation>
+<translation id="3047079729301751317">Iki-clear ng pagdiskonekta kay <ph name="USERNAME"/> ang iyong history, mga bookmark, setting at iba pang data ng Chrome na naka-imbak sa device na ito. Hindi iki-clear ang data na naka-imbak sa iyong Google Account at maaaring pamahalaan sa <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Na-corrupt o hindi wasto ang installer archive. Paki-download muli ang Google Chrome.</translation>
 <translation id="2246246234298806438">Hindi maipapakita ng Google Chrome ang preview sa pag-print kapag nawawala ang built-in na PDF viewer.</translation>
 <translation id="6626317981028933585">Nakalulungkot, ang iyong mga setting ng Mozilla Firefox ay hindi magagamit habang tumatakbo ang browser. Upang mai-import ang mga setting sa Google Chrome, i-save ang iyong ginagawa at isara ang lahat ng mga window ng Firefox. Pagkatapos i-click ang Ipagpatuloy.</translation>
@@ -256,10 +251,9 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="1818142563254268765">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chrome.</translation>
 <translation id="4338032231047635328">Tinangka mong maabot ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang certificate na ipinakita ng server ay naglalaman ng mga error. Hindi makakagamit ang Google Chrome ng isang certificate na may mga error at hindi mapapatunayan ang pagkakakilanlan ng site kung saan mo tinangkang kumonekta.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3836351788193713666">Halos napapanahon na! Muling ilunsad ang Google Chrome upang tapusin ang pag-update.</translation>
+<translation id="3836351788193713666">Halos up-to-date na! Muling ilunsad ang Google Chrome upang tapusin ang pag-update.</translation>
 <translation id="884296878221830158">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o na-click ang button ng Home.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="8449380764213232436">Ang Google Chrome ay nagi-import ngayon ng sumusunod na mga item mula sa <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3396977131400919238">Nagkaroon ng error sa operating system habang nag-i-install. Paki-download muli ang Google Chrome.</translation>
 <translation id="8037887340639533879">Walang nakitang pag-install ng Google Chrome upang i-update.</translation>
 <translation id="5495581687705680288">Mga module na na-load sa Google Chrome</translation>

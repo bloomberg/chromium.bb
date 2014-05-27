@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="1729654308190250600">Introduza um endereço de email que não esteja vazio.</translation>
 <translation id="6015796118275082299">Ano</translation>
-<translation id="9186171386827445984">A carregar o documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
 <translation id="1235745349614807883">Limpar pesquisas recentes</translation>
 <translation id="7223624360433298498">tempo decorrido</translation>
-<translation id="1171774979989969504">Introduza um endereço de e-mail.</translation>
+<translation id="1171774979989969504">Introduza um endereço de email.</translation>
 <translation id="709897737746224366">Faça corresponder o formato pedido.</translation>
 <translation id="5048533449481078685">marcador de lista</translation>
 <translation id="4202807286478387388">ir para</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Introduza uma parte seguida de &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; está incompleto.</translation>
 <translation id="2746543609216772311">O valor tem de ser <ph name="MINIMUM_DATE_OR_TIME"/> ou posterior.</translation>
 <translation id="2572483411312390101">reproduzir</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Seleccione esta caixa se pretender continuar.</translation>
 <translation id="8534579021159131403">Minutos</translation>
 <translation id="819205353528511139">reproduzir o filme no modo de ecrã inteiro</translation>
-<translation id="8964020114565522021">Arraste o ficheiro para aqui</translation>
 <translation id="4103419683916926126">Milissegundos</translation>
 <translation id="838869780401515933">verificar</translation>
 <translation id="2846343701378493991">1024 (Tamanho médio)</translation>
@@ -85,11 +82,11 @@
 <translation id="7740050170769002709">Conteúdo HTML</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="8541249477527128034">controlo multimédia</translation>
-<translation id="2226276347425096477">Encurte este texto para <ph name="MAX_CHARACTERS"/> caracteres ou menos (está actualmente a utilizar <ph name="CURRENT_LENGTH"/> caracteres).</translation>
+<translation id="2226276347425096477">Encurte este texto para <ph name="MAX_CHARACTERS"/> caracteres ou menos (está atualmente a utilizar <ph name="CURRENT_LENGTH"/> caracteres).</translation>
 <translation id="6101327004457443354">reativar a faixa de áudio</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1639239467298939599">A carregar</translation>
-<translation id="2908441821576996758">Introduza uma lista de endereços de e-mail separados por vírgula.</translation>
+<translation id="2908441821576996758">Introduza uma lista de endereços de email separados por vírgula.</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Introduza um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE"/>.</translation>

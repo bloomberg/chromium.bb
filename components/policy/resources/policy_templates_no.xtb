@@ -112,7 +112,6 @@ Denne regelen brukes internt av Chrome.</translation>
           MERK: Standardatferden for forbruker- og bedriftsenheter er ikke den samme. På forbrukerenheter er overvåkede brukere aktivert som standard, men på bedriftsenheter er de deaktivert.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
-<translation id="5827231192798670332">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="6649397154027560979">Denne innstillingen er avviklet. Bruk URLBlacklist i stedet.
@@ -149,7 +148,6 @@ Denne regelen brukes internt av Chrome.</translation>
       Hvis <ph name="PRODUCT_NAME"/> ikke finner informasjon om opphevelsesstatusen, blir disse sertifikatene behandlet som opphevede («hard-fail»).
 
       Hvis denne innstillingen ikke er angitt, eller er angitt til «false», kommer Chrome til å bruke de gjeldende alternativene for opphevelsessjekking på nettet.</translation>
-<translation id="1438955478865681012">Konfigurerer utvidelsesrelaterte retningslinjer. Brukeren får ikke installerte utvidelser som står på sperrelisten med mindre de også står på godkjenningslisten. Du kan også tvinge <ph name="PRODUCT_NAME"/> til å installere utvidelser automatisk, ved å spesifisere dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sperrelisten prioriteres over listen over tvungne utvidelser.</translation>
 <translation id="3516856976222674451">Begrens maksimal lengde for brukerøkter.
 
       Når denne innstillingen angis, spesifiserer den hvor lenge brukere kan være pålogget før de automatisk logges av og økten avsluttes. 
@@ -212,19 +210,6 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
-<translation id="4418909344122918381">Kontroller brukeratferden i en flerprofiløkt på <ph name="PRODUCT_OS_NAME"/>-enheter.
-
-      Hvis denne innstillingen angis som MultiProfileUserBehaviorUnrestricted, kan brukeren være enten primær- eller sekundærbruker i en flerprofiløkt.
-
-      Hvis denne innstillingen angis som MultiProfileUserBehaviorMustBePrimary, kan brukeren bare være primærbrukeren i en flerprofiløkt.
-
-      Hvis denne innstillingen angis som MultiProfileUserBehaviorNotAllowed, kan ikke brukeren være del av en flerprofiløkt.
-
-      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
-
-      Hvis innstillingen endres mens brukeren er logget på en flerprofiløkt, blir alle brukerne i denne økten kontrollert mot de tilsvarende innstillingene. Økten lukkes hvis noen av brukerne ikke lenger har tillatelse til å ta del i den.
-
-      Hvis innstillingen ikke angis, blir standardverdien MultiProfileUserBehaviorUnrestricted brukt.</translation>
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
@@ -297,6 +282,7 @@ Denne regelen brukes internt av Chrome.</translation>
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
 <translation id="5912364507361265851">Tillat brukere å vise passord i passordbehandling</translation>
+<translation id="5318185076587284965">Aktiver bruken av relétjenere ved fjerntilgangsverten</translation>
 <translation id="510186355068252378">Deaktiverer datasynkronisering i <ph name="PRODUCT_NAME"/> ved hjelp av Google-betjente synkroniseringstjenester, og hindrer brukerne i å endre denne innstillingen.
 
       Hvis du aktiverer denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME"/>.
@@ -330,6 +316,20 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-prefikset for verter med ekstern adgang</translation>
 <translation id="6561396069801924653">Vis tilgjengelighetsalternativer i systemmenyen</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>
+<translation id="7983624541020350102">(Dette dokumentet kan inneholde innstillinger som er beregnet på nyere
+      <ph name="PRODUCT_NAME"/>-versjoner, og disse kan
+      endres uten varsel. Listen over støttede innstillinger er den
+      samme for Chromium og Google Chrome.)
+
+      Du trenger ikke å endre disse innstillingene manuelt. Du kan laste ned maler som er enkle å bruke fra
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Disse innstillingene skal bare brukes for å konfigurere Chrome-økter internt i organisasjonen din. Hvis du bruker disse innstillingene utenfor organisasjonen din (f.eks. i et program som er offentlig tilgjengelig), anses dette som skadelig programvare av Google og anti-virusleverandører.
+
+      Merk: Fra og med <ph name="PRODUCT_NAME"/>
+      28 lastes innstillingene inn direkte fra Group Policy API-et i
+      Windows. Innstillingene som legges til manuelt i registeret, blir ignorert. Du finner mer informasjon på
+      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
 <translation id="4386578721025870401">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett.
 
@@ -416,13 +416,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
 
      Hvis denne retningslinjen ikke angis, blir blir gjeldende innstilling det samme som brukeren velger ved installasjon / første kjøring.</translation>
-<translation id="4784220343847172494">Kontrollerer den automatiske oppryddingsatferden på <ph name="PRODUCT_OS_NAME"/>-enheter. Det blir utløst en automatisk opprydding når mengden ledig diskplass når et kritisk nivå, slik at diskplass kan frigjøres.
-
-      Hvis du angir denne retningslinjen til «RemoveLRU», fjerner den automatiske oppryddingen brukere i rekkefølgen «lengst tid siden forrige pålogging», frem til det er frigjort nok diskplass.
-
-      Hvis du angir denne retningslinjen til «RemoveLRUIfDormant», fjerner den automatiske oppryddingen brukere som ikke har logget seg på de siste tre månedene, i rekkefølgen «lengst tid siden forrige pålogging», frem til det er frigjort nok diskplass.
-
-      Hvis denne retningslinjen ikke er angitt, blir den innebygde standardstrategien brukt ved automatisk opprydding. På nåværende tidspunkt vil dette si strategien RemoveLRUIfDormant.</translation>
 <translation id="6256787297633808491">Rapporteringer for hele systemet som skal brukes ved Chrome-oppstart</translation>
 <translation id="2516600974234263142">Aktiverer utskrift i <ph name="PRODUCT_NAME"/> og hindrer brukere fra å endre denne innstillingen.
 
@@ -450,16 +443,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
-<translation id="3234167886857176179">Dette er listen over innstillinger gjelder for <ph name="PRODUCT_NAME"/>.
-
-      Du trenger ikke å endre disse innstillingene manuelt. Du kan laste ned lettvinte maler fra
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Listen over støttede innstillinger er den samme for Chromium og Google Chrome.
-
-      Disse innstillingene skal bare brukes for å konfigurere Chrome-økter internt i organisasjonen din. Hvis du bruker disse innstillingene utenfor organisasjonen din (f.eks. i et program som er offentlig tilgjengelig), anses dette som skadelig programvare og blir sannsynligvis merket som skadelig programvare av Google og anti-virusleverandører.
-
-      Merk: Fra og med Chrome 28 lastes innstillingene inn direkte fra Group Policy API-en i Windows. Innstillinger som legges til manuelt i registeret blir ignorert. Du finner mer informasjon på http://crbug.com/259236</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
 
       Du kan fortsatt utføre stavekontroll av innhold, men da med en ordliste du har lastet ned selv – denne innstillingen styrer bare bruk av tjenesten på nettet.
@@ -486,6 +469,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for mellomtjener</translation>
 <translation id="2144674628322086778">Tillat bedriftsbrukeren å være både primær og sekundær (standard atferd)</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
+<translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="5499375345075963939">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Når verdien for denne retningslinjen er angitt og ikke er 0, blir demo-brukeren som for tiden er pålogget, automatisk logget av etter at angitt periode for inaktivitet er passert.
@@ -730,6 +714,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
 <translation id="1679420586049708690">Offentlig økt for automatisk pålogging</translation>
+<translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="2552966063069741410">Tidssone</translation>
 <translation id="3788662722837364290">Innstillinger for strømstyring når brukeren er inaktiv</translation>
@@ -752,6 +737,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis denne tillatelsen ikke er angitt, blir standardkommandolinjen brukt.</translation>
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="6394350458541421998">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_OS_NAME"/> versjon 29. Bruk innstillingen PresentationScreenDimDelayScale i stedet.</translation>
+<translation id="2956777931324644324">Denne innstillingen har ikke vært tilgjengelig siden <ph name="PRODUCT_NAME"/>-versjon 36.
+
+      Angi om TLS-domenebetingende sertifikatsutvidelser bør aktiveres.
+
+      Disse innstillingene blir brukt til å aktivere den TLS-domenebetingede sertifikatsutvidelsen for testing. Denne eksperimentelle innstillingen blir fjernet i fremtiden.</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
 <translation id="228659285074633994">Angir tidsperioden uten brukeraktivitet før det vises en advarsel om at enheten går på AC-strøm.
@@ -900,7 +890,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Denne regelen er bare for intern bruk i Chrome.</translation>
 <translation id="5586942249556966598">Ikke gjør noe</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
-<translation id="5317965872570843334">Aktiverer bruk av STUN og relétjenere når eksterne klienter prøver å etablere forbindelse til denne maskinen. Hvis denne innstillingen er aktivert, kan eksterne klienter oppdage og koble seg til denne maskinen selv om de er adskilt fra den av brannmur. Hvis denne innstillingen er deaktivert, og utgående UDP-tilkoblinger filtreres ut av brannmuren, vil denne maskinen bare tillate forbindelser fra klientmaskiner i det lokale nettverket. Hvis denne retningslinjen ikke angis, vil innstillingen være aktivert.</translation>
 <translation id="4057110413331612451">Tillat bedriftsbrukeren å bare være primær flerprofilbruker</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
@@ -933,6 +922,15 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
 <translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
+<translation id="7332963785317884918">Denne innstillingen er foreldet. <ph name="PRODUCT_OS_NAME"/> kommer alltid til å bruke oppryddingsstrategien «RemoveLRU».
+
+      Kontrollerer den automatiske oppryddingsfunksjonaliteten på <ph name="PRODUCT_OS_NAME"/>-enheter. Automatisk opprydding starter når mengden ledig diskplass når et kritisk nivå. Dette gjøres for å frigjøre diskplass.
+
+      Hvis denne denne innstillingen angis som «RemoveLRU», fortsetter den automatiske oppryddingen å fjerne brukere fra enheten (gamle pålogginger først) til det er nok ledig plass.
+
+      Hvis denne innstillingen angis som «RemoveLRUIfDormant», fortsetter den automatiske oppryddingen å fjerne brukere som ikke har logget på de siste tre månedene (gamle pålogginger først) til det er nok ledig plass.
+
+      Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
@@ -1007,6 +1005,19 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="538108065117008131">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere følgende innholdstyper.</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
+<translation id="1464848559468748897">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME"/>-enheter.
+
+      Hvis denne innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofiløkt.
+
+      Hvis denne innstillingen angis til «MultiProfileUserBehaviorMustBePrimary», kan brukeren bare være primær bruker i en flerprofiløkt.
+
+      Hvis denne innstillingen angis til «MultiProfileUserBehaviorNotAllowed», kan ikke brukeren være en del av en flerprofiløkt.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+      Hvis innstillingen endres mens brukeren er logget på en flerprofiløkt, kontrolleres alle brukere i økten mot sine korresponderende innstillinger. Økten lukkes hvis noen av brukerne ikke lenger har tillatelse til å være i økten.
+
+      Hvis innstillingen ikke angis, gjelder standardverdien «MultiProfileUserBehaviorUnrestricted» for virksomhetsadministrerte brukere, og «MultiProfileUserBehaviorUnrestricted» for ikke-administrerte brukere.</translation>
 <translation id="243972079416668391">Angi handlingen som skal utføres når inaktivitetsforsinkelsen overgås mens maskinen kjører på vekselstrøm.
 
           Når denne innnstillingen er angitt, angir den handlingen <ph name="PRODUCT_OS_NAME"/> utfører når brukeren er inaktiv for tidsperioden som er angitt i inaktivitetsforsinkelsen, som konfigureres separat.
@@ -1167,6 +1178,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Disse reglene er bare for intern bruk i Chrome.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
+<translation id="5461308170340925511">Konfigurerer retningslinjer knyttet til utvidelser. Brukeren får ikke lov til å installere utvidelser oppført på svartelisten, før disse eventuelt blir godkjent og føres opp på godkjenningslisten. Du kan også tvinge <ph name="PRODUCT_NAME"/> til å installere utvidelser automatisk, ved å spesifisere dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Utvidelser som blir tvangsinstallert, blir installert uavhengig av om de står oppført på svartelisten.</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME"/> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME"/> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME"/>.</translation>
 <translation id="6373222873250380826">Deaktiverer automatiske oppdateringer når angitt som Sann.
 
@@ -1248,9 +1260,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
-<translation id="2431811512983100641">Angir om domene-bundet utvidelse av sertifikater for TLS skal aktiveres.
-
-      Denne innstillingen brukes for å teste domene-bundet utvidelse av sertifikater for TLS.  Denne eksperimentelle innstillingen blir fjernet i fremtiden.</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.
 
           Denne retningslinjen er valgfri. Hvis den ikke angis, aktiverer ingen søkeord søkeleverandøren.
@@ -1372,6 +1381,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis denne innstillingen er deaktivert eller ikke angitt, blir TalkGadget-domenenavnet angitt som standard («chromoting-host.talkgadget.google.com»), tilordnet alle verter.
 
           Klienter med ekstern adgang blir ikke påvirket av denne innstillingen. De kommer også til å benytte seg av «chromoting-client.talkgadget.google.com» ved bruk av TalkGadget.</translation>
+<translation id="1103860406762205913">Slår på den tidligere nettbaserte påloggingen</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="6915442654606973733">Aktiver tilgjengelighetsfunksjon for muntlig tilbakemelding.
 
@@ -1593,7 +1603,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
-<translation id="7736666549200541892">Aktiver domene-bundet utvidelse av sertifikater for TLS</translation>
 <translation id="1796466452925192872">Lar deg spesifisere hvilke nettadresser som kan installere utvidelser, apper og temaer.
 
           Fra og med Chrome 21 er det blitt vanskeligere å installere utvidelser, apper og brukerskripter som ikke hentes fra Chrome Nettmarked. Tidligere kunne brukere klikke på en link til en *.crx-fil, hvorpå Chrome, etter et par advarsler, tilbød seg å installere filen. Etter Chrome 21 må du nå laste ned slike filer, for deretter å dra dem til siden for Chrome-innstillinger. Denne innstillingen legger til rette for at bestemte nettadresser kan bruke den gamle, enklere installeringsflyten.
@@ -1603,11 +1612,19 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           ExtensionInstallBlacklist har forrang for denne retningslinjen. I klartekst betyr dette at en utvidelse oppført på sperrelisten, ikke blir installert, selv om nedlastingen skal skje fra et nettsted på denne listen.</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="4224610387358583899">Forsinkelser for skjermlås</translation>
+<translation id="5388730678841939057">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding (foreldet)</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME"/> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME"/> gjengi HTML-sider som standard.</translation>
 <translation id="186719019195685253">Handling som skal utføres når inaktivitetsforsinkelsen overgås og maskinen kjører på vekselstrøm</translation>
 <translation id="7890264460280019664">Rapportér en liste over nettverksgrensesnitt med typene og maskinvareadressene til tjeneren.
 
       Hvis innstillingen ikke er angitt, eller angitt som «false», rapporteres ikke grensesnittlisten.</translation>
+<translation id="197143349065136573">Slår på den tidligere nettbaserte påloggingen.
+
+      Denne innstillingen er nyttig for bedriftskunder som bruker SSO-løsninger som ennå ikke er kompatible med den nye, innebygde påloggingsflyten.
+      Hvis du slår på denne innstillingen, blir den tidligere, nettbaserte påloggingsflyten brukt.
+      Hvis du slår av denne innstillingen eller ikke angir noe her, blir som standard den nye, innebygde påloggingsflyten brukt. Brukere kan fortsatt slå på den foregående, nettbaserte påloggingsflyten via kommandolinjeflagget --enable-web-based-signin.
+
+      Vi fjerner den eksperimentelle innstillingen på et senere tidspunkt, når den innebygde påloggingsflyten støtter alle SSO-påloggingsflyter fullt ut.</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
@@ -1711,6 +1728,13 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
+<translation id="8071636581296916773">Aktiverer bruk av relétjenere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
+
+          Hvis denne innstillingen er aktivert, kan eksterne klienter bruke relétjenere til å koble seg til denne maskinen når en direkte tilkobling ikke er tilgjengelig (f.eks. på grunn av brannmurrestriksjoner).
+
+          Merk at innstillingen ignoreres hvis innstillingen <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> er deaktivert.
+
+          Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5781806558783210276">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på batteristrøm.
 
@@ -1762,6 +1786,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis denne innstillingen er aktivert, må brukere oppgi en gyldig to-delt kode ved lesing av en vert.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, er ikke to-delt autentisering i bruk. I stedet må brukere oppgi en egendefinert PIN-kode (standard atferd).</translation>
+<translation id="6698424063018171973">Begrenser UDP-portområdet som brukes av den eksterne tilgangsverten i denne maskinen.
+
+          Hvis denne innstillingen ikke angis, eller hvis den blir angitt til en tom streng, får den eksterne tilgangsverten tillatelse til å bruke tilgjengelige porter, med mindre innstillingen <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> er deaktivert, da bruker den eksterne tilgangsverten UDP-porter i området 12400-12409.</translation>
 <translation id="7329842439428490522">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME"/> slår av skjermen.
@@ -1777,6 +1804,13 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       De gjenkjente identifikatorene for tilkoblingstyper inkluderer Ethernet, Wi-Fi, WiMax, Bluetooth og mobilnettverk.</translation>
 <translation id="6652197835259177259">Innstillinger for lokalt administrerte brukere</translation>
+<translation id="2808013382476173118">Aktiverer bruk av STUN-servere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
+
+          Hvis denne innstillingen er aktivert, kan eksterne klienter oppdage og koble seg til denne maskinen selv om de er adskilt fra den av en brannmur.
+
+          Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres ut av brannmuren, vil denne maskinen bare tillate forbindelser fra klientmaskiner i det lokale nettverket.
+
+          Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
 <translation id="3243309373265599239">Angir hvor lenge brukeren kan være inaktiv før skjermen nedtones når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi høyere enn null. angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME"/> nedtoner skjermen.

@@ -6,14 +6,12 @@
 <translation id="248395913932153421">दिवस</translation>
 <translation id="1729654308190250600">कृपया एक रिक्त-नसलेला ईमेल पत्ता प्रविष्ट करा.</translation>
 <translation id="6015796118275082299">वर्ष</translation>
-<translation id="9186171386827445984">दस्तऐवज लोड करत आहे: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> पृष्ठे...</translation>
 <translation id="1235745349614807883">अलीकडील शोध साफ करा</translation>
 <translation id="7223624360433298498">लोटलेला अवधी</translation>
 <translation id="1171774979989969504">कृपया एक ईमेल पत्ता प्रविष्ट करा.</translation>
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
 <translation id="5048533449481078685">सूची चिन्हक</translation>
 <translation id="4202807286478387388">जंप करा</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">कृपया '<ph name="ATSIGN"/>' मागुन येणारा भाग प्रविष्ट करा. '<ph name="INVALIDADDRESS"/>' अपूर्ण आहे.</translation>
 <translation id="2746543609216772311">मूल्य <ph name="MINIMUM_DATE_OR_TIME"/> किंवा नंतरचे असणे आवश्यक आहे.</translation>
 <translation id="2572483411312390101">प्ले करा</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">कृपया आपण पुढे चालू ठेवू इच्छित असल्यास हा बॉक्स पहा.</translation>
 <translation id="8534579021159131403">मिनिटे</translation>
 <translation id="819205353528511139">पूर्ण स्क्रीन मोडमध्ये चित्रपट प्ले करा</translation>
-<translation id="8964020114565522021">फाइल येथे ड्रॅग करा</translation>
 <translation id="4103419683916926126">मिलिसेकंद</translation>
 <translation id="838869780401515933">तपासा</translation>
 <translation id="2846343701378493991">1024 (मध्यम प्रत)</translation>

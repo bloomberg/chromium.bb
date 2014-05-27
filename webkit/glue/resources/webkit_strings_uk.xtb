@@ -6,14 +6,12 @@
 <translation id="248395913932153421">День</translation>
 <translation id="1729654308190250600">Введіть електронну адресу.</translation>
 <translation id="6015796118275082299">Рік</translation>
-<translation id="9186171386827445984">Завантаження документа – сторінки: <ph name="PAGE_NUMBER"/> із <ph name="NUMBER_OF_PAGES"/>...</translation>
 <translation id="1235745349614807883">Очистити останні пошуки</translation>
 <translation id="7223624360433298498">минуло часу</translation>
 <translation id="1171774979989969504">Введіть електронну адресу.</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
 <translation id="5048533449481078685">маркер списку</translation>
 <translation id="4202807286478387388">перейти</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Введіть частину електронної адреси до знака &quot;<ph name="ATSIGN"/>&quot;. Електронна адреса &quot;<ph name="INVALIDADDRESS"/>&quot; неповна.</translation>
 <translation id="2746543609216772311">Має бути <ph name="MINIMUM_DATE_OR_TIME"/> або пізніша дата.</translation>
 <translation id="2572483411312390101">відтворити</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Поставте тут прапорець, якщо хочете продовжити.</translation>
 <translation id="8534579021159131403">Хвилини</translation>
 <translation id="819205353528511139">відтворити фільм у повноекранному режимі</translation>
-<translation id="8964020114565522021">Перетягніть файл сюди</translation>
 <translation id="4103419683916926126">Мілісекунди</translation>
 <translation id="838869780401515933">установити прапорець</translation>
 <translation id="2846343701378493991">1024 (Середній рівень)</translation>

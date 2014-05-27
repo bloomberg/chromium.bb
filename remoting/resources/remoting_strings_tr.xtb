@@ -17,6 +17,7 @@ Ana Makinesi</translation>
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="2124408767156847088">Android cihazınızdan bilgisayarlarınıza güvenle erişin.</translation>
+<translation id="3194245623920924351">Chrome Uzaktan Masaüstü</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
 <translation id="8244400547700556338">Nasıl yapıldığını öğrenin.</translation>
@@ -27,6 +28,8 @@ Ana Makinesi</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7782471917492991422">Lütfen bilgisayarınızın güç yönetimi ayarlarını kontrol edin ve boşta kaldığında uyku moduna geçecek şekilde ayarlanmadığından emin olun.</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
+<translation id="5925497314631808737">• Tam ekran / yoğun içerik modu uygulandı
+• İşlem çubuğunu gizleme simgesi iyileştirildi</translation>
 <translation id="2707879711568641861">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="7868137160098754906">Lütfen uzak bilgisayara ilişkin PIN'inizi girin.</translation>
@@ -134,7 +137,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="4361728918881830843">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü'nü o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
 <translation id="7444276978508498879">İstemci bağlandı: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="4913529628896049296">bağlantı bekleniyor...</translation>
-<translation id="5714695932513333758">Bağlantı geçmişi</translation>
 <translation id="811307782653349804">Bilgisayarınıza her yerden erişin.</translation>
 <translation id="2939145106548231838">Ana makineyle kimlik doğrulaması yap</translation>
 <translation id="2366718077645204424">Ana bilgisayara erişilemiyor. Bu sorun, kullandığınız ağın yapılandırmasından kaynaklanıyor olabilir.</translation>
@@ -189,7 +191,6 @@ Masaüstü Ana Makinesi</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="7319983568955948908">Paylaşmayı Durdur</translation>
 <translation id="6681800064886881394">Telif Hakkı 2013 Google Inc. Tüm Hakları Saklıdır.</translation>
-<translation id="8038108135592087998">Android için Chrome Uzak Masaüstü uygulamasının ilk sürümü</translation>
 <translation id="6668065415969892472">PIN'iniz güncellendi.</translation>
 <translation id="4513946894732546136">Geri Bildirim</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>

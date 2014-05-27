@@ -6,14 +6,12 @@
 <translation id="248395913932153421">روز</translation>
 <translation id="1729654308190250600">لطفاً یک آدرس ایمیل غیرخالی وارد کنید.</translation>
 <translation id="6015796118275082299">سال</translation>
-<translation id="9186171386827445984">در حال بارگیری سند: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> صفحات...</translation>
 <translation id="1235745349614807883">پاک کردن جستجوهای اخیر</translation>
 <translation id="7223624360433298498">مدت سپری شده</translation>
 <translation id="1171774979989969504">لطفاً یک آدرس ایمیل وارد کنید.</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="5048533449481078685">علامت گذار لیست</translation>
 <translation id="4202807286478387388">پرش</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN"/>» را وارد کنید. «<ph name="INVALIDADDRESS"/>» ناقص است.</translation>
 <translation id="2746543609216772311">مقدار باید <ph name="MINIMUM_DATE_OR_TIME"/> یا بعد از آن باشد.</translation>
 <translation id="2572483411312390101">پخش</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">در صورتی که می‌خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
 <translation id="8534579021159131403">دقیقه</translation>
 <translation id="819205353528511139">پخش فیلم در حالت تمام صفحه</translation>
-<translation id="8964020114565522021">فایل را اینجا بکشید</translation>
 <translation id="4103419683916926126">میلی‌ ثانیه</translation>
 <translation id="838869780401515933">علامت‌گذاری</translation>
 <translation id="2846343701378493991">1024 (درجه متوسط)</translation>

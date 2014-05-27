@@ -104,7 +104,6 @@
           MEGJEGYZÉS: a fogyasztói és vállalati eszközök alapértelmezett működése eltérő. A fogyasztói eszközökön alapértelmezés szerint engedélyezettek a felügyelt felhasználók, míg a vállalati eszközökön le vannak tiltva.</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="5469825884154817306">Képek letiltása ezeken az webhelyeken</translation>
-<translation id="5827231192798670332">Kiválasztja az automatikus megtisztítás során a lemezterület felszabadításához használt stratégiát</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
 <translation id="2482676533225429905">Natív üzenetküldő</translation>
 <translation id="6649397154027560979">Ez a házirend megszűnt. Kérjük, használja helyette az URLBlacklist házirendet.
@@ -141,7 +140,6 @@
       Ha a(z) <ph name="PRODUCT_NAME"/> nem tud visszavonási állapotinformációt beszerezni, akkor az ilyen tanúsítványok visszavontként lesznek kezelve („hard-fail”).
 
       Ha ez a házirend nincs beállítva, vagy hamis értékűre van beállítva, akkor a Chrome a meglévő online visszavonás-ellenőrzési beállításokat használja.</translation>
-<translation id="1438955478865681012">Beállítja a bővítményekkel kapcsolatos szabályokat. A felhasználó nem telepíthet feketelistás bővítményeket, kivéve, ha azok szerepelnek az engedélyezett listán. Kényszerítheti is, hogy a <ph name="PRODUCT_NAME"/> automatikusan telepítse a kiterjesztéseket, ha meghatározza őket a következőben: <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. A feketelista elsőbbséget élvez a kényszerített bővítmények listájával szemben.</translation>
 <translation id="3516856976222674451">Felhasználói munkamenet maximális hosszának korlátozása.
 
       Amikor az irányelv be van állítva, megadja annak az időtartamnak a hosszát, amelynek elteltével a felhasználót a rendszer automatikusan kijelentkezteti, megszüntetve ezzel a munkamenetet. A felhasználót a hátralévő időről a tálcán található visszaszámláló tájékoztatja.
@@ -198,19 +196,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="1096105751829466145">Alapértelmezett keresési szolgáltató</translation>
 <translation id="7567380065339179813">Bővítmények engedélyezése ezeken a webhelyeken</translation>
 <translation id="4555850956567117258">A felhasználó távoli tanúsításának engedélyezése</translation>
-<translation id="4418909344122918381">A felhasználói viselkedés vezérlése többprofilú munkamenet során <ph name="PRODUCT_OS_NAME"/>-eszközökön.
-
-      Ha a házirend beállítása „MultiProfileUserBehaviorUnrestricted”, akkor a felhasználó lehet elsődleges és másodlagos felhasználó is egy többprofilú munkamenet során.
-
-      Ha a házirend beállítása „MultiProfileUserBehaviorMustBePrimary”, akkor a felhasználó csak elsődleges felhasználó lehet egy többprofilú munkamenet során.
-
-      Ha a házirend beállítása „MultiProfileUserBehaviorNotAllowed”, akkor a felhasználó nem vehet részt többprofilú munkamenetben.
-
-      Ha Ön meghatározza ezt a beállítást, a felhasználók nem módosíthatják vagy bírálhatják felül.
-
-      Ha a beállítás aközben módosul, amíg a felhasználó bejelentkezett egy többprofilú munkamenetbe, akkor a rendszer a munkamenet összes felhasználójánál ellenőrzi a megfelelő beállítást. Ha valamelyik felhasználó többé nem jogosult a munkamenetben való részvételre, akkor a munkamenet befejeződik.
-
-      Ha a házirend nincs beállítva, akkor a rendszer az alapértelmezett értéket használja (MultiProfileUserBehaviorUnrestricted).</translation>
 <translation id="5966615072639944554">A távoli tanúsítási API használatára engedélyezett bővítmények</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
@@ -263,6 +248,7 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
           Ezt a házirendet csak akkor veszi figyelembe a rendszer, ha a „DefaultSearchProviderEnabled” házirend engedélyezett.</translation>
 <translation id="5912364507361265851">Lehetővé teszi, hogy a felhasználók megjelenítsék a jelszavakat a Jelszókezelőben</translation>
+<translation id="5318185076587284965">Relay szerverek használatának engedélyezése a távoli gazdagép számára</translation>
 <translation id="510186355068252378">Tiltja az adatok szinkronizálását a Google szinkronizálási szolgáltatásainak segítségével a(z) <ph name="PRODUCT_NAME"/> alkalmazásban, valamint megakadályozza, hogy a felhasználók módosítsák ezt a beállítást. Ha engedélyezi ezt a beállítást, a felhasználók nem módosíthatják, illetve nem írhatják felül a(z) <ph name="PRODUCT_NAME"/> ezen beállítását. Ha ez a házirend beállítatlanul marad, akkor a felhasználó dönthet arról, hogy kívánja-e használni a Google Sync szolgáltatást.</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
 <translation id="4807950475297505572">A legrégebben használt felhasználók eltávolítása, amíg elegendő szabad terület nem lesz</translation>
@@ -292,6 +278,20 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="382476126209906314">Beállítja a távoli hozzáférésű gazdagép TalkGadget előtagját</translation>
 <translation id="6561396069801924653">Kisegítő beállítások megjelenítése az értesítési terület menüjében</translation>
 <translation id="8104962233214241919">Ügyféltanúsítványok automatikus kiválasztása ezeknél a webhelyeknél</translation>
+<translation id="7983624541020350102">(A jelen dokumentumban lehetnek olyan házirendek, melyek a
+      <ph name="PRODUCT_NAME"/> későbbi verzióihoz készültek, és ezek
+      figyelmeztetés nélkül módosulhatnak. A támogatott házirendek listája
+      ugyanaz a Chromium és a Google Chrome esetében.)
+
+      Nincs szükség a beállítások manuális módosítására! Innen letölthet egyszerűen használható sablonokat:
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Ezek a házirendek kizárólag a szervezetén belül használt Chrome-példányok konfigurálására használhatók. A házirendek szervezetén kívüli használata (például egy nyilvánosan terjesztett programban) rosszindulatú programnak minősül, ezért a Google és a víruskereső szoftverek gyártói nagy valószínűséggel rosszindulatú programként címkézik fel.
+
+      Megjegyzés: A <ph name="PRODUCT_NAME"/>
+      28-tól a házirendek közvetlenül a Group Policy API-ból töltődnek be
+      Windows rendszeren. A manuálisan a beállításjegyzékbe írt házirendeket a rendszer mellőzni fogja. A részleteket lásd itt:
+      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">AppPack bővítmények listája</translation>
 <translation id="4386578721025870401">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet.
 
@@ -369,13 +369,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
       Ezekkel a házirendekkel beállíthatja, hogy a <ph name="PRODUCT_OS_NAME"/> hogyan reagáljon, ha a felhasználó egy adott ideig tétlen marad.</translation>
 <translation id="2565967352111237512">Lehetővé teszi a(z) <ph name="PRODUCT_NAME"/> használati és összeomlási adatainak anonim jelentését a Google-nak, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást. Ha engedélyezi ezt a beállítást, használati és összeomlási anonim adatok továbbítódnak a Google-hoz. Ha letiltja a beállítást, soha nem továbbítódnak a Google-hoz a használati és az összeomlási anonim adatok. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül ezt a beállítást a(z) <ph name="PRODUCT_NAME"/> alkalmazásban. Ha a házirend beállítatlanul marad, akkor az lesz a beállítás, amit a felhasználó a telepítéskor/első futtatáskor választott.</translation>
-<translation id="4784220343847172494">Az automatikus megtisztítás viselkedését vezérli <ph name="PRODUCT_OS_NAME"/>-eszközökön. A lemezterületet felszabadító automatikus megtisztítás akkor aktiválódik, ha a szabad lemezterület mennyisége kritikus szintet ér el.
-
-      Ha a házirend beállítása „RemoveLRU”, akkor az automatikus megtisztítás addig távolítja el a felhasználókat az eszközről a legrégebbi bejelentkezések sorrendjében, amíg elegendő szabad terület nem lesz.
-
-      Ha a házirend beállítása „RemoveLRUIfDormant”, akkor az automatikus megtisztítás addig távolítja el a legalább 3 hónapja be nem jelentkezett felhasználókat a legrégebbi bejelentkezések sorrendjében, amíg elegendő szabad terület nem lesz.
-
-      Ha a házirend nincs beállítva, akkor az automatikus megtisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
 <translation id="6256787297633808491">A Chrome indításakor alkalmazandó rendszerszintű jelölők</translation>
 <translation id="2516600974234263142">Engedélyezi a nyomtatást a(z) <ph name="PRODUCT_NAME"/> programban, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
@@ -403,16 +396,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="8906768759089290519">Vendég mód bekapcsolása</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
-<translation id="3234167886857176179">Ez a <ph name="PRODUCT_NAME"/> által használt házirendek listája.
-
-      Nincs szükség a beállítások manuális módosítására! Letölthet könnyen használható sablonokat innen:
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      A támogatott házirendek listája megegyezik a Chromium és a Google Chrome esetén.
-
-      Ezek a házirendek kizárólag a szervezetén belül használt Chrome-példányok konfigurálására használhatók. A házirendek szervezetén kívüli használata (például egy nyilvánosan terjesztett programban) rosszindulatú programnak minősül, ezért a Google és a víruskereső szoftverek gyártói nagy valószínűséggel rosszindulatú programként címkézik fel.
-
-      Megjegyzés: a Chrome 28-tól a házirendek közvetlenül a Group Policy API-ból töltődnek be Windows rendszerben. A manuálisan a beállításjegyzékbe írt házirendek mellőzve lesznek. A részleteket lásd itt: http://crbug.com/259236.</translation>
 <translation id="2292084646366244343">A(z) <ph name="PRODUCT_NAME"/> használhatja a Google helyesírási hibák javítását segítő internetes szolgáltatását. Ha a beállítás engedélyezve van, akkor a szolgáltatás mindig használatban van. Letiltás esetén a szolgáltatás soha nincs használatban.
 
       A helyesírás-ellenőrzés továbbra is elvégezhető egy letöltött szótár használatával, ez a házirend csak az internetes szolgáltatás használatát szabályozza.
@@ -439,6 +422,7 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="3915395663995367577">URL egy proxy .pac fájlhoz</translation>
 <translation id="2144674628322086778">A vállalati felhasználó elsődleges és másodlagos felhasználó is lehet  (alapértelmezett viselkedés)</translation>
 <translation id="1022361784792428773">Bővítményazonosítók, amelyek felhasználói telepítését meg kell akadályozni (vagy * az összes esetén)</translation>
+<translation id="3805659594028420438">TLS-domainhez kötött tanúsítványbővítmények engedélyezése (elavult)</translation>
 <translation id="5499375345075963939">Ez a házirend csak kiállító módban aktív.
 
        Amikor a házirend be van állítva, és az értéke nem 0, akkor az aktuális bejelentkezett bemutatófelhasználót a rendszer meghatározott idő elteltével automatikusan kijelentkezteti.
@@ -645,6 +629,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
       Ha nincs beállítva, akkor a felhasználó módosíthatja az indítóban rögzített alkalmazások listáját.</translation>
 <translation id="1679420586049708690">Nyilvános munkamenet automatikus bejelentkezéshez</translation>
+<translation id="5836064773277134605">A távoli gazdagép által használt UDP porttartomány korlátozása</translation>
 <translation id="7625444193696794922">Azt a kiadási csatornát határozza meg, amelyhez az eszközt hozzá kell kötni.</translation>
 <translation id="2552966063069741410">Időzóna</translation>
 <translation id="3788662722837364290">Energiagazdálkodási beállítások olyankor, amikor a felhasználó tétlen</translation>
@@ -667,6 +652,11 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
           Ha nincs beállítva ez a házirend, akkor a rendszer az alapértelmezett parancssort használja.</translation>
 <translation id="2646290749315461919">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók tartózkodási helyét. A felhasználók tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely a tartózkodási helyét szeretné tudni. Ha a házirend konfigurálatlanul marad, a rendszer az &quot;AskGeolocation&quot; értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="6394350458541421998">Ez a házirend többé nincs jelen a <ph name="PRODUCT_OS_NAME"/> 29-es verziójától kezdve. Kérjük, használja helyette a PresentationScreenDimDelayScale házirendet.</translation>
+<translation id="2956777931324644324">Ezt a házirendet a <ph name="PRODUCT_NAME"/> 36-os verziójától kezdve visszavontuk.
+
+      Azt adja meg, hogy a TLS-domainhez kötött tanúsítványbővítmények engedélyezve legyenek-e.
+
+      Ez a beállítás arra szolgál, hogy tesztelési célból engedélyezze a TLS-domainhez kötött tanúsítványbővítményeket. Ezt a kísérleti beállítást a jövőben eltávolítjuk.</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
 <translation id="2959898425599642200">Proxy figyelmen kívül hagyásának szabályai</translation>
 <translation id="228659285074633994">Megadja azt az időtartamot, amely után felhasználói bevitel hiányában megjelenik egy figyelmeztető párbeszédablak, amennyiben a rendszer hálózati áramról üzemel.
@@ -804,7 +794,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
           A házirend belső felhasználású, és azt maga a Chrome használja.</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="131353325527891113">Felhasználónevek megjelenítése a bejelentkezési képernyőn</translation>
-<translation id="5317965872570843334">Lehetővé teszi a STUN és továbbítószerverek használatát, amikor távoli ügyfelek próbálnak kapcsolatot létrehozni ezzel a géppel. Ha ez a beállítás engedélyezve van, akkor a távoli ügyfelek láthatják ezt a gépet, és csatlakozni is tudnak hozzá, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak olyan kapcsolatokat fog engedélyezni az ügyfelek gépei felől, amelyek a helyi hálózaton belül találhatók. Ha a házirend beállítatlanul marad, akkor a rendszer engedélyezi a beállítást.</translation>
 <translation id="4057110413331612451">A vállalati felhasználó csak elsődleges felhasználó lehet többprofilos módban</translation>
 <translation id="5365946944967967336">Kezdőoldal gomb megjelenítése az eszköztáron</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
@@ -829,6 +818,15 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
       használjon más eszközt, például a Telemetryt.</translation>
 <translation id="8731693562790917685">A tartalmi beállítások lehetővé teszik az adott típusú tartalmak (pl. cookie-k, képek vagy JavaScriptek) kezelésének meghatározását.</translation>
 <translation id="2411919772666155530">Értesítések letiltása ezeken a webhelyeken</translation>
+<translation id="7332963785317884918">Ez a házirend elavult. A <ph name="PRODUCT_OS_NAME"/> mindig a „RemoveLRU” tisztítási stratégiát fogja használni.
+
+      Az automatikus tisztítási viselkedést vezérli <ph name="PRODUCT_OS_NAME"/>-eszközökön. Automatikus tisztítás akkor következik be, amikor a szabad lemezterület mennyisége kritikus szintet ér el, így szabadítva fel lemezterületet.
+
+      Ha a házirend beállítása „RemoveLRU”, akkor az automatikus tisztítás a legrégebben bejelentkezett felhasználókat távolítja el az eszközről addig, amíg elég szabad lemezterület nem lesz.
+
+      Ha a házirend beállítása „RemoveLRUIfDormant”, akkor az automatikus tisztítás a felhasználókat addig távolítja el a legrégebbi bejelentkezés sorrendjében, amíg elég szabad terület nem lesz, akik legalább 3 hónapja nem jelentkeztek be.
+
+      Ha a házirend nincs beállítva, akkor az automatikus tisztítás az alapértelmezett stratégiát használja. Ez jelenleg a „RemoveLRUIfDormant” stratégia.</translation>
 <translation id="6923366716660828830">Megadja az alapértelmezett keresési szolgáltató nevét. Ha üresen vagy beállítatlanul marad, a keresési URL által megadott gazdagépnév lesz használatban. A házirend csak akkor érvényesül, ha a &quot;DefaultSearchProviderEnabled&quot; házirend engedélyezve van.</translation>
 <translation id="4869787217450099946">Meghatározza, hogy a képernyőébresztés zárolása kérhető legyen-e. A képernyőébresztés zárolására vonatkozó kérelmeket a bővítmények küldhetik az energiagazdálkodás bővítmény API-n keresztül.
 
@@ -895,6 +893,19 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a &quot;DefaultJavaScriptSetting&quot; házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME"/> számára.</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az &quot;Indításkor betöltendő URL-ek&quot; listájának tartalmát figyelmen kívül hagyja, hacsak a &quot;Teendő indításkor&quot; részben nem az &quot;URL-ek listájának megnyitása&quot; lehetőséget választja.</translation>
+<translation id="1464848559468748897">A felhasználói viselkedés vezérlése többprofilos munkamenet során <ph name="PRODUCT_OS_NAME"/>-eszközökön.
+
+      Ha a házirend beállítása „MultiProfileUserBehaviorUnrestricted”, akkor a felhasználó lehet elsődleges vagy másodlagos felhasználó egy többprofilos munkamenetben.
+
+      Ha a házirend beállítása „MultiProfileUserBehaviorMustBePrimary”, akkor a felhasználó csak az elsődleges felhasználó lehet egy többprofilos munkamenetben.
+
+      Ha a házirend beállítása „MultiProfileUserBehaviorNotAllowed”, akkor a felhasználó nem vehet részt többprofilos munkamenetben.
+
+      Ha konfigurálja ezt a beállítást, a felhasználók nem módosíthatják vagy bírálhatják felül azt.
+
+      Ha a beállítás módosul, miközben a felhasználó be van jelentkezve egy többprofilos munkamenetbe, a rendszer a munkamenetben részt vevő összes felhasználónál ellenőrzi a megfelelő beállítást. Ha a felhasználók valamelyike többé nem vehet részt a munkamenetben, akkor a munkamenet lezárul.
+
+      Ha a házirend nincs beállítva, akkor a vállalat által felügyelt felhasználókra a „MultiProfileUserBehaviorMustBePrimary” alapértelmezett érték vonatkozik, a nem felügyelt felhasználókra pedig a „MultiProfileUserBehaviorUnrestricted” érték vonatkozik.</translation>
 <translation id="243972079416668391">A tétlenségi késleltetés elérésekor végrehajtandó művelet megadása hálózati áramforrásról való működés során.
 
           Ha ez a házirend be van állítva, akkor megadja, hogy milyen műveletet hajtson végre a(z) <ph name="PRODUCT_OS_NAME"/>, ha a felhasználó inaktív marad a tétlenségi késleltetésként megadott időtartamig, amely külön konfigurálható.
@@ -1022,6 +1033,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
           A házirend belső felhasználású, és azt maga a Chrome használja.</translation>
 <translation id="913195841488580904">Letiltja a hozzáférést az URL-ek egy listájához</translation>
+<translation id="5461308170340925511">Beállítja a bővítményekkel kapcsolatos irányelveket. A felhasználó csak akkor telepíthet tiltott listán szereplő bővítményeket, ha azokat engedélyezőlistára tették. Beállíthatja továbbá, hogy a(z) <ph name="PRODUCT_NAME"/> automatikusan telepítse a bővítményeket azáltal, hogy azokat megadja a(z) <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> elemei között. A kényszerített telepítésű bővítményeket attól függetlenül telepíti a rendszer, hogy azok szerepelnek-e a tiltott listán vagy sem.</translation>
 <translation id="3292147213643666827">Lehetővé teszi, hogy a(z) <ph name="PRODUCT_NAME"/> proxyként működjön a(z) <ph name="CLOUD_PRINT_NAME"/> és a számítógéphez csatlakoztatott régebbi nyomtatók között.
 
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
@@ -1098,9 +1110,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="465099050592230505">Vállalati internetes áruház URL-je (megszűnt)</translation>
 <translation id="2006530844219044261">Energiagazdálkodás</translation>
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
-<translation id="2431811512983100641">Meghatározza, hogy a TLS-domainhez kötött tanúsítványbővítmények engedélyezve legyenek-e.
-
-Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére használható. Ezt a kísérleti beállítást a jövőben eltávolítjuk.</translation>
 <translation id="8711086062295757690">Megadja a kulcsszót, amely az ezzel a szolgáltatóval való keresés gyors elérésére használatos a cím- és keresősávban. Nem kötelező házirend. Ha nincs beállítva, kulcsszóval nem lehet aktiválni a keresési szolgáltatót. A házirend csak akkor érvényesül, ha a &quot;DefaultSearchProviderEnabled&quot; házirend engedélyezve van.</translation>
 <translation id="5774856474228476867">Az alapértelmezett keresési szolgáltató kereső URL-je</translation>
 <translation id="4650759511838826572">URL protokollsémák tiltása</translation>
@@ -1165,7 +1174,7 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="5921713479449475707">Automatikus frissítési letöltések engedélyezése HTTP-n keresztül</translation>
-<translation id="4482640907922304445">Megjeleníti a Kezdőlap gombot a(z) <ph name="PRODUCT_NAME"/> eszköztárán. Ha engedélyezi ezt a beállítást, a Kezdőlap gomb mindig látható. Ha letiltja a beállítást, a Kezdőlap gomb soha nem látható. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül ezt a beállítást a következőben: <ph name="PRODUCT_NAME"/>. Ha a házirend beállítatlanul marad, a felhasználó dönthet a Kezdőlap gomb megjelenítéséről.</translation>
+<translation id="4482640907922304445">Megjeleníti a Kezdőoldal gombot az <ph name="PRODUCT_NAME"/> eszköztárán. Ha engedélyezi ezt a beállítást, a Kezdőoldal gomb mindig látható. Ha letiltja a beállítást, a Kezdőoldal gomb soha nem látható. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a <ph name="PRODUCT_NAME"/> ezen beállítását. Ha a házirend nincs beállítva, a felhasználó dönthet a Kezdőoldal gomb megjelenítéséről.</translation>
 <translation id="2518231489509538392">Hanglejátszás engedélyezése</translation>
 <translation id="8146727383888924340">Ajánlatok beváltásának engedélyezése a felhasználók számára Chrome OS-regisztráció útján</translation>
 <translation id="7301543427086558500">Olyan alternatív URL-ek listáját adja meg, amelyekkel a keresett kifejezések nyerhetők ki a keresőmotorból. Az URL-eknek tartalmazniuk kell a keresett kifejezések kinyerésére szolgáló <ph name="SEARCH_TERM_MARKER"/> karakterláncot.
@@ -1206,6 +1215,7 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
           Ha a beállítás le van tiltva vagy nincs beállítva, akkor minden gazdagép az alapértelmezett TalkGadget domainnevet („chromoting-host.talkgadget.google.com”) használja.
 
           Távoli hozzáférésű kliensekre nincs hatással ez a beállítás. Ők a TalkGadget eléréséhez mindig a „chromoting-client.talkgadget.google.com” nevet használják.</translation>
+<translation id="1103860406762205913">Engedélyezi a régi internetalapú bejelentkezést</translation>
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="6915442654606973733">A hangos visszajelzés kisegítő lehetőség engedélyezése.
 
@@ -1402,7 +1412,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7882585827992171421">Ez a házirend csak kiállító módban aktív.
 
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
-<translation id="7736666549200541892">TLS-domainhez kötött tanúsítványbővítmények engedélyezése</translation>
 <translation id="1796466452925192872">Lehetővé teszi annak megadását, hogy mely URL-ek telepíthetnek bővítményeket, alkalmazásokat és témákat.
 
               A Chrome 21-től kezdve nehezebb a bővítmények, alkalmazások és felhasználói szkriptek telepítése a Chrome Internetes áruházon kívülről. A felhasználók korábban rákattinthattak egy *.crx fájlra mutató linkre, a Chrome pedig néhány figyelmeztetés után felajánlotta a fájl telepítését. A Chrome 21-től kezdve az ilyen fájlokat le kell tölteni, és be kell húzni a Chrome beállításainak oldalára. Ez a beállítás lehetővé teszi, hogy bizonyos URL-ek a régi, könnyebb telepítési folyamatot használják.
@@ -1412,11 +1421,19 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
               Az ExtensionInstallBlacklist elsőbbséget élvez ezen házirenddel szemben, azaz a feketelistán lévő bővítmények akkor sem lesznek telepítve, ha történetesen ezen a listán szereplő webhelyről származnak.</translation>
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
 <translation id="4224610387358583899">Képernyő zárolásának késleltetései</translation>
+<translation id="5388730678841939057">Kiválasztja az automatikus megtisztítás során a lemezterület felszabadításához használt stratégiát (elavult)</translation>
 <translation id="7848840259379156480">Lehetővé teszi, hogy beállítsa az alapértelmezett HTML-megjelenítőt, ha a <ph name="PRODUCT_FRAME_NAME"/> telepítve van. Az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de opcionálisan ezt felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a <ph name="PRODUCT_FRAME_NAME"/> segítségével.</translation>
 <translation id="186719019195685253">Végrehajtandó művelet a tétlenségi késleltetés elérésekor hálózati áramforrásról történő üzemelés során</translation>
 <translation id="7890264460280019664">A hálózati interfészek listájának jelentése a szervernek a típusukkal és hardvercímükkel együtt.
 
       Ha ez a házirend nincs beállítva, vagy hamis értékűre van beállítva, az interfészlistát nem továbbítja a rendszer.</translation>
+<translation id="197143349065136573">Engedélyezi a régi internetalapú bejelentkezési folyamatot.
+
+      Ez a beállítás a vállalati ügyfelek számára lehet hasznos, akik olyan SSO-megoldásokat használnak, amelyek még nem kompatibilisek az új közvetlen bejelentkezési folyamattal.
+      Ha engedélyezi ezt a beállítást, akkor a rendszer a régi, internetalapú bejelentkezési folyamatot használja.
+      Ha kikapcsolja a beállítást, vagy nem adja meg azt, akkor a rendszer alapértelmezés szerint az új közvetlen bejelentkezési folyamatot használja. A felhasználók továbbra is engedélyezhetik a régi, internetalapú bejelentkezési folyamatot az --enable-web-based-signin parancssori jelölő használatával.
+
+      A kísérleti beállítást a jövőben megszüntetjük, amikor a közvetlen bejelentkezés teljesen támogatni fogja valamennyi SSO bejelentkezési folyamatot.</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="3973371701361892765">A polc soha ne legyen automatikusan elrejtve</translation>
@@ -1480,6 +1497,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha ez a házirend nincs beállítva, az összes beállítás az alapértelmezett értéket használja.</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
+<translation id="8071636581296916773">Engedélyezi relay szerverek használatát, amikor a távoli ügyfelek megpróbálnak kapcsolatot létesíteni ezzel a számítógéppel.
+
+          Ha a beállítás engedélyezve van, akkor a távoli ügyfelek relay szerverek használatával csatlakozhatnak ehhez a számítógéphez, amennyiben nem áll rendelkezésre közvetlen kapcsolat (pl. a tűzfal korlátozásai miatt).
+
+          Ha a <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> házirend le van tiltva, a rendszer figyelmen kívül hagyja ezt a házirendet.
+
+          Ha a házirend nincs beállítva, akkor a beállítás engedélyezett lesz.</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
 <translation id="5781806558783210276">Meghatározza azt a felhasználói bevitel nélkül eltelt időtartamot, amely után a rendszer tétlen állapotba kerül, ha akkumulátorról működik.
 
@@ -1523,6 +1547,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a beállítás engedélyezve van, a felhasználóknak érvényes kétlépcsős kódot kell megadniuk a gazdagéphez való hozzáféréshez.
 
           Ha a beállítás le van tiltva vagy nincs megadva, akkor a kétlépcsős azonosítás nincs engedélyezve, és alapértelmezés szerint a felhasználó által megadott PIN kód szükséges.</translation>
+<translation id="6698424063018171973">Korlátozza a távoli gazdagép által használt UDP porttartományt ezen a számítógépen.
+
+          Ha a házirend nincs beállítva, vagy ha a beállítása egy üres karakterlánc, akkor a távoli gazdagép bármelyik elérhető portot használhatja, kivéve ha a <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> házirend le van tiltva. Ebben az esetben a távoli gazdagép a 12400–12409 tartományba tartozó UDP portokat fogja használni.</translation>
 <translation id="7329842439428490522">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer kikapcsolja a képernyőt, ha akkumulátorról működik.
 
           Ha a házirend nullánál nagyobb értékre van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME"/> kikapcsolja a képernyőt.
@@ -1538,6 +1565,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       A felismert kapcsolattípus-azonosítók a következők: Ethernet, Wi-Fi, WiMax, Bluetooth és mobil.</translation>
 <translation id="6652197835259177259">Helyi felügyeletű felhasználói beállítások</translation>
+<translation id="2808013382476173118">Lehetővé teszi a STUN szerverek használatát, amikor távoli ügyfelek próbálnak kapcsolatot létrehozni ezzel a számítógéppel.
+
+          Ha ez a beállítás engedélyezve van, akkor a távoli ügyfelek láthatják ezt a számítógépet, és csatlakozni is tudnak hozzá, még akkor is, ha tűzfal választja el őket.
+
+          Ha ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a számítógép csak olyan kapcsolatokat fog engedélyezni az ügyfelek számítógépei felől, amelyek a helyi hálózaton belül találhatók.
+
+          Ha a házirend nincs beállítva, akkor a rendszer engedélyezi a beállítást.</translation>
 <translation id="3243309373265599239">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer elsötétíti a képernyőt, ha hálózati áramról működik.
 
           Ha a házirend nullánál nagyobb értékre van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME"/> elsötétíti a képernyőt.

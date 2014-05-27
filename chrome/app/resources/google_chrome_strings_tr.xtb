@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="8914504000324227558">Chrome'u Yeniden Başlat</translation>
 <translation id="8000275528373650868">Google Chrome, Windows Vista veya Windows XP SP2 veya daha ileri bir sürümü gerektirir.</translation>
 <translation id="8485767968786176057">Bu durumda, sertifikada listelenen adres tarayıcınızın ulaşmaya çalıştığı web sitesinin adresiyle eşleşmez. Bunun nedenlerinden biri, farklı bir web sitesine ait sertifika sunan, dolayısıyla uyumsuzluğa neden olan bir saldırganın bağlantınıza girmiş olması olabilir. Başka bir nedeni de sunucunun, ziyaret etmeye çalıştığınız web sitesi de dahil olmak üzere, birden fazla web sitesi için aynı sertifikayı (o sertifika tüm web siteleri için geçerli olmasa da) döndürmeye ayarlanmış olmasıdır. Google Chrome, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; alanına eriştiğinizi söyleyebilir, ancak bunun ulaşmak istediğiniz &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ile aynı site olup olmadığını doğrulayamaz. Devam ederseniz, Chrome daha başka ad uyumsuzluklarında herhangi bir denetleme yapmayacaktır.</translation>
+<translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="123620459398936149">Chrome OS, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="5430073640787465221">Tercih dosyanız bozuk veya geçersiz. Google Chrome, ayarlarınızı kurtaramıyor.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
-<translation id="7115445779188493842">Uygulama başlatıcıyı kullanmak için Google Chrome'u masaüstünde yeniden başlatmalısınız.</translation>
+<translation id="7952135150021331855">Google Chrome arka planda çalışıyor.</translation>
 <translation id="345171907106878721">Kendinizi Chrome'a ekleyin</translation>
 <translation id="6236285698028833233">Google Chrome güncellemesi durdu ve artık işletim sisteminizin bu sürümü desteklenmiyor.</translation>
 <translation id="5453904507266736060">Google Chrome'un Arka Planda Çalışmasına İzin Ver</translation>
@@ -15,7 +15,6 @@
 <translation id="4167057906098955729">Chrome uygulamaları, uzantılar ve web sitelerinden gelen tüm bildirimlerinizi burada görebilirsiniz.</translation>
 <translation id="2704356438731803243">Mevcut Chrome verilerinizi ayrı tutmak isterseniz, <ph name="USER_NAME"/> için yeni bir Chrome kullanıcısı oluşturabilirsiniz.</translation>
 <translation id="386202838227397562">Lütfen tüm Google Chrome pencerelerini kapatıp tekrar deneyin.</translation>
-<translation id="2144822863799338346">Chrome'unuza hoş geldiniz. Şunları yapmak için tekrar buraya göz atın:</translation>
 <translation id="1225016890511909183">Chrome, bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız, ancak yine de bundan sonraki ödemeler için kartınızın güvenlik kodunu doğrulamanız gerekir.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="8838365799985821335">Bir uzantı, Chrome'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
@@ -23,12 +22,12 @@
 <translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="7781002470561365167">Google Chrome'un yeni bir sürümü çıktı.</translation>
 <translation id="5251420635869119124">Misafirler Chrome'u geride hiçbir şey bırakmadan kullanabilirler.</translation>
-<translation id="7101265395643981223">Google Chrome'u başlat</translation>
 <translation id="4891791193823137474">Google Chrome'un arka planda çalışmasına izin ver</translation>
 <translation id="110877069173485804">Bu sizin Chrome'unuz</translation>
+<translation id="1376881911183620035">Yeni Chrome'u denediğiniz için teşekkür ederiz. Devam etmeden önce tüm açık çalışmalarınızı kaydettiğinizden emin olmak için Chrome'un yeniden başlatılması gerekiyor.</translation>
 <translation id="2896252579017640304">Chrome uygulamalarını başlat</translation>
-<translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="2721687379934343312">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanır ve bu OS X hesabını paylaşan diğer Chrome kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
+<translation id="683440813066116847">Google Chrome Canary'nin mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="4953650215774548573">Google Chrome'u varsayılan tarayıcım olarak ayarla</translation>
 <translation id="6014844626092547096">Chrome'da oturum açtınız! Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="7419046106786626209">Senkronizasyon, alan adınızda kullanılamadığından Chrome OS, verilerinizi senkronize edemedi.</translation>
@@ -37,27 +36,21 @@
 <translation id="6982337800632491844"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Google Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="4309555186815777032">(Chrome'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME"/> kanalına güncelleniyor...</translation>
+<translation id="8032142183999901390">Hesabınızı Chrome'dan kaldırdıktan sonra, geçerli olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="5775197990071433230">Bu bilgisayar zaten Google Chrome bileşenlerinin daha yeni bir sürümüne sahip. Lütfen daha yeni bir yükleme programı kullanın.</translation>
-<translation id="3555616473548901994">Kaldırma işlemi tamamlandı.</translation>
 <translation id="4987308747895123092">Lütfen, (Windows 8 modunda olanlar dahil) Google Chrome pencerelerinin tümünü kapatın ve tekrar deneyin.</translation>
 <translation id="568643307450491754">Yer işaretlerinizi Chrome menüsünde veya yer işaretleri çubuğunda bulabilirsiniz.</translation>
-<translation id="55271449890419930">Google Chrome, uzantıların kişisel verilerinizi işleme şeklini denetlemediğinden, gizli pencerelerde tüm uzantılar devre dışı bırakılmıştır. Bunları 
-          <ph name="BEGIN_LINK"/>uzantı yöneticisi<ph name="END_LINK"/> içinde tek tek yeniden etkinleştirebilirsiniz.</translation>
 <translation id="8556340503434111824">Kullanabileceğiniz yeni bir Google Chrome sürümü var ve bu sürüm, her zamankinden daha hızlı.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
-<translation id="2082230140685103752">Chrome uygulamalarını kullanmak için Google Chrome'u masaüstünde yeniden başlatmalısınız.</translation>
 <translation id="3080151273017101988">Google Chrome kapandığında arka plan uygulamaları çalıştırmaya devam et</translation>
 <translation id="4149882025268051530">Yükleyici arşivi açamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="7054640471403081847">Bu bilgisayarın donanımı artık desteklenmediğinden, Google Chrome güncellemelerini alması yakında duracak.</translation>
-<translation id="6326709553577195251">Hesabınızı kaldırmak için Chrome'un yeniden başlatılması gerekiyor. Devam etmeden önce açık olan çalışmaları kaydettiğinizden emin olun.</translation>
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="7060865993964054389">Google Chrome Uygulama Başlatıcı</translation>
 <translation id="1682634494516646069">Google Chrome, veri dizini üzerinde okuma ve yazma işlemi yapamıyor: <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="4343226815564935778">Google Chrome kurulum dizininin kullanımda olduğu görülüyor. Lütfen bilgisayarınızı yeniden başlatın ve tekrar deneyin.</translation>
 <translation id="8227755444512189073">Google Chrome'un <ph name="SCHEME"/> bağlantılarını işleyebilmek için harici bir uygulama başlatması gerekiyor. İstenen bağlantı <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hata! Google Chrome kilitlendi. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="1480489203462860648">Deneyin, zaten yüklü!</translation>
-<translation id="7831498172068826473">Bir yönetici tarafından kontrol edilen bir yönetilen hesapla oturum açtınız. Bu hesapla bağlantınızı keserseniz bu Chrome kullanıcısı ve uygulamalar, yer işaretleri, geçmiş, şifreler gibi tüm ilişkili Chrome verileri ve diğer ayarlar bu bilgisayardan kaldırılır.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>Hizmet Şartları<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chrome'u kullanma konusunda yardım alın</translation>
 <translation id="7398801000654795464">Chrome'da <ph name="USER_EMAIL_ADDRESS"/> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
@@ -116,14 +109,17 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> Chrome'a eklendi.</translation>
 <translation id="1786477462680638703">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmayı denediniz, ancak sunucu Google Chrome'un güvenmediği bir kuruluş tarafından yayınlanmış sertifika sundu. Bu durum, sunucunun kendi güvenlik kimlik bilgilerini oluşturduğu ve Chrome'un kimlik bilgileri konusunda bunlara güvenemediği anlamına gelebilir veya bir saldırgan iletişiminize müdahale etmeye çalışıyor olabilir.</translation>
+<translation id="7494905215383356681">Chrome açık kaynak lisansları</translation>
 <translation id="2346876346033403680">Birisi daha önce bu bilgisayarda <ph name="ACCOUNT_EMAIL_LAST"/> olarak Chrome'da oturum açmış. Bu sizin hesabınız değilse, bilgilerinizi ayrı tutmak için yeni bir Chrome kullanıcısı oluşturun.
 
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chrome bilgileriniz <ph name="ACCOUNT_EMAIL_NEW"/> ile birleştirilecektir.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Uyarı:<ph name="END_BOLD"/> Google Chrome, uzantıların göz atma geçmişinizi kaydetmesini önleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için, bu seçeneğin onay işaretini kaldırın.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2664962310688259219">Chrome OS açık kaynak lisansları</translation>
 <translation id="2290014774651636340">Google API anahtarları eksik. Google Chrome'un bazı işlevleri devre dışı bırakılacak.</translation>
 <translation id="4794050651896644714">Ayrıntıları Chrome'a kaydet</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
+<translation id="2036562258783619899">Yeni Chrome'u önizleyin</translation>
 <translation id="5855036575689098185">Bilgisayarınızda çalışan yazılım Google Chrome ile uyumsuz.</translation>
 <translation id="8008534537613507642">Chrome'u yeniden yükle</translation>
 <translation id="2044287590254833138">Google Chrome Araç Çubuğu</translation>
@@ -140,7 +136,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="4273752058983339720">Google Chrome bilgisayarınızı başlattığınızda otomatik olarak başlayacak şekilde yapılandırıldı.</translation>
 <translation id="1104959162601287462">&amp;Chrome OS hakkında</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
-<translation id="1140117203923356735"><ph name="FILE_NAME"/> bazı kötü amaçlı yazılımların yaptığına benzer ayar değişiklikleri yapıyor; bu nedenle Chrome tarafından engellendi.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="1759301979429102118">Kişilerinizde kayıtlı bilgiler, Chrome'da formları daha hızlı bir şekilde doldurmanıza yardımcı olabilir.</translation>
 <translation id="7787950393032327779">Profilin başka bir bilgisayarda (<ph name="HOST_NAME"/>) başka bir Google Chrome işlemi (<ph name="PROCESS_ID"/>) tarafından kullanıldığı anlaşılıyor. Chrome, profili bozulmaması için kilitledi. Bu profili kullanan başka bir işlem olmadığından eminseniz profilin kilidini açabilir ve Chrome'u tekrar başlatabilirsiniz.</translation>
@@ -150,10 +145,9 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="4561051373932531560">Google Chrome web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
 <translation id="5788838254726722945">Google Chrome Uygulama Başlatıcı'nın yüklemesini kaldır</translation>
 <translation id="3612333635265770873">Aynı isme sahip bir modülün Google Chrome'la çakıştığı bilinmektedir.</translation>
+<translation id="2665296953892887393">Kilitlenme raporlarını ve <ph name="UMA_LINK"/> bilgilerini Google'a göndererek Google Chrome'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="7761834446675418963">Chrome'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
-<translation id="3248703849416430126">• Kişiler arasında geçiş yapma
-• Chrome bilgilerinizi kilitleme
-• Google Hesaplarınızı yönetme</translation>
+<translation id="4864451188650489141">Aşağıda diğer Google Hesaplarınızı ekleyebilir ve Chromium'unuzu kilitleyebilirsiniz.</translation>
 <translation id="5875635642195358109">Chrome menüsü &gt;
         <ph name="SETTINGS_TITLE"/>
         &gt;
@@ -161,6 +155,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
         öğesine giderek &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; seçeneğinin işaretini kaldırın.
         Bu işlem sorunu çözmüyorsa, performansın iyileşmesi için bu seçeneği
         tekrar işaretlemenizi öneririz.</translation>
+<translation id="6235018212288296708">Google Chrome'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="61852838583753520">&amp;Chrome OS'u güncelle</translation>
 <translation id="5028489144783860647">Google Chrome, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="9026991721384951619">Hesap oturum açma ayrıntılarınız güncel olmadığından Chrome OS, verilerinizi senkronize edemedi.</translation>
@@ -181,21 +176,20 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="1587223624401073077">Google Chrome kameranızı kullanıyor.</translation>
 <translation id="1399397803214730675">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'un yüklemesini kaldırın ve tekrar deneyin.</translation>
 <translation id="576822117893741893">Chrome menüsünü göster</translation>
-<translation id="338432196642384904">Chrome kullanıcısını sil</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK"/>, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
-<translation id="4566427205701379461">Chrome öğelerinizi senkronize etmek için <ph name="PROFILE_EMAIL"/> adresini kullanıyorsunuz. Senkronizasyon tercihinizi güncellemek veya Chrome'u bir Google hesabı olmadan kullanmak için ayarları ziyaret edin.</translation>
 <translation id="8614913330719544658">Google Chrome yanıt vermiyor. Yeniden başlatılsın mı?</translation>
 <translation id="2681064822612051220">Sistemde çakışan bir Google Chrome yüklemesi bulundu. Lütfen yüklemeyi kaldırıp tekrar deneyin.</translation>
 <translation id="1175529839152551794">Artık oturum açtığınıza göre dizüstü bilgisayarınıza, telefonunuza ve tabletinize sekmeleri, yer işaretlerini ve diğer Chrome öğelerini alabilirsiniz. Google hizmetleriyle ilgili daha alakalı öneriler ve özellikler de alırsınız.</translation>
+<translation id="8209985377776300429">Yeni Chrome'u önizliyorsunuz.</translation>
 <translation id="6126631249883707068">Google Chrome'un şifrenizi kaydetmesini istiyor musunuz?</translation>
 <translation id="7773845170078702898">Google Chrome'un bu site için şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="4251615635259297716">Chrome verileriniz bu hesaba bağlansın mı?</translation>
 <translation id="7125719106133729027">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u manuel olarak yeniden yüklemeniz gerekiyor.</translation>
 <translation id="5940385492829620908">Web, yer işaretleri ve diğer Chrome öğeleriniz burada bulunur.</translation>
-<translation id="5788515153694509397">Yönetilen Chrome kullanıcısını sil</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
+<translation id="3039245375609697729">Chrome'u Google Hesabınızla ve paylaşılan bilgisayarlarda kullanmanın yeni yolunu deneyin.</translation>
+<translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome daha da iyi bir hale geldi</translation>
-<translation id="8142608456917638009">Google Chrome bir uygulama kısayolunu oluşturamadı.</translation>
 <translation id="174539241580958092">Oturum açmadaki bir hata nedeniyle Google Chrome, verilerinizi senkronize edemedi.</translation>
 <translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="2189123953385179981">Google ChromeOS, <ph name="SCHEME"/> bağlantılarını kullanmak için bir dış uygulamanın başlatılmasını desteklemez. İstenen bağlantı:  <ph name="PROTOLINK"/>.</translation>
@@ -218,9 +212,8 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
           &gt;
           LAN Ayarları
           öğesine gidin ve &quot;LAN için proxy sunucusu kullan&quot; seçeneğinin işaretini kaldırın.</translation>
+<translation id="6598387184982954187">Chrome öğelerinizi senkronize etmek için <ph name="PROFILE_EMAIL"/> adresini kullanıyorsunuz. Senkronizasyon tercihinizi güncellemek veya Chrome'u bir Google Hesabı olmadan kullanmak için şunu ziyaret edin: <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="7825851276765848807">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Google Chrome'u tekrar yükleyin.</translation>
-<translation id="1061257178446858647">Şimdi Chrome'da oturum açtınız! Yer işaretleriniz, geçmişiniz ve diğer ayarlarınız Google Hesabınızla senkronize edilecek.</translation>
-<translation id="3335672657969596251">Google Chrome, <ph name="OS_NAME"/> işletim sistemini desteklemez.</translation>
 <translation id="4458285410772214805">Bu değişikliğin geçerli olabilmesi için lütfen çıkış yapıp tekrar oturum açın.</translation>
 <translation id="8679801911857917785">Ayrıca Chrome'u başlattığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="5334545119300433702">Bu modülün Google Chrome'la çakıştığı biliniyor.</translation>
@@ -233,9 +226,11 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="7592736734348559088">Hesap oturum açma ayrıntılarınız güncel olmadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
 <translation id="6991142834212251086">Chrome verilerimi bu hesaba bağla</translation>
 <translation id="3451115285585441894">Chrome'a ekleniyor...</translation>
+<translation id="6502165024350711060">Chrome tarafından önerildi</translation>
+<translation id="3047079729301751317"><ph name="USERNAME"/> kullanıcısının bağlantısını kesmek, geçmişinizi, yer işaretlerinizi, ayarlarınızı ve bu cihazda depolanan diğer Chrome verilerinizi temizler. Google Hesabınızda depolanan veriler temizlenmez ve <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hesap Özeti<ph name="END_GOOGLE_DASHBOARD_LINK"/>'nden yönetilebilir.</translation>
 <translation id="1001534784610492198">Yükleyici arşivi bozuk veya geçersiz. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="2246246234298806438">Google Chrome, dahili PDF görüntüleyici yokken baskı önizlemeyi gösteremez.</translation>
-<translation id="6626317981028933585">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a almak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>
+<translation id="6626317981028933585">Maalesef, Mozilla Firefox çalışırken ona ait ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Ayrıca, Chrome'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -246,10 +241,9 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="1818142563254268765">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u güncellemeniz gerekiyor.</translation>
 <translation id="4338032231047635328">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifikada hatalar var. Google Chrome hata içeren bir sertifikayı kullanamaz ve bağlanmak istediğiniz sitenin kimliğini doğrulayamaz.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3836351788193713666">Neredeyse güncel! Güncelleştirmeyi tamamlamak için Google Chrome'u yeniden başlatın.</translation>
+<translation id="3836351788193713666">Az kaldı! Güncellemeyi tamamlamak için Google Chrome'u yeniden başlatın.</translation>
 <translation id="884296878221830158">Ayrıca Chrome'u başlattığınızda veya Ana Sayfa düğmesini tıkladığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
-<translation id="8449380764213232436">Google Chrome, şu anda <ph name="BROWSER_COMPONENT"/> bölümünden aşağıdaki öğeleri alıyor:</translation>
 <translation id="3396977131400919238">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="8037887340639533879">Google Chrome'un güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="5495581687705680288">Google Chrome'a yüklenen modüller</translation>

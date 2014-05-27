@@ -104,7 +104,6 @@
           NOTĂ: comportamentul prestabilit pentru dispozitivele destinate consumatorilor și întreprinderilor diferă: utilizatorii monitorizați sunt activați în mod prestabilit pe dispozitivele destinate consumatorilor, iar pe dispozitivele destinate întreprinderilor, aceștia sunt dezactivați în mod prestabilit.</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="5469825884154817306">Blocați imagini de pe aceste site-uri</translation>
-<translation id="5827231192798670332">Selectați strategia utilizată pentru eliberarea spațiului pe disc în timpul curățării automate</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="2482676533225429905">Mesagerie nativă</translation>
 <translation id="6649397154027560979">Această politică este învechită. Utilizați, în schimb, URLBlacklist.
@@ -141,7 +140,6 @@
       Dacă <ph name="PRODUCT_NAME"/> nu poate obține informații despre starea revocării, certificatele de acest fel vor fi considerate revocate („blocate”).
 
       Dacă această politică nu este setată sau nu este activată, Chrome va utiliza setările existente pentru verificarea revocărilor online.</translation>
-<translation id="1438955478865681012">Configurează politicile privind extensiile. Utilizatorul nu are permisiunea de a instala extensii introduse pe lista neagră, cu excepția cazului în care acestea sunt introduse pe lista albă. De asemenea, puteți forța <ph name="PRODUCT_NAME"/> să instaleze în mod automat extensii specificându-le în <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Lista neagră are prioritate față de lista cu extensii impuse.</translation>
 <translation id="3516856976222674451">Limitați durata maximă a sesiunii unui utilizator.
 
       Dacă este configurată, această politică specifică perioada de timp după care un utilizator este deconectat în mod automat, încheind sesiunea. Utilizatorul este informat despre timpul rămas prin afișarea unui cronometru în bara de sistem.
@@ -198,19 +196,6 @@
 <translation id="1096105751829466145">Furnizor de căutare prestabilit</translation>
 <translation id="7567380065339179813">Permiteți pluginuri pe aceste site-uri</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
-<translation id="4418909344122918381">Controlează comportamentul utilizatorului în timpul unei sesiuni cu profiluri multiple pe dispozitivele cu <ph name="PRODUCT_OS_NAME"/>.
-
-      Dacă politica este setată la „MultiProfileUserBehaviorUnrestricted”, utilizatorul poate fi atât unul principal, cât și unul secundar într-o sesiune cu profiluri multiple.
-
-      Dacă politica este setată la „MultiProfileUserBehaviorMustBePrimary”, utilizatorul poate fi numai utilizatorul principal dintr-o sesiune cu profiluri multiple.
-
-      Dacă politica este setată la „MultiProfileUserBehaviorNotAllowed”, utilizatorul nu poate face parte dintr-o sesiune cu profiluri multiple.
-
-      Utilizatorii nu pot modifica sau suprascrie această setare, dacă o configurați.
-
-      Dacă setarea este modificată când utilizatorul este conectat într-o sesiune cu profiluri multiple, pentru toți utilizatorii din sesiune se vor verifica setările corespunzătoare. Dacă niciunul dintre utilizatori nu mai are permisiunea de a se afla în sesiune, aceasta va fi închisă.
-
-      Dacă politica nu este configurată, va fi utilizată valoarea prestabilită „MultiProfileUserBehaviorUnrestricted”.</translation>
 <translation id="5966615072639944554">Extensii cărora li se permite să utilizeze API-ul de atestare la distanță</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
 <translation id="5290940294294002042">Specificați o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva</translation>
@@ -263,6 +248,7 @@
 
           Această politică este respectată doar dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="5912364507361265851">Permite utilizatorilor să afișeze parolele în managerul de parole</translation>
+<translation id="5318185076587284965">Activați folosirea serverelor de transmisie de către gazdele de acces la distanță</translation>
 <translation id="510186355068252378">Dezactivează sincronizarea datelor în <ph name="PRODUCT_NAME"/> folosind serviciile de sincronizare găzduite de Google și împiedică utilizatorii să modifice această setare. Dacă activați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică este nesetată, utilizatorul va putea să aleagă dacă să folosească sau nu Sincronizare Google.</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="4807950475297505572">Utilizatorii care s-au conectat de cele mai puține ori recent sunt eliminați până când există suficient spațiu liber</translation>
@@ -292,6 +278,19 @@
 <translation id="382476126209906314">Configurarea prefixului TalkGadget pentru gazdele de acces la distanță</translation>
 <translation id="6561396069801924653">Afișați opțiuni de accesibilitate în meniul barei de sistem</translation>
 <translation id="8104962233214241919">Selectați automat certificatele de client pentru aceste site-uri</translation>
+<translation id="7983624541020350102">(Acest document poate să includă politici care vizează versiuni
+      <ph name="PRODUCT_NAME"/> ulterioare, iar acestea se pot
+      schimba fără notificare. Lista politicilor acceptate este identică pentru
+      Chromium și Google Chrome.)
+
+      Nu este necesar să modificați aceste setări manual!  Puteți să descărcați șabloane ușor de folosit de la <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Aceste politici nu pot fi folosite decât cu scopul de a configura instanțe ale browserului Chrome în cadrul organizației dvs. Utilizarea acestor politici în afara organizației (de exemplu, într-un program distribuit în mod public) este considerată program malware și probabil va fi etichetată ca atare de Google și de furnizorii de programe antivirus.
+
+      Notă: începând cu <ph name="PRODUCT_NAME"/> versiunea
+      28, politicile sunt încărcate în Windows direct din API-ul Group Policy.
+      Politicile scrise manual în registry vor fi ignorate. Pentru detalii, consultați
+      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicații</translation>
 <translation id="4386578721025870401">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline.
 
@@ -369,13 +368,6 @@
 
       Aceste politici vă permit să configurați modul în care se comportă <ph name="PRODUCT_OS_NAME"/> când utilizatorul este inactiv pentru o anumită perioadă de timp.</translation>
 <translation id="2565967352111237512">Permite raportarea anonimă la Google a datelor despre utilizare și blocări referitoare la <ph name="PRODUCT_NAME"/> și împiedică utilizatorii să modifice această setare. Dacă activați această setare, raportarea anonimă a datelor despre utilizare și blocări sunt trimise la Google. Dacă dezactivați această setare, raportarea anonimă a datelor despre utilizare și blocări nu se trimise niciodată la Google. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME"/>. Dacă această politică este nesetată, setarea va fi ceea ce utilizatorul poate alege la instalare sau la prima rulare.</translation>
-<translation id="4784220343847172494">Controlează comportamentul de curățare automată pe dispozitivele <ph name="PRODUCT_OS_NAME"/>. Curățarea automată este inițiată atunci când spațiul liber de pe disc atinge un nivel critic, cu scopul recuperării de spațiu pe disc.
-
-      Dacă politica este setată la „RemoveLRU”, curățarea automată va continua să elimine de pe dispozitiv utilizatorii începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
-
-      Dacă această politică este setată la „RemoveLRUIfDormant”, curățarea automată va continua să elimine utilizatorii care nu s-au conectat în ultimele 3 luni, începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
-
-      Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
 <translation id="6256787297633808491">Marcaje la nivel de sistem de aplicat la pornirea Chrome</translation>
 <translation id="2516600974234263142">Activează printarea în <ph name="PRODUCT_NAME"/> și nu le permite utilizatorilor să modifice această setare.
 
@@ -403,16 +395,6 @@
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="838870586332499308">Activați roamingul de date</translation>
-<translation id="3234167886857176179">Aceasta este lista politicilor respectate de <ph name="PRODUCT_NAME"/>.
-
-      Nu este necesar să modificați aceste setări manual!  Puteți să descărcați șabloane ușor de folosit de la
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Lista politicilor acceptate este identică pentru Chromium și Google Chrome.
-
-      Aceste politici nu pot fi utilizate decât cu scopul de a configura instanțe ale browserului Chrome în cadrul organizației dvs. Utilizarea acestor politici în afara organizației (de exemplu, într-un program distribuit în mod public) este considerată program malware și probabil va fi etichetată ca atare de Google și de furnizorii de programe antivirus.
-
-      Notă: începând cu Chrome versiunea 28, politicile sunt încărcate în Windows direct din API-ul Group Policy. Politicile scrise manual în registry vor fi ignorate. Pentru detalii, consultați http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> poate utiliza un serviciu web Google pentru a ajuta la soluționarea greșelilor de ortografie. Dacă setarea este activată, atunci se va utiliza întotdeauna acest serviciu. Dacă setarea este dezactivată, atunci acest serviciu nu va fi utilizat niciodată.
 
       Totuși, verificarea ortografiei se poate face cu un dicționar descărcat; această politică afectează numai utilizarea serviciului web.
@@ -439,6 +421,7 @@
 <translation id="3915395663995367577">Adresa URL a unui fișier .pac pentru proxy</translation>
 <translation id="2144674628322086778">Permite ca utilizatorul întreprindere să fie atât principal, cât și secundar (comportament prestabilit)</translation>
 <translation id="1022361784792428773">ID-urile extensiilor particulare pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
+<translation id="3805659594028420438">Activați extensia pentru certificatele TLS legate la domeniu (învechită)</translation>
 <translation id="5499375345075963939">Această politică este activă numai în modul Vânzare.
 
       Dacă valoarea acestei politici este configurată și diferă de 0, atunci utilizatorul demonstrativ conectat în prezent va fi deconectat automat după o perioadă de inactivitate specificată.
@@ -645,6 +628,7 @@
 
       Dacă această politică este lăsată nesetată, utilizatorul poate modifica lista cu aplicații fixate din lansator.</translation>
 <translation id="1679420586049708690">Sesiune publică pentru conectare automată</translation>
+<translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="2552966063069741410">Fus orar</translation>
 <translation id="3788662722837364290">Setările pentru gestionarea consumului de energie când utilizatorul devine inactiv</translation>
@@ -667,6 +651,11 @@
           Dacă această politică nu este setată, va fi utilizată linia de comandă prestabilită.</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="6394350458541421998">Această politică a fost retrasă începând cu <ph name="PRODUCT_OS_NAME"/> versiunea 29. Utilizați, în schimb, politica PresentationScreenDimDelayScale.</translation>
+<translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME"/> versiunea 36.
+
+      Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
+
+      Setarea este folosită pentru a activa extensia pentru certificatele TLS legate la domeniu în vederea testării. Pe viitor, această setare experimentală va fi eliminată.</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
 <translation id="2959898425599642200">Reguli de ocolire a proxy-ului</translation>
 <translation id="228659285074633994">Indică perioada de timp fără intrări de la utilizator după care este afișată o casetă de dialog de avertizare la funcționarea pe c.a.
@@ -804,7 +793,6 @@
           Această politică este destinată să fie utilizată la nivel intern de Chrome.</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="131353325527891113">Afișați numele de utilizator pe ecranul de conectare</translation>
-<translation id="5317965872570843334">Permite utilizarea de servere STUN și de retransmisie atunci când clienții la distanță încearcă să stabilească o conexiune cu acest computer. Dacă această setare este activată, atunci clienții la distanță pot să descopere computerul și să se conecteze la acesta, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, acest computer va permite numai conexiunile de la computerele client din rețeaua locală. Dacă această politică este lăsată nesetată, setarea va fi activată.</translation>
 <translation id="4057110413331612451">Permite ca utilizatorul întreprindere să fie numai unul cu profil multiplu principal</translation>
 <translation id="5365946944967967336">Afișați butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="3709266154059827597">Configurați lista neagră pentru instalarea extensiilor</translation>
@@ -829,6 +817,15 @@
       folosiți instrumente ca Telemetrie.</translation>
 <translation id="8731693562790917685">Setările pentru conținut vă permit să specificați modul în care este gestionat conținutul de un anumit tip (de ex., cookie-uri, imagini sau JavaScript).</translation>
 <translation id="2411919772666155530">Blocați notificările pe aceste site-uri</translation>
+<translation id="7332963785317884918">Această politică este învechită. <ph name="PRODUCT_OS_NAME"/> va folosi întotdeauna strategia de curățare „RemoveLRU”.
+
+      Controlează comportamentul de curățare automată pe dispozitivele <ph name="PRODUCT_OS_NAME"/>. Curățarea automată este inițiată atunci când spațiul liber de pe disc atinge un nivel critic, cu scopul recuperării de spațiu pe disc.
+
+       Dacă politica este setată la „RemoveLRU”, curățarea automată va continua să elimine de pe dispozitiv utilizatorii începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
+
+      Dacă politica este setată la „RemoveLRUIfDormant”, curățarea automată va continua să elimine utilizatorii care nu s-au conectat în ultimele 3 luni, începând cu cei care s-au conectat de cele mai puține ori recent, până când există suficient spațiu liber.
+
+      Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
 <translation id="6923366716660828830">Specifică numele furnizorului de căutare prestabilit. Dacă nu este completată sau este nesetată, va fi utilizat numele de gazdă specificat de adresa URL de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="4869787217450099946">Specifică dacă este permisă blocarea activării ecranului. Blocarea activării ecranului poate fi solicitată de extensii prin intermediul API-ului pentru extensiile de gestionare a consumului de energie.
 
@@ -895,6 +892,19 @@
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME"/> să gestioneze următoarele tipuri de conținut.</translation>
 <translation id="2312134445771258233">Vă permite să configurați paginile încărcate la pornire. Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectați „Deschideți o listă cu adrese URL” în „Acțiune la pornire”.</translation>
+<translation id="1464848559468748897">Controlează comportamentul utilizatorilor în timpul unei sesiuni cu profiluri multiple pe dispozitivele <ph name="PRODUCT_OS_NAME"/>.
+
+      Dacă politica este setată la „MultiProfileUserBehaviorUnrestricted”, utilizatorul poate fi atât unul principal, cât și unul secundar într-o sesiune cu profiluri multiple.
+
+      Dacă politica este setată la „MultiProfileUserBehaviorMustBePrimary”, utilizatorul poate fi numai utilizatorul principal dintr-o sesiune cu profiluri multiple.
+
+      Dacă politica este setată la „MultiProfileUserBehaviorNotAllowed”, utilizatorul nu poate face parte dintr-o sesiune cu profiluri multiple.
+
+      Utilizatorii nu pot modifica sau înlocui această setare, dacă o configurați.
+
+      Dacă setarea este modificată când utilizatorul este conectat într-o sesiune cu profiluri multiple, pentru toți utilizatorii din sesiune se vor verifica setările corespunzătoare. Dacă niciunul dintre utilizatori nu mai are permisiunea de a se afla în sesiune, aceasta va fi închisă.
+
+      Dacă politica nu este configurată, valoarea prestabilită „MultiProfileUserBehaviorMustBePrimary” se aplică în cazul utilizatorilor gestionați de o companie, iar valoarea „MultiProfileUserBehaviorUnrestricted” va fi folosită pentru utilizatorii negestionați.</translation>
 <translation id="243972079416668391">Specificați acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.
 
           Dacă politica este setată, aceasta indică ce acțiune realizează <ph name="PRODUCT_OS_NAME"/> când utilizatorul rămâne inactiv pentru perioada de timp dată de intervalul de inactivitate, care poate fi configurat separat.
@@ -1022,6 +1032,7 @@
 
           Această politică este destinată să fie utilizată la nivel intern de Chrome.</translation>
 <translation id="913195841488580904">Blocați accesul la o listă de adrese URL</translation>
+<translation id="5461308170340925511">Configurează politici în privința extensiilor. Utilizatorul nu poate să instaleze extensii din lista neagră, decât dacă acestea apar în lista albă. De asemenea, puteți forța <ph name="PRODUCT_NAME"/> să instaleze automat extensii specificându-le în <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Extensiile instalate forțat sunt instalate indiferent dacă apar în lista neagră.</translation>
 <translation id="3292147213643666827">Permite <ph name="PRODUCT_NAME"/> să acționeze ca un proxy între <ph name="CLOUD_PRINT_NAME"/> și imprimantele conectate anterior la computer.
 
       Dacă această setare este activată sau nu este configurată, utilizatorii pot activa proxy-ul Cloud Print autentificându-se cu Contul Google.
@@ -1098,9 +1109,6 @@
 <translation id="465099050592230505">Adresa URL a magazinului web pentru întreprinderi (politică învechită)</translation>
 <translation id="2006530844219044261">Gestionarea consumului de energie</translation>
 <translation id="1221359380862872747">Încărcați adrese URL specificate la conectarea demonstrativă</translation>
-<translation id="2431811512983100641">Această politică specifică dacă trebuie activată extensia pentru certificatele TLS legate la domeniu.
-
-      Această setare este utilizată pentru a activa pentru testare extensia pentru certificatele TLS legate la domeniu. Această setare experimentală va fi eliminată în viitor.</translation>
 <translation id="8711086062295757690">Specifică cuvântul cheie care este comanda rapidă utilizată în caseta polivalentă pentru a declanșa căutarea pentru acest furnizor. Această politică este opțională. Dacă nu este setată, niciun cuvânt cheie nu va activa furnizorul de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="5774856474228476867">Adresa URL de căutare a furnizorului prestabilit de căutare</translation>
 <translation id="4650759511838826572">Dezactivați schemele pentru protocolul adresei URL</translation>
@@ -1206,6 +1214,7 @@
           Dacă această setare este dezactivată sau neconfigurată, atunci numele de domeniu prestabilit TalkGadget („chromoting-host.talkgadget.google.com”) va fi utilizat pentru toate gazdele.
 
           Clienții de acces la distanță nu sunt afectați de această setare a politicii. Aceștia vor utiliza întotdeauna „chromoting-client.talkgadget.google.com” pentru a accesa TalkGadget.</translation>
+<translation id="1103860406762205913">Activează vechea conectare online</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="6915442654606973733">Activați funcția de accesibilitate pentru feedback vocal.
 
@@ -1404,7 +1413,6 @@
 <translation id="7882585827992171421">Această politică este activă numai în modul Vânzare.
 
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
-<translation id="7736666549200541892">Activați extensia pentru certificatele TLS legate la domeniu</translation>
 <translation id="1796466452925192872">Puteți să specificați de la care adrese URL se permite instalarea de extensii, aplicații și teme.
 
           Începând cu versiunea Chrome 21, devine mai dificilă instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator care nu provin din Magazinul web Chrome. Anterior, utilizatorii puteau face clic pe un link care trimitea la un fișier *.crx, iar Chrome permitea instalarea fișierului după câteva avertismente. Începând cu versiunea Chrome 21, astfel de fișiere trebuie să fie descărcate și trase în pagina de setări Chrome. Această setare permite anumitor adrese URL să beneficieze de fluxul de instalare anterior, mai facil.
@@ -1414,11 +1422,19 @@
           ExtensionInstallBlacklist are prioritate față de această politică. Aceasta înseamnă că o extensie de pe lista neagră nu va fi instalată, chiar dacă se întâmplă să provină de la un site de pe această listă.</translation>
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
 <translation id="4224610387358583899">Intervalele până la blocarea ecranului</translation>
+<translation id="5388730678841939057">Selectează strategia folosită pentru eliberarea spațiului pe disc în timpul curățării automate (învechită)</translation>
 <translation id="7848840259379156480">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME"/> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME"/> să redea paginile HTML în mod prestabilit.</translation>
 <translation id="186719019195685253">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.</translation>
 <translation id="7890264460280019664">Raportează lista cu interfețe de rețea, care cuprinde tipurile acestora și adresele hardware către server.
 
       Dacă politica nu este setată sau nu este activată, lista cu interfețe nu va fi raportată.</translation>
+<translation id="197143349065136573">Activează vechiul flux de conectare online.
+
+      Această setare este utilă pentru clienții enterprise care folosesc soluții SSO necompatibile încă cu noul flux de conectare inline.
+      Dacă activați această setare, se va folosi vechiul flux de conectare online.
+      Dacă dezactivați această setare sau o lăsați neconfigurată, noul flux de conectare inline va fi folosit în mod prestabilit. Utilizatorii pot încă să activeze vechiul flux de conectare online prin semnalizatorul linie de comandă --enable-web-based-signin.
+
+      Setarea experimentală va fi eliminată pe viitor când conectarea inline va fi compatibilă integral cu toate fluxurile de conectare SSO.</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="3973371701361892765">Nu ascundeți niciodată automat raftul</translation>
@@ -1482,6 +1498,13 @@
 
       Dacă politica nu este configurată, sunt utilizate valorile prestabilite pentru toate setările.</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
+<translation id="8071636581296916773">Activează folosirea serverelor de transmisie când clienții la distanță încearcă să stabilească o conexiune cu acest computer.
+
+          Dacă setarea este activată, clienții la distanță pot să folosească servere de transmisie pentru a se conecta la acest computer când conectarea nu se poate face direct (de ex., din cauza restricțiilor impuse prin firewall).
+
+          Rețineți că dacă politica <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> este dezactivată, această politică va fi ignorată.
+
+          Dacă politica nu este configurată, setarea va fi activată.</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="5781806558783210276">Specifică intervalul de timp fără intervenția utilizatorului după care se ia măsura pentru inactivitate la funcționarea pe baterie.
 
@@ -1525,6 +1548,9 @@
           Dacă este activată această setare, atunci utilizatorii trebuie să furnizeze un cod valid cu doi factori când accesează o gazdă.
 
           Dacă această setare este dezactivată sau neconfigurată, atunci autentificarea cu doi factori nu va fi activată și se va aplica setarea prestabilită, folosind un PIN definit de utilizator.</translation>
+<translation id="6698424063018171973">Limitează intervalul pentru portul UDP folosit de gazda de acces la distanță la acest computer.
+
+          Dacă politica nu este configurată sau dacă este setată la o valoare goală, gazda de acces la distanță va putea să folosească orice port disponibil, cu excepția cazului în care politica <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> este dezactivată, caz în care gazda de acces la distanță va folosi porturi UDP din intervalul 12400 – 12409.</translation>
 <translation id="7329842439428490522">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este oprit atunci când dispozitivul funcționează pe baterie.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME"/> să oprească ecranul.
@@ -1540,6 +1566,13 @@
 
       Identificatorii recunoscuți pentru tipurile de conexiune sunt „ethernet”, „wifi”, „wimax”, „bluetooth” și „mobil”.</translation>
 <translation id="6652197835259177259">Setări pentru utilizatorii gestionați local</translation>
+<translation id="2808013382476173118">Activează utilizarea de servere STUN când clienții la distanță încearcă să stabilească o conexiune cu acest computer.
+
+          Dacă setarea este activată, clienții la distanță pot să descopere computerul și să se conecteze la acesta, chiar dacă există un firewall.
+
+          Dacă setarea este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, acest computer va accepta numai conexiunile de la computerele client din rețeaua locală.
+
+          Dacă politica nu este configurată, setarea va fi activată.</translation>
 <translation id="3243309373265599239">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe c.a.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME"/> să reducă luminozitatea ecranului.

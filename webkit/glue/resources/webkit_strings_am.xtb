@@ -6,14 +6,12 @@
 <translation id="248395913932153421">ቀን</translation>
 <translation id="1729654308190250600">እባክዎ ባዶ ያልሆነ የኢሜይል አድራሻ ያስገቡ።</translation>
 <translation id="6015796118275082299">ዓመት</translation>
-<translation id="9186171386827445984">ሰነዱን በመጫን ላይ፦ <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ገጾች...</translation>
 <translation id="1235745349614807883">የቅርብ ጊዜ ፍለጋዎችን አጽዳ</translation>
 <translation id="7223624360433298498">ያለፈው ጊዜ</translation>
 <translation id="1171774979989969504">እባክዎ የኢሜይል አድራሻ ያስገቡ።</translation>
 <translation id="709897737746224366">እባክዎ የተጠየቀውን ቅርጸት ያዛምዱ።</translation>
 <translation id="5048533449481078685">ዝርዝር አመልካች</translation>
 <translation id="4202807286478387388">ዝለል</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">እባክዎ አንድ ክፍል ያስገቡና «<ph name="ATSIGN"/>»ን ያስከትሉ። «<ph name="INVALIDADDRESS"/>» ያልተሟላ ነው።</translation>
 <translation id="2746543609216772311">ዋጋ <ph name="MINIMUM_DATE_OR_TIME"/> ወይም ከዚያ በኋላ መሆን አለበት።</translation>
 <translation id="2572483411312390101">አጫውት</translation>
@@ -33,7 +31,7 @@
 <translation id="2723001399770238859">ድምጽ</translation>
 <translation id="6845533974506654842">ተጫን</translation>
 <translation id="8244226242650769279">የምስል ካርታ</translation>
-<translation id="310520048233152454">እባክዎ አንድ ዩ አር ኤል ያስገቡ።</translation>
+<translation id="310520048233152454">እባክዎ አንድ ዩአርኤል ያስገቡ።</translation>
 <translation id="4812940957355064477">እባክዎ ቁጥር ያስገቡ።</translation>
 <translation id="2548326553472216322">የቅርብ ጊዜ ፍለጋዎች የሉም</translation>
 <translation id="1938124657309484470">ዋጋ <ph name="MAXIMUM_DATE_OR_TIME"/> ወይም ከዚያ በፊት መሆን አለበት።</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">ለመቀጠል ከፈለጉ እባክዎ ይህ ሳጥን ላይ ምልክት ያድርጉ።</translation>
 <translation id="8534579021159131403">ደቂቃዎች</translation>
 <translation id="819205353528511139">ፊልሙን በሙሉ ማያ ገጽ ሁነታ አጫውት</translation>
-<translation id="8964020114565522021">ፋይል ወደዚህ ጎትት</translation>
 <translation id="4103419683916926126">ሚሊሰኮንዶች</translation>
 <translation id="838869780401515933">አመልክት</translation>
 <translation id="2846343701378493991">1024(መካከለኛ ደረጃ)</translation>

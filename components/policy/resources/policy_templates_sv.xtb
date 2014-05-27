@@ -125,7 +125,6 @@
           OBS! Standardbeteendet skiljer sig åt mellan kund- och företagsenheter: på kundenheter aktiveras övervakade användare som standard men på företagsenheter inaktiveras de som standard.</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
-<translation id="5827231192798670332">Väljer den strategi som används för att frigöra diskutrymme under automatisk rensning.</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="6649397154027560979">Den här principen är föråldrad, använd URLBlacklist i stället.
@@ -162,7 +161,6 @@
       Om <ph name="PRODUCT_NAME"/> inte kan hämta statusinformation för återkallning kommer sådana certifikat att behandlas som återkallade (&quot;hard-fail&quot;).
 
       Om den här policyn inte är angiven eller har värdet falskt använder Chrome de befintliga inställningarna för kontroller för återkallning online.</translation>
-<translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
 <translation id="3516856976222674451">Begränsa den maximala längden för en användarsession.
 
       När policyn tillämpas anges den tidsrymd efter vilken en användare loggas ut automatiskt, och sessionen avslutas. Användaren informeras om den återstående tiden med hjälp av en nedräkningstimer som visas i systemfältet.
@@ -229,19 +227,6 @@
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
-<translation id="4418909344122918381">Styr användarbeteende i en session med flera profiler på <ph name="PRODUCT_OS_NAME"/>-enheter.
-
-      Om policyn är inställd på MultiProfileUserBehaviorUnrestricted kan användaren vara primär eller sekundär i en session med flera profiler.
-
-      Om policyn är inställd på MultiProfileUserBehaviorMustBePrimary kan användaren bara vara primär i en session med flera profiler.
-
-      Om policyn är inställd på MultiProfileUserBehaviorNotAllowed kan användaren inte delta i en session med flera profiler.
-
-      Om du anger den här inställningen kan den inte ändras eller åsidosättas av användare.
-
-      Om inställningen ändras medan användaren är inloggad i en session med flera profiler kontrolleras motsvarande inställningar för alla användare i sessionen. Sessionen avslutas om någon av användarna inte längre kan delta i den.
-
-      Om policyn inte anges används standardinställningen MultiProfileUserBehaviorUnrestricted.</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och hämtningshistorik</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
@@ -318,6 +303,7 @@
 
           Policyn beaktas bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="5912364507361265851">Tillåt att användarna visar lösenord i lösenordshanteraren</translation>
+<translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
 <translation id="510186355068252378">Policyn inaktiverar datasynkronisering i <ph name="PRODUCT_NAME"/> med Googles synkroniseringstjänster och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.
@@ -353,6 +339,20 @@
 <translation id="382476126209906314">Konfigurera prefixet TalkGadget för fjärråtkomstvärdar</translation>
 <translation id="6561396069801924653">Visa tillgänglighetsalternativ i menyn i systemfältet</translation>
 <translation id="8104962233214241919">Välj klientcertifikat automatiskt för dessa webbplatser</translation>
+<translation id="7983624541020350102">(Dokumentet kan innehålla policyer som gäller senare versioner av
+      <ph name="PRODUCT_NAME"/>. Dessa policyer kan ändras utan föregående
+      meddelande. Listan över policyer som stöds är samma
+      för Chromium och Google Chrome.)
+
+      Du behöver inte ändra inställningarna manuellt. Hämta lättanvända mallar från
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Policyerna ska användas för att konfigurera delar av Chrome inom organisationen. Användning av dessa policyer utanför organisationen (till exempel i program som distribueras offentligt) betraktas som skadlig kod och kommer med största sannolikhet markeras som skadlig kod av Google och leverantörer av antivirusprogram.
+
+      Obs! Från och med <ph name="PRODUCT_NAME"/>
+      28 kan policyerna läsas in direkt från API:et för Group Policy i
+      Windows. Policyer som har skrivits manuellt till registret ignoreras. Läs
+      mer på http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
 <translation id="4386578721025870401">Begränsa tiden då en användare som verifierats via SAML kan logga in offline.
 
@@ -442,13 +442,6 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.
 
       Om du inte ställer in policyn kan användaren välja inställningen när programmet installeras eller körs första gången.</translation>
-<translation id="4784220343847172494">Styr beteendet för automatisk rensning på <ph name="PRODUCT_OS_NAME"/>-enheter. Automatisk rensning aktiveras för att återställa diskutrymme när diskutrymmet når en kritisk nivå.
-
-      Om policyn ställs in på RemoveLRU tas användare bort från enheten utifrån vilka användare som varit oanvända längst tills det finns tillräckligt med ledigt utrymme.
-
-      Om policyn ställs in på RemoveLRUIfDormant tas de användare som har använts minst nyligen och som inte har loggat in på tre månader bort.
-
-      Om policyn inte ställs in används standardstrategin. För närvarande är det RemoveLRUIfDormant.</translation>
 <translation id="6256787297633808491">Flaggor som gäller hela systemet och som ska tillämpas vid start av Chrome</translation>
 <translation id="2516600974234263142">Aktiverar utskrift i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar inställningen.
 
@@ -476,16 +469,6 @@
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
-<translation id="3234167886857176179">Det här är listan med policyer som <ph name="PRODUCT_NAME"/> följer.
-
-      Du behöver inte ändra dessa inställningar manuellt!  Du kan hämta enkla mallar från
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Listan med policyer som stöds är densamma för Chromium och Google Chrome.
-
-      Dessa policyer är endast avsedda för att konfigurera förekomster av Chrome internt inom din organisation. Användning av dessa policyer utanför organisationen (t.ex. i ett offentligt distribuerat program) anses utgöra skadlig programvara och kommer förmodligen att betecknas som sådan av Google och leverantörer av antivirusprogram.
-
-      Obs! Fr.o.m. Chrome 28 läses policyer in direkt från API:t för gruppolicyer i Windows. Policyer som skrivits manuellt till registret ignoreras. Mer information finns på http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
 
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du hämtar. Policyn styr endast användningen av onlinetjänsten.
@@ -516,6 +499,7 @@
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
 <translation id="2144674628322086778">Tillåt att företagsanvändare både är primära och sekundära (standardinställning)</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
+<translation id="3805659594028420438">Aktivera domänbundna TLS-certifikattillägg (föråldrad)</translation>
 <translation id="5499375345075963939">Policyn är endast aktiv i återförsäljarläge.
 
       När värdet för den här policyn är angiven och inte är 0 kommer den nuvarande inloggade demoanvändaren att loggas ut automatiskt när en viss tid av inaktivitet har gått.
@@ -777,6 +761,7 @@
 
       Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
 <translation id="1679420586049708690">Offentlig session för automatisk inloggning</translation>
+<translation id="5836064773277134605">Begränsa UDP-portintervallet som används av värden för fjärråtkomst</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="2552966063069741410">Tidszon</translation>
 <translation id="3788662722837364290">Energisparinställningar när användaren är inaktiv</translation>
@@ -803,6 +788,11 @@
 
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
 <translation id="6394350458541421998">Den här principen finns inte med i <ph name="PRODUCT_OS_NAME"/> version 29 och senare. Använd principen PresentationScreenDimDelayScale i stället.</translation>
+<translation id="2956777931324644324">Den här policyn har gäller inte för version 36 och senare av <ph name="PRODUCT_NAME"/>.
+
+      Anger om domänbundna TLS-certifikattillägg ska aktiveras.
+
+      Inställningen används för att aktivera domänbundna TLS-certifikattillägg för testning. De experimentella inställningarna tas bort framöver.</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="228659285074633994">Anger hur lång tid det tar innan ett varningsmeddelande visas när en användare inte gjort någon åtgärd när enheten är ansluten till elnätet.
@@ -968,13 +958,6 @@
           Denna policy är endast för intern användning i Chrome.</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="131353325527891113">Visa användarnamn på inloggningsskärmen</translation>
-<translation id="5317965872570843334">Policyn gör att STUN och reläservrar kan användas när fjärrklienter försöker upprätta en anslutning till den här datorn.
-
-          Om den här inställningen är aktiverad kan fjärrklienter identifiera och ansluta till den här datorn även om det finns en brandvägg mellan dem.
-
-          Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen, tillåter datorn bara anslutningar från klientdatorer inom det lokala nätverket.
-
-          Om policyn inte anges är inställningen aktiverad.</translation>
 <translation id="4057110413331612451">Tillåt att företagsanvändare endast är en primär multiprofilanvändare</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
@@ -1009,6 +992,15 @@
       Om du vill få exakta data i realtid kan du använda ett verktyg som Telemetry.</translation>
 <translation id="8731693562790917685">Med innehållsinställningarna kan du ange hur innehåll av en viss typ (till exempel cookies, bilder eller JavaScript) ska hanteras.</translation>
 <translation id="2411919772666155530">Blockera meddelanden på dessa webbplatser</translation>
+<translation id="7332963785317884918">Policyn är föråldrad. Rensningsstrategin RemoveLRU används alltid av <ph name="PRODUCT_OS_NAME"/>.
+
+      Strategin kontrollerar den automatiska rensningen på <ph name="PRODUCT_OS_NAME"/>-enheter. Automatisk rensning utlöses för att frigöra diskutrymme när det tomma utrymmet har minskat till kritiska nivåer.
+
+      Om RemoveLRU har angetts som policy tas användare bort via automatisk rensning utifrån vem som loggade in för längst tid sedan, tills tillräckligt mycket utrymme har frigjorts.
+
+      Om RemoveLRUIfDormant har angetts som policy tas användare som inte har loggat in på tre månader bort, via automatisk rensning, i en ordningsföljd utifrån vem som loggade in för längst tid sedan, tills tillräckligt med utrymme har frigjorts.
+
+      Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
@@ -1085,6 +1077,19 @@
 <translation id="2312134445771258233">Innebär att du kan konfigurera sidorna som läses in vid start.
 
       Innehållet på listan &quot;Webbadresser att öppna vid start&quot; ignoreras om du inte väljer &quot;Öppna följande sidor&quot; i &quot;Vid start&quot;.</translation>
+<translation id="1464848559468748897">Kontrollera användarbeteendet i en session med flera profiler på <ph name="PRODUCT_OS_NAME"/>-enheter.
+
+      Om MultiProfileUserBehaviorUnrestricted har angetts som policy kan användaren vara antingen en primär eller en sekundär användare i en session med flera profiler.
+
+      Om MultiProfileUserBehaviorMustBePrimary har angetts som policy kan användaren endast vara primär användare i en session med flera profiler.
+
+      Om MultiProfileUserBehaviorNotAllowed har angetts som policy kan användaren inte delta i en session med flera profiler.
+
+      Om du anger den här inställningen kan användare inte ändra eller åsidosätta den.
+
+      Om inställningen ändras medan användaren är inloggad i en session med flera profiler kontrolleras alla användare i sessionen mot sina respektive inställningar. Sessionen stängs om någon av användarna inte längre får delta i sessionen.
+
+      Om policyn inte har angetts tillämpas standardvärdet MultiProfileUserBehaviorMustBePrimary för användare som hanteras av ett företag och MultiProfileUserBehaviorUnrestricted för användare som inte hanteras.</translation>
 <translation id="243972079416668391">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid anslutning till ett elnät.
 
           När policyn har angetts anges den åtgärd som <ph name="PRODUCT_OS_NAME"/> vidtar när användaren är inaktiv under den tid som angetts av fördröjningen på grund av inaktivitet, som kan konfigureras separat.
@@ -1252,6 +1257,7 @@
 
           Denna policy är endast för intern användning i Chrome.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
+<translation id="5461308170340925511">Konfigurerar principer för tillägg. Användaren tillåts inte installera svartlistade tillägg såvida de inte också står på vitlistan. Du kan även tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Tillägg med tvingande installation installeras även om de står på den svarta listan.</translation>
 <translation id="3292147213643666827">Gör att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och gamla skrivare som är anslutna till datorn.
 
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
@@ -1336,9 +1342,6 @@
 <translation id="465099050592230505">Webbadress till företagets webbutik (föråldrad)</translation>
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
-<translation id="2431811512983100641">Policyn anger om TLS-domänbundna certifikattillägg ska aktiveras.
-
-      Den här inställningen används för att aktivera TLS-domänbundna certifikattillägg för testning. Den här experimentella inställningen kommer att tas bort i framtiden.</translation>
 <translation id="8711086062295757690">Policyn anger nyckelordet, som är ett kortkommando som används i adressfältet för att aktivera sökning för den här leverantören.
 
           Policyn är valfri. Om den inte anges aktiverar inget nyckelord sökleverantören.
@@ -1460,6 +1463,7 @@
           Om inställningen inaktiveras eller inte anges kommer domännamnet som är standard för TalkGadget (chromoting-host.talkgadget.google.com) att användas för alla värdar.
 
           Fjärråtkomstklienter påverkas inte av den här policyinställningen. De kommer alltid att använda chromoting-client.talkgadget.google.com för att komma åt TalkGadget.</translation>
+<translation id="1103860406762205913">Aktiverar den gamla webbaserade inloggningen</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="6915442654606973733">Aktivera hjälpmedelsfunktionen talad feedback.
 
@@ -1695,7 +1699,6 @@
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
-<translation id="7736666549200541892">Aktivera TLS-domänbundna certifikattillägg</translation>
 <translation id="1796466452925192872">Här kan du ange med vilka webbadresser det ska vara tillåtet att installera tillägg, program och teman.
 
           Från och med Chrome 21 är det svårare att installera tillägg, appar och användarskript utanför Chrome Web Store. Tidigare kunde användare klicka på en länk till en *.CRX-fil och sedan installera filen via Chrome efter att några varningar visades. Efter Chrome 21 måste sådana filer hämtas och dras till Chromes inställningssida. Med den här inställningen kan du göra det möjligt för särskilda webbadresser att använda det äldre och enklare installationsflödet.
@@ -1705,6 +1708,7 @@
           ExtensionInstallBlacklist har företräde framför den här policyn. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
 <translation id="4224610387358583899">Skärmlåsfördröjningar</translation>
+<translation id="5388730678841939057">Väljer den strategi som används för att frigöra diskutrymme under automatisk rensning (föråldrad).</translation>
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
@@ -1712,6 +1716,13 @@
 <translation id="7890264460280019664">Rapportera en lista över nätverksgränssnitt med deras typer och maskinvaruadresser till servern.
 
       Om policyn inte anges, eller anges som falsk, rapporteras inte gränssnittslistan.</translation>
+<translation id="197143349065136573">Aktiverar det gamla webbaserade inloggningsflödet.
+
+      Den här inställningen är praktisk för företagskunder som använder SSO-lösningar som inte är kompatibla med det nya direktinloggningsflödet ännu.
+      Om du aktiverar den här inställlningen används det gamla webbaserade inloggningsflödet.
+      Om du inaktiverar inställningen eller lämnar den utan ett värde används det nya direktinloggningsflödet som standard. Användarna kan fortfarande aktivera det gamla webbaserade inloggningsflödet med kommandoradsflaggan --enable-web-based-signin.
+
+      Inställningen är experimentell och kommer att tas bort i framtiden när alla SSO-inloggningsflöden stöds fullt ut vid direktinloggning.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
@@ -1826,6 +1837,13 @@
 
       Om principen inte ställs in används standardvärden för alla inställningar.</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
+<translation id="8071636581296916773">Reläserveranvändning aktiveras när fjärrklienter försöker etablera en anslutning till datorn.
+
+          Om inställningen har aktiverats kan fjärrklienten använda reläservrar för att ansluta till datorn när det inte går att ansluta direkt (t.ex. på grund av begränsningar i brandväggen).
+
+          Observera att den här policyn ignoreras om <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>-policyn har inaktiverats.
+
+          Om policyn inte har angetts aktiveras inställningen.</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="5781806558783210276">Anger efter hur lång tid utan åtgärd från användaren som inaktivitietsåtgärden vidtas när enheten drivs av batteriet.
 
@@ -1878,6 +1896,9 @@
           Om inställningen aktiveras måste användaren ange en giltig tvåstegskod för att komma åt värden.
 
           Om inställningen inaktiveras eller inte anges så kommer tvåstegsverifiering inte att aktiveras och standardfunktionen med en användardefinierad PIN-kod kommer att användas.</translation>
+<translation id="6698424063018171973">Begränsar UDP-portintervallet som används av värden för fjärråtkomst i den här datorn.
+
+          Om policyn inte har angetts, eller om den har angetts som en tom sträng, får värden för fjärråtkomst använda vilken port som helst som är tillgänglig, såvida inte <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/>-policyn har inaktiverats. I så fall används UDP-portar inom intervallet 12400–12409 av värden för fjärråtkomst.</translation>
 <translation id="7329842439428490522">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten drivs av batteriet.
 
           Om policyn är inställd på ett värde som är större än noll anger den hur länge användaren måste vara inaktiv innan skärmen stängs av av <ph name="PRODUCT_OS_NAME"/>.
@@ -1895,6 +1916,13 @@
 
       Identifierarna för giltiga anslutningstyper är &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; och &quot;cellular&quot;.</translation>
 <translation id="6652197835259177259">Inställningar för lokalt hanterade användare</translation>
+<translation id="2808013382476173118">Policyn gör att STUN-servrar kan användas när fjärrklienter försöker upprätta en anslutning till den här datorn.
+
+          Om den här inställningen har aktiverats kan fjärrklienter identifiera och ansluta till den här datorn även om det finns en brandvägg mellan dem.
+
+          Om inställningen har inaktiverats och utgående UDP-anslutningar filtreras av brandväggen, tillåter datorn bara anslutningar från klientdatorer inom det lokala nätverket.
+
+          Om policyn inte har angetts är inställningen aktiverad.</translation>
 <translation id="3243309373265599239">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten är ansluten till elnätet.
 
           Om den här policyn är inställd på ett värde som är större än noll anger den efter hur lång tids inaktivitet som <ph name="PRODUCT_OS_NAME"/> dämpar skärmen.

@@ -117,7 +117,6 @@
           MÄRKUS. Tavatarbijatele ja ettevõtetele mõeldud seadmete vaikekäitumine on erinev: tarbijate seadmetes on järelevalvega kasutajad vaikimisi lubatud, kuid ettevõtete seadmetes vaikimisi keelatud.</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="5469825884154817306">Blokeeri kujutised nendel saitidel</translation>
-<translation id="5827231192798670332">Valib automaatse puhastamise ajal kettaruumi vabastamiseks strateegia</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="2482676533225429905">Omasõnumside</translation>
 <translation id="6649397154027560979">Selle reegli tugi on katkestatud, kasutage selle asemel üksust URLBlacklist.
@@ -154,7 +153,6 @@
       Kui tootel <ph name="PRODUCT_NAME"/> ei õnnestu tühistamise oleku teavet hankida, siis käideldakse selliseid sertifikaate tühistatutena („hard-fail”).
 
       Kui seda reeglit pole määratud või see on määratud olekule Väär, siis kasutab Chrome olemasolevaid tühistamise kontrollimise veebiseadeid.</translation>
-<translation id="1438955478865681012">Seadistab laiendustega seotud reeglid. Kasutajatel ei ole lubatud mustas nimekirjas olevaid laiendusi installida, kui need ei ole kantud lubatud nimekirja. Võite sundida rakendust <ph name="PRODUCT_NAME"/> automaatselt laiendusi installima, määrates need reeglis <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Must nimekiri on sunnitud laienduste loendi suhtes ülimuslik.</translation>
 <translation id="3516856976222674451">Piirake kasutajaseansi maksimumpikkust.
 
       Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
@@ -221,19 +219,6 @@
 <translation id="1096105751829466145">Vaikeotsingupakkuja</translation>
 <translation id="7567380065339179813">Luba pistikprogrammid nendel saitidel</translation>
 <translation id="4555850956567117258">Kasutajale kaugatesteerimise lubamine</translation>
-<translation id="4418909344122918381">Kasutaja käitumise juhtimine mitme profiiliga seansside puhul operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME"/> seadmetes.
-
-      Kui reegel on määratud seadele „MultiProfileUserBehaviorUnrestricted”, võib kasutaja olla mitme profiiliga seansi puhul esmane või sekundaarne kasutaja.
-
-      Kui reegel on määratud seadele „MultiProfileUserBehaviorMustBePrimary”, võib kasutaja olla mitme profiiliga seansi puhul vaid esmane kasutaja.
-
-      Kui reegel on määratud seadele „MultiProfileUserBehaviorNotAllowed”, ei saa kasutaja mitme profiiliga seansis osaleda.
-
-      Kui määrate seade, ei saa kasutajad seda muuta ega alistada.
-
-      Kui seadet muudetakse ajal, mil kasutaja on mitme profiiliga seanssi sisse logitud, kontrollitakse seansi kõiki kasutajaid vastavate seadete alusel. Seanss suletakse, kui ühel kasutajal ei ole enam lubatud seansis osaleda.
-
-      Kui jätate reegli määramata, kasutatakse vaikeväärtust „MultiProfileUserBehaviorUnrestricted”.</translation>
 <translation id="5966615072639944554">Kaugatesteerimise API kasutamiseks lubatud laiendused</translation>
 <translation id="1617235075406854669">Brauseri ja allalaadimiste ajaloo kustutamise lubamine</translation>
 <translation id="5290940294294002042">Määrake pistikprogrammide loend, mida kasutaja saab lubada või keelata</translation>
@@ -305,6 +290,7 @@
 
           See reegel kehtib vaid siis, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="5912364507361265851">Luba kasutajatel paroolihalduris paroolide näitamine</translation>
+<translation id="5318185076587284965">Luba kaugjuurdepääsuhostil kasutada releeservereid</translation>
 <translation id="510186355068252378">Keelab rakenduses <ph name="PRODUCT_NAME"/> andmete sünkroonimise Google'i hostitud sünkroonimisteenuste abil ja takistab kasutajatel seade muutmist.
 
       Seade lubamisel ei saa kasutajad seadet teenuses <ph name="PRODUCT_NAME"/> muuta ega alistada.
@@ -332,12 +318,26 @@
 <translation id="4668325077104657568">Kujutiste vaikeseaded</translation>
 <translation id="4492287494009043413">Keela ekraanipiltide tegemine</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>
-<translation id="6074963268421707432">Keela kõigil saitidel töölauateatiste näitamine</translation>
+<translation id="6074963268421707432">Keela kõigil saitidel töölaua märguannete kuvamine</translation>
 <translation id="8614804915612153606">Keelab automaatvärskenduse</translation>
 <translation id="4834526953114077364">Kõige kauem aega tagasi kasutanud kasutajad, kes ei ole viimase 3 kuu jooksul sisse loginud, eemaldatakse, kuni on piisavalt vaba ruumi</translation>
 <translation id="382476126209906314">TalkGadgeti eesliite seadistamine kaugjuurdepääsu hostidele</translation>
 <translation id="6561396069801924653">Juurdepääsuvalikute kuvamine süsteemisalve menüüs</translation>
 <translation id="8104962233214241919">Valige automaatselt kliendi sertifikaadid nendele saitidele</translation>
+<translation id="7983624541020350102">(See dokument võib sisaldada reegleid, mis on suunatud toote
+      <ph name="PRODUCT_NAME"/> hilisematele versioonidele, mis võivad 
+      muutuda ette teatamata. Toetatud reeglite loend on 
+      sama Chromiumi ja Google Chrome'i puhul.)
+
+      Te ei pea neid seadeid käsitsi muutma. Saate alla laadida lihtsalt kasutatavad mallid aadressilt
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Reeglid on ette nähtud kasutamiseks ainult organisatsiooni sisekasutuseks mõeldud Chrome'i eksemplaride konfigureerimisel. Nende reeglite kasutamist väljaspool organisatsiooni (nt avalikult levitatavas programmis) loetakse pahavaraks ja selle tähistavad pahavaraks tõenäoliselt ka Google ja viirusetõrjepakkujad.
+
+      Märkus. Alates toote <ph name="PRODUCT_NAME"/>
+       versioonist 28 laaditakse reeglid Windowsis otse rühmareegli API-st.
+      Käsitsi registrisse kirjutatud reegleid ignoreeritakse. Vaadake üksikasju aadressilt
+      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">AppPacki laienduste loend</translation>
 <translation id="4386578721025870401">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida.
 
@@ -427,13 +427,6 @@
       Seade lubamisel või keelamisel ei saa kasutajad seda seadet rakenduses <ph name="PRODUCT_NAME"/> muuta ega alistad.
 
       Kui seda reeglit ei määrata, siis kasutatakse seadet, mille kasutaja valis installimisel või esmakordsel käitamisel.</translation>
-<translation id="4784220343847172494">Juhib automaatset puhastamist operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME"/> seadmetel. Automaatne puhastamine käivitatakse osaliseks kettaruumi taastamiseks, kui vaba kettaruumi hulk on jõudnud kriitilise tasemeni.
-
-      Kui eeskirjade jaoks on määratud valik „RemoveLRU”, jätkab automaatne puhastamine kasutajate eemaldamist seadmest kõige kauem aega tagasi sisselogimise järjekorras, kuni on piisavalt vaba ruumi.
-
-      Kui eeskirjade jaoks on määratud valik „RemoveLRUIfDormant”, jätkab automaatne puhastamine nende kasutajate eemaldamist, kes ei ole vähemalt 3 kuu jooksul sisse loginud, kõige kauem aega tagasi sisselogimise järjekorras, kuni on piisavalt vaba ruumi.
-
-      Kui eeskirjade jaoks ei ole midagi määratud, kasutab automaatne puhastamine vaikimisi sisseehitatud strateegiat. Praegu on see strateegia „RemoveLRUIfDormant”.</translation>
 <translation id="6256787297633808491">Süsteemiülesed märgised, mis rakendatakse Chrome'i käivitamisel</translation>
 <translation id="2516600974234263142">Lubab printimise rakenduses <ph name="PRODUCT_NAME"/> ja takistab kasutajaid seadet muutmast.
 
@@ -461,16 +454,6 @@
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
-<translation id="3234167886857176179">See on loetelu reeglitest, mida <ph name="PRODUCT_NAME"/> järgib.
-
-      Te ei pea neid seadeid käsitsi muutma. Saate laadida alla lihtsalt kasutatavad mallid aadressilt
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Toetatud reeglite loend on Chromiumi ja Google Chrome'i puhul sama.
-
-      Need reeglid on mõeldud ainult teie organisatsiooni Chrome'i eksemplaride seadistamiseks. Nende reeglite kasutamist väljaspool teie organisatsiooni (nt avalikult levitatud programmis) loetakse pahavara kasutamiseks ning Google ja viirusetõrjeteenuste pakkujad loevad selle tõenäoliselt pahavaraks.
-
-      Märkus: Chrome 28-st alates laaditakse reeglid Windowsis otse Group Policy API kaudu. Registrisse käsitsi lisatud reegleid eiratakse. Üksikasju vaadake aadressilt http://crbug.com/259236.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> saab kasutada Google'i veebiteenust, et aidata parandada õigekirjavigu. Kui seade on lubatud, siis kasutatakse teenust alati. Kui seade on keelatud, siis ei kasutata teenust kunagi.
 
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
@@ -501,6 +484,7 @@
 <translation id="3915395663995367577">Puhverserveri pac-faili URL</translation>
 <translation id="2144674628322086778">Lubage ettevõtte kasutajal olla nii esmane kui ka teisene (vaikekäitumine)</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
+<translation id="3805659594028420438">Luba TLS-i domeenisuunaliste sertifikaatide laiendus (pakkumine on peatatud)</translation>
 <translation id="5499375345075963939">Reegel on aktiivne ainult jaerežiimis.
 
       Kui reegli väärtus on määratud ja see ei ole 0, siis logitakse parasjagu sisselogitud demoversiooni kasutaja automaatselt välja pärast seda, kui määratud pikkusega mitteaktiivsuse perioodi lõpeb.
@@ -761,6 +745,7 @@ Seade lubamisel saadavad registreeritud seadmed regulaarselt teavet operatsiooni
 
       Kui jätate eeskirja määramata, siis võib kasutaja käivitis kinnitatud rakenduste loendit muuta.</translation>
 <translation id="1679420586049708690">Avalik seanss automaatseks sisselogimiseks</translation>
+<translation id="5836064773277134605">Piira kaugjuurdepääsuhosti kasutatavate UDP-portide vahemikku</translation>
 <translation id="7625444193696794922">Määrab väljalaskekanali, millele seade tuleks lukustada.</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
 <translation id="3788662722837364290">Toitehalduse seaded, kui kasutaja on tegevusetu</translation>
@@ -787,6 +772,11 @@ Seade lubamisel saadavad registreeritud seadmed regulaarselt teavet operatsiooni
 
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="6394350458541421998">Reegel on alates rakenduse <ph name="PRODUCT_OS_NAME"/> versioonist 29 kasutusest kõrvaldatud. Kasutage selle asemel reeglit PresentationScreenDimDelayScale.</translation>
+<translation id="2956777931324644324">Selle reegli pakkumine lõpetati toote <ph name="PRODUCT_NAME"/> versiooniga 36.
+
+      Määrab, kas TLS-i domeenisuunaline sertifikaatide laiendus peab olema lubatud.
+
+      Selle seadega lubatakse testimiseks TLS-i domeenisuunaline sertifikaatide laiendus. See katseline seade eemaldatakse tulevikus.</translation>
 <translation id="5770738360657678870">Arendaja kanal (võib olla ebastabiilne)</translation>
 <translation id="2959898425599642200">Puhverserveri möödumisreeglid</translation>
 <translation id="228659285074633994">Määrab aja, pärast mida kuvatakse vahelduvvoolutoite kasutamisel hoiatusdialoog, kui kasutaja pole midagi sisestanud.
@@ -949,13 +939,6 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
           Reegel on mõeldud Chrome'ile sisekasutuseks.</translation>
 <translation id="5586942249556966598">Ära tee midagi</translation>
 <translation id="131353325527891113">Kuva kasutajanimed sisselogimiskuval</translation>
-<translation id="5317965872570843334">Lubab STUN-i ja vaheserverite kasutamise, kui kaugkliendid proovivad luua ühenduse selle seadmega.
-
-          Seade lubamisel saavad kaugkliendid seadme leida ja sellega ühenduse luua isegi juhul, kui neid eraldab tulemüür.
-
-          Kui seade on keelatud ja tulemüür filtreerib väljuvad UDP-ühendused, siis lubab masin klientmasinatest tulevaid ühendusi vaid kohalikus võrgus.
-
-          Kui jätate selle reegli määramata, siis seade lubatakse.</translation>
 <translation id="4057110413331612451">Lubage ettevõtte kasutajal olla ainult esmane multiprofiili kasutaja</translation>
 <translation id="5365946944967967336">Kuva tööriistaribal nuppu Avaleht</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
@@ -990,6 +973,15 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
       Reaalajas täpsete andmete hankimiseks kasutage sellist tööriista nagu            telemeetria.</translation>
 <translation id="8731693562790917685">Sisu seaded võimaldavad teil määrata, kuidas kindlat tüüpi sisu (näiteks küpsiseid, kujutisi või JavaScripti) käsitletakse.</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
+<translation id="7332963785317884918">Reegel on peatatud. <ph name="PRODUCT_OS_NAME"/> kasutab alati puhastusstrateegiat „RemoveLRU”.
+
+      Juhib automaatset puhastamist operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME"/> seadmetes. Automaatne puhastamine käivitatakse osaliseks kettaruumi vabastamiseks, kui vaba kettaruumi hulk on jõudnud kriitilise tasemeni.
+
+      Kui reegel on määratud valikule „RemoveLRU”, jätkab automaatne puhastamine kasutajate eemaldamist seadmest, lähtudes sellest, milline kasutaja kõige kauem aega tagasi sisse logis, kuni on piisavalt vaba ruumi.
+
+      Kui reegel on määratud valikule „RemoveLRUIfDormant”, jätkab automaatne puhastamine nende kasutajate eemaldamist, kes ei ole vähemalt 3 kuu jooksul sisse loginud, lähtudes sellest, milline kasutaja kõige kauem aega tagasi sisse logis, kuni on piisavalt vaba ruumi.
+
+      Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
 <translation id="6923366716660828830">Määrab vaikeotsingupakkuja nime. Kui see jäetakse tühjaks või määramata, siis kasutatakse otsingu URL-i määratud hosti nime.
 
           See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
@@ -1064,6 +1056,19 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="538108065117008131">Teenusel <ph name="PRODUCT_FRAME_NAME"/> järgmist tüüpi sisu käsitsemise lubamine.</translation>
 <translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
+<translation id="1464848559468748897">Kasutaja käitumise juhtimine mitme profiiliga seansside puhul operatsioonisüsteemi <ph name="PRODUCT_OS_NAME"/> seadmetes.
+
+      Kui reegel on määratud valikule „MultiProfileUserBehaviorUnrestricted”, saab kasutaja mitme profiiliga seansi puhul olla kas peamine või sekundaarne kasutaja.
+
+      Kui reegel on määratud valikule „MultiProfileUserBehaviorMustBePrimary”, saab kasutaja mitme profiiliga seansi puhul olla ainult peamine kasutaja..
+
+      Kui reegel on määratud valikule „MultiProfileUserBehaviorNotAllowed”, ei saa kasutaja osaleda mitme profiiliga seansis.
+
+      Kui määrate selle seade, siis ei saa kasutajad seda muuta ega alistada.
+
+      Kui seadet muudetakse ajal, mil kasutaja on mitme profiiliga seanssi sisse logitud, kontrollitakse seansi kõiki kasutajaid vastavate seadete alusel. Seanss suletakse, kui ühel kasutajal ei ole enam lubatud seansis osaleda.
+
+      Kui jätate reegli määramata, kasutatakse seade „MultiProfileUserBehaviorMustBePrimary” vaikeväärtust ettevõtte hallatud kasutajate puhul ja seadet „MultiProfileUserBehaviorUnrestricted” haldamata kasutajate puhul.</translation>
 <translation id="243972079416668391">Määrab toimingu, mis rakendub siis, kui tegevusetuse viivitusaeg täitub võrgutoite kasutamisel.
 
           Kui see reegel on määratud, siis täpsustab see, milline toiming rakendub operatsioonisüsteemis <ph name="PRODUCT_OS_NAME"/>, kui kasutaja on tegevusetu tegevusetuse viivitusajaga määratud perioodi jooksul (selle saab seadistada eraldi).
@@ -1225,6 +1230,7 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 
           Reegel on mõeldud Chrome'ile sisekasutuseks.</translation>
 <translation id="913195841488580904">URL-ide loendile juurdepääsu blokeerimine</translation>
+<translation id="5461308170340925511">Konfigureerib laiendusega seotud eeskirjad. Kasutaja ei tohi installida mustas nimekirjas olevaid laiendusi, välja arvatud juhul, kui need on lubatud loendisse lisatud. Saate jõustada eeskirju <ph name="PRODUCT_NAME"/> automaatselt laiendusi installima, määrates need teenuses <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Jõustamisega installitud laiendused installitakse olenemata sellest, kas need on mustas nimekirjas või mitte.</translation>
 <translation id="3292147213643666827">Võimaldab rakendusel <ph name="PRODUCT_NAME"/> töötada puhverserverina teenuse <ph name="CLOUD_PRINT_NAME"/> ja seadmega ühendatud pärandprinterite vahel.
 
       Kui seade on lubatud või seadistamata, saavad kasutajad lubada pilvprintimise puhverserveri Google'i kontoga autentides.
@@ -1251,7 +1257,7 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="2592091433672667839">Inaktiivsuse periood, mille möödudes kuvatakse jaemüügirežiimis sisselogimiskuval ekraanisäästja</translation>
 <translation id="166427968280387991">Puhverserver</translation>
-<translation id="2805707493867224476">Luba kõigil saitidel hüpikakende näitamine</translation>
+<translation id="2805707493867224476">Luba kõigil saitidel hüpikakende kuvamine</translation>
 <translation id="1727394138581151779">Blokeeri kõik pistikprogrammid</translation>
 <translation id="8118665053362250806">Määra meediaketta vahemälu maht</translation>
 <translation id="6565312346072273043">Määrake sisselogimiskuval oleva ekraanil kuvatava klaviatuuri vaikeolek.
@@ -1309,9 +1315,6 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 <translation id="465099050592230505">Ettevõtte veebipoe URL (tugi on katkestatud)</translation>
 <translation id="2006530844219044261">Toitehaldus</translation>
 <translation id="1221359380862872747">Laadi määratud URL-id demosse sisselogimisel</translation>
-<translation id="2431811512983100641">Määrab, kas domeeni suunduvate TLS-i sertifikaatide laiendus on lubatud.
-
-      Seade abil saab katsetamiseks lubada domeeni suunduvate TLS-i sertifikaatide laienduse. See katseline seade eemaldatakse tulevikus.</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.
 
           Reegel on valikuline. Kui jätate selle määramata, siis ei saa märksõnaga otsingupakkujat aktiveerida.
@@ -1433,6 +1436,7 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
           Kui seade on keelatud või pole määratud, kasutatakse kõigi hostide jaoks TalkGadgeti domeeni vaikenime („chromoting-host.talkgadget.google.com”).
 
           See reegliseade ei mõjuta kaugjuurdepääsuga kliente. Nemad kasutavad TalkGadgetile juurdepääsuks alati nime „chromoting-client.talkgadget.google.com”.</translation>
+<translation id="1103860406762205913">Lubab vaba veebipõhist sisselogimist</translation>
 <translation id="5765780083710877561">Kirjeldus:</translation>
 <translation id="6915442654606973733">Suulise tagasiside hõlbustusfunktsiooni lubamine.
 
@@ -1668,7 +1672,6 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 <translation id="7882585827992171421">Reegel on aktiivne ainult jaerežiimis.
 
       Määrab laienduse ID, mida kasutatakse sisselogimisekraani ekraanisäästjana. Laiendus peab kuuluma AppPacki, mis on seadistatud domeenile DeviceAppPack-reegliga.</translation>
-<translation id="7736666549200541892">Luba TLS-i domeenisuunaliste sertifikaatide laiendus</translation>
 <translation id="1796466452925192872">Võimaldab määrata, millised URL-id on lubatud laienduste, rakenduste ja teemade installimiseks.
 
           Alates versioonist Chrome 21 on väljaspoolt Chrome'i veebipoodi hangitud laienduste, rakenduste ja kasutajaskriptide installimine keeruline. Varem said kasutajad klõpsata *.crx-faili lingil ja Chrome pakkus pärast paari hoiatust võimaluse fail installida. Alates versioonist Chrome 21 tuleb sellised failid alla laadida ja lohistada Chrome'i seadete lehele. Seade võimaldab teatud URL-ide puhul ka vana ja lihtsamat installivoogu.
@@ -1678,11 +1681,19 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
           Selle reegli alistab reegel ExtensionInstallBlacklist. See tähendab, et mustas nimekirjas olevat laiendust ei installita isegi siis, kui see toimub loendis olevalt saidilt.</translation>
 <translation id="2113068765175018713">Seadme tööaja piiramine automaatse taaskäivitamisega</translation>
 <translation id="4224610387358583899">Ekraaniluku viivitused</translation>
+<translation id="5388730678841939057">Valib automaatse puhastamise ajal kettaruumi vabastamiseks strateegia (pakkumine on peatatud)</translation>
 <translation id="7848840259379156480">Võimaldab seadistada HTML-i vaikerenderdusmootori, kui <ph name="PRODUCT_FRAME_NAME"/> on installitud. Vaikeseadena on hostbrauseril lubatud renderdada, kuid võite selle soovi korral alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME"/> HTML-lehti vaikimisi renderdada.</translation>
 <translation id="186719019195685253">Toiming, mis rakendub siis, kui tegevusetuse viivitusaeg saab täis vahelduvvoolu kasutamise ajal</translation>
 <translation id="7890264460280019664">Serverile edastatakse loend võrgu liideste ning nende tüüpide ja riistvara aadresside kohta.
 
       Kui reegel on määramata või on seatud olekusse Väär, siis liidese loendit ei edastata.</translation>
+<translation id="197143349065136573">Lubab vana veebipõhise sisselogimisvoo.
+
+      See seade on kasulik ettevõtte klientidele, kes kasutavad SSO lahendusi, mis ei ühildu veel uue tekstisisese sisselogimisvooga.
+      Kui lubate selle seade, kasutatakse vana veebipõhist sisselogimisvoogu.
+      Kui keelate selle seade või jätate selle määramata, kasutatakse vaikimisi uut tekstisisest sisselogimisvoogu. Kasutajad võivad endiselt lubada vana veebipõhist sisselogimisvoogu käsurea markeeringu kaudu – veebipõhise sisselogimise lubamine.
+
+      Katseline seade eemaldatakse tulevikus, kui tekstisisene sisselogimine kõiki SSO sisselogimisvooge täielikult toetab.</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="3973371701361892765">Ära peida hoidlat kunagi automaatselt</translation>
@@ -1786,6 +1797,15 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
       Kui seda reeglit ei määrata, siis kasutatakse kõikide seadete jaoks vaikevalikuid.</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
+<translation id="8071636581296916773">Lubab releeserverite kasutamise, kui kaugkliendid proovivad luua ühenduse selle seadmega.
+
+          Seade lubamisel saavad kaugkliendid kasutada releeservereid seadmega ühenduse loomiseks siis, kui otseühendus pole saadaval (nt tulemüüri piirangute tõttu).
+
+
+          Pange tähele, et kui reegel <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> on keelatud, siis seda reeglit ignoreeritakse.
+
+
+          Kui jätate selle reegli määramata, siis seade lubatakse.</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5781806558783210276">Määrab aja, pärast mida lülitatakse akutoitega töötamisel sisse jõudeolek, kui kasutaja pole midagi sisestanud.
 
@@ -1838,6 +1858,9 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
           Kui seade on lubatud, siis peavad kasutajad hosti pääsemiseks esitama kehtiva kahetasandilise koodi.
 
           Kui seade on keelatud või pole määratud, siis pole kahetasandiline autentimine lubatud ja vaikimisi kasutatakse kasutaja määratud PIN-koodi.</translation>
+<translation id="6698424063018171973">Piirab UDP-portide vahemikku, mida kaugjuurdepääsuhost selles seadmes kasutab.
+
+          Kui see reegel on määramata või selleks määratakse tühi string, siis saab kaugjuurdepääsuhost kasutada iga saadaolevat porti, kui just reegel <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> pole keelatud. Sellisel juhul kasutab kaugjuurdepääsuhost UDP-porte vahemikus 12400–12409.</translation>
 <translation id="7329842439428490522">Määrab aja, pärast mida ekraan akutoitega töötamisel välja lülitatakse, kui kasutaja pole midagi sisestanud.
 
           Kui selle reegli väärtuseks määratakse arv, mis on suurem kui null, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui <ph name="PRODUCT_OS_NAME"/> ekraani välja lülitab.
@@ -1855,6 +1878,13 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
 <translation id="6652197835259177259">Kohalikult hallatud kasutajaseaded</translation>
+<translation id="2808013382476173118">Lubab STUN-serverite kasutamise, kui kaugkliendid proovivad luua ühenduse selle seadmega.
+
+          Seade lubamisel saavad kaugkliendid seadme leida ja sellega ühenduse luua isegi juhul, kui neid eraldab tulemüür.
+
+          Kui seade on keelatud ja tulemüür filtreerib väljuvad UDP-ühendused, siis lubab seade klientseadmetest tulevaid ühendusi vaid kohalikus võrgus.
+
+          Kui jätate selle reegli määramata, siis seade lubatakse.</translation>
 <translation id="3243309373265599239">Määrab aja, pärast mida hämardatakse võrgutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
 
           Kui selle reegli väärtuseks määratakse arv, mis on suurem kui null, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui <ph name="PRODUCT_OS_NAME"/> ekraani hämardab.

@@ -25,11 +25,13 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
 <translation id="4250680216510889253">No</translation>
-<translation id="8073388330009372546">Obre imatge en pestanya nova</translation>
+<translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="8730621377337864115">Finalitzat</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
+<translation id="473775607612524610">Actualitza</translation>
 <translation id="8627706565932943526">Error de sincronització</translation>
+<translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="4043215103217793252">Edita la pàgina de les adreces d'interès</translation>
 <translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
@@ -51,7 +53,7 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="1206892813135768548">Copia el text de l'enllaç</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
-<translation id="4271185234001491831">No tradueixis mai el contingut escrit en <ph name="LANGUAGE"/></translation>
+<translation id="4271185234001491831">No tradueixis mai de: <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Copia la imatge</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="2501278716633472235">Enrere</translation>

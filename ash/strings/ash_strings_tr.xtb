@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="3595596368722241419">Pil tam dolu</translation>
+<translation id="6895424601869865703"><ph name="GIVEN_NAME"/> için bir hesap ekle</translation>
+<translation id="1057289296854808272">Döndürme açık (Değiştirmek için buraya hafifçe vurun)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ve <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portal durumu</translation>
 <translation id="30155388420722288">Taşma Düğmesi</translation>
@@ -45,6 +47,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
+<translation id="4625920103690741805">Döndürme kilitli (Değiştirmek için buraya hafifçe vurun)</translation>
 <translation id="3799026279081545374">Şarj cihazınız sorunlu olabilir. ABD'de yaşıyorsanız yardım almak ve cihazı yenisiyle değiştirmek için lütfen 866-628-1371 numaralı telefonu arayın. İngiltere'de yaşıyorsanız 0800-026-0613 numaralı telefonu, İrlanda'da yaşıyorsanız 1-800-832-664 numaralı telefonu, Kanada'da yaşıyorsanız 866-628-1372 numaralı telefonu, Avustralya'da yaşıyorsanız lütfen 1-800-067-460 numaralı telefonu arayın.</translation>
 <translation id="3026237328237090306">Mobil verileri ayarla</translation>
 <translation id="5871632337994001636">Cihazları yönet...</translation>
@@ -69,6 +72,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="7170041865419449892">Aralık dışında</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Yapılandırma</translation>
@@ -101,6 +105,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="372094107052732682">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="1480041086352807611">Demo modu</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (birincil)</translation>
 <translation id="3626637461649818317">%<ph name="PERCENTAGE"/> kaldı</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
@@ -127,6 +132,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
 <translation id="7256405249507348194">Tanınmayan hata: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Hesaplar</translation>
 <translation id="2894654529758326923">Bilgiler</translation>
 <translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>
 <translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/> </translation>
@@ -139,7 +145,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor.</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
-<translation id="1398853756734560583">Büyüt</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Bağlanıyor...</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> içinde otomatik olarak çıkış yapacaksınız.</translation>
 <translation id="252373100621549798">Bilinmeyen Görünüm</translation>
@@ -151,7 +156,9 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' ağına bağlanamadı: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Kablosuz kapalı.</translation>
 <translation id="2872961005593481000">Kapat</translation>
+<translation id="3433830597744061105">Hesapları yönet</translation>
 <translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME"/> etkinleştirme portalını ziyaret edin.</translation>
+<translation id="742594950370306541">Kamera kullanımda.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> ağına bağlanıldı</translation>
 <translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
 <translation id="8678698760965522072">Çevrimiçi durumu</translation>
@@ -168,7 +175,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
 <translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
-<translation id="3157931365184549694">Geri yükle</translation>
 <translation id="4274292172790327596">Tanınmayan hata</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Kulaklık</translation>
@@ -225,6 +231,7 @@ Sunucu mesajı: <ph name="SERVER_MSG"/></translation>
 <translation id="9046895021617826162">Bağlantı başarısız oldu</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="973896785707726617">Bu oturum <ph name="SESSION_TIME_REMAINING"/> içinde sona erecek. Oturumunuz otomatik olarak kapatılacaktır.</translation>
+<translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
 <translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
 <translation id="6636709850131805001">Tanınmayan durum</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -242,7 +249,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="520760366042891468">Ekranınızın denetimi Hangouts üzerinden paylaşılıyor.</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="4015692727874266537">Başka bir hesapta oturum açın...</translation>
-<translation id="5941711191222866238">Simge durumuna küçült</translation>
+<translation id="1044925987639358253">Mikrofon kullanımda.</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Tebrikler! '<ph name="NAME"/>' veri hizmetiniz etkinleştirildi ve kullanıma hazır.</translation>

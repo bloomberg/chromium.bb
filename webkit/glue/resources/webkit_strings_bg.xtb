@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Ден</translation>
 <translation id="1729654308190250600">Моля, въведете имейл адрес.</translation>
 <translation id="6015796118275082299">Година</translation>
-<translation id="9186171386827445984">Документът се зарежда: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> страници...</translation>
 <translation id="1235745349614807883">Изчистване на скорошните търсения</translation>
 <translation id="7223624360433298498">изминало време</translation>
 <translation id="1171774979989969504">Моля, въведете имейл адрес.</translation>
 <translation id="709897737746224366">Моля, спазвайте изисквания формат.</translation>
 <translation id="5048533449481078685">списъчен показалец</translation>
 <translation id="4202807286478387388">преминаване</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Моля, въведете текст преди „<ph name="ATSIGN"/>“. „<ph name="INVALIDADDRESS"/>“ е непълно.</translation>
 <translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME"/> или по-късно.</translation>
 <translation id="2572483411312390101">пускане</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Моля, поставете отметка в това квадратче, ако искате да продължите.</translation>
 <translation id="8534579021159131403">Минути</translation>
 <translation id="819205353528511139">пускане на филма в режим на цял екран</translation>
-<translation id="8964020114565522021">Плъзнете файла тук</translation>
 <translation id="4103419683916926126">Милисекунди</translation>
 <translation id="838869780401515933">отмятане</translation>
 <translation id="2846343701378493991">1024 (средна степен на сложност)</translation>

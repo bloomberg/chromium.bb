@@ -6,14 +6,12 @@
 <translation id="248395913932153421">일</translation>
 <translation id="1729654308190250600">비어 있지 않은 이메일 주소를 입력해 주세요.</translation>
 <translation id="6015796118275082299">연도</translation>
-<translation id="9186171386827445984">문서 로드 중: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>페이지</translation>
 <translation id="1235745349614807883">최근 검색 삭제</translation>
 <translation id="7223624360433298498">경과 시간</translation>
 <translation id="1171774979989969504">이메일 주소를 입력하세요.</translation>
 <translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="5048533449481078685">목록 표시기</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN"/>' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS"/>'(이)가 완전하지 않습니다.</translation>
 <translation id="2746543609216772311">값은 <ph name="MINIMUM_DATE_OR_TIME"/> 이후여야 합니다.</translation>
 <translation id="2572483411312390101">재생</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">계속하려면 이 확인란을 선택하세요.</translation>
 <translation id="8534579021159131403">분</translation>
 <translation id="819205353528511139">전체화면 모드로 영화 재생</translation>
-<translation id="8964020114565522021">여기로 파일 드래그</translation>
 <translation id="4103419683916926126">밀리초</translation>
 <translation id="838869780401515933">선택</translation>
 <translation id="2846343701378493991">1024(중간 등급)</translation>

@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="8000275528373650868">Google Chrome のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="8485767968786176057">証明書に記載されているアドレスが、ブラウザがアクセスしようとしたウェブサイトのアドレスと一致しません。理由の 1 つとして、通信が悪意のあるユーザーによって傍受され、そのユーザーから別のウェブサイトの証明書が提示されているために、アドレスが一致しないことが考えられます。あるいは、アクセスしようとしているウェブサイトを含む複数のウェブサイトについて同じ証明書を返すようにサーバーが設定されているが、その証明書がすべてのサイトについて有効とは限らないことが考えられます。Google Chrome では、アクセスしているサイトが確かに &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; であることは保証できますが、アクセスしようとした &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは検証できません。次に進むと、以降 Chrome ではアドレスの不一致がチェックされなくなります。</translation>
+<translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
-<translation id="7115445779188493842">アプリ ランチャーを使用するには、Google Chrome をデスクトップ モードで再起動する必要があります。</translation>
+<translation id="7952135150021331855">Google Chrome はバックグラウンドで実行中です。</translation>
 <translation id="345171907106878721">Chrome に自分を追加</translation>
 <translation id="6236285698028833233">Google Chrome はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="5453904507266736060">Google Chrome のバックグラウンドでの実行を許可する</translation>
@@ -15,7 +15,6 @@
 <translation id="4167057906098955729">Chrome のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
 <translation id="2704356438731803243">既存の Chrome データを個別に保持したい場合は、<ph name="USER_NAME"/> 用の新しい Chrome ユーザーを作成できます。</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
-<translation id="2144822863799338346">Chrome へようこそ。次の操作を行うときは、こちらの画面にお戻りください:</translation>
 <translation id="1225016890511909183">Chrome で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="8838365799985821335">拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
@@ -23,12 +22,12 @@
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
-<translation id="7101265395643981223">Google Chrome を起動</translation>
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
+<translation id="1376881911183620035">新しい Chrome をお試しいただきありがとうございます。Chrome では再起動が必要です。続ける前に、未保存のデータがないか確認してください。</translation>
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
-<translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="2721687379934343312">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーがアクセスしたり同期したりできます。</translation>
+<translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="4953650215774548573">Google Chrome を既定のブラウザとして設定する</translation>
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>
@@ -37,27 +36,21 @@
 <translation id="6982337800632491844"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME"/> チャンネルに更新しています...</translation>
+<translation id="8032142183999901390">Chrome からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="5775197990071433230">新しいバージョンの Google Chrome コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
-<translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="4987308747895123092">Google Chrome のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
-<translation id="55271449890419930">Google Chrome では拡張機能による個人情報の取り扱いを制御できないため、シークレット ウィンドウではすべての拡張機能が無効になっています。
-<ph name="BEGIN_LINK"/>拡張機能マネージャ<ph name="END_LINK"/>で、拡張機能を個別に有効にできます。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
-<translation id="2082230140685103752">Chrome アプリを使用するには、Google Chrome をデスクトップ モードで再起動する必要があります。</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="7054640471403081847">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Google Chrome アップデートの受信を停止します。</translation>
-<translation id="6326709553577195251">アカウントを削除するには Chrome の再起動が必要です。先に進む前に、途中の作業をすべて保存しているか確認してください。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
 <translation id="7060865993964054389">Google Chrome アプリ ランチャー</translation>
 <translation id="1682634494516646069">Google Chrome はこのデータ ディレクトリへの読み書きを実行できません: <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="4343226815564935778">Google Chrome のインストール先ディレクトリが現在使用中です。パソコンを再起動して、もう一度やり直してください。</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> リンクを処理するには外部アプリケーションの起動が必要です。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>
 <translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
-<translation id="7831498172068826473">管理者のいる管理対象アカウントでログインしています。このアカウントから切断すると、この Chrome ユーザーと、関連付けられたすべての Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）がこのパソコンから削除されます。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>利用規約<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chrome の使用に関するアドバイス</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS"/> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
@@ -115,20 +108,23 @@
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> が Chrome に追加されました。</translation>
 <translation id="1786477462680638703">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、Google Chrome で信頼されていない発行元です。サーバーで独自に生成されたセキュリティ認証情報が、Chrome で認証情報として使用できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
+<translation id="7494905215383356681">Chrome オープンソース ライセンス</translation>
 <translation id="2346876346033403680">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST"/> として Chrome にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chrome ユーザーを作成して情報を個別に保持してください。
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW"/> と統合されます。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>警告:<ph name="END_BOLD"/> 拡張機能による閲覧履歴の記録は Google Chrome で停止することができません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2664962310688259219">Chrome OS オープンソース ライセンス</translation>
 <translation id="2290014774651636340">Google API キーが欠落しています。Google Chrome の一部の機能は無効になります。</translation>
 <translation id="4794050651896644714">Chrome で詳細を保存する</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
+<translation id="2036562258783619899">新しい Chrome の概要を見る</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
-<translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
+<translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="103396972844768118">Chrome データに関する重要な情報</translation>
@@ -139,7 +135,6 @@
 <translation id="4273752058983339720">Google Chrome は、パソコン起動時に自動的に起動されるよう設定されています。</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
-<translation id="1140117203923356735"><ph name="FILE_NAME"/> で不正なソフトウェアに類似した設定の変更が加えられているため、Chrome はこのファイルをブロックしました。</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="1759301979429102118">連絡先から詳細を取得すると、Chrome でのフォームの記入が楽になります。</translation>
 <translation id="7787950393032327779">プロフィールは、別のコンピュータ（<ph name="HOST_NAME"/>）の別の Google Chrome プロセス（<ph name="PROCESS_ID"/>）で使用されているようです。Chrome はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chrome を再起動できます。</translation>
@@ -149,10 +144,9 @@
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="5788838254726722945">Google Chrome アプリ ランチャーをアンインストール</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
+<translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK"/>を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
-<translation id="3248703849416430126">• ユーザーを切り替える
-• Chrome のデータをロックする
-• Google アカウントを管理する</translation>
+<translation id="4864451188650489141">以下では、他の Google アカウントの追加や Chromium のロックができます。</translation>
 <translation id="5875635642195358109">このオプションを無効にするには:
         Chrome メニュー &gt;
         <ph name="SETTINGS_TITLE"/>
@@ -161,6 +155,7 @@
         の順に移動して、[<ph name="NO_PREFETCH_DESCRIPTION"/>] チェックボックスをオフにします。
         このオプションを無効にしても問題が解決しない場合は、ページの表示速度を
         向上させるために再度有効にすることをおすすめします。</translation>
+<translation id="6235018212288296708">mDNS トラフィックを許可する Google Chrome のインバウンド ルールです。</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="5028489144783860647">Google Chrome はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
@@ -182,21 +177,20 @@
 <translation id="1587223624401073077">Google Chrome がカメラを使用しています。</translation>
 <translation id="1399397803214730675">新しいバージョンの Google Chrome が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome をアンインストールしてからもう一度お試しください。</translation>
 <translation id="576822117893741893">Chrome メニューを表示する</translation>
-<translation id="338432196642384904">Chrome ユーザーを削除</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>障害レポートを有効<ph name="END_LINK"/>にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
-<translation id="4566427205701379461"><ph name="PROFILE_EMAIL"/> を使って Chrome データを同期しています。同期設定を更新する場合、または Google アカウントなしで Chrome を使用する場合は、[設定] ページを開いてください。</translation>
 <translation id="8614913330719544658">Google Chrome が応答しません。今すぐ再起動しますか？</translation>
 <translation id="2681064822612051220">システム上に競合している Google Chrome が見つかりました。これをアンインストールしてからもう一度お試しください。</translation>
 <translation id="1175529839152551794">ログインしました。ノートパソコン、スマートフォン、タブレットで同じタブ、ブックマーク、その他の Chrome 設定をご利用いただけます。また、Google のサービスをご利用になる際に、より関連性の高いヒントや機能が表示されるようになります。</translation>
+<translation id="8209985377776300429">新しい Chrome のプレビュー中です。</translation>
 <translation id="6126631249883707068">Google Chrome でパスワードを保存しますか？</translation>
 <translation id="7773845170078702898">Google Chrome でこのサイトのパスワードを保存しますか？</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="7125719106133729027">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を手動で再インストールする必要があります。</translation>
 <translation id="5940385492829620908">ウェブ、ブックマーク、その他の Chrome データを好みに設定できます。</translation>
-<translation id="5788515153694509397">管理対象の Chrome ユーザーを削除</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
+<translation id="3039245375609697729">共有パソコンで Google アカウントを使って Chrome を利用する新しい方法をお試しください。</translation>
+<translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="6113794647360055231">進化する Chrome</translation>
-<translation id="8142608456917638009">Google Chrome ではアプリケーションのショートカットを作成できませんでした。</translation>
 <translation id="174539241580958092">ログイン時にエラーが発生したため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
@@ -220,9 +214,8 @@
           &gt;
           [LAN の設定]
           の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
+<translation id="6598387184982954187">Chrome データの同期に <ph name="PROFILE_EMAIL"/> を使用しています。同期設定を更新する、または Google アカウントなしで Chrome を使用するには、<ph name="SETTINGS_LINK"/> にアクセスしてください。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
-<translation id="1061257178446858647">Chrome にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
-<translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
@@ -235,6 +228,8 @@
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="6991142834212251086">Chrome データをこのアカウントにリンクする</translation>
 <translation id="3451115285585441894">Chrome に追加...</translation>
+<translation id="6502165024350711060">Chrome による候補</translation>
+<translation id="3047079729301751317"><ph name="USERNAME"/> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chrome データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK"/>Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK"/>で管理できます。</translation>
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>
@@ -251,7 +246,6 @@
 <translation id="3836351788193713666">Google Chrome を再起動して更新を完了してください</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
-<translation id="8449380764213232436"><ph name="BROWSER_COMPONENT"/> から Google Chrome にインポートしています:</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>
 <translation id="8037887340639533879">更新対象の Google Chrome のインストールは見つかりませんでした。</translation>
 <translation id="5495581687705680288">Google Chrome に読み込まれているモジュール</translation>

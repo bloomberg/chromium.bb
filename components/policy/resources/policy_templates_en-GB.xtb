@@ -125,7 +125,6 @@
           NOTE: The default behaviour for consumer and enterprise devices differs: on consumer devices, supervised users are enabled by default, but on enterprise devices they are disabled by default.</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
-<translation id="5827231192798670332">Selects the strategy used to free up disk space during automatic clean-up</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="6649397154027560979">This policy is deprecated, please use URLBlacklist instead.
@@ -162,7 +161,6 @@
       If <ph name="PRODUCT_NAME"/> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
 
       If this policy is not set, or it is set to false, then Chrome will use the existing online revocation checking settings.</translation>
-<translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
 <translation id="3516856976222674451">Limit the maximum length of a user session.
 
       When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
@@ -229,19 +227,6 @@
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
-<translation id="4418909344122918381">Control user behaviour in a multi-profile session on <ph name="PRODUCT_OS_NAME"/> devices.
-
-      If this policy is set to 'MultiProfileUserBehaviourUnrestricted', the user can be either primary or secondary user in a multi-profile session.
-
-      If this policy is set to 'MultiProfileUserBehaviourMustBePrimary', the user can only be the primary user in a multi-profile session.
-
-      If this policy is set to 'MultiProfileUserBehaviourNotAllowed', the user cannot be part of a multi-profile session.
-
-      If you set this setting, users cannot change or override it.
-
-      If the setting is changed while the user is signed into a multi-profile session, all users in the session will be checked against their corresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
-
-      If the policy is left not set, the default value 'MultiProfileUserBehaviourUnrestricted' will be used.</translation>
 <translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
@@ -319,6 +304,7 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="5912364507361265851">Allow users to show passwords in Password Manager</translation>
+<translation id="5318185076587284965">Enable the use of relay servers by the remote access host</translation>
 <translation id="510186355068252378">Disables data synchronisation in <ph name="PRODUCT_NAME"/> using Google-hosted synchronisation services and prevents users from changing this setting.
 
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
@@ -354,6 +340,20 @@
 <translation id="382476126209906314">Configure the TalkGadget prefix for remote access hosts</translation>
 <translation id="6561396069801924653">Show accessibility options in system tray menu</translation>
 <translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
+<translation id="7983624541020350102">(This document may include policies that are targeted for later
+      <ph name="PRODUCT_NAME"/> versions; those are
+      subject to change without notice. The list of supported policies is the
+      same for Chromium and Google Chrome.)
+
+      You don't need to change these settings by hand!  You can download easy-to-use templates from
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      These policies are strictly intended to be used to configure instances of Chrome internal to your organisation. Use of these policies outside of your organisation (for example, in a publicly distributed programme) is considered malware and will likely be labelled as malware by Google and anti-virus vendors.
+
+      Note: Starting with <ph name="PRODUCT_NAME"/>
+      28, policies are loaded directly from the Group Policy API on
+      Windows. Policies manually written to the registry will be ignored. See
+      http://crbug.com/259236 for details.</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="4386578721025870401">Limit the time for which a user-authenticated via SAML can log in offline.
 
@@ -443,13 +443,6 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left unset the setting will be what the user chose upon installation / first run.</translation>
-<translation id="4784220343847172494">Controls the automatic clean-up behaviour on <ph name="PRODUCT_OS_NAME"/> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
-
-      If this policy is set to 'RemoveLRU', the automatic clean-up will keep removing users from the device in least-recently-logged-in order until there is enough free space.
-
-      If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
-
-      If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="6256787297633808491">System wide flags to be applied on Chrome start-up</translation>
 <translation id="2516600974234263142">Enables printing in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -477,16 +470,6 @@
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
-<translation id="3234167886857176179">This is the list of policies that <ph name="PRODUCT_NAME"/> respects.
-
-      You don't need to change these settings by hand!  You can download easy-to-use templates from
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      The list of supported policies is the same for Chromium and Google Chrome.
-
-      These policies are strictly intended to be used to configure instances of Chrome internal to your organisation. Use of these policies outside of your organisation (for example, in a publicly distributed programme) is considered malware and is likely to be labelled as malware by Google and anti-virus vendors.
-
-      Note: starting with Chrome 28, policies are loaded directly from the Group Policy API on Windows. Policies manually written to the registry will be ignored. See http://crbug.com/259236 for details.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
@@ -517,6 +500,7 @@
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
 <translation id="2144674628322086778">Allow enterprise user to be both primary and secondary  (Default behaviour)</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
+<translation id="3805659594028420438">Enable TLS domain-bound certificates extension (deprecated)</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
 
       When the value of this policy is set and is not 0 then the currently logged in demo user will be logged out automatically after an inactivity time of the specified duration has elapsed.
@@ -778,6 +762,7 @@
 
       If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="1679420586049708690">Public session for auto-login</translation>
+<translation id="5836064773277134605">Restrict the UDP port range used by the remote access host</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="3788662722837364290">Power management settings when the user becomes idle</translation>
@@ -804,6 +789,11 @@
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
 <translation id="6394350458541421998">This policy has been retired as of <ph name="PRODUCT_OS_NAME"/> version 29. Please use the PresentationScreenDimDelayScale policy instead.</translation>
+<translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME"/> version 36.
+
+      Specifies whether the TLS domain-bound certificates extension should be enabled.
+
+      This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="228659285074633994">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
@@ -967,13 +957,6 @@
           This policy is for internal use by Chrome itself.</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
-<translation id="5317965872570843334">Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine.
-
-          If this setting is enabled, then remote clients can discover and connect to this machines even if they are separated by a firewall.
-
-          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
-
-          If this policy is left unset the setting will be enabled.</translation>
 <translation id="4057110413331612451">Allow enterprise user to be primary multiprofile user only</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
@@ -1008,6 +991,15 @@
       please use tools like Telemetry.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
+<translation id="7332963785317884918">This policy is deprecated. <ph name="PRODUCT_OS_NAME"/> will always use the 'RemoveLRU' clean-up strategy.
+
+      Controls the automatic clean-up behaviour on <ph name="PRODUCT_OS_NAME"/> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
+
+      If this policy is set to 'RemoveLRU', the automatic clean-up will keep removing users from the device in least-recently-logged-in order until there is enough free space.
+
+      If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
+
+      If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
@@ -1084,6 +1076,19 @@
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
+<translation id="1464848559468748897">Control the user behaviour in a multi-profile session on <ph name="PRODUCT_OS_NAME"/> devices.
+
+      If this policy is set to 'Multi-ProfileUserBehaviourUnrestricted', the user can be either the primary or secondary user in a multi-profile session.
+
+      If this policy is set to 'Multi-ProfileUserBehaviourMustBePrimary', the user can only be the primary user in a multi-profile session.
+
+      If this policy is set to 'Multi-ProfileUserBehaviourNotAllowed', the user cannot be part of a multi-profile session.
+
+      If you set this setting, users cannot change or override it.
+
+      If the setting is changed while the user is signed into a multi-profile session, all users in the session will be checked against their corresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
+
+      If the policy is left not set, the default value 'Multi-ProfileUserBehaviourMustBePrimary' applies for enterprise-managed users and 'Multi-ProfileUserBehaviourUnrestricted' will be used for non-managed users.</translation>
 <translation id="243972079416668391">Specify the action to take when the idle delay is reached while running on AC power.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME"/> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
@@ -1253,6 +1258,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           This policy is for internal use by Chrome itself.</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
+<translation id="5461308170340925511">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Force-installed extensions are installed regardless whether they are present in the blacklist.</translation>
 <translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
@@ -1337,9 +1343,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="465099050592230505">Enterprise web store URL (deprecated)</translation>
 <translation id="2006530844219044261">Power management</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
-<translation id="2431811512983100641">Specifies whether the TLS domain-bound certificates extension should be enabled.
-
-      This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
 
           This policy is optional. If not set, no keyword will activate the search provider.
@@ -1461,6 +1464,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           If this setting is disabled or not set, then the default TalkGadget domain name ('chromoting-host.talkgadget.google.com') will be used for all hosts.
 
           Remote access clients are not affected by this policy setting. They will always use 'chromoting-client.talkgadget.google.com' to access the TalkGadget.</translation>
+<translation id="1103860406762205913">Enables the old web-based signin</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="6915442654606973733">Enable the spoken feedback accessibility feature.
 
@@ -1696,7 +1700,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
-<translation id="7736666549200541892">Enable TLS domain-bound certificates extension</translation>
 <translation id="1796466452925192872">Allows you to specify which URLs are allowed to install extensions, apps and themes.
 
           Starting in Chrome 21, it is more difficult to install extensions, apps and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and Chrome would offer to install the file after a few warnings. After Chrome 21, such files must be downloaded and dragged onto the Chrome settings page. This setting allows specific URLs to have the old, easier installation flow.
@@ -1706,6 +1709,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
 <translation id="4224610387358583899">Screen lock delays</translation>
+<translation id="5388730678841939057">Selects the strategy used to free up disk space during automatic clean-up</translation>
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME"/> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
@@ -1713,6 +1717,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7890264460280019664">Report list of network interfaces with their types and hardware addresses to the server.
 
       If the policy is not set, or set to false, the interface list will not be reported.</translation>
+<translation id="197143349065136573">Enables the old web-based signin flow.
+
+      This setting is useful for enterprise customers who are using SSO solutions that are not compatible with the new inline signin flow yet.
+      If you enable this setting, the old web-based signin flow would be used.
+      If you disable this setting or leave it not set, the new inline signin flow would be used by default. Users may still enable the old web-based signin flow through the command line flag – enable-web-based-signin.
+
+      The experimental setting will be removed in the future when the inline signin fully supports all SSO signin flows.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="3973371701361892765">Never auto-hide the shelf</translation>
@@ -1824,6 +1835,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       If this policy is unset, defaults are used for all settings.</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
+<translation id="8071636581296916773">Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
+
+          If this setting is enabled, then remote clients can use relay servers to connect to this machine when a direct connection is not available (e.g. due to firewall restrictions).
+
+          Note that if the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> is disabled, this policy will be ignored.
+
+          If this policy is not set, the setting will be enabled.</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="5781806558783210276">Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
@@ -1876,6 +1894,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           If this setting is enabled, then users must provide a valid two-factor code when accessing a host.
 
           If this setting is disabled or not set, then two-factor will not be enabled and the default behaviour of having a user-defined PIN will be used.</translation>
+<translation id="6698424063018171973">Restricts the UDP port range used by the remote access host in this machine.
+
+          If this policy is not set, or if it is set to an empty string, the remote access host will be allowed to use any available port, unless the policy <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> is disabled, in which case the remote access host will use UDP ports in the 12400-12409 range.</translation>
 <translation id="7329842439428490522">Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> turns off the screen.
@@ -1893,6 +1914,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       The recognised connection type identifiers are &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; and &quot;cellular&quot;.</translation>
 <translation id="6652197835259177259">Locally managed users settings</translation>
+<translation id="2808013382476173118">Enables usage of STUN servers when remote clients are trying to establish a connection to this machine.
+
+          If this setting is enabled, then remote clients can discover and connect to this machine even if they are separated by a firewall.
+
+          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
+
+          If this policy is not set, the setting will be enabled.</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> dims the screen.

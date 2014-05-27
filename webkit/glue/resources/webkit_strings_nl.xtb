@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="1729654308190250600">Geef een e-mailadres op.</translation>
 <translation id="6015796118275082299">Jaar</translation>
-<translation id="9186171386827445984">Document wordt geladen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pagina's...</translation>
 <translation id="1235745349614807883">Recente zoekopdrachten wissen</translation>
 <translation id="7223624360433298498">verstreken tijd</translation>
 <translation id="1171774979989969504">Geef een e-mailadres op.</translation>
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="5048533449481078685">lijstmarkering</translation>
 <translation id="4202807286478387388">Gaan naar</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Geef een naamgedeelte op, gevolgd door '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is onvolledig.</translation>
 <translation id="2746543609216772311">Waarde moet <ph name="MINIMUM_DATE_OR_TIME"/> of later zijn.</translation>
 <translation id="2572483411312390101">afspelen</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Vink dit selectievakje aan als je wilt doorgaan.</translation>
 <translation id="8534579021159131403">Minuten</translation>
 <translation id="819205353528511139">film afspelen op volledig scherm</translation>
-<translation id="8964020114565522021">Sleep bestand hier naartoe</translation>
 <translation id="4103419683916926126">Milliseconden</translation>
 <translation id="838869780401515933">Selecteren</translation>
 <translation id="2846343701378493991">1024 (gemiddeld niveau)</translation>
@@ -90,7 +87,7 @@
 <translation id="1822429046913737220">a.m./p.m.</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="2908441821576996758">Voer een door komma's gescheiden lijst met e-mailadressen in.</translation>
-<translation id="5939518447894949180">Herstellen</translation>
+<translation id="5939518447894949180">Terugzetten</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Geef een geldige waarde op. De dichtstbijzijnde geldige waarde is <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Ongeldige waarde.</translation>

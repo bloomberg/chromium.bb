@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="1729654308190250600">Introduïu una adreça electrònica.</translation>
 <translation id="6015796118275082299">Any</translation>
-<translation id="9186171386827445984">S'està carregant el document: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pàgines...</translation>
 <translation id="1235745349614807883">Esborra les cerques recents</translation>
 <translation id="7223624360433298498">temps transcorregut</translation>
 <translation id="1171774979989969504">Introduïu una adreça electrònica.</translation>
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="5048533449481078685">marcador de llistes</translation>
 <translation id="4202807286478387388">salta</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Introduïu un nom d'usuari seguit de &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; no és una adreça completa.</translation>
 <translation id="2746543609216772311">El valor ha de ser <ph name="MINIMUM_DATE_OR_TIME"/> o posterior.</translation>
 <translation id="2572483411312390101">reprodueix</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
 <translation id="8534579021159131403">Minuts</translation>
 <translation id="819205353528511139">reprodueix la pel·lícula en mode de pantalla completa</translation>
-<translation id="8964020114565522021">Arrossegueu el fitxer aquí.</translation>
 <translation id="4103419683916926126">Mil·lisegons</translation>
 <translation id="838869780401515933">marca</translation>
 <translation id="2846343701378493991">1024 (Mitjà)</translation>

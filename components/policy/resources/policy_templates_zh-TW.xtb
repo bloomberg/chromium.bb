@@ -104,7 +104,6 @@
           注意：一般使用者和企業客戶的裝置對於這項設定的預設值有所不同。在預設狀態下，一般使用者的裝置會啟用建立受監督使用者的功能，但企業戶的裝置則會停用這項功能。</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
-<translation id="5827231192798670332">選取自動清理時用來釋出磁碟空間的策略</translation>
 <translation id="8412312801707973447">不論線上 OCSP/CRL 檢查是否執行</translation>
 <translation id="2482676533225429905">內建訊息傳遞</translation>
 <translation id="6649397154027560979">這項政策已淘汰，請改用 URLBlacklist。
@@ -141,7 +140,6 @@
       如果 <ph name="PRODUCT_NAME"/> 無法取得撤銷狀態資訊，這類憑證將被視為已撤銷 (也就是「作業失敗」) 來處理。
 
       如未設定這項政策，或是設定為 False，Chrome 將會套用目前的線上撤銷檢查設定。</translation>
-<translation id="1438955478865681012">設定擴充功能相關政策。使用者不得安裝黑名單上的擴充應用程式，除非該擴充功能重返許可清單。如要強制 <ph name="PRODUCT_NAME"/> 自動安裝擴充功能，請在 <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> 中指定。應以黑名單優先，接著才是強制擴充功能清單。</translation>
 <translation id="3516856976222674451">限制使用者工作階段的長度上限。
 
       如果您設定這項政策，政策就會指定系統要在多少時間之後將使用者自動登出。系統會在系統列顯示倒數計時器，藉此通知使用者剩餘時間。
@@ -198,19 +196,6 @@
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="7567380065339179813">允許這些網站的外掛程式</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
-<translation id="4418909344122918381">針對使用者在 <ph name="PRODUCT_OS_NAME"/> 裝置多重設定檔工作階段中的行為進行控制。
-
-      如果將這項政策設為「MultiProfileUserBehaviorUnrestricted」，使用者就能成為多重設定檔工作階段的主要或次要使用者。
-
-      如果將這項政策設為「MultiProfileUserBehaviorMustBePrimary」，使用者就只能是多重設定檔工作階段的主要使用者。
-
-      如果將這項政策設為「MultiProfileUserBehaviorNotAllowed」，使用者就無法登入多重設定檔工作階段。
-
-      如果設定了這項政策，使用者將無法予以變更或覆寫。
-
-      如果在您變更設定的同時，使用者已經登入多重設定檔工作階段，系統將檢查工作階段中所有使用者的相應設定；要是有任何使用者未得到進入工作階段的許可，工作階段將會關閉。
-
-      如未設定這項政策，系統將會使用預設值「MultiProfileUserBehaviorUnrestricted」。</translation>
 <translation id="5966615072639944554">允許擴充功能使用 Remote Attestation API</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
@@ -263,6 +248,7 @@
 
           只有當您啟用「DefaultSearchProviderEnabled」政策時，這項政策才會生效。</translation>
 <translation id="5912364507361265851">允許使用者在密碼管理員中顯示密碼</translation>
+<translation id="5318185076587284965">啟用遠端存取主機所使用的轉送伺服器</translation>
 <translation id="510186355068252378">透過 Google 代管的同步處理服務來停用「<ph name="PRODUCT_NAME"/>」中的資料同步處理，並禁止使用者變更這項設定。如果您啟用這項設定，使用者就無法在「<ph name="PRODUCT_NAME"/>」中變更或覆寫這項設定。如果未設定這項政策，使用者可以自行決定是否要使用 Google Sync。</translation>
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="4807950475297505572">移除近期登入次數最少的使用者，直到有足夠的可用空間</translation>
@@ -292,6 +278,13 @@
 <translation id="382476126209906314">為遠端存取主機設定 TalkGadget 前置詞</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示協助工具選項</translation>
 <translation id="8104962233214241919">自動為這些網站選取用戶端憑證</translation>
+<translation id="7983624541020350102">(本文件包含新版 <ph name="PRODUCT_NAME"/> 遵循的政策清單。內容如有變動，恕不另行通知。本支援政策清單與 Chromium 和 Google Chrome 的相同。)
+
+      您不需手動變更這些設定，前往下列網址就能下載簡單易用的範本：<ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>。
+
+      以上政策僅適用於設定貴機構內部的 Chrome 執行個體。若在貴機構以外使用這些政策 (例如公開發佈的程式)，則會被視為惡意軟體，Google 和防毒軟體廠商皆可能標示其為惡意軟體。
+
+      注意：從 <ph name="PRODUCT_NAME"/> 28 版本起，所有政策會直接從 Group Policy API 載入 Windows。系統將忽略手動寫入登錄檔的政策。詳情請見 http://crbug.com/259236。</translation>
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
 <translation id="4386578721025870401">限制透過 SAML 驗證的使用者可離線登入的時間。
 
@@ -366,13 +359,6 @@
 
       這些政策可讓您設定當使用者閒置一段時間後，要讓 <ph name="PRODUCT_OS_NAME"/> 採取的動作。</translation>
 <translation id="2565967352111237512">啟用向 Google 匿名回報「<ph name="PRODUCT_NAME"/>」使用狀況和相關當機資料的功能，並禁止使用者變更這項設定。如果您啟用這項設定，系統會以匿名方式傳送使用狀況和相關當機資料給 Google。如果您停用這項設定，系統永遠都不會將這些報告傳送給 Google。不論您啟用或停用這項設定，使用者都無法在 「<ph name="PRODUCT_NAME"/>」變更或覆寫這項設定。如果未設定這項政策，系統會執行使用者在安裝/初次執行時選擇的設定。</translation>
-<translation id="4784220343847172494">控制 <ph name="PRODUCT_OS_NAME"/> 裝置上的自動清理行為。當可用磁碟空間不足，系統就會觸發自動清理程序以釋出部分磁碟空間。
-
-      如果這項政策設為「RemoveLRU」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始依序把人從裝置上移除，直到有足夠的可用空間為止。
-
-      如果這項政策設為「RemoveLRUIfDormant」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始，依序把至少 3 個月未登入的使用者從裝置上移除，直到有足夠的可用空間為止。
-
-      如果未設定這項政策，自動清理作業將會採用預設建立的策略，這項策略現為「RemoveLRUIfDormant」。</translation>
 <translation id="6256787297633808491">要在 Chrome 啟動時套用的全系統設定</translation>
 <translation id="2516600974234263142">啟用 <ph name="PRODUCT_NAME"/> 的列印功能，並且禁止使用者變更這項設定。
 
@@ -400,16 +386,6 @@
 <translation id="8906768759089290519">啟用訪客模式</translation>
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
-<translation id="3234167886857176179">這是 <ph name="PRODUCT_NAME"/> 遵循的政策清單。
-
-      您不需手動變更這些設定，前往下列網址就能下載簡單易用的範例：
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>。
-
-      本支援政策清單與 Chromium 和 Google Chrome 的相同。
-
-      以上政策僅適用於設定貴機構內部的 Chrome 執行個體。若在貴機構以外使用這些政策 (例如公開發佈的程式)，則會被視為惡意軟體，Google 和防毒軟體廠商皆可能標示其為惡意軟體。
-
-      注意：從 Chrome 28 版本起，所有政策會直接從 Group Policy API 載入 Windows。系統將忽略手動寫入登錄檔的政策。詳情請見 http://crbug.com/259236。</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> 可以透過 Google 網路服務來解決拼字錯誤。如果您啟用這項設定，系統就會一律使用這項服務；如果您停用這項設定，則系統將絕不使用這項服務。
 
       您仍可使用下載的字典執行拼字檢查，這項政策僅可控制是否使用線上服務。
@@ -436,6 +412,7 @@
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
 <translation id="2144674628322086778">允許企業使用者成為主要或次要使用者 (預設值)</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
+<translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="5499375345075963939">這項政策僅於零售模式中有效。
 
       如果這項政策設為 0 以外的值，則系統會在指定的閒置時間過後，自動登出目前登入示範模式的使用者。
@@ -645,6 +622,7 @@
 
       如果未設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
 <translation id="1679420586049708690">自動登入的公開工作階段</translation>
+<translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
 <translation id="2552966063069741410">時區</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
@@ -667,6 +645,11 @@
           如果未設定這項政策，系統會使用預設命令列。</translation>
 <translation id="2646290749315461919">允許您設定是否要讓網站追蹤使用者的實際位置。您可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME"/>版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
+<translation id="2956777931324644324">我們已於 <ph name="PRODUCT_NAME"/> 版本 36 中移除這項政策。
+
+      指定是否要啟用 TLS 網域專屬憑證擴充功能。
+
+      這項實驗性設定是用來啟用 TLS 網域專屬憑證擴充功能以供測試，我們將於日後移除。</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
 <translation id="228659285074633994">指定裝置處於 AC 供電環境時，要在於使用者停止輸入多少時間長度後顯示警告對話方塊。
@@ -806,7 +789,6 @@
           這項政策僅供 Chrome 內部使用。</translation>
 <translation id="5586942249556966598">不要處理</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
-<translation id="5317965872570843334">在遠端用戶試圖與這台電腦建立連結時，啟用 STUN 使用量和轉送伺服器。如果這項設定已啟用，那麼即使遠端用戶被防火牆隔開，也能發現這台電腦並建立連結。如果這項設定已停用，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會自動允許來自當地網路的用戶端電腦的連接。如果未設定這項政策，系統會啟用設定。</translation>
 <translation id="4057110413331612451">允許企業使用者僅成為多重設定檔的主要使用者</translation>
 <translation id="5365946944967967336">在工具列上顯示 [首頁] 按鈕</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
@@ -829,6 +811,15 @@
       無論其選項值為何，系統都會在網頁上回報記憶體資訊；但基於安全性考量，系統會限制回報的資料量以及更新頻率。如要取得即時準確資料，請使用 Telemetry 等工具。</translation>
 <translation id="8731693562790917685">內容設定允許您指定特定內容型類 (例如，Cookie、圖片或 JavaScript) 的處理方式。</translation>
 <translation id="2411919772666155530">封鎖這些網站的通知</translation>
+<translation id="7332963785317884918">這項政策已被取代。<ph name="PRODUCT_OS_NAME"/> 將一律使用「RemoveLRU」清理策略。
+
+      控制 <ph name="PRODUCT_OS_NAME"/> 裝置上的自動清理行為。當可用磁碟空間不足，系統就會觸發自動清理程序以釋出部分磁碟空間。
+
+      如果這項政策設為「RemoveLRU」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始依序把使用者從裝置上移除，直到有足夠的可用空間為止。
+
+      如果這項政策設為「RemoveLRUIfDormant」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始，依序把至少 3 個月未登入的使用者從裝置上移除，直到有足夠的可用空間為止。
+
+      如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
 <translation id="6923366716660828830">指定預設搜尋引擎名稱。如果名稱欄位留空或未設定，系統會使用搜尋網址指定的主機名稱。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="4869787217450099946">指定是否允許螢幕喚醒鎖定。擴充功能可透過 Power Management Extension API 要求螢幕喚醒鎖。
 
@@ -895,6 +886,19 @@
 <translation id="1454846751303307294">允許您設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="538108065117008131">允許 <ph name="PRODUCT_FRAME_NAME"/> 處理下列內容類型。</translation>
 <translation id="2312134445771258233">允許您設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非您在 [起始動作] 中選取 [開啟網址清單]。</translation>
+<translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME"/> 裝置多重設定檔工作階段中的行為進行控制。
+
+      如果將這項政策設為「MultiProfileUserBehaviorUnrestricted」，使用者就能成為多重設定檔工作階段的主要或次要使用者。 
+
+      如果將這項政策設為「MultiProfileUserBehaviorMustBePrimary」，使用者就只能是多重設定檔工作階段的主要使用者。
+
+      如果將這項政策設為「MultiProfileUserBehaviorNotAllowed」，使用者就無法登入多重設定檔工作階段。
+
+      如果設定了這項政策，使用者將無法進行變更或覆寫。
+
+      如果在您變更設定的同時，使用者已經登入多重設定檔工作階段，系統將檢查工作階段中所有使用者的相應設定；要是有任何使用者未得到進入工作階段的許可，工作階段將會關閉。
+
+      如未設定這項政策，系統將會對受企業管理的使用者套用預設值「MultiProfileUserBehaviorMustBePrimary」，並對不屬於管理化環境的使用者使用「MultiProfileUserBehaviorUnrestricted」。</translation>
 <translation id="243972079416668391">指定使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作。
 
           如果您設定這項政策，表示 <ph name="PRODUCT_OS_NAME"/> 會在閒置延遲時間 (可另行設定) 所指定的閒置時間長度過後採取政策所指定的動作。
@@ -1024,6 +1028,7 @@
 
           這項政策僅供 Chrome 內部使用。</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
+<translation id="5461308170340925511">設定擴充功能相關政策。列入黑名單的擴充功能必須重新加入許可清單，使用者才能安裝。您也可以透過 <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> 指定要安裝的擴充功能，強制讓 <ph name="PRODUCT_NAME"/> 自動安裝這些擴充功能。無論要強制安裝的擴充功能是否被列入黑名單，系統都會予以安裝。</translation>
 <translation id="3292147213643666827">啟用 Proxy 功能，將 <ph name="PRODUCT_NAME"/> 當做 <ph name="CLOUD_PRINT_NAME"/> 與連接到本機的舊型印表機之間的 Proxy。
 
       不論這項政策處於啟用或未設定的狀態，使用者都可以透過 Google 帳戶驗證來啟用雲端列印 Proxy。
@@ -1102,9 +1107,6 @@
 <translation id="465099050592230505">企業線上應用程式商店網址 (已不適用)</translation>
 <translation id="2006530844219044261">電源管理</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
-<translation id="2431811512983100641">指定是否要啟用 TLS 網域專屬憑證擴充功能。
-
-      這項設定是用來啟用 TLS 網域專屬憑證擴充功能以供測試。日後會移除這項實驗性設定。</translation>
 <translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>
@@ -1210,6 +1212,7 @@
           如果您停用這項設定或並未進行設置，則所有主機都會使用 TalkGadget 預設網域名稱 (「chromoting-host.talkgadget.google.com」)。
 
           遠端存取用戶端不受這項政策設定所影響，而會一律採用「chromoting-client.talkgadget.google.com」來存取 TalkGadget。</translation>
+<translation id="1103860406762205913">啟用舊版網頁式登入功能</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="6915442654606973733">啟用互動朗讀協助功能。
 
@@ -1265,7 +1268,7 @@
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
-<translation id="1465619815762735808">點選播放</translation>
+<translation id="1465619815762735808">點擊執行</translation>
 <translation id="7227967227357489766">定義可登入裝置的使用者允許清單，項目格式為「<ph name="USER_WHITELIST_ENTRY_FORMAT"/>」(例如「<ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>」)。如要允許網域的任意使用者，請使用格式為「<ph name="USER_WHITELIST_ENTRY_WILDCARD"/>」的項目。
 
       如果您未設定這項政策，則所有使用者均可登入裝置。注意，如要建立新的使用者，您必須妥善設定「<ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>」政策。</translation>
@@ -1410,7 +1413,6 @@
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於您透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
-<translation id="7736666549200541892">啟用 TLS 網域專屬憑證擴充功能</translation>
 <translation id="1796466452925192872">讓您指定要允許哪些網址安裝擴充功能、應用程式和主題。
 
       從 Chrome 21 起，透過非 Chrome 線上應用程式商店的其他來源安裝擴充功能、應用程式和使用者指令碼，將變得較為困難。過去使用者可按一下 *.crx 檔案的連結，Chrome 就會提示數項警告訊息，然後詢問是否安裝該檔案；從 Chrome 21 起，使用者則必須先下載這類檔案並將其拖曳至 Chrome 設定網頁。透過本設定，您可允許特定網址使用較簡便的舊式安裝流程。 
@@ -1420,11 +1422,19 @@
       ExtensionInstallBlacklist 的設定優先於本政策。也就是說，即使本清單允許安裝某網站的擴充功能，但如果該擴充功能亦列於黑名單上，則您仍然無法使用較簡便的方式安裝該擴充功能。</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="4224610387358583899">螢幕鎖定延遲</translation>
+<translation id="5388730678841939057">選取自動清理時用來釋出磁碟空間的策略 (已不適用)</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="7890264460280019664">將網路介面清單及其類型和硬體位址回報給伺服器。
 
       如未設定這項政策，或是設定為 False，系統將不會回傳介面清單。</translation>
+<translation id="197143349065136573">啟用舊版網頁式登入流程。
+
+      使用 SSO 解決方案 (目前與新版內嵌登入流程不相容) 的企業客戶十分適合使用這項設定。
+      啟用這項設定時，系統會使用舊版網頁式登入流程。
+      未設定或停用這項設定時，系統在預設狀態下會使用新版內嵌登入流程。不過，使用者仍然可以透過命令列指令 enable-web-based-signin 啟用舊版網頁式登入流程。
+
+      日後，當內嵌登入流程全面支援所有 SSO 登入流程時，我們將移除這項實驗性設定。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="3973371701361892765">永不自動隱藏檔案櫃</translation>
@@ -1490,6 +1500,13 @@
 
       如未設定這項政策，所有設定將自動套用預設值。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
+<translation id="8071636581296916773">遠端用戶端嘗試與這台電腦建立連線時，啟用轉送伺服器。
+
+          如果啟用這項設定，遠端用戶端即可在無法直接連線 (例如受到防火牆限制) 時，使用轉送伺服器與這台電腦建立連線。
+
+          請注意，如果停用 <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> 政策，系統將會忽略這項政策。
+
+          如果未設定這項政策，系統將啟用這項設定。</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="5781806558783210276">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後採取動作。
 
@@ -1533,6 +1550,9 @@
           如果您啟用這項設定，則使用者在存取主機時，必須提供有效的雙重驗證碼。
 
           如果您停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
+<translation id="6698424063018171973">限制這台電腦的遠端存取主機所用的 UDP 通訊埠範圍。
+
+          如果未設定這項政策，或是設定為空值，遠端存取主機將可使用任何可用的通訊埠；如果停用 <ph name="REMOTEACCESSHOSTFIREWALLTRAVERSAL_POLICY_NAME"/> 政策，則遠端存取主機僅可使用 12400 至 12409 範圍的 UDP 通訊埠。</translation>
 <translation id="7329842439428490522">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後關閉螢幕。
 
           如果您將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME"/> 才會關閉螢幕。
@@ -1548,6 +1568,13 @@
 
       系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="6652197835259177259">本機管理化環境下的使用者設定</translation>
+<translation id="2808013382476173118">在遠端用戶端嘗試與這台電腦建立連線時，啟用 STUN 伺服器。
+
+          如果啟用這項設定，那麼即使遠端用戶端被防火牆隔開，也能偵測到這台電腦並建立連線。
+
+          如果停用這項設定，且防火牆會篩出外傳 UDP 連線，則這台電腦只會自動允許來自區域網路用戶端電腦的連線。
+
+          如果未設定這項政策，系統會啟用這項設定。</translation>
 <translation id="3243309373265599239">指定時間長度，如果系統在 AC 供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後將螢幕調暗。
 
           如果您將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME"/> 才會將螢幕調暗。

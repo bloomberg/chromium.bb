@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Diena</translation>
 <translation id="1729654308190250600">Lūdzu, ievadiet e-pasta adresi.</translation>
 <translation id="6015796118275082299">Gads</translation>
-<translation id="9186171386827445984">Notiek dokumenta ielāde: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lappuses...</translation>
 <translation id="1235745349614807883">Dzēst nesenos meklējumus</translation>
 <translation id="7223624360433298498">pagājušais laiks</translation>
 <translation id="1171774979989969504">Ievadiet e-pasta adresi.</translation>
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="5048533449481078685">sarakstu marķieris</translation>
 <translation id="4202807286478387388">lekt</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Lūdzu, ievadiet daļu, kas atrodas pirms zīmes <ph name="ATSIGN"/>. “<ph name="INVALIDADDRESS"/>” ir nepilna adrese.</translation>
 <translation id="2746543609216772311">Vērtībai ir jābūt “<ph name="MINIMUM_DATE_OR_TIME"/>” vai vēlākam datumam vai laikam.</translation>
 <translation id="2572483411312390101">atskaņot</translation>
@@ -56,11 +54,10 @@
 <translation id="2674318244760992338">kājene</translation>
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="8115662671911883373">sākt slēgto parakstu rādīšanu</translation>
-<translation id="7364796246159120393">Izvēlieties failu</translation>
+<translation id="7364796246159120393">Izvēlēties failu</translation>
 <translation id="2761667185364618470">Lai turpinātu, atzīmējiet šo izvēles rūtiņu.</translation>
 <translation id="8534579021159131403">Minūtes</translation>
 <translation id="819205353528511139">atskaņot filmu pilnekrāna režīmā</translation>
-<translation id="8964020114565522021">Ievelciet failu šeit</translation>
 <translation id="4103419683916926126">Milisekundes</translation>
 <translation id="838869780401515933">prbaudt</translation>
 <translation id="2846343701378493991">1024 (Vidēja Atzīme)</translation>

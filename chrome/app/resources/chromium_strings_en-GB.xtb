@@ -21,17 +21,19 @@
 Some features may be unavailable and changes to preferences won't be saved.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE"/></translation>
+<translation id="455521026202544465">Thanks for trying out the new Chromium. Chromium needs to restart so make sure that you've saved any open work before continuing.</translation>
 <translation id="731644333568559921">Update &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium requires Windows XP or later. Some features may not work.</translation>
 <translation id="7023267510504981715">You must upgrade Chromium to use Google Wallet [<ph name="ERROR_CODE"/>].</translation>
+<translation id="1444754455097148408">Chromium open source licences</translation>
 <translation id="7419987137528340081">If you prefer to keep your existing Chromium data separate, you can create a new Chromium user for <ph name="USER_NAME"/>.</translation>
 <translation id="5427571867875391349">Set Chromium as your default browser</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME"/> channel...</translation>
 <translation id="3549345495227188780">Get Started with Chromium OS</translation>
+<translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="6953661834318318668">Chromium Toolbar</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
-<translation id="3555616473548901994">Uninstallation complete.</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="580822234363523061">Go to
           the Chromium menu &gt;
@@ -58,14 +60,14 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium does not include the PDF viewer which is required for Print Preview to function.</translation>
 <translation id="7138853919861947730">Chromium may use web services to improve your browsing experience.</translation>
-<translation id="466053073629175099">You're now signed in to Chromium! Your bookmarks, history, and other settings will be synced to your Google Account.</translation>
+<translation id="934663725767849097">Try the new way to use Chromium with your Google Account and on shared computers.</translation>
 <translation id="3849925841547750267">Unfortunately, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="7771626876550251690">In this case, the address listed in the certificate does not match the address of the website your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Chromium can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chromium will not check for any further name mismatches.</translation>
 <translation id="7027298027173928763">Chromium could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to manually reinstall Chromium.</translation>
 <translation id="8897323336392112261">It also controls what page is shown when you start Chromium or click the Home button.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
-<translation id="5750436165037325892">You are signed in with a managed account which is controlled by an administrator. If you disconnect from this account, this Chromium user and all associated Chromium data, such as apps, bookmarks, history, passwords and other settings will be removed from this computer.</translation>
+<translation id="3068515742935458733">Help make Chromium better by sending crash reports and <ph name="UMA_LINK"/> to Google</translation>
 <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
@@ -79,10 +81,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
         and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
         If this does not resolve the issue, we recommend selecting this option
         again for improved performance.</translation>
-<translation id="4124681358536363708">The Google Chrome installation directory seems to be in use. Please reboot your computer and try again.</translation>
-<translation id="8770560772173120024">Chromium is now importing Favourites/Bookmarks.</translation>
 <translation id="7463979740390522693">Chromium - Notifications (<ph name="QUANTITY"/> unread)</translation>
-<translation id="4345520932254577235">Welcome to your Chromium. Come here to:</translation>
 <translation id="225614027745146050">Welcome</translation>
 <translation id="5823381412099532241">Chromium could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chromium.</translation>
 <translation id="9191268552238695869">An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.</translation>
@@ -97,9 +96,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3046695367536568084">You need to be signed in to Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
 <translation id="3296368748942286671">Continue running background apps when Chromium is closed</translation>
 <translation id="473775607612524610">Update</translation>
-<translation id="5714819759736651024">To use Chrome apps, you must relaunch Chromium on the desktop.</translation>
 <translation id="7707841053049645517">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
-<translation id="7338384957110970244">Chromium could not create an application shortcut.</translation>
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
@@ -112,12 +109,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="4932687624772039103">Chromium does not support <ph name="OS_NAME"/>.</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="85843667276690461">Get help with using Chromium</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>
-<translation id="263863604136125912">Start Chromium</translation>
 <translation id="9036189287518468038">Chromium App Launcher</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
@@ -132,6 +127,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="9022552996538154597">Sign in to Chromium</translation>
 <translation id="4365115785552740256">Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
+<translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="2216475571518225820">This site is using the Chromium Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.</translation>
 <translation id="3487263810738775861">An extension has changed what page is shown when you start Chromium.</translation>
@@ -144,23 +140,20 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1745962126679160932">Chromium will securely store your information so that you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="275588974610408078">Crash reporting is not available in Chromium.</translation>
 <translation id="5909170354645388250">Not used in Chromium. Placeholder to keep resource maps in sync. It expects one argument: $1.</translation>
+<translation id="5805689092869152320">Chromium is running in the background.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
 <translation id="2685838254101182273">Chromium has stopped updating and no longer supports this version of your operating system.</translation>
+<translation id="3223794808658970984">Preview the new Chromium</translation>
 <translation id="3582788516608077514">Updating Chromium ...</translation>
-<translation id="2845645985022908863">• Switch between people
-• Lock your Chromium stuff
-• Manage your Google Accounts</translation>
 <translation id="7223968959479464213">Task Manager - Chromium</translation>
-<translation id="8999125622087081673">Delete managed Chromium user</translation>
-<translation id="3838208658251026018">Chromium is now importing the following items from <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="6638567566961868659">Find your bookmarks in the Chromium menu or on the bookmarks bar.</translation>
 <translation id="2673087257647337101">Nearly up to date! Relaunch Chromium to finish updating.</translation>
+<translation id="4864451188650489141">You can add your other Google Accounts and lock your Chromium below.</translation>
 <translation id="1293235220023151515">A conflicting installation of Chromium was found on the system. Please uninstall it and try again.</translation>
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> has been added to Chromium.</translation>
-<translation id="377819400056480591">To remove your account, Chromium needs to restart. Make sure that you've saved any open work before continuing.</translation>
 <translation id="4559775032954821361">Go to
           the Chromium menu &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -190,15 +183,14 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
 <translation id="3244477511402911926">Chromium Notification Center</translation>
 <translation id="1105130903706696483">Chromium didn't shut down correctly. To re-open the pages that you had open, click Restore.</translation>
+<translation id="9214519575840037443">Suggested by Chromium</translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1414495520565016063">You're signed in to Chromium!</translation>
-<translation id="1902135785017821799"><ph name="FILE_NAME"/> makes settings changes similar to some malware, so Chromium has blocked it.</translation>
-<translation id="3155163173539279776">Relaunch Chromium</translation>
+<translation id="2158734852934720349">Chromium OS open source licences</translation>
 <translation id="2966088006374919794">Chromium needs to launch an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="2558235863893655150">Do you want Chromium to save your password?</translation>
 <translation id="1231416733874080281">Show the Chromium menu</translation>
-<translation id="5245781775140304270">Because Chromium does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can re-enable them individually in the
-          <ph name="BEGIN_LINK"/>extensions manager<ph name="END_LINK"/>.</translation>
+<translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL"/> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON"/>restart<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
@@ -207,9 +199,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6424492062988593837">Chromium just got better! A new version is available.</translation>
 <translation id="811857857463334932">This computer will no longer receive Chromium updates because its hardware is no longer supported.</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
-<translation id="1800685724563744906">You're using <ph name="PROFILE_EMAIL"/> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit settings.</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
-<translation id="6763060723530774166">To use the app launcher, you must relaunch Chromium on the desktop.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="3130323860337406239">Chromium is using your microphone.</translation>
 <translation id="3249425904492147663">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Chromium cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
@@ -226,6 +216,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="8724049448828509830">A download is currently in progress. Do you want to exit Chromium and cancel the download?</translation>
 <translation id="608189560609172163">Chromium could not sync your data due to an error signing in.</translation>
+<translation id="4888717733111232871">Inbound rule for Chromium to allow mDNS traffic.</translation>
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="8985587603644336029">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST"/>. If that isn't your account, create a new Chromium user to keep your information separate.
@@ -242,8 +233,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 <translation id="7318036098707714271">Your preferences file is corrupt or invalid.
 
 Google Chrome is unable to recover your settings.</translation>
+<translation id="473845343586694349">You're previewing the new Chromium.</translation>
+<translation id="918373042641772655">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chromium data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
-<translation id="9079155260087892529">Delete Chromium user</translation>
 <translation id="4019464536895378627">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by Chromium. This may mean that the server has generated its own security credentials, which Chromium cannot rely on for identity information, or an attacker may be trying to intercept your communications.</translation>
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

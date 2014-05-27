@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Den</translation>
 <translation id="1729654308190250600">Vyplňte e-mailovou adresu.</translation>
 <translation id="6015796118275082299">Rok</translation>
-<translation id="9186171386827445984">Načítání dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stran...</translation>
 <translation id="1235745349614807883">Smazat nedávná vyhledávání</translation>
 <translation id="7223624360433298498">přehraný čas</translation>
 <translation id="1171774979989969504">Zadejte prosím e-mailovou adresu.</translation>
 <translation id="709897737746224366">Zadejte hodnotu, která odpovídá požadovanému formátu.</translation>
 <translation id="5048533449481078685">značka seznamu</translation>
 <translation id="4202807286478387388">přejít</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Zadejte část před znakem <ph name="ATSIGN"/>. Adresa <ph name="INVALIDADDRESS"/> není úplná.</translation>
 <translation id="2746543609216772311">Datum musí být <ph name="MINIMUM_DATE_OR_TIME"/> nebo později.</translation>
 <translation id="2572483411312390101">přehrát</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Chcete-li pokračovat, zaškrtněte toto políčko.</translation>
 <translation id="8534579021159131403">Minuty</translation>
 <translation id="819205353528511139">přehrát film v režimu celé obrazovky</translation>
-<translation id="8964020114565522021">Přetáhnout soubor sem</translation>
 <translation id="4103419683916926126">Milisekundy</translation>
 <translation id="838869780401515933">zaškrtnout</translation>
 <translation id="2846343701378493991">1024 (Střední kvalita)</translation>

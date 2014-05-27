@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="3595596368722241419">Baterai penuh</translation>
+<translation id="6895424601869865703">Tambahkan akun untuk <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Rotasi aktif (Ketuk di sini untuk mengubah)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> dan <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Status portal</translation>
 <translation id="30155388420722288">Tombol Luapan</translation>
@@ -45,6 +47,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
+<translation id="4625920103690741805">Rotasi terkunci (Ketuk di sini untuk mengubah)</translation>
 <translation id="3799026279081545374">Mungkin Anda memiliki pengisi daya yang tidak bagus. Apabila Anda tinggal di AS, hubungi 866-628-1371 untuk mendapatkan bantuan dan pengganti. Apabila Anda tinggal di Inggris, hubungi 0800-026-0613. Apabila Anda tinggal di Irlandia, hubungi 1-800-832-664. Apabila Anda tinggal di Kanada, hubungi 866-628-1372. Apabila Anda tinggal di Australia, hubungi 1-800-067-460.</translation>
 <translation id="3026237328237090306">Siapkan data seluler</translation>
 <translation id="5871632337994001636">Mengelola perangkat...</translation>
@@ -69,6 +72,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="7170041865419449892">Di luar jangkauan</translation>
 <translation id="4804818685124855865">Putuskan</translation>
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfigurasi</translation>
@@ -101,6 +105,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="372094107052732682">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="1480041086352807611">Mode demo</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (utama)</translation>
 <translation id="3626637461649818317">Sisa <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">Metode masukan</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="2372145515558759244">Menyinkronkan aplikasi...</translation>
 <translation id="7256405249507348194">Kesalahan tidak dikenal: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Akun</translation>
 <translation id="2894654529758326923">Informasi</translation>
 <translation id="7925247922861151263">Pemeriksaan AAA gagal</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>.<ph name="MINUTE"/> sampai penuh</translation>
@@ -139,7 +145,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="4527045527269911712">Perangkat Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; meminta izin untuk bersanding.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
-<translation id="1398853756734560583">Perbesar</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Menyambung...</translation>
 <translation id="6062360702481658777">Anda akan dikeluarkan secara otomatis dalam <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Tampilan yang Tidak Diketahui</translation>
@@ -151,7 +156,9 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="5097002363526479830">Gagal menyambung ke jaringan '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
 <translation id="2872961005593481000">Matikan</translation>
+<translation id="3433830597744061105">Kelola akun</translation>
 <translation id="2966449113954629791">Data seluler Anda yang diizinkan mungkin telah habis. Kunjungi portal aktivasi <ph name="NAME"/> untuk membeli data lagi.</translation>
+<translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="8132793192354020517">Tersambung ke <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Setel wallpaper...</translation>
 <translation id="8678698760965522072">Status online</translation>
@@ -168,7 +175,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="1602076796624386989">Aktifkan data seluler</translation>
 <translation id="68610848741840742">ChromeVox (Masukan lisan)</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
-<translation id="3157931365184549694">Pulihkan</translation>
 <translation id="4274292172790327596">Kesalahan tak dikenal</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>.<ph name="MINUTES"/>.<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Headphone</translation>
@@ -224,6 +230,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="9046895021617826162">Gagal menyambung</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">Sesi ini akan berakhir dalam <ph name="SESSION_TIME_REMAINING"/>. Anda akan otomatis dikeluarkan.</translation>
+<translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
 <translation id="8372369524088641025">Kunci WEP yang buruk</translation>
 <translation id="6636709850131805001">Keadaan yang tidak dikenal</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="520760366042891468">Berbagi kontrol layar Anda melalui Hangouts.</translation>
 <translation id="8000066093800657092">Tidak ada jaringan</translation>
 <translation id="4015692727874266537">Masuk ke akun lain...</translation>
-<translation id="5941711191222866238">Perkecil</translation>
+<translation id="1044925987639358253">Mikrofon sedang digunakan.</translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Selamat! Layanan data '<ph name="NAME"/>' Anda telah diaktifkan dan siap digunakan.</translation>

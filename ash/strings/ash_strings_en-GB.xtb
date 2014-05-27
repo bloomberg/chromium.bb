@@ -2,6 +2,8 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="3595596368722241419">Battery full</translation>
+<translation id="6895424601869865703">Add an account for <ph name="GIVEN_NAME"/></translation>
+<translation id="1057289296854808272">Rotation on (Tap here to change)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> and <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portal state</translation>
 <translation id="30155388420722288">Overflow Button</translation>
@@ -45,6 +47,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="3846575436967432996">No network information available</translation>
+<translation id="4625920103690741805">Rotation locked (Tap here to change)</translation>
 <translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
 <translation id="3026237328237090306">Set up mobile data</translation>
 <translation id="5871632337994001636">Manage devices...</translation>
@@ -69,6 +72,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="7170041865419449892">Out of range</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
+<translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Configuration</translation>
@@ -101,6 +105,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="372094107052732682">Press Ctrl+Shift+Q twice to exit.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="1480041086352807611">Demo mode</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primary)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% remaining</translation>
 <translation id="9089416786594320554">Input methods</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
@@ -127,6 +132,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="2372145515558759244">Syncing apps...</translation>
 <translation id="7256405249507348194">Unrecognised error: <ph name="DESC"/></translation>
+<translation id="1987317783729300807">Accounts</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="7925247922861151263">AAA check failed</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> until full</translation>
@@ -139,7 +145,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="4527045527269911712">Bluetooth device &quot;<ph name="DEVICE_NAME"/>&quot; would like permission to pair.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
-<translation id="1398853756734560583">Maximise</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Connecting...</translation>
 <translation id="6062360702481658777">You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Unknown Display</translation>
@@ -151,7 +156,9 @@ Press Shift + Alt to switch.</translation>
 <translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="3433830597744061105">Manage accounts</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME"/> activation portal to buy more data.</translation>
+<translation id="742594950370306541">Camera is in use.</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
 <translation id="8678698760965522072">Online state</translation>
@@ -168,7 +175,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="1602076796624386989">Enable mobile data</translation>
 <translation id="68610848741840742">ChromeVox (Spoken feedback)</translation>
 <translation id="6981982820502123353">Accessibility</translation>
-<translation id="3157931365184549694">Restore</translation>
 <translation id="4274292172790327596">Unrecognised error</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Headphone</translation>
@@ -224,6 +230,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="9046895021617826162">Connection failed</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="973896785707726617">This session will end in <ph name="SESSION_TIME_REMAINING"/>. You will be automatically signed out.</translation>
+<translation id="743058460480092004">Camera and microphone are in use.</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="6636709850131805001">Unrecognised state</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -241,7 +248,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="520760366042891468">Sharing control of your screen via Hangouts.</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="4015692727874266537">Sign in another account...</translation>
-<translation id="5941711191222866238">Minimise</translation>
+<translation id="1044925987639358253">Microphone is in use.</translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Congratulations! Your '<ph name="NAME"/>' data service has been activated and is ready to go.</translation>

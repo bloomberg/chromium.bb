@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Day</translation>
 <translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="6015796118275082299">Year</translation>
-<translation id="9186171386827445984">Loading document: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pages...</translation>
 <translation id="1235745349614807883">Clear Recent Searches</translation>
 <translation id="7223624360433298498">elapsed time</translation>
 <translation id="1171774979989969504">Please enter an email address.</translation>
 <translation id="709897737746224366">Please match the format requested.</translation>
 <translation id="5048533449481078685">list marker</translation>
 <translation id="4202807286478387388">jump</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Please enter a part followed by '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is incomplete.</translation>
 <translation id="2746543609216772311">Value must be <ph name="MINIMUM_DATE_OR_TIME"/> or later.</translation>
 <translation id="2572483411312390101">play</translation>
@@ -56,11 +54,10 @@
 <translation id="2674318244760992338">footer</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="8115662671911883373">start displaying closed captions</translation>
-<translation id="7364796246159120393">Choose File</translation>
+<translation id="7364796246159120393">Choose file</translation>
 <translation id="2761667185364618470">Please tick this box if you want to proceed.</translation>
 <translation id="8534579021159131403">Minutes</translation>
 <translation id="819205353528511139">play film in full screen mode</translation>
-<translation id="8964020114565522021">Drag file here</translation>
 <translation id="4103419683916926126">Milliseconds</translation>
 <translation id="838869780401515933">tick</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>

@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Diena</translation>
 <translation id="1729654308190250600">Įveskite el. pašto adresą (nepalikite lauko tuščio).</translation>
 <translation id="6015796118275082299">Metai</translation>
-<translation id="9186171386827445984">Įkeliamas dokumentas: <ph name="PAGE_NUMBER"/> / <ph name="NUMBER_OF_PAGES"/> psl...</translation>
 <translation id="1235745349614807883">Išvalyti pastarąsias paieškas</translation>
 <translation id="7223624360433298498">praėjęs laikas</translation>
 <translation id="1171774979989969504">Įveskite el. pašto adresą.</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
 <translation id="5048533449481078685">sąrašo žymeklis</translation>
 <translation id="4202807286478387388">peršokti</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Įveskite el. pašto adreso dalį iki „<ph name="ATSIGN"/>“. „<ph name="INVALIDADDRESS"/>“ nėra visas el. pašto adresas.</translation>
 <translation id="2746543609216772311">Vertė turi būti <ph name="MINIMUM_DATE_OR_TIME"/> ar vėlesnė data.</translation>
 <translation id="2572483411312390101">paleisti</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Jei norite tęsti, pažymėkite šį laukelį.</translation>
 <translation id="8534579021159131403">Minutės</translation>
 <translation id="819205353528511139">paleisti filmą viso ekrano režimu</translation>
-<translation id="8964020114565522021">Vilkite failą čia</translation>
 <translation id="4103419683916926126">Milisekundės</translation>
 <translation id="838869780401515933">tikrinti</translation>
 <translation id="2846343701378493991">1024 (vidutinio lygio)</translation>

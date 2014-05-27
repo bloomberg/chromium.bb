@@ -6,14 +6,12 @@
 <translation id="248395913932153421">يوم</translation>
 <translation id="1729654308190250600">يُرجى إدخال عنوان البريد الإلكتروني وعدم ترك الحق فارغًا.</translation>
 <translation id="6015796118275082299">عام</translation>
-<translation id="9186171386827445984">جارٍ تحميل المستند: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> من الصفحات...</translation>
 <translation id="1235745349614807883">محو آخر عمليات البحث</translation>
 <translation id="7223624360433298498">المدة المنقضية</translation>
 <translation id="1171774979989969504">الرجاء إدخال عنوان البريد الإلكتروني.</translation>
 <translation id="709897737746224366">الرجاء مطابقة التنسيق المطلوب.</translation>
 <translation id="5048533449481078685">محدّد القائمة</translation>
 <translation id="4202807286478387388">الدخول</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">يُرجى إدخال جزء متبوع بعلامة &quot;<ph name="ATSIGN"/>&quot;، حيث إن &quot;<ph name="INVALIDADDRESS"/>&quot; غير مكتمل.</translation>
 <translation id="2746543609216772311">يجب أن تكون القيمة <ph name="MINIMUM_DATE_OR_TIME"/> أو بعد ذلك.</translation>
 <translation id="2572483411312390101">تشغيل</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">الرجاء تحديد هذا المربع إذا أردت المتابعة.</translation>
 <translation id="8534579021159131403">دقائق</translation>
 <translation id="819205353528511139">تشغيل الفيلم في وضع ملء الشاشة</translation>
-<translation id="8964020114565522021">سحب الملفّ إلى هنا</translation>
 <translation id="4103419683916926126">مللي ثانية</translation>
 <translation id="838869780401515933">الاختيار</translation>
 <translation id="2846343701378493991">1024 (درجة متوسطة)</translation>

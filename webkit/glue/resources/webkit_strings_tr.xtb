@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Gün</translation>
 <translation id="1729654308190250600">Lütfen e-posta adresini boş bırakmayın.</translation>
 <translation id="6015796118275082299">Yıl</translation>
-<translation id="9186171386827445984">Belge yükleniyor: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sayfa...</translation>
 <translation id="1235745349614807883">Son Aramaları Temizle</translation>
 <translation id="7223624360433298498">geçen süre</translation>
 <translation id="1171774979989969504">Lütfen e-posta adresi girin.</translation>
 <translation id="709897737746224366">Lütfen istenen biçimi eşleştirin.</translation>
 <translation id="5048533449481078685">liste işaretçisi</translation>
 <translation id="4202807286478387388">git</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Lütfen başına &quot;<ph name="ATSIGN"/>&quot; ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; adresi eksik.</translation>
 <translation id="2746543609216772311">Değer <ph name="MINIMUM_DATE_OR_TIME"/> veya daha ileri olmalıdır.</translation>
 <translation id="2572483411312390101">oynat</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">İlerlemek istiyorsanız lütfen bu kutuyu işaretleyin.</translation>
 <translation id="8534579021159131403">Dakika</translation>
 <translation id="819205353528511139">filmi tam ekran modunda oynat</translation>
-<translation id="8964020114565522021">Dosyayı buraya sürükleyin</translation>
 <translation id="4103419683916926126">Milisaniye</translation>
 <translation id="838869780401515933">işaretle</translation>
 <translation id="2846343701378493991">1024 (Orta Düzey)</translation>

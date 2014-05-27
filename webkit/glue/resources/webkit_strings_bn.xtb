@@ -6,14 +6,12 @@
 <translation id="248395913932153421">দিন</translation>
 <translation id="1729654308190250600">দয়া করে একটি খালি না থাকা ইমেল ঠিকানা লিখুন৷</translation>
 <translation id="6015796118275082299">বছর</translation>
-<translation id="9186171386827445984">নথি লোড হচ্ছে: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> পৃষ্ঠা...</translation>
 <translation id="1235745349614807883">সাম্প্রতিক অনুসন্ধানগুলি সাফ করুন</translation>
 <translation id="7223624360433298498">অতিবাহিত সময়</translation>
 <translation id="1171774979989969504">দয়া করে কোন ইমেল ঠিকানা প্রবেশ করান:</translation>
 <translation id="709897737746224366">দয়া করে অনুরোধ হওয়া বিন্যাসটি মেলান৷</translation>
 <translation id="5048533449481078685">তালিকা নির্দেশক</translation>
 <translation id="4202807286478387388">লাফ দিন</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
 <translation id="2746543609216772311">মানকে অবশ্যই <ph name="MINIMUM_DATE_OR_TIME"/> বা পরবর্তী হতে হবে৷</translation>
 <translation id="2572483411312390101">চালনা করুন</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">আপনি যদি এগিয়ে যেতে চান তবে দয়া করে এই বাক্সটি পরীক্ষা করুন৷</translation>
 <translation id="8534579021159131403">মিনিট</translation>
 <translation id="819205353528511139">পূর্ণ স্ক্রীন মোডে চলচ্চিত্র চালান</translation>
-<translation id="8964020114565522021">ফাইল এখানে টেনে আনুন</translation>
 <translation id="4103419683916926126">মিলিসেকেন্ড</translation>
 <translation id="838869780401515933">চেক করুন</translation>
 <translation id="2846343701378493991">1024 (মধ্যম গ্রেড)</translation>

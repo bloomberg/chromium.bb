@@ -6,14 +6,12 @@
 <translation id="248395913932153421">Hari</translation>
 <translation id="1729654308190250600">Jangan mengosongkan bidang alamat email.</translation>
 <translation id="6015796118275082299">Tahun</translation>
-<translation id="9186171386827445984">Memuat dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
 <translation id="1235745349614807883">Hapus Penelusuran Barusan</translation>
 <translation id="7223624360433298498">waktu berlalu</translation>
 <translation id="1171774979989969504">Masukkan alamat email.</translation>
 <translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
 <translation id="5048533449481078685">penanda daftar</translation>
 <translation id="4202807286478387388">lompati</translation>
-<translation id="4611115858363067980"><ph name="FILENAME"/> - <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="5307600278924710095">Masukkan bagian yang diikuti dengan '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' tidak lengkap.</translation>
 <translation id="2746543609216772311">Tanggal harus <ph name="MINIMUM_DATE_OR_TIME"/> atau setelahnya.</translation>
 <translation id="2572483411312390101">main</translation>
@@ -60,7 +58,6 @@
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
 <translation id="8534579021159131403">Menit</translation>
 <translation id="819205353528511139">putar film dalam mode layar penuh</translation>
-<translation id="8964020114565522021">Tarik file ke sini</translation>
 <translation id="4103419683916926126">Milidetik</translation>
 <translation id="838869780401515933">centangi</translation>
 <translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
