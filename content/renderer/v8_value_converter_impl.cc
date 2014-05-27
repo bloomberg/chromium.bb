@@ -38,7 +38,8 @@ bool V8ValueConverter::Strategy::FromV8Array(
 }
 
 bool V8ValueConverter::Strategy::FromV8ArrayBuffer(v8::Handle<v8::Object> value,
-                                                   base::Value** out) const {
+                                                   base::Value** out,
+                                                   v8::Isolate* isolate) const {
   return false;
 }
 
@@ -342,7 +343,7 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
   }
 
   if (val->IsArrayBuffer() || val->IsArrayBufferView())
-    return FromV8ArrayBuffer(val->ToObject());
+    return FromV8ArrayBuffer(val->ToObject(), isolate);
 
   if (val->IsObject())
     return FromV8Object(val->ToObject(), state, isolate);
@@ -405,10 +406,11 @@ base::Value* V8ValueConverterImpl::FromV8Array(
 }
 
 base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
-    v8::Handle<v8::Object> val) const {
+    v8::Handle<v8::Object> val,
+    v8::Isolate* isolate) const {
   if (strategy_) {
     base::Value* out = NULL;
-    if (strategy_->FromV8ArrayBuffer(val, &out))
+    if (strategy_->FromV8ArrayBuffer(val, &out, isolate))
       return out;
   }
 

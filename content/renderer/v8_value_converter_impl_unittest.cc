@@ -732,7 +732,8 @@ class V8ValueConverterOverridingStrategyForTesting
     return true;
   }
   virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
-                                 base::Value** out) const OVERRIDE {
+                                 base::Value** out,
+                                 v8::Isolate* isolate) const OVERRIDE {
     *out = NewReferenceValue();
     return true;
   }
@@ -822,7 +823,8 @@ class V8ValueConverterBypassStrategyForTesting
     return false;
   }
   virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
-                                 base::Value** out) const OVERRIDE {
+                                 base::Value** out,
+                                 v8::Isolate* isolate) const OVERRIDE {
     return false;
   }
   virtual bool FromV8Number(v8::Handle<v8::Number> value,

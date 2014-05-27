@@ -55,7 +55,8 @@ class CONTENT_EXPORT V8ValueConverter {
     // behavior. v8::Object is passed as ArrayBuffer and ArrayBufferView
     // classes are siblings.
     virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
-                                   base::Value** out) const;
+                                   base::Value** out,
+                                   v8::Isolate* isolate) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. This allows to intercept "non-finite" values and do something

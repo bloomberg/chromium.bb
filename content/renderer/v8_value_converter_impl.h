@@ -61,7 +61,8 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
 
   // This will convert objects of type ArrayBuffer or any of the
   // ArrayBufferView subclasses.
-  base::Value* FromV8ArrayBuffer(v8::Handle<v8::Object> val) const;
+  base::Value* FromV8ArrayBuffer(v8::Handle<v8::Object> val,
+                                 v8::Isolate* isolate) const;
 
   base::Value* FromV8Object(v8::Handle<v8::Object> object,
                             FromV8ValueState* state,

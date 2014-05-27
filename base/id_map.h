@@ -32,8 +32,10 @@ enum IDMapOwnershipSemantics {
 // ownership semantics are set to own because pointers will leak.
 template<typename T, IDMapOwnershipSemantics OS = IDMapExternalPointer>
 class IDMap : public base::NonThreadSafe {
- private:
+ public:
   typedef int32 KeyType;
+
+ private:
   typedef base::hash_map<KeyType, T*> HashTable;
 
  public:

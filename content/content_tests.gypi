@@ -875,6 +875,7 @@
         ['OS == "android"', {
           'sources': [
             'browser/renderer_host/java/jni_helper_unittest.cc',
+            'renderer/java/gin_java_bridge_value_converter_unittest.cc',
           ],
           'sources!': [
             'browser/geolocation/network_location_provider_unittest.cc',
