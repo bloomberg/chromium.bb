@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,7 +129,7 @@ void OnlineAttempt::TryClientLogin() {
 
   client_fetcher_->StartClientLogin(
       attempt_->user_context.GetUserID(),
-      attempt_->user_context.GetPassword(),
+      attempt_->user_context.GetKey()->GetSecret(),
       GaiaConstants::kSyncService,
       attempt_->login_token,
       attempt_->login_captcha,

@@ -5,17 +5,29 @@
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
 namespace chromeos {
 
+MockAuthenticator::MockAuthenticator(LoginStatusConsumer* consumer,
+                                     const UserContext& expected_user_context)
+    : Authenticator(consumer),
+      expected_user_context_(expected_user_context) {
+}
+
+void MockAuthenticator::CompleteLogin(Profile* profile,
+                                      const UserContext& user_context) {
+  if (expected_user_context_ != user_context)
+    NOTREACHED();
+  OnLoginSuccess();
+}
+
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                             const UserContext& user_context) {
-  if (expected_username_ == user_context.GetUserID() &&
-      expected_password_ == user_context.GetPassword()) {
+  if (user_context == expected_user_context_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&MockAuthenticator::OnLoginSuccess, this));
     return;
@@ -25,13 +37,6 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&MockAuthenticator::OnLoginFailure, this,
                  LoginFailure::FromNetworkAuthFailure(error)));
-}
-
-void MockAuthenticator::CompleteLogin(Profile* profile,
-                                      const UserContext& user_context) {
-  CHECK_EQ(expected_username_, user_context.GetUserID());
-  CHECK_EQ(expected_password_, user_context.GetPassword());
-  OnLoginSuccess();
 }
 
 void MockAuthenticator::AuthenticateToUnlock(
@@ -52,35 +57,34 @@ void MockAuthenticator::LoginRetailMode() {
   consumer_->OnRetailModeLoginSuccess(user_context);
 }
 
+void MockAuthenticator::LoginOffTheRecord() {
+  consumer_->OnOffTheRecordLoginSuccess();
+}
+
 void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
-  UserContext user_context(expected_username_);
-  user_context.SetUserIDHash(expected_username_);
+  UserContext user_context(expected_user_context_.GetUserID());
+  user_context.SetUserIDHash(expected_user_context_.GetUserID());
   consumer_->OnLoginSuccess(user_context);
 }
 
 void MockAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,
                                             bool use_guest_mount) {
-  UserContext user_context(expected_username_);
-  user_context.SetUserIDHash(expected_username_);
+  UserContext user_context(expected_user_context_.GetUserID());
+  user_context.SetUserIDHash(expected_user_context_.GetUserID());
   consumer_->OnLoginSuccess(user_context);
 }
 
-void MockAuthenticator::LoginOffTheRecord() {
-  consumer_->OnOffTheRecordLoginSuccess();
-}
-
 void MockAuthenticator::OnRetailModeLoginSuccess() {
-  UserContext user_context(expected_username_);
-  user_context.SetUserIDHash(expected_username_);
+  UserContext user_context(expected_user_context_.GetUserID());
+  user_context.SetUserIDHash(expected_user_context_.GetUserID());
   consumer_->OnRetailModeLoginSuccess(user_context);
 }
 
 void MockAuthenticator::OnLoginSuccess() {
-  // If we want to be more like the real thing, we could save username
+  // If we want to be more like the real thing, we could save the user ID
   // in AuthenticateToLogin, but there's not much of a point.
-  UserContext user_context(expected_username_);
-  user_context.SetPassword(expected_password_);
-  user_context.SetUserIDHash(expected_username_);
+  UserContext user_context(expected_user_context_);
+  user_context.SetUserIDHash(expected_user_context_.GetUserID());
   consumer_->OnLoginSuccess(user_context);
 }
 
@@ -88,11 +92,18 @@ void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
     consumer_->OnLoginFailure(failure);
 }
 
+void MockAuthenticator::RecoverEncryptedData(const std::string& old_password) {
+}
+
+void MockAuthenticator::ResyncEncryptedData() {
+}
+
 void MockAuthenticator::SetExpectedCredentials(
-    const std::string& expected_username,
-    const std::string& expected_password) {
-  expected_username_ = expected_username;
-  expected_password_ = expected_password;
+    const UserContext& user_context) {
+  expected_user_context_ = user_context;
+}
+
+MockAuthenticator::~MockAuthenticator() {
 }
 
 }  // namespace chromeos

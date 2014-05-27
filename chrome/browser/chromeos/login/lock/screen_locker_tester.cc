@@ -201,10 +201,10 @@ bool ScreenLockerTester::IsLocked() {
 }
 
 void ScreenLockerTester::InjectMockAuthenticator(
-    const std::string& user, const std::string& password) {
+    const UserContext& user_context) {
   DCHECK(ScreenLocker::screen_locker_);
   ScreenLocker::screen_locker_->SetAuthenticator(
-      new MockAuthenticator(ScreenLocker::screen_locker_, user, password));
+      new MockAuthenticator(ScreenLocker::screen_locker_, user_context));
 }
 
 }  // namespace test

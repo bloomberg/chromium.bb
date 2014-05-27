@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 
 namespace content {
 class BrowserContext;
@@ -28,16 +29,17 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   class Delegate {
     public:
      // Called after user_context were checked online.
-     virtual void OnChecked(const std::string &username, bool success) = 0;
+     virtual void OnChecked(const std::string& username, bool success) = 0;
   };
 
   explicit OnlineAttemptHost(Delegate *delegate);
   virtual ~OnlineAttemptHost();
 
-  // Checks user credentials using an online attempt. Calls callback with the
-  // check result (whether authentication was successful). Note, only one
-  // checking at a time (the newest call stops the old one, if called with
-  // another username and password combination).
+  // Performs an online check of the credentials in |user_context| and invokes
+  // the delegate's OnChecked() with the result. Note that only one check can be
+  // in progress at any given time. If this method is invoked with a different
+  // |user_context| than a check currently in progress, the current check will
+  // be silently aborted.
   void Check(content::BrowserContext* auth_context,
              const UserContext& user_context);
 
@@ -53,8 +55,7 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
 
  private:
   Delegate* delegate_;
-  std::string current_attempt_hash_;
-  std::string current_username_;
+  UserContext current_attempt_user_context_;
   scoped_ptr<OnlineAttempt> online_attempt_;
   scoped_ptr<AuthAttemptState> state_;
   base::WeakPtrFactory<OnlineAttemptHost> weak_ptr_factory_;

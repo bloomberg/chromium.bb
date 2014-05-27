@@ -236,8 +236,7 @@ void LoginPerformer::LoginAsLocallyManagedUser(
   SupervisedUserAuthentication* authentication = UserManager::Get()->
       GetSupervisedUserManager()->GetAuthentication();
 
-  UserContext user_context_copy =
-      authentication->TransformPasswordInContext(user_context);
+  UserContext user_context_copy = authentication->TransformKey(user_context);
 
   if (authentication->GetPasswordSchema(user_context.GetUserID()) ==
       SupervisedUserAuthentication::SCHEMA_SALT_HASHED) {
@@ -253,7 +252,7 @@ void LoginPerformer::LoginAsLocallyManagedUser(
         base::Bind(&ExtendedAuthenticator::AuthenticateToMount,
                    extended_authenticator_.get(),
                    user_context_copy,
-                   ExtendedAuthenticator::HashSuccessCallback()));
+                   ExtendedAuthenticator::ResultCallback()));
 
   } else {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);

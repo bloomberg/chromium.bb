@@ -4,6 +4,7 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,12 +41,11 @@ TEST_F(SupervisedUserAuthenticationTest, SignatureGeneration) {
   std::string expected_signature =
       "KOPQmmJcMr9iMkr36N1cX+G9gDdBBu7zutAxNayPMN4=";
 
-  std::string salted_password =
-      SupervisedUserAuthentication::BuildPasswordForHashWithSaltSchema(
-          salt, password);
-  ASSERT_EQ(expected_salted_password, salted_password);
+  Key key(password);
+  key.Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
+  ASSERT_EQ(expected_salted_password, key.GetSecret());
   std::string signature = SupervisedUserAuthentication::BuildPasswordSignature(
-      salted_password, revision, signature_key);
+      key.GetSecret(), revision, signature_key);
   ASSERT_EQ(expected_signature, signature);
 }
 

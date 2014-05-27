@@ -101,8 +101,7 @@ void FakeLoginUtils::SetFirstLoginPrefs(PrefService* prefs) {
 
 scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
-  authenticator_ =
-      new MockAuthenticator(consumer, expected_username_, expected_password_);
+  authenticator_ = new MockAuthenticator(consumer, expected_user_context_);
   return authenticator_;
 }
 
@@ -114,13 +113,11 @@ void FakeLoginUtils::InitRlzDelayed(Profile* user_profile) {
   NOTREACHED() << "Method not implemented.";
 }
 
-void FakeLoginUtils::SetExpectedCredentials(const std::string& username,
-                                            const std::string& password) {
-  expected_username_ = username;
-  expected_password_ = password;
-  if (authenticator_.get()) {
+void FakeLoginUtils::SetExpectedCredentials(const UserContext& user_context) {
+  expected_user_context_ = user_context;
+  if (authenticator_) {
     static_cast<MockAuthenticator*>(authenticator_.get())->
-        SetExpectedCredentials(username, password);
+        SetExpectedCredentials(user_context);
   }
 }
 

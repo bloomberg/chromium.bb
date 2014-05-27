@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
@@ -631,7 +632,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
             WizardController::default_controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
 
-  LoginUtils::Set(new TestLoginUtils(kUsername, kPassword));
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
+  LoginUtils::Set(new TestLoginUtils(user_context));
   MockConsumer mock_consumer;
 
   // Must have a pending signin to resume after auto-enrollment:
@@ -642,8 +645,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       &mock_consumer);
   // This calls StartWizard, destroying the current controller() and its mocks;
   // don't set expectations on those objects.
-  UserContext user_context(kUsername);
-  user_context.SetPassword(kPassword);
   ExistingUserController::current_controller()->CompleteLogin(user_context);
   // Run the tasks posted to complete the login:
   base::MessageLoop::current()->RunUntilIdle();

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
@@ -28,10 +29,6 @@ namespace {
 
 // Byte size of hash salt.
 const unsigned kSaltSize = 32;
-
-// Parameters of cryptographic hashing for new user schema.
-const unsigned kNumIterations = 1234;
-const unsigned kKeySizeInBits = 256;
 
 // Size of key signature.
 const unsigned kHMACKeySizeInBits = 256;
@@ -104,26 +101,7 @@ SupervisedUserAuthentication::GetStableSchema() {
   return stable_schema_;
 }
 
-std::string SupervisedUserAuthentication::TransformPassword(
-    const std::string& user_id,
-    const std::string& password) {
-  int user_schema = GetPasswordSchema(user_id);
-  if (user_schema == SCHEMA_PLAIN)
-    return password;
-
-  if (user_schema == SCHEMA_SALT_HASHED) {
-    base::DictionaryValue holder;
-    std::string salt;
-    owner_->GetPasswordInformation(user_id, &holder);
-    holder.GetStringWithoutPathExpansion(kSalt, &salt);
-    DCHECK(!salt.empty());
-    return BuildPasswordForHashWithSaltSchema(salt, password);
-  }
-  NOTREACHED();
-  return password;
-}
-
-UserContext SupervisedUserAuthentication::TransformPasswordInContext(
+UserContext SupervisedUserAuthentication::TransformKey(
     const UserContext& context) {
   UserContext result = context;
   int user_schema = GetPasswordSchema(context.GetUserID());
@@ -136,11 +114,10 @@ UserContext SupervisedUserAuthentication::TransformPasswordInContext(
     owner_->GetPasswordInformation(context.GetUserID(), &holder);
     holder.GetStringWithoutPathExpansion(kSalt, &salt);
     DCHECK(!salt.empty());
-    result.SetPassword(
-        BuildPasswordForHashWithSaltSchema(salt, context.GetPassword()));
-    result.SetDoesNeedPasswordHashing(false);
+    Key* const key = result.GetKey();
+    key->Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
+    key->SetLabel(kCryptohomeManagedUserKeyLabel);
     result.SetIsUsingOAuth(false);
-    result.SetKeyLabel(kCryptohomeManagedUserKeyLabel);
     return result;
   }
   NOTREACHED() << "Unknown password schema for " << context.GetUserID();
@@ -162,10 +139,11 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
     password_data->SetStringWithoutPathExpansion(kSalt, salt);
     int revision = kMinPasswordRevision;
     password_data->SetIntegerWithoutPathExpansion(kPasswordRevision, revision);
-    std::string salted_password =
-        BuildPasswordForHashWithSaltSchema(salt, password);
-    std::string base64_signature_key = BuildRawHMACKey();
-    std::string base64_signature =
+    Key key(password);
+    key.Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
+    const std::string salted_password = key.GetSecret();
+    const std::string base64_signature_key = BuildRawHMACKey();
+    const std::string base64_signature =
         BuildPasswordSignature(salted_password, revision, base64_signature_key);
     password_data->SetStringWithoutPathExpansion(kEncryptedPassword,
                                                  salted_password);
@@ -310,22 +288,6 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
       FROM_HERE,
       base::Bind(&LoadPasswordData, profile_path),
       base::Bind(&OnPasswordDataLoaded, success_callback, failure_callback));
-}
-
-// static
-std::string SupervisedUserAuthentication::BuildPasswordForHashWithSaltSchema(
-    const std::string& salt,
-    const std::string& plain_password) {
-  scoped_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                  plain_password,
-                                                  salt,
-                                                  kNumIterations,
-                                                  kKeySizeInBits));
-  std::string raw_result, result;
-  key->GetRawKey(&raw_result);
-  base::Base64Encode(raw_result, &result);
-  return result;
 }
 
 std::string SupervisedUserAuthentication::BuildPasswordSignature(

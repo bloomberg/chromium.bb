@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
@@ -204,7 +205,7 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
   }
 
   UserContext user_context(manager_id);
-  user_context.SetPassword(manager_password);
+  user_context.SetKey(Key(manager_password));
   ExistingUserController::current_controller()->Login(user_context);
 }
 

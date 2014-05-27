@@ -252,11 +252,10 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   // Special case: supervised users. Use special authenticator.
   if (const User* user = FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
-      UserContext updated_context =
-          UserManager::Get()
-              ->GetSupervisedUserManager()
-              ->GetAuthentication()
-              ->TransformPasswordInContext(user_context);
+      UserContext updated_context = UserManager::Get()
+                                        ->GetSupervisedUserManager()
+                                        ->GetAuthentication()
+                                        ->TransformKey(user_context);
       // TODO(antrim) : replace empty closure with explicit method.
       // http://crbug.com/351268
       BrowserThread::PostTask(

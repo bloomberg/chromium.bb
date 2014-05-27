@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/auth/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
@@ -74,9 +75,8 @@ const int kAutoLoginNoDelay = 0;
 const int kAutoLoginShortDelay = 1;
 const int kAutoLoginLongDelay = 10000;
 
-
-ACTION_P2(CreateAuthenticator, username, password) {
-  return new MockAuthenticator(arg0, username, password);
+ACTION_P(CreateAuthenticator, user_context) {
+  return new MockAuthenticator(arg0, user_context);
 }
 
 }  // namespace
@@ -236,12 +236,12 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(2);
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(kUsername);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
-      .WillOnce(WithArg<0>(CreateAuthenticator(kUsername, kPassword)));
-  UserContext user_context(kUsername);
-  user_context.SetPassword(kPassword);
-  user_context.SetUserIDHash(kUsername);
+      .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
   EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
       .InSequence(uiEnabledSequence);
   existing_user_controller()->DoAutoEnrollment();
   UserContext user_context(kUsername);
-  user_context.SetPassword(kPassword);
+  user_context.SetKey(Key(kPassword));
   existing_user_controller()->CompleteLogin(user_context);
   content::RunAllPendingInMessageLoop();
 }
@@ -298,15 +298,15 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
               StartWizardPtr(WizardController::kTermsOfServiceScreenName,
                              NULL))
       .Times(1);
+  UserContext user_context(kNewUsername);
+  user_context.SetKey(Key(kPassword));
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
-      .WillOnce(WithArg<0>(CreateAuthenticator(kNewUsername, kPassword)));
+      .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
   base::Callback<void(void)> add_user_cb =
       base::Bind(&MockUserManager::AddUser,
                  base::Unretained(mock_user_manager_),
                  kNewUsername);
-  UserContext user_context(kNewUsername);
-  user_context.SetPassword(kPassword);
   user_context.SetUserIDHash(kNewUsername);
   EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
       .Times(1)
@@ -426,16 +426,12 @@ class ExistingUserControllerPublicSessionTest
   virtual void SetUpUserManager() OVERRIDE {
   }
 
-  void ExpectSuccessfulLogin(const std::string& username,
-                             const std::string& password) {
+  void ExpectSuccessfulLogin(const UserContext& user_context) {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
         .Times(1)
-        .WillOnce(WithArg<0>(CreateAuthenticator(username, password)));
-    UserContext user_context(username);
-    user_context.SetPassword(password);
-    user_context.SetUserIDHash(username);
+        .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
     EXPECT_CALL(*mock_login_utils_, PrepareProfile(user_context, _, _, _, _))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
@@ -533,7 +529,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        AutoLoginNoDelay) {
   // Set up mocks to check login success.
-  ExpectSuccessfulLogin(public_session_user_id_, "");
+  UserContext user_context(public_session_user_id_);
+  user_context.SetUserIDHash(user_context.GetUserID());
+  ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
 
   // Start auto-login and wait for login tasks to complete.
@@ -544,7 +542,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        AutoLoginShortDelay) {
   // Set up mocks to check login success.
-  ExpectSuccessfulLogin(public_session_user_id_, "");
+  UserContext user_context(public_session_user_id_);
+  user_context.SetUserIDHash(user_context.GetUserID());
+  ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginShortDelay);
   ASSERT_TRUE(auto_login_timer());
@@ -567,15 +567,16 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        LoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  ExpectSuccessfulLogin(kUsername, kPassword);
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(user_context.GetUserID());
+  ExpectSuccessfulLogin(user_context);
 
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
   ASSERT_TRUE(auto_login_timer());
 
-  // Login and check that it stopped the timer.
-  UserContext user_context(kUsername);
-  user_context.SetPassword(kPassword);
+  // Log in and check that it stopped the timer.
   existing_user_controller()->Login(user_context);
   EXPECT_TRUE(is_login_in_progress());
   ASSERT_TRUE(auto_login_timer());
@@ -593,9 +594,11 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
-      .WillOnce(WithArg<0>(CreateAuthenticator(kUsername, kPassword)));
+      .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
   EXPECT_CALL(*mock_login_utils_, CompleteOffTheRecordLogin(_))
       .Times(1);
 
@@ -620,7 +623,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        CompleteLoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  ExpectSuccessfulLogin(kUsername, kPassword);
+  UserContext user_context(kUsername);
+  user_context.SetKey(Key(kPassword));
+  user_context.SetUserIDHash(user_context.GetUserID());
+  ExpectSuccessfulLogin(user_context);
   EXPECT_CALL(*mock_login_display_host_, OnCompleteLogin())
       .Times(1);
 
@@ -629,8 +635,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   ASSERT_TRUE(auto_login_timer());
 
   // Check that login completes and stops the timer.
-  UserContext user_context(kUsername);
-  user_context.SetPassword(kPassword);
   existing_user_controller()->CompleteLogin(user_context);
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
@@ -646,7 +650,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        PublicSessionLoginStopsAutoLogin) {
   // Set up mocks to check login success.
-  ExpectSuccessfulLogin(public_session_user_id_, "");
+  UserContext user_context(public_session_user_id_);
+  user_context.SetUserIDHash(user_context.GetUserID());
+  ExpectSuccessfulLogin(user_context);
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);
   ASSERT_TRUE(auto_login_timer());

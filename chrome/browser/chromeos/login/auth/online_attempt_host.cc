@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/auth/online_attempt_host.h"
 
 #include "base/bind.h"
-#include "base/sha1.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/online_attempt.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
@@ -25,12 +24,9 @@ OnlineAttemptHost::~OnlineAttemptHost() {
 void OnlineAttemptHost::Check(content::BrowserContext* auth_context,
                               const UserContext& user_context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::string attempt_hash = base::SHA1HashString(
-      user_context.GetUserID() + "\n" + user_context.GetPassword());
-  if (attempt_hash != current_attempt_hash_) {
+  if (user_context != current_attempt_user_context_) {
     Reset();
-    current_attempt_hash_ = attempt_hash;
-    current_username_ = user_context.GetUserID();
+    current_attempt_user_context_ = user_context;
 
     state_.reset(new AuthAttemptState(user_context,
                                       User::USER_TYPE_REGULAR,
@@ -45,8 +41,7 @@ void OnlineAttemptHost::Check(content::BrowserContext* auth_context,
 void OnlineAttemptHost::Reset() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   online_attempt_.reset(NULL);
-  current_attempt_hash_.clear();
-  current_username_.clear();
+  current_attempt_user_context_ = UserContext();
 }
 
 void OnlineAttemptHost::Resolve() {
@@ -64,7 +59,7 @@ void OnlineAttemptHost::Resolve() {
 
 void OnlineAttemptHost::ResolveOnUIThread(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  delegate_->OnChecked(current_username_, success);
+  delegate_->OnChecked(current_attempt_user_context_.GetUserID(), success);
   Reset();
 }
 

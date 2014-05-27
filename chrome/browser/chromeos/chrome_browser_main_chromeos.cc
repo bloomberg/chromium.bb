@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -142,7 +143,7 @@ class StubLogin : public LoginStatusConsumer,
       : profile_prepared_(false) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     UserContext user_context(username);
-    user_context.SetPassword(password);
+    user_context.SetKey(Key(password));
     authenticator_.get()->AuthenticateToLogin(ProfileHelper::GetSigninProfile(),
                                               user_context);
   }

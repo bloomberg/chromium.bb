@@ -21,6 +21,8 @@ class Profile;
 
 namespace chromeos {
 
+class UserContext;
+
 // LMU Creation process:
 // 0. Manager is logged in
 // 1. Generate ID for new LMU
@@ -150,7 +152,7 @@ class ManagedUserCreationControllerNew
   // Authenticator success callbacks.
   void OnMountSuccess(const std::string& mount_hash);
   void OnAddKeySuccess();
-  void OnPasswordHashingSuccess(const std::string& password_hash);
+  void OnKeyTransformedIfNeeded(const UserContext& user_context);
 
   void StartCreationImpl();
 

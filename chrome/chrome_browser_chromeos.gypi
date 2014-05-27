@@ -500,6 +500,8 @@
         'browser/chromeos/login/auth/authenticator.h',
         'browser/chromeos/login/auth/extended_authenticator.cc',
         'browser/chromeos/login/auth/extended_authenticator.h',
+        'browser/chromeos/login/auth/key.cc',
+        'browser/chromeos/login/auth/key.h',
         'browser/chromeos/login/auth/login_performer.cc',
         'browser/chromeos/login/auth/login_performer.h',
         'browser/chromeos/login/auth/login_status_consumer.cc',

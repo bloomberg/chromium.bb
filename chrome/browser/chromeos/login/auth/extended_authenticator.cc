@@ -8,8 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/auth/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -56,48 +56,34 @@ ExtendedAuthenticator::ExtendedAuthenticator(LoginStatusConsumer* consumer)
       base::Bind(&ExtendedAuthenticator::OnSaltObtained, this));
 }
 
-ExtendedAuthenticator::~ExtendedAuthenticator() {}
-
 void ExtendedAuthenticator::SetConsumer(LoginStatusConsumer* consumer) {
   old_consumer_ = consumer;
 }
 
-void ExtendedAuthenticator::OnSaltObtained(const std::string& system_salt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  salt_obtained_ = true;
-  system_salt_ = system_salt;
-  for (size_t i = 0; i < hashing_queue_.size(); i++) {
-    hashing_queue_[i].Run(system_salt);
-  }
-  hashing_queue_.clear();
-}
-
 void ExtendedAuthenticator::AuthenticateToMount(
     const UserContext& context,
-    const HashSuccessCallback& success_callback) {
+    const ResultCallback& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TransformContext(context,
-                   base::Bind(&ExtendedAuthenticator::DoAuthenticateToMount,
-                              this,
-                              success_callback));
+  TransformKeyIfNeeded(context,
+                       base::Bind(&ExtendedAuthenticator::DoAuthenticateToMount,
+                                  this,
+                                  success_callback));
 }
 
 void ExtendedAuthenticator::AuthenticateToCheck(
     const UserContext& context,
     const base::Closure& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  TransformContext(context,
-                   base::Bind(&ExtendedAuthenticator::DoAuthenticateToCheck,
-                              this,
-                              success_callback));
+  TransformKeyIfNeeded(context,
+                       base::Bind(&ExtendedAuthenticator::DoAuthenticateToCheck,
+                                  this,
+                                  success_callback));
 }
 
 void ExtendedAuthenticator::CreateMount(
     const std::string& user_id,
     const std::vector<cryptohome::KeyDefinition>& keys,
-    const HashSuccessCallback& success_callback) {
+    const ResultCallback& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RecordStartMarker("MountEx");
@@ -110,8 +96,9 @@ void ExtendedAuthenticator::CreateMount(
     mount.create_keys.push_back(keys[i]);
   }
   UserContext context(user_id);
-  context.SetPassword(keys.front().key);
-  context.SetKeyLabel(keys.front().label);
+  Key key(keys.front().key);
+  key.SetLabel(keys.front().label);
+  context.SetKey(key);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       id,
@@ -129,12 +116,12 @@ void ExtendedAuthenticator::AddKey(const UserContext& context,
                                    bool replace_existing,
                                    const base::Closure& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TransformContext(context,
-                   base::Bind(&ExtendedAuthenticator::DoAddKey,
-                              this,
-                              key,
-                              replace_existing,
-                              success_callback));
+  TransformKeyIfNeeded(context,
+                       base::Bind(&ExtendedAuthenticator::DoAddKey,
+                                  this,
+                                  key,
+                                  replace_existing,
+                                  success_callback));
 }
 
 void ExtendedAuthenticator::UpdateKeyAuthorized(
@@ -143,27 +130,66 @@ void ExtendedAuthenticator::UpdateKeyAuthorized(
     const std::string& signature,
     const base::Closure& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TransformContext(context,
-                   base::Bind(&ExtendedAuthenticator::DoUpdateKeyAuthorized,
-                              this,
-                              key,
-                              signature,
-                              success_callback));
+  TransformKeyIfNeeded(context,
+                       base::Bind(&ExtendedAuthenticator::DoUpdateKeyAuthorized,
+                                  this,
+                                  key,
+                                  signature,
+                                  success_callback));
 }
 
 void ExtendedAuthenticator::RemoveKey(const UserContext& context,
                                       const std::string& key_to_remove,
                                       const base::Closure& success_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TransformContext(context,
-                   base::Bind(&ExtendedAuthenticator::DoRemoveKey,
-                              this,
-                              key_to_remove,
-                              success_callback));
+  TransformKeyIfNeeded(context,
+                       base::Bind(&ExtendedAuthenticator::DoRemoveKey,
+                                  this,
+                                  key_to_remove,
+                                  success_callback));
+}
+
+void ExtendedAuthenticator::TransformKeyIfNeeded(
+    const UserContext& user_context,
+    const ContextCallback& callback) {
+  if (user_context.GetKey()->GetKeyType() != Key::KEY_TYPE_PASSWORD_PLAIN) {
+    callback.Run(user_context);
+    return;
+  }
+
+  if (!salt_obtained_) {
+    system_salt_callbacks_.push_back(base::Bind(
+        &ExtendedAuthenticator::TransformKeyIfNeeded,
+        this,
+        user_context,
+        callback));
+    return;
+  }
+
+  UserContext transformed_context = user_context;
+  transformed_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                          system_salt_);
+  callback.Run(transformed_context);
+}
+
+ExtendedAuthenticator::~ExtendedAuthenticator() {
+}
+
+void ExtendedAuthenticator::OnSaltObtained(const std::string& system_salt) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  salt_obtained_ = true;
+  system_salt_ = system_salt;
+  for (std::vector<base::Closure>::const_iterator it =
+           system_salt_callbacks_.begin();
+       it != system_salt_callbacks_.end(); ++it) {
+    it->Run();
+  }
+  system_salt_callbacks_.clear();
 }
 
 void ExtendedAuthenticator::DoAuthenticateToMount(
-    const HashSuccessCallback& success_callback,
+    const ResultCallback& success_callback,
     const UserContext& user_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -171,8 +197,8 @@ void ExtendedAuthenticator::DoAuthenticateToMount(
 
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.GetPassword(),
-                                 user_context.GetKeyLabel());
+  const Key* const key = user_context.GetKey();
+  cryptohome::Authorization auth(key->GetSecret(), key->GetLabel());
   cryptohome::MountParameters mount(false);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
@@ -195,8 +221,8 @@ void ExtendedAuthenticator::DoAuthenticateToCheck(
 
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.GetPassword(),
-                                 user_context.GetKeyLabel());
+  const Key* const key = user_context.GetKey();
+  cryptohome::Authorization auth(key->GetSecret(), key->GetLabel());
 
   cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
       id,
@@ -218,8 +244,8 @@ void ExtendedAuthenticator::DoAddKey(const cryptohome::KeyDefinition& key,
 
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.GetPassword(),
-                                 user_context.GetKeyLabel());
+  const Key* const auth_key = user_context.GetKey();
+  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
 
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       id,
@@ -243,8 +269,8 @@ void ExtendedAuthenticator::DoUpdateKeyAuthorized(
 
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.GetPassword(),
-                                 user_context.GetKeyLabel());
+  const Key* const auth_key = user_context.GetKey();
+  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
 
   cryptohome::HomedirMethods::GetInstance()->UpdateKeyEx(
       id,
@@ -267,8 +293,8 @@ void ExtendedAuthenticator::DoRemoveKey(const std::string& key_to_remove,
 
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.GetPassword(),
-                                 user_context.GetKeyLabel());
+  const Key* const auth_key = user_context.GetKey();
+  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
 
   cryptohome::HomedirMethods::GetInstance()->RemoveKeyEx(
       id,
@@ -284,7 +310,7 @@ void ExtendedAuthenticator::DoRemoveKey(const std::string& key_to_remove,
 void ExtendedAuthenticator::OnMountComplete(
     const std::string& time_marker,
     const UserContext& user_context,
-    const HashSuccessCallback& success_callback,
+    const ResultCallback& success_callback,
     bool success,
     cryptohome::MountError return_code,
     const std::string& mount_hash) {
@@ -352,55 +378,6 @@ void ExtendedAuthenticator::OnOperationComplete(
     LoginFailure failure(LoginFailure::UNLOCK_FAILED);
     old_consumer_->OnLoginFailure(failure);
   }
-}
-
-void ExtendedAuthenticator::HashPasswordWithSalt(
-    const std::string& password,
-    const HashSuccessCallback& success_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(consumer_) << "This is a part of new API";
-
-  DoHashWithSalt(password, success_callback, system_salt_);
-}
-
-void ExtendedAuthenticator::TransformContext(const UserContext& user_context,
-                                             const ContextCallback& callback) {
-  if (!user_context.DoesNeedPasswordHashing()) {
-    callback.Run(user_context);
-  } else {
-    DoHashWithSalt(user_context.GetPassword(),
-                   base::Bind(&ExtendedAuthenticator::DidTransformContext,
-                              this,
-                              user_context,
-                              callback),
-                   system_salt_);
-  }
-}
-
-void ExtendedAuthenticator::DidTransformContext(
-    const UserContext& user_context,
-    const ContextCallback& callback,
-    const std::string& hashed_password) {
-  DCHECK(user_context.DoesNeedPasswordHashing());
-  UserContext context = user_context;
-  context.SetPassword(hashed_password);
-  context.SetDoesNeedPasswordHashing(false);
-  callback.Run(context);
-}
-
-void ExtendedAuthenticator::DoHashWithSalt(const std::string& password,
-                                           const HashSuccessCallback& callback,
-                                           const std::string& system_salt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (salt_obtained_) {
-    std::string hash =
-        ParallelAuthenticator::HashPassword(password, system_salt);
-    callback.Run(hash);
-    return;
-  }
-  hashing_queue_.push_back(base::Bind(
-      &ExtendedAuthenticator::DoHashWithSalt, this, password, callback));
 }
 
 }  // namespace chromeos

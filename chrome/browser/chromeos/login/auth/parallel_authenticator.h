@@ -157,10 +157,6 @@ class ParallelAuthenticator : public Authenticator,
   // Must be called on the UI thread.
   virtual void Resolve() OVERRIDE;
 
-  // Returns hash of |password|, salted with the system salt.
-  static std::string HashPassword(const std::string& password,
-                                  const std::string& ascii_salt);
-
   void OnOffTheRecordLoginSuccess();
   void OnPasswordChangeDetected();
 

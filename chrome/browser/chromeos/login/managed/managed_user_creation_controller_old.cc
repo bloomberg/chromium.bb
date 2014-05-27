@@ -13,7 +13,9 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/mount_manager.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -159,12 +161,15 @@ void ManagedUserCreationControllerOld::StartCreation() {
     authentication->StorePasswordData(creation_context_->local_user_id,
                                       creation_context_->password_data);
   }
+
   VLOG(1) << "Creating cryptohome";
+
+  UserContext context(creation_context_->local_user_id);
+  context.SetKey(Key(creation_context_->password));
   authenticator_ = new ManagedUserAuthenticator(this);
   authenticator_->AuthenticateToCreate(
-      creation_context_->local_user_id,
-      authentication->TransformPassword(creation_context_->local_user_id,
-                                        creation_context_->password));
+      context.GetUserID(),
+      authentication->TransformKey(context).GetKey()->GetSecret());
 }
 
 void ManagedUserCreationControllerOld::OnAuthenticationFailure(
@@ -202,10 +207,11 @@ void ManagedUserCreationControllerOld::OnMountSuccess(
 
   VLOG(1) << "Adding master key";
 
+  UserContext context(creation_context_->local_user_id);
+  context.SetKey(Key(creation_context_->password));
   authenticator_->AddMasterKey(
       creation_context_->local_user_id,
-      authentication->TransformPassword(creation_context_->local_user_id,
-                                        creation_context_->password),
+      authentication->TransformKey(context).GetKey()->GetSecret(),
       creation_context_->master_key);
 }
 

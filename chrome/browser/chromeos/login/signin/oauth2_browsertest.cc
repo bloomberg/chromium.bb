@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -230,7 +231,7 @@ class OAuth2Test : public OobeBaseTest {
     }
 
     UserContext user_context(username);
-    user_context.SetPassword(password);
+    user_context.SetKey(Key(password));
     controller->Login(user_context);
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,

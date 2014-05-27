@@ -5,8 +5,10 @@
 #include "chrome/browser/managed_mode/chromeos/manager_password_service.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
@@ -130,7 +132,7 @@ void ManagerPasswordService::GetManagedUsersCallback(
   }
 
   UserContext manager_key(user_id);
-  manager_key.SetPassword(master_key);
+  manager_key.SetKey(Key(master_key));
   manager_key.SetIsUsingOAuth(false);
 
   // As master key can have old label, leave label field empty - it will work
@@ -205,22 +207,23 @@ void ManagerPasswordService::OnAddKeySuccess(
     // 1) Add new manager key (using old key).
     // 2) Remove old supervised user key.
     // 3) Remove old manager key.
-    authenticator_->TransformContext(
+    authenticator_->TransformKeyIfNeeded(
         master_key_context,
-        base::Bind(&ManagerPasswordService::OnContextTransformed,
+        base::Bind(&ManagerPasswordService::OnKeyTransformedIfNeeded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void ManagerPasswordService::OnContextTransformed(
+void ManagerPasswordService::OnKeyTransformedIfNeeded(
     const UserContext& master_key_context) {
-  DCHECK(!master_key_context.DoesNeedPasswordHashing());
-  cryptohome::KeyDefinition new_master_key(master_key_context.GetPassword(),
+  const Key* const key = master_key_context.GetKey();
+  DCHECK_NE(Key::KEY_TYPE_PASSWORD_PLAIN, key->GetKeyType());
+  cryptohome::KeyDefinition new_master_key(key->GetSecret(),
                                            kCryptohomeMasterKeyLabel,
                                            cryptohome::PRIV_DEFAULT);
   // Use new master key for further actions.
   UserContext new_master_key_context = master_key_context;
-  new_master_key_context.SetKeyLabel(kCryptohomeMasterKeyLabel);
+  new_master_key_context.GetKey()->SetLabel(kCryptohomeMasterKeyLabel);
   authenticator_->AddKey(
       master_key_context,
       new_master_key,

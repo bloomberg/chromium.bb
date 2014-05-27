@@ -10,6 +10,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
@@ -146,7 +147,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
 
     VLOG(1) << "Adding new schema key";
-    DCHECK(context_.GetKeyLabel().empty());
+    DCHECK(context_.GetKey()->GetLabel().empty());
     authenticator_->AddKey(context_,
                            key,
                            false /* no key exists */,
@@ -162,7 +163,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
       key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
     }
     // Just update the key.
-    DCHECK_EQ(context_.GetKeyLabel(), kCryptohomeManagedUserKeyLabel);
+    DCHECK_EQ(context_.GetKey()->GetLabel(), kCryptohomeManagedUserKeyLabel);
     authenticator_->UpdateKeyAuthorized(
         context_,
         key,

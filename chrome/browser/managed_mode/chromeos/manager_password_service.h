@@ -54,7 +54,7 @@ class ManagerPasswordService
   void OnAddKeySuccess(const UserContext& master_key_context,
                        const std::string& user_id,
                        scoped_ptr<base::DictionaryValue> password_data);
-  void OnContextTransformed(const UserContext& master_key_context);
+  void OnKeyTransformedIfNeeded(const UserContext& master_key_context);
   void OnNewManagerKeySuccess(const UserContext& master_key_context);
   void OnOldManagedUserKeyDeleted(const UserContext& master_key_context);
   void OnOldManagerKeyDeleted(const UserContext& master_key_context);

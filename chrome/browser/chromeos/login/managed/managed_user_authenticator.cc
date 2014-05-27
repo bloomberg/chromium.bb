@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/auth/parallel_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -64,9 +64,12 @@ void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeMount-LMU-Start", false);
+
+  Key key(attempt->password);
+  key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       attempt->username,
-      ParallelAuthenticator::HashPassword(attempt->password, system_salt),
+      key.GetSecret(),
       flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeMount-LMU-End",
@@ -81,15 +84,20 @@ void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
 // Calls cryptohome's addKey method.
 void AddKey(ManagedUserAuthenticator::AuthAttempt* attempt,
             scoped_refptr<ManagedUserAuthenticator> resolver,
-            const std::string& master_key,
+            const std::string& plain_text_master_key,
             const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeAddKey-LMU-Start", false);
+
+  Key user_key(attempt->password);
+  user_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+  Key master_key(plain_text_master_key);
+  master_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncAddKey(
       attempt->username,
-      ParallelAuthenticator::HashPassword(attempt->password, system_salt),
-      ParallelAuthenticator::HashPassword(master_key, system_salt),
+      user_key.GetSecret(),
+      master_key.GetSecret(),
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeAddKey-LMU-End",
                  attempt,

@@ -9,7 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -156,7 +158,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_GT(lock_bounds.width(), 10);
   EXPECT_GT(lock_bounds.height(), 10);
 
-  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
+  UserContext user_context(UserManager::kStubUser);
+  user_context.SetKey(Key("pass"));
+  tester->InjectMockAuthenticator(user_context);
   EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("fail");
   content::RunAllPendingInMessageLoop();
@@ -200,7 +204,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     EXPECT_FALSE(window_state->hide_shelf_when_fullscreen());
     EXPECT_TRUE(tester->IsLocked());
   }
-  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
+  UserContext user_context(UserManager::kStubUser);
+  user_context.SetKey(Key("pass"));
+  tester->InjectMockAuthenticator(user_context);
   tester->EnterPassword("pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
@@ -234,7 +240,6 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     EXPECT_TRUE(tester->IsLocked());
   }
 
-  tester->InjectMockAuthenticator(UserManager::kStubUser, "pass");
   tester->EnterPassword("pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());

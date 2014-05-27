@@ -56,12 +56,8 @@ class SupervisedUserAuthentication {
   // schema should be migrated somehow.
   Schema GetStableSchema();
 
-  // Transforms password according to schema specified in Local State.
-  std::string TransformPassword(const std::string& supervised_user_id,
-                                const std::string& password);
-
-  // Transforms password according to schema specified in Local State.
-  UserContext TransformPasswordInContext(const UserContext& context);
+  // Transforms key according to schema specified in Local State.
+  UserContext TransformKey(const UserContext& context);
 
   // Fills |password_data| with |password|-specific data for |user_id|,
   // depending on target schema. Does not affect Local State.
@@ -104,10 +100,6 @@ class SupervisedUserAuthentication {
 
   // Utility method that gets schema version for |user_id| from Local State.
   Schema GetPasswordSchema(const std::string& user_id);
-
-  static std::string BuildPasswordForHashWithSaltSchema(
-      const std::string& salt,
-      const std::string& plain_password);
 
   static std::string BuildPasswordSignature(
       const std::string& password,

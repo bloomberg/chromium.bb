@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -399,7 +400,7 @@ class LoginUtilsTest : public testing::Test,
     scoped_refptr<Authenticator> authenticator =
         LoginUtils::Get()->CreateAuthenticator(this);
     UserContext user_context(username);
-    user_context.SetPassword("password");
+    user_context.SetKey(Key("password"));
     user_context.SetUserIDHash(username);
     authenticator->CompleteLogin(ProfileHelper::GetSigninProfile(),
                                  user_context);

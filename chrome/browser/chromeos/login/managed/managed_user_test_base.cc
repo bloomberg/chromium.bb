@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -287,7 +289,9 @@ void ManagedUserTestBase::StartFlowLoginAsManager() {
 
   // Next button is now enabled.
   JSExpect("!$('managed-user-creation-next-button').disabled");
-  SetExpectedCredentials(kTestManager, kTestManagerPassword);
+  UserContext user_context(kTestManager);
+  user_context.SetKey(Key(kTestManagerPassword));
+  SetExpectedCredentials(user_context);
   content::WindowedNotificationObserver login_observer(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());

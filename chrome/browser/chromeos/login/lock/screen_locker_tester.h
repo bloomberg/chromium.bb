@@ -15,6 +15,8 @@ class Widget;
 
 namespace chromeos {
 
+class UserContext;
+
 namespace test {
 
 // ScreenLockerTester provides access to the private state/function
@@ -27,9 +29,8 @@ class ScreenLockerTester {
   // Returns true if the screen is locked.
   virtual bool IsLocked();
 
-  // Injects MockAuthenticate that uses given |user| and |password|.
-  virtual void InjectMockAuthenticator(const std::string& user,
-                                       const std::string& password);
+  // Injects MockAuthenticator that uses the credentials in |user_context|.
+  virtual void InjectMockAuthenticator(const UserContext& user_context);
 
   // Sets the password text.
   virtual void SetPassword(const std::string& password) = 0;

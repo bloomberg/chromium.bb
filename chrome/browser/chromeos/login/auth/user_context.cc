@@ -9,16 +9,13 @@
 
 namespace chromeos {
 
-UserContext::UserContext() : does_need_password_hashing_(true),
-                             is_using_oauth_(true),
+UserContext::UserContext() : is_using_oauth_(true),
                              auth_flow_(AUTH_FLOW_OFFLINE) {
 }
 
 UserContext::UserContext(const UserContext& other)
     : user_id_(other.user_id_),
-      password_(other.password_),
-      does_need_password_hashing_(other.does_need_password_hashing_),
-      key_label_(other.key_label_),
+      key_(other.key_),
       auth_code_(other.auth_code_),
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
@@ -27,7 +24,6 @@ UserContext::UserContext(const UserContext& other)
 
 UserContext::UserContext(const std::string& user_id)
     : user_id_(login::CanonicalizeUserID(user_id)),
-      does_need_password_hashing_(true),
       is_using_oauth_(true),
       auth_flow_(AUTH_FLOW_OFFLINE) {
 }
@@ -37,29 +33,27 @@ UserContext::~UserContext() {
 
 bool UserContext::operator==(const UserContext& context) const {
   return context.user_id_ == user_id_ &&
-         context.password_ == password_ &&
-         context.does_need_password_hashing_ == does_need_password_hashing_ &&
-         context.key_label_ == key_label_ &&
+         context.key_ == key_ &&
          context.auth_code_ == auth_code_ &&
          context.user_id_hash_ == user_id_hash_ &&
          context.is_using_oauth_ == is_using_oauth_ &&
          context.auth_flow_ == auth_flow_;
 }
 
+bool UserContext::operator!=(const UserContext& context) const {
+  return !(*this == context);
+}
+
 const std::string& UserContext::GetUserID() const {
   return user_id_;
 }
 
-const std::string& UserContext::GetPassword() const {
-  return password_;
+const Key* UserContext::GetKey() const {
+  return &key_;
 }
 
-bool UserContext::DoesNeedPasswordHashing() const {
-  return does_need_password_hashing_;
-}
-
-const std::string& UserContext::GetKeyLabel() const {
-  return key_label_;
+Key* UserContext::GetKey() {
+  return &key_;
 }
 
 const std::string& UserContext::GetAuthCode() const {
@@ -79,23 +73,16 @@ UserContext::AuthFlow UserContext::GetAuthFlow() const {
 }
 
 bool UserContext::HasCredentials() const {
-  return (!user_id_.empty() && !password_.empty()) || !auth_code_.empty();
+  return (!user_id_.empty() && !key_.GetSecret().empty()) ||
+         !auth_code_.empty();
 }
 
 void UserContext::SetUserID(const std::string& user_id) {
   user_id_ = login::CanonicalizeUserID(user_id);
 }
 
-void UserContext::SetPassword(const std::string& password) {
-  password_ = password;
-}
-
-void UserContext::SetDoesNeedPasswordHashing(bool does_need_password_hashing) {
-  does_need_password_hashing_ = does_need_password_hashing;
-}
-
-void UserContext::SetKeyLabel(const std::string& key_label) {
-  key_label_ = key_label;
+void UserContext::SetKey(const Key& key) {
+  key_ = key;
 }
 
 void UserContext::SetAuthCode(const std::string& auth_code) {
@@ -115,7 +102,7 @@ void UserContext::SetAuthFlow(AuthFlow auth_flow) {
 }
 
 void UserContext::ClearSecrets() {
-  password_.clear();
+  key_.ClearSecret();
   auth_code_.clear();
 }
 

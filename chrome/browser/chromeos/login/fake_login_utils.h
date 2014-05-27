@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_LOGIN_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_LOGIN_UTILS_H_
 
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 
 namespace chromeos {
@@ -35,16 +36,14 @@ class FakeLoginUtils : public LoginUtils {
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
-  void SetExpectedCredentials(const std::string& username,
-                              const std::string& password);
+  void SetExpectedCredentials(const UserContext& user_context);
   void set_should_launch_browser(bool should_launch_browser) {
     should_launch_browser_ = should_launch_browser;
   }
 
  private:
   scoped_refptr<Authenticator> authenticator_;
-  std::string expected_username_;
-  std::string expected_password_;
+  UserContext expected_user_context_;
   bool should_launch_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLoginUtils);

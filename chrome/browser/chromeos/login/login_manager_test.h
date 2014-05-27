@@ -17,6 +17,8 @@ class WebContents;
 
 namespace chromeos {
 
+class UserContext;
+
 // Base class for Chrome OS out-of-box/login WebUI tests.
 // If no special configuration is done launches out-of-box WebUI.
 // To launch login UI use PRE_* test that will register user(s) and mark
@@ -33,30 +35,29 @@ class LoginManagerTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
-  // Registers user with given |username| on device.
-  // Should be called in PRE_* test.
-  // TODO(dzhioev): add ability to register users without PRE_* test.
-  void RegisterUser(const std::string& username);
+  // Registers the user with the given |user_id| on the device.
+  // This method should be called in PRE_* test.
+  // TODO(dzhioev): Add the ability to register users without a PRE_* test.
+  void RegisterUser(const std::string& user_id);
 
   // Set expected credentials for next login attempt.
-  void SetExpectedCredentials(const std::string& username,
-                              const std::string& password);
+  void SetExpectedCredentials(const UserContext& user_context);
 
-  // Tries to login with |username| and |password|. Returns false if attempt
-  // has failed.
-  bool TryToLogin(const std::string& username, const std::string& password);
+  // Tries to login with the credentials in |user_context|. The return value
+  // indicates whether the login attempt succeeded.
+  bool TryToLogin(const UserContext& user_context);
 
-  // Tries to add user to session with |username| and |password|. Returns false
-  // if attempt has failed. this function does the same as TryToLogin but
-  // doesn't check that new user become active user.
-  bool AddUserToSession(const std::string& username,
-                        const std::string& password);
+  // Tries to add the user identified and authenticated by |user_context| to the
+  // session. The return value indicates whether the attempt succeeded. This
+  // method does the same as TryToLogin() but doesn't verify that the new user
+  // has become the active user.
+  bool AddUserToSession(const UserContext& user_context);
 
-  // Login user with |username|. User should be registered using RegisterUser().
-  void LoginUser(const std::string& username);
+  // Log in user with |user_id|. User should be registered using RegisterUser().
+  void LoginUser(const std::string& user_id);
 
-  // Add user with |username| to session.
-  void AddUser(const std::string& username);
+  // Add user with |user_id| to session.
+  void AddUser(const std::string& user_id);
 
   // Executes given JS |expression| in |web_contents_| and checks
   // that it is true.

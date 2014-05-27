@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -1175,7 +1176,7 @@ void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(sanitized_email);
   UserContext user_context(sanitized_email);
-  user_context.SetPassword(password);
+  user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml ?
       UserContext::AUTH_FLOW_GAIA_WITH_SAML :
       UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
@@ -1199,7 +1200,7 @@ void SigninScreenHandler::HandleCompleteAuthentication(
     return;
   delegate_->SetDisplayEmail(gaia::SanitizeEmail(email));
   UserContext user_context(email);
-  user_context.SetPassword(password);
+  user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
   delegate_->CompleteLogin(user_context);
 }
@@ -1209,7 +1210,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
   if (!delegate_)
     return;
   UserContext user_context(username);
-  user_context.SetPassword(password);
+  user_context.SetKey(Key(password));
   delegate_->Login(user_context);
 }
 

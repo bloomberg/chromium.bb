@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOGIN_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_LOGIN_UTILS_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,35 +20,27 @@ class LoginStatusConsumer;
 
 class TestLoginUtils : public LoginUtils {
  public:
-  TestLoginUtils(const std::string& expected_username,
-                 const std::string& expected_password);
+  explicit TestLoginUtils(const UserContext& user_context);
   virtual ~TestLoginUtils();
 
+  // LoginUtils:
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) OVERRIDE {}
-  virtual void PrepareProfile(const UserContext& credentials,
+  virtual void PrepareProfile(const UserContext& user_context,
                               const std::string& display_email,
                               bool has_cookies,
                               bool has_active_session,
                               Delegate* delegate) OVERRIDE;
-
   virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
-
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE {}
-
   virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE {}
-
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
-
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE {}
-
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
  private:
-  std::string expected_username_;
-  std::string expected_password_;
-  std::string auth_token_;
+  UserContext expected_user_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoginUtils);
 };
