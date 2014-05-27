@@ -178,6 +178,12 @@ if (!is_android) {
       ]
       defines += [ "PERFTOOLS_DLL_DECL=" ]
 
+      configs -= [
+        # Tcmalloc defines this itself, and we don't want duplicate definition
+        # warnings.
+        "//build/config/win:nominmax",
+      ]
+
       direct_dependent_configs = [ ":nocmt" ]
 
       deps += [

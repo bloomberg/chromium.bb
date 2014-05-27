@@ -372,6 +372,13 @@ component("skia") {
     ]
   }
 
+  sources -= [
+    # This file is a stub for systems that use pthreads but aren't covered by
+    # one of the more specific pthread files. We don't support any such
+    # systems.
+    "//third_party/skia/src/utils/SkThreadUtils_pthread_other.cpp",
+  ]
+
   if (!use_cairo) {
     sources -= [
       "ext/bitmap_platform_device_cairo.cc",
@@ -402,6 +409,14 @@ component("skia") {
 
   if (component_mode == "shared_library") {
     defines = [ "SKIA_IMPLEMENTATION=1" ]
+  }
+
+  if (is_win) {
+    configs -= [
+      # Some files define WIN32_LEAN_AND_MEAN and we want to avoid a duplicate
+      # definition warning.
+      "//build/config/win:lean_and_mean",
+    ]
   }
 
   if (is_linux) {

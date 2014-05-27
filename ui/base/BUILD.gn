@@ -251,12 +251,6 @@ component("ui_base") {
     "window_open_disposition.cc",
     "window_open_disposition.h",
     "work_area_watcher_observer.h",
-    "x/selection_owner.cc",
-    "x/selection_owner.h",
-    "x/selection_requestor.cc",
-    "x/selection_requestor.h",
-    "x/selection_utils.cc",
-    "x/selection_utils.h",
     "x/x11_menu_list.cc",
     "x/x11_menu_list.h",
     "x/x11_util.cc",
@@ -294,6 +288,17 @@ component("ui_base") {
     ]
   }
 
+  if (use_x11 && use_aura) {
+    sources += [
+      "x/selection_owner.cc",
+      "x/selection_owner.h",
+      "x/selection_requestor.cc",
+      "x/selection_requestor.h",
+      "x/selection_utils.cc",
+      "x/selection_utils.h",
+    ]
+  }
+
   if (use_aura) {
     deps += [
       "//ui/events",
@@ -303,12 +308,6 @@ component("ui_base") {
       "cursor/cursor.cc",
       "cursor/cursor.h",
       "dragdrop/drag_utils_aura.cc",
-      "x/selection_owner.cc",
-      "x/selection_owner.h",
-      "x/selection_requestor.cc",
-      "x/selection_requestor.h",
-      "x/selection_utils.cc",
-      "x/selection_utils.h",
     ]
   }
   if (!use_x11) {
@@ -316,6 +315,12 @@ component("ui_base") {
       "x/x11_util.cc",
       "x/x11_util.h",
       "x/x11_util_internal.h",
+    ]
+  }
+
+  if (!use_ozone) {
+    sources -= [
+      "touch/touch_device_ozone.cc",
     ]
   }
 

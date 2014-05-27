@@ -323,6 +323,7 @@ _native_compiler_configs = [
 if (is_win) {
   _native_compiler_configs += [
     "//build/config/win:lean_and_mean",
+    "//build/config/win:nominmax",
     "//build/config/win:sdk",
     "//build/config/win:unicode",
   ]

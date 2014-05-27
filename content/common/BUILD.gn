@@ -237,9 +237,6 @@ source_set("common") {
   if (!is_win || !use_aura) {
     sources -= [ "cursors/webcursor_aurawin.cc" ]
   }
-  if (!use_aura || !use_x11) {
-    sources -= [ "cursors/webcursor_aurax11.cc" ]
-  }
 
   if (use_seccomp_bpf) {
     defines += [ "USE_SECCOMP_BPF" ]

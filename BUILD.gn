@@ -42,6 +42,7 @@ group("root") {
     "//ipc",
     "//mojo",
     "//net",
+    "//ppapi:ppapi_c",
     #"//sdch",
     "//skia",
     "//third_party/brotli",
@@ -95,6 +96,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//content/public/common",
+      "//ppapi:ppapi_c",
       "//third_party/libusb",
       #"//third_party/WebKit/Source/platform",
       "//third_party/WebKit/Source/wtf",  # TODO(brettw) re-enable for Android.

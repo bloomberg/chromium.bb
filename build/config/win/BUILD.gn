@@ -15,7 +15,6 @@ config("sdk") {
     "_WIN32_WINNT=0x0602",
     "_WINDOWS",
     "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
-    "NOMINMAX",
     "NTDDI_VERSION=0x06020000",
     "PSAPI_VERSION=1",
     "WIN32",
@@ -127,5 +126,17 @@ config("unicode") {
 config("lean_and_mean") {
   defines = [
     "WIN32_LEAN_AND_MEAN",
+  ]
+}
+
+# Nominmax --------------------------------------------------------------------
+
+# Some third party code defines NOMINMAX before including windows.h, which
+# then causes warnings when it's been previously defined on the command line.
+# For such targets, this config can be removed.
+
+config("nominmax") {
+  defines = [
+    "NOMINMAX",
   ]
 }
