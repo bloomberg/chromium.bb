@@ -106,15 +106,16 @@ namespace WebCore {
 
 #define TOSTRING_VOID_INTERNAL(var, value) \
     var = (value);                         \
-    if (UNLIKELY(!var.prepare()))          \
-        return;
-
-#define TOSTRING_VOID_INTERNAL_RETHROW(var, value, block) \
-    var = (value);                                        \
-    if (UNLIKELY(!var.prepare())) {                       \
-        block.ReThrow();                                  \
-        return;                                           \
+    if (UNLIKELY(!var.prepare())) {        \
+        block.ReThrow();                   \
+        return;                            \
     }
+
+// There are no v8::TryCatch declared outside.
+#define TOSTRING_VOID_INTERNAL_NOTRYCATCH(var, value) \
+    var = (value);                                    \
+    if (UNLIKELY(!var.prepare()))                     \
+        return;
 
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
     type var(value);                               \

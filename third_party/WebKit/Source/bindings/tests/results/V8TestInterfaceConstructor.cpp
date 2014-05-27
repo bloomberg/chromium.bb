@@ -76,7 +76,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         v8::TryCatch block;
         TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
-        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[1], block);
+        TOSTRING_VOID_INTERNAL(stringArg, info[1]);
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
         TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
         if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {

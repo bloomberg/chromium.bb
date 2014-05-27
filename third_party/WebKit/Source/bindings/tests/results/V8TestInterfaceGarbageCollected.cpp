@@ -103,7 +103,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> str;
     {
-        TOSTRING_VOID_INTERNAL(str, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(str, info[0]);
     }
     RawPtr<TestInterfaceGarbageCollected> impl = TestInterfaceGarbageCollected::create(str);
 

@@ -25,7 +25,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if interface_name == 'EventTarget' %}
     if (DOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
-            exceptionState.throwIfNeeded();
+            {{throw_from_exception_state(method)}};
             return;
         }
         if (!window->document())
@@ -33,14 +33,14 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% elif method.is_check_security_for_frame %}
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
-        exceptionState.throwIfNeeded();
+        {{throw_from_exception_state(method)}};
         return;
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
+        {{throw_from_exception_state(method)}};
         return;
     }
     {% endif %}
@@ -177,8 +177,10 @@ if (!std::isnan({{argument.name}}NativeValue))
     {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
 {% elif argument.idl_type == 'SerializedScriptValue' %}
 {{argument.name}} = SerializedScriptValue::create(info[{{argument.index}}], 0, 0, exceptionState, info.GetIsolate());
-if (exceptionState.throwIfNeeded())
+if (exceptionState.hadException()) {
+    {{throw_from_exception_state(method)}};
     return;
+}
 {% elif argument.is_variadic_wrapper_type %}
 for (int i = {{argument.index}}; i < info.Length(); ++i) {
     if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate())) {
@@ -188,9 +190,9 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
     }
     {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
 }
-{% else %}
+{% else %}{# argument.is_nullable #}
 {{argument.v8_value_to_local_cpp_value}};
-{% endif %}
+{% endif %}{# argument.is_nullable #}
 {# Type checking, possibly throw a TypeError, per:
    http://www.w3.org/TR/WebIDL/#es-type-mapping #}
 {% if argument.has_type_checking_unrestricted %}
@@ -248,8 +250,10 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {% endif %}
 {# Post-call #}
 {% if method.is_raises_exception %}
-if (exceptionState.throwIfNeeded())
+if (exceptionState.hadException()) {
+    {{throw_from_exception_state(method)}};
     return;
+}
 {% endif %}
 {# Set return value #}
 {% if method.is_constructor %}
@@ -285,16 +289,23 @@ v8SetReturnValueNull(info);
 {% macro throw_type_error(method, error_message) %}
 {% if method.has_exception_state %}
 exceptionState.throwTypeError({{error_message}});
-exceptionState.throwIfNeeded();
+{{throw_from_exception_state(method)}};
 {% elif method.is_constructor %}
 throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
-{% else %}
+{% else %}{# method.has_exception_state #}
 throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
 {% endif %}
 {% if method.arguments_need_try_catch %}
 block.ReThrow();
-{%- endif %}
+{%- endif %}{# method.has_exception_state #}
 {% endmacro %}
+
+
+{######################################}
+{# FIXME: return a rejected Promise if method.idl_type == 'Promise' #}
+{% macro throw_from_exception_state(method) %}
+exceptionState.throwIfNeeded()
+{%- endmacro %}
 
 
 {######################################}

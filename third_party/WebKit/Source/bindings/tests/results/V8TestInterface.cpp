@@ -929,7 +929,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceEmpty* testInterfaceEmptyArg;
     {
         v8::TryCatch block;
-        TOSTRING_VOID_INTERNAL_RETHROW(strArg, info[0], block);
+        TOSTRING_VOID_INTERNAL(strArg, info[0]);
         if (info.Length() > 1 && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
             exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
             exceptionState.throwIfNeeded();
@@ -940,8 +940,10 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     }
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(scriptContext, strArg, testInterfaceEmptyArg, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -1076,8 +1078,10 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, *impl, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 

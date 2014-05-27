@@ -4822,7 +4822,7 @@ static void voidMethodStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>&
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
     }
     impl->voidMethodStringArg(stringArg);
 }
@@ -5986,7 +5986,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
     V8StringResource<> testEnumTypeArg;
     {
         v8::TryCatch block;
-        TOSTRING_VOID_INTERNAL_RETHROW(testEnumTypeArg, info[0], block);
+        TOSTRING_VOID_INTERNAL(testEnumTypeArg, info[0]);
         String string = testEnumTypeArg;
         if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestObject", "parameter 1 ('" + string + "') is not a valid enum value."), info.GetIsolate());
@@ -6180,8 +6180,10 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
     {
         serializedScriptValueArg = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
-        if (exceptionState.throwIfNeeded())
+        if (exceptionState.hadException()) {
+            exceptionState.throwIfNeeded();
             return;
+        }
     }
     impl->voidMethodSerializedScriptValueArg(serializedScriptValueArg);
 }
@@ -6249,7 +6251,7 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
     int longArg;
     {
         v8::TryCatch block;
-        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
     }
     impl->voidMethodStringArgLongArg(stringArg, longArg);
@@ -6271,7 +6273,7 @@ static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8:
             impl->voidMethodOptionalStringArg();
             return;
         }
-        TOSTRING_VOID_INTERNAL(optionalStringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(optionalStringArg, info[0]);
     }
     impl->voidMethodOptionalStringArg(optionalStringArg);
 }
@@ -6571,7 +6573,7 @@ static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbac
     Vector<String> variadicStringArgs;
     {
         v8::TryCatch block;
-        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
         TONATIVE_VOID_INTERNAL(variadicStringArgs, toNativeArguments<String>(info, 1));
     }
     impl->voidMethodStringArgVariadicStringArg(stringArg, variadicStringArgs);
@@ -6763,7 +6765,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     int longArg;
     {
         v8::TryCatch block;
-        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[0], block);
+        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
         if (UNLIKELY(info.Length() <= 1)) {
             impl->overloadedMethodB(stringArg);
             return;
@@ -6985,7 +6987,7 @@ static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& 
             impl->overloadedMethodF();
             return;
         }
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
     }
     impl->overloadedMethodF(stringArg);
 }
@@ -7158,7 +7160,7 @@ static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
     }
     impl->overloadedMethodI(stringArg);
 }
@@ -7458,7 +7460,7 @@ static void voidMethodDefaultUndefinedStringArgMethod(const v8::FunctionCallback
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultUndefinedStringArg;
     {
-        TOSTRING_VOID_INTERNAL(defaultUndefinedStringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(defaultUndefinedStringArg, info[0]);
     }
     impl->voidMethodDefaultUndefinedStringArg(defaultUndefinedStringArg);
 }
@@ -7475,7 +7477,7 @@ static void voidMethodDefaultNullStringStringArgMethod(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultNullStringStringArg;
     {
-        TOSTRING_VOID_INTERNAL(defaultNullStringStringArg, argumentOrNull(info, 0));
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(defaultNullStringStringArg, argumentOrNull(info, 0));
     }
     impl->voidMethodDefaultNullStringStringArg(defaultNullStringStringArg);
 }
@@ -7519,7 +7521,7 @@ static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCal
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<WithNullCheck> treatNullAsNullStringStringArg;
     {
-        TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(treatNullAsNullStringStringArg, info[0]);
     }
     impl->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
@@ -7540,7 +7542,7 @@ static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMe
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<WithUndefinedOrNullCheck> treatNullAsNullStringStringArg;
     {
-        TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(treatNullAsNullStringStringArg, info[0]);
     }
     impl->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
 }
@@ -8386,8 +8388,10 @@ static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::V
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     impl->raisesExceptionVoidMethod(exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 
 static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8402,8 +8406,10 @@ static void raisesExceptionStringMethodMethod(const v8::FunctionCallbackInfo<v8:
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionStringMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     String result = impl->raisesExceptionStringMethod(exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -8423,15 +8429,19 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
         v8::TryCatch block;
         if (UNLIKELY(info.Length() <= 0)) {
             impl->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
-            if (exceptionState.throwIfNeeded())
+            if (exceptionState.hadException()) {
+                exceptionState.throwIfNeeded();
                 return;
+            }
             return;
         }
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     }
     impl->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 
 static void raisesExceptionVoidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8459,8 +8469,10 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), ScriptState::current(info.GetIsolate()));
     }
     impl->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 
 static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8486,8 +8498,10 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
         }
     }
     impl->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 
 static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -8502,8 +8516,10 @@ static void raisesExceptionTestInterfaceEmptyVoidMethodMethod(const v8::Function
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionTestInterfaceEmptyVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     RefPtr<TestInterfaceEmpty> result = impl->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
     v8SetReturnValue(info, result.release());
 }
 
@@ -8529,8 +8545,10 @@ static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethod(const
     }
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->callWithExecutionContextRaisesExceptionVoidMethodLongArg(scriptContext, longArg, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
 }
 
 static void callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

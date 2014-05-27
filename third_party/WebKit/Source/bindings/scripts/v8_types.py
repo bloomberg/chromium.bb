@@ -229,6 +229,7 @@ def v8_type(interface_name):
 # compute_interfaces_info.py to avoid having to parse IDLs of all used interfaces.
 IdlType.implemented_as_interfaces = {}
 
+
 def implemented_as(idl_type):
     base_idl_type = idl_type.base_type
     if base_idl_type in IdlType.implemented_as_interfaces:
@@ -450,21 +451,26 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     else:
         macro = 'TONATIVE_VOID'
 
+    # Macros come in several variants, to minimize expensive creation of
+    # v8::TryCatch.
+    suffix = ''
+
     if declare_variable:
         args.insert(0, this_cpp_type)
     else:
-        # Use a macro that assumes a previously declared local variable.
-        macro += '_INTERNAL'
-        if method_has_try_catch and macro == 'TOSTRING_VOID_INTERNAL':
-            # The TOSTRING_VOID_INTERNAL macro comes in two flavors; use the
-            # right one depending on whether the containing method has a
-            # v8::TryCatch local (named 'block') declared or not. If there is
-            # such a local, its ReThrow() method must be called if an exception
-            # is thrown.
-            macro += '_RETHROW'
-            args.append('block')
+        suffix += '_INTERNAL'
 
-    return '%s(%s)' % (macro, ', '.join(args))
+    # The TOSTRING_VOID_INTERNAL macro comes in two flavors; use the right one
+    # depending on whether the containing method has a v8::TryCatch local
+    # (named 'block') declared or not. If there is such a local, use the block
+    # for avoiding declaring another one for performance and propagate the
+    # exception.
+    if (macro == 'TOSTRING_VOID' and not declare_variable and
+       not method_has_try_catch):
+        suffix += '_NOTRYCATCH'
+
+    return '%s(%s)' % (macro + suffix, ', '.join(args))
+
 
 IdlType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 IdlUnionType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value

@@ -266,13 +266,25 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
+def v8_value_to_local_cpp_variadic_value(argument, index):
+    assert argument.is_variadic
+    idl_type = argument.idl_type
+
+    macro = 'TONATIVE_VOID_INTERNAL'
+    macro_args = [
+      argument.name,
+      'toNativeArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
+    ]
+
+    return '%s(%s)' % (macro, ', '.join(macro_args))
+
+
 def v8_value_to_local_cpp_value(argument, index, method_has_try_catch):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        return 'TONATIVE_VOID_INTERNAL({name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
-            cpp_type=idl_type.cpp_type, name=name, index=index)
+        return v8_value_to_local_cpp_variadic_value(argument, index)
     # [Default=NullString]
     if (argument.is_optional and idl_type.name == 'String' and
         extended_attributes.get('Default') == 'NullString'):

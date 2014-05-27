@@ -133,7 +133,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
     {
         v8::TryCatch block;
         TONATIVE_VOID_INTERNAL(floatArg, static_cast<float>(info[0]->NumberValue()));
-        TOSTRING_VOID_INTERNAL_RETHROW(stringArg, info[1], block);
+        TOSTRING_VOID_INTERNAL(stringArg, info[1]);
     }
     impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
@@ -271,7 +271,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8StringResource<> stringArg;
     {
-        TOSTRING_VOID_INTERNAL(stringArg, info[0]);
+        TOSTRING_VOID_INTERNAL_NOTRYCATCH(stringArg, info[0]);
     }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
 
