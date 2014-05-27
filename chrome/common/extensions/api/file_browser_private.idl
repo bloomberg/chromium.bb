@@ -81,6 +81,18 @@ enum SearchType { EXCLUDE_DIRECTORIES, SHARED_WITH_ME, OFFLINE, ALL };
 // Zooming mode.
 enum ZoomOperationType { in, out, reset };
 
+// Specifies how to open inspector.
+enum InspectionType {
+  // Open inspector for foreground page.
+  normal,
+  // Open inspector for foreground page and bring focus to the console.
+  console,
+  // Open inspector for foreground page in inspect element mode.
+  element,
+  // Open inspector for background page.
+  background
+};
+
 // Device event type.
 enum DeviceEventType {
   // Device is added.
@@ -761,6 +773,10 @@ interface Functions {
   // Moves the window to other user's desktop.
   static void visitDesktop(DOMString profileId,
                            optional SimpleCallback callback);
+
+  // Opens inspector window.
+  // |type| InspectionType which specifies how to open inspector.
+  static void openInspector(InspectionType type);
 };
 
 interface Events {

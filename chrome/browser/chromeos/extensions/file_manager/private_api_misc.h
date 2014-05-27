@@ -160,6 +160,19 @@ class FileBrowserPrivateVisitDesktopFunction
   virtual bool RunSync() OVERRIDE;
 };
 
+// Implements the chrome.fileBrowserPrivate.openInspector method.
+class FileBrowserPrivateOpenInspectorFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.openInspector",
+                             FILEBROWSERPRIVATE_OPENINSPECTOR);
+
+ protected:
+  virtual ~FileBrowserPrivateOpenInspectorFunction() {}
+
+  virtual bool RunSync() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

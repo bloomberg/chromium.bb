@@ -905,3 +905,48 @@ CommandHandler.COMMANDS_['zoom-reset'] = {
   },
   canExecute: CommandUtil.canExecuteAlways
 };
+
+/**
+ * Open inspector for foreground page.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['inspect-normal'] = {
+  execute: function(event, fileManager) {
+    chrome.fileBrowserPrivate.openInspector('normal');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
+/**
+ * Open inspector for foreground page and bring focus to the console.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['inspect-console'] = {
+  execute: function(event, fileManager) {
+    chrome.fileBrowserPrivate.openInspector('console');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
+/**
+ * Open inspector for foreground page in inspect element mode.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['inspect-element'] = {
+  execute: function(event, fileManager) {
+    chrome.fileBrowserPrivate.openInspector('element');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
+/**
+ * Open inspector for background page.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['inspect-background'] = {
+  execute: function(event, fileManager) {
+    chrome.fileBrowserPrivate.openInspector('background');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
