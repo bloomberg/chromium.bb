@@ -3467,24 +3467,30 @@ TEST_F(ExtensionServiceTest, BlacklistedInPrefsFromStartup) {
   test_blacklist.SetBlacklistState(
       good1, extensions::BLACKLISTED_MALWARE, false);
 
+  // Extension service hasn't loaded yet, but IsExtensionEnabled reads out of
+  // prefs. Ensure it takes into account the blacklist state (crbug.com/373842).
+  EXPECT_FALSE(service_->IsExtensionEnabled(good0));
+  EXPECT_FALSE(service_->IsExtensionEnabled(good1));
+  EXPECT_TRUE(service_->IsExtensionEnabled(good2));
+
   service_->Init();
 
-  ASSERT_EQ(2u, registry_->blacklisted_extensions().size());
-  ASSERT_EQ(1u, registry_->enabled_extensions().size());
+  EXPECT_EQ(2u, registry_->blacklisted_extensions().size());
+  EXPECT_EQ(1u, registry_->enabled_extensions().size());
 
-  ASSERT_TRUE(registry_->blacklisted_extensions().Contains(good0));
-  ASSERT_TRUE(registry_->blacklisted_extensions().Contains(good1));
-  ASSERT_TRUE(registry_->enabled_extensions().Contains(good2));
+  EXPECT_TRUE(registry_->blacklisted_extensions().Contains(good0));
+  EXPECT_TRUE(registry_->blacklisted_extensions().Contains(good1));
+  EXPECT_TRUE(registry_->enabled_extensions().Contains(good2));
 
   // Give time for the blacklist to update.
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, registry_->blacklisted_extensions().size());
-  ASSERT_EQ(2u, registry_->enabled_extensions().size());
+  EXPECT_EQ(1u, registry_->blacklisted_extensions().size());
+  EXPECT_EQ(2u, registry_->enabled_extensions().size());
 
-  ASSERT_TRUE(registry_->enabled_extensions().Contains(good0));
-  ASSERT_TRUE(registry_->blacklisted_extensions().Contains(good1));
-  ASSERT_TRUE(registry_->enabled_extensions().Contains(good2));
+  EXPECT_TRUE(registry_->enabled_extensions().Contains(good0));
+  EXPECT_TRUE(registry_->blacklisted_extensions().Contains(good1));
+  EXPECT_TRUE(registry_->enabled_extensions().Contains(good2));
 }
 #endif  // defined(ENABLE_BLACKLIST_TESTS)
 

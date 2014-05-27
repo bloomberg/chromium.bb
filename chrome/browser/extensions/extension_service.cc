@@ -801,6 +801,7 @@ bool ExtensionService::IsExtensionEnabled(
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
   // enabled unless otherwise noted.
   return !extension_prefs_->IsExtensionDisabled(extension_id) &&
+         !extension_prefs_->IsExtensionBlacklisted(extension_id) &&
          !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 
