@@ -43,56 +43,125 @@ AsyncUtil.forEach = function(
 
 /**
  * Creates a class for executing several asynchronous closures in a fifo queue.
- * Added tasks will be executed sequentially in order they were added.
+ * Added tasks will be started in order they were added. Tasks are run
+ * concurrently. At most, |limit| jobs will be run at the same time.
  *
+ * @param {number} limit The number of jobs to run at the same time.
  * @constructor
  */
-AsyncUtil.Queue = function() {
-  this.running_ = false;
-  this.closures_ = [];
+AsyncUtil.ConcurrentQueue = function(limit) {
+  console.assert(limit > 0, '|limit| must be larger than 0');
+
+  this.limit_ = limit;
+  this.addedTasks_ = [];
+  this.pendingTasks_ = [];
+  this.isCancelled_ = false;
+
+  Object.seal(this);
 };
 
 /**
  * @return {boolean} True when a task is running, otherwise false.
  */
-AsyncUtil.Queue.prototype.isRunning = function() {
-  return this.running_;
+AsyncUtil.ConcurrentQueue.prototype.isRunning = function() {
+  return this.pendingTasks_.length !== 0;
+};
+
+/**
+ * @return {number} Number of waiting tasks.
+ */
+AsyncUtil.ConcurrentQueue.prototype.getWaitingTasksCount = function() {
+  return this.addedTasks_.length;
+};
+
+/**
+ * @return {boolean} Number of running tasks.
+ */
+AsyncUtil.ConcurrentQueue.prototype.getRunningTasksCount = function() {
+  return this.pendingTasks_.length;
 };
 
 /**
  * Enqueues a closure to be executed.
- * @param {function(function())} closure Closure with a completion callback to
- *     be executed.
+ * @param {function(function())} closure Closure with a completion
+ *     callback to be executed.
  */
-AsyncUtil.Queue.prototype.run = function(closure) {
-  this.closures_.push(closure);
-  if (!this.running_)
-    this.continue_();
-};
-
-/**
- * Serves the next closure from the queue.
- * @private
- */
-AsyncUtil.Queue.prototype.continue_ = function() {
-  if (!this.closures_.length) {
-    this.running_ = false;
+AsyncUtil.ConcurrentQueue.prototype.run = function(closure) {
+  if (this.isCancelled_) {
+    console.error('Queue is calcelled. Cannot add a new task.');
     return;
   }
 
-  // Run the next closure.
-  this.running_ = true;
-  var closure = this.closures_.shift();
-  closure(this.continue_.bind(this));
+  this.addedTasks_.push(closure);
+  this.continue_();
 };
 
 /**
- * Cancels all pending tasks. Note that this does NOT cancel the task running
- * currently.
+ * Cancels the queue. It removes all the not-run (yet) tasks. Note that this
+ * does NOT stop tasks currently running.
  */
-AsyncUtil.Queue.prototype.cancel = function() {
-  this.closures_ = [];
+AsyncUtil.ConcurrentQueue.prototype.cancel = function() {
+  this.isCancelled_ = true;
+  this.addedTasks_ = [];
 };
+
+/**
+ * @return {boolean} True when the queue have been requested to cancel or is
+ *      already cancelled. Otherwise false.
+ */
+AsyncUtil.ConcurrentQueue.prototype.isCancelled = function() {
+  return this.isCancelled_;
+};
+
+/**
+ * Runs the next tasks if available.
+ * @private
+ */
+AsyncUtil.ConcurrentQueue.prototype.continue_ = function() {
+  if (this.addedTasks_.length === 0)
+    return;
+
+  console.assert(
+      this.pendingTasks_.length <= this.limit_,
+      'Too many jobs are running (' + this.pendingTasks_.length + ')');
+
+  if (this.pendingTasks_.length >= this.limit_)
+    return;
+
+  // Run the next closure.
+  var closure = this.addedTasks_.shift();
+  this.pendingTasks_.push(closure);
+  closure(this.onTaskFinished_.bind(this, closure));
+
+  this.continue_();
+};
+
+/**
+ * Called when a task is finished. Removes the tasks from pending task list.
+ * @param {function()} closure Finished task, which has been bound in
+ *     |continue_|.
+ * @private
+ */
+AsyncUtil.ConcurrentQueue.prototype.onTaskFinished_ = function(closure) {
+  var index = this.pendingTasks_.indexOf(closure);
+  console.assert(index >= 0, 'Invalid task is finished');
+  this.pendingTasks_.splice(index, 1);
+
+  this.continue_();
+};
+
+/**
+ * Creates a class for executing several asynchronous closures in a fifo queue.
+ * Added tasks will be executed sequentially in order they were added.
+ *
+ * @constructor
+ * @extends {AsyncUtil.ConcurrentQueue}
+ */
+AsyncUtil.Queue = function() {
+  AsyncUtil.ConcurrentQueue.call(this, 1);
+};
+
+AsyncUtil.Queue.prototype.__proto__ = AsyncUtil.ConcurrentQueue.prototype;
 
 /**
  * Creates a class for executing several asynchronous closures in a group in
