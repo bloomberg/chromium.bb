@@ -257,7 +257,7 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 
 	sb = zalloc(sizeof *sb);
 	if (sb == NULL) {
-		weston_log("could not zalloc %ld memory for sb: %m\n", sizeof *sb);
+		weston_log("could not zalloc %zu memory for sb: %m\n", sizeof *sb);
 		close(fd);
 		free(data);
 		return NULL;
