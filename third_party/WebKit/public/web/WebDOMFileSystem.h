@@ -42,6 +42,8 @@
 #endif
 
 namespace v8 {
+class Isolate;
+class Object;
 class Value;
 template <class T> class Handle;
 }
@@ -95,6 +97,11 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> createV8Entry(
         const WebString& path,
         EntryType);
+    BLINK_EXPORT v8::Handle<v8::Value> toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    BLINK_EXPORT v8::Handle<v8::Value> createV8Entry(
+        const WebString& path,
+        EntryType,
+        v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
     bool isNull() const { return m_private.isNull(); }
 
