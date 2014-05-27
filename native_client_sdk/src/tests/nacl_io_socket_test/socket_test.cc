@@ -584,7 +584,15 @@ TEST_F(SocketTestUDP, Listen) {
   EXPECT_EQ(errno, ENOTSUP);
 }
 
-TEST_F(SocketTestTCP, Listen) {
+// Temporarily disable the TCP Listen test on PNaCl;
+// TODO(sbc): Re-enable once we fix the issue: http://crbug/377084
+#ifdef __pnacl__
+#define MAYBE_Listen DISABLED_Listen
+#else
+#define MAYBE_Listen Listen
+#endif
+
+TEST_F(SocketTestTCP, MAYBE_Listen) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
   const char* client_greeting = "hello";
