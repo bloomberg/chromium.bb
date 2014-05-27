@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {

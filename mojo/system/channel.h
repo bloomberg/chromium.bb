@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/raw_channel.h"

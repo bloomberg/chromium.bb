@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 #include "mojo/system/handle_table.h"
 #include "mojo/system/mapping_table.h"
 #include "mojo/system/system_impl_export.h"

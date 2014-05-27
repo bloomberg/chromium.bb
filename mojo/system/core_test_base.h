@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/c/system/core.h"
+#include "mojo/public/c/system/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

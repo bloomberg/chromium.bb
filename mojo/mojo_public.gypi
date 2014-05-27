@@ -29,6 +29,7 @@
         'public/c/system/core.h',
         'public/c/system/macros.h',
         'public/c/system/system_export.h',
+        'public/c/system/types.h',
         'public/platform/native/system_thunks.cc',
         'public/platform/native/system_thunks.h',
       ],
