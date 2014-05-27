@@ -247,7 +247,7 @@ bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(
     int embedder_render_process_id,
     int guest_instance_id) {
   if (!CanEmbedderAccessInstanceID(embedder_render_process_id,
-                                  guest_instance_id)) {
+                                   guest_instance_id)) {
     // The embedder process is trying to access a guest it does not own.
     content::RecordAction(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "content/public/common/page_transition_types.h"
+#include "url/gurl.h"
 
 namespace content {
 

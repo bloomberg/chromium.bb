@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 struct RendererContentSettingRules;
 
@@ -18,7 +19,8 @@ struct RendererContentSettingRules;
 // <*view> tag. GuestViewBase maintains an association between a guest
 // WebContents and an embedder WebContents. It receives events issued from
 // the guest and relays them to the embedder.
-class GuestViewBase : public content::BrowserPluginGuestDelegate {
+class GuestViewBase : public content::BrowserPluginGuestDelegate,
+                      public content::WebContentsDelegate {
  public:
   class Event {
    public:
@@ -125,14 +127,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate {
 
   void SetOpener(GuestViewBase* opener);
 
-  // BrowserPluginGuestDelegate implementation.
-  virtual void Destroy() OVERRIDE;
-  virtual void RegisterDestructionCallback(
-      const DestructionCallback& callback) OVERRIDE;
+  // WebContentsDelegate implementation.
+  virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
       const blink::WebGestureEvent& event) OVERRIDE;
 
+  // BrowserPluginGuestDelegate implementation.
+  virtual void Destroy() OVERRIDE;
+  virtual void RegisterDestructionCallback(
+      const DestructionCallback& callback) OVERRIDE;
  protected:
   GuestViewBase(int guest_instance_id,
                 content::WebContents* guest_web_contents,

@@ -74,38 +74,34 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
 
-  // GuestDelegate implementation.
-  virtual void AddMessageToConsole(int32 level,
+  // WebContentsDelegate implementation.
+  virtual bool AddMessageToConsole(content::WebContents* source,
+                                   int32 level,
                                    const base::string16& message,
                                    int32 line_no,
                                    const base::string16& source_id) OVERRIDE;
-  virtual void LoadProgressed(double progress) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void DidAttach() OVERRIDE;
-  virtual void EmbedderDestroyed() OVERRIDE;
-  virtual void FindReply(int request_id,
+  virtual void LoadProgressChanged(content::WebContents* source,
+                                   double progress) OVERRIDE;
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual void FindReply(content::WebContents* source,
+                         int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
-  virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool IsDragAndDropEnabled() OVERRIDE;
-  virtual void RendererResponsive() OVERRIDE;
-  virtual void RendererUnresponsive() OVERRIDE;
-  virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
-      OVERRIDE;
+  virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
+  virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
   virtual void RequestMediaAccessPermission(
+      content::WebContents* source,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
-  virtual void CanDownload(const std::string& request_method,
+  virtual void CanDownload(content::RenderViewHost* render_view_host,
                            const GURL& url,
+                           const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void RequestPointerLockPermission(
-      bool user_gesture,
-      bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
@@ -115,8 +111,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
-  virtual void NavigateGuest(const std::string& src) OVERRIDE;
-  virtual void Destroy() OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
@@ -131,6 +125,20 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                   const base::string16& frame_name,
                                   const GURL& target_url,
                                   content::WebContents* new_contents) OVERRIDE;
+
+  // GuestDelegate implementation.
+  virtual void DidAttach() OVERRIDE;
+  virtual void EmbedderDestroyed() OVERRIDE;
+  virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual bool IsDragAndDropEnabled() OVERRIDE;
+  virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
+      OVERRIDE;
+  virtual void RequestPointerLockPermission(
+      bool user_gesture,
+      bool last_unlocked_by_target,
+      const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void NavigateGuest(const std::string& src) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

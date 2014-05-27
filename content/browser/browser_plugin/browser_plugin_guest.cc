@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -16,13 +15,11 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
-#include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
@@ -31,20 +28,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/media_stream_request.h"
-#include "content/public/common/result_codes.h"
-#include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
-#include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "ui/events/keycodes/keyboard_codes.h"
-#include "webkit/common/resource_type.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
@@ -113,19 +101,6 @@ BrowserPluginGuest::BrowserPluginGuest(
       last_can_compose_inline_(true),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
-  web_contents->SetDelegate(this);
-}
-
-bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
-                                             int32 level,
-                                             const base::string16& message,
-                                             int32 line_no,
-                                             const base::string16& source_id) {
-  if (!delegate_)
-    return false;
-
-  delegate_->AddMessageToConsole(level, message, line_no, source_id);
-  return true;
 }
 
 void BrowserPluginGuest::WillDestroy(WebContents* web_contents) {
@@ -380,76 +355,6 @@ void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
   UpdateVisibility();
 }
 
-void BrowserPluginGuest::AddNewContents(WebContents* source,
-                                        WebContents* new_contents,
-                                        WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_pos,
-                                        bool user_gesture,
-                                        bool* was_blocked) {
-  if (!delegate_)
-    return;
-
-  delegate_->AddNewContents(source, new_contents, disposition,
-                            initial_pos, user_gesture, was_blocked);
-}
-
-void BrowserPluginGuest::CanDownload(
-    RenderViewHost* render_view_host,
-    const GURL& url,
-    const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
-  if (!delegate_ || !url.is_valid()) {
-    callback.Run(false);
-    return;
-  }
-
-  delegate_->CanDownload(request_method, url, callback);
-}
-
-void BrowserPluginGuest::LoadProgressChanged(WebContents* contents,
-                                             double progress) {
-  if (delegate_)
-    delegate_->LoadProgressed(progress);
-}
-
-void BrowserPluginGuest::CloseContents(WebContents* source) {
-  if (!delegate_)
-    return;
-
-  delegate_->Close();
-}
-
-JavaScriptDialogManager* BrowserPluginGuest::GetJavaScriptDialogManager() {
-  if (!delegate_)
-    return NULL;
-  return delegate_->GetJavaScriptDialogManager();
-}
-
-ColorChooser* BrowserPluginGuest::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor color,
-    const std::vector<ColorSuggestion>& suggestions) {
-  if (!delegate_)
-    return NULL;
-  return delegate_->OpenColorChooser(web_contents, color, suggestions);
-}
-
-bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
-  if (!delegate_)
-    return false;
-
-  return delegate_->HandleContextMenu(params);
-}
-
-void BrowserPluginGuest::HandleKeyboardEvent(
-    WebContents* source,
-    const NativeWebKeyboardEvent& event) {
-  if (!delegate_)
-    return;
-
-  delegate_->HandleKeyboardEvent(event);
-}
-
 void BrowserPluginGuest::SetZoom(double zoom_factor) {
   if (delegate_)
     delegate_->SetZoom(zoom_factor);
@@ -458,70 +363,6 @@ void BrowserPluginGuest::SetZoom(double zoom_factor) {
 void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_SetMouseLock(instance_id(), allow));
-}
-
-void BrowserPluginGuest::FindReply(WebContents* contents,
-                                   int request_id,
-                                   int number_of_matches,
-                                   const gfx::Rect& selection_rect,
-                                   int active_match_ordinal,
-                                   bool final_update) {
-  if (!delegate_)
-    return;
-
-  // |selection_rect| is updated to incorporate embedder coordinates.
-  delegate_->FindReply(request_id, number_of_matches,
-                       ToGuestRect(selection_rect),
-                       active_match_ordinal, final_update);
-}
-
-WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
-                                                const OpenURLParams& params) {
-  if (!delegate_)
-    return NULL;
-  return delegate_->OpenURLFromTab(source, params);
-}
-
-void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
-                                            int opener_render_frame_id,
-                                            const base::string16& frame_name,
-                                            const GURL& target_url,
-                                            WebContents* new_contents) {
-  if (!delegate_)
-    return;
-
-  delegate_->WebContentsCreated(source_contents,
-                                opener_render_frame_id,
-                                frame_name,
-                                target_url,
-                                new_contents);
-}
-
-void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
-  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Hung"));
-  if (!delegate_)
-    return;
-  delegate_->RendererUnresponsive();
-}
-
-void BrowserPluginGuest::RendererResponsive(WebContents* source) {
-  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Responsive"));
-  if (!delegate_)
-    return;
-  delegate_->RendererResponsive();
-}
-
-void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
-                                        const FileChooserParams& params) {
-  if (!delegate_)
-    return;
-  delegate_->RunFileChooser(web_contents, params);
-}
-
-bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {
-  // Rather than managing focus in WebContentsImpl::RenderViewReady, we will
-  // manage the focus ourselves.
-  return false;
 }
 
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
@@ -1084,28 +925,6 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
-}
-
-void BrowserPluginGuest::RequestMediaAccessPermission(
-    WebContents* web_contents,
-    const MediaStreamRequest& request,
-    const MediaResponseCallback& callback) {
-  if (!delegate_) {
-    callback.Run(MediaStreamDevices(),
-                 MEDIA_DEVICE_INVALID_STATE,
-                 scoped_ptr<MediaStreamUI>());
-    return;
-  }
-
-  delegate_->RequestMediaAccessPermission(request, callback);
-}
-
-bool BrowserPluginGuest::PreHandleGestureEvent(
-    WebContents* source, const blink::WebGestureEvent& event) {
-  if (!delegate_)
-    return false;
-
-  return delegate_->PreHandleGestureEvent(source, event);
 }
 
 void BrowserPluginGuest::OnUpdateRect(

@@ -10,9 +10,9 @@
 // messages about the guest render process that the embedder might be interested
 // in receiving should be listened for here.
 //
-// BrowserPluginGuest is a WebContentsDelegate and WebContentsObserver for the
-// guest WebContents. BrowserPluginGuest operates under the assumption that the
-// guest will be accessible through only one RenderViewHost for the lifetime of
+// BrowserPluginGuest is a WebContentsObserver for the guest WebContents.
+// BrowserPluginGuest operates under the assumption that the guest will be
+// accessible through only one RenderViewHost for the lifetime of
 // the guest WebContents. Thus, cross-process navigation is not supported.
 
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
@@ -27,7 +27,6 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
@@ -36,8 +35,8 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
-#include "ui/surface/transport_dib.h"
 
+class SkBitmap;
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -65,7 +64,6 @@ class RenderWidgetHostView;
 class SiteInstance;
 class WebCursor;
 struct DropData;
-struct MediaStreamRequest;
 
 // A browser plugin guest provides functionality for WebContents to operate in
 // the guest role and implements guest-specific overrides for ViewHostMsg_*
@@ -77,9 +75,7 @@ struct MediaStreamRequest;
 // A BrowserPluginGuest can also create a new unattached guest via
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
-class CONTENT_EXPORT BrowserPluginGuest
-    : public WebContentsDelegate,
-      public WebContentsObserver {
+class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
  public:
   virtual ~BrowserPluginGuest();
 
@@ -167,63 +163,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // WebContentsDelegate implementation.
-  virtual bool AddMessageToConsole(WebContents* source,
-                                   int32 level,
-                                   const base::string16& message,
-                                   int32 line_no,
-                                   const base::string16& source_id) OVERRIDE;
-  // If a new window is created with target="_blank" and rel="noreferrer", then
-  // this method is called, indicating that the new WebContents is ready to be
-  // attached.
-  virtual void AddNewContents(WebContents* source,
-                              WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
-  virtual void CanDownload(RenderViewHost* render_view_host,
-                           const GURL& url,
-                           const std::string& request_method,
-                           const base::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void LoadProgressChanged(WebContents* source,
-                                   double progress) OVERRIDE;
-  virtual void CloseContents(WebContents* source) OVERRIDE;
-  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
-  virtual ColorChooser* OpenColorChooser(
-      WebContents* web_contents,
-      SkColor color,
-      const std::vector<ColorSuggestion>& suggestions) OVERRIDE;
-  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      WebContents* source,
-      const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void FindReply(WebContents* contents,
-                         int request_id,
-                         int number_of_matches,
-                         const gfx::Rect& selection_rect,
-                         int active_match_ordinal,
-                         bool final_update) OVERRIDE;
-  virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) OVERRIDE;
-  virtual void WebContentsCreated(WebContents* source_contents,
-                                  int opener_render_frame_id,
-                                  const base::string16& frame_name,
-                                  const GURL& target_url,
-                                  WebContents* new_contents) OVERRIDE;
-  virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
-  virtual void RendererResponsive(WebContents* source) OVERRIDE;
-  virtual void RunFileChooser(WebContents* web_contents,
-                              const FileChooserParams& params) OVERRIDE;
-  virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
-  virtual void RequestMediaAccessPermission(
-      WebContents* web_contents,
-      const MediaStreamRequest& request,
-      const MediaResponseCallback& callback) OVERRIDE;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;

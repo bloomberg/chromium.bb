@@ -51,6 +51,7 @@ GuestViewBase::GuestViewBase(int guest_instance_id,
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
       weak_ptr_factory_(this) {
+  guest_web_contents->SetDelegate(this);
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
   GuestViewManager::FromBrowserContext(browser_context_)->
@@ -193,6 +194,11 @@ void GuestViewBase::SetOpener(GuestViewBase* guest) {
 void GuestViewBase::RegisterDestructionCallback(
     const DestructionCallback& callback) {
   destruction_callback_ = callback;
+}
+
+bool GuestViewBase::ShouldFocusPageAfterCrash() {
+  // Focus is managed elsewhere.
+  return false;
 }
 
 bool GuestViewBase::PreHandleGestureEvent(content::WebContents* source,
