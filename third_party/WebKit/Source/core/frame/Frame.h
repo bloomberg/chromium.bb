@@ -28,6 +28,7 @@
 #ifndef Frame_h
 #define Frame_h
 
+#include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -62,8 +63,8 @@ public:
     virtual void willDetachFrameHost();
     virtual void detachFromFrameHost();
 
-    FrameClient* client() const { return m_client; }
-    void clearClient() { m_client = 0; }
+    FrameClient* client() const;
+    void clearClient();
 
     // NOTE: Page is moving out of Blink up into the browser process as
     // part of the site-isolation (out of process iframes) work.
@@ -82,6 +83,7 @@ public:
     virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>);
     DOMWindow* domWindow() const;
 
+    FrameTree& tree() const;
     ChromeClient& chromeClient() const;
 
     RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
@@ -101,6 +103,8 @@ public:
 protected:
     Frame(FrameClient*, FrameHost*, HTMLFrameOwnerElement*);
 
+    mutable FrameTree m_treeNode;
+
     FrameHost* m_host;
     HTMLFrameOwnerElement* m_ownerElement;
 
@@ -113,6 +117,16 @@ private:
     blink::WebLayer* m_remotePlatformLayer;
 };
 
+inline FrameClient* Frame::client() const
+{
+    return m_client;
+}
+
+inline void Frame::clearClient()
+{
+    m_client = 0;
+}
+
 inline DOMWindow* Frame::domWindow() const
 {
     return m_domWindow.get();
@@ -121,6 +135,11 @@ inline DOMWindow* Frame::domWindow() const
 inline HTMLFrameOwnerElement* Frame::ownerElement() const
 {
     return m_ownerElement;
+}
+
+inline FrameTree& Frame::tree() const
+{
+    return m_treeNode;
 }
 
 } // namespace WebCore

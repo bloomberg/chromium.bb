@@ -24,55 +24,56 @@
 
 namespace WebCore {
 
-    class LocalFrame;
-    class TreeScope;
+class Frame;
+class LocalFrame;
+class TreeScope;
 
-    class FrameTree {
-        WTF_MAKE_NONCOPYABLE(FrameTree);
-    public:
-        explicit FrameTree(LocalFrame* thisFrame);
-        ~FrameTree();
+class FrameTree {
+    WTF_MAKE_NONCOPYABLE(FrameTree);
+public:
+    explicit FrameTree(Frame* thisFrame);
+    ~FrameTree();
 
-        const AtomicString& name() const { return m_name; }
-        const AtomicString& uniqueName() const { return m_uniqueName; }
-        // If |name| is not empty, |fallbackName| is ignored. Otherwise,
-        // |fallbackName| is used as a source of uniqueName.
-        void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
+    const AtomicString& name() const { return m_name; }
+    const AtomicString& uniqueName() const { return m_uniqueName; }
+    // If |name| is not empty, |fallbackName| is ignored. Otherwise,
+    // |fallbackName| is used as a source of uniqueName.
+    void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
 
-        LocalFrame* parent() const;
-        LocalFrame* top() const;
-        LocalFrame* previousSibling() const;
-        LocalFrame* nextSibling() const;
-        LocalFrame* firstChild() const;
-        LocalFrame* lastChild() const;
+    LocalFrame* parent() const;
+    LocalFrame* top() const;
+    LocalFrame* previousSibling() const;
+    LocalFrame* nextSibling() const;
+    LocalFrame* firstChild() const;
+    LocalFrame* lastChild() const;
 
-        bool isDescendantOf(const LocalFrame* ancestor) const;
-        LocalFrame* traversePreviousWithWrap(bool) const;
-        LocalFrame* traverseNext(const LocalFrame* stayWithin = 0) const;
-        LocalFrame* traverseNextWithWrap(bool) const;
+    bool isDescendantOf(const LocalFrame* ancestor) const;
+    LocalFrame* traversePreviousWithWrap(bool) const;
+    LocalFrame* traverseNext(const LocalFrame* stayWithin = 0) const;
+    LocalFrame* traverseNextWithWrap(bool) const;
 
-        LocalFrame* child(const AtomicString& name) const;
-        LocalFrame* find(const AtomicString& name) const;
-        unsigned childCount() const;
+    LocalFrame* child(const AtomicString& name) const;
+    LocalFrame* find(const AtomicString& name) const;
+    unsigned childCount() const;
 
-        LocalFrame* scopedChild(unsigned index) const;
-        LocalFrame* scopedChild(const AtomicString& name) const;
-        unsigned scopedChildCount() const;
-        void invalidateScopedChildCount();
+    LocalFrame* scopedChild(unsigned index) const;
+    LocalFrame* scopedChild(const AtomicString& name) const;
+    unsigned scopedChildCount() const;
+    void invalidateScopedChildCount();
 
-    private:
-        LocalFrame* deepLastChild() const;
-        AtomicString uniqueChildName(const AtomicString& requestedName) const;
-        bool uniqueNameExists(const AtomicString& name) const;
-        unsigned scopedChildCount(TreeScope*) const;
+private:
+    LocalFrame* deepLastChild() const;
+    AtomicString uniqueChildName(const AtomicString& requestedName) const;
+    bool uniqueNameExists(const AtomicString& name) const;
+    unsigned scopedChildCount(TreeScope*) const;
 
-        LocalFrame* m_thisFrame;
+    Frame* m_thisFrame;
 
-        AtomicString m_name; // The actual frame name (may be empty).
-        AtomicString m_uniqueName;
+    AtomicString m_name; // The actual frame name (may be empty).
+    AtomicString m_uniqueName;
 
-        mutable unsigned m_scopedChildCount;
-    };
+    mutable unsigned m_scopedChildCount;
+};
 
 } // namespace WebCore
 

@@ -90,7 +90,6 @@ static inline float parentTextZoomFactor(LocalFrame* frame)
 
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
     : Frame(client, host, ownerElement)
-    , m_treeNode(this)
     , m_loader(this)
     , m_navigationScheduler(this)
     , m_script(adoptPtr(new ScriptController(this)))
