@@ -30,9 +30,9 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCStatsReport> RTCStatsReport::create(const String& id, const String& type, double timestamp)
+PassRefPtrWillBeRawPtr<RTCStatsReport> RTCStatsReport::create(const String& id, const String& type, double timestamp)
 {
-    return adoptRef(new RTCStatsReport(id, type, timestamp));
+    return adoptRefWillBeNoop(new RTCStatsReport(id, type, timestamp));
 }
 
 RTCStatsReport::RTCStatsReport(const String& id, const String& type, double timestamp)
@@ -52,12 +52,12 @@ Vector<String> RTCStatsReport::names() const
     return result;
 }
 
-const PassRefPtr<RTCStatsReport> RTCStatsReport::local()
+const PassRefPtrWillBeRawPtr<RTCStatsReport> RTCStatsReport::local()
 {
     return this;
 }
 
-const PassRefPtr<RTCStatsReport> RTCStatsReport::remote()
+const PassRefPtrWillBeRawPtr<RTCStatsReport> RTCStatsReport::remote()
 {
     return this;
 }

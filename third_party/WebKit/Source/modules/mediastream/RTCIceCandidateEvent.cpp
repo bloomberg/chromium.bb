@@ -35,7 +35,7 @@ PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create()
     return adoptRefWillBeNoop(new RTCIceCandidateEvent);
 }
 
-PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate> candidate)
+PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCIceCandidate> candidate)
 {
     return adoptRefWillBeNoop(new RTCIceCandidateEvent(canBubble, cancelable, candidate));
 }
@@ -45,7 +45,7 @@ RTCIceCandidateEvent::RTCIceCandidateEvent()
     ScriptWrappable::init(this);
 }
 
-RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate> candidate)
+RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCIceCandidate> candidate)
     : Event(EventTypeNames::icecandidate, canBubble, cancelable)
     , m_candidate(candidate)
 {
@@ -68,6 +68,7 @@ const AtomicString& RTCIceCandidateEvent::interfaceName() const
 
 void RTCIceCandidateEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_candidate);
     Event::trace(visitor);
 }
 

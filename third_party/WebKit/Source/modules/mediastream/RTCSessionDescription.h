@@ -42,10 +42,10 @@ namespace WebCore {
 class Dictionary;
 class ExceptionState;
 
-class RTCSessionDescription FINAL : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
+class RTCSessionDescription FINAL : public RefCountedWillBeGarbageCollectedFinalized<RTCSessionDescription>, public ScriptWrappable {
 public:
-    static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
-    static PassRefPtr<RTCSessionDescription> create(blink::WebRTCSessionDescription);
+    static PassRefPtrWillBeRawPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<RTCSessionDescription> create(blink::WebRTCSessionDescription);
 
     String type();
     void setType(const String&, ExceptionState&);
@@ -54,6 +54,8 @@ public:
     void setSdp(const String&);
 
     blink::WebRTCSessionDescription webSessionDescription();
+
+    void trace(Visitor*) { }
 
 private:
     explicit RTCSessionDescription(blink::WebRTCSessionDescription);

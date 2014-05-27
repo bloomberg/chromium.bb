@@ -34,9 +34,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
-    return adoptRef(new MediaStreamTrackSourcesRequestImpl(origin, callback));
+    return adoptRefWillBeNoop(new MediaStreamTrackSourcesRequestImpl(origin, callback));
 }
 
 MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
@@ -66,6 +66,13 @@ void MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired(Timer<MediaStr
     m_callback->handleEvent(m_sourceInfos);
     m_callback.clear();
     m_protect.release();
+}
+
+void MediaStreamTrackSourcesRequestImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_sourceInfos);
+    visitor->trace(m_protect);
+    MediaStreamTrackSourcesRequest::trace(visitor);
 }
 
 } // namespace WebCore

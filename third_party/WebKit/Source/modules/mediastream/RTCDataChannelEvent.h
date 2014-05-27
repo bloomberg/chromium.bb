@@ -36,7 +36,7 @@ public:
     virtual ~RTCDataChannelEvent();
 
     static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create();
-    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel>);
+    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCDataChannel>);
 
     RTCDataChannel* channel() const;
 
@@ -46,9 +46,9 @@ public:
 
 private:
     RTCDataChannelEvent();
-    RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel>);
+    RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCDataChannel>);
 
-    RefPtr<RTCDataChannel> m_channel;
+    RefPtrWillBeMember<RTCDataChannel> m_channel;
 };
 
 } // namespace WebCore

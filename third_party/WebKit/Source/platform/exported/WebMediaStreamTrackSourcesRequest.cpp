@@ -49,7 +49,7 @@ private:
 
 } // namespace
 
-WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(const PassRefPtr<MediaStreamTrackSourcesRequest>& request)
+WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(const PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest>& request)
     : m_private(request)
 {
 }

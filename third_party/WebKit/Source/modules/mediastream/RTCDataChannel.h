@@ -44,11 +44,11 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class RTCDataChannel FINAL : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDataChannelHandlerClient {
-    REFCOUNTED_EVENT_TARGET(RTCDataChannel);
+class RTCDataChannel FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDataChannelHandlerClient {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<RTCDataChannel>);
 public:
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
+    static PassRefPtrWillBeRawPtr<RTCDataChannel> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
     virtual ~RTCDataChannel();
 
     String label() const;
@@ -82,6 +82,8 @@ public:
 
     void stop();
 
+    void trace(Visitor*);
+
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
@@ -113,7 +115,7 @@ private:
     BinaryType m_binaryType;
 
     Timer<RTCDataChannel> m_scheduledEventTimer;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
 } // namespace WebCore

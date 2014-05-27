@@ -45,16 +45,10 @@ class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
-class MediaStreamTrack FINAL : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
-    REFCOUNTED_EVENT_TARGET(MediaStreamTrack);
+class MediaStreamTrack FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaStreamTrack>);
 public:
-    class Observer {
-    public:
-        virtual ~Observer() { }
-        virtual void trackEnded() = 0;
-    };
-
-    static PassRefPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);
+    static PassRefPtrWillBeRawPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
 
     String kind() const;
@@ -68,7 +62,7 @@ public:
 
     static void getSources(ExecutionContext*, PassOwnPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);
     void stopTrack(ExceptionState&);
-    PassRefPtr<MediaStreamTrack> clone(ExecutionContext*);
+    PassRefPtrWillBeRawPtr<MediaStreamTrack> clone(ExecutionContext*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
@@ -77,8 +71,8 @@ public:
     MediaStreamComponent* component();
     bool ended() const;
 
-    void addObserver(Observer*);
-    void removeObserver(Observer*);
+    void registerMediaStream(MediaStream*);
+    void unregisterMediaStream(MediaStream*);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -89,6 +83,8 @@ public:
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
+    void trace(Visitor*);
+
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
 
@@ -98,14 +94,14 @@ private:
     virtual void sourceChangedState() OVERRIDE;
 
     void propagateTrackEnded();
-    Vector<Observer*> m_observers;
-    bool m_isIteratingObservers;
+    WillBeHeapHashSet<RawPtrWillBeMember<MediaStream> > m_registeredMediaStreams;
+    bool m_isIteratingRegisteredMediaStreams;
 
     bool m_stopped;
     RefPtr<MediaStreamComponent> m_component;
 };
 
-typedef Vector<RefPtr<MediaStreamTrack> > MediaStreamTrackVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<MediaStreamTrack> > MediaStreamTrackVector;
 
 } // namespace WebCore
 

@@ -27,6 +27,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/mediastream/RTCStatsReport.h"
+#include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCStatsResponseBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -36,18 +37,20 @@ namespace WebCore {
 
 class RTCStatsResponse FINAL : public RTCStatsResponseBase, public ScriptWrappable {
 public:
-    static PassRefPtr<RTCStatsResponse> create();
+    static PassRefPtrWillBeRawPtr<RTCStatsResponse> create();
 
-    const Vector<RefPtr<RTCStatsReport> >& result() const { return m_result; }
+    const WillBeHeapVector<RefPtrWillBeMember<RTCStatsReport> >& result() const { return m_result; }
 
-    PassRefPtr<RTCStatsReport> namedItem(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<RTCStatsReport> namedItem(const AtomicString& name);
 
     virtual size_t addReport(String id, String type, double timestamp) OVERRIDE;
     virtual void addStatistic(size_t report, String name, String value) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     RTCStatsResponse();
-    Vector<RefPtr<RTCStatsReport> > m_result;
+    WillBeHeapVector<RefPtrWillBeMember<RTCStatsReport> > m_result;
     HashMap<String, int> m_idmap;
 };
 

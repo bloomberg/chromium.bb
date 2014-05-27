@@ -58,7 +58,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
         return;
     }
 
-    RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
+    RefPtrWillBeRawPtr<UserMediaRequest> request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
         ASSERT(exceptionState.hadException());
         return;
@@ -75,7 +75,7 @@ void NavigatorMediaStream::getMediaDevices(Navigator& navigator, PassOwnPtr<Medi
         return;
     }
 
-    RefPtr<MediaDevicesRequest> request = MediaDevicesRequest::create(navigator.frame()->document(), userMedia, callback, exceptionState);
+    RefPtrWillBeRawPtr<MediaDevicesRequest> request = MediaDevicesRequest::create(navigator.frame()->document(), userMedia, callback, exceptionState);
     if (!request) {
         if (!exceptionState.hadException())
             exceptionState.throwDOMException(NotSupportedError, "Failed to request media devices.");

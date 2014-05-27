@@ -652,7 +652,7 @@ Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, const String
 }
 
 template <class T, class V8T>
-HeapVector<Member<T> > toRefPtrWillBeMemberNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
+WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
 {
     if (success)
         *success = true;

@@ -49,7 +49,7 @@ RTCStatsRequestImpl::~RTCStatsRequestImpl()
 {
 }
 
-PassRefPtr<RTCStatsResponseBase> RTCStatsRequestImpl::createResponse()
+PassRefPtrWillBeRawPtr<RTCStatsResponseBase> RTCStatsRequestImpl::createResponse()
 {
     return RTCStatsResponse::create();
 }
@@ -64,7 +64,7 @@ MediaStreamComponent* RTCStatsRequestImpl::component()
     return m_component.get();
 }
 
-void RTCStatsRequestImpl::requestSucceeded(PassRefPtr<RTCStatsResponseBase> response)
+void RTCStatsRequestImpl::requestSucceeded(PassRefPtrWillBeRawPtr<RTCStatsResponseBase> response)
 {
     if (!m_successCallback)
         return;

@@ -34,7 +34,7 @@ PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
     return adoptRefWillBeNoop(new MediaStreamTrackEvent);
 }
 
-PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack> track)
+PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<MediaStreamTrack> track)
 {
     return adoptRefWillBeNoop(new MediaStreamTrackEvent(type, canBubble, cancelable, track));
 }
@@ -45,7 +45,7 @@ MediaStreamTrackEvent::MediaStreamTrackEvent()
     ScriptWrappable::init(this);
 }
 
-MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack> track)
+MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<MediaStreamTrack> track)
     : Event(type, canBubble, cancelable)
     , m_track(track)
 {
@@ -68,6 +68,7 @@ const AtomicString& MediaStreamTrackEvent::interfaceName() const
 
 void MediaStreamTrackEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_track);
     Event::trace(visitor);
 }
 

@@ -30,10 +30,10 @@
 
 namespace WebCore {
 
-PassRefPtr<SourceInfo> SourceInfo::create(const blink::WebSourceInfo& webSourceInfo)
+PassRefPtrWillBeRawPtr<SourceInfo> SourceInfo::create(const blink::WebSourceInfo& webSourceInfo)
 {
     ASSERT(!webSourceInfo.isNull());
-    return adoptRef(new SourceInfo(webSourceInfo));
+    return adoptRefWillBeNoop(new SourceInfo(webSourceInfo));
 }
 
 SourceInfo::SourceInfo(const blink::WebSourceInfo& webSourceInfo)

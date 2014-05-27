@@ -48,9 +48,9 @@ class ExceptionState;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-class UserMediaRequest FINAL : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
+class UserMediaRequest FINAL : public RefCountedWillBeGarbageCollectedFinalized<UserMediaRequest>, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
     virtual ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }
@@ -71,6 +71,8 @@ public:
 
     // ContextLifecycleObserver
     virtual void contextDestroyed() OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     UserMediaRequest(ExecutionContext*, UserMediaController*, blink::WebMediaConstraints audio, blink::WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);

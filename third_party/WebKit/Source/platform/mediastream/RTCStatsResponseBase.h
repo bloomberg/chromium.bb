@@ -31,12 +31,14 @@
 
 namespace WebCore {
 
-class RTCStatsResponseBase : public RefCounted<RTCStatsResponseBase> {
+class RTCStatsResponseBase : public RefCountedWillBeGarbageCollectedFinalized<RTCStatsResponseBase> {
 public:
     virtual ~RTCStatsResponseBase() { }
 
     virtual size_t addReport(String id, String type, double timestamp) = 0;
     virtual void addStatistic(size_t report, String name, String value) = 0;
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCStatsResponse> RTCStatsResponse::create()
+PassRefPtrWillBeRawPtr<RTCStatsResponse> RTCStatsResponse::create()
 {
-    return adoptRef(new RTCStatsResponse());
+    return adoptRefWillBeNoop(new RTCStatsResponse());
 }
 
 RTCStatsResponse::RTCStatsResponse()
@@ -38,7 +38,7 @@ RTCStatsResponse::RTCStatsResponse()
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<RTCStatsReport> RTCStatsResponse::namedItem(const AtomicString& name)
+PassRefPtrWillBeRawPtr<RTCStatsReport> RTCStatsResponse::namedItem(const AtomicString& name)
 {
     if (m_idmap.find(name) != m_idmap.end())
         return m_result[m_idmap.get(name)];
@@ -56,6 +56,12 @@ void RTCStatsResponse::addStatistic(size_t report, String name, String value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(report >= 0 && report < m_result.size());
     m_result[report]->addStatistic(name, value);
+}
+
+void RTCStatsResponse::trace(Visitor* visitor)
+{
+    visitor->trace(m_result);
+    RTCStatsResponseBase::trace(visitor);
 }
 
 } // namespace WebCore

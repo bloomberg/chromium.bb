@@ -41,9 +41,9 @@ class LocalFrame;
 
 class UserMediaClient {
 public:
-    virtual void requestUserMedia(PassRefPtr<UserMediaRequest>) = 0;
+    virtual void requestUserMedia(PassRefPtrWillBeRawPtr<UserMediaRequest>) = 0;
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
-    virtual void requestMediaDevices(PassRefPtr<MediaDevicesRequest>) = 0;
+    virtual void requestMediaDevices(PassRefPtrWillBeRawPtr<MediaDevicesRequest>) = 0;
     virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
 
 protected:

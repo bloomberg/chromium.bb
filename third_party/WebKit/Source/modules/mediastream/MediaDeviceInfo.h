@@ -26,6 +26,7 @@
 #ifndef MediaDeviceInfo_h
 #define MediaDeviceInfo_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebMediaDeviceInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -33,14 +34,16 @@
 
 namespace WebCore {
 
-class MediaDeviceInfo : public RefCounted<MediaDeviceInfo> {
+class MediaDeviceInfo FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaDeviceInfo> {
 public:
-    static PassRefPtr<MediaDeviceInfo> create(const blink::WebMediaDeviceInfo&);
+    static PassRefPtrWillBeRawPtr<MediaDeviceInfo> create(const blink::WebMediaDeviceInfo&);
 
     String deviceId() const;
     String kind() const;
     String label() const;
     String groupId() const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit MediaDeviceInfo(const blink::WebMediaDeviceInfo&);
@@ -48,7 +51,7 @@ private:
     blink::WebMediaDeviceInfo m_webMediaDeviceInfo;
 };
 
-typedef Vector<RefPtr<MediaDeviceInfo> > MediaDeviceInfoVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<MediaDeviceInfo> > MediaDeviceInfoVector;
 
 } // namespace WebCore
 

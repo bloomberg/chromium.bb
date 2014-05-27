@@ -47,7 +47,7 @@ UserMediaClientImpl::UserMediaClientImpl(WebLocalFrameImpl* webFrame)
 {
 }
 
-void UserMediaClientImpl::requestUserMedia(PassRefPtr<UserMediaRequest> request)
+void UserMediaClientImpl::requestUserMedia(PassRefPtrWillBeRawPtr<UserMediaRequest> request)
 {
     if (m_client)
         m_client->requestUserMedia(request);
@@ -59,7 +59,7 @@ void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request)
         m_client->cancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
-void UserMediaClientImpl::requestMediaDevices(PassRefPtr<WebCore::MediaDevicesRequest> request)
+void UserMediaClientImpl::requestMediaDevices(PassRefPtrWillBeRawPtr<WebCore::MediaDevicesRequest> request)
 {
     if (m_client)
         m_client->requestMediaDevices(request);

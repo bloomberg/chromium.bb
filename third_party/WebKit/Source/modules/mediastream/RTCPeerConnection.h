@@ -56,21 +56,21 @@ class RTCSessionDescriptionCallback;
 class RTCStatsCallback;
 class VoidCallback;
 
-class RTCPeerConnection FINAL : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public blink::WebRTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
-    REFCOUNTED_EVENT_TARGET(RTCPeerConnection);
+class RTCPeerConnection FINAL : public RefCountedWillBeRefCountedGarbageCollected<RTCPeerConnection>, public ScriptWrappable, public blink::WebRTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<RTCPeerConnection>);
 public:
-    static PassRefPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     virtual ~RTCPeerConnection();
 
     void createOffer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
 
     void createAnswer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
 
-    void setLocalDescription(PassRefPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
-    PassRefPtr<RTCSessionDescription> localDescription(ExceptionState&);
+    void setLocalDescription(PassRefPtrWillBeRawPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<RTCSessionDescription> localDescription(ExceptionState&);
 
-    void setRemoteDescription(PassRefPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
-    PassRefPtr<RTCSessionDescription> remoteDescription(ExceptionState&);
+    void setRemoteDescription(PassRefPtrWillBeRawPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<RTCSessionDescription> remoteDescription(ExceptionState&);
 
     String signalingState() const;
 
@@ -91,15 +91,15 @@ public:
 
     MediaStream* getStreamById(const String& streamId);
 
-    void addStream(PassRefPtr<MediaStream>, const Dictionary& mediaConstraints, ExceptionState&);
+    void addStream(PassRefPtrWillBeRawPtr<MediaStream>, const Dictionary& mediaConstraints, ExceptionState&);
 
-    void removeStream(PassRefPtr<MediaStream>, ExceptionState&);
+    void removeStream(PassRefPtrWillBeRawPtr<MediaStream>, ExceptionState&);
 
     void getStats(PassOwnPtr<RTCStatsCallback> successCallback, PassRefPtr<MediaStreamTrack> selector);
 
-    PassRefPtr<RTCDataChannel> createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
+    PassRefPtrWillBeRawPtr<RTCDataChannel> createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
 
-    PassRefPtr<RTCDTMFSender> createDTMFSender(PassRefPtr<MediaStreamTrack>, ExceptionState&);
+    PassRefPtrWillBeRawPtr<RTCDTMFSender> createDTMFSender(PassRefPtrWillBeRawPtr<MediaStreamTrack>, ExceptionState&);
 
     void close(ExceptionState&);
 
@@ -132,6 +132,8 @@ public:
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
+    void trace(Visitor*);
+
 private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
 
@@ -151,12 +153,12 @@ private:
     MediaStreamVector m_localStreams;
     MediaStreamVector m_remoteStreams;
 
-    Vector<RefPtr<RTCDataChannel> > m_dataChannels;
+    WillBeHeapVector<RefPtrWillBeMember<RTCDataChannel> > m_dataChannels;
 
     OwnPtr<blink::WebRTCPeerConnectionHandler> m_peerHandler;
 
     AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 
     bool m_stopped;
 };

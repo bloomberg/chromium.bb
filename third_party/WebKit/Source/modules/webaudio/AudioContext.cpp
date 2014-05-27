@@ -348,7 +348,7 @@ PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStre
     }
 
     // Use the first audio track in the media stream.
-    RefPtr<MediaStreamTrack> audioTrack = audioTracks[0];
+    RefPtrWillBeRawPtr<MediaStreamTrack> audioTrack = audioTracks[0];
     OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
     RefPtrWillBeRawPtr<MediaStreamAudioSourceNode> node = MediaStreamAudioSourceNode::create(this, mediaStream, audioTrack.get(), provider.release());
 

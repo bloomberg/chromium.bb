@@ -30,6 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
+#include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
 #include "platform/mediastream/MediaStreamCenter.h"
@@ -38,9 +39,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
+PassRefPtrWillBeRawPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
 {
-    RefPtr<MediaStreamTrack> track = adoptRef(new MediaStreamTrack(context, component));
+    RefPtrWillBeRawPtr<MediaStreamTrack> track = adoptRefWillBeRefCountedGarbageCollected(new MediaStreamTrack(context, component));
     track->suspendIfNeeded();
     return track.release();
 }
@@ -48,7 +49,7 @@ PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context,
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
     : ActiveDOMObject(context)
     , m_readyState(MediaStreamSource::ReadyStateLive)
-    , m_isIteratingObservers(false)
+    , m_isIteratingRegisteredMediaStreams(false)
     , m_stopped(false)
     , m_component(component)
 {
@@ -123,7 +124,7 @@ String MediaStreamTrack::readyState() const
 
 void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
-    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequestImpl::create(context->securityOrigin()->toString(), callback);
+    RefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequestImpl::create(context->securityOrigin()->toString(), callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }
@@ -139,10 +140,10 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
     propagateTrackEnded();
 }
 
-PassRefPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
 {
     RefPtr<MediaStreamComponent> clonedComponent = MediaStreamComponent::create(component()->source());
-    RefPtr<MediaStreamTrack> clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
+    RefPtrWillBeRawPtr<MediaStreamTrack> clonedTrack = MediaStreamTrack::create(context, clonedComponent.get());
     MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent.get());
     return clonedTrack.release();
 }
@@ -174,11 +175,11 @@ void MediaStreamTrack::sourceChangedState()
 
 void MediaStreamTrack::propagateTrackEnded()
 {
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    m_isIteratingObservers = true;
-    for (Vector<Observer*>::iterator iter = m_observers.begin(); iter != m_observers.end(); ++iter)
+    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
+    m_isIteratingRegisteredMediaStreams = true;
+    for (WillBeHeapHashSet<RawPtrWillBeMember<MediaStream> >::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
         (*iter)->trackEnded();
-    m_isIteratingObservers = false;
+    m_isIteratingRegisteredMediaStreams = false;
 }
 
 MediaStreamComponent* MediaStreamTrack::component()
@@ -196,18 +197,19 @@ PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
     return MediaStreamCenter::instance().createWebAudioSourceFromMediaStreamTrack(component());
 }
 
-void MediaStreamTrack::addObserver(MediaStreamTrack::Observer* observer)
+void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 {
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    m_observers.append(observer);
+    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
+    RELEASE_ASSERT(!m_registeredMediaStreams.contains(mediaStream));
+    m_registeredMediaStreams.add(mediaStream);
 }
 
-void MediaStreamTrack::removeObserver(MediaStreamTrack::Observer* observer)
+void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream)
 {
-    RELEASE_ASSERT(!m_isIteratingObservers);
-    size_t pos = m_observers.find(observer);
-    RELEASE_ASSERT(pos != kNotFound);
-    m_observers.remove(pos);
+    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
+    WillBeHeapHashSet<RawPtrWillBeMember<MediaStream> >::iterator iter = m_registeredMediaStreams.find(mediaStream);
+    RELEASE_ASSERT(iter != m_registeredMediaStreams.end());
+    m_registeredMediaStreams.remove(iter);
 }
 
 const AtomicString& MediaStreamTrack::interfaceName() const
@@ -218,6 +220,11 @@ const AtomicString& MediaStreamTrack::interfaceName() const
 ExecutionContext* MediaStreamTrack::executionContext() const
 {
     return ActiveDOMObject::executionContext();
+}
+
+void MediaStreamTrack::trace(Visitor* visitor)
+{
+    visitor->trace(m_registeredMediaStreams);
 }
 
 } // namespace WebCore

@@ -45,10 +45,10 @@ class RTCStatsRequest : public RefCounted<RTCStatsRequest> {
 public:
     virtual ~RTCStatsRequest() { }
 
-    virtual PassRefPtr<RTCStatsResponseBase> createResponse() = 0;
+    virtual PassRefPtrWillBeRawPtr<RTCStatsResponseBase> createResponse() = 0;
     virtual bool hasSelector() = 0;
     virtual MediaStreamComponent* component() = 0;
-    virtual void requestSucceeded(PassRefPtr<RTCStatsResponseBase>) = 0;
+    virtual void requestSucceeded(PassRefPtrWillBeRawPtr<RTCStatsResponseBase>) = 0;
 
 protected:
     RTCStatsRequest() { }

@@ -34,14 +34,16 @@
 
 namespace WebCore {
 
-class SourceInfo : public RefCounted<SourceInfo>, public ScriptWrappable {
+class SourceInfo : public RefCountedWillBeGarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
 public:
-    static PassRefPtr<SourceInfo> create(const blink::WebSourceInfo&);
+    static PassRefPtrWillBeRawPtr<SourceInfo> create(const blink::WebSourceInfo&);
 
     String id() const;
     String kind() const;
     String label() const;
     String facing() const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit SourceInfo(const blink::WebSourceInfo&);
@@ -49,7 +51,7 @@ private:
     blink::WebSourceInfo m_webSourceInfo;
 };
 
-typedef Vector<RefPtr<SourceInfo> > SourceInfoVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<SourceInfo> > SourceInfoVector;
 
 } // namespace WebCore
 

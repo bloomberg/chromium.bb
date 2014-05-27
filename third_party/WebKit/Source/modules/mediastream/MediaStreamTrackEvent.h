@@ -37,7 +37,7 @@ public:
     virtual ~MediaStreamTrackEvent();
 
     static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create();
-    static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack>);
+    static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<MediaStreamTrack>);
 
     MediaStreamTrack* track() const;
 
@@ -48,9 +48,9 @@ public:
 
 private:
     MediaStreamTrackEvent();
-    MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack>);
+    MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<MediaStreamTrack>);
 
-    RefPtr<MediaStreamTrack> m_track;
+    RefPtrWillBeMember<MediaStreamTrack> m_track;
 };
 
 } // namespace WebCore

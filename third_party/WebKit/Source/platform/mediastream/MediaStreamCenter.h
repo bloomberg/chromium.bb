@@ -32,6 +32,7 @@
 #define MediaStreamCenter_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebVector.h"
 #include "wtf/OwnPtr.h"
@@ -58,7 +59,7 @@ public:
 
     static MediaStreamCenter& instance();
 
-    bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
+    bool getMediaStreamTrackSources(PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequest>);
 
     void didCreateMediaStreamTrack(MediaStreamComponent*);
     void didSetMediaStreamTrackEnabled(MediaStreamComponent*);

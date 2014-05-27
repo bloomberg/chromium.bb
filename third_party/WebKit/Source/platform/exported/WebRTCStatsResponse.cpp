@@ -33,7 +33,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebRTCStatsResponse::WebRTCStatsResponse(const PassRefPtr<RTCStatsResponseBase>& request)
+WebRTCStatsResponse::WebRTCStatsResponse(const PassRefPtrWillBeRawPtr<RTCStatsResponseBase>& request)
     : m_private(request)
 {
 }
@@ -48,7 +48,7 @@ void WebRTCStatsResponse::reset()
     m_private.reset();
 }
 
-WebRTCStatsResponse::operator WTF::PassRefPtr<WebCore::RTCStatsResponseBase>() const
+WebRTCStatsResponse::operator PassRefPtrWillBeRawPtr<WebCore::RTCStatsResponseBase>() const
 {
     return m_private.get();
 }

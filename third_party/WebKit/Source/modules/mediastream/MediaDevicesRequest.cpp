@@ -33,9 +33,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaDevicesRequest> MediaDevicesRequest::create(ExecutionContext* context, UserMediaController* controller, PassOwnPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<MediaDevicesRequest> MediaDevicesRequest::create(ExecutionContext* context, UserMediaController* controller, PassOwnPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
 {
-    RefPtr<MediaDevicesRequest> request = adoptRef(new MediaDevicesRequest(context, controller, callback));
+    RefPtrWillBeRawPtr<MediaDevicesRequest> request = adoptRefWillBeRefCountedGarbageCollected(new MediaDevicesRequest(context, controller, callback));
     request->suspendIfNeeded();
     return request.release();
 }

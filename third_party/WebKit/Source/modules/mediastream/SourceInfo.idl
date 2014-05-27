@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject
 ] interface SourceInfo {
     readonly attribute DOMString id;

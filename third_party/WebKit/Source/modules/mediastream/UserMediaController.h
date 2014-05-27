@@ -40,10 +40,10 @@ public:
 
     UserMediaClient* client() const { return m_client; }
 
-    void requestUserMedia(PassRefPtr<UserMediaRequest>);
+    void requestUserMedia(PassRefPtrWillBeRawPtr<UserMediaRequest>);
     void cancelUserMediaRequest(UserMediaRequest*);
 
-    void requestMediaDevices(PassRefPtr<MediaDevicesRequest>);
+    void requestMediaDevices(PassRefPtrWillBeRawPtr<MediaDevicesRequest>);
     void cancelMediaDevicesRequest(MediaDevicesRequest*);
 
     static PassOwnPtr<UserMediaController> create(UserMediaClient*);
@@ -59,7 +59,7 @@ private:
     UserMediaClient* m_client;
 };
 
-inline void UserMediaController::requestUserMedia(PassRefPtr<UserMediaRequest> request)
+inline void UserMediaController::requestUserMedia(PassRefPtrWillBeRawPtr<UserMediaRequest> request)
 {
     m_client->requestUserMedia(request);
 }
@@ -69,7 +69,7 @@ inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* reques
     m_client->cancelUserMediaRequest(request);
 }
 
-inline void UserMediaController::requestMediaDevices(PassRefPtr<MediaDevicesRequest> request)
+inline void UserMediaController::requestMediaDevices(PassRefPtrWillBeRawPtr<MediaDevicesRequest> request)
 {
     m_client->requestMediaDevices(request);
 }

@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     ActiveDOMObject
 ] interface RTCDTMFSender : EventTarget {

@@ -43,11 +43,13 @@ class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
 public:
-    static PassRefPtr<MediaStreamTrackSourcesRequestImpl> create(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    static PassRefPtrWillBeRawPtr<MediaStreamTrackSourcesRequestImpl> create(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
     ~MediaStreamTrackSourcesRequestImpl();
 
     virtual String origin() { return m_origin; }
     virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     MediaStreamTrackSourcesRequestImpl(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
@@ -58,7 +60,7 @@ private:
     String m_origin;
     Timer<MediaStreamTrackSourcesRequestImpl> m_scheduledEventTimer;
     SourceInfoVector m_sourceInfos;
-    RefPtr<MediaStreamTrackSourcesRequest> m_protect;
+    RefPtrWillBeMember<MediaStreamTrackSourcesRequest> m_protect;
 };
 
 } // namespace WebCore

@@ -36,7 +36,7 @@ public:
     virtual ~RTCIceCandidateEvent();
 
     static PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> create();
-    static PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> create(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate>);
+    static PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> create(bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCIceCandidate>);
 
     RTCIceCandidate* candidate() const;
 
@@ -46,9 +46,9 @@ public:
 
 private:
     RTCIceCandidateEvent();
-    RTCIceCandidateEvent(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate>);
+    RTCIceCandidateEvent(bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<RTCIceCandidate>);
 
-    RefPtr<RTCIceCandidate> m_candidate;
+    RefPtrWillBeMember<RTCIceCandidate> m_candidate;
 };
 
 } // namespace WebCore
