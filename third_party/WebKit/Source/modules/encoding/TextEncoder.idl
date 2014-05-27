@@ -33,8 +33,9 @@
     Exposed=Window&Worker,
     Constructor([Default=NullString] optional DOMString utfLabel),
     RaisesException=Constructor,
-    GarbageCollected
+    GarbageCollected,
+    MeasureAs=TextEncoderConstructor
 ] interface TextEncoder {
     readonly attribute DOMString encoding;
-    Uint8Array encode([Default=NullString] optional DOMString input, optional Dictionary options);
+    [MeasureAs=TextEncoderEncode] Uint8Array encode([Default=NullString] optional DOMString input, optional Dictionary options);
 };
