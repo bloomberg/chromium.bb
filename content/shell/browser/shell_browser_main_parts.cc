@@ -41,9 +41,9 @@
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/x/touch_factory_x11.h"
-#if !defined(OS_CHROMEOS)
-#include "ui/base/ime/input_method_initializer.h"
 #endif
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
+#include "ui/base/ime/input_method_initializer.h"
 #endif
 
 namespace content {
@@ -108,7 +108,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();
 #endif
 #if defined(OS_ANDROID)
