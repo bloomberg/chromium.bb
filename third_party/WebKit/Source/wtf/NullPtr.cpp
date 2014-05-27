@@ -29,6 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if !(COMPILER_SUPPORTS(CXX_NULLPTR) || defined(_LIBCPP_VERSION))
 
-std::nullptr_t nullptr;
+const std::nullptr_t nullptr;
 
 #endif

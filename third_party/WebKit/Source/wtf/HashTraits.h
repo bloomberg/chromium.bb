@@ -188,34 +188,7 @@ namespace WTF {
         static PeekOutType peek(std::nullptr_t) { return 0; }
     };
 
-    template<typename T> struct HashTraits<RawPtr<T> > : SimpleClassHashTraits<RawPtr<T> > {
-        typedef std::nullptr_t EmptyValueType;
-        static EmptyValueType emptyValue() { return nullptr; }
-
-        static const bool hasIsEmptyValueFunction = true;
-        static bool isEmptyValue(const RawPtr<T>& value) { return !value; }
-
-        static const bool needsDestruction = false;
-        typedef RawPtr<T> PeekInType;
-        typedef RawPtr<T> PassInType;
-        typedef RawPtr<T>* IteratorGetType;
-        typedef const RawPtr<T>* IteratorConstGetType;
-        typedef RawPtr<T>& IteratorReferenceType;
-        typedef T* const IteratorConstReferenceType;
-        static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
-        static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
-        typedef RawPtr<T> PeekOutType;
-        typedef RawPtr<T> PassOutType;
-
-        template<typename U>
-        static void store(const U& value, RawPtr<T>& storage) { storage = value; }
-
-        static PeekOutType peek(const RawPtr<T>& value) { return value; }
-        static PeekOutType peek(std::nullptr_t) { return nullptr; }
-
-        static PassOutType passOut(const RawPtr<T>& value) { return value; }
-        static PassOutType passOut(std::nullptr_t) { return nullptr; }
-    };
+    template<typename T> struct HashTraits<RawPtr<T> > : HashTraits<T*> { };
 
     template<> struct HashTraits<String> : SimpleClassHashTraits<String> {
         static const bool hasIsEmptyValueFunction = true;

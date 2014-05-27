@@ -108,8 +108,13 @@ public:
     PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
-        if (!result.isNewEntry)
+        if (!result.isNewEntry) {
+#if ENABLE(OILPAN)
             return static_cast<T*>(result.storedValue->value.get());
+#else
+            return static_cast<T*>(result.storedValue->value);
+#endif
+        }
 
         RefPtrWillBeRawPtr<T> list = T::create(node, collectionType, name);
         result.storedValue->value = list.get();
@@ -120,8 +125,13 @@ public:
     PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), nullptr);
-        if (!result.isNewEntry)
+        if (!result.isNewEntry) {
+#if ENABLE(OILPAN)
             return static_cast<T*>(result.storedValue->value.get());
+#else
+            return static_cast<T*>(result.storedValue->value);
+#endif
+        }
 
         RefPtrWillBeRawPtr<T> list = T::create(node, collectionType);
         result.storedValue->value = list.get();
@@ -131,13 +141,7 @@ public:
     template<typename T>
     T* cached(CollectionType collectionType)
     {
-#if ENABLE(OILPAN)
-        // FIXME: Oilpan: unify, if possible. The lookup resolves to a T& with Oilpan,
-        // whereas non-Oilpan resolves to RawPtr<T>.
         return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
-#else
-        return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)).get());
-#endif
     }
 
     PassRefPtrWillBeRawPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)

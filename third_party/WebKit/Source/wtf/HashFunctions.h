@@ -134,6 +134,8 @@ namespace WTF {
 #endif
         }
         static bool equal(T a, T b) { return a == b; }
+        static bool equal(std::nullptr_t, T b) { return b == 0; }
+        static bool equal(T a, std::nullptr_t) { return a == 0; }
         static const bool safeToCompareToEmptyOrDeleted = true;
     };
     template<typename P> struct PtrHash<RefPtr<P> > : PtrHash<P*> {

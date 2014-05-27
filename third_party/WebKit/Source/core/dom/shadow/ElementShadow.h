@@ -87,14 +87,7 @@ private:
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    // FIXME: Oilpan: This should be WillBeHeapHashMap<RawPtrWillBeMember<const Node>, ...>
-    // but that currently leads to a regression because the handling of RawPtr in HashMap
-    // is suboptimal. See crbug.com/374431 for details.
-#if ENABLE(OILPAN)
-    typedef HeapHashMap<Member<const Node>, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
-#else
-    typedef HashMap<const Node*, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
-#endif
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<const Node>, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;

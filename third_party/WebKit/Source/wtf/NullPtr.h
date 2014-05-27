@@ -47,9 +47,18 @@ typedef decltype(nullptr) nullptr_t;
 #else
 
 namespace std {
-class nullptr_t { };
+class nullptr_t {
+public:
+    // Make nullptr convertible to any pointer type.
+    template<typename T> operator T*() const { return 0; }
+    // Make nullptr convertible to any member pointer type.
+    template<typename C, typename T> operator T C::*() { return 0; }
+private:
+    // Do not allow taking the address of nullptr.
+    void operator&();
+};
 }
-extern std::nullptr_t nullptr;
+WTF_EXPORT extern const std::nullptr_t nullptr;
 
 #endif
 
