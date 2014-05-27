@@ -240,7 +240,8 @@ TEST_F(RegistryTest, RecursiveDelete) {
 // This test requires running as an Administrator as it tests redirected
 // registry writes to HKLM\Software
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa384253.aspx
-TEST_F(RegistryTest, Wow64RedirectedFromNative) {
+// TODO(wfh): flaky test on Vista.  See http://crbug.com/377917
+TEST_F(RegistryTest, DISABLED_Wow64RedirectedFromNative) {
   if (!IsRedirectorPresent())
     return;
 
@@ -276,7 +277,8 @@ TEST_F(RegistryTest, Wow64RedirectedFromNative) {
   ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kRootKey));
 }
 
-TEST_F(RegistryTest, Wow64NativeFromRedirected) {
+// TODO(wfh): flaky test on Vista.  See http://crbug.com/377917
+TEST_F(RegistryTest, DISABLED_Wow64NativeFromRedirected) {
   if (!IsRedirectorPresent())
     return;
   RegKey key;
