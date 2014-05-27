@@ -32,6 +32,8 @@ def _ComputeChromeCategories(options):
     categories.append('disabled-by-default-gpu.debug*')
   if options.trace_flow:
     categories.append('disabled-by-default-toplevel.flow')
+  if options.trace_memory:
+    categories.append('disabled-by-default-memory')
   if options.chrome_categories:
     categories += options.chrome_categories.split(',')
   return categories
@@ -87,6 +89,9 @@ def _CreateOptionParser():
                          'for GPU data.', action='store_true')
   chrome_opts.add_option('--trace-flow', help='Enable extra trace categories '
                          'for IPC message flows.', action='store_true')
+  chrome_opts.add_option('--trace-memory', help='Enable extra trace categories '
+                         'for memory profile. (tcmalloc required)',
+                         action='store_true')
   parser.add_option_group(chrome_opts)
 
   systrace_opts = optparse.OptionGroup(parser, 'Systrace tracing options')
@@ -181,7 +186,8 @@ When in doubt, just try out --trace-frame-viewer.
         chrome_controller.ChromeTracingController(device,
                                                   package_info,
                                                   chrome_categories,
-                                                  options.ring_buffer))
+                                                  options.ring_buffer,
+                                                  options.trace_memory))
   if systrace_categories:
     enabled_controllers.append(
         systrace_controller.SystraceController(device,

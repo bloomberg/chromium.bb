@@ -11,9 +11,11 @@ from chrome_profiler import controllers
 
 from pylib import pexpect
 
+_HEAP_PROFILE_MMAP_PROPERTY = 'heapprof.mmap'
 
 class ChromeTracingController(controllers.BaseController):
-  def __init__(self, device, package_info, categories, ring_buffer):
+  def __init__(self, device, package_info,
+               categories, ring_buffer, trace_memory=False):
     controllers.BaseController.__init__(self)
     self._device = device
     self._package_info = package_info
@@ -21,6 +23,7 @@ class ChromeTracingController(controllers.BaseController):
     self._ring_buffer = ring_buffer
     self._trace_file = None
     self._trace_interval = None
+    self._trace_memory = trace_memory
     self._trace_start_re = \
        re.compile(r'Logging performance trace to file')
     self._trace_finish_re = \
@@ -59,6 +62,12 @@ class ChromeTracingController(controllers.BaseController):
         self._package_info.package, 'GPU_PROFILER_START',
         '-e categories "%s"' % ','.join(self._categories),
         '-e continuous' if self._ring_buffer else '')
+
+    if self._trace_memory:
+      self._device.old_interface.EnableAdbRoot()
+      self._device.old_interface.system_properties \
+          [_HEAP_PROFILE_MMAP_PROPERTY] = 1
+
     # Chrome logs two different messages related to tracing:
     #
     # 1. "Logging performance trace to file"
@@ -79,6 +88,9 @@ class ChromeTracingController(controllers.BaseController):
         'GPU_PROFILER_STOP')
     self._trace_file = self._device.old_interface.WaitForLogMatch(
         self._trace_finish_re, None, timeout=120).group(1)
+    if self._trace_memory:
+      self._device.old_interface.system_properties \
+          [_HEAP_PROFILE_MMAP_PROPERTY] = 0
 
   def PullTrace(self):
     # Wait a bit for the browser to finish writing the trace file.
