@@ -694,7 +694,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 
 void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
   if (rv != net::OK) {
-    LOG(ERROR) << "Failed to open the serviceworker diskcache.";
+    LOG(ERROR) << "Failed to open the serviceworker diskcache: "
+               << net::ErrorToString(rv);
     // TODO(michaeln): DeleteAndStartOver()
     disk_cache_->Disable();
     state_ = DISABLED;
