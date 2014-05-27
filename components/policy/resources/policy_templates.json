@@ -3044,12 +3044,12 @@
         {
           'name': 'MultiProfileUserBehaviorUnrestricted',
           'value': 'unrestricted',
-          'caption': '''Allow enterprise user to be both primary and secondary  (Default behavior)''',
+          'caption': '''Allow enterprise user to be both primary and secondary  (Default behavior for non-managed users)''',
         },
         {
           'name': 'MultiProfileUserBehaviorMustBePrimary',
           'value': 'primary-only',
-          'caption': '''Allow enterprise user to be primary multiprofile user only''',
+          'caption': '''Allow enterprise user to be primary multiprofile user only (Default behavior for enterprise-managed users)''',
         },
         {
           'name': 'MultiProfileUserBehaviorNotAllowed',
