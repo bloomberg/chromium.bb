@@ -375,9 +375,9 @@ GROUP ( libnacl.a libcrt_common.a )
                    'elf32-bigarm-nacl',
                    'elf32-littlearm-nacl']
   elif arch == 'i686':
-    format_list = 'elf32-i386-nacl'
+    format_list = ['elf32-i386-nacl']
   elif arch == 'x86_64':
-    format_list = 'elf32-x86_64-nacl'
+    format_list = ['elf32-x86_64-nacl']
   else:
     raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
