@@ -48,10 +48,21 @@ message KeyPrivileges {
   optional bool authorized_update = 5 [default=false];
 }
 
+// Public metadata stored on behalf of the KeyProvider.
+message KeyProviderData {
+  message Entry {
+    optional string name = 1;
+    optional int64 number = 2;
+    optional bytes bytes = 3;
+  }
+  repeated Entry entry = 1;
+}
+
 message KeyData {
+  // The KeyType should specify the handling needed by Cryptohome
+  // and not a provider KeyType.
   enum KeyType {
-    // All password wrapping prior to the creation of this enum.
-    KEY_TYPE_PASSWORD_CROS_LEGACY = 0;
+    KEY_TYPE_PASSWORD = 0;
   }
   optional KeyType type = 1;
   // All keys must be labeled when persisted to disk, but when KeyData
@@ -63,6 +74,10 @@ message KeyData {
   optional int64 revision = 4;
   // At present, only support for one authorization mechanism is implemented.
   repeated KeyAuthorizationData authorization_data = 5;
+  // Data stored for use by the provider of the key, often for pre-processing
+  // of passwords or custom provider key typing.
+  // This will be size-limited by serialized size (e.g., 4096 bytes).
+  optional KeyProviderData provider_data = 6;
 }
 
 // Key is not presently persisted to disk, but it acts as the single authority

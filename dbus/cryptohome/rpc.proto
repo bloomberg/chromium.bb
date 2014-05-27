@@ -54,7 +54,7 @@ message AuthorizationRequest {
   // |key| must supply at least a |key.secret()|.  If no |key.data()| or
   // |key.data().label()| is supplied, the |key.secret()| will be tested
   // against all compatible |key.data().type()| keys, where
-  // KEY_TYPE_PASSWORD_CROS_LEGACY is the default type.  If
+  // KEY_TYPE_PASSWORD is the default type.  If
   // |key.data().label()| is supplied, then the |key.secret()| will only be
   // tested against the matching VaultKeyset.
   optional Key key = 1;
