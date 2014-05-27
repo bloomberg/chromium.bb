@@ -1798,11 +1798,6 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     // cancel poster display.
     bool noSeekRequired = !seekableRanges->length() || (time == now && displayMode() != Poster);
 
-    // Always notify the media engine of a seek if the source is not closed. This ensures that the source is
-    // always in a flushed state when the 'seeking' event fires.
-    if (m_mediaSource && m_mediaSource->isClosed())
-        noSeekRequired = false;
-
     if (noSeekRequired) {
         if (time == now) {
             scheduleEvent(EventTypeNames::seeking);
