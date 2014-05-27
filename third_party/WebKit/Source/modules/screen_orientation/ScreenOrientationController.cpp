@@ -8,18 +8,17 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
-#include "modules/screen_orientation/ScreenOrientationDispatcher.h"
+#include "platform/LayoutTestSupport.h"
+#include "platform/PlatformScreen.h"
 
 namespace WebCore {
 
-#if !ENABLE(OILPAN)
 ScreenOrientationController::~ScreenOrientationController()
 {
-    // With oilpan, weak processing removes the controller once it is dead.
-    ScreenOrientationDispatcher::instance().removeController(this);
 }
-#endif
 
 ScreenOrientationController& ScreenOrientationController::from(Document& document)
 {
@@ -33,18 +32,7 @@ ScreenOrientationController& ScreenOrientationController::from(Document& documen
 
 ScreenOrientationController::ScreenOrientationController(Document& document)
     : m_document(document)
-    , m_orientation(blink::WebScreenOrientationPortraitPrimary)
 {
-    // FIXME: We should listen for screen orientation change events only when the page is visible.
-    ScreenOrientationDispatcher::instance().addController(this);
-}
-
-void ScreenOrientationController::dispatchOrientationChangeEvent()
-{
-    if (m_document.domWindow()
-        && !m_document.activeDOMObjectsAreSuspended()
-        && !m_document.activeDOMObjectsAreStopped())
-        m_document.domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }
 
 const char* ScreenOrientationController::supplementName()
@@ -52,13 +40,45 @@ const char* ScreenOrientationController::supplementName()
     return "ScreenOrientationController";
 }
 
-void ScreenOrientationController::didChangeScreenOrientation(blink::WebScreenOrientationType orientation)
+// Compute the screen orientation using the orientation angle and the screen width / height.
+blink::WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameView* view)
 {
-    if (orientation == m_orientation)
-        return;
+    // Bypass orientation detection in layout tests to get consistent results.
+    // FIXME: The screen dimension should be fixed when running the layout tests to avoid such
+    // issues.
+    if (isRunningLayoutTest())
+        return blink::WebScreenOrientationPortraitPrimary;
 
-    m_orientation = orientation;
-    dispatchOrientationChangeEvent();
+    FloatRect rect = screenRect(view);
+    uint16_t rotation = screenOrientationAngle(view);
+    bool isTallDisplay = rotation % 180 ? rect.height() < rect.width() : rect.height() > rect.width();
+    switch (rotation) {
+    case 0:
+        return isTallDisplay ? blink::WebScreenOrientationPortraitPrimary : blink::WebScreenOrientationLandscapePrimary;
+    case 90:
+        return isTallDisplay ? blink::WebScreenOrientationLandscapePrimary : blink::WebScreenOrientationPortraitSecondary;
+    case 180:
+        return isTallDisplay ? blink::WebScreenOrientationPortraitSecondary : blink::WebScreenOrientationLandscapeSecondary;
+    case 270:
+        return isTallDisplay ? blink::WebScreenOrientationLandscapeSecondary : blink::WebScreenOrientationPortraitPrimary;
+    default:
+        ASSERT_NOT_REACHED();
+        return blink::WebScreenOrientationPortraitPrimary;
+    }
+}
+
+blink::WebScreenOrientationType ScreenOrientationController::orientation() const
+{
+    LocalFrame* mainFrame = m_document.frame();
+    if (!mainFrame)
+        return blink::WebScreenOrientationPortraitPrimary;
+    blink::WebScreenOrientationType orientationType = screenOrientationType(mainFrame->view());
+    if (orientationType == blink::WebScreenOrientationUndefined) {
+        // The embedder could not provide us with an orientation, deduce it ourselves.
+        orientationType = computeOrientation(mainFrame->view());
+    }
+    ASSERT(orientationType != blink::WebScreenOrientationUndefined);
+    return orientationType;
 }
 
 } // namespace WebCore

@@ -96,6 +96,14 @@ uint16_t screenOrientationAngle(Widget* widget)
     return hostWindow->screenInfo().orientationAngle;
 }
 
+blink::WebScreenOrientationType screenOrientationType(Widget* widget)
+{
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
+        return blink::WebScreenOrientationUndefined;
+    return hostWindow->screenInfo().orientationType;
+}
+
 void screenColorProfile(ColorProfile& toProfile)
 {
     blink::WebVector<char> profile;

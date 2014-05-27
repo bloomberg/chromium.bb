@@ -27,6 +27,7 @@
 #define PlatformScreen_h
 
 #include "platform/geometry/FloatRect.h"
+#include "public/platform/WebScreenOrientationType.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 
@@ -46,6 +47,7 @@ PLATFORM_EXPORT FloatRect screenAvailableRect(Widget*);
 PLATFORM_EXPORT void screenColorProfile(ColorProfile&);
 
 PLATFORM_EXPORT uint16_t screenOrientationAngle(Widget*);
+PLATFORM_EXPORT blink::WebScreenOrientationType screenOrientationType(Widget*);
 
 } // namespace WebCore
 

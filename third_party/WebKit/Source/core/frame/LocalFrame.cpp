@@ -164,11 +164,21 @@ void LocalFrame::setView(PassRefPtr<FrameView> view)
 
 void LocalFrame::sendOrientationChangeEvent()
 {
-    if (!RuntimeEnabledFeatures::orientationEventEnabled())
+    if (!RuntimeEnabledFeatures::orientationEventEnabled() && !RuntimeEnabledFeatures::screenOrientationEnabled())
         return;
 
-    if (DOMWindow* window = domWindow())
-        window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
+    DOMWindow* window = domWindow();
+    if (!window)
+        return;
+    window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
+
+    // Notify subframes.
+    Vector<RefPtr<LocalFrame> > childFrames;
+    for (LocalFrame* child = tree().firstChild(); child; child = child->tree().nextSibling())
+        childFrames.append(child);
+
+    for (size_t i = 0; i < childFrames.size(); ++i)
+        childFrames[i]->sendOrientationChangeEvent();
 }
 
 void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio)
