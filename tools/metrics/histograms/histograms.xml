@@ -3371,6 +3371,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The age of the cache's files (wall time). ShaderCache.</summary>
 </histogram>
 
+<histogram name="DiskCache.SizeStats2" units="kilobytes">
+  <owner>rvargas@chromium.org</owner>
+  <summary>The size distribution of data stored in the HTTP cache.</summary>
+</histogram>
+
 <histogram name="DiskCache.TotalIOTime" units="milliseconds">
   <obsolete>
     Deprecated.

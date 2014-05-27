@@ -420,8 +420,6 @@
       'disk_cache/blockfile/sparse_control.h',
       'disk_cache/blockfile/stats.cc',
       'disk_cache/blockfile/stats.h',
-      'disk_cache/blockfile/stats_histogram.cc',
-      'disk_cache/blockfile/stats_histogram.h',
       'disk_cache/blockfile/storage_block-inl.h',
       'disk_cache/blockfile/storage_block.h',
       'disk_cache/blockfile/stress_support.h',

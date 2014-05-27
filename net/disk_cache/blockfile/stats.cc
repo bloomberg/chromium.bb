@@ -6,7 +6,11 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/metrics/bucket_ranges.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/sample_vector.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -88,13 +92,10 @@ bool VerifyStats(OnDiskStats* stats) {
   return true;
 }
 
-Stats::Stats() : size_histogram_(NULL) {
+Stats::Stats() {
 }
 
 Stats::~Stats() {
-  if (size_histogram_) {
-    size_histogram_->Disable();
-  }
 }
 
 bool Stats::Init(void* data, int num_bytes, Addr address) {
@@ -123,17 +124,32 @@ bool Stats::Init(void* data, int num_bytes, Addr address) {
 }
 
 void Stats::InitSizeHistogram() {
-  // It seems impossible to support this histogram for more than one
-  // simultaneous objects with the current infrastructure.
+  // Only generate this histogram for the main cache.
   static bool first_time = true;
-  if (first_time) {
-    first_time = false;
-    if (!size_histogram_) {
-      // Stats may be reused when the cache is re-created, but we want only one
-      // histogram at any given time.
-      size_histogram_ = StatsHistogram::FactoryGet("DiskCache.SizeStats", this);
-    }
+  if (!first_time)
+    return;
+
+  first_time = false;
+  int min = 1;
+  int max = 64 * 1024;
+  int num_buckets = 75;
+  base::BucketRanges ranges(num_buckets + 1);
+  base::Histogram::InitializeBucketRanges(min, max, &ranges);
+
+  base::HistogramBase* stats_histogram = base::Histogram::FactoryGet(
+      "DiskCache.SizeStats2", min, max, num_buckets,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  base::SampleVector samples(&ranges);
+  for (int i = 0; i < kDataSizesLength; i++) {
+    // This is a good time to fix any inconsistent data. The count should be
+    // always positive, but if it's not, reset the value now.
+    if (data_sizes_[i] < 0)
+      data_sizes_[i] = 0;
+
+    samples.Accumulate(GetBucketRange(i) / 1024, data_sizes_[i]);
   }
+  stats_histogram->AddSamples(samples);
 }
 
 int Stats::StorageSize() {
@@ -246,15 +262,6 @@ int Stats::GetBucketRange(size_t i) const {
   i -= 17;
   n <<= i;
   return n;
-}
-
-void Stats::Snapshot(base::HistogramSamples* samples) const {
-  for (int i = 0; i < kDataSizesLength; i++) {
-    int count = data_sizes_[i];
-    if (count < 0)
-      count = 0;
-    samples->Accumulate(GetBucketRange(i), count);
-  }
 }
 
 // The array will be filled this way:

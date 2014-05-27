@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "net/disk_cache/blockfile/addr.h"
-#include "net/disk_cache/blockfile/stats_histogram.h"
 
 namespace base {
 class HistogramSamples;
@@ -83,19 +82,15 @@ class Stats {
   // Returns the number of bytes copied.
   int SerializeStats(void* data, int num_bytes, Addr* address);
 
-  // Support for StatsHistograms. Together, these methods allow StatsHistograms
-  // to take a snapshot of the data_sizes_ as the histogram data.
-  int GetBucketRange(size_t i) const;
-  void Snapshot(base::HistogramSamples* samples) const;
-
  private:
+  // Supports generation of SizeStats histogram data.
+  int GetBucketRange(size_t i) const;
   int GetStatsBucket(int32 size);
   int GetRatio(Counters hit, Counters miss) const;
 
   Addr storage_addr_;
   int data_sizes_[kDataSizesLength];
   int64 counters_[MAX_COUNTER];
-  StatsHistogram* size_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(Stats);
 };
