@@ -180,6 +180,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void OnWillDestroyWindow() OVERRIDE;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) OVERRIDE;
+  virtual void OnAnimate(base::TimeTicks begin_frame_time) OVERRIDE;
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;

@@ -79,6 +79,16 @@ void WindowAndroid::RequestVSyncUpdate() {
   Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject().obj());
 }
 
+void WindowAndroid::SetNeedsAnimate() {
+  if (compositor_)
+    compositor_->SetNeedsAnimate();
+}
+
+void WindowAndroid::Animate(base::TimeTicks begin_frame_time) {
+  FOR_EACH_OBSERVER(
+      WindowAndroidObserver, observer_list_, OnAnimate(begin_frame_time));
+}
+
 void WindowAndroid::OnVSync(JNIEnv* env, jobject obj, jlong time_micros) {
   base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
   FOR_EACH_OBSERVER(

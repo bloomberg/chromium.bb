@@ -48,7 +48,9 @@ class UI_BASE_EXPORT WindowAndroid {
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
 
   void RequestVSyncUpdate();
+  void SetNeedsAnimate();
   void OnVSync(JNIEnv* env, jobject obj, jlong time_micros);
+  void Animate(base::TimeTicks begin_frame_time);
 
  private:
   ~WindowAndroid();

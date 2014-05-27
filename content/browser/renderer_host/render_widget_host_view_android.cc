@@ -1032,7 +1032,7 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 }
 
 void RenderWidgetHostViewAndroid::SetNeedsAnimate() {
-  content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+  content_view_core_->GetWindowAndroid()->SetNeedsAnimate();
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
@@ -1336,10 +1336,13 @@ void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
       host_->GetRoutingID(),
       cc::BeginFrameArgs::Create(frame_time, deadline, vsync_period)));
 
-  // TODO(sievers): This should use the LayerTreeHostClient callback
-  bool needs_animate = Animate(frame_time);
-  if (needs_begin_frame_ || needs_animate)
+  if (needs_begin_frame_)
     content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
+}
+
+void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
+  if (Animate(begin_frame_time))
+    SetNeedsAnimate();
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

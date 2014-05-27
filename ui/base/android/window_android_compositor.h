@@ -24,6 +24,7 @@ class UI_BASE_EXPORT WindowAndroidCompositor {
       scoped_ptr<cc::CopyOutputRequest> request) = 0;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) = 0;
+  virtual void SetNeedsAnimate() = 0;
 };
 
 }  // namespace ui
