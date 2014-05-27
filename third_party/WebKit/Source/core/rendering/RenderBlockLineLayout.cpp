@@ -516,8 +516,8 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
 
             ASSERT(opportunitiesInRun <= expansionOpportunityCount);
 
-            // Only justify text if whitespace is collapsed.
-            if (r->m_object->style()->collapseWhiteSpace()) {
+            // Don't justify for white-space: pre.
+            if (r->m_object->style()->whiteSpace() != PRE) {
                 InlineTextBox* textBox = toInlineTextBox(r->m_box);
                 int expansion = (availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / expansionOpportunityCount;
                 textBox->setExpansion(expansion);
