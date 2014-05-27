@@ -11,12 +11,12 @@
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
-#include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -38,8 +38,8 @@ class PepperContainerApp: public Application,
                           public NativeViewportClient,
                           public MojoPpapiGlobals::Delegate {
  public:
-  explicit PepperContainerApp(MojoHandle shell_handle)
-      : Application(shell_handle),
+  explicit PepperContainerApp(MojoHandle service_provider_handle)
+      : Application(service_provider_handle),
         ppapi_globals_(this),
         plugin_module_(new PluginModule) {
     mojo::AllocationScope scope;
@@ -120,11 +120,11 @@ class PepperContainerApp: public Application,
 }  // namespace mojo
 
 extern "C" PEPPER_CONTAINER_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle shell_handle) {
+    MojoHandle service_provider_handle) {
   mojo::Environment env;
   mojo::GLES2Initializer gles2;
   base::MessageLoop run_loop;
-  mojo::examples::PepperContainerApp app(shell_handle);
+  mojo::examples::PepperContainerApp app(service_provider_handle);
 
   run_loop.Run();
   return MOJO_RESULT_OK;

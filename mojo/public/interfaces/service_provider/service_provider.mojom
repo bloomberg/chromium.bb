@@ -4,15 +4,11 @@
 
 module mojo {
 
-[Client=ShellClient]
-interface Shell {
+[Client=ServiceProvider]
+interface ServiceProvider {
   // Loads url. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  Connect(string url, handle<message_pipe> client_handle);
-};
-
-interface ShellClient {
-  AcceptConnection(string url, handle<message_pipe> client_handle);
+  ConnectToService(string url, handle<message_pipe> client_handle);
 };
 
 }

@@ -7,8 +7,8 @@
 #include "base/auto_reset.h"
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
-#include "mojo/public/cpp/shell/connect.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -47,14 +47,17 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };
 
-RootViewManager::RootViewManager(Shell* shell, RootNodeManager* root_node)
-    : shell_(shell),
+RootViewManager::RootViewManager(ServiceProvider* service_provider,
+                                 RootNodeManager* root_node)
+    : service_provider_(service_provider),
       root_node_manager_(root_node),
       in_setup_(false) {
   screen_.reset(ScreenMojo::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   NativeViewportPtr viewport;
-  ConnectTo(shell, "mojo:mojo_native_viewport_service", &viewport);
+  ConnectToService(service_provider,
+                   "mojo:mojo_native_viewport_service",
+                   &viewport);
   window_tree_host_.reset(new WindowTreeHostMojo(
         viewport.Pass(),
         gfx::Rect(800, 600),

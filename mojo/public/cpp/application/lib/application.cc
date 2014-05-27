@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/shell/application.h"
+#include "mojo/public/cpp/application/application.h"
 
 namespace mojo {
 
-Application::Application(ScopedMessagePipeHandle shell_handle)
-    : internal::ServiceConnectorBase::Owner(shell_handle.Pass()) {
+Application::Application(ScopedMessagePipeHandle service_provider_handle)
+    : internal::ServiceConnectorBase::Owner(service_provider_handle.Pass()) {
 }
 
-Application::Application(MojoHandle shell_handle)
+Application::Application(MojoHandle service_provider_handle)
     : internal::ServiceConnectorBase::Owner(
-          mojo::MakeScopedHandle(MessagePipeHandle(shell_handle)).Pass()) {}
+          mojo::MakeScopedHandle(
+              MessagePipeHandle(service_provider_handle)).Pass()) {}
 
 Application::~Application() {
   for (ServiceConnectorList::iterator it = service_connectors_.begin();
@@ -38,16 +39,16 @@ void Application::RemoveServiceConnector(
     }
   }
   if (service_connectors_.empty())
-    shell_.reset();
+    service_provider_.reset();
 }
 
-void Application::AcceptConnection(const mojo::String& url,
+void Application::ConnectToService(const mojo::String& url,
                                    ScopedMessagePipeHandle client_handle) {
   // TODO(davemoore): This method must be overridden by an Application subclass
   // to dispatch to the right ServiceConnector. We need to figure out an
   // approach to registration to make this better.
   assert(1 == service_connectors_.size());
-  return service_connectors_.front()->AcceptConnection(url.To<std::string>(),
+  return service_connectors_.front()->ConnectToService(url.To<std::string>(),
                                                        client_handle.Pass());
 }
 

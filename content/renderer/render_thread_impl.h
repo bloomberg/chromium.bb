@@ -416,8 +416,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
 
-  // mojo::ShellClient implementation:
-  virtual void AcceptConnection(
+  // mojo::ServiceProvider implementation:
+  virtual void ConnectToService(
       const mojo::String& service_name,
       mojo::ScopedMessagePipeHandle message_pipe) OVERRIDE;
 

@@ -22,7 +22,7 @@ class ViewManagerPrivate {
   ViewManagerSynchronizer* synchronizer() {
     return manager_->synchronizer_.get();
   }
-  Shell* shell() { return manager_->shell_; }
+  ServiceProvider* service_provider() { return manager_->service_provider_; }
 
   void set_root(ViewTreeNode* root) { manager_->tree_ = root; }
 

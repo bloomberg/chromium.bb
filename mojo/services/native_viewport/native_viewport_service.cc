@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "mojo/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
@@ -186,9 +186,11 @@ class NativeViewportImpl
 
 
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
-    CreateNativeViewportService(mojo::shell::Context* context,
-                                mojo::ScopedMessagePipeHandle shell_handle) {
-  mojo::Application* app = new mojo::Application(shell_handle.Pass());
+    CreateNativeViewportService(
+        mojo::shell::Context* context,
+        mojo::ScopedMessagePipeHandle service_provider_handle) {
+  mojo::Application* app = new mojo::Application(
+      service_provider_handle.Pass());
   app->AddService<mojo::services::NativeViewportImpl>(context);
   return app;
 }

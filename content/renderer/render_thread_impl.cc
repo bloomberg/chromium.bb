@@ -1178,7 +1178,7 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
       .PassAs<gfx::GpuMemoryBuffer>();
 }
 
-void RenderThreadImpl::AcceptConnection(
+void RenderThreadImpl::ConnectToService(
     const mojo::String& service_name,
     mojo::ScopedMessagePipeHandle message_pipe) {
   // TODO(darin): Invent some kind of registration system to use here.

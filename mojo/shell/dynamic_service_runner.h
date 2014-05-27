@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace base {
 class FilePath;

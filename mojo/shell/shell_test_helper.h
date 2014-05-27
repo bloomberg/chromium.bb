@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -20,9 +20,10 @@ class RunLoop;
 namespace mojo {
 namespace shell {
 
-// ShellTestHelper is useful for tests to establish a connection to the Shell.
-// ShellTestHelper does this by spawning a thread and connecting. Invoke Init()
-// to do this. Once done, shell() returns the handle to the Shell.
+// ShellTestHelper is useful for tests to establish a connection to the
+// ServiceProvider. ShellTestHelper does this by spawning a thread and
+// connecting. Invoke Init() to do this. Once done, service_provider()
+// returns the handle to the ServiceProvider.
 class ShellTestHelper {
  public:
   struct State;
@@ -32,18 +33,19 @@ class ShellTestHelper {
 
   void Init();
 
-  // Returns a handle to the Shell. ShellTestHelper owns the shell.
-  Shell* shell() { return shell_.get(); }
+  // Returns a handle to the ServiceProvider. ShellTestHelper owns the
+  // ServiceProvider.
+  ServiceProvider* service_provider() { return service_provider_.get(); }
 
  private:
-  class TestShellClient;
+  class TestServiceProvider;
 
   // Invoked once connection has been established.
-  void OnShellStarted();
+  void OnServiceProviderStarted();
 
   Environment environment_;
 
-  base::Thread shell_thread_;
+  base::Thread service_provider_thread_;
 
   // If non-null we're in Init() and waiting for connection.
   scoped_ptr<base::RunLoop> run_loop_;
@@ -52,9 +54,9 @@ class ShellTestHelper {
   State* state_;
 
   // Client interface for the shell.
-  scoped_ptr<TestShellClient> shell_client_;
+  scoped_ptr<TestServiceProvider> local_service_provider_;
 
-  ShellPtr shell_;
+  ServiceProviderPtr service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestHelper);
 };

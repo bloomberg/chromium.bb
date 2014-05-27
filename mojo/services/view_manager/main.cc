@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/shell/application.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
 
@@ -20,12 +20,13 @@
 #endif
 
 extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle shell_handle) {
+    MojoHandle service_provider_handle) {
   base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::MessageLoop loop;
-  mojo::Application app(shell_handle);
-  mojo::view_manager::service::RootNodeManager root_node_manager(app.shell());
+  mojo::Application app(service_provider_handle);
+  mojo::view_manager::service::RootNodeManager root_node_manager(
+      app.service_provider());
   app.AddService<mojo::view_manager::service::ViewManagerConnection>(
       &root_node_manager);
   loop.Run();

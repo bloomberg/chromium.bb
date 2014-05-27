@@ -246,8 +246,8 @@ class ViewManagerTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
-    view_manager_1_.reset(new ViewManager(test_helper_.shell()));
-    view_manager_2_.reset(new ViewManager(test_helper_.shell()));
+    view_manager_1_.reset(new ViewManager(test_helper_.service_provider()));
+    view_manager_2_.reset(new ViewManager(test_helper_.service_provider()));
     view_manager_1_->Init();
     view_manager_2_->Init();
   }

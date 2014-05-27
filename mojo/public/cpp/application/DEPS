@@ -1,4 +1,4 @@
 include_rules = [
   "+mojo/public/cpp/bindings",
-  "+mojo/public/interfaces/shell",
+  "+mojo/public/interfaces/service_provider",
 ]

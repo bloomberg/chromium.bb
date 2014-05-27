@@ -9,11 +9,11 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/geometry/geometry_type_converters.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
-#include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/gfx/rect.h"
 
@@ -32,7 +32,8 @@ namespace examples {
 
 class SampleApp : public Application, public NativeViewportClient {
  public:
-  explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
+  explicit SampleApp(MojoHandle service_provider_handle)
+      : Application(service_provider_handle) {
     AllocationScope scope;
 
     ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
@@ -71,11 +72,11 @@ class SampleApp : public Application, public NativeViewportClient {
 }  // namespace mojo
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle shell_handle) {
+    MojoHandle service_provider_handle) {
   base::MessageLoop loop;
   mojo::GLES2Initializer gles2;
 
-  mojo::examples::SampleApp app(shell_handle);
+  mojo::examples::SampleApp app(service_provider_handle);
   loop.Run();
   return MOJO_RESULT_OK;
 }

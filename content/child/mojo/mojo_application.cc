@@ -10,8 +10,8 @@
 
 namespace content {
 
-MojoApplication::MojoApplication(mojo::ShellClient* shell_client)
-    : shell_client_(shell_client) {
+MojoApplication::MojoApplication(mojo::ServiceProvider* service_provider)
+    : service_provider_(service_provider) {
 }
 
 MojoApplication::~MojoApplication() {
@@ -38,8 +38,8 @@ void MojoApplication::OnActivate(
                          ChildProcess::current()->io_message_loop_proxy());
   DCHECK(message_pipe.is_valid());
 
-  shell_.Bind(message_pipe.Pass());
-  shell_.set_client(shell_client_);
+  host_service_provider_.Bind(message_pipe.Pass());
+  host_service_provider_.set_client(service_provider_);
 }
 
 }  // namespace content

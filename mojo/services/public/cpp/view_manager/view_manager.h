@@ -13,7 +13,7 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 namespace mojo {
-class Shell;
+class ServiceProvider;
 namespace view_manager {
 
 class View;
@@ -27,7 +27,7 @@ class ViewTreeNode;
 // TODO: displays
 class ViewManager {
  public:
-  explicit ViewManager(Shell* shell);
+  explicit ViewManager(ServiceProvider* service_provider);
   ~ViewManager();
 
   // Connects to the View Manager service. This method must be called before
@@ -51,7 +51,7 @@ class ViewManager {
   typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
   typedef std::map<TransportViewId, View*> IdToViewMap;
 
-  Shell* shell_;
+  ServiceProvider* service_provider_;
   scoped_ptr<ViewManagerSynchronizer> synchronizer_;
   ViewTreeNode* tree_;
 
