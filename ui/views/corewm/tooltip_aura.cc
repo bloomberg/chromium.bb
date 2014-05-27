@@ -147,25 +147,9 @@ void TooltipAura::TrimTooltipToFit(const gfx::FontList& font_list,
 int TooltipAura::GetMaxWidth(const gfx::Point& location) const {
   // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
   // out a way to merge.
-  gfx::Rect display_bounds = GetBoundsForTooltip(location);
-  return (display_bounds.width() + 1) / 2;
-}
-
-gfx::Rect TooltipAura::GetBoundsForTooltip(
-    const gfx::Point& origin) const {
-  DCHECK(tooltip_window_);
-  gfx::Rect widget_bounds;
-  // For Desktop aura we constrain the tooltip to the bounds of the Widget
-  // (which comes from the RootWindow).
-  if (screen_type_ == gfx::SCREEN_TYPE_NATIVE &&
-      gfx::SCREEN_TYPE_NATIVE != gfx::SCREEN_TYPE_ALTERNATE) {
-    widget_bounds = tooltip_window_->GetHost()->GetBounds();
-  }
   gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
-  gfx::Rect bounds(screen->GetDisplayNearestPoint(origin).bounds());
-  if (!widget_bounds.IsEmpty())
-    bounds.Intersect(widget_bounds);
-  return bounds;
+  gfx::Rect display_bounds(screen->GetDisplayNearestPoint(location).bounds());
+  return (display_bounds.width() + 1) / 2;
 }
 
 void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
@@ -175,7 +159,8 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
                          tooltip_height);
 
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-  gfx::Rect display_bounds = GetBoundsForTooltip(mouse_pos);
+  gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
+  gfx::Rect display_bounds(screen->GetDisplayNearestPoint(mouse_pos).bounds());
 
   // If tooltip is out of bounds on the x axis, we simply shift it
   // horizontally by the offset.
@@ -191,22 +176,6 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
 
   tooltip_rect.AdjustToFit(display_bounds);
   widget_->SetBounds(tooltip_rect);
-}
-
-void TooltipAura::CreateWidget() {
-  if (widget_) {
-    // If the window for which the tooltip is being displayed changes and if the
-    // tooltip window and the tooltip widget belong to different rootwindows
-    // then we need to recreate the tooltip widget under the active root window
-    // hierarchy to get it to display.
-    if (widget_->GetNativeWindow()->GetRootWindow() ==
-        tooltip_window_->GetRootWindow())
-      return;
-    DestroyWidget();
-  }
-  widget_ = CreateTooltipWidget(tooltip_window_);
-  widget_->SetContentsView(&label_);
-  widget_->AddObserver(this);
 }
 
 void TooltipAura::DestroyWidget() {
@@ -230,18 +199,31 @@ void TooltipAura::SetText(aura::Window* window,
   int width = max_width + 2 * kTooltipHorizontalPadding;
   int height = label_.GetHeightForWidth(max_width) +
       2 * kTooltipVerticalPadding;
-  CreateWidget();
+
+  if (!widget_) {
+    widget_ = CreateTooltipWidget(tooltip_window_);
+    widget_->SetContentsView(&label_);
+    widget_->AddObserver(this);
+  }
+
   SetTooltipBounds(location, width, height);
 
+  ui::NativeTheme* native_theme = widget_->GetNativeTheme();
   label_.set_background(
       views::Background::CreateSolidBackground(
-          widget_->GetNativeTheme()->GetSystemColor(
+          native_theme->GetSystemColor(
               ui::NativeTheme::kColorId_TooltipBackground)));
+
+  label_.SetAutoColorReadabilityEnabled(false);
+  label_.SetEnabledColor(native_theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TooltipText));
 }
 
 void TooltipAura::Show() {
-  if (widget_)
+  if (widget_) {
     widget_->Show();
+    widget_->StackAtTop();
+  }
 }
 
 void TooltipAura::Hide() {

@@ -330,7 +330,7 @@ void Widget::Init(const InitParams& in_params) {
   InitParams params = in_params;
 
   params.child |= (params.type == InitParams::TYPE_CONTROL);
-  is_top_level_ = (!params.child && params.type != InitParams::TYPE_TOOLTIP);
+  is_top_level_ = !params.child;
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
       params.type != views::Widget::InitParams::TYPE_WINDOW &&

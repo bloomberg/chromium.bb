@@ -299,9 +299,11 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // references. Make sure we destroy ShadowController early on.
   shadow_controller_.reset();
   tooltip_manager_.reset();
-  host_->window()->RemovePreTargetHandler(tooltip_controller_.get());
-  aura::client::SetTooltipClient(host_->window(), NULL);
-  tooltip_controller_.reset();
+  if (tooltip_controller_.get()) {
+    host_->window()->RemovePreTargetHandler(tooltip_controller_.get());
+    aura::client::SetTooltipClient(host_->window(), NULL);
+    tooltip_controller_.reset();
+  }
 
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
 
@@ -496,14 +498,15 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   aura::client::SetDragDropDelegate(content_window_, this);
 
-  tooltip_manager_.reset(new TooltipManagerAura(GetWidget()));
-
-  tooltip_controller_.reset(
-      new corewm::TooltipController(
-          desktop_window_tree_host_->CreateTooltip()));
-  aura::client::SetTooltipClient(host_->window(),
-                                 tooltip_controller_.get());
-  host_->window()->AddPreTargetHandler(tooltip_controller_.get());
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
+    tooltip_manager_.reset(new TooltipManagerAura(GetWidget()));
+    tooltip_controller_.reset(
+        new corewm::TooltipController(
+            desktop_window_tree_host_->CreateTooltip()));
+    aura::client::SetTooltipClient(host_->window(),
+                                   tooltip_controller_.get());
+    host_->window()->AddPreTargetHandler(tooltip_controller_.get());
+  }
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
     visibility_controller_.reset(new wm::VisibilityController);

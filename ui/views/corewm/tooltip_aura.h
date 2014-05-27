@@ -40,17 +40,11 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   // Returns the max width of the tooltip when shown at the specified location.
   int GetMaxWidth(const gfx::Point& location) const;
 
-  // Returns the bounds to fit the tooltip in.
-  gfx::Rect GetBoundsForTooltip(const gfx::Point& origin) const;
-
   // Adjusts the bounds given by the arguments to fit inside the desktop
   // and applies the adjusted bounds to the label_.
   void SetTooltipBounds(const gfx::Point& mouse_pos,
                         int tooltip_width,
                         int tooltip_height);
-
-  // Makes sure |widget_| is valid, creating as necessary.
-  void CreateWidget();
 
   // Destroys |widget_|.
   void DestroyWidget();

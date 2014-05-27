@@ -262,7 +262,9 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   bool use_non_toplevel_window =
-      params->parent && params->type != views::Widget::InitParams::TYPE_MENU;
+      params->parent &&
+      params->type != views::Widget::InitParams::TYPE_MENU &&
+      params->type != views::Widget::InitParams::TYPE_TOOLTIP;
 
 #if defined(OS_WIN)
   // On desktop Linux Chrome must run in an environment that supports a variety
@@ -321,10 +323,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // While the majority of the time, context wasn't plumbed through due to the
   // existence of a global WindowTreeClient, if this window is toplevel, it's
   // possible that there is no contextual state that we can use.
-  if (params->parent == NULL &&
-      params->context == NULL &&
-      !params->child &&
-      params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
+  if (params->parent == NULL && params->context == NULL && !params->child) {
     // We need to make a decision about where to place this window based on the
     // desktop type.
     switch (chrome::GetActiveDesktop()) {
@@ -352,7 +351,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
                                              parent_profile);
     }
     params->native_widget = native_widget;
-  } else if (params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
+  } else {
     // TODO(erg): Once we've threaded context to everywhere that needs it, we
     // should remove this check here.
     gfx::NativeView to_check =

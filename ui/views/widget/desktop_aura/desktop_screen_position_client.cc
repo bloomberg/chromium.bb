@@ -27,8 +27,7 @@ gfx::Point GetOrigin(const aura::Window* root_window) {
 // Returns true if bounds passed to window are treated as though they are in
 // screen coordinates.
 bool PositionWindowInScreenCoordinates(aura::Window* window) {
-  if (window->type() == ui::wm::WINDOW_TYPE_POPUP ||
-      window->type() == ui::wm::WINDOW_TYPE_TOOLTIP)
+  if (window->type() == ui::wm::WINDOW_TYPE_POPUP)
     return true;
 
   Widget* widget = Widget::GetWidgetForNativeView(window);

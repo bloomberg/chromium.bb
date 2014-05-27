@@ -47,10 +47,12 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   GtkStyle* GetLabelStyle() const;
   GtkStyle* GetButtonStyle() const;
   GtkStyle* GetTreeStyle() const;
+  GtkStyle* GetTooltipStyle() const;
   GtkStyle* GetMenuStyle() const;
   GtkStyle* GetMenuItemStyle() const;
 
   mutable GtkWidget* fake_window_;
+  mutable GtkWidget* fake_tooltip_;
   mutable OwnedWidgetGtk fake_entry_;
   mutable OwnedWidgetGtk fake_label_;
   mutable OwnedWidgetGtk fake_button_;

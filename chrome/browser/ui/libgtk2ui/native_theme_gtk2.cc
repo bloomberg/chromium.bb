@@ -104,12 +104,16 @@ NativeThemeGtk2* NativeThemeGtk2::instance() {
 
 NativeThemeGtk2::NativeThemeGtk2()
     : fake_window_(NULL),
+      fake_tooltip_(NULL),
       fake_menu_item_(NULL) {
 }
 
 NativeThemeGtk2::~NativeThemeGtk2() {
   if (fake_window_)
     gtk_widget_destroy(fake_window_);
+  if (fake_tooltip_)
+    gtk_widget_destroy(fake_tooltip_);
+
   fake_entry_.Destroy();
   fake_label_.Destroy();
   fake_button_.Destroy();
@@ -249,7 +253,9 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
 
     // Tooltips
     case kColorId_TooltipBackground:
-      return GetWindowStyle()->bg[GTK_STATE_NORMAL];
+      return GetTooltipStyle()->bg[GTK_STATE_NORMAL];
+    case kColorId_TooltipText:
+      return GetTooltipStyle()->fg[GTK_STATE_NORMAL];
 
     // Trees and Tables (implemented on GTK using the same class)
     case kColorId_TableBackground:
@@ -375,6 +381,15 @@ GtkStyle* NativeThemeGtk2::GetTreeStyle() const {
     fake_tree_.Own(gtk_tree_view_new());
 
   return gtk_rc_get_style(fake_tree_.get());
+}
+
+GtkStyle* NativeThemeGtk2::GetTooltipStyle() const {
+  if (!fake_tooltip_) {
+    fake_tooltip_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(fake_tooltip_, "gtk-tooltip");
+    gtk_widget_realize(fake_tooltip_);
+  }
+  return gtk_rc_get_style(fake_tooltip_);
 }
 
 GtkStyle* NativeThemeGtk2::GetMenuStyle() const {
