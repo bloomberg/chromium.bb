@@ -176,9 +176,13 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
       }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
-    case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED)
         UpdateBounds(window_state, true);
+      break;
+    case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
+      // Don't animate on a screen rotation - just snap to new size.
+      if (current_state_type_ != wm::WINDOW_STATE_TYPE_MINIMIZED)
+        UpdateBounds(window_state, false);
       break;
   }
 }
