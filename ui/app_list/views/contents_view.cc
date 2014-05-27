@@ -156,7 +156,7 @@ void ContentsView::CalculateIdealBounds() {
 
     gfx::Rect incoming_target(rect);
     gfx::Rect outgoing_target(rect);
-    outgoing_target.set_y(-outgoing_target.height());
+    outgoing_target.set_x(-outgoing_target.width());
 
     for (int i = 0; i < view_model_->view_size(); ++i) {
       view_model_->set_ideal_bounds(i,

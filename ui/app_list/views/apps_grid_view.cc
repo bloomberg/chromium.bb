@@ -358,6 +358,9 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       activated_folder_item_view_(NULL),
       dragging_for_reparent_item_(false) {
   SetPaintToLayer(true);
+  // Clip any icons that are outside the grid view's bounds. These icons would
+  // otherwise be visible to the user when the grid view is off screen.
+  layer()->SetMasksToBounds(true);
   SetFillsBoundsOpaquely(false);
 
   pagination_model_->AddObserver(this);
