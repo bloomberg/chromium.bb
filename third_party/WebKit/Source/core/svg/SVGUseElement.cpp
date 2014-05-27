@@ -851,7 +851,7 @@ bool SVGUseElement::selfHasRelativeLengths() const
     if (!m_targetElementInstance)
         return false;
 
-    SVGElement* element = m_targetElementInstance->correspondingElement();
+    SVGElement* element = m_targetElementInstance->shadowTreeElement();
     if (!element)
         return false;
 

@@ -40,9 +40,6 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-
-    virtual bool selfHasRelativeLengths() const OVERRIDE;
-
 };
 
 } // namespace WebCore

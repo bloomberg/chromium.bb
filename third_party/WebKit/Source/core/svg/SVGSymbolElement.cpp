@@ -67,16 +67,7 @@ void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    // Every other property change is ignored.
-    if (attrName == SVGNames::viewBoxAttr)
-        updateRelativeLengthsInformation();
-}
-
-bool SVGSymbolElement::selfHasRelativeLengths() const
-{
-    return hasAttribute(SVGNames::viewBoxAttr);
+    invalidateInstances();
 }
 
 RenderObject* SVGSymbolElement::createRenderer(RenderStyle*)
