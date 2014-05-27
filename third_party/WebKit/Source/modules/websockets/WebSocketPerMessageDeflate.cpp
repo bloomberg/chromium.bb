@@ -189,7 +189,7 @@ bool WebSocketPerMessageDeflate::deflate(WebSocketFrame& frame)
     }
 
     if (frame.payloadLength > 0 && !m_deflater->addBytes(frame.payload, frame.payloadLength)) {
-        m_failureReason = "Failed to inflate a frame";
+        m_failureReason = "Failed to deflate a frame";
         return false;
     }
     if (frame.final && !m_deflater->finish()) {
