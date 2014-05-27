@@ -75,6 +75,13 @@ void DesktopScreenPositionClient::SetBounds(
   // TODO: Use the 3rd parameter, |display|.
   aura::Window* root = window->GetRootWindow();
 
+  // This method assumes that |window| does not have an associated
+  // DesktopNativeWidgetAura.
+  internal::NativeWidgetPrivate* desktop_native_widget =
+      DesktopNativeWidgetAura::ForWindow(root);
+  DCHECK(!desktop_native_widget ||
+         desktop_native_widget->GetNativeView() != window);
+
   if (PositionWindowInScreenCoordinates(window)) {
     // The caller expects windows we consider "embedded" to be placed in the
     // screen coordinate system. So we need to offset the root window's
@@ -89,16 +96,7 @@ void DesktopScreenPositionClient::SetBounds(
     return;
   }
 
-  internal::NativeWidgetPrivate* desktop_native_widget =
-      DesktopNativeWidgetAura::ForWindow(root);
-  if (desktop_native_widget &&
-      desktop_native_widget->GetNativeView() == window) {
-    // |window| is the content_window.
-    // Setting bounds of root resizes |window|.
-    root->GetHost()->SetBounds(bounds);
-  } else {
-    window->SetBounds(bounds);
-  }
+  window->SetBounds(bounds);
 }
 
 }  // namespace views
