@@ -11,26 +11,20 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
-#include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/media/webrtc_audio_renderer.h"
-#include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 
 namespace content {
 namespace {
@@ -56,15 +50,6 @@ void CopyStreamConstraints(const blink::WebMediaConstraints& constraints,
 }
 
 static int g_next_request_id  = 0;
-
-void GetDefaultOutputDeviceParams(
-    int* output_sample_rate, int* output_buffer_size) {
-  // Fetch the default audio output hardware config.
-  media::AudioHardwareConfig* hardware_config =
-      RenderThreadImpl::current()->GetAudioHardwareConfig();
-  *output_sample_rate = hardware_config->GetOutputSampleRate();
-  *output_buffer_size = hardware_config->GetOutputBufferSize();
-}
 
 }  // namespace
 
@@ -183,99 +168,6 @@ void MediaStreamImpl::cancelUserMediaRequest(
     // stream if the request does not exist.
     DeleteUserMediaRequestInfo(request);
   }
-}
-
-blink::WebMediaStream MediaStreamImpl::GetMediaStream(
-    const GURL& url) {
-  return blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
-}
-
-bool MediaStreamImpl::IsMediaStream(const GURL& url) {
-  blink::WebMediaStream web_stream(
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
-
-  return (!web_stream.isNull() &&
-      (MediaStream::GetMediaStream(web_stream) != NULL));
-}
-
-scoped_refptr<VideoFrameProvider>
-MediaStreamImpl::GetVideoFrameProvider(
-    const GURL& url,
-    const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb) {
-  DCHECK(CalledOnValidThread());
-  blink::WebMediaStream web_stream(GetMediaStream(url));
-
-  if (web_stream.isNull() || !web_stream.extraData())
-    return NULL;  // This is not a valid stream.
-
-  DVLOG(1) << "MediaStreamImpl::GetVideoFrameProvider stream:"
-           << base::UTF16ToUTF8(web_stream.id());
-
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream.videoTracks(video_tracks);
-  if (video_tracks.isEmpty() ||
-      !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
-    return NULL;
-  }
-
-  return new RTCVideoRenderer(video_tracks[0], error_cb, repaint_cb);
-}
-
-scoped_refptr<MediaStreamAudioRenderer>
-MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
-  DCHECK(CalledOnValidThread());
-  blink::WebMediaStream web_stream(GetMediaStream(url));
-
-  if (web_stream.isNull() || !web_stream.extraData())
-    return NULL;  // This is not a valid stream.
-
-  DVLOG(1) << "MediaStreamImpl::GetAudioRenderer stream:"
-           << base::UTF16ToUTF8(web_stream.id());
-
-  MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);
-
-  // TODO(tommi): MediaStreams do not have a 'local or not' concept.
-  // Tracks _might_, but even so, we need to fix the data flow so that
-  // it works the same way for all track implementations, local, remote or what
-  // have you.
-  // In this function, we should simply create a renderer object that receives
-  // and mixes audio from all the tracks that belong to the media stream.
-  // We need to remove the |is_local| property from MediaStreamExtraData since
-  // this concept is peerconnection specific (is a previously recorded stream
-  // local or remote?).
-  if (native_stream->is_local()) {
-    // Create the local audio renderer if the stream contains audio tracks.
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    web_stream.audioTracks(audio_tracks);
-    if (audio_tracks.isEmpty())
-      return NULL;
-
-    // TODO(xians): Add support for the case where the media stream contains
-    // multiple audio tracks.
-    return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id);
-  }
-
-  webrtc::MediaStreamInterface* stream =
-      MediaStream::GetAdapter(web_stream);
-  if (stream->GetAudioTracks().empty())
-    return NULL;
-
-  // This is a remote WebRTC media stream.
-  WebRtcAudioDeviceImpl* audio_device =
-      dependency_factory_->GetWebRtcAudioDevice();
-
-  // Share the existing renderer if any, otherwise create a new one.
-  scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
-  if (!renderer.get()) {
-    renderer = CreateRemoteAudioRenderer(stream, render_frame_id);
-
-    if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
-      renderer = NULL;
-  }
-
-  return renderer.get() ?
-      renderer->CreateSharedAudioRendererProxy(stream) : NULL;
 }
 
 // Callback from MediaStreamDispatcher.
@@ -716,66 +608,6 @@ void MediaStreamImpl::StopLocalSource(
 
   source_impl->ResetSourceStoppedCallback();
   source_impl->StopSource();
-}
-
-scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
-    webrtc::MediaStreamInterface* stream,
-    int render_frame_id) {
-  if (stream->GetAudioTracks().empty())
-    return NULL;
-
-  DVLOG(1) << "MediaStreamImpl::CreateRemoteAudioRenderer label:"
-           << stream->label();
-
-  // TODO(tommi): Change the default value of session_id to be
-  // StreamDeviceInfo::kNoId.  Also update AudioOutputDevice etc.
-  int session_id = 0, sample_rate = 0, buffer_size = 0;
-  if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
-                                               &sample_rate,
-                                               &buffer_size)) {
-    GetDefaultOutputDeviceParams(&sample_rate, &buffer_size);
-  }
-
-  return new WebRtcAudioRenderer(
-      stream, RenderViewObserver::routing_id(), render_frame_id,  session_id,
-      sample_rate, buffer_size);
-}
-
-scoped_refptr<WebRtcLocalAudioRenderer>
-MediaStreamImpl::CreateLocalAudioRenderer(
-    const blink::WebMediaStreamTrack& audio_track,
-    int render_frame_id) {
-  DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer";
-
-  int session_id = 0, sample_rate = 0, buffer_size = 0;
-  if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
-                                               &sample_rate,
-                                               &buffer_size)) {
-    GetDefaultOutputDeviceParams(&sample_rate, &buffer_size);
-  }
-
-  // Create a new WebRtcLocalAudioRenderer instance and connect it to the
-  // existing WebRtcAudioCapturer so that the renderer can use it as source.
-  return new WebRtcLocalAudioRenderer(
-      audio_track,
-      RenderViewObserver::routing_id(),
-      render_frame_id,
-      session_id,
-      buffer_size);
-}
-
-bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
-    int* session_id,
-    int* output_sample_rate,
-    int* output_frames_per_buffer) {
-  DCHECK(CalledOnValidThread());
-  WebRtcAudioDeviceImpl* audio_device =
-      dependency_factory_->GetWebRtcAudioDevice();
-  if (!audio_device)
-    return false;
-
-  return audio_device->GetAuthorizedDeviceInfoForAudioRenderer(
-      session_id, output_sample_rate, output_frames_per_buffer);
 }
 
 MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(

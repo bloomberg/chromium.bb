@@ -31,7 +31,7 @@ class WebLayerImpl;
 
 namespace content {
 class MediaStreamAudioRenderer;
-class MediaStreamClient;
+class MediaStreamRendererFactory;
 class VideoFrameProvider;
 class WebMediaPlayerDelegate;
 
@@ -59,8 +59,8 @@ class WebMediaPlayerMS
   WebMediaPlayerMS(blink::WebFrame* frame,
                    blink::WebMediaPlayerClient* client,
                    base::WeakPtr<WebMediaPlayerDelegate> delegate,
-                   MediaStreamClient* media_stream_client,
-                   media::MediaLog* media_log);
+                   media::MediaLog* media_log,
+                   scoped_ptr<MediaStreamRendererFactory> factory);
   virtual ~WebMediaPlayerMS();
 
   virtual void load(LoadType load_type,
@@ -150,8 +150,6 @@ class WebMediaPlayerMS
 
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
-  MediaStreamClient* media_stream_client_;
-
   // Specify content:: to disambiguate from cc::.
   scoped_refptr<content::VideoFrameProvider> video_frame_provider_;
   bool paused_;
@@ -187,6 +185,8 @@ class WebMediaPlayerMS
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
 
   scoped_refptr<media::MediaLog> media_log_;
+
+  scoped_ptr<MediaStreamRendererFactory> renderer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

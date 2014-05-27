@@ -17,7 +17,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/renderer/media/media_stream_client.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -28,24 +27,20 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
-class MediaStreamAudioRenderer;
 class PeerConnectionDependencyFactory;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
 class VideoCapturerDelegate;
-class WebRtcAudioRenderer;
-class WebRtcLocalAudioRenderer;
 
-// MediaStreamImpl is a delegate for the Media Stream API messages used by
-// WebKit. It ties together WebKit, native PeerConnection in libjingle and
-// MediaStreamManager (via MediaStreamDispatcher and MediaStreamDispatcherHost)
+// MediaStreamImpl is a delegate for the Media Stream GetUserMedia API.
+// It ties together WebKit and MediaStreamManager
+// (via MediaStreamDispatcher and MediaStreamDispatcherHost)
 // in the browser process. It must be created, called and destroyed on the
 // render thread.
 // MediaStreamImpl have weak pointers to a MediaStreamDispatcher.
 class CONTENT_EXPORT MediaStreamImpl
     : public RenderViewObserver,
       NON_EXPORTED_BASE(public blink::WebUserMediaClient),
-      NON_EXPORTED_BASE(public MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
       public base::SupportsWeakPtr<MediaStreamImpl>,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
@@ -58,18 +53,9 @@ class CONTENT_EXPORT MediaStreamImpl
 
   // blink::WebUserMediaClient implementation
   virtual void requestUserMedia(
-      const blink::WebUserMediaRequest& user_media_request) OVERRIDE;
+      const blink::WebUserMediaRequest& user_media_request);
   virtual void cancelUserMediaRequest(
-      const blink::WebUserMediaRequest& user_media_request) OVERRIDE;
-
-  // MediaStreamClient implementation.
-  virtual bool IsMediaStream(const GURL& url) OVERRIDE;
-  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
-      const GURL& url,
-      const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
-  virtual scoped_refptr<MediaStreamAudioRenderer>
-      GetAudioRenderer(const GURL& url, int render_frame_id) OVERRIDE;
+      const blink::WebUserMediaRequest& user_media_request);
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -108,11 +94,6 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
       content::MediaStreamRequestResult result);
-
-
-  // Returns the WebKit representation of a MediaStream given an URL.
-  // This is virtual for test purposes.
-  virtual blink::WebMediaStream GetMediaStream(const GURL& url);
 
   // Creates a MediaStreamVideoSource object.
   // This is virtual for test purposes.
@@ -158,7 +139,7 @@ class CONTENT_EXPORT MediaStreamImpl
     bool IsSourceUsed(const blink::WebMediaStreamSource& source) const;
     void RemoveSource(const blink::WebMediaStreamSource& source);
 
-    bool AreAllSourcesRemoved() const { return sources_.empty(); };
+    bool AreAllSourcesRemoved() const { return sources_.empty(); }
 
    private:
     void OnTrackStarted(MediaStreamSource* source, bool success);
@@ -223,22 +204,6 @@ class CONTENT_EXPORT MediaStreamImpl
 
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
-
-  scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
-      webrtc::MediaStreamInterface* stream, int render_frame_id);
-  scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
-      const blink::WebMediaStreamTrack& audio_track,
-      int render_frame_id);
-
-  // Returns a valid session id if a single capture device is currently open
-  // (and then the matching session_id), otherwise -1.
-  // This is used to pass on a session id to a webrtc audio renderer (either
-  // local or remote), so that audio will be rendered to a matching output
-  // device, should one exist.
-  // Note that if there are more than one open capture devices the function
-  // will not be able to pick an appropriate device and return false.
-  bool GetAuthorizedDeviceInfoForAudioRenderer(
-      int* session_id, int* output_sample_rate, int* output_buffer_size);
 
   // Weak ref to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.

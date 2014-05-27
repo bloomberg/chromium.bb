@@ -102,9 +102,6 @@ void EnableAutoResizeMode(RenderView* render_view,
 void DisableAutoResizeMode(RenderView* render_view,
                            const blink::WebSize& new_size);
 
-// Forces the |render_frame| to use mock media streams.
-void UseMockMediaStreams(RenderFrame* render_frame);
-
 // Provides a text dump of the contents of the given page state.
 std::string DumpBackForwardList(std::vector<PageState>& page_state,
                                 size_t current_index);

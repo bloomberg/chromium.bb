@@ -11,8 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "cc/layers/video_layer.h"
+#include "content/public/renderer/render_view.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
-#include "content/renderer/media/media_stream_client.h"
+#include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/video_frame_provider.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
@@ -80,15 +81,14 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log)
+    media::MediaLog* media_log,
+    scoped_ptr<MediaStreamRendererFactory> factory)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       buffered_(static_cast<size_t>(1)),
       client_(client),
       delegate_(delegate),
-      media_stream_client_(media_stream_client),
       paused_(true),
       current_frame_used_(false),
       pending_repaint_(false),
@@ -97,9 +97,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       sequence_started_(false),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      media_log_(media_log) {
+      media_log_(media_log),
+      renderer_factory_(factory.Pass()) {
   DVLOG(1) << "WebMediaPlayerMS::ctor";
-  DCHECK(media_stream_client);
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 }
@@ -141,15 +141,16 @@ void WebMediaPlayerMS::load(LoadType load_type,
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 
-  // Check if this url is media stream.
-  video_frame_provider_ = media_stream_client_->GetVideoFrameProvider(
+  video_frame_provider_ = renderer_factory_->GetVideoFrameProvider(
       url,
       base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
       base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()));
 
-  audio_renderer_ = media_stream_client_->GetAudioRenderer(
+  RenderFrame* frame = RenderFrame::FromWebFrame(frame_);
+  audio_renderer_ = renderer_factory_->GetAudioRenderer(
     url,
-    RenderFrame::FromWebFrame(frame_)->GetRoutingID());
+    frame->GetRenderView()->GetRoutingID(),
+    frame->GetRoutingID());
 
   if (video_frame_provider_.get() || audio_renderer_.get()) {
     if (audio_renderer_.get())

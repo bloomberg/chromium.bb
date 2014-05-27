@@ -60,6 +60,7 @@
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
+#include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_impl.h"
@@ -91,6 +92,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -403,7 +405,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       notification_provider_(NULL),
-      media_stream_client_(NULL),
       web_user_media_client_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -642,13 +643,6 @@ void RenderFrameImpl::OnImeConfirmComposition(
 }
 
 #endif  // ENABLE_PLUGINS
-
-void RenderFrameImpl::SetMediaStreamClientForTesting(
-    MediaStreamClient* media_stream_client) {
-  DCHECK(!media_stream_client_);
-  DCHECK(!web_user_media_client_);
-  media_stream_client_ = media_stream_client;
-}
 
 bool RenderFrameImpl::Send(IPC::Message* message) {
   if (is_detaching_) {
@@ -1385,9 +1379,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  WebMediaPlayer* player = CreateWebMediaPlayerForMediaStream(url, client);
-  if (player)
-    return player;
+  blink::WebMediaStream web_stream(
+      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
+  if (!web_stream.isNull())
+    return CreateWebMediaPlayerForMediaStream(url, client);
 
 #if defined(OS_ANDROID)
   return CreateAndroidWebMediaPlayer(url, client);
@@ -2743,7 +2738,7 @@ void RenderFrameImpl::willStartUsingPeerConnectionHandler(
 
 blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
   // This can happen in tests, in which case it's OK to return NULL.
-  if (!InitializeMediaStreamClient())
+  if (!InitializeUserMediaClient())
     return NULL;
 
   return web_user_media_client_;
@@ -3407,8 +3402,8 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   GetRenderWidget()->UpdateSelectionBounds();
 }
 
-bool RenderFrameImpl::InitializeMediaStreamClient() {
-  if (media_stream_client_)
+bool RenderFrameImpl::InitializeUserMediaClient() {
+  if (web_user_media_client_)
     return true;
 
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
@@ -3429,7 +3424,6 @@ bool RenderFrameImpl::InitializeMediaStreamClient() {
       render_view_.get(),
       render_view_->media_stream_dispatcher_,
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory());
-  media_stream_client_ = media_stream_impl;
   web_user_media_client_ = media_stream_impl;
   return true;
 #else
@@ -3441,21 +3435,28 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
     const blink::WebURL& url,
     WebMediaPlayerClient* client) {
 #if defined(ENABLE_WEBRTC)
-  if (!InitializeMediaStreamClient()) {
-    LOG(ERROR) << "Failed to initialize MediaStreamClient";
-    return NULL;
-  }
-  if (media_stream_client_->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    bool found_neon =
-        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
+  bool found_neon =
+      (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+  UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    return new WebMediaPlayerMS(frame_, client, weak_factory_.GetWeakPtr(),
-                                media_stream_client_, new RenderMediaLog());
-  }
-#endif  // defined(ENABLE_WEBRTC)
+  return new WebMediaPlayerMS(frame_, client, weak_factory_.GetWeakPtr(),
+                              new RenderMediaLog(),
+                              CreateRendererFactory());
+#else
   return NULL;
+#endif  // defined(ENABLE_WEBRTC)
+}
+
+scoped_ptr<MediaStreamRendererFactory>
+RenderFrameImpl::CreateRendererFactory() {
+#if defined(ENABLE_WEBRTC)
+  return scoped_ptr<MediaStreamRendererFactory>(
+      new MediaStreamRendererFactory());
+#else
+  return scoped_ptr<MediaStreamRendererFactory>(
+      static_cast<MediaStreamRendererFactory*>(NULL));
+#endif
 }
 
 #if defined(OS_ANDROID)

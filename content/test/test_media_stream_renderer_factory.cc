@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_media_stream_client.h"
+#include "content/test/test_media_stream_renderer_factory.h"
 
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/test/test_video_frame_provider.h"
@@ -37,16 +37,12 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 
 namespace content {
 
-TestMediaStreamClient::TestMediaStreamClient(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {}
+TestMediaStreamRendererFactory::TestMediaStreamRendererFactory() {}
 
-TestMediaStreamClient::~TestMediaStreamClient() {}
+TestMediaStreamRendererFactory::~TestMediaStreamRendererFactory() {}
 
-bool TestMediaStreamClient::IsMediaStream(const GURL& url) {
-  return IsMockMediaStreamWithVideo(url);
-}
-
-scoped_refptr<VideoFrameProvider> TestMediaStreamClient::GetVideoFrameProvider(
+scoped_refptr<VideoFrameProvider>
+TestMediaStreamRendererFactory::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb) {
@@ -60,8 +56,9 @@ scoped_refptr<VideoFrameProvider> TestMediaStreamClient::GetVideoFrameProvider(
       repaint_cb);
 }
 
-scoped_refptr<MediaStreamAudioRenderer> TestMediaStreamClient::GetAudioRenderer(
-    const GURL& url, int render_frame_id) {
+scoped_refptr<MediaStreamAudioRenderer>
+TestMediaStreamRendererFactory::GetAudioRenderer(
+    const GURL& url, int render_view_id, int render_frame_id) {
   return NULL;
 }
 

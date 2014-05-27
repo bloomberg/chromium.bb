@@ -10,6 +10,7 @@
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
+#include "content/test/test_media_stream_renderer_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -270,6 +271,12 @@ class WebFrameTestProxy : public Base {
   }
 
  private:
+  virtual scoped_ptr<MediaStreamRendererFactory>
+  CreateRendererFactory() OVERRIDE {
+    return scoped_ptr<MediaStreamRendererFactory>(
+        new TestMediaStreamRendererFactory());
+  }
+
   WebTestProxyBase* base_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
