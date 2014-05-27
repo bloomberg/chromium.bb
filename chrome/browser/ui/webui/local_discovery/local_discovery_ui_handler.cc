@@ -165,8 +165,8 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   // of a reload.
   if (!privet_lister_) {
     service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
-    privet_lister_.reset(new PrivetDeviceListerImpl(
-        service_discovery_client_.get(), this));
+    privet_lister_.reset(
+        new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
     privet_http_factory_ =
         PrivetHTTPAsynchronousFactory::CreateInstance(
             service_discovery_client_.get(), profile->GetRequestContext());
@@ -301,10 +301,6 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
-  bool is_cloud_print =
-      device_descriptions_[current_http_client_->GetName()].type ==
-      kDeviceTypePrinter;
-
   Profile* profile = Profile::FromWebUI(web_ui());
 
   ProfileOAuth2TokenService* token_service =
@@ -326,7 +322,6 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
       profile->GetRequestContext(),
       token_service,
       signin_manager->GetAuthenticatedAccountId(),
-      is_cloud_print,
       token,
       base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                  base::Unretained(this))));

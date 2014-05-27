@@ -34,11 +34,6 @@ const char kFailedConfirmResponseBadJson[] = "["
     "   \"success\""
     "]";
 
-const char kGCDConfirmResponse[] =
-    "{"
-    "   \"kind\": \"clouddevices#registrationTicket\""
-    "}";
-
 const char kAccountId[] = "account_id";
 
 class MockableConfirmCallback {
@@ -81,7 +76,6 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        true,
                                         "SomeToken",
                                         callback_.callback());
   GCDBaseApiFlow* cloudprint_flow = confirm_flow.GetBaseApiFlowForTests();
@@ -117,7 +111,6 @@ TEST_F(PrivetConfirmApiFlowTest, BadToken) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        true,
                                         "SomeCloudprintToken",
                                         callback_.callback());
 
@@ -134,7 +127,6 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        true,
                                         "SomeToken",
                                         callback_.callback());
 
@@ -162,7 +154,6 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
                                         account_id_,
-                                        true,
                                         "SomeToken",
                                         callback_.callback());
 
@@ -184,44 +175,6 @@ TEST_F(PrivetConfirmApiFlowTest, BadJson) {
 
   EXPECT_CALL(callback_,
               ConfirmCallback(GCDBaseApiFlow::ERROR_MALFORMED_RESPONSE));
-
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-}
-
-TEST_F(PrivetConfirmApiFlowTest, SuccessGCD) {
-  PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
-                                        &token_service_,
-                                        account_id_,
-                                        false,
-                                        "SomeGcdToken",
-                                        callback_.callback());
-  GCDBaseApiFlow* gcd_flow = confirm_flow.GetBaseApiFlowForTests();
-
-  confirm_flow.Start();
-
-  gcd_flow->OnGetTokenSuccess(NULL, "SomeToken", base::Time());
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-
-  EXPECT_EQ(GURL("https://www.googleapis.com/clouddevices/v1/"
-                 "registrationTickets/SomeGcdToken"),
-            fetcher->GetOriginalURL());
-
-  EXPECT_EQ("{ \"userEmail\": \"me\" }", fetcher->upload_data());
-
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
-  std::string oauth_header;
-  std::string proxy;
-  EXPECT_TRUE(headers.GetHeader("Authorization", &oauth_header));
-  EXPECT_EQ("Bearer SomeToken", oauth_header);
-  EXPECT_FALSE(headers.GetHeader("X-Cloudprint-Proxy", &proxy));
-
-  fetcher->SetResponseString(kGCDConfirmResponse);
-  fetcher->set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher->set_response_code(200);
-
-  EXPECT_CALL(callback_, ConfirmCallback(GCDBaseApiFlow::SUCCESS));
 
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }

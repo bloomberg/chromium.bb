@@ -15,12 +15,10 @@ CloudDeviceList::CloudDeviceList(net::URLRequestContextGetter* request_context,
                                  OAuth2TokenService* token_service,
                                  const std::string& account_id,
                                  CloudDeviceListDelegate* delegate)
-    : request_context_(request_context),
-      delegate_(delegate),
-      api_flow_(request_context_,
+    : delegate_(delegate),
+      api_flow_(request_context,
                 token_service,
                 account_id,
-                cloud_devices::GetCloudDevicesRelativeURL("devices"),
                 this) {
 }
 
@@ -62,8 +60,8 @@ void CloudDeviceList::OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
   delegate_->OnDeviceListReady();
 }
 
-bool CloudDeviceList::GCDIsCloudPrint() {
-  return false;
+GURL CloudDeviceList::GetURL() {
+  return cloud_devices::GetCloudDevicesRelativeURL("devices");
 }
 
 bool CloudDeviceList::FillDeviceDetails(

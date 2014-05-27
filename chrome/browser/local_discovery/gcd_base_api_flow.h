@@ -39,10 +39,13 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
     virtual void OnGCDAPIFlowComplete(GCDBaseApiFlow* flow,
                                       const base::DictionaryValue* value) = 0;
 
-    // Return 1 if flow is for a Cloud Print device
-    virtual bool GCDIsCloudPrint() = 0;
+    virtual GURL GetURL() = 0;
+
+    virtual std::string GetOAuthScope();
 
     virtual net::URLFetcher::RequestType GetRequestType();
+
+    virtual std::vector<std::string> GetExtraRequestHeaders();
 
     // If there is no data, set upload_type and upload_data to ""
     virtual void GetUploadData(std::string* upload_type,
@@ -53,21 +56,6 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
   GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                  OAuth2TokenService* token_service,
                  const std::string& account_id,
-                 const GURL& url,
-                 Delegate* delegate);
-
-  // Create a cookie-based confirmation.
-  GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
-                 int user_index,
-                 const std::string& xsrf_token,
-                 const GURL& url,
-                 Delegate* delegate);
-
-  // Create a cookie-based confirmation with no XSRF token (for requests that
-  // don't need an XSRF token).
-  GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
-                 int user_index,
-                 const GURL& url,
                  Delegate* delegate);
 
   virtual ~GCDBaseApiFlow();
@@ -92,8 +80,21 @@ class GCDBaseApiFlow : public net::URLFetcherDelegate,
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   OAuth2TokenService* token_service_;
   std::string account_id_;
-  GURL url_;
   Delegate* delegate_;
+  DISALLOW_COPY_AND_ASSIGN(GCDBaseApiFlow);
+};
+
+class CloudPrintApiFlowDelegate : public GCDBaseApiFlow::Delegate {
+ public:
+  CloudPrintApiFlowDelegate();
+  virtual ~CloudPrintApiFlowDelegate();
+
+  // GCDBaseApiFlow::Delegate implementation
+  virtual std::string GetOAuthScope() OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CloudPrintApiFlowDelegate);
 };
 
 }  // namespace local_discovery

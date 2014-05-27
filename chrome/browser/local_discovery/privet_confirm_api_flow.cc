@@ -17,16 +17,9 @@ namespace local_discovery {
 
 namespace {
 
-const char kGCDAutomatedClaimUploadData[] = "{ \"userEmail\": \"me\" }";
-const char kGCDKindRegistrationTicket[] = "clouddevices#registrationTicket";
-
-GURL GetConfirmFlowUrl(bool is_cloud_print, const std::string& token) {
-  if (is_cloud_print) {
-    return net::AppendQueryParameter(
-        cloud_devices::GetCloudPrintRelativeURL("confirm"), "token", token);
-  }
-  return cloud_devices::GetCloudDevicesRelativeURL("registrationTickets/" +
-                                                   token);
+GURL GetConfirmFlowUrl(const std::string& token) {
+  return net::AppendQueryParameter(
+      cloud_devices::GetCloudPrintRelativeURL("confirm"), "token", token);
 }
 
 }  // namespace
@@ -35,16 +28,14 @@ PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
     net::URLRequestContextGetter* request_context,
     OAuth2TokenService* token_service,
     const std::string& account_id,
-    bool is_cloud_print,
     const std::string& token,
     const ResponseCallback& callback)
-    : is_cloud_print_(is_cloud_print),
-      flow_(request_context,
+    : flow_(request_context,
             token_service,
             account_id,
-            GetConfirmFlowUrl(is_cloud_print, token),
             this),
-      callback_(callback) {
+      callback_(callback),
+      token_(token) {
 }
 
 PrivetConfirmApiCallFlow::~PrivetConfirmApiCallFlow() {
@@ -65,15 +56,9 @@ void PrivetConfirmApiCallFlow::OnGCDAPIFlowComplete(
     const base::DictionaryValue* value) {
   bool success = false;
 
-  if (is_cloud_print_) {
-    if (!value->GetBoolean(cloud_print::kSuccessValue, &success)) {
-      callback_.Run(GCDBaseApiFlow::ERROR_MALFORMED_RESPONSE);
-      return;
-    }
-  } else {
-    std::string kind;
-    value->GetString(kGCDKeyKind, &kind);
-    success = (kind == kGCDKindRegistrationTicket);
+  if (!value->GetBoolean(cloud_print::kSuccessValue, &success)) {
+    callback_.Run(GCDBaseApiFlow::ERROR_MALFORMED_RESPONSE);
+    return;
   }
 
   if (success) {
@@ -83,21 +68,12 @@ void PrivetConfirmApiCallFlow::OnGCDAPIFlowComplete(
   }
 }
 
-bool PrivetConfirmApiCallFlow::GCDIsCloudPrint() { return is_cloud_print_; }
-
 net::URLFetcher::RequestType PrivetConfirmApiCallFlow::GetRequestType() {
-  return (is_cloud_print_) ? net::URLFetcher::GET : net::URLFetcher::PATCH;
+  return net::URLFetcher::GET;
 }
 
-void PrivetConfirmApiCallFlow::GetUploadData(std::string* upload_type,
-                                             std::string* upload_data) {
-  if (is_cloud_print_) {
-    *upload_type = "";
-    *upload_data = "";
-  } else {
-    *upload_type = cloud_print::kContentTypeJSON;
-    *upload_data = kGCDAutomatedClaimUploadData;
-  }
+GURL PrivetConfirmApiCallFlow::GetURL() {
+  return GetConfirmFlowUrl(token_);
 }
 
 }  // namespace local_discovery

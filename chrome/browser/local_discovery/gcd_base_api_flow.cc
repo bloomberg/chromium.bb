@@ -23,8 +23,16 @@ namespace {
 const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
 }
 
+std::string GCDBaseApiFlow::Delegate::GetOAuthScope() {
+  return cloud_devices::kCloudDevicesAuthScope;
+}
+
 net::URLFetcher::RequestType GCDBaseApiFlow::Delegate::GetRequestType() {
   return net::URLFetcher::GET;
+}
+
+std::vector<std::string> GCDBaseApiFlow::Delegate::GetExtraRequestHeaders() {
+  return std::vector<std::string>();
 }
 
 void GCDBaseApiFlow::Delegate::GetUploadData(std::string* upload_type,
@@ -36,13 +44,11 @@ void GCDBaseApiFlow::Delegate::GetUploadData(std::string* upload_type,
 GCDBaseApiFlow::GCDBaseApiFlow(net::URLRequestContextGetter* request_context,
                                OAuth2TokenService* token_service,
                                const std::string& account_id,
-                               const GURL& url,
                                Delegate* delegate)
     : OAuth2TokenService::Consumer("cloud_print"),
       request_context_(request_context),
       token_service_(token_service),
       account_id_(account_id),
-      url_(url),
       delegate_(delegate) {
 }
 
@@ -50,11 +56,7 @@ GCDBaseApiFlow::~GCDBaseApiFlow() {}
 
 void GCDBaseApiFlow::Start() {
   OAuth2TokenService::ScopeSet oauth_scopes;
-  if (delegate_->GCDIsCloudPrint()) {
-    oauth_scopes.insert(cloud_devices::kCloudPrintAuthScope);
-  } else {
-    oauth_scopes.insert(cloud_devices::kCloudDevicesAuthScope);
-  }
+  oauth_scopes.insert(delegate_->GetOAuthScope());
   oauth_request_ =
       token_service_->StartRequest(account_id_, oauth_scopes, this);
 }
@@ -63,7 +65,7 @@ void GCDBaseApiFlow::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  CreateRequest(url_);
+  CreateRequest(delegate_->GetURL());
 
   std::string authorization_header =
       base::StringPrintf(kCloudPrintOAuthHeaderFormat, access_token.c_str());
@@ -94,10 +96,9 @@ void GCDBaseApiFlow::CreateRequest(const GURL& url) {
 
   url_fetcher_->SetRequestContext(request_context_.get());
 
-  if (delegate_->GCDIsCloudPrint()) {
-    url_fetcher_->AddExtraRequestHeader(
-        cloud_print::kChromeCloudPrintProxyHeader);
-  }
+  std::vector<std::string> extra_headers = delegate_->GetExtraRequestHeaders();
+  for (size_t i = 0; i < extra_headers.size(); ++i)
+    url_fetcher_->AddExtraRequestHeader(extra_headers[i]);
 }
 
 void GCDBaseApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -128,6 +129,18 @@ void GCDBaseApiFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   delegate_->OnGCDAPIFlowComplete(this, dictionary_value);
+}
+
+CloudPrintApiFlowDelegate::CloudPrintApiFlowDelegate() {}
+
+CloudPrintApiFlowDelegate::~CloudPrintApiFlowDelegate() {}
+
+std::string CloudPrintApiFlowDelegate::GetOAuthScope() {
+  return cloud_devices::kCloudPrintAuthScope;
+}
+
+std::vector<std::string> CloudPrintApiFlowDelegate::GetExtraRequestHeaders() {
+  return std::vector<std::string>(1, cloud_print::kChromeCloudPrintProxyHeader);
 }
 
 }  // namespace local_discovery

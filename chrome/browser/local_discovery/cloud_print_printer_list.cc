@@ -17,12 +17,10 @@ CloudPrintPrinterList::CloudPrintPrinterList(
     OAuth2TokenService* token_service,
     const std::string& account_id,
     CloudDeviceListDelegate* delegate)
-    : request_context_(request_context),
-      delegate_(delegate),
-      api_flow_(request_context_,
+    : delegate_(delegate),
+      api_flow_(request_context,
                 token_service,
                 account_id,
-                cloud_devices::GetCloudPrintRelativeURL("search"),
                 this) {
 }
 
@@ -66,7 +64,9 @@ void CloudPrintPrinterList::OnGCDAPIFlowComplete(
   delegate_->OnDeviceListReady();
 }
 
-bool CloudPrintPrinterList::GCDIsCloudPrint() { return true; }
+GURL CloudPrintPrinterList::GetURL() {
+  return cloud_devices::GetCloudPrintRelativeURL("search");
+}
 
 bool CloudPrintPrinterList::FillPrinterDetails(
     const base::DictionaryValue* printer_value,

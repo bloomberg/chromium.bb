@@ -33,7 +33,7 @@ class CloudDeviceList : public GCDBaseApiFlow::Delegate {
       GCDBaseApiFlow* flow,
       const base::DictionaryValue* value) OVERRIDE;
 
-  virtual bool GCDIsCloudPrint() OVERRIDE;
+  virtual GURL GetURL() OVERRIDE;
 
   GCDBaseApiFlow* GetOAuth2ApiFlowForTests() { return &api_flow_; }
 
@@ -45,7 +45,6 @@ class CloudDeviceList : public GCDBaseApiFlow::Delegate {
   bool FillDeviceDetails(const base::DictionaryValue* value,
                          CloudDeviceListDelegate::Device* device);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   DeviceList device_list_;
   CloudDeviceListDelegate* delegate_;
   GCDBaseApiFlow api_flow_;
