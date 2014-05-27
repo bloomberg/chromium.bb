@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
@@ -313,6 +314,8 @@ void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
 
 void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   client_context_.reset(new ClientContext(
       jni_runtime_->network_task_runner().get()));
