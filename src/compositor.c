@@ -4229,6 +4229,11 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
+	if (!signals[0] || !signals[1] || !signals[2] || !signals[3]) {
+		ret = EXIT_FAILURE;
+		goto out_signals;
+	}
+
 	if (noconfig == 0)
 		config = weston_config_parse("weston.ini");
 	if (config != NULL) {
@@ -4256,13 +4261,16 @@ int main(int argc, char *argv[])
 
 	backend_init = weston_load_module(backend, "backend_init");
 	free(backend);
-	if (!backend_init)
-		exit(EXIT_FAILURE);
+	if (!backend_init) {
+		ret = EXIT_FAILURE;
+		goto out_signals;
+	}
 
 	ec = backend_init(display, &argc, argv, config);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
-		exit(EXIT_FAILURE);
+		ret = EXIT_FAILURE;
+		goto out_signals;
 	}
 
 	catch_signals();
@@ -4343,12 +4351,15 @@ int main(int argc, char *argv[])
 
 	wl_signal_emit(&ec->destroy_signal, ec);
 
-	for (i = ARRAY_LENGTH(signals); i;)
-		wl_event_source_remove(signals[--i]);
-
 	weston_compositor_xkb_destroy(ec);
 
 	ec->destroy(ec);
+
+out_signals:
+	for (i = ARRAY_LENGTH(signals) - 1; i >= 0; i--)
+		if (signals[i])
+			wl_event_source_remove(signals[i]);
+
 	wl_display_destroy(display);
 
 	weston_log_file_close();
