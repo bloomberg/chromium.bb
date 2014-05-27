@@ -39,6 +39,24 @@ public class MathUtils {
      * @param b Second boundary range value.
      * @return The passed in value if it is within the range, otherwise the closest boundary value.
      */
+    public static long clamp(long value, long a, long b) {
+        long min = (a > b) ? b : a;
+        long max = (a > b) ? a : b;
+        if (value < min) value = min;
+        else if (value > max) value = max;
+        return value;
+    }
+
+    /**
+     * Returns the passed in value if it resides within the specified range (inclusive).  If not,
+     * it will return the closest boundary from the range.  The ordering of the boundary values does
+     * not matter.
+     *
+     * @param value The value to be compared against the range.
+     * @param a First boundary range value.
+     * @param b Second boundary range value.
+     * @return The passed in value if it is within the range, otherwise the closest boundary value.
+     */
     public static float clamp(float value, float a, float b) {
         float min = (a > b) ? b : a;
         float max = (a > b) ? a : b;
