@@ -28,7 +28,7 @@ void CreateShortcuts() {
   std::string app_list_title =
       l10n_util::GetStringUTF8(IDS_APP_LIST_SHORTCUT_NAME);
 
-  if (!ShellIntegrationLinux::CreateAppListDesktopShortcut(
+  if (!shell_integration_linux::CreateAppListDesktopShortcut(
            app_list::kAppListWMClass,
            app_list_title)) {
     LOG(WARNING) << "Unable to create App Launcher shortcut.";

@@ -136,7 +136,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
   }
-  virtual ~NativeAppWindowStateDelegate(){
+  virtual ~NativeAppWindowStateDelegate() {
     if (window_state_) {
       window_state_->RemoveObserver(this);
       window_state_->window()->RemoveObserver(this);
@@ -220,7 +220,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
   // X11 environments to distinguish them from main browser windows.
   init_params.wm_class_name = web_app::GetWMClassFromAppName(app_name);
-  init_params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
+  init_params.wm_class_class = shell_integration_linux::GetProgramClassName();
   const char kX11WindowRoleApp[] = "app";
   init_params.wm_role_name = std::string(kX11WindowRoleApp);
 #endif

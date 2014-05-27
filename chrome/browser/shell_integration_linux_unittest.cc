@@ -30,6 +30,8 @@
 using content::BrowserThread;
 using ::testing::ElementsAre;
 
+namespace shell_integration_linux {
+
 namespace {
 
 // Provides mock environment variables values based on a stored map.
@@ -79,7 +81,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
     env.Set("HOME", "/home/user");
     env.Set("XDG_DATA_HOME", "/user/path");
     base::FilePath path;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+    ASSERT_TRUE(GetDataWriteLocation(&env, &path));
     EXPECT_EQ(base::FilePath("/user/path"), path);
   }
 
@@ -88,7 +90,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
     MockEnvironment env;
     env.Set("HOME", "/home/user");
     base::FilePath path;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+    ASSERT_TRUE(GetDataWriteLocation(&env, &path));
     EXPECT_EQ(base::FilePath("/home/user/.local/share"), path);
   }
 
@@ -96,7 +98,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
   {
     MockEnvironment env;
     base::FilePath path;
-    ASSERT_FALSE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+    ASSERT_FALSE(GetDataWriteLocation(&env, &path));
   }
 }
 
@@ -111,7 +113,7 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("XDG_DATA_HOME", "/user/path");
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        GetDataSearchLocations(&env),
         ElementsAre(base::FilePath("/user/path"),
                     base::FilePath("/system/path/1"),
                     base::FilePath("/system/path/2")));
@@ -123,7 +125,7 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("HOME", "/home/user");
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        GetDataSearchLocations(&env),
         ElementsAre(base::FilePath("/home/user/.local/share"),
                     base::FilePath("/system/path/1"),
                     base::FilePath("/system/path/2")));
@@ -135,7 +137,7 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
     EXPECT_THAT(
-        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        GetDataSearchLocations(&env),
         ElementsAre(base::FilePath("/system/path/1"),
                     base::FilePath("/system/path/2")));
   }
@@ -146,7 +148,7 @@ TEST(ShellIntegrationTest, GetDataSearchLocations) {
     env.Set("HOME", "/home/user");
     env.Set("XDG_DATA_HOME", "/user/path");
     EXPECT_THAT(
-        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        GetDataSearchLocations(&env),
         ElementsAre(base::FilePath("/user/path"),
                     base::FilePath("/usr/local/share"),
                     base::FilePath("/usr/share")));
@@ -167,8 +169,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   {
     MockEnvironment env;
     web_app::ShortcutLocations result =
-        ShellIntegrationLinux::GetExistingShortcutLocations(
-            &env, kProfilePath, kExtensionId);
+        GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
     EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
               result.applications_menu_location);
@@ -188,9 +189,8 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_FALSE(base::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
-    web_app::ShortcutLocations result =
-        ShellIntegrationLinux::GetExistingShortcutLocations(
-            &env, kProfilePath, kExtensionId, desktop_path);
+    web_app::ShortcutLocations result = GetExistingShortcutLocations(
+        &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
     EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
               result.applications_menu_location);
@@ -212,8 +212,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
     web_app::ShortcutLocations result =
-        ShellIntegrationLinux::GetExistingShortcutLocations(
-            &env, kProfilePath, kExtensionId);
+        GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
     EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
@@ -235,8 +234,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
         apps_path.AppendASCII(kTemplateFilename),
         kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
     web_app::ShortcutLocations result =
-        ShellIntegrationLinux::GetExistingShortcutLocations(
-            &env, kProfilePath, kExtensionId);
+        GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
     EXPECT_FALSE(result.on_desktop);
     EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
@@ -265,9 +263,8 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_FALSE(base::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
-    web_app::ShortcutLocations result =
-        ShellIntegrationLinux::GetExistingShortcutLocations(
-            &env, kProfilePath, kExtensionId, desktop_path);
+    web_app::ShortcutLocations result = GetExistingShortcutLocations(
+        &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
     EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
@@ -304,8 +301,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
         kTestData1, strlen(kTestData1)));
     std::string contents;
     ASSERT_TRUE(
-        ShellIntegrationLinux::GetExistingShortcutContents(
-            &env, kTemplateFilepath, &contents));
+        GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 
@@ -324,8 +320,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
         kTestData1, strlen(kTestData1)));
     std::string contents;
     ASSERT_TRUE(
-        ShellIntegrationLinux::GetExistingShortcutContents(
-            &env, kTemplateFilepath, &contents));
+        GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 
@@ -344,8 +339,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
         kTestData2, strlen(kTestData2)));
     std::string contents;
     ASSERT_TRUE(
-        ShellIntegrationLinux::GetExistingShortcutContents(
-            &env, kTemplateFilepath, &contents));
+        GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData2, contents);
   }
 
@@ -372,8 +366,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
         kTestData2, strlen(kTestData2)));
     std::string contents;
     ASSERT_TRUE(
-        ShellIntegrationLinux::GetExistingShortcutContents(
-            &env, kTemplateFilepath, &contents));
+        GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData2, contents);
   }
 }
@@ -382,8 +375,7 @@ TEST(ShellIntegrationTest, GetExtensionShortcutFilename) {
   base::FilePath kProfilePath("a/b/c/Profile Name?");
   const char kExtensionId[] = "extensionid";
   EXPECT_EQ(base::FilePath("chrome-extensionid-Profile_Name_.desktop"),
-            ShellIntegrationLinux::GetExtensionShortcutFilename(
-                kProfilePath, kExtensionId));
+            GetExtensionShortcutFilename(kProfilePath, kExtensionId));
 }
 
 TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
@@ -408,8 +400,7 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
             base::WriteFile(
                 temp_dir.path().AppendASCII(kUnrelatedAppFilename), "", 0));
   std::vector<base::FilePath> paths =
-      ShellIntegrationLinux::GetExistingProfileShortcutFilenames(
-          kProfilePath, temp_dir.path());
+      GetExistingProfileShortcutFilenames(kProfilePath, temp_dir.path());
   // Path order is arbitrary. Sort the output for consistency.
   std::sort(paths.begin(), paths.end());
   EXPECT_THAT(paths,
@@ -434,8 +425,7 @@ TEST(ShellIntegrationTest, GetWebShortcutFilename) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
               test_cases[i].path,
-              ShellIntegrationLinux::GetWebShortcutFilename(
-                  GURL(test_cases[i].url)).value()) <<
+              GetWebShortcutFilename(GURL(test_cases[i].url)).value()) <<
         " while testing " << test_cases[i].url;
   }
 }
@@ -575,7 +565,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     SCOPED_TRACE(i);
     EXPECT_EQ(
         test_cases[i].expected_output,
-        ShellIntegrationLinux::GetDesktopFileContents(
+        GetDesktopFileContents(
             kChromeExePath,
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
@@ -590,7 +580,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 
 TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
   const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
-  CommandLine command_line(kChromeExePath);
+  base::CommandLine command_line(kChromeExePath);
   command_line.AppendSwitch("--show-app-list");
   EXPECT_EQ(
       "#!/usr/bin/env xdg-open\n"
@@ -603,7 +593,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
       "Icon=chrome_app_list\n"
       "Categories=Network;WebBrowser;\n"
       "StartupWMClass=chrome-app-list\n",
-      ShellIntegrationLinux::GetDesktopFileContentsForCommand(
+      GetDesktopFileContentsForCommand(
           command_line,
           "chrome-app-list",
           GURL(),
@@ -648,10 +638,10 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     SCOPED_TRACE(i);
-    EXPECT_EQ(
-        test_cases[i].expected_output,
-        ShellIntegrationLinux::GetDirectoryFileContents(
-            base::ASCIIToUTF16(test_cases[i].title),
-            test_cases[i].icon_name));
+    EXPECT_EQ(test_cases[i].expected_output,
+              GetDirectoryFileContents(base::ASCIIToUTF16(test_cases[i].title),
+                                       test_cases[i].icon_name));
   }
 }
+
+}  // namespace shell_integration_linux

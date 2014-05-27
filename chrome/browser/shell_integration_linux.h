@@ -17,7 +17,7 @@ class CommandLine;
 class Environment;
 }
 
-namespace ShellIntegrationLinux {
+namespace shell_integration_linux {
 
 // Get the path to write user-specific application data files to, as specified
 // in the XDG Base Directory Specification:
@@ -136,6 +136,6 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 // for the profile in |profile_path|.
 void DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
 
-}  // namespace ShellIntegrationLinux
+}  // namespace shell_integration_linux
 
 #endif  // CHROME_BROWSER_SHELL_INTEGRATION_LINUX_H_

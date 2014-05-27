@@ -323,17 +323,13 @@ const char kAppListDesktopName[] = "chrome-app-list";
 const char kAppListDesktopName[] = "chromium-app-list";
 #endif
 
-}  // namespace
-
-namespace {
-
 // Utility function to get the path to the version of a script shipped with
 // Chrome. |script| gives the name of the script. |chrome_version| returns the
 // path to the Chrome version of the script, and the return value of the
 // function is true if the function is successful and the Chrome version is
 // not the script found on the PATH.
 bool GetChromeVersionOfScript(const std::string& script,
-                               std::string* chrome_version) {
+                              std::string* chrome_version) {
   // Get the path to the Chrome version.
   base::FilePath chrome_dir;
   if (!PathService::Get(base::DIR_EXE, &chrome_dir))
@@ -386,7 +382,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(ShellIntegrationLinux::GetDesktopName(env.get()));
+  argv.push_back(shell_integration_linux::GetDesktopName(env.get()));
 
   int exit_code;
   bool ran_ok = LaunchXdgUtility(argv, &exit_code);
@@ -421,7 +417,7 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(ShellIntegrationLinux::GetDesktopName(env.get()));
+  argv.push_back(shell_integration_linux::GetDesktopName(env.get()));
 
   std::string reply;
   int success_code;
@@ -499,11 +495,11 @@ base::FilePath GetChromeExePath() {
   return chrome_exe_path;
 }
 
-} // namespace
+}  // namespace
 
 // static
 ShellIntegration::DefaultWebClientSetPermission
-    ShellIntegration::CanSetAsDefaultBrowser() {
+ShellIntegration::CanSetAsDefaultBrowser() {
   return SET_DEFAULT_UNATTENDED;
 }
 
@@ -513,12 +509,14 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 }
 
 // static
-bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
+bool ShellIntegration::SetAsDefaultProtocolClient(
+    const std::string& protocol) {
   return SetDefaultWebClient(protocol);
 }
 
 // static
-ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
+ShellIntegration::DefaultWebClientState
+ShellIntegration::GetDefaultBrowser() {
   return GetIsDefaultWebClient(std::string());
 }
 
@@ -547,7 +545,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return browser.find("irefox") != std::string::npos;
 }
 
-namespace ShellIntegrationLinux {
+namespace shell_integration_linux {
 
 bool GetDataWriteLocation(base::Environment* env, base::FilePath* search_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -856,7 +854,7 @@ std::string GetDesktopFileContentsForCommand(
   return output_buffer;
 #else
   NOTIMPLEMENTED();
-  return std::string("");
+  return std::string();
 #endif
 }
 
@@ -896,7 +894,7 @@ std::string GetDirectoryFileContents(const base::string16& title,
   return output_buffer;
 #else
   NOTIMPLEMENTED();
-  return std::string("");
+  return std::string();
 #endif
 }
 
@@ -940,7 +938,7 @@ bool CreateDesktopShortcut(
   }
 
   if (creation_locations.on_desktop) {
-    std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
+    std::string contents = GetDesktopFileContents(
         chrome_exe_path,
         app_name,
         shortcut_info.url,
@@ -964,7 +962,7 @@ bool CreateDesktopShortcut(
         break;
       case web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS:
         directory_filename = base::FilePath(kDirectoryFilename);
-        directory_contents = ShellIntegrationLinux::GetDirectoryFileContents(
+        directory_contents = GetDirectoryFileContents(
             ShellIntegration::GetAppShortcutsSubdirName(), "");
         break;
       default:
@@ -973,7 +971,7 @@ bool CreateDesktopShortcut(
     }
     // Set NoDisplay=true if hidden but not in the applications menu. This will
     // hide the application from user-facing menus.
-    std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
+    std::string contents = GetDesktopFileContents(
         chrome_exe_path,
         app_name,
         shortcut_info.url,
@@ -1081,4 +1079,4 @@ void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
   }
 }
 
-}  // namespace ShellIntegrationLinux
+}  // namespace shell_integration_linux

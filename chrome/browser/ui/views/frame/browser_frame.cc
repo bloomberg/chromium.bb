@@ -108,8 +108,8 @@ void BrowserFrame::InitBrowserFrame() {
       chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {
     params.context = ash::Shell::GetPrimaryRootWindow();
 #if defined(OS_WIN)
-   // If this window is under ASH on Windows, we need it to be translucent.
-   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    // If this window is under ASH on Windows, we need it to be translucent.
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 #endif
   }
 #endif
@@ -120,7 +120,7 @@ void BrowserFrame::InitBrowserFrame() {
   // windows and e.g app windows.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   const Browser& browser = *browser_view_->browser();
-  params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
+  params.wm_class_class = shell_integration_linux::GetProgramClassName();
   params.wm_class_name = params.wm_class_class;
   if (browser.is_app() && !browser.is_devtools()) {
     // This window is a hosted app or v1 packaged app.
