@@ -63,6 +63,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   base::Thread thread_;
   base::TimeTicks last_callback_time_;
   base::TimeDelta callback_interval_;
+  base::TimeDelta interval_from_last_beep_;
   int beep_duration_in_buffers_;
   int beep_generated_in_buffers_;
   int beep_period_in_frames_;

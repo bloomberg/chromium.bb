@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -247,7 +248,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     video_capture_device_factory_->GetDeviceNames(&physical_video_devices_);
     ASSERT_GT(physical_video_devices_.size(), 0u);
 
-    audio_manager_->GetAudioInputDeviceNames(&physical_audio_devices_);
+    media_stream_manager_->audio_input_device_manager()->GetFakeDeviceNames(
+        &physical_audio_devices_);
     ASSERT_GT(physical_audio_devices_.size(), 0u);
   }
 
