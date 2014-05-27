@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -755,8 +756,6 @@ bool TestLauncher::Init() {
 void TestLauncher::RunTests() {
   testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
 
-  int num_runnable_tests = 0;
-
   std::vector<std::string> test_names;
 
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
@@ -804,8 +803,10 @@ void TestLauncher::RunTests() {
       if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
         continue;
 
-      if (num_runnable_tests++ % total_shards_ != shard_index_)
+      if (base::Hash(test_name) % total_shards_ !=
+          static_cast<uint32>(shard_index_)) {
         continue;
+      }
 
       test_names.push_back(test_name);
     }
