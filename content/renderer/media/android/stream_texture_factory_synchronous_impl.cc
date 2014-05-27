@@ -136,16 +136,16 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
 scoped_refptr<StreamTextureFactorySynchronousImpl>
 StreamTextureFactorySynchronousImpl::Create(
     const CreateContextProviderCallback& try_create_callback,
-    int view_id) {
-  return new StreamTextureFactorySynchronousImpl(try_create_callback, view_id);
+    int frame_id) {
+  return new StreamTextureFactorySynchronousImpl(try_create_callback, frame_id);
 }
 
 StreamTextureFactorySynchronousImpl::StreamTextureFactorySynchronousImpl(
     const CreateContextProviderCallback& try_create_callback,
-    int view_id)
+    int frame_id)
     : create_context_provider_callback_(try_create_callback),
       context_provider_(create_context_provider_callback_.Run()),
-      view_id_(view_id) {}
+      frame_id_(frame_id) {}
 
 StreamTextureFactorySynchronousImpl::~StreamTextureFactorySynchronousImpl() {}
 
@@ -167,7 +167,7 @@ void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
         base::Process::Current().handle(),
         surface_texture,
-        view_id_,
+        frame_id_,
         player_id);
   }
 }

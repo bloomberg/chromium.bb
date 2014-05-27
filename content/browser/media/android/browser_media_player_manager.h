@@ -16,9 +16,10 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
+#include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "content/common/media/media_player_messages_enums_android.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
@@ -33,6 +34,7 @@ namespace content {
 class BrowserDemuxerAndroid;
 class ContentViewCoreImpl;
 class ExternalVideoSurfaceContainer;
+class RenderFrameHost;
 class WebContents;
 
 // This class manages all the MediaPlayerAndroid and CDM objects.
@@ -41,22 +43,18 @@ class WebContents;
 // MediaPlayerAndroid and CDM objects are converted to IPCs and then sent to
 // the render process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
-    : public WebContentsObserver,
-      public media::MediaPlayerManager {
+    : public media::MediaPlayerManager {
  public:
   // Permits embedders to provide an extended version of the class.
-  typedef BrowserMediaPlayerManager* (*Factory)(RenderViewHost*);
+  typedef BrowserMediaPlayerManager* (*Factory)(RenderFrameHost*);
   static void RegisterFactory(Factory factory);
 
   // Returns a new instance using the registered factory if available.
-  static BrowserMediaPlayerManager* Create(RenderViewHost* rvh);
+  static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
 
   ContentViewCoreImpl* GetContentViewCore() const;
 
   virtual ~BrowserMediaPlayerManager();
-
-  // WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Fullscreen video playback controls.
   virtual void FullscreenPlayerPlay();
@@ -68,6 +66,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Called when browser player wants the renderer media element to seek.
   // Any actual seek started by renderer will be handled by browser in OnSeek().
   void OnSeekRequest(int player_id, const base::TimeDelta& time_to_seek);
+
+  // Pauses all video players manages by this class.
+  void PauseVideo();
 
   // media::MediaPlayerManager overrides.
   virtual void OnTimeUpdate(
@@ -113,10 +114,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
 
- protected:
-  // Clients must use Create() or subclass constructor.
-  explicit BrowserMediaPlayerManager(RenderViewHost* render_view_host);
-
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);
   virtual void OnExitFullscreen(int player_id);
@@ -147,6 +144,16 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnReleaseSession(int cdm_id, uint32 session_id);
   void OnSetCdm(int player_id, int cdm_id);
   void OnDestroyCdm(int cdm_id);
+#if defined(VIDEO_HOLE)
+  void OnNotifyExternalSurface(
+      int player_id, bool is_request, const gfx::RectF& rect);
+#endif  // defined(VIDEO_HOLE)
+
+ protected:
+  // Clients must use Create() or subclass constructor.
+  explicit BrowserMediaPlayerManager(RenderFrameHost* render_frame_host);
+
+  WebContents* web_contents() const { return web_contents_; }
 
   // Cancels all pending session creations associated with |cdm_id|.
   void CancelAllPendingSessionCreations(int cdm_id);
@@ -172,6 +179,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Removes the CDM with the specified id.
   void RemoveCdm(int cdm_id);
+
+  int RoutingID();
+
+  // Helper function to send messages to RenderFrameObserver.
+  bool Send(IPC::Message* msg);
 
  private:
   // If |permitted| is false, it does nothing but send
@@ -208,10 +220,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnMediaResourcesReleased(int player_id);
 
 #if defined(VIDEO_HOLE)
-  void OnNotifyExternalSurface(
-      int player_id, bool is_request, const gfx::RectF& rect);
   void OnRequestExternalSurface(int player_id, const gfx::RectF& rect);
 #endif  // defined(VIDEO_HOLE)
+
+  RenderFrameHost* const render_frame_host_;
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
@@ -244,7 +256,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Whether the fullscreen player has been Release()-d.
   bool fullscreen_player_is_released_;
 
-  WebContents* web_contents_;
+  WebContents* const web_contents_;
 
   // Object for retrieving resources media players.
   scoped_ptr<media::MediaResourceGetter> media_resource_getter_;

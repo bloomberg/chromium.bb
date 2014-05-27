@@ -26,7 +26,7 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   static scoped_refptr<StreamTextureFactoryImpl> Create(
       const scoped_refptr<cc::ContextProvider>& context_provider,
       GpuChannelHost* channel,
-      int view_id);
+      int frame_id);
 
   // StreamTextureFactory implementation.
   virtual StreamTextureProxy* CreateProxy() OVERRIDE;
@@ -43,12 +43,12 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   StreamTextureFactoryImpl(
       const scoped_refptr<cc::ContextProvider>& context_provider,
       GpuChannelHost* channel,
-      int view_id);
+      int frame_id);
   virtual ~StreamTextureFactoryImpl();
 
   scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_refptr<GpuChannelHost> channel_;
-  int view_id_;
+  int frame_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactoryImpl);
 };

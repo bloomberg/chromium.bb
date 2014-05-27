@@ -8,7 +8,9 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/media/android/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,34 +31,52 @@ namespace content {
 namespace {
 
 // Pass a java surface object to the MediaPlayerAndroid object
-// identified by render process handle, render view ID and player ID.
+// identified by render process handle, render frame ID and player ID.
 static void SetSurfacePeer(
     const base::android::JavaRef<jobject>& surface,
     base::ProcessHandle render_process_handle,
-    int render_view_id,
+    int render_frame_id,
     int player_id) {
-  int renderer_id = 0;
+  int render_process_id = 0;
   RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
   while (!it.IsAtEnd()) {
     if (it.GetCurrentValue()->GetHandle() == render_process_handle) {
-      renderer_id = it.GetCurrentValue()->GetID();
+      render_process_id = it.GetCurrentValue()->GetID();
       break;
     }
     it.Advance();
   }
+  if (!render_process_id) {
+    DVLOG(1) << "Cannot find render process for render_process_handle "
+             << render_process_handle;
+    return;
+  }
 
-  if (renderer_id) {
-    RenderViewHostImpl* host = RenderViewHostImpl::FromID(
-        renderer_id, render_view_id);
-    if (host) {
-      media::MediaPlayerAndroid* player =
-          host->media_player_manager()->GetPlayer(player_id);
-      if (player &&
-          player != host->media_player_manager()->GetFullscreenPlayer()) {
-        gfx::ScopedJavaSurface scoped_surface(surface);
-        player->SetVideoSurface(scoped_surface.Pass());
-      }
-    }
+  RenderFrameHostImpl* frame =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!frame) {
+    DVLOG(1) << "Cannot find frame for render_frame_id " << render_frame_id;
+    return;
+  }
+
+  RenderViewHostImpl* view =
+      static_cast<RenderViewHostImpl*>(frame->GetRenderViewHost());
+  BrowserMediaPlayerManager* player_manager =
+      view->media_web_contents_observer()->GetMediaPlayerManager(frame);
+  if (!player_manager) {
+    DVLOG(1) << "Cannot find the media player manager for frame " << frame;
+    return;
+  }
+
+  media::MediaPlayerAndroid* player = player_manager->GetPlayer(player_id);
+  if (!player) {
+    DVLOG(1) << "Cannot find media player for player_id " << player_id;
+    return;
+  }
+
+  if (player != player_manager->GetFullscreenPlayer()) {
+    gfx::ScopedJavaSurface scoped_surface(surface);
+    player->SetVideoSurface(scoped_surface.Pass());
   }
 }
 

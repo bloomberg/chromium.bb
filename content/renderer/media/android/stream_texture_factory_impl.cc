@@ -81,17 +81,17 @@ void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
 scoped_refptr<StreamTextureFactoryImpl> StreamTextureFactoryImpl::Create(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     GpuChannelHost* channel,
-    int view_id) {
-  return new StreamTextureFactoryImpl(context_provider, channel, view_id);
+    int frame_id) {
+  return new StreamTextureFactoryImpl(context_provider, channel, frame_id);
 }
 
 StreamTextureFactoryImpl::StreamTextureFactoryImpl(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     GpuChannelHost* channel,
-    int view_id)
+    int frame_id)
     : context_provider_(context_provider),
       channel_(channel),
-      view_id_(view_id) {
+      frame_id_(frame_id) {
   DCHECK(channel);
 }
 
@@ -106,7 +106,7 @@ StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
 void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id, int player_id) {
   DCHECK(channel_.get());
   channel_->Send(
-      new GpuStreamTextureMsg_EstablishPeer(stream_id, view_id_, player_id));
+      new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id_, player_id));
 }
 
 unsigned StreamTextureFactoryImpl::CreateStreamTexture(

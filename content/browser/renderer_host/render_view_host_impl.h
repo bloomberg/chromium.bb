@@ -53,7 +53,7 @@ struct SelectedFileInfo;
 
 namespace content {
 
-class BrowserMediaPlayerManager;
+class MediaWebContentsObserver;
 class ChildProcessSecurityPolicyImpl;
 class PageState;
 class RenderWidgetHostDelegate;
@@ -392,8 +392,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
 #if defined(OS_ANDROID)
-  BrowserMediaPlayerManager* media_player_manager() {
-    return media_player_manager_.get();
+  MediaWebContentsObserver* media_web_contents_observer() {
+    return media_web_contents_observer_.get();
   }
 
   void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
@@ -625,8 +625,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool virtual_keyboard_requested_;
 
 #if defined(OS_ANDROID)
-  // Manages all the android mediaplayer objects and handling IPCs for video.
-  scoped_ptr<BrowserMediaPlayerManager> media_player_manager_;
+  // Manages all the android mediaplayer managers and forwards IPCs to the
+  // managers.
+  scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;
 #endif
 
   // Used to swap out or shutdown this RVH when the unload event is taking too

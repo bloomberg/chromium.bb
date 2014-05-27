@@ -24,7 +24,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/media/android/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
@@ -365,9 +365,10 @@ void ContentViewCoreImpl::Hide() {
 }
 
 void ContentViewCoreImpl::PauseVideo() {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (host)
-    host->Send(new ViewMsg_PauseVideo(host->GetRoutingID()));
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (rvhi)
+    rvhi->media_web_contents_observer()->PauseVideo();
 }
 
 void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {

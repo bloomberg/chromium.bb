@@ -3398,11 +3398,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   ResetLoadProgressState();
   loading_frames_in_progress_ = 0;
 
-#if defined(OS_ANDROID)
-  if (GetRenderViewHostImpl()->media_player_manager())
-    GetRenderViewHostImpl()->media_player_manager()->DestroyAllMediaPlayers();
-#endif
-
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     RenderProcessGone(GetCrashedStatus()));

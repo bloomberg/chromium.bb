@@ -23,11 +23,13 @@ namespace content {
 const size_t kMaxWebSessionIdLength = 512;
 const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
-RendererMediaPlayerManager::RendererMediaPlayerManager(RenderView* render_view)
-    : RenderViewObserver(render_view),
+RendererMediaPlayerManager::RendererMediaPlayerManager(
+    RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame),
       next_media_player_id_(0),
       fullscreen_frame_(NULL),
-      pending_fullscreen_frame_(NULL) {}
+      pending_fullscreen_frame_(NULL) {
+}
 
 RendererMediaPlayerManager::~RendererMediaPlayerManager() {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
@@ -67,6 +69,7 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_PauseVideo, OnPauseVideo)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionCreated, OnSessionCreated)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionMessage, OnSessionMessage)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionReady, OnSessionReady)
@@ -231,6 +234,10 @@ void RendererMediaPlayerManager::OnRequestFullscreen(int player_id) {
     player->OnRequestFullscreen();
 }
 
+void RendererMediaPlayerManager::OnPauseVideo() {
+  ReleaseVideoResources();
+}
+
 void RendererMediaPlayerManager::EnterFullscreen(int player_id,
                                                  blink::WebFrame* frame) {
   pending_fullscreen_frame_ = frame;
@@ -361,8 +368,8 @@ void RendererMediaPlayerManager::RegisterMediaKeys(int cdm_id,
 
 void RendererMediaPlayerManager::ReleaseVideoResources() {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
-  for (player_it = media_players_.begin();
-      player_it != media_players_.end(); ++player_it) {
+  for (player_it = media_players_.begin(); player_it != media_players_.end();
+       ++player_it) {
     WebMediaPlayerAndroid* player = player_it->second;
 
     // Do not release if an audio track is still playing
@@ -444,8 +451,8 @@ void RendererMediaPlayerManager::RetrieveGeometryChanges(
 
 bool
 RendererMediaPlayerManager::ShouldUseVideoOverlayForEmbeddedEncryptedVideo() {
-  const RendererPreferences& prefs = static_cast<RenderViewImpl*>(
-      render_view())->renderer_preferences();
+  const RendererPreferences& prefs = static_cast<RenderFrameImpl*>(
+      render_frame())->render_view()->renderer_preferences();
   return prefs.use_video_overlay_for_embedded_encrypted_video;
 }
 #endif  // defined(VIDEO_HOLE)

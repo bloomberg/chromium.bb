@@ -113,6 +113,11 @@ class CONTENT_EXPORT RenderWidget
   void RegisterSwappedOutChildFrame(RenderFrameImpl* frame);
   void UnregisterSwappedOutChildFrame(RenderFrameImpl* frame);
 
+#if defined(VIDEO_HOLE)
+  void RegisterVideoHoleFrame(RenderFrameImpl* frame);
+  void UnregisterVideoHoleFrame(RenderFrameImpl* frame);
+#endif  // defined(VIDEO_HOLE)
+
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -708,9 +713,12 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
 
-  // A list of swapped out RenderFrames that need to be notified
+  // Lists of swapped out RenderFrames that need to be notified
   // of compositing-related events (e.g. DidCommitCompositorFrame).
   ObserverList<RenderFrameImpl> swapped_out_frames_;
+#if defined(VIDEO_HOLE)
+  ObserverList<RenderFrameImpl> video_hole_frames_;
+#endif  // defined(VIDEO_HOLE)
 
   ui::MenuSourceType context_menu_source_type_;
   gfx::Point touch_editing_context_menu_location_;

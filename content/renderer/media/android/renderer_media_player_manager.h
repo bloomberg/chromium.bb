@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "content/common/media/media_player_messages_enums_android.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
@@ -32,16 +32,16 @@ class ProxyMediaKeys;
 class WebMediaPlayerAndroid;
 
 // Class for managing all the WebMediaPlayerAndroid objects in the same
-// RenderView.
-class RendererMediaPlayerManager : public RenderViewObserver {
+// RenderFrame.
+class RendererMediaPlayerManager : public RenderFrameObserver {
  public:
   static const int kInvalidCdmId = 0;
 
-  // Constructs a RendererMediaPlayerManager object for the |render_view|.
-  RendererMediaPlayerManager(RenderView* render_view);
+  // Constructs a RendererMediaPlayerManager object for the |render_frame|.
+  RendererMediaPlayerManager(RenderFrame* render_frame);
   virtual ~RendererMediaPlayerManager();
 
-  // RenderViewObserver overrides.
+  // RenderFrameObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Initializes a MediaPlayerAndroid object in browser process.
@@ -91,7 +91,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // Requests an external surface for out-of-band compositing.
   void RequestExternalSurface(int player_id, const gfx::RectF& geometry);
 
-  // RenderViewObserver overrides.
+  // RenderFrameObserver overrides.
   virtual void DidCommitCompositorFrame() OVERRIDE;
 
   // Returns true if a media player should use video-overlay for the embedded
@@ -123,10 +123,6 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   // player is unregistered. For now |cdm_id| is the same as player_id
   // used in other methods.
   void RegisterMediaKeys(int cdm_id, ProxyMediaKeys* media_keys);
-
-  // Releases the media resources managed by this object when a video
-  // is playing.
-  void ReleaseVideoResources();
 
   // Checks whether a player can enter fullscreen.
   bool CanEnterFullscreen(blink::WebFrame* frame);
@@ -175,6 +171,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
   void OnRequestFullscreen(int player_id);
+  void OnPauseVideo();
   void OnSessionCreated(int cdm_id,
                         uint32 session_id,
                         const std::string& web_session_id);
@@ -188,6 +185,12 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                       uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       uint32 system_code);
+
+  // Release all video player resources.
+  // If something is in progress the resource will not be freed. It will
+  // only be freed once the tab is destroyed or if the user navigates away
+  // via WebMediaPlayerAndroid::Destroy.
+  void ReleaseVideoResources();
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.

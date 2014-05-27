@@ -62,6 +62,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
                                            int32 line_number,
                                            int32 severity_level) {}
 
+  // Called when a compositor frame has committed.
+  virtual void DidCommitCompositorFrame() {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

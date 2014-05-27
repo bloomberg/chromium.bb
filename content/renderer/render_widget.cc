@@ -1212,6 +1212,19 @@ void RenderWidget::didBecomeReadyForAdditionalInput() {
 void RenderWidget::DidCommitCompositorFrame() {
   FOR_EACH_OBSERVER(RenderFrameImpl, swapped_out_frames_,
                     DidCommitCompositorFrame());
+#if defined(VIDEO_HOLE)
+  // Not using FOR_EACH_OBSERVER because |swapped_out_frames_| and
+  // |video_hole_frames_| may have common frames.
+  if (!video_hole_frames_.might_have_observers())
+    return;
+  ObserverListBase<RenderFrameImpl>::Iterator iter(video_hole_frames_);
+  RenderFrameImpl* frame;
+  while ((frame = iter.GetNext()) != NULL) {
+    // Prevent duplicate notification of DidCommitCompositorFrame().
+    if (!swapped_out_frames_.HasObserver(frame))
+      frame->DidCommitCompositorFrame();
+  }
+#endif  // defined(VIDEO_HOLE)
 }
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {
@@ -2110,5 +2123,15 @@ void RenderWidget::RegisterSwappedOutChildFrame(RenderFrameImpl* frame) {
 void RenderWidget::UnregisterSwappedOutChildFrame(RenderFrameImpl* frame) {
   swapped_out_frames_.RemoveObserver(frame);
 }
+
+#if defined(VIDEO_HOLE)
+void RenderWidget::RegisterVideoHoleFrame(RenderFrameImpl* frame) {
+  video_hole_frames_.AddObserver(frame);
+}
+
+void RenderWidget::UnregisterVideoHoleFrame(RenderFrameImpl* frame) {
+  video_hole_frames_.RemoveObserver(frame);
+}
+#endif  // defined(VIDEO_HOLE)
 
 }  // namespace content

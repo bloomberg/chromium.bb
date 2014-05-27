@@ -782,6 +782,8 @@
       'browser/media/android/media_drm_credential_manager.h',
       'browser/media/android/media_resource_getter_impl.cc',
       'browser/media/android/media_resource_getter_impl.h',
+      'browser/media/android/media_web_contents_observer.cc',
+      'browser/media/android/media_web_contents_observer.h',
       'browser/media/capture/audio_mirroring_manager.cc',
       'browser/media/capture/audio_mirroring_manager.h',
       'browser/media/capture/content_video_capture_device_core.cc',

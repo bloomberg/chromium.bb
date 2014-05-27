@@ -35,7 +35,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/browser/media/android/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
@@ -993,7 +993,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (host_ && host_->IsRenderView()) {
     RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
         RenderViewHost::From(host_));
-    rvhi->media_player_manager()->OnFrameInfoUpdated();
+    rvhi->media_web_contents_observer()->OnFrameInfoUpdated();
   }
 #endif  // defined(VIDEO_HOLE)
 }

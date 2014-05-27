@@ -26,6 +26,10 @@
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "ui/gfx/range/range.h"
 
+#if defined(OS_ANDROID)
+#include "content/renderer/media/android/renderer_media_player_manager.h"
+#endif
+
 class TransportDIB;
 struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
@@ -63,6 +67,10 @@ class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
 struct CustomContextMenuContext;
+
+#if defined(OS_ANDROID)
+class RendererMediaPlayerManager;
+#endif
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -524,6 +532,8 @@ class CONTENT_EXPORT RenderFrameImpl
  blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
+
+ RendererMediaPlayerManager* GetMediaPlayerManager();
 #endif
 
   // Stores the WebLocalFrame we are associated with.
@@ -592,6 +602,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // MediaStreamClient attached to this frame; lazily initialized.
   MediaStreamClient* media_stream_client_;
   blink::WebUserMediaClient* web_user_media_client_;
+
+#if defined(OS_ANDROID)
+  // Manages all media players in this render frame for communicating with the
+  // real media player and CDM objects in the browser process. It's okay to use
+  // raw pointers since it's a RenderFrameObserver.
+  RendererMediaPlayerManager* media_player_manager_;
+#endif
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

@@ -194,13 +194,13 @@ gpu::GLInProcessContext* SynchronousCompositorFactoryImpl::GetShareContext() {
 }
 
 scoped_refptr<StreamTextureFactory>
-SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int view_id) {
+SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
   scoped_refptr<StreamTextureFactorySynchronousImpl> factory(
       StreamTextureFactorySynchronousImpl::Create(
           base::Bind(
               &SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory,
               base::Unretained(this)),
-          view_id));
+          frame_id));
   return factory;
 }
 

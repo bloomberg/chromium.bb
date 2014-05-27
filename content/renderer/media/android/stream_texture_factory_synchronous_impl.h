@@ -41,7 +41,7 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
 
   static scoped_refptr<StreamTextureFactorySynchronousImpl> Create(
       const CreateContextProviderCallback& try_create_callback,
-      int view_id);
+      int frame_id);
 
   virtual StreamTextureProxy* CreateProxy() OVERRIDE;
   virtual void EstablishPeer(int32 stream_id, int player_id) OVERRIDE;
@@ -56,12 +56,12 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
   friend class base::RefCounted<StreamTextureFactorySynchronousImpl>;
   StreamTextureFactorySynchronousImpl(
       const CreateContextProviderCallback& try_create_callback,
-      int view_id);
+      int frame_id);
   virtual ~StreamTextureFactorySynchronousImpl();
 
   CreateContextProviderCallback create_context_provider_callback_;
   scoped_refptr<ContextProvider> context_provider_;
-  int view_id_;
+  int frame_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactorySynchronousImpl);
 };

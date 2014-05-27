@@ -120,6 +120,7 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #endif
@@ -404,6 +405,9 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       notification_provider_(NULL),
       media_stream_client_(NULL),
       web_user_media_client_(NULL),
+#if defined(OS_ANDROID)
+      media_player_manager_(NULL),
+#endif
       weak_factory_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 
@@ -423,6 +427,10 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
+#if defined(VIDEO_HOLE)
+  if (media_player_manager_)
+    render_view_->UnregisterVideoHoleFrame(this);
+#endif  // defined(VIDEO_HOLE)
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
@@ -1251,6 +1259,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
 void RenderFrameImpl::DidCommitCompositorFrame() {
   if (compositing_helper_)
     compositing_helper_->DidCommitCompositorFrame();
+  FOR_EACH_OBSERVER(
+      RenderFrameObserver, observers_, DidCommitCompositorFrame());
 }
 
 RenderView* RenderFrameImpl::GetRenderView() {
@@ -3477,19 +3487,29 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     }
 
     stream_texture_factory = StreamTextureFactoryImpl::Create(
-        context_provider, gpu_channel_host, render_view_->routing_id_);
+        context_provider, gpu_channel_host, routing_id_);
   }
 
   return new WebMediaPlayerAndroid(
       frame_,
       client,
       weak_factory_.GetWeakPtr(),
-      render_view_->media_player_manager_,
+      GetMediaPlayerManager(),
       stream_texture_factory,
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       new RenderMediaLog());
 }
 
-#endif
+RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
+  if (!media_player_manager_) {
+    media_player_manager_ = new RendererMediaPlayerManager(this);
+#if defined(VIDEO_HOLE)
+    render_view_->RegisterVideoHoleFrame(this);
+#endif  // defined(VIDEO_HOLE)
+  }
+  return media_player_manager_;
+}
+
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content

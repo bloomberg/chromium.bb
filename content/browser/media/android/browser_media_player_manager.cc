@@ -18,6 +18,7 @@
 #include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -58,10 +59,10 @@ void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
 
 // static
 BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
-    RenderViewHost* rvh) {
+    RenderFrameHost* rfh) {
   if (g_factory)
-    return g_factory(rvh);
-  return new BrowserMediaPlayerManager(rvh);
+    return g_factory(rfh);
+  return new BrowserMediaPlayerManager(rfh);
 }
 
 ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
@@ -126,45 +127,15 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 }
 
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
-    RenderViewHost* render_view_host)
-    : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
+    RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host),
       fullscreen_player_id_(-1),
       fullscreen_player_is_released_(false),
-      web_contents_(WebContents::FromRenderViewHost(render_view_host)),
+      web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
       weak_ptr_factory_(this) {
 }
 
 BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {}
-
-bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BrowserMediaPlayerManager, msg)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_EnterFullscreen, OnEnterFullscreen)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ExitFullscreen, OnExitFullscreen)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Initialize, OnInitialize)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Start, OnStart)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Seek, OnSeek)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Pause, OnPause)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetVolume, OnSetVolume)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetPoster, OnSetPoster)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Release, OnReleaseResources)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
-                        DestroyAllMediaPlayers)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetCdm, OnSetCdm)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_InitializeCdm, OnInitializeCdm)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_CreateSession, OnCreateSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_UpdateSession, OnUpdateSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_ReleaseSession, OnReleaseSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_DestroyCdm, OnDestroyCdm)
-#if defined(VIDEO_HOLE)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
-                        OnNotifyExternalSurface)
-#endif  // defined(VIDEO_HOLE)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
 
 void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
@@ -174,8 +145,8 @@ void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
       fullscreen_player_is_released_ = false;
     }
     player->Start();
-    Send(new MediaPlayerMsg_DidMediaPlayerPlay(
-        routing_id(), fullscreen_player_id_));
+    Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(),
+                                               fullscreen_player_id_));
   }
 }
 
@@ -183,8 +154,8 @@ void BrowserMediaPlayerManager::FullscreenPlayerPause() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
     player->Pause(true);
-    Send(new MediaPlayerMsg_DidMediaPlayerPause(
-        routing_id(), fullscreen_player_id_));
+    Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(),
+                                                fullscreen_player_id_));
   }
 }
 
@@ -211,8 +182,8 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
     }
   }
 
-  Send(new MediaPlayerMsg_DidExitFullscreen(
-      routing_id(), fullscreen_player_id_));
+  Send(
+      new MediaPlayerMsg_DidExitFullscreen(RoutingID(), fullscreen_player_id_));
   video_view_.reset();
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   fullscreen_player_id_ = -1;
@@ -226,8 +197,8 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
 
 void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
                                              base::TimeDelta current_time) {
-  Send(new MediaPlayerMsg_MediaTimeUpdate(
-      routing_id(), player_id, current_time));
+  Send(
+      new MediaPlayerMsg_MediaTimeUpdate(RoutingID(), player_id, current_time));
 }
 
 void BrowserMediaPlayerManager::SetVideoSurface(
@@ -241,8 +212,7 @@ void BrowserMediaPlayerManager::SetVideoSurface(
   if (empty_surface)
     return;
 
-  Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(),
-                                             player->player_id()));
+  Send(new MediaPlayerMsg_DidEnterFullscreen(RoutingID(), player->player_id()));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOverlayFullscreenVideoSubtitle)) {
     return;
@@ -260,27 +230,27 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
     int player_id, base::TimeDelta duration, int width, int height,
     bool success) {
   Send(new MediaPlayerMsg_MediaMetadataChanged(
-      routing_id(), player_id, duration, width, height, success));
+      RoutingID(), player_id, duration, width, height, success));
   if (fullscreen_player_id_ == player_id)
     video_view_->UpdateMediaMetadata();
 }
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
-  Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
+  Send(new MediaPlayerMsg_MediaPlaybackCompleted(RoutingID(), player_id));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnPlaybackComplete();
 }
 
 void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
-  Send(new MediaPlayerMsg_MediaPlayerReleased(routing_id(), player_id));
+  Send(new MediaPlayerMsg_MediaPlayerReleased(RoutingID(), player_id));
   OnReleaseResources(player_id);
 }
 
 void BrowserMediaPlayerManager::OnBufferingUpdate(
     int player_id, int percentage) {
   Send(new MediaPlayerMsg_MediaBufferingUpdate(
-      routing_id(), player_id, percentage));
+      RoutingID(), player_id, percentage));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnBufferingUpdate(percentage);
 }
@@ -288,24 +258,28 @@ void BrowserMediaPlayerManager::OnBufferingUpdate(
 void BrowserMediaPlayerManager::OnSeekRequest(
     int player_id,
     const base::TimeDelta& time_to_seek) {
-  Send(new MediaPlayerMsg_SeekRequest(routing_id(), player_id, time_to_seek));
+  Send(new MediaPlayerMsg_SeekRequest(RoutingID(), player_id, time_to_seek));
+}
+
+void BrowserMediaPlayerManager::PauseVideo() {
+  Send(new MediaPlayerMsg_PauseVideo(RoutingID()));
 }
 
 void BrowserMediaPlayerManager::OnSeekComplete(
     int player_id,
     const base::TimeDelta& current_time) {
-  Send(new MediaPlayerMsg_SeekCompleted(routing_id(), player_id, current_time));
+  Send(new MediaPlayerMsg_SeekCompleted(RoutingID(), player_id, current_time));
 }
 
 void BrowserMediaPlayerManager::OnError(int player_id, int error) {
-  Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
+  Send(new MediaPlayerMsg_MediaError(RoutingID(), player_id, error));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnMediaPlayerError(error);
 }
 
 void BrowserMediaPlayerManager::OnVideoSizeChanged(
     int player_id, int width, int height) {
-  Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
+  Send(new MediaPlayerMsg_MediaVideoSizeChanged(RoutingID(), player_id,
       width, height));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnVideoSizeChanged(width, height);
@@ -373,7 +347,7 @@ void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
   // TODO(qinmin): make this flag default on android.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureRequirementForMediaFullscreen)) {
-    Send(new MediaPlayerMsg_RequestFullscreen(routing_id(), player_id));
+    Send(new MediaPlayerMsg_RequestFullscreen(RoutingID(), player_id));
   }
 }
 
@@ -384,7 +358,7 @@ void BrowserMediaPlayerManager::OnSessionCreated(
     uint32 session_id,
     const std::string& web_session_id) {
   Send(new CdmMsg_SessionCreated(
-      routing_id(), cdm_id, session_id, web_session_id));
+      RoutingID(), cdm_id, session_id, web_session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionMessage(
@@ -400,15 +374,15 @@ void BrowserMediaPlayerManager::OnSessionMessage(
   }
 
   Send(new CdmMsg_SessionMessage(
-      routing_id(), cdm_id, session_id, message, destination_gurl));
+      RoutingID(), cdm_id, session_id, message, destination_gurl));
 }
 
 void BrowserMediaPlayerManager::OnSessionReady(int cdm_id, uint32 session_id) {
-  Send(new CdmMsg_SessionReady(routing_id(), cdm_id, session_id));
+  Send(new CdmMsg_SessionReady(RoutingID(), cdm_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionClosed(int cdm_id, uint32 session_id) {
-  Send(new CdmMsg_SessionClosed(routing_id(), cdm_id, session_id));
+  Send(new CdmMsg_SessionClosed(RoutingID(), cdm_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionError(
@@ -417,7 +391,7 @@ void BrowserMediaPlayerManager::OnSessionError(
     media::MediaKeys::KeyError error_code,
     uint32 system_code) {
   Send(new CdmMsg_SessionError(
-      routing_id(), cdm_id, session_id, error_code, system_code));
+      RoutingID(), cdm_id, session_id, error_code, system_code));
 }
 
 #if defined(VIDEO_HOLE)
@@ -501,8 +475,8 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   // TODO(qinmin): There is no need to send DidEnterFullscreen message.
   // However, if we don't send the message, page layers will not be
   // correctly restored. http:crbug.com/367346.
-  Send(new MediaPlayerMsg_DidEnterFullscreen(routing_id(), player_id));
-  Send(new MediaPlayerMsg_DidExitFullscreen(routing_id(), player_id));
+  Send(new MediaPlayerMsg_DidEnterFullscreen(RoutingID(), player_id));
+  Send(new MediaPlayerMsg_DidExitFullscreen(RoutingID(), player_id));
   video_view_.reset();
 }
 
@@ -833,6 +807,14 @@ void BrowserMediaPlayerManager::OnSetCdm(int player_id, int cdm_id) {
   cdm_to_player_map_[cdm_id] = player_id;
 }
 
+int BrowserMediaPlayerManager::RoutingID() {
+  return render_frame_host_->GetRoutingID();
+}
+
+bool BrowserMediaPlayerManager::Send(IPC::Message* msg) {
+  return render_frame_host_->Send(msg);
+}
+
 void BrowserMediaPlayerManager::CreateSessionIfPermitted(
     int cdm_id,
     uint32 session_id,
@@ -882,8 +864,8 @@ void BrowserMediaPlayerManager::OnMediaResourcesRequested(int player_id) {
     if ((*it)->IsPlayerReady() && !(*it)->IsPlaying() &&
         fullscreen_player_id_ != (*it)->player_id()) {
       (*it)->Release();
-      Send(new MediaPlayerMsg_MediaPlayerReleased(
-          routing_id(), (*it)->player_id()));
+      Send(new MediaPlayerMsg_MediaPlayerReleased(RoutingID(),
+                                                  (*it)->player_id()));
     }
   }
 }
