@@ -6,10 +6,37 @@
 
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/path.h"
+#include "ui/views/masked_view_targeter.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
+
+// A class used to define a triangular-shaped hit test mask on a View.
+class TestMaskedViewTargeter : public MaskedViewTargeter {
+ public:
+  explicit TestMaskedViewTargeter(View* masked_view)
+      : MaskedViewTargeter(masked_view) {}
+  virtual ~TestMaskedViewTargeter() {}
+
+ private:
+  virtual bool GetHitTestMask(View* view, gfx::Path* mask) const OVERRIDE {
+    SkScalar w = SkIntToScalar(view->width());
+    SkScalar h = SkIntToScalar(view->height());
+
+    // Create a triangular mask within the bounds of |view|.
+    mask->moveTo(w / 2, 0);
+    mask->lineTo(w, h);
+    mask->lineTo(0, h);
+    mask->close();
+
+    return true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestMaskedViewTargeter);
+};
+
 namespace test {
 
 typedef ViewsTestBase ViewTargeterTest;
@@ -188,6 +215,73 @@ TEST_F(ViewTargeterTest, SubtreeShouldBeExploredForEvent) {
 
   // TODO(tdanderson): Move the hit-testing unit tests out of view_unittest
   // and into here. See crbug.com/355425.
+}
+
+// Tests that FindTargetForEvent() returns the correct target when some
+// views in the view tree have a MaskedViewTargeter installed, i.e.,
+// they have a custom-shaped hit test mask.
+TEST_F(ViewTargeterTest, MaskedViewTargeter) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 650, 650);
+  widget.Init(params);
+
+  ui::EventTargeter* targeter = new ViewTargeter();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetEventTargeter(make_scoped_ptr(targeter));
+
+  // The coordinates used for SetBounds() are in the parent coordinate space.
+  View masked_view, unmasked_view, masked_child;
+  masked_view.SetBounds(0, 0, 200, 200);
+  unmasked_view.SetBounds(300, 0, 300, 300);
+  masked_child.SetBounds(0, 0, 100, 100);
+  root_view->AddChildView(&masked_view);
+  root_view->AddChildView(&unmasked_view);
+  unmasked_view.AddChildView(&masked_child);
+
+  // Install event targeters of type TestMaskedViewTargeter on the two masked
+  // views to define their hit test masks.
+  ui::EventTargeter* masked_targeter = new TestMaskedViewTargeter(&masked_view);
+  masked_view.SetEventTargeter(make_scoped_ptr(masked_targeter));
+  masked_targeter = new TestMaskedViewTargeter(&masked_child);
+  masked_child.SetEventTargeter(make_scoped_ptr(masked_targeter));
+
+  // Note that the coordinates used below are in the coordinate space of
+  // the root view.
+
+  // Event located within the hit test mask of |masked_view|.
+  ui::ScrollEvent scroll(ui::ET_SCROLL,
+                         gfx::Point(100, 190),
+                         ui::EventTimeForNow(),
+                         0,
+                         0,
+                         3,
+                         0,
+                         3,
+                         2);
+  ui::EventTarget* current_target =
+      targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&masked_view, static_cast<View*>(current_target));
+
+  // Event located outside the hit test mask of |masked_view|.
+  scroll.set_location(gfx::Point(10, 10));
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(root_view, static_cast<View*>(current_target));
+
+  // Event located within the hit test mask of |masked_child|.
+  scroll.set_location(gfx::Point(350, 3));
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&masked_child, static_cast<View*>(current_target));
+
+  // Event located within the hit test mask of |masked_child|.
+  scroll.set_location(gfx::Point(300, 12));
+  current_target = targeter->FindTargetForEvent(root_view, &scroll);
+  EXPECT_EQ(&unmasked_view, static_cast<View*>(current_target));
+
+  // TODO(tdanderson): We should also test that targeting of masked views
+  //                   works correctly with gestures. See crbug.com/375822.
 }
 
 }  // namespace test

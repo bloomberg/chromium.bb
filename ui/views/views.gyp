@@ -306,6 +306,8 @@
         'linux_ui/status_icon_linux.cc',
         'linux_ui/window_button_order_observer.h',
         'linux_ui/window_button_order_provider.cc',
+        'masked_view_targeter.cc',
+        'masked_view_targeter.h',
         'metrics.cc',
         'metrics.h',
         'metrics_aura.cc',

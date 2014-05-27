@@ -13,6 +13,17 @@ namespace views {
 ViewTargeter::ViewTargeter() {}
 ViewTargeter::~ViewTargeter() {}
 
+gfx::RectF ViewTargeter::BoundsForEvent(const ui::LocatedEvent& event) const {
+  gfx::RectF event_bounds(event.location_f(), gfx::SizeF(1, 1));
+  if (event.IsGestureEvent()) {
+    const ui::GestureEvent& gesture =
+        static_cast<const ui::GestureEvent&>(event);
+    event_bounds = gesture.details().bounding_box_f();
+  }
+
+  return event_bounds;
+}
+
 ui::EventTarget* ViewTargeter::FindTargetForEvent(ui::EventTarget* root,
                                                   ui::Event* event) {
   View* view = static_cast<View*>(root);

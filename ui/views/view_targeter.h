@@ -23,6 +23,11 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
   virtual ~ViewTargeter();
 
  protected:
+  // Returns the location of |event| represented as a rect. If |event| is
+  // a gesture event, its bounding box is returned. Otherwise, a 1x1 rect
+  // having its origin at the location of |event| is returned.
+  gfx::RectF BoundsForEvent(const ui::LocatedEvent& event) const;
+
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                               ui::Event* event) OVERRIDE;
