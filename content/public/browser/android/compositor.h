@@ -64,11 +64,6 @@ class CONTENT_EXPORT Compositor {
   // Tells the view tree to assume a transparent background when rendering.
   virtual void SetHasTransparentBackground(bool flag) = 0;
 
-  // Attempts to composite and read back the result into the provided buffer.
-  // The buffer must be at least window width * height * 4 (RGBA) bytes large.
-  // The buffer is not modified if false is returned.
-  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) = 0;
-
   // Request layout and draw. You only need to call this if you need to trigger
   // Composite *without* having modified the layer tree.
   virtual void SetNeedsComposite() = 0;

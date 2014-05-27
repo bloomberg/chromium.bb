@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A class for reading back content.
@@ -20,17 +21,17 @@ public abstract class ContentReadbackHandler {
     /**
      * A callback interface for content readback into a bitmap.
      */
-    public static interface GetContentBitmapCallback {
+    public static interface GetBitmapCallback {
         /**
          * Called when the content readback finishes.
          * @param success    Indicates whether the readback succeeded or not.
          * @param bitmap     The {@link Bitmap} of the content.
          */
-        public void onFinishGetContentBitmap(boolean success, Bitmap bitmap);
+        public void onFinishGetBitmap(boolean success, Bitmap bitmap);
     }
 
     private int mNextReadbackId = 1;
-    private SparseArray<GetContentBitmapCallback> mGetContentBitmapRequests;
+    private SparseArray<GetBitmapCallback> mGetBitmapRequests;
 
     private long mNativeContentReadbackHandler;
 
@@ -38,7 +39,7 @@ public abstract class ContentReadbackHandler {
      * Creates a {@link ContentReadbackHandler}.
      */
     public ContentReadbackHandler() {
-        mGetContentBitmapRequests = new SparseArray<GetContentBitmapCallback>();
+        mGetBitmapRequests = new SparseArray<GetBitmapCallback>();
     }
 
     /**
@@ -58,11 +59,11 @@ public abstract class ContentReadbackHandler {
 
 
     @CalledByNative
-    private void notifyGetContentBitmapFinished(int readbackId, boolean success, Bitmap bitmap) {
-        GetContentBitmapCallback callback = mGetContentBitmapRequests.get(readbackId);
+    private void notifyGetBitmapFinished(int readbackId, boolean success, Bitmap bitmap) {
+        GetBitmapCallback callback = mGetBitmapRequests.get(readbackId);
         if (callback != null) {
-            mGetContentBitmapRequests.delete(readbackId);
-            callback.onFinishGetContentBitmap(success, bitmap);
+            mGetBitmapRequests.delete(readbackId);
+            callback.onFinishGetBitmap(success, bitmap);
         } else {
             // readback Id is unregistered.
             assert false : "Readback finished for unregistered Id: " + readbackId;
@@ -80,18 +81,37 @@ public abstract class ContentReadbackHandler {
      * @param callback The callback to be executed after readback completes.
      */
     public void getContentBitmapAsync(float scale, Rect srcRect, ContentViewCore view,
-            GetContentBitmapCallback callback) {
+            GetBitmapCallback callback) {
         if (!readyForReadback()) {
-            callback.onFinishGetContentBitmap(false, null);
+            callback.onFinishGetBitmap(false, null);
             return;
         }
         ThreadUtils.assertOnUiThread();
 
         int readbackId = mNextReadbackId++;
-        mGetContentBitmapRequests.put(readbackId, callback);
+        mGetBitmapRequests.put(readbackId, callback);
         nativeGetContentBitmap(mNativeContentReadbackHandler, readbackId, scale,
                 Bitmap.Config.ARGB_8888, srcRect.top, srcRect.left, srcRect.width(),
                 srcRect.height(), view);
+    }
+
+    /**
+     * Asynchronously, grab a bitmap of the current browser compositor root layer.
+     *
+     * @param windowAndroid The window that hosts the compositor.
+     * @param callback      The callback to be executed after readback completes.
+     */
+    public void getCompositorBitmapAsync(WindowAndroid windowAndroid, GetBitmapCallback callback) {
+        if (!readyForReadback()) {
+            callback.onFinishGetBitmap(false, null);
+            return;
+        }
+        ThreadUtils.assertOnUiThread();
+
+        int readbackId = mNextReadbackId++;
+        mGetBitmapRequests.put(readbackId, callback);
+        nativeGetCompositorBitmap(mNativeContentReadbackHandler, readbackId,
+                windowAndroid.getNativePointer());
     }
 
     /**
@@ -105,4 +125,6 @@ public abstract class ContentReadbackHandler {
     private native void nativeGetContentBitmap(long nativeContentReadbackHandler, int readback_id,
             float scale, Bitmap.Config config, float x, float y, float width, float height,
             Object contentViewCore);
+    private native void nativeGetCompositorBitmap(long nativeContentReadbackHandler,
+            int readback_id, long nativeWindowAndroid);
 }

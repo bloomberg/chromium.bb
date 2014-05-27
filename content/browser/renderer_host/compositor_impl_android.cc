@@ -438,10 +438,6 @@ void CompositorImpl::SetHasTransparentBackground(bool flag) {
     host_->set_has_transparent_background(flag);
 }
 
-bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
-  return false;
-}
-
 void CompositorImpl::SetNeedsComposite() {
   if (!host_.get() || needs_composite_)
     return;

@@ -36,9 +36,6 @@ class UI_BASE_EXPORT WindowAndroid {
     content_offset_ = content_offset;
   }
 
-  bool GrabSnapshot(int content_x, int content_y, int width, int height,
-                    std::vector<unsigned char>* png_representation);
-
   // Compositor callback relay.
   void OnCompositingDidCommit();
 

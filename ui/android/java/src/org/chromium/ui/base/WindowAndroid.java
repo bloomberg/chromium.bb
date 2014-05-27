@@ -279,15 +279,6 @@ public class WindowAndroid {
         return mNativeWindowAndroid;
     }
 
-    /**
-     * Returns a PNG-encoded screenshot of the the window region at (|windowX|,
-     * |windowY|) with the size |width| by |height| pixels.
-     */
-    @CalledByNative
-    public byte[] grabSnapshot(int windowX, int windowY, int width, int height) {
-        return null;
-    }
-
     private native long nativeInit(long vsyncPeriod);
     private native void nativeOnVSync(long nativeWindowAndroid, long vsyncTimeMicros);
     private native void nativeDestroy(long nativeWindowAndroid);

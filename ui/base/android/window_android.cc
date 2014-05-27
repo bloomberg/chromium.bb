@@ -41,22 +41,6 @@ WindowAndroid::~WindowAndroid() {
       WindowAndroidObserver, observer_list_, OnWillDestroyWindow());
 }
 
-bool WindowAndroid::GrabSnapshot(
-    int content_x, int content_y, int width, int height,
-    std::vector<unsigned char>* png_representation) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> result =
-      Java_WindowAndroid_grabSnapshot(env, GetJavaObject().obj(),
-                                      content_x + content_offset_.x(),
-                                      content_y + content_offset_.y(),
-                                      width, height);
-  if (result.is_null())
-    return false;
-  base::android::JavaByteArrayToByteVector(
-      env, result.obj(), png_representation);
-  return true;
-}
-
 void WindowAndroid::OnCompositingDidCommit() {
   FOR_EACH_OBSERVER(WindowAndroidObserver,
                     observer_list_,

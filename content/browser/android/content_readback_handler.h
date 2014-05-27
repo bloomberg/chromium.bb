@@ -13,6 +13,10 @@
 
 class SkBitmap;
 
+namespace cc {
+class CopyOutputResult;
+}
+
 namespace content {
 
 // Native side of the ContentReadbackHandler.java, which issues content
@@ -35,13 +39,17 @@ class ContentReadbackHandler {
                         jfloat width,
                         jfloat height,
                         jobject content_view_core);
+  void GetCompositorBitmap(JNIEnv* env,
+                           jobject obj,
+                           jint readback_id,
+                           jlong native_window_android);
 
  private:
   virtual ~ContentReadbackHandler();
 
-  void OnFinishContentReadback(int readback_id,
-                               bool success,
-                               const SkBitmap& bitmap);
+  void OnFinishReadback(int readback_id,
+                        bool success,
+                        const SkBitmap& bitmap);
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   base::WeakPtrFactory<ContentReadbackHandler> weak_factory_;
