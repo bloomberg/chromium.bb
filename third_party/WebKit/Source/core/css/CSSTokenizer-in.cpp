@@ -1481,7 +1481,9 @@ restartAfterComment:
             m_token = ATKEYWORD;
             ++result;
             parseIdentifier(result, resultString, hasEscape);
-            detectAtToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>(), hasEscape);
+            // The standard enables unicode escapes in at-rules. In this case only the resultString will contain the
+            // correct identifier, hence we have to use it to determine its length instead of the usual pointer arithmetic.
+            detectAtToken<SrcCharacterType>(resultString.length() + 1, hasEscape);
         }
         break;
 
