@@ -8,14 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/network_config_message_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -26,111 +23,40 @@ namespace chromeos {
 
 namespace {
 
-const char kStringsJsFile[] = "strings.js";
-const char kRequestNetworkInfoCallback[] = "requestNetworkInfo";
-const char kNetworkEventLogTag[] = "networkEventLog";
-const char kNetworkStateTag[] = "networkStates";
-const char kFavoriteStateTag[] = "favoriteStates";
-const char kOnNetworkInfoReceivedFunction[] = "NetworkUI.onNetworkInfoReceived";
+const int kMaxLogEvents = 1000;
 
-class NetworkMessageHandler : public content::WebUIMessageHandler {
+class NetworkUIMessageHandler : public content::WebUIMessageHandler {
  public:
-  NetworkMessageHandler();
-  virtual ~NetworkMessageHandler();
+  NetworkUIMessageHandler() {}
+  virtual ~NetworkUIMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE {
+    web_ui()->RegisterMessageCallback(
+        "NetworkUI.getNetworkLog",
+        base::Bind(&NetworkUIMessageHandler::GetNetworkLog,
+                   base::Unretained(this)));
+  }
 
  private:
-  void CollectNetworkInfo(const base::ListValue* value) const;
-  std::string GetNetworkEventLog() const;
-  void GetNetworkState(base::DictionaryValue* output) const;
-  void GetFavoriteState(base::DictionaryValue* output) const;
-  void RespondToPage(const base::DictionaryValue& value) const;
+  void GetNetworkLog(const base::ListValue* value) const {
+    base::StringValue data(chromeos::network_event_log::GetAsString(
+        chromeos::network_event_log::NEWEST_FIRST,
+        "json",
+        chromeos::network_event_log::LOG_LEVEL_DEBUG,
+        kMaxLogEvents));
+    web_ui()->CallJavascriptFunction("NetworkUI.getNetworkLogCallback", data);
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkMessageHandler);
+  DISALLOW_COPY_AND_ASSIGN(NetworkUIMessageHandler);
 };
-
-NetworkMessageHandler::NetworkMessageHandler() {
-}
-
-NetworkMessageHandler::~NetworkMessageHandler() {
-}
-
-void NetworkMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      kRequestNetworkInfoCallback,
-      base::Bind(&NetworkMessageHandler::CollectNetworkInfo,
-                 base::Unretained(this)));
-}
-
-void NetworkMessageHandler::CollectNetworkInfo(
-    const base::ListValue* value) const {
-  base::DictionaryValue data;
-  data.SetString(kNetworkEventLogTag, GetNetworkEventLog());
-
-  base::DictionaryValue* networkState = new base::DictionaryValue;
-  GetNetworkState(networkState);
-  data.Set(kNetworkStateTag, networkState);
-
-  base::DictionaryValue* favoriteState = new base::DictionaryValue;
-  GetFavoriteState(favoriteState);
-  data.Set(kFavoriteStateTag, favoriteState);
-
-  RespondToPage(data);
-}
-
-void NetworkMessageHandler::RespondToPage(
-    const base::DictionaryValue& value) const {
-  web_ui()->CallJavascriptFunction(kOnNetworkInfoReceivedFunction, value);
-}
-
-std::string NetworkMessageHandler::GetNetworkEventLog() const {
-  std::string format = "json";
-  return chromeos::network_event_log::GetAsString(
-      chromeos::network_event_log::NEWEST_FIRST,
-      format,
-      chromeos::network_event_log::LOG_LEVEL_DEBUG,
-      0);
-}
-
-void NetworkMessageHandler::GetNetworkState(
-    base::DictionaryValue* output) const {
-  chromeos::NetworkStateHandler* handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  chromeos::NetworkStateHandler::NetworkStateList network_list;
-  handler->GetNetworkList(&network_list);
-  for (chromeos::NetworkStateHandler::NetworkStateList::const_iterator it =
-           network_list.begin();
-       it != network_list.end();
-       ++it) {
-    base::DictionaryValue* properties = new base::DictionaryValue;
-    (*it)->GetStateProperties(properties);
-    output->Set((*it)->path(), properties);
-  }
-}
-
-void NetworkMessageHandler::GetFavoriteState(
-    base::DictionaryValue* output) const {
-  chromeos::NetworkStateHandler* handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  chromeos::NetworkStateHandler::FavoriteStateList favorite_list;
-  handler->GetFavoriteList(&favorite_list);
-  for (chromeos::NetworkStateHandler::FavoriteStateList::const_iterator it =
-           favorite_list.begin();
-       it != favorite_list.end();
-       ++it) {
-    base::DictionaryValue* properties = new base::DictionaryValue;
-    (*it)->GetStateProperties(properties);
-    output->Set((*it)->path(), properties);
-  }
-}
 
 }  // namespace
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new NetworkMessageHandler());
+  web_ui->AddMessageHandler(new NetworkConfigMessageHandler());
+  web_ui->AddMessageHandler(new NetworkUIMessageHandler());
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
@@ -149,14 +75,14 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("logLevelTimeDetailText",
                            IDS_NETWORK_LOG_LEVEL_TIME_DETAIL);
   html->AddLocalizedString("logEntryFormat", IDS_NETWORK_LOG_ENTRY);
-  html->SetJsonPath(kStringsJsFile);
+  html->SetJsonPath("strings.js");
+  html->AddResourcePath("network_config.js", IDR_NETWORK_CONFIG_JS);
+  html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);
+  html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
+  html->SetDefaultResource(IDR_NETWORK_UI_HTML);
 
-  html->AddResourcePath("network.css", IDR_NETWORK_CSS);
-  html->AddResourcePath("network.js", IDR_NETWORK_JS);
-  html->SetDefaultResource(IDR_NETWORK_HTML);
-
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, html);
+  content::WebUIDataSource::Add(
+      web_ui->GetWebContents()->GetBrowserContext(), html);
 }
 
 NetworkUI::~NetworkUI() {

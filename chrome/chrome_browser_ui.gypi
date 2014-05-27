@@ -2091,6 +2091,8 @@
         'browser/ui/webui/chromeos/mobile_setup_ui.h',
         'browser/ui/webui/chromeos/network_ui.cc',
         'browser/ui/webui/chromeos/network_ui.h',
+        'browser/ui/webui/chromeos/network_config_message_handler.cc',
+        'browser/ui/webui/chromeos/network_config_message_handler.h',
         'browser/ui/webui/chromeos/nfc_debug_ui.cc',
         'browser/ui/webui/chromeos/nfc_debug_ui.h',
         'browser/ui/webui/chromeos/power_ui.cc',

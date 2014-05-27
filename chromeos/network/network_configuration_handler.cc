@@ -209,6 +209,7 @@ void NetworkConfigurationHandler::GetProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
+  NET_LOG_USER("GetProperties", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
       base::Bind(&GetPropertiesCallback,

@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <title id="network" i18n-content="titleText"></title>
-  <link rel="stylesheet" href="chrome://network/network.css">
+  <link rel="stylesheet" href="chrome://network/network_ui.css">
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://network/strings.js"></script>
-  <script src="chrome://network/network.js"></script>
+  <script src="chrome://network/network_config.js"></script>
+  <script src="chrome://network/network_ui.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <p i18n-content="autoRefreshText"></p>
@@ -34,13 +35,10 @@
   <table id="network-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
-      <td>Path</td>
       <td>GUID</td>
       <td>Name</td>
       <td>Type</td>
       <td>State</td>
-      <td>Profile</td>
-      <td>Connect</td>
       <td>Error</td>
       <td>Security</td>
       <td>Technology</td>
@@ -54,7 +52,6 @@
   <table id="favorite-state-table" class="state-table">
     <tr class="state-table-header">
       <td></td>
-      <td>Path</td>
       <td>GUID</td>
       <td>Name</td>
       <td>Type</td>

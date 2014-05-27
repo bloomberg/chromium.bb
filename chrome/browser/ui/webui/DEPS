@@ -7,6 +7,7 @@ include_rules = [
   "+sync/internal_api/public/events",
 
   # Other libraries.
+  "+components/onc",
   "+device/bluetooth",
   "+device/nfc",
   "+third_party/angle",       # For ANGLE version.

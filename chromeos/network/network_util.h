@@ -100,12 +100,14 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> TranslateFavoriteStateToONC(
 // |configured_only|, and |visible_only| to NetworkStateHandler::
 // GetNetworkListByType(). Translates the result into a list of ONC
 // dictionaries using TranslateShillServiceToONCPart. |limit| is used to limit
-// the number of results.
+// the number of results. If |debugging_properties| is true then also include
+// additional debugging properties (used in release code for chrome://network).
 CHROMEOS_EXPORT scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     NetworkTypePattern pattern,
     bool configured_only,
     bool visible_only,
-    int limit);
+    int limit,
+    bool debugging_properties);
 
 }  // namespace network_util
 }  // namespace chromeos

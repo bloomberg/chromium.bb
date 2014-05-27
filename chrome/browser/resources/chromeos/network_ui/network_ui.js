@@ -2,20 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var NetworkUI = function() {
+var NetworkUI = (function() {
+  'use strict';
+
   // Properties to display in the network state table. Each entry can be either
   // a single state field or an array of state fields. If more than one is
   // specified then the first non empty value is used.
   var NETWORK_STATE_FIELDS = [
-    'Name', 'Type', 'State', 'Profile', 'Connectable',
-    'Error', 'Security',
-    ['Cellular.NetworkTechnology', 'EAP.EAP'],
-    'Cellular.ActivationState', 'Cellular.RoamingState',
-    'Cellular.OutOfCredits', 'Strength'
+    'GUID',
+    'Name',
+    'Type',
+    'ConnectionState',
+    'ErrorState',
+    'WiFi.Security',
+    ['Cellular.NetworkTechnology',
+     'EAP.EAP'],
+    'Cellular.ActivationState',
+    'Cellular.RoamingState',
+    'Cellular.OutOfCredits',
+    'WiFi.SignalStrength'
   ];
 
   var FAVORITE_STATE_FIELDS = [
-    'Name', 'Type', 'Profile', 'onc_source'
+    'GUID',
+    'Name',
+    'Type',
+    'Profile',
+    'onc_source'
   ];
 
   var LOG_LEVEL_CLASSNAME = {
@@ -97,17 +110,18 @@ var NetworkUI = function() {
   /**
    * Create a cell with a button for expanding a network state table row.
    *
-   * @param {dictionary} state Property values for the network or favorite.
+   * @param {string} guid The GUID identifying the network.
    * @return {DOMElement} The created td element that displays the given value.
    */
-  var createStateTableExpandButton = function(state) {
+  var createStateTableExpandButton = function(guid) {
     var cell = document.createElement('td');
     cell.className = 'state-table-expand-button-cell';
     var button = document.createElement('button');
     button.addEventListener('click', function(event) {
-      toggleExpandRow(event.target, state);
+      toggleExpandRow(event.target, guid);
     });
     button.className = 'state-table-expand-button';
+    button.textContent = '+';
     cell.appendChild(button);
     return cell;
   };
@@ -127,33 +141,30 @@ var NetworkUI = function() {
   /**
    * Create a row in the network state table.
    *
-   * @param {string} stateFields The state fields to use for the row.
-   * @param {string} path The network or favorite path.
-   * @param {dictionary} state Property values for the network or favorite.
+   * @param {Array} stateFields The state fields to use for the row.
+   * @param {Object} state Property values for the network or favorite.
    * @return {DOMElement} The created tr element that contains the network
    *     state information.
    */
-  var createStateTableRow = function(stateFields, path, state) {
+  var createStateTableRow = function(stateFields, state) {
     var row = document.createElement('tr');
     row.className = 'state-table-row';
-    row.appendChild(createStateTableExpandButton(state));
-    row.appendChild(createStateTableCell(path));
-    var guid = state['GUID'];
-    if (guid)
-      guid = guid.slice(1, 9);
-    row.appendChild(createStateTableCell(guid));
+    var guid = state.GUID;
+    row.appendChild(createStateTableExpandButton(guid));
     for (var i = 0; i < stateFields.length; ++i) {
       var field = stateFields[i];
       var value = '';
       if (typeof field == 'string') {
-        value = state[field];
+        value = networkConfig.getValueFromProperties(state, field);
       } else {
         for (var j = 0; j < field.length; ++j) {
-          value = state[field[j]];
+          value = networkConfig.getValueFromProperties(state, field[j]);
           if (value)
             break;
         }
       }
+      if (field == 'GUID')
+        value = value.slice(0, 8);
       row.appendChild(createStateTableCell(value));
     }
     return row;
@@ -163,30 +174,46 @@ var NetworkUI = function() {
    * Create table for networks or favorites.
    *
    * @param {string} tablename The name of the table to be created.
-   * @param {Array.<Object>} stateFields The list of fields for the table.
-   * @param {Array.<Object>} states An array of network or favorite states.
+   * @param {Array} stateFields The list of fields for the table.
+   * @param {Array} states An array of network or favorite states.
    */
   var createStateTable = function(tablename, stateFields, states) {
     var table = $(tablename);
     var oldRows = table.querySelectorAll('.state-table-row');
     for (var i = 0; i < oldRows.length; ++i)
       table.removeChild(oldRows[i]);
-    for (var path in states)
-      table.appendChild(createStateTableRow(stateFields, path, states[path]));
+    states.forEach(function(state) {
+      table.appendChild(createStateTableRow(stateFields, state));
+    });
   };
 
   /**
-   * This callback function is triggered when the data is received.
+   * This callback function is triggered when the network log is received.
    *
-   * @param {dictionary} data A dictionary that contains network state
-   *     information.
+   * @param {Object} data A JSON structure of event log entries.
    */
-  var onNetworkInfoReceived = function(data) {
-    createEventLog(JSON.parse(data.networkEventLog));
-    createStateTable(
-        'network-state-table', NETWORK_STATE_FIELDS, data.networkStates);
-    createStateTable(
-        'favorite-state-table', FAVORITE_STATE_FIELDS, data.favoriteStates);
+  var getNetworkLogCallback = function(data) {
+    createEventLog(JSON.parse(data));
+  };
+
+  /**
+   * This callback function is triggered when visible networks are received.
+   *
+   * @param {Array} data A list of network state information for each
+   *     visible network.
+   */
+  var onVisibleNetworksReceived = function(states) {
+    createStateTable('network-state-table', NETWORK_STATE_FIELDS, states);
+  };
+
+  /**
+   * This callback function is triggered when favorite networks are received.
+   *
+   * @param {Object} data A list of network state information for each
+   *     favorite network.
+   */
+  var onFavoriteNetworksReceived = function(states) {
+    createStateTable('favorite-state-table', FAVORITE_STATE_FIELDS, states);
   };
 
   /**
@@ -194,17 +221,17 @@ var NetworkUI = function() {
    * state information for a row.
    *
    * @param {DOMElement} btn The button that was clicked.
-   * @param {dictionary} state Property values for the network or favorite.
+   * @param {string} guid GUID identifying the network.
    */
-  var toggleExpandRow = function(btn, state) {
+  var toggleExpandRow = function(btn, guid) {
     var cell = btn.parentNode;
     var row = cell.parentNode;
-    if (btn.classList.contains('state-table-expand-button-expanded')) {
-      btn.classList.remove('state-table-expand-button-expanded');
+    if (btn.textContent == '-') {
+      btn.textContent = '+';
       row.parentNode.removeChild(row.nextSibling);
     } else {
-      btn.classList.add('state-table-expand-button-expanded');
-      var expandedRow = createExpandedRow(state, row);
+      btn.textContent = '-';
+      var expandedRow = createExpandedRow(guid, row);
       row.parentNode.insertBefore(expandedRow, row.nextSibling);
     }
   };
@@ -212,11 +239,11 @@ var NetworkUI = function() {
   /**
    * Creates the expanded row for displaying the complete state as JSON.
    *
-   * @param {dictionary} state Property values for the network or favorite.
+   * @param {Object} state Property values for the network or favorite.
    * @param {DOMElement} baseRow The unexpanded row associated with the new row.
    * @return {DOMElement} The created tr element for the expanded row.
    */
-  var createExpandedRow = function(state, baseRow) {
+  var createExpandedRow = function(guid, baseRow) {
     var expandedRow = document.createElement('tr');
     expandedRow.className = 'state-table-row';
     var emptyCell = document.createElement('td');
@@ -225,16 +252,33 @@ var NetworkUI = function() {
     var detailCell = document.createElement('td');
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
-    detailCell.innerHTML = JSON.stringify(state, null, '\t');
     expandedRow.appendChild(detailCell);
+    networkConfig.getProperties(guid, function(state) {
+      if (networkConfig.lastError)
+        detailCell.textContent = networkConfig.lastError;
+      else
+        detailCell.textContent = JSON.stringify(state, null, '\t');
+    });
     return expandedRow;
   };
 
   /**
-   * Sends a refresh request.
+   * Requests a network log update.
    */
-  var sendRefresh = function() {
-    chrome.send('requestNetworkInfo');
+  var requestLog = function() {
+    chrome.send('NetworkUI.getNetworkLog');
+  };
+
+  /**
+   * Requests an update of all network info.
+   */
+  var requestNetworks = function() {
+    networkConfig.getNetworks(
+        { 'type': 'All', 'visible': true },
+        onVisibleNetworksReceived);
+    networkConfig.getNetworks(
+        { 'type': 'All', 'configured': true },
+        onFavoriteNetworksReceived);
   };
 
   /**
@@ -243,31 +287,32 @@ var NetworkUI = function() {
   var setRefresh = function() {
     var interval = parseQueryParams(window.location)['refresh'];
     if (interval && interval != '')
-      setInterval(sendRefresh, parseInt(interval) * 1000);
+      setInterval(requestNetworks, parseInt(interval) * 1000);
   };
 
   /**
    * Get network information from WebUI.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    $('log-refresh').onclick = sendRefresh;
+    $('log-refresh').onclick = requestLog;
     $('log-error').checked = true;
-    $('log-error').onclick = sendRefresh;
+    $('log-error').onclick = requestLog;
     $('log-user').checked = true;
-    $('log-user').onclick = sendRefresh;
+    $('log-user').onclick = requestLog;
     $('log-event').checked = true;
-    $('log-event').onclick = sendRefresh;
+    $('log-event').onclick = requestLog;
     $('log-debug').checked = false;
-    $('log-debug').onclick = sendRefresh;
+    $('log-debug').onclick = requestLog;
     $('log-fileinfo').checked = false;
-    $('log-fileinfo').onclick = sendRefresh;
+    $('log-fileinfo').onclick = requestLog;
     $('log-timedetail').checked = false;
-    $('log-timedetail').onclick = sendRefresh;
+    $('log-timedetail').onclick = requestLog;
     setRefresh();
-    sendRefresh();
+    requestLog();
+    requestNetworks();
   });
 
   return {
-    onNetworkInfoReceived: onNetworkInfoReceived
+    getNetworkLogCallback: getNetworkLogCallback
   };
-}();
+})();

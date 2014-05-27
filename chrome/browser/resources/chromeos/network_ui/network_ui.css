@@ -50,17 +50,13 @@
 }
 
 .state-table-expand-button {
-  background-color: #f0f0f0;
-  border: 1px solid;
-  border-color: #a0a0a0;
-  height: 12px;
-  margin: 4px;
+  background-color: #fff;
+  border: none;
+  height: 20px;
+  margin: 0;
+  outline: none;
   padding: 0;
-  width: 12px;
-}
-
-.state-table-expand-button-expanded {
-  background-color: #b0b0b0;
+  width: 20px;
 }
 
 .state-table-expanded-cell {

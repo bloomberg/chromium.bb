@@ -167,7 +167,8 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     NetworkTypePattern pattern,
     bool configured_only,
     bool visible_only,
-    int limit) {
+    int limit,
+    bool debugging_properties) {
   NetworkStateHandler::FavoriteStateList favorite_states;
   NetworkHandler::Get()->network_state_handler()->GetFavoriteListByType(
       pattern, configured_only, visible_only, limit, &favorite_states);
@@ -179,6 +180,14 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
        ++it) {
     scoped_ptr<base::DictionaryValue> onc_dictionary =
         TranslateFavoriteStateToONC(*it);
+
+    if (debugging_properties) {
+      onc_dictionary->SetString("profile_path", (*it)->profile_path());
+      std::string onc_source = (*it)->ui_data().GetONCSourceAsString();
+      if (!onc_source.empty())
+        onc_dictionary->SetString("onc_source", onc_source);
+    }
+
     network_properties_list->Append(onc_dictionary.release());
   }
   return network_properties_list.Pass();
