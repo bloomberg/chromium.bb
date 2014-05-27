@@ -10,8 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
@@ -39,7 +37,10 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void OnBeforeUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
+  virtual void OnFadeOut() OVERRIDE;
+  virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void SetUIEnabled(bool is_enabled) OVERRIDE;
+  virtual void SelectPod(int index) OVERRIDE;
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
@@ -95,6 +96,9 @@ class WebUILoginDisplay : public LoginDisplay,
   void StartPasswordClearTimer();
   void OnPasswordClearTimerExpired();
 
+  // Set of Users that are visible.
+  UserList users_;
+
   // Whether to show guest login.
   bool show_guest_;
 
@@ -110,9 +114,6 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_;
-
-  scoped_ptr<GaiaScreen> gaia_screen_;
-  scoped_ptr<UserSelectionScreen> user_selection_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
 };

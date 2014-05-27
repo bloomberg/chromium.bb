@@ -197,6 +197,17 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Handles login success notification.
+   */
+  Oobe.onLoginSuccess = function(username) {
+    if (Oobe.getInstance().currentScreen.id == SCREEN_ACCOUNT_PICKER) {
+      // TODO(nkostylev): Enable animation back when session start jank
+      // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
+      // $('pod-row').startAuthenticatedAnimation();
+    }
+  };
+
+  /**
    * Sets text content for a div with |labelId|.
    * @param {string} labelId Id of the label div.
    * @param {string} labelText Text for the label.

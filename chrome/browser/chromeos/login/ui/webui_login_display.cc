@@ -46,9 +46,7 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
     : LoginDisplay(delegate, gfx::Rect()),
       show_guest_(false),
       show_new_user_(false),
-      webui_handler_(NULL),
-      gaia_screen_(new GaiaScreen()),
-      user_selection_screen_(new UserSelectionScreen()) {
+      webui_handler_(NULL) {
 }
 
 void WebUILoginDisplay::ClearAndEnablePassword() {
@@ -63,7 +61,7 @@ void WebUILoginDisplay::Init(const UserList& users,
   // Testing that the delegate has been set.
   DCHECK(delegate_);
 
-  user_selection_screen_->Init(users);
+  users_ = users;
   show_guest_ = show_guest;
   show_users_ = show_users;
   show_new_user_ = show_new_user;
@@ -74,35 +72,36 @@ void WebUILoginDisplay::Init(const UserList& users,
     activity_detector->AddObserver(this);
 }
 
-// ---- Common methods
-
-// ---- User selection screen methods
-
-void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
-  user_selection_screen_->OnBeforeUserRemoved(username);
-}
-
-void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
-  user_selection_screen_->OnUserRemoved(username);
-}
-
-void WebUILoginDisplay::OnUserImageChanged(const User& user) {
-  user_selection_screen_->OnUserImageChanged(user);
-}
-
-// User selection screen, screen lock API
-
-const UserList& WebUILoginDisplay::GetUsers() const {
-  return user_selection_screen_->GetUsers();
-}
-
-// ---- Gaia screen methods
-
-// ---- Not yet classified methods
-
 void WebUILoginDisplay::OnPreferencesChanged() {
   if (webui_handler_)
     webui_handler_->OnPreferencesChanged();
+}
+
+void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    if ((*it)->email() == username) {
+      users_.erase(it);
+      break;
+    }
+  }
+}
+
+void WebUILoginDisplay::OnUserImageChanged(const User& user) {
+  if (webui_handler_)
+    webui_handler_->OnUserImageChanged(user);
+}
+
+void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
+  if (webui_handler_)
+    webui_handler_->OnUserRemoved(username);
+}
+
+void WebUILoginDisplay::OnFadeOut() {
+}
+
+void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
+  if (webui_handler_)
+    webui_handler_->OnLoginSuccess(username);
 }
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
@@ -111,8 +110,9 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // Allow this call only before user sign in or at lock screen.
   // If this call is made after new user signs in but login screen is still
   // around that would trigger a sign in extension refresh.
-  if (is_enabled && (!UserManager::Get()->IsUserLoggedIn() ||
-                     ScreenLocker::default_screen_locker())) {
+  if (is_enabled &&
+      (!UserManager::Get()->IsUserLoggedIn() ||
+       ScreenLocker::default_screen_locker())) {
     ClearAndEnablePassword();
   }
 
@@ -121,6 +121,9 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     if (chromeos::WebUILoginView* login_view = host->GetWebUILoginView())
       login_view->SetUIEnabled(is_enabled);
   }
+}
+
+void WebUILoginDisplay::SelectPod(int index) {
 }
 
 void WebUILoginDisplay::ShowError(int error_msg_id,
@@ -329,8 +332,6 @@ void WebUILoginDisplay::ShowWrongHWIDScreen() {
 void WebUILoginDisplay::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
-  gaia_screen_->SetHandler(webui_handler_);
-  user_selection_screen_->SetHandler(webui_handler_);
 }
 
 void WebUILoginDisplay::ShowSigninScreenForCreds(
@@ -338,6 +339,10 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
     const std::string& password) {
   if (webui_handler_)
     webui_handler_->ShowSigninScreenForCreds(username, password);
+}
+
+const UserList& WebUILoginDisplay::GetUsers() const {
+  return users_;
 }
 
 bool WebUILoginDisplay::IsShowGuest() const {

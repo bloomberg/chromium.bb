@@ -131,8 +131,19 @@ class LoginDisplay : public RemoveUserDelegate {
   // |user| contains updated user.
   virtual void OnUserImageChanged(const User& user) = 0;
 
+  // After this call login display should be ready to be smoothly destroyed
+  // (e.g. hide throbber, etc.).
+  virtual void OnFadeOut() = 0;
+
+  // Called when user is successfully authenticated.
+  virtual void OnLoginSuccess(const std::string& username) = 0;
+
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;
+
+  // Selects user entry with specified |index|.
+  // Does nothing if current user is already selected.
+  virtual void SelectPod(int index) = 0;
 
   // Displays simple error bubble with |error_msg_id| specified.
   // |login_attempts| shows number of login attempts made by current user.

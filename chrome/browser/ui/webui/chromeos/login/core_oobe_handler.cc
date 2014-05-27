@@ -190,6 +190,10 @@ void CoreOobeHandler::RefocusCurrentPod() {
   CallJS("refocusCurrentPod");
 }
 
+void CoreOobeHandler::OnLoginSuccess(const std::string& username) {
+  CallJS("onLoginSuccess", username);
+}
+
 void CoreOobeHandler::ShowPasswordChangedScreen(bool show_password_error) {
   CallJS("showPasswordChangedScreen", show_password_error);
 }
