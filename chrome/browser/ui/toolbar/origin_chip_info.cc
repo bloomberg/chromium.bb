@@ -111,35 +111,40 @@ bool OriginChipInfo::Update(const content::WebContents* web_contents,
                                         label_);
   }
 
-  if (displayed_url_.SchemeIs(extensions::kExtensionScheme)) {
-    icon_ = IDR_EXTENSIONS_FAVICON;
 
+  if (displayed_url_.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
         extensions::ExtensionSystem::Get(profile_)->extension_service()->
             extensions()->GetExtensionOrAppByURL(displayed_url_);
-    extension_icon_image_.reset(
-        new extensions::IconImage(profile_,
-                                  extension,
-                                  extensions::IconsInfo::GetIcons(extension),
-                                  extension_misc::EXTENSION_ICON_BITTY,
-                                  extensions::util::GetDefaultAppIcon(),
-                                  owner_));
 
-    // Forces load of the image.
-    extension_icon_image_->image_skia().GetRepresentation(1.0f);
-    if (!extension_icon_image_->image_skia().image_reps().empty())
-      owner_->OnExtensionIconImageChanged(extension_icon_image_.get());
-  } else {
-    if (extension_icon_image_) {
-      extension_icon_image_.reset();
-      owner_->OnExtensionIconImageChanged(NULL);
+    if (extension) {
+      icon_ = IDR_EXTENSIONS_FAVICON;
+      extension_icon_image_.reset(
+          new extensions::IconImage(profile_,
+                                    extension,
+                                    extensions::IconsInfo::GetIcons(extension),
+                                    extension_misc::EXTENSION_ICON_BITTY,
+                                    extensions::util::GetDefaultAppIcon(),
+                                    owner_));
+
+      // Forces load of the image.
+      extension_icon_image_->image_skia().GetRepresentation(1.0f);
+      if (!extension_icon_image_->image_skia().image_reps().empty())
+        owner_->OnExtensionIconImageChanged(extension_icon_image_.get());
+
+      return true;
     }
-
-    icon_ = (displayed_url_.is_empty() ||
-             displayed_url_.SchemeIs(content::kChromeUIScheme)) ?
-        IDR_PRODUCT_LOGO_16 :
-        toolbar_model->GetIconForSecurityLevel(security_level_);
   }
+
+  if (extension_icon_image_) {
+    extension_icon_image_.reset();
+    owner_->OnExtensionIconImageChanged(NULL);
+  }
+
+  icon_ = (displayed_url_.is_empty() ||
+           displayed_url_.SchemeIs(content::kChromeUIScheme)) ?
+      IDR_PRODUCT_LOGO_16 :
+      toolbar_model->GetIconForSecurityLevel(security_level_);
 
   return true;
 }
