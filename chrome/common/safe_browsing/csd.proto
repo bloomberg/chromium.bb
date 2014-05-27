@@ -334,3 +334,71 @@ message ClientUploadResponse {
   // Holds the permalink where the results of scanning the binary are available
   optional string permalink = 2;
 }
+
+message ClientIncidentReport {
+  message IncidentData {
+    message TrackedPreferenceIncident {
+      enum ValueState {
+        UNKNOWN = 0;
+        CLEARED = 1;
+        WEAK_LEGACY = 2;
+        CHANGED = 3;
+        UNTRUSTED_UNKNOWN_VALUE = 4;
+      }
+
+      optional string path = 1;
+      optional string atomic_value = 2;
+      optional string split_key = 3;
+      optional ValueState value_state = 4;
+    }
+    optional int64 incident_time_msec = 1;
+    optional TrackedPreferenceIncident tracked_preference = 2;
+  }
+
+  repeated IncidentData incident = 1;
+
+  message DownloadDetails {
+    optional bytes token = 1;
+    optional ClientDownloadRequest download = 2;
+    optional int64 download_time_msec = 3;
+    optional int64 open_time_msec = 4;
+  }
+
+  optional DownloadDetails download = 2;
+
+  message EnvironmentData {
+    message OS {
+      optional string os_name = 1;
+      optional string os_version = 2;
+    }
+    optional OS os = 1;
+    message Machine {
+      optional string cpu_architecture = 1;
+      optional string cpu_vendor = 2;
+      optional uint32 cpuid = 3;
+    }
+    optional Machine machine = 2;
+    message Process {
+      repeated string dlls = 1;
+      message Patch {
+        optional string function = 1;
+        optional string target_dll = 2;
+      }
+      repeated Patch patches = 2;
+      message NetworkProvider {}
+      repeated NetworkProvider network_providers = 3;
+    }
+    optional Process process = 3;
+  }
+
+  optional EnvironmentData environment = 3;
+}
+
+message ClientIncidentResponse {
+  optional bytes token = 1;
+  optional bool download_requested = 2;
+
+  message EnvironmentRequest { optional int32 dll_index = 1; }
+
+  repeated EnvironmentRequest environment_requests = 3;
+}
