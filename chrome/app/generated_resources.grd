@@ -5751,12 +5751,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enabling this option prevents web sites from accessing the WebAudio API.
         </message>
       </if>
-      <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME" desc="Name of the 'Fixed position creates stacking context' lab.">
-        Fixed position elements create stacking contexts.
-      </message>
-      <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION" desc="Description for the flag to make fixed position elements create stacking contexts.">
-        Enabling this option makes all fixed position elements create new CSS stacking contexts.
-      </message>
       <message name="IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME" desc="Name of the 'Compositing for fixed position elements' lab.">
         Compositing for fixed position elements.
       </message>

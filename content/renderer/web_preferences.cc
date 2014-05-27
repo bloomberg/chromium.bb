@@ -263,9 +263,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
 
-  settings->setFixedPositionCreatesStackingContext(
-      prefs.fixed_position_creates_stacking_context);
-
   settings->setDeferredImageDecodingEnabled(
       prefs.deferred_image_decoding_enabled);
   settings->setShouldRespectImageOrientation(

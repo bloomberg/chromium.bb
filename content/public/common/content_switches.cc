@@ -152,9 +152,6 @@ const char kDisableFileSystem[]             = "disable-file-system";
 // Disables sending filters (SkImageFilter objects) between processes over IPC
 const char kDisableFiltersOverIPC[]         = "disable-filters-over-ipc";
 
-const char kDisableFixedPositionCreatesStackingContext[]
-    = "disable-fixed-position-creates-stacking-context";
-
 // Disable 3D inside of flapper.
 const char kDisableFlash3d[]                = "disable-flash-3d";
 
@@ -398,9 +395,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable the fast text autosizing implementation.
 const char kEnableFastTextAutosizing[]      = "enable-fast-text-autosizing";
-
-const char kEnableFixedPositionCreatesStackingContext[]
-    = "enable-fixed-position-creates-stacking-context";
 
 // Enable Gesture Tap Highlight
 const char kEnableGestureTapHighlight[]     = "enable-gesture-tap-highlight";

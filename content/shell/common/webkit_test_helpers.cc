@@ -103,7 +103,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
       command_line.HasSwitch(switches::kForceCompositingMode);
   prefs->accelerated_compositing_for_video_enabled = false;
   prefs->mock_scrollbars_enabled = false;
-  prefs->fixed_position_creates_stacking_context = false;
   prefs->smart_insert_delete_enabled = true;
   prefs->minimum_accelerated_2d_canvas_size = 0;
 #if defined(OS_ANDROID)

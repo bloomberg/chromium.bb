@@ -462,9 +462,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
 
   prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
-  prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
-      switches::kDisableFixedPositionCreatesStackingContext);
-
   prefs.gesture_tap_highlight_enabled = !command_line.HasSwitch(
       switches::kDisableGestureTapHighlight);
 

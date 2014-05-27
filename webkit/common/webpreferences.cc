@@ -82,7 +82,6 @@ WebPreferences::WebPreferences()
       device_supports_mouse(true),
       touch_adjustment_enabled(true),
       pointer_events_max_touch_points(0),
-      fixed_position_creates_stacking_context(false),
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
       should_respect_image_orientation(false),

@@ -576,15 +576,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "fixed-position-creates-stacking-context",
-    IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME,
-    IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(
-        switches::kEnableFixedPositionCreatesStackingContext,
-        switches::kDisableFixedPositionCreatesStackingContext)
-  },
-  {
     "enable-compositing-for-fixed-position",
     IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME,
     IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_DESCRIPTION,
