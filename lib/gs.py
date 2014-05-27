@@ -315,7 +315,8 @@ class GSContext(object):
 
       # gsutil has been known to return version to stderr in the past, so
       # use combine_stdout_stderr=True.
-      result = self.DoCommand(cmd, combine_stdout_stderr=True)
+      result = self.DoCommand(cmd, combine_stdout_stderr=True,
+                              redirect_stdout=True)
 
       # Expect output like: gsutil version 3.35
       match = re.search(r'^\s*gsutil\s+version\s+([\d.]+)', result.output,
