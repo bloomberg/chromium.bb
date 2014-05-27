@@ -1370,7 +1370,7 @@ int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
 
   CHECK(server_cert_.get());
 
-  PeerCertificateChain chain(store_ctx->chain);
+  PeerCertificateChain chain(store_ctx->untrusted);
   if (chain.IsValid() && server_cert_->Equals(chain.AsOSChain()))
     return 1;
 
