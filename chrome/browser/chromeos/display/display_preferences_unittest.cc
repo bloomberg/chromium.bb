@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/display/chromeos/display_configurator.h"
+#include "ui/gfx/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
 using ash::ResolutionNotificationController;
@@ -618,6 +620,43 @@ TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
   LoadDisplayPreferences(false);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
             shell->display_configurator()->power_state());
+}
+
+// Tests that display configuration changes caused by MaximizeModeController
+// are not saved.
+TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::MaximizeModeController* controller = shell->maximize_mode_controller();
+  gfx::Display::SetInternalDisplayId(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  ash::DisplayManager* display_manager = shell->display_manager();
+  LoggedInAsUser();
+  // Populate the properties.
+  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                      gfx::Display::ROTATE_180);
+  // Reset property to avoid rotation lock
+  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                      gfx::Display::ROTATE_0);
+
+  // Open up 270 degrees to trigger maximize mode
+  controller->OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                                     gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_TRUE(shell->IsMaximizeModeWindowManagerEnabled());
+
+  // Trigger 90 degree rotation
+  controller->OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 1.0f, 0.0f),
+                                     gfx::Vector3dF(0.0f, 1.0f, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_90, display_manager->
+                GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation());
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayProperties);
+  const base::DictionaryValue* property = NULL;
+  EXPECT_TRUE(properties->GetDictionary(
+      base::Int64ToString(gfx::Display::InternalDisplayId()), &property));
+  int rotation = -1;
+  EXPECT_TRUE(property->GetInteger("rotation", &rotation));
+  EXPECT_EQ(gfx::Display::ROTATE_0, rotation);
 }
 
 }  // namespace chromeos

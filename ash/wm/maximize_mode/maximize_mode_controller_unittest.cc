@@ -450,7 +450,7 @@ TEST_F(MaximizeModeControllerTest, LaptopTest) {
   // Feeds in sample accelerometer data and verifies that there are no
   // transitions into touchview / maximize mode while shaking the device around
   // with the hinge at less than 180 degrees.
-  ASSERT_TRUE(kAccelerometerLaptopModeTestDataLength % 6 == 0);
+  ASSERT_EQ(0u, kAccelerometerLaptopModeTestDataLength % 6);
   for (size_t i = 0; i < kAccelerometerLaptopModeTestDataLength / 6; ++i) {
     gfx::Vector3dF base(kAccelerometerLaptopModeTestData[i * 6],
                         kAccelerometerLaptopModeTestData[i * 6 + 1],
@@ -474,7 +474,7 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
   // Feeds in sample accelerometer data and verifies that there are no
   // transitions out of touchview / maximize mode while shaking the device
   // around.
-  ASSERT_TRUE(kAccelerometerFullyOpenTestDataLength % 6 == 0);
+  ASSERT_EQ(0u, kAccelerometerFullyOpenTestDataLength % 6);
   for (size_t i = 0; i < kAccelerometerFullyOpenTestDataLength / 6; ++i) {
     gfx::Vector3dF base(kAccelerometerFullyOpenTestData[i * 6],
                         kAccelerometerFullyOpenTestData[i * 6 + 1],
@@ -521,7 +521,7 @@ TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
 
   // Trigger maximize mode by opening to 270.
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   maximize_mode_controller()->set_rotation_locked(true);
@@ -595,5 +595,28 @@ TEST_F(MaximizeModeControllerTest, BlockRotationNotifications) {
   EXPECT_FALSE(message_center->HasPopupNotifications());
 }
 #endif
+
+// Tests that if a user has set a display rotation that it is restored upon
+// exiting maximize mode.
+TEST_F(MaximizeModeControllerTest, ResetUserRotationUponExit) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                      gfx::Display::ROTATE_90);
+
+  // Trigger maximize mode
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  TriggerAccelerometerUpdate(gfx::Vector3dF(1.0f, 0.0f, 0.0f),
+                             gfx::Vector3dF(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_180, GetInternalDisplayRotation());
+
+  // Exit maximize mode
+  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
+}
 
 }  // namespace ash

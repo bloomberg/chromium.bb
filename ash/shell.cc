@@ -477,6 +477,14 @@ bool Shell::IsMaximizeModeWindowManagerEnabled() {
   return maximize_mode_window_manager_.get() != NULL;
 }
 
+#if defined(OS_CHROMEOS)
+bool Shell::ShouldSaveDisplaySettings() {
+  return !((IsMaximizeModeWindowManagerEnabled() &&
+            maximize_mode_controller_->in_set_screen_rotation()) ||
+           resolution_notification_controller_->DoesNotificationTimeout());
+}
+#endif
+
 void Shell::UpdateShelfVisibility() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();

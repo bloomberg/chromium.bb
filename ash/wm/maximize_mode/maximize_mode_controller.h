@@ -10,6 +10,7 @@
 #include "ash/display/display_manager.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/display.h"
 
 namespace ui {
 class EventHandler;
@@ -69,6 +70,14 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   void SetDisplayRotation(DisplayManager* display_manager,
                           gfx::Display::Rotation rotation);
 
+  // Enables MaximizeModeWindowManager, and determines the current state of
+  // rotation lock.
+  void EnterMaximizeMode();
+
+  // Removes MaximizeModeWindowManager and resets the display rotation if there
+  // is no rotation lock.
+  void LeaveMaximizeMode();
+
   // An event targeter controller which traps mouse and keyboard events while
   // maximize mode is engaged.
   scoped_ptr<MaximizeModeEventBlocker> event_blocker_;
@@ -84,6 +93,10 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
 
   // True when the screen's orientation is being changed.
   bool in_set_screen_rotation_;
+
+  // The rotation of the display set by the user. This rotation will be
+  // restored upon exiting maximize mode.
+  gfx::Display::Rotation user_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };

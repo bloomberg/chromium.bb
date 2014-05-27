@@ -332,6 +332,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Test if the MaximizeModeWindowManager is enabled or not.
   bool IsMaximizeModeWindowManagerEnabled();
 
+#if defined(OS_CHROMEOS)
+  // Test if MaximizeModeWindowManager is not enabled, and if
+  // MaximizeModeController is not currently setting a display rotation. Or if
+  // the |resolution_notification_controller_| is not showing its confirmation
+  // dialog. If true then changes to display settings can be saved.
+  bool ShouldSaveDisplaySettings();
+#endif
+
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
   }
