@@ -35,6 +35,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
@@ -52,9 +53,10 @@
 
 namespace WebCore {
 
-FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
+FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, ExecutionContext* context)
     : m_errorCallback(errorCallback)
     , m_fileSystem(fileSystem)
+    , m_executionContext(context)
 {
     if (m_fileSystem)
         m_fileSystem->addPendingCallbacks();
@@ -68,21 +70,46 @@ FileSystemCallbacksBase::~FileSystemCallbacksBase()
 
 void FileSystemCallbacksBase::didFail(int code)
 {
-    if (m_errorCallback) {
-        m_errorCallback->handleEvent(FileError::create(static_cast<FileError::ErrorCode>(code)).get());
-        m_errorCallback.clear();
-    }
+    if (m_errorCallback)
+        handleEventOrScheduleCallback(m_errorCallback.release(), FileError::create(static_cast<FileError::ErrorCode>(code)));
+}
+
+bool FileSystemCallbacksBase::shouldScheduleCallback() const
+{
+    return !shouldBlockUntilCompletion() && m_executionContext && m_executionContext->activeDOMObjectsAreSuspended();
+}
+
+template <typename CB, typename CBArg>
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
+{
+    ASSERT(callback.get());
+    if (shouldScheduleCallback())
+        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
+    else if (callback)
+        callback->handleEvent(arg.get());
+    m_executionContext.clear();
+}
+
+template <typename CB>
+void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback)
+{
+    ASSERT(callback.get());
+    if (shouldScheduleCallback())
+        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback);
+    else if (callback)
+        callback->handleEvent();
+    m_executionContext.clear();
 }
 
 // EntryCallbacks -------------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> EntryCallbacks::create(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& expectedPath, bool isDirectory)
+PassOwnPtr<AsyncFileSystemCallbacks> EntryCallbacks::create(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& expectedPath, bool isDirectory)
 {
-    return adoptPtr(new EntryCallbacks(successCallback, errorCallback, fileSystem, expectedPath, isDirectory));
+    return adoptPtr(new EntryCallbacks(successCallback, errorCallback, context, fileSystem, expectedPath, isDirectory));
 }
 
-EntryCallbacks::EntryCallbacks(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& expectedPath, bool isDirectory)
-    : FileSystemCallbacksBase(errorCallback, fileSystem)
+EntryCallbacks::EntryCallbacks(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem, const String& expectedPath, bool isDirectory)
+    : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
     , m_expectedPath(expectedPath)
     , m_isDirectory(isDirectory)
@@ -93,22 +120,21 @@ void EntryCallbacks::didSucceed()
 {
     if (m_successCallback) {
         if (m_isDirectory)
-            m_successCallback->handleEvent(DirectoryEntry::create(m_fileSystem, m_expectedPath).get());
+            handleEventOrScheduleCallback(m_successCallback.release(), DirectoryEntry::create(m_fileSystem, m_expectedPath));
         else
-            m_successCallback->handleEvent(FileEntry::create(m_fileSystem, m_expectedPath).get());
+            handleEventOrScheduleCallback(m_successCallback.release(), FileEntry::create(m_fileSystem, m_expectedPath));
     }
-    m_successCallback.clear();
 }
 
 // EntriesCallbacks -----------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> EntriesCallbacks::create(PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DirectoryReaderBase> directoryReader, const String& basePath)
+PassOwnPtr<AsyncFileSystemCallbacks> EntriesCallbacks::create(PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DirectoryReaderBase> directoryReader, const String& basePath)
 {
-    return adoptPtr(new EntriesCallbacks(successCallback, errorCallback, directoryReader, basePath));
+    return adoptPtr(new EntriesCallbacks(successCallback, errorCallback, context, directoryReader, basePath));
 }
 
-EntriesCallbacks::EntriesCallbacks(PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DirectoryReaderBase> directoryReader, const String& basePath)
-    : FileSystemCallbacksBase(errorCallback, directoryReader->filesystem())
+EntriesCallbacks::EntriesCallbacks(PassOwnPtr<EntriesCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DirectoryReaderBase> directoryReader, const String& basePath)
+    : FileSystemCallbacksBase(errorCallback, directoryReader->filesystem(), context)
     , m_successCallback(successCallback)
     , m_directoryReader(directoryReader)
     , m_basePath(basePath)
@@ -129,46 +155,41 @@ void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
     m_directoryReader->setHasMoreEntries(hasMore);
     EntryHeapVector entries;
     entries.swap(m_entries);
+    // FIXME: delay the callback iff shouldScheduleCallback() is true.
     if (m_successCallback)
         m_successCallback->handleEvent(entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* executionContext, FileSystemType type)
+PassOwnPtr<AsyncFileSystemCallbacks> FileSystemCallbacks::create(PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, FileSystemType type)
 {
-    return adoptPtr(new FileSystemCallbacks(successCallback, errorCallback, executionContext, type));
+    return adoptPtr(new FileSystemCallbacks(successCallback, errorCallback, context, type));
 }
 
 FileSystemCallbacks::FileSystemCallbacks(PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, FileSystemType type)
-    : FileSystemCallbacksBase(errorCallback, nullptr)
+    : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_successCallback(successCallback)
-    , m_executionContext(context)
     , m_type(type)
 {
 }
 
 void FileSystemCallbacks::didOpenFileSystem(const String& name, const KURL& rootURL)
 {
-    if (m_successCallback) {
-        RefPtrWillBeRawPtr<DOMFileSystem> fileSystem = DOMFileSystem::create(m_executionContext.get(), name, m_type, rootURL);
-        m_successCallback->handleEvent(fileSystem.get());
-        m_executionContext.clear();
-    }
-    m_successCallback.clear();
+    if (m_successCallback)
+        handleEventOrScheduleCallback(m_successCallback.release(), DOMFileSystem::create(m_executionContext.get(), name, m_type, rootURL));
 }
 
 // ResolveURICallbacks --------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* executionContext)
+PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
 {
-    return adoptPtr(new ResolveURICallbacks(successCallback, errorCallback, executionContext));
+    return adoptPtr(new ResolveURICallbacks(successCallback, errorCallback, context));
 }
 
 ResolveURICallbacks::ResolveURICallbacks(PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
-    : FileSystemCallbacksBase(errorCallback, nullptr)
+    : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_successCallback(successCallback)
-    , m_executionContext(context)
 {
 }
 
@@ -179,27 +200,25 @@ void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL,
 
     String absolutePath;
     if (!DOMFileSystemBase::pathToAbsolutePath(type, root.get(), filePath, absolutePath)) {
-        m_errorCallback->handleEvent(FileError::create(FileError::INVALID_MODIFICATION_ERR).get());
-        m_errorCallback.clear();
+        handleEventOrScheduleCallback(m_errorCallback.release(), FileError::create(FileError::INVALID_MODIFICATION_ERR));
         return;
     }
 
     if (isDirectory)
-        m_successCallback->handleEvent(DirectoryEntry::create(filesystem, absolutePath).get());
+        handleEventOrScheduleCallback(m_successCallback.release(), DirectoryEntry::create(filesystem, absolutePath));
     else
-        m_successCallback->handleEvent(FileEntry::create(filesystem, absolutePath).get());
-    m_successCallback.clear();
+        handleEventOrScheduleCallback(m_successCallback.release(), FileEntry::create(filesystem, absolutePath));
 }
 
 // MetadataCallbacks ----------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> MetadataCallbacks::create(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
 {
-    return adoptPtr(new MetadataCallbacks(successCallback, errorCallback, fileSystem));
+    return adoptPtr(new MetadataCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
-MetadataCallbacks::MetadataCallbacks(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
-    : FileSystemCallbacksBase(errorCallback, fileSystem)
+MetadataCallbacks::MetadataCallbacks(PassOwnPtr<MetadataCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
+    : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
 {
 }
@@ -207,19 +226,18 @@ MetadataCallbacks::MetadataCallbacks(PassOwnPtr<MetadataCallback> successCallbac
 void MetadataCallbacks::didReadMetadata(const FileMetadata& metadata)
 {
     if (m_successCallback)
-        m_successCallback->handleEvent(Metadata::create(metadata).get());
-    m_successCallback.clear();
+        handleEventOrScheduleCallback(m_successCallback.release(), Metadata::create(metadata));
 }
 
 // FileWriterBaseCallbacks ----------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtr<FileWriterBaseCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtr<FileWriterBaseCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
 {
-    return adoptPtr(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback));
+    return adoptPtr(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback, context));
 }
 
-FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtr<FileWriterBaseCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
-    : FileSystemCallbacksBase(errorCallback, nullptr)
+FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtr<FileWriterBaseCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+    : FileSystemCallbacksBase(errorCallback, nullptr, context)
     , m_fileWriter(fileWriter)
     , m_successCallback(successCallback)
 {
@@ -228,22 +246,19 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWrit
 void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<blink::WebFileWriter> fileWriter, long long length)
 {
     m_fileWriter->initialize(fileWriter, length);
-    if (m_successCallback) {
-        m_successCallback->handleEvent(m_fileWriter.get());
-        m_fileWriter = nullptr;
-    }
-    m_successCallback.clear();
+    if (m_successCallback)
+        handleEventOrScheduleCallback(m_successCallback.release(), PassRefPtrWillBeRawPtr<FileWriterBase>(m_fileWriter.release()));
 }
 
 // VoidCallbacks --------------------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
+PassOwnPtr<AsyncFileSystemCallbacks> VoidCallbacks::create(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
 {
-    return adoptPtr(new VoidCallbacks(successCallback, errorCallback, fileSystem));
+    return adoptPtr(new VoidCallbacks(successCallback, errorCallback, context, fileSystem));
 }
 
-VoidCallbacks::VoidCallbacks(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
-    : FileSystemCallbacksBase(errorCallback, fileSystem)
+VoidCallbacks::VoidCallbacks(PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context, PassRefPtrWillBeRawPtr<DOMFileSystemBase> fileSystem)
+    : FileSystemCallbacksBase(errorCallback, fileSystem, context)
     , m_successCallback(successCallback)
 {
 }
@@ -251,8 +266,7 @@ VoidCallbacks::VoidCallbacks(PassOwnPtr<VoidCallback> successCallback, PassOwnPt
 void VoidCallbacks::didSucceed()
 {
     if (m_successCallback)
-        m_successCallback->handleEvent();
-    m_successCallback.clear();
+        handleEventOrScheduleCallback(m_successCallback.release());
 }
 
 } // namespace
