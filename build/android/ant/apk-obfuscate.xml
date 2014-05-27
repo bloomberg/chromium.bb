@@ -160,7 +160,6 @@
           destfile="${preobfuscate.jar.file}"/>
         <proguard>
           -include      "${proguard.configcmd}"
-          -include      "${out.absolute.dir}/proguard.txt"
           -injars       ${project.all.classes.value}
           -outjars      "${obfuscated.jar.abs.file}"
           -libraryjars  ${project.target.classpath.value}
