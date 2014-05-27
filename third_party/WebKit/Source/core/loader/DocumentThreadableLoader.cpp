@@ -263,7 +263,7 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
-    didReceiveResponse(resource->identifier(), response);
+    handleResponse(resource->identifier(), response);
 }
 
 void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier, const ResourceResponse& response)
@@ -300,7 +300,7 @@ void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier,
     CrossOriginPreflightResultCache::shared().appendEntry(securityOrigin()->toString(), m_actualRequest->url(), preflightResult.release());
 }
 
-void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response)
 {
     ASSERT(m_client);
 
@@ -323,10 +323,10 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, int dataLength)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
-    didReceiveData(data, dataLength);
+    handleReceivedData(data, dataLength);
 }
 
-void DocumentThreadableLoader::didReceiveData(const char* data, int dataLength)
+void DocumentThreadableLoader::handleReceivedData(const char* data, int dataLength)
 {
     ASSERT(m_client);
     // Preflight data should be invisible to clients.
@@ -344,10 +344,10 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
     if (resource->errorOccurred())
         m_client->didFail(resource->resourceError());
     else
-        didFinishLoading(resource->identifier(), resource->loadFinishTime());
+        handleSuccessfulFinish(resource->identifier(), resource->loadFinishTime());
 }
 
-void DocumentThreadableLoader::didFinishLoading(unsigned long identifier, double finishTime)
+void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, double finishTime)
 {
     if (m_actualRequest) {
         ASSERT(!m_sameOriginRequest);
@@ -384,7 +384,10 @@ void DocumentThreadableLoader::preflightSuccess()
 void DocumentThreadableLoader::preflightFailure(const String& url, const String& errorDescription)
 {
     ResourceError error(errorDomainBlinkInternal, 0, url, errorDescription);
-    m_actualRequest = nullptr; // Prevent didFinishLoading() from bypassing access check.
+
+    // Prevent handleSuccessfulFinish() from bypassing access check.
+    m_actualRequest = nullptr;
+
     m_client->didFailAccessControlCheck(error);
 }
 
@@ -446,13 +449,13 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request)
         return;
     }
 
-    didReceiveResponse(identifier, response);
+    handleResponse(identifier, response);
 
     SharedBuffer* data = resource->resourceBuffer();
     if (data)
-        didReceiveData(data->data(), data->size());
+        handleReceivedData(data->data(), data->size());
 
-    didFinishLoading(identifier, 0.0);
+    handleSuccessfulFinish(identifier, 0.0);
 }
 
 bool DocumentThreadableLoader::isAllowedRedirect(const KURL& url) const

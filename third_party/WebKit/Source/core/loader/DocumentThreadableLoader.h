@@ -69,7 +69,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
 
         DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&);
 
-        // RawResourceClient
+        // RawResourceClient implementation
         virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
         virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
         virtual void dataReceived(Resource*, const char* data, int dataLength) OVERRIDE;
@@ -78,9 +78,13 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         virtual void dataDownloaded(Resource*, int) OVERRIDE;
 
         void cancelWithError(const ResourceError&);
-        void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
-        void didReceiveData(const char* data, int dataLength);
-        void didFinishLoading(unsigned long identifier, double finishTime);
+
+        // Methods containing code to handle resource fetch results which is
+        // common to both sync and async mode.
+        void handleResponse(unsigned long identifier, const ResourceResponse&);
+        void handleReceivedData(const char* data, int dataLength);
+        void handleSuccessfulFinish(unsigned long identifier, double finishTime);
+
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
         void preflightSuccess();
