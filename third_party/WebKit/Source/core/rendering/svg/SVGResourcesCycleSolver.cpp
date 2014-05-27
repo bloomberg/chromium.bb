@@ -51,25 +51,14 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(RenderObject* renderer) con
 {
     ASSERT(renderer);
 
-    // First operate on the resources of the given renderer.
+    // First (first loop iteration) operate on the resources of the given
+    // renderer.
     // <marker id="a"> <path marker-start="url(#b)"/> ...
     // <marker id="b" marker-start="url(#a)"/>
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(renderer)) {
-        HashSet<RenderSVGResourceContainer*> resourceSet;
-        resources->buildSetOfResources(resourceSet);
-
-        // Walk all resources and check wheter they reference any resource contained in the resources set.
-        HashSet<RenderSVGResourceContainer*>::iterator end = resourceSet.end();
-        for (HashSet<RenderSVGResourceContainer*>::iterator it = resourceSet.begin(); it != end; ++it) {
-            if (m_allResources.contains(*it))
-                return true;
-        }
-    }
-
     // Then operate on the child resources of the given renderer.
     // <marker id="a"> <path marker-start="url(#b)"/> ...
     // <marker id="b"> <path marker-start="url(#a)"/> ...
-    for (RenderObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
+    for (RenderObject* child = renderer; child; child = child->nextInPreOrder(renderer)) {
         SVGResources* childResources = SVGResourcesCache::cachedResourcesForRenderObject(child);
         if (!childResources)
             continue;
@@ -78,18 +67,13 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(RenderObject* renderer) con
         HashSet<RenderSVGResourceContainer*> childSet;
         childResources->buildSetOfResources(childSet);
 
-        // Walk all child resources and check wheter they reference any resource contained in the resources set.
+        // Walk all child resources and check whether they reference any resource contained in the resources set.
         HashSet<RenderSVGResourceContainer*>::iterator end = childSet.end();
         for (HashSet<RenderSVGResourceContainer*>::iterator it = childSet.begin(); it != end; ++it) {
             if (m_allResources.contains(*it))
                 return true;
         }
-
-        // Walk children recursively, stop immediately if we found a cycle
-        if (resourceContainsCycles(child))
-            return true;
     }
-
     return false;
 }
 
