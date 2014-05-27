@@ -67,7 +67,8 @@
                                        optional any dialogArgs,
                                        optional DOMString featureArgs);
 
-    void alert([Default=NullString] optional DOMString message);
+    void alert();
+    void alert(DOMString message);
     boolean confirm([Default=NullString] optional DOMString message);
     [TreatReturnedNullStringAs=Null] DOMString prompt([Default=NullString] optional DOMString message,
                                                       [Default=NullString] optional DOMString defaultValue);

@@ -159,7 +159,7 @@ enum PageshowEventPersistence {
         void showModalDialog(const String& urlString, const String& dialogFeaturesString,
             DOMWindow* callingWindow, DOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
-        void alert(const String& message);
+        void alert(const String& message = String());
         bool confirm(const String& message);
         String prompt(const String& message, const String& defaultValue);
 
