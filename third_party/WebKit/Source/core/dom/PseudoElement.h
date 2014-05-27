@@ -29,7 +29,6 @@
 
 #include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "wtf/Forward.h"
 
 namespace WebCore {
 

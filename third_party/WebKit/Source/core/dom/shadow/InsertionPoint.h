@@ -35,7 +35,6 @@
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
-#include "wtf/Forward.h"
 
 namespace WebCore {
 

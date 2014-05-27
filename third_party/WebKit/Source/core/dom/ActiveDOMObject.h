@@ -29,7 +29,6 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Assertions.h"
-#include "wtf/Forward.h"
 
 namespace WebCore {
 

@@ -32,11 +32,9 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "platform/heap/Handle.h"
 #include "wtf/DoublyLinkedList.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

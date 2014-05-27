@@ -25,7 +25,6 @@
 #define NodeList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

@@ -25,7 +25,6 @@
 #define DOMImplementation_h
 
 #include "core/dom/Document.h"
-#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

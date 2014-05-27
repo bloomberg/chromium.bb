@@ -28,7 +28,6 @@
 
 #include "core/dom/DocumentParser.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 class TextResourceDecoder;

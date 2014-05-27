@@ -31,8 +31,8 @@
 #ifndef DocumentOrderedMap_h
 #define DocumentOrderedMap_h
 
+#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
 
 namespace WebCore {

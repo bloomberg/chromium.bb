@@ -23,9 +23,6 @@
 #ifndef DocumentMarker_h
 #define DocumentMarker_h
 
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
 

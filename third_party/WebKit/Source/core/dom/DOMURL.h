@@ -32,9 +32,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

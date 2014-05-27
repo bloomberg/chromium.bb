@@ -33,7 +33,6 @@
 
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
-#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

@@ -26,7 +26,6 @@
 
 #include "core/dom/LiveNodeList.h"
 #include "wtf/Forward.h"
-#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

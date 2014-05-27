@@ -32,7 +32,6 @@
 #define ContentDistribution_h
 
 #include "core/dom/Node.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
