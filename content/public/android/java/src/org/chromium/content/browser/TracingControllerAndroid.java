@@ -53,6 +53,11 @@ public class TracingControllerAndroid {
     private static final String DEFAULT_CHROME_CATEGORIES_PLACE_HOLDER =
             "_DEFAULT_CHROME_CATEGORIES";
 
+    // These strings must match the ones expected by adb_profile_chrome.
+    private static final String PROFILER_STARTED_FMT = "Profiler started: %s";
+    private static final String PROFILER_FINISHED_FMT =
+            "Profiler finished. Results are in %s.";
+
     private final Context mContext;
     private final TracingBroadcastReceiver mBroadcastReceiver;
     private final TracingIntentFilter mIntentFilter;
@@ -191,7 +196,8 @@ public class TracingControllerAndroid {
             return false;
         }
 
-        logAndToastInfo(mContext.getString(R.string.profiler_started_toast) + ": " + categories);
+        logForProfiler(String.format(PROFILER_STARTED_FMT, categories));
+        showToast(mContext.getString(R.string.profiler_started_toast) + ": " + categories);
         mFilename = filename;
         mIsTracing = true;
         return true;
@@ -217,8 +223,8 @@ public class TracingControllerAndroid {
             return;
         }
 
-        logAndToastInfo(
-                mContext.getString(R.string.profiler_stopped_toast, mFilename));
+        logForProfiler(String.format(PROFILER_FINISHED_FMT, mFilename));
+        showToast(mContext.getString(R.string.profiler_stopped_toast, mFilename));
         mIsTracing = false;
         mFilename = null;
     }
@@ -242,13 +248,17 @@ public class TracingControllerAndroid {
         }
     }
 
-    void logAndToastError(String str) {
+    private void logAndToastError(String str) {
         Log.e(TAG, str);
         if (mShowToasts) Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
     }
 
-    void logAndToastInfo(String str) {
+    // The |str| string needs to match the ones that adb_chrome_profiler looks for.
+    private void logForProfiler(String str) {
         Log.i(TAG, str);
+    }
+
+    private void showToast(String str) {
         if (mShowToasts) Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
     }
 
