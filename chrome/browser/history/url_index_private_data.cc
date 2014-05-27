@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
@@ -150,6 +149,7 @@ URLIndexPrivateData::URLIndexPrivateData()
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     base::string16 search_string,
     size_t cursor_position,
+    size_t max_matches,
     const std::string& languages,
     BookmarkService* bookmark_service) {
   // If cursor position is set and useful (not at either end of the
@@ -246,14 +246,14 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
       AddHistoryMatch(*this, languages, bookmark_service, lower_raw_string,
                       lower_raw_terms, base::Time::Now())).ScoredMatches();
 
-  // Select and sort only the top kMaxMatches results.
-  if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
+  // Select and sort only the top |max_matches| results.
+  if (scored_items.size() > max_matches) {
     std::partial_sort(scored_items.begin(),
                       scored_items.begin() +
-                          AutocompleteProvider::kMaxMatches,
+                          max_matches,
                       scored_items.end(),
                       ScoredHistoryMatch::MatchScoreGreater);
-      scored_items.resize(AutocompleteProvider::kMaxMatches);
+      scored_items.resize(max_matches);
   } else {
     std::sort(scored_items.begin(), scored_items.end(),
               ScoredHistoryMatch::MatchScoreGreater);

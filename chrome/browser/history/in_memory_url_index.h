@@ -117,9 +117,11 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // URLIndexPrivateData class. For a complete description of this function
   // refer to that class.  If |cursor_position| is base::string16::npos, the
   // function doesn't do anything special with the cursor; this is equivalent
-  // to the cursor being at the end.
+  // to the cursor being at the end.  In total, |max_matches| of items will be
+  // returned in the |ScoredHistoryMatches| vector.
   ScoredHistoryMatches HistoryItemsForTerms(const base::string16& term_string,
-                                            size_t cursor_position);
+                                            size_t cursor_position,
+                                            size_t max_matches);
 
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);

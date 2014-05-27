@@ -65,9 +65,12 @@ class URLIndexPrivateData
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
   // to this function. |bookmark_service| is used to boost a result's score if
   // its URL is referenced by one or more of the user's bookmarks.  |languages|
-  // is used to help parse/format the URLs in the history index.
+  // is used to help parse/format the URLs in the history index.  In total,
+  // |max_matches| of items will be returned in the |ScoredHistoryMatches|
+  // vector.
   ScoredHistoryMatches HistoryItemsForTerms(base::string16 term_string,
                                             size_t cursor_position,
+                                            size_t max_matches,
                                             const std::string& languages,
                                             BookmarkService* bookmark_service);
 
