@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 namespace base {
 namespace mac {
@@ -30,6 +31,12 @@ class BASE_EXPORT ScopedMachPort {
 
   mach_port_t get() const {
     return port_;
+  }
+
+  mach_port_t release() WARN_UNUSED_RESULT {
+    mach_port_t temp = port_;
+    port_ = MACH_PORT_NULL;
+    return temp;
   }
 
  private:
