@@ -15,9 +15,9 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "mojo/common/channel_init.h"
+#include "mojo/public/cpp/application/application.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/shell/application.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
 
 namespace mojo {

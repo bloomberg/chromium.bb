@@ -12,9 +12,9 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/geometry/geometry_type_converters.h"
+#include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/shell/connect.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
@@ -376,7 +376,9 @@ class ViewManagerConnectionTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     test_helper_.Init();
 
-    ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager_);
+    ConnectToService(test_helper_.service_provider(),
+                     "mojo:mojo_view_manager",
+                     &view_manager_);
     view_manager_.set_client(&client_);
 
     client_.WaitForId();
@@ -386,7 +388,9 @@ class ViewManagerConnectionTest : public testing::Test {
  protected:
   // Creates a second connection to the viewmanager.
   void EstablishSecondConnection() {
-    ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager2_);
+    ConnectToService(test_helper_.service_provider(),
+                     "mojo:mojo_view_manager",
+                     &view_manager2_);
     view_manager2_.set_client(&client2_);
 
     client2_.WaitForId();

@@ -1456,7 +1456,7 @@
         '../cc/cc.gyp:cc',
         '../mojo/mojo.gyp:mojo_cpp_bindings',
         '../mojo/mojo.gyp:mojo_js_bindings',
-        '../mojo/mojo.gyp:mojo_shell_bindings',
+        '../mojo/mojo.gyp:mojo_service_provider_bindings',
         '../net/net.gyp:http_server',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',

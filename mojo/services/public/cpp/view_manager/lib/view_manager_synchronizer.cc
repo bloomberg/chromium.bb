@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/shell/connect.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
@@ -411,8 +411,10 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       next_server_change_id_(0),
       sync_factory_(this),
       init_loop_(NULL) {
-  ConnectTo(ViewManagerPrivate(view_manager_).shell(), "mojo:mojo_view_manager",
-            &service_);
+  ConnectToService(
+      ViewManagerPrivate(view_manager_).service_provider(),
+      "mojo:mojo_view_manager",
+      &service_);
   service_.set_client(this);
 
   // Start a runloop. This loop is quit when the server tells us about the

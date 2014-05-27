@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/dynamic_service_runner.h"
 #include "mojo/shell/keep_alive.h"

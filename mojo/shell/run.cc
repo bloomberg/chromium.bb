@@ -36,7 +36,7 @@ void Run(Context* context) {
       return;
     }
     ScopedMessagePipeHandle no_handle;
-    context->service_manager()->Connect(GURL(*it), no_handle.Pass());
+    context->service_manager()->ConnectToService(GURL(*it), no_handle.Pass());
   }
 }
 

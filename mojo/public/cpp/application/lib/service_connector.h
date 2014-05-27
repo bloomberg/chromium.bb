@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_SHELL_LIB_SERVICE_CONNECTOR_H_
-#define MOJO_PUBLIC_CPP_SHELL_LIB_SERVICE_CONNECTOR_H_
+#ifndef MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_CONNECTOR_H_
+#define MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_CONNECTOR_H_
 
 #include <assert.h>
 
 #include <vector>
 
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 
 namespace mojo {
 namespace internal {
@@ -61,11 +61,11 @@ struct ServiceConstructor<ServiceImpl, void> {
 
 class ServiceConnectorBase {
  public:
-  class Owner : public ShellClient {
+  class Owner : public ServiceProvider {
    public:
-    Owner(ScopedMessagePipeHandle shell_handle);
+    Owner(ScopedMessagePipeHandle service_provider_handle);
     virtual ~Owner();
-    Shell* shell() { return shell_.get(); }
+    ServiceProvider* service_provider() { return service_provider_.get(); }
     virtual void AddServiceConnector(
         internal::ServiceConnectorBase* service_connector) = 0;
     virtual void RemoveServiceConnector(
@@ -76,12 +76,12 @@ class ServiceConnectorBase {
                                      Owner* owner) {
       service_connector->owner_ = owner;
     }
-    ShellPtr shell_;
+    ServiceProviderPtr service_provider_;
   };
   ServiceConnectorBase() : owner_(NULL) {}
   virtual ~ServiceConnectorBase();
-  Shell* shell() { return owner_->shell(); }
-  virtual void AcceptConnection(const std::string& url,
+  ServiceProvider* service_provider() { return owner_->service_provider(); }
+  virtual void ConnectToService(const std::string& url,
                                 ScopedMessagePipeHandle client_handle) = 0;
 
  protected:
@@ -103,7 +103,7 @@ class ServiceConnector : public internal::ServiceConnectorBase {
     assert(connections_.empty());  // No one should have added more!
   }
 
-  virtual void AcceptConnection(const std::string& url,
+  virtual void ConnectToService(const std::string& url,
                                 ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
     ServiceConnection<ServiceImpl, Context>* impl =
         ServiceConstructor<ServiceImpl, Context>::New(context_);
@@ -138,4 +138,4 @@ class ServiceConnector : public internal::ServiceConnectorBase {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_SHELL_LIB_SERVICE_CONNECTOR_H_
+#endif  // MOJO_PUBLIC_CPP_APPLICATION_LIB_SERVICE_CONNECTOR_H_

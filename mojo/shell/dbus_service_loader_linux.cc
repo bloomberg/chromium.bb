@@ -37,12 +37,12 @@ class DBusServiceLoader::LoadContext {
   LoadContext(DBusServiceLoader* loader,
               const scoped_refptr<dbus::Bus>& bus,
               const GURL& url,
-              ScopedMessagePipeHandle shell_handle)
+              ScopedMessagePipeHandle service_provider_handle)
       : loader_(loader),
         bus_(bus),
         service_dbus_proxy_(NULL),
         url_(url),
-        shell_handle_(shell_handle.Pass()),
+        service_provider_handle_(service_provider_handle.Pass()),
         keep_alive_(loader->context_) {
     base::PostTaskAndReplyWithResult(
         loader_->context_->task_runners()->io_runner(),
@@ -108,7 +108,8 @@ class DBusServiceLoader::LoadContext {
     mojo::AllocationScope scope;
     external_service_->Activate(
         mojo::ScopedMessagePipeHandle(
-            mojo::MessagePipeHandle(shell_handle_.release().value())));
+            mojo::MessagePipeHandle(
+                service_provider_handle_.release().value())));
   }
 
   // Should the ExternalService disappear completely, destroy connection state.
@@ -132,7 +133,7 @@ class DBusServiceLoader::LoadContext {
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* service_dbus_proxy_;  // Owned by bus_;
   const GURL url_;
-  ScopedMessagePipeHandle shell_handle_;
+  ScopedMessagePipeHandle service_provider_handle_;
   KeepAlive keep_alive_;
   scoped_ptr<common::ChannelInit> channel_init_;
   ExternalServicePtr external_service_;

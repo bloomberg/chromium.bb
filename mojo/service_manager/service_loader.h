@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICE_MANAGER_SERVICE_LOADER_H_
 #define MOJO_SERVICE_MANAGER_SERVICE_LOADER_H_
 
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
 
