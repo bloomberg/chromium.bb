@@ -55,6 +55,9 @@ class MockAudioInputControllerEventHandler
                              AudioInputController::ErrorCode error_code));
   MOCK_METHOD3(OnData, void(AudioInputController* controller,
                             const uint8* data, uint32 size));
+  MOCK_METHOD2(OnLog,
+               void(AudioInputController* controller,
+                    const std::string& message));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputControllerEventHandler);

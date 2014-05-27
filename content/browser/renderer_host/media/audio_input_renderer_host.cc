@@ -118,6 +118,16 @@ void AudioInputRendererHost::OnData(media::AudioInputController* controller,
   NOTREACHED() << "Only low-latency mode is supported.";
 }
 
+void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
+                                   const std::string& message) {
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&AudioInputRendererHost::DoLog,
+                                     this,
+                                     make_scoped_refptr(controller),
+                                     message));
+}
+
 void AudioInputRendererHost::DoCompleteCreation(
     media::AudioInputController* controller) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -203,6 +213,21 @@ void AudioInputRendererHost::DoHandleError(
 
   audio_log_->OnError(entry->stream_id);
   DeleteEntryOnError(entry, AUDIO_INPUT_CONTROLLER_ERROR);
+}
+
+void AudioInputRendererHost::DoLog(media::AudioInputController* controller,
+                                   const std::string& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AudioEntry* entry = LookupByController(controller);
+  if (!entry)
+    return;
+
+  // Add stream ID and current audio level reported by AIC to native log.
+  std::string log_string =
+      base::StringPrintf("[stream_id=%d] ", entry->stream_id);
+  log_string += message;
+  MediaStreamManager::SendMessageToNativeLog(log_string);
+  DVLOG(1) << log_string;
 }
 
 bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message) {

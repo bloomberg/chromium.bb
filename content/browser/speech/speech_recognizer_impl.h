@@ -133,6 +133,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       media::AudioInputController::ErrorCode error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data, uint32 size) OVERRIDE;
+  virtual void OnLog(media::AudioInputController* controller,
+                     const std::string& message) OVERRIDE {}
 
   // SpeechRecognitionEngineDelegate methods.
   virtual void OnSpeechRecognitionEngineResults(
