@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -66,7 +67,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -99,7 +99,9 @@ const base::FilePath::CharType kRLZDisabledFlagName[] =
     FILE_PATH_LITERAL(".rlz_disabled");
 
 base::FilePath GetRlzDisabledFlagPath() {
-  return base::GetHomeDir().Append(kRLZDisabledFlagName);
+  base::FilePath homedir;
+  PathService::Get(base::DIR_HOME, &homedir);
+  return homedir.Append(kRLZDisabledFlagName);
 }
 #endif
 

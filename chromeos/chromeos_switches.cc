@@ -138,6 +138,9 @@ const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
 // If true, the Chromebook has a keyboard with a diamond key.
 const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
 
+// Defines user homedir. This defaults to primary user homedir.
+const char kHomedir[]           = "homedir";
+
 // If true, profile selection in UserManager will always return active user's
 // profile.
 // TODO(nkostlyev): http://crbug.com/364604 - Get rid of this switch after we

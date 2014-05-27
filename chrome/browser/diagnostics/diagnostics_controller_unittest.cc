@@ -4,6 +4,7 @@
 
 #include "chrome/browser/diagnostics/diagnostics_controller.h"
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -40,14 +41,8 @@ class DiagnosticsControllerTest : public testing::Test {
     // Redirect the home dir to the profile directory. We have to do this
     // because NSS uses the HOME directory to find where to store it's database,
     // so that's where the diagnostics and recovery code looks for it.
-
-    // Preserve existing home directory setting, if any.
-    const char* old_home_dir = ::getenv("HOME");
-    if (old_home_dir)
-      old_home_dir_ = old_home_dir;
-    else
-      old_home_dir_.clear();
-    ::setenv("HOME", profile_dir_.value().c_str(), 1);
+    PathService::Get(base::DIR_HOME, &old_home_dir_);
+    PathService::Override(base::DIR_HOME, profile_dir_);
 #endif
 
     cmdline_ = CommandLine(CommandLine::NO_PROGRAM);
@@ -62,11 +57,7 @@ class DiagnosticsControllerTest : public testing::Test {
   virtual void TearDown() {
     DiagnosticsController::GetInstance()->ClearResults();
 #if defined(OS_CHROMEOS)
-    if (!old_home_dir_.empty()) {
-      ::setenv("HOME", old_home_dir_.c_str(), 1);
-    } else {
-      ::unsetenv("HOME");
-    }
+    PathService::Override(base::DIR_HOME, old_home_dir_);
     old_home_dir_.clear();
 #endif
   }
@@ -85,7 +76,7 @@ class DiagnosticsControllerTest : public testing::Test {
   base::FilePath profile_dir_;
 
 #if defined(OS_CHROMEOS)
-  std::string old_home_dir_;
+  base::FilePath old_home_dir_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsControllerTest);

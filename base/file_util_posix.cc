@@ -458,8 +458,12 @@ bool GetTempDir(FilePath* path) {
 #if !defined(OS_MACOSX)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
-  if (SysInfo::IsRunningOnChromeOS())
-    return FilePath("/home/chronos/user");
+  if (SysInfo::IsRunningOnChromeOS()) {
+    // On Chrome OS chrome::DIR_USER_DATA is overriden with a primary user
+    // homedir once it becomes available.
+    NOTREACHED() << "Called GetHomeDir() without base::DIR_HOME override";
+    return FilePath("/");
+  }
 #endif
 
   const char* home_dir = getenv("HOME");
