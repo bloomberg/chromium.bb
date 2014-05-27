@@ -60,8 +60,10 @@ const float kDisplayRotationStickyAngleDegrees = 60.0f;
 
 // The minimum acceleration in a direction required to trigger screen rotation.
 // This prevents rapid toggling of rotation when the device is near flat and
-// there is very little screen aligned force on it.
-const float kMinimumAccelerationScreenRotation = 0.3f;
+// there is very little screen aligned force on it. The value is effectively the
+// sine of the rise angle required, with the current value requiring at least a
+// 25 degree rise.
+const float kMinimumAccelerationScreenRotation = 0.42f;
 
 const float kRadiansToDegrees = 180.0f / 3.14159265f;
 
