@@ -37,56 +37,9 @@
   'includes': [
     'bindings.gypi',
     'idl.gypi',
+    'scripts/scripts.gypi',
+    'templates/templates.gypi',
   ],
-
-  'variables': {
-    # Python source
-    'jinja_module_files': [
-      # jinja2/__init__.py contains version string, so sufficient for package
-      '<(DEPTH)/third_party/jinja2/__init__.py',
-      '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
-    ],
-    'idl_lexer_parser_files': [
-      # PLY (Python Lex-Yacc)
-      '<(DEPTH)/third_party/ply/lex.py',
-      '<(DEPTH)/third_party/ply/yacc.py',
-      # Web IDL lexer/parser (base parser)
-      '<(DEPTH)/tools/idl_parser/idl_lexer.py',
-      '<(DEPTH)/tools/idl_parser/idl_node.py',
-      '<(DEPTH)/tools/idl_parser/idl_parser.py',
-      # Blink IDL lexer/parser/constructor
-      'scripts/blink_idl_lexer.py',
-      'scripts/blink_idl_parser.py',
-    ],
-    'idl_compiler_files': [
-      'scripts/idl_compiler.py',
-      # Blink IDL front end (ex-lexer/parser)
-      'scripts/idl_definitions.py',
-      'scripts/idl_reader.py',
-      'scripts/idl_validator.py',
-      'scripts/interface_dependency_resolver.py',
-      # V8 code generator
-      'scripts/code_generator_v8.py',
-      'scripts/v8_attributes.py',
-      'scripts/v8_callback_interface.py',
-      'scripts/v8_globals.py',
-      'scripts/v8_interface.py',
-      'scripts/v8_methods.py',
-      'scripts/v8_types.py',
-      'scripts/v8_utilities.py',
-    ],
-
-    # Jinja templates
-    'code_generator_template_files': [
-      'templates/attributes.cpp',
-      'templates/callback_interface.cpp',
-      'templates/callback_interface.h',
-      'templates/interface_base.cpp',
-      'templates/interface.cpp',
-      'templates/interface.h',
-      'templates/methods.cpp',
-    ],
-  },
 
   'targets': [
 ################################################################################
@@ -171,58 +124,6 @@
   },
 ################################################################################
   {
-    # A separate pre-caching step is *not required* to use lex/parse table
-    # caching in PLY, as the caches are concurrency-safe.
-    # However, pre-caching ensures that all compiler processes use the cached
-    # files (hence maximizing speed), instead of early processes building the
-    # tables themselves (as they've not yet been written when they start).
-    'target_name': 'cached_lex_yacc_tables',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'cache_lex_yacc_tables',
-      'inputs': [
-        '<@(idl_lexer_parser_files)',
-      ],
-      'outputs': [
-        '<(bindings_output_dir)/lextab.py',
-        '<(bindings_output_dir)/parsetab.pickle',
-      ],
-      'action': [
-        'python',
-        'scripts/blink_idl_parser.py',
-        '<(bindings_output_dir)',
-      ],
-      'message': 'Caching PLY lex & yacc lex/parse tables',
-    }],
-  },
-################################################################################
-  {
-    # A separate pre-caching step is *required* to use bytecode caching in
-    # Jinja (which improves speed significantly), as the bytecode cache is
-    # not concurrency-safe on write; details in code_generator_v8.py.
-    'target_name': 'cached_jinja_templates',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'cache_jinja_templates',
-      'inputs': [
-        '<@(jinja_module_files)',
-        'scripts/code_generator_v8.py',
-        '<@(code_generator_template_files)',
-      ],
-      'outputs': [
-        '<(bindings_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
-      ],
-      'action': [
-        'python',
-        'scripts/code_generator_v8.py',
-        '<(bindings_output_dir)',
-        '<(bindings_output_dir)/cached_jinja_templates.stamp',
-      ],
-      'message': 'Caching bytecode of Jinja templates',
-    }],
-  },
-################################################################################
-  {
     'target_name': 'individual_generated_bindings',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
@@ -230,8 +131,8 @@
     'hard_dependency': 1,
     'dependencies': [
       'interfaces_info',
-      'cached_lex_yacc_tables',
-      'cached_jinja_templates',
+      'scripts/scripts.gyp:cached_lex_yacc_tables',
+      'scripts/scripts.gyp:cached_jinja_templates',
       '../core/core_generated.gyp:generated_testing_idls',
     ],
     'sources': [

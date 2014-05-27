@@ -9,8 +9,8 @@
 {
   'includes': [
     'generated.gypi',
-    '../../bindings.gypi',
     '../../idl.gypi',
+    '../../scripts/scripts.gypi',
   ],
 
   'targets': [
