@@ -10,11 +10,12 @@
 import bisect
 import getopt
 import os
+import pty
 import re
 import subprocess
 import sys
+import termios
 
-llvm_symbolizer = None
 symbolizers = {}
 DEBUG = False
 demangle = False;
@@ -28,6 +29,12 @@ def fix_filename(file_name):
   file_name = re.sub('.*crtstuff.c:0', '???:0', file_name)
   return file_name
 
+def GuessArch(addr):
+  # Guess which arch we're running. 10 = len('0x') + 8 hex digits.
+  if len(addr) > 10:
+    return 'x86_64'
+  else:
+    return 'i386'
 
 class Symbolizer(object):
   def __init__(self):
@@ -50,23 +57,27 @@ class Symbolizer(object):
 
 
 class LLVMSymbolizer(Symbolizer):
-  def __init__(self, symbolizer_path):
+  def __init__(self, symbolizer_path, addr):
     super(LLVMSymbolizer, self).__init__()
     self.symbolizer_path = symbolizer_path
+    self.default_arch = GuessArch(addr)
     self.pipe = self.open_llvm_symbolizer()
 
   def open_llvm_symbolizer(self):
-    if not os.path.exists(self.symbolizer_path):
-      return None
     cmd = [self.symbolizer_path,
            '--use-symbol-table=true',
            '--demangle=%s' % demangle,
-           '--functions=true',
-           '--inlining=true']
+           '--functions=short',
+           '--inlining=true',
+           '--default-arch=%s' % self.default_arch]
     if DEBUG:
       print ' '.join(cmd)
-    return subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
+    try:
+      result = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+    except OSError:
+      result = None
+    return result
 
   def symbolize(self, addr, binary, offset):
     """Overrides Symbolizer.symbolize."""
@@ -84,9 +95,9 @@ class LLVMSymbolizer(Symbolizer):
           break
         file_name = self.pipe.stdout.readline().rstrip()
         file_name = fix_filename(file_name)
-        if (not function_name.startswith('??') and
+        if (not function_name.startswith('??') or
             not file_name.startswith('??')):
-          # Append only valid frames.
+          # Append only non-trivial frames.
           result.append('%s in %s %s' % (addr, function_name,
                                          file_name))
     except Exception:
@@ -96,12 +107,14 @@ class LLVMSymbolizer(Symbolizer):
     return result
 
 
-def LLVMSymbolizerFactory(system):
+def LLVMSymbolizerFactory(system, addr):
   symbolizer_path = os.getenv('LLVM_SYMBOLIZER_PATH')
   if not symbolizer_path:
-    # Assume llvm-symbolizer is in PATH.
-    symbolizer_path = 'llvm-symbolizer'
-  return LLVMSymbolizer(symbolizer_path)
+    symbolizer_path = os.getenv('ASAN_SYMBOLIZER_PATH')
+    if not symbolizer_path:
+      # Assume llvm-symbolizer is in PATH.
+      symbolizer_path = 'llvm-symbolizer'
+  return LLVMSymbolizer(symbolizer_path, addr)
 
 
 class Addr2LineSymbolizer(Symbolizer):
@@ -135,37 +148,56 @@ class Addr2LineSymbolizer(Symbolizer):
     return ['%s in %s %s' % (addr, function_name, file_name)]
 
 
+class UnbufferedLineConverter(object):
+  """
+  Wrap a child process that responds to each line of input with one line of
+  output.  Uses pty to trick the child into providing unbuffered output.
+  """
+  def __init__(self, args, close_stderr=False):
+    pid, fd = pty.fork()
+    if pid == 0:
+      # We're the child. Transfer control to command.
+      if close_stderr:
+        dev_null = os.open('/dev/null', 0)
+        os.dup2(dev_null, 2)
+      os.execvp(args[0], args)
+    else:
+      # Disable echoing.
+      attr = termios.tcgetattr(fd)
+      attr[3] = attr[3] & ~termios.ECHO
+      termios.tcsetattr(fd, termios.TCSANOW, attr)
+      # Set up a file()-like interface to the child process
+      self.r = os.fdopen(fd, "r", 1)
+      self.w = os.fdopen(os.dup(fd), "w", 1)
+
+  def convert(self, line):
+    self.w.write(line + "\n")
+    return self.readline()
+
+  def readline(self):
+    return self.r.readline().rstrip()
+
+
 class DarwinSymbolizer(Symbolizer):
   def __init__(self, addr, binary):
     super(DarwinSymbolizer, self).__init__()
     self.binary = binary
-    # Guess which arch we're running. 10 = len('0x') + 8 hex digits.
-    if len(addr) > 10:
-      self.arch = 'x86_64'
-    else:
-      self.arch = 'i386'
-    self.pipe = None
-
-  def write_addr_to_pipe(self, offset):
-    print >> self.pipe.stdin, '0x%x' % int(offset, 16)
+    self.arch = GuessArch(addr)
+    self.open_atos()
 
   def open_atos(self):
     if DEBUG:
       print 'atos -o %s -arch %s' % (self.binary, self.arch)
     cmdline = ['atos', '-o', self.binary, '-arch', self.arch]
-    self.pipe = subprocess.Popen(cmdline,
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+    self.atos = UnbufferedLineConverter(cmdline, close_stderr=True)
 
   def symbolize(self, addr, binary, offset):
     """Overrides Symbolizer.symbolize."""
     if self.binary != binary:
       return None
-    self.open_atos()
-    self.write_addr_to_pipe(offset)
-    self.pipe.stdin.close()
-    atos_line = self.pipe.stdout.readline().rstrip()
+    atos_line = self.atos.convert('0x%x' % int(offset, 16))
+    while "got symbolicator for" in atos_line:
+      atos_line = self.atos.readline()
     # A well-formed atos response looks like this:
     #   foo(type1, type2) (in object.name) (filename.cc:80)
     match = re.match('^(.*) \(in (.*)\) \((.*:\d*)\)$', atos_line)
@@ -296,12 +328,14 @@ class SymbolizationLoop(object):
     # E.g. in Chrome several binaries may share a single .dSYM.
     self.binary_name_filter = binary_name_filter
     self.system = os.uname()[0]
-    if self.system in ['Linux', 'Darwin']:
-      self.llvm_symbolizer = LLVMSymbolizerFactory(self.system)
-    else:
+    if self.system not in ['Linux', 'Darwin']:
       raise Exception('Unknown system')
+    self.llvm_symbolizer = None
 
   def symbolize_address(self, addr, binary, offset):
+    # Initialize llvm-symbolizer lazily.
+    if not self.llvm_symbolizer:
+      self.llvm_symbolizer = LLVMSymbolizerFactory(self.system, addr)
     # Use the chain of symbolizers:
     # Breakpad symbolizer -> LLVM symbolizer -> addr2line/atos
     # (fall back to next symbolizer if the previous one fails).
