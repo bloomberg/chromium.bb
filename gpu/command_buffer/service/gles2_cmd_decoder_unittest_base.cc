@@ -645,10 +645,7 @@ void GLES2DecoderTestBase::DoDeleteBuffer(
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, Pointee(service_id)))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::DeleteBuffers cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  GenHelper<cmds::DeleteBuffersImmediate>(client_id);
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForColorMask(bool red,
@@ -840,10 +837,7 @@ void GLES2DecoderTestBase::DoDeleteFramebuffer(
   EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, Pointee(service_id)))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::DeleteFramebuffers cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  GenHelper<cmds::DeleteFramebuffersImmediate>(client_id);
 }
 
 void GLES2DecoderTestBase::DoBindRenderbuffer(
@@ -866,10 +860,7 @@ void GLES2DecoderTestBase::DoDeleteRenderbuffer(
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, Pointee(service_id)))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::DeleteRenderbuffers cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  GenHelper<cmds::DeleteRenderbuffersImmediate>(client_id);
 }
 
 void GLES2DecoderTestBase::DoBindTexture(
@@ -891,10 +882,7 @@ void GLES2DecoderTestBase::DoDeleteTexture(
   EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(service_id)))
       .Times(1)
       .RetiresOnSaturation();
-  cmds::DeleteTextures cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  GenHelper<cmds::DeleteTexturesImmediate>(client_id);
 }
 
 void GLES2DecoderTestBase::DoTexImage2D(

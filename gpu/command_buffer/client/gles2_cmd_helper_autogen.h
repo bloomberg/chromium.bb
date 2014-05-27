@@ -318,31 +318,12 @@ void CullFace(GLenum mode) {
   }
 }
 
-void DeleteBuffers(GLsizei n,
-                   uint32_t buffers_shm_id,
-                   uint32_t buffers_shm_offset) {
-  gles2::cmds::DeleteBuffers* c = GetCmdSpace<gles2::cmds::DeleteBuffers>();
-  if (c) {
-    c->Init(n, buffers_shm_id, buffers_shm_offset);
-  }
-}
-
 void DeleteBuffersImmediate(GLsizei n, const GLuint* buffers) {
   const uint32_t size = gles2::cmds::DeleteBuffersImmediate::ComputeSize(n);
   gles2::cmds::DeleteBuffersImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::DeleteBuffersImmediate>(size);
   if (c) {
     c->Init(n, buffers);
-  }
-}
-
-void DeleteFramebuffers(GLsizei n,
-                        uint32_t framebuffers_shm_id,
-                        uint32_t framebuffers_shm_offset) {
-  gles2::cmds::DeleteFramebuffers* c =
-      GetCmdSpace<gles2::cmds::DeleteFramebuffers>();
-  if (c) {
-    c->Init(n, framebuffers_shm_id, framebuffers_shm_offset);
   }
 }
 
@@ -364,16 +345,6 @@ void DeleteProgram(GLuint program) {
   }
 }
 
-void DeleteRenderbuffers(GLsizei n,
-                         uint32_t renderbuffers_shm_id,
-                         uint32_t renderbuffers_shm_offset) {
-  gles2::cmds::DeleteRenderbuffers* c =
-      GetCmdSpace<gles2::cmds::DeleteRenderbuffers>();
-  if (c) {
-    c->Init(n, renderbuffers_shm_id, renderbuffers_shm_offset);
-  }
-}
-
 void DeleteRenderbuffersImmediate(GLsizei n, const GLuint* renderbuffers) {
   const uint32_t size =
       gles2::cmds::DeleteRenderbuffersImmediate::ComputeSize(n);
@@ -389,15 +360,6 @@ void DeleteShader(GLuint shader) {
   gles2::cmds::DeleteShader* c = GetCmdSpace<gles2::cmds::DeleteShader>();
   if (c) {
     c->Init(shader);
-  }
-}
-
-void DeleteTextures(GLsizei n,
-                    uint32_t textures_shm_id,
-                    uint32_t textures_shm_offset) {
-  gles2::cmds::DeleteTextures* c = GetCmdSpace<gles2::cmds::DeleteTextures>();
-  if (c) {
-    c->Init(n, textures_shm_id, textures_shm_offset);
   }
 }
 
@@ -528,15 +490,6 @@ void FrontFace(GLenum mode) {
   }
 }
 
-void GenBuffers(GLsizei n,
-                uint32_t buffers_shm_id,
-                uint32_t buffers_shm_offset) {
-  gles2::cmds::GenBuffers* c = GetCmdSpace<gles2::cmds::GenBuffers>();
-  if (c) {
-    c->Init(n, buffers_shm_id, buffers_shm_offset);
-  }
-}
-
 void GenBuffersImmediate(GLsizei n, GLuint* buffers) {
   const uint32_t size = gles2::cmds::GenBuffersImmediate::ComputeSize(n);
   gles2::cmds::GenBuffersImmediate* c =
@@ -553,15 +506,6 @@ void GenerateMipmap(GLenum target) {
   }
 }
 
-void GenFramebuffers(GLsizei n,
-                     uint32_t framebuffers_shm_id,
-                     uint32_t framebuffers_shm_offset) {
-  gles2::cmds::GenFramebuffers* c = GetCmdSpace<gles2::cmds::GenFramebuffers>();
-  if (c) {
-    c->Init(n, framebuffers_shm_id, framebuffers_shm_offset);
-  }
-}
-
 void GenFramebuffersImmediate(GLsizei n, GLuint* framebuffers) {
   const uint32_t size = gles2::cmds::GenFramebuffersImmediate::ComputeSize(n);
   gles2::cmds::GenFramebuffersImmediate* c =
@@ -572,16 +516,6 @@ void GenFramebuffersImmediate(GLsizei n, GLuint* framebuffers) {
   }
 }
 
-void GenRenderbuffers(GLsizei n,
-                      uint32_t renderbuffers_shm_id,
-                      uint32_t renderbuffers_shm_offset) {
-  gles2::cmds::GenRenderbuffers* c =
-      GetCmdSpace<gles2::cmds::GenRenderbuffers>();
-  if (c) {
-    c->Init(n, renderbuffers_shm_id, renderbuffers_shm_offset);
-  }
-}
-
 void GenRenderbuffersImmediate(GLsizei n, GLuint* renderbuffers) {
   const uint32_t size = gles2::cmds::GenRenderbuffersImmediate::ComputeSize(n);
   gles2::cmds::GenRenderbuffersImmediate* c =
@@ -589,15 +523,6 @@ void GenRenderbuffersImmediate(GLsizei n, GLuint* renderbuffers) {
           size);
   if (c) {
     c->Init(n, renderbuffers);
-  }
-}
-
-void GenTextures(GLsizei n,
-                 uint32_t textures_shm_id,
-                 uint32_t textures_shm_offset) {
-  gles2::cmds::GenTextures* c = GetCmdSpace<gles2::cmds::GenTextures>();
-  if (c) {
-    c->Init(n, textures_shm_id, textures_shm_offset);
   }
 }
 
@@ -1116,16 +1041,6 @@ void TexParameterf(GLenum target, GLenum pname, GLfloat param) {
   }
 }
 
-void TexParameterfv(GLenum target,
-                    GLenum pname,
-                    uint32_t params_shm_id,
-                    uint32_t params_shm_offset) {
-  gles2::cmds::TexParameterfv* c = GetCmdSpace<gles2::cmds::TexParameterfv>();
-  if (c) {
-    c->Init(target, pname, params_shm_id, params_shm_offset);
-  }
-}
-
 void TexParameterfvImmediate(GLenum target,
                              GLenum pname,
                              const GLfloat* params) {
@@ -1141,16 +1056,6 @@ void TexParameteri(GLenum target, GLenum pname, GLint param) {
   gles2::cmds::TexParameteri* c = GetCmdSpace<gles2::cmds::TexParameteri>();
   if (c) {
     c->Init(target, pname, param);
-  }
-}
-
-void TexParameteriv(GLenum target,
-                    GLenum pname,
-                    uint32_t params_shm_id,
-                    uint32_t params_shm_offset) {
-  gles2::cmds::TexParameteriv* c = GetCmdSpace<gles2::cmds::TexParameteriv>();
-  if (c) {
-    c->Init(target, pname, params_shm_id, params_shm_offset);
   }
 }
 
@@ -1197,16 +1102,6 @@ void Uniform1f(GLint location, GLfloat x) {
   }
 }
 
-void Uniform1fv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform1fv* c = GetCmdSpace<gles2::cmds::Uniform1fv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
-  }
-}
-
 void Uniform1fvImmediate(GLint location, GLsizei count, const GLfloat* v) {
   const uint32_t size = gles2::cmds::Uniform1fvImmediate::ComputeSize(count);
   gles2::cmds::Uniform1fvImmediate* c =
@@ -1220,16 +1115,6 @@ void Uniform1i(GLint location, GLint x) {
   gles2::cmds::Uniform1i* c = GetCmdSpace<gles2::cmds::Uniform1i>();
   if (c) {
     c->Init(location, x);
-  }
-}
-
-void Uniform1iv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform1iv* c = GetCmdSpace<gles2::cmds::Uniform1iv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
   }
 }
 
@@ -1249,16 +1134,6 @@ void Uniform2f(GLint location, GLfloat x, GLfloat y) {
   }
 }
 
-void Uniform2fv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform2fv* c = GetCmdSpace<gles2::cmds::Uniform2fv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
-  }
-}
-
 void Uniform2fvImmediate(GLint location, GLsizei count, const GLfloat* v) {
   const uint32_t size = gles2::cmds::Uniform2fvImmediate::ComputeSize(count);
   gles2::cmds::Uniform2fvImmediate* c =
@@ -1272,16 +1147,6 @@ void Uniform2i(GLint location, GLint x, GLint y) {
   gles2::cmds::Uniform2i* c = GetCmdSpace<gles2::cmds::Uniform2i>();
   if (c) {
     c->Init(location, x, y);
-  }
-}
-
-void Uniform2iv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform2iv* c = GetCmdSpace<gles2::cmds::Uniform2iv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
   }
 }
 
@@ -1301,16 +1166,6 @@ void Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
   }
 }
 
-void Uniform3fv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform3fv* c = GetCmdSpace<gles2::cmds::Uniform3fv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
-  }
-}
-
 void Uniform3fvImmediate(GLint location, GLsizei count, const GLfloat* v) {
   const uint32_t size = gles2::cmds::Uniform3fvImmediate::ComputeSize(count);
   gles2::cmds::Uniform3fvImmediate* c =
@@ -1324,16 +1179,6 @@ void Uniform3i(GLint location, GLint x, GLint y, GLint z) {
   gles2::cmds::Uniform3i* c = GetCmdSpace<gles2::cmds::Uniform3i>();
   if (c) {
     c->Init(location, x, y, z);
-  }
-}
-
-void Uniform3iv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform3iv* c = GetCmdSpace<gles2::cmds::Uniform3iv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
   }
 }
 
@@ -1353,16 +1198,6 @@ void Uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   }
 }
 
-void Uniform4fv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform4fv* c = GetCmdSpace<gles2::cmds::Uniform4fv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
-  }
-}
-
 void Uniform4fvImmediate(GLint location, GLsizei count, const GLfloat* v) {
   const uint32_t size = gles2::cmds::Uniform4fvImmediate::ComputeSize(count);
   gles2::cmds::Uniform4fvImmediate* c =
@@ -1379,33 +1214,12 @@ void Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
   }
 }
 
-void Uniform4iv(GLint location,
-                GLsizei count,
-                uint32_t v_shm_id,
-                uint32_t v_shm_offset) {
-  gles2::cmds::Uniform4iv* c = GetCmdSpace<gles2::cmds::Uniform4iv>();
-  if (c) {
-    c->Init(location, count, v_shm_id, v_shm_offset);
-  }
-}
-
 void Uniform4ivImmediate(GLint location, GLsizei count, const GLint* v) {
   const uint32_t size = gles2::cmds::Uniform4ivImmediate::ComputeSize(count);
   gles2::cmds::Uniform4ivImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::Uniform4ivImmediate>(size);
   if (c) {
     c->Init(location, count, v);
-  }
-}
-
-void UniformMatrix2fv(GLint location,
-                      GLsizei count,
-                      uint32_t value_shm_id,
-                      uint32_t value_shm_offset) {
-  gles2::cmds::UniformMatrix2fv* c =
-      GetCmdSpace<gles2::cmds::UniformMatrix2fv>();
-  if (c) {
-    c->Init(location, count, value_shm_id, value_shm_offset);
   }
 }
 
@@ -1422,17 +1236,6 @@ void UniformMatrix2fvImmediate(GLint location,
   }
 }
 
-void UniformMatrix3fv(GLint location,
-                      GLsizei count,
-                      uint32_t value_shm_id,
-                      uint32_t value_shm_offset) {
-  gles2::cmds::UniformMatrix3fv* c =
-      GetCmdSpace<gles2::cmds::UniformMatrix3fv>();
-  if (c) {
-    c->Init(location, count, value_shm_id, value_shm_offset);
-  }
-}
-
 void UniformMatrix3fvImmediate(GLint location,
                                GLsizei count,
                                const GLfloat* value) {
@@ -1443,17 +1246,6 @@ void UniformMatrix3fvImmediate(GLint location,
           size);
   if (c) {
     c->Init(location, count, value);
-  }
-}
-
-void UniformMatrix4fv(GLint location,
-                      GLsizei count,
-                      uint32_t value_shm_id,
-                      uint32_t value_shm_offset) {
-  gles2::cmds::UniformMatrix4fv* c =
-      GetCmdSpace<gles2::cmds::UniformMatrix4fv>();
-  if (c) {
-    c->Init(location, count, value_shm_id, value_shm_offset);
   }
 }
 
@@ -1491,15 +1283,6 @@ void VertexAttrib1f(GLuint indx, GLfloat x) {
   }
 }
 
-void VertexAttrib1fv(GLuint indx,
-                     uint32_t values_shm_id,
-                     uint32_t values_shm_offset) {
-  gles2::cmds::VertexAttrib1fv* c = GetCmdSpace<gles2::cmds::VertexAttrib1fv>();
-  if (c) {
-    c->Init(indx, values_shm_id, values_shm_offset);
-  }
-}
-
 void VertexAttrib1fvImmediate(GLuint indx, const GLfloat* values) {
   const uint32_t size = gles2::cmds::VertexAttrib1fvImmediate::ComputeSize();
   gles2::cmds::VertexAttrib1fvImmediate* c =
@@ -1514,15 +1297,6 @@ void VertexAttrib2f(GLuint indx, GLfloat x, GLfloat y) {
   gles2::cmds::VertexAttrib2f* c = GetCmdSpace<gles2::cmds::VertexAttrib2f>();
   if (c) {
     c->Init(indx, x, y);
-  }
-}
-
-void VertexAttrib2fv(GLuint indx,
-                     uint32_t values_shm_id,
-                     uint32_t values_shm_offset) {
-  gles2::cmds::VertexAttrib2fv* c = GetCmdSpace<gles2::cmds::VertexAttrib2fv>();
-  if (c) {
-    c->Init(indx, values_shm_id, values_shm_offset);
   }
 }
 
@@ -1543,15 +1317,6 @@ void VertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
   }
 }
 
-void VertexAttrib3fv(GLuint indx,
-                     uint32_t values_shm_id,
-                     uint32_t values_shm_offset) {
-  gles2::cmds::VertexAttrib3fv* c = GetCmdSpace<gles2::cmds::VertexAttrib3fv>();
-  if (c) {
-    c->Init(indx, values_shm_id, values_shm_offset);
-  }
-}
-
 void VertexAttrib3fvImmediate(GLuint indx, const GLfloat* values) {
   const uint32_t size = gles2::cmds::VertexAttrib3fvImmediate::ComputeSize();
   gles2::cmds::VertexAttrib3fvImmediate* c =
@@ -1566,15 +1331,6 @@ void VertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   gles2::cmds::VertexAttrib4f* c = GetCmdSpace<gles2::cmds::VertexAttrib4f>();
   if (c) {
     c->Init(indx, x, y, z, w);
-  }
-}
-
-void VertexAttrib4fv(GLuint indx,
-                     uint32_t values_shm_id,
-                     uint32_t values_shm_offset) {
-  gles2::cmds::VertexAttrib4fv* c = GetCmdSpace<gles2::cmds::VertexAttrib4fv>();
-  if (c) {
-    c->Init(indx, values_shm_id, values_shm_offset);
   }
 }
 
@@ -1673,31 +1429,12 @@ void TexStorage2DEXT(GLenum target,
   }
 }
 
-void GenQueriesEXT(GLsizei n,
-                   uint32_t queries_shm_id,
-                   uint32_t queries_shm_offset) {
-  gles2::cmds::GenQueriesEXT* c = GetCmdSpace<gles2::cmds::GenQueriesEXT>();
-  if (c) {
-    c->Init(n, queries_shm_id, queries_shm_offset);
-  }
-}
-
 void GenQueriesEXTImmediate(GLsizei n, GLuint* queries) {
   const uint32_t size = gles2::cmds::GenQueriesEXTImmediate::ComputeSize(n);
   gles2::cmds::GenQueriesEXTImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::GenQueriesEXTImmediate>(size);
   if (c) {
     c->Init(n, queries);
-  }
-}
-
-void DeleteQueriesEXT(GLsizei n,
-                      uint32_t queries_shm_id,
-                      uint32_t queries_shm_offset) {
-  gles2::cmds::DeleteQueriesEXT* c =
-      GetCmdSpace<gles2::cmds::DeleteQueriesEXT>();
-  if (c) {
-    c->Init(n, queries_shm_id, queries_shm_offset);
   }
 }
 
@@ -1752,16 +1489,6 @@ void PopGroupMarkerEXT() {
   }
 }
 
-void GenVertexArraysOES(GLsizei n,
-                        uint32_t arrays_shm_id,
-                        uint32_t arrays_shm_offset) {
-  gles2::cmds::GenVertexArraysOES* c =
-      GetCmdSpace<gles2::cmds::GenVertexArraysOES>();
-  if (c) {
-    c->Init(n, arrays_shm_id, arrays_shm_offset);
-  }
-}
-
 void GenVertexArraysOESImmediate(GLsizei n, GLuint* arrays) {
   const uint32_t size =
       gles2::cmds::GenVertexArraysOESImmediate::ComputeSize(n);
@@ -1770,16 +1497,6 @@ void GenVertexArraysOESImmediate(GLsizei n, GLuint* arrays) {
           size);
   if (c) {
     c->Init(n, arrays);
-  }
-}
-
-void DeleteVertexArraysOES(GLsizei n,
-                           uint32_t arrays_shm_id,
-                           uint32_t arrays_shm_offset) {
-  gles2::cmds::DeleteVertexArraysOES* c =
-      GetCmdSpace<gles2::cmds::DeleteVertexArraysOES>();
-  if (c) {
-    c->Init(n, arrays_shm_id, arrays_shm_offset);
   }
 }
 
@@ -1997,16 +1714,6 @@ void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   }
 }
 
-void ProduceTextureCHROMIUM(GLenum target,
-                            uint32_t mailbox_shm_id,
-                            uint32_t mailbox_shm_offset) {
-  gles2::cmds::ProduceTextureCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::ProduceTextureCHROMIUM>();
-  if (c) {
-    c->Init(target, mailbox_shm_id, mailbox_shm_offset);
-  }
-}
-
 void ProduceTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
   const uint32_t size =
       gles2::cmds::ProduceTextureCHROMIUMImmediate::ComputeSize();
@@ -2015,16 +1722,6 @@ void ProduceTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
           gles2::cmds::ProduceTextureCHROMIUMImmediate>(size);
   if (c) {
     c->Init(target, mailbox);
-  }
-}
-
-void ConsumeTextureCHROMIUM(GLenum target,
-                            uint32_t mailbox_shm_id,
-                            uint32_t mailbox_shm_offset) {
-  gles2::cmds::ConsumeTextureCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::ConsumeTextureCHROMIUM>();
-  if (c) {
-    c->Init(target, mailbox_shm_id, mailbox_shm_offset);
   }
 }
 
@@ -2171,17 +1868,6 @@ void WaitAllAsyncTexImage2DCHROMIUM() {
   }
 }
 
-void DiscardFramebufferEXT(GLenum target,
-                           GLsizei count,
-                           uint32_t attachments_shm_id,
-                           uint32_t attachments_shm_offset) {
-  gles2::cmds::DiscardFramebufferEXT* c =
-      GetCmdSpace<gles2::cmds::DiscardFramebufferEXT>();
-  if (c) {
-    c->Init(target, count, attachments_shm_id, attachments_shm_offset);
-  }
-}
-
 void DiscardFramebufferEXTImmediate(GLenum target,
                                     GLsizei count,
                                     const GLenum* attachments) {
@@ -2208,15 +1894,6 @@ void WaitSyncPointCHROMIUM(GLuint sync_point) {
       GetCmdSpace<gles2::cmds::WaitSyncPointCHROMIUM>();
   if (c) {
     c->Init(sync_point);
-  }
-}
-
-void DrawBuffersEXT(GLsizei count,
-                    uint32_t bufs_shm_id,
-                    uint32_t bufs_shm_offset) {
-  gles2::cmds::DrawBuffersEXT* c = GetCmdSpace<gles2::cmds::DrawBuffersEXT>();
-  if (c) {
-    c->Init(count, bufs_shm_id, bufs_shm_offset);
   }
 }
 

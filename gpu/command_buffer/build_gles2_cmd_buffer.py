@@ -2712,6 +2712,7 @@ class TypeHandler(object):
     if immediate == True or immediate == None:
       if func.num_pointer_args == 1 or immediate:
         generator.AddFunction(ImmediateFunction(func))
+        return True
 
   def AddBucketFunction(self, generator, func):
     """Adds a bucket version of a function."""
@@ -7312,8 +7313,8 @@ class GLGenerator(object):
 
         gen_cmd = f.GetInfo('gen_cmd')
         if gen_cmd == True or gen_cmd == None:
-          self.AddFunction(f)
-          f.type_handler.AddImmediateFunction(self, f)
+          if not f.type_handler.AddImmediateFunction(self, f):
+            self.AddFunction(f)
           f.type_handler.AddBucketFunction(self, f)
 
     self.Log("Auto Generated Functions    : %d" %

@@ -61,9 +61,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform1i;
-      cmds::Uniform1iv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform1ivImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform1ivImmediate>();
+      GLint data[2][1] = {{0}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -79,9 +81,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform2i;
-      cmds::Uniform2iv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform2ivImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform2ivImmediate>();
+      GLint data[2][2] = {{0}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -97,9 +101,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform3i;
-      cmds::Uniform3iv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform3ivImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform3ivImmediate>();
+      GLint data[2][3] = {{0}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -115,9 +121,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform4i;
-      cmds::Uniform4iv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform4ivImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform4ivImmediate>();
+      GLint data[2][4] = {{0}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -135,9 +143,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform1f;
-      cmds::Uniform1fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform1fvImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform1fvImmediate>();
+      GLfloat data[2][1] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -153,9 +163,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform2f;
-      cmds::Uniform2fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform2fvImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform2fvImmediate>();
+      GLfloat data[2][2] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -171,9 +183,11 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform3f;
-      cmds::Uniform3fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform3fvImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform3fvImmediate>();
+      GLfloat data[2][3] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -189,36 +203,45 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 
     {
       valid_uniform = accepts_apis & Program::kUniform4f;
-      cmds::Uniform4fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::Uniform4fvImmediate& cmd =
+          *GetImmediateAs<cmds::Uniform4fvImmediate>();
+      GLfloat data[2][4] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
 
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix2f;
-      cmds::UniformMatrix2fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::UniformMatrix2fvImmediate& cmd =
+          *GetImmediateAs<cmds::UniformMatrix2fvImmediate>();
+      GLfloat data[2][2 * 2] = {{0.0f}};
+
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
 
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix3f;
-      cmds::UniformMatrix3fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::UniformMatrix3fvImmediate& cmd =
+          *GetImmediateAs<cmds::UniformMatrix3fvImmediate>();
+      GLfloat data[2][3 * 3] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
 
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix4f;
-      cmds::UniformMatrix4fv cmd;
-      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+      cmds::UniformMatrix4fvImmediate& cmd =
+          *GetImmediateAs<cmds::UniformMatrix4fvImmediate>();
+      GLfloat data[2][4 * 4] = {{0.0f}};
+      cmd.Init(1, 2, &data[0][0]);
+      EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(data)));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
     }
@@ -228,40 +251,16 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest2, ::testing::Bool());
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::GenQueriesEXT, 0>(
-    bool valid) {
-  if (!valid) {
-    // Make the client_query_id_ so that trying to make it again
-    // will fail.
-    GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    cmds::GenQueriesEXT cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  }
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GenQueriesEXTImmediate, 0>(
     bool valid) {
   if (!valid) {
     // Make the client_query_id_ so that trying to make it again
     // will fail.
-    GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    cmds::GenQueriesEXT cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  }
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::DeleteQueriesEXT, 0>(
-    bool valid) {
-  if (valid) {
-    // Make the client_query_id_ so that trying to delete it will succeed.
-    GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    cmds::GenQueriesEXT cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    cmds::GenQueriesEXTImmediate& cmd =
+        *GetImmediateAs<cmds::GenQueriesEXTImmediate>();
+    cmd.Init(1, &client_query_id_);
+    EXPECT_EQ(error::kNoError,
+              ExecuteImmediateCmd(cmd, sizeof(client_query_id_)));
   }
 };
 
@@ -270,10 +269,11 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::DeleteQueriesEXTImmediate, 0>(
     bool valid) {
   if (valid) {
     // Make the client_query_id_ so that trying to delete it will succeed.
-    GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    cmds::GenQueriesEXT cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    cmds::GenQueriesEXTImmediate& cmd =
+        *GetImmediateAs<cmds::GenQueriesEXTImmediate>();
+    cmd.Init(1, &client_query_id_);
+    EXPECT_EQ(error::kNoError,
+              ExecuteImmediateCmd(cmd, sizeof(client_query_id_)));
   }
 };
 
@@ -370,21 +370,9 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform1f, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform1fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform1fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform1iv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_INT);
 };
 
 template <>
@@ -401,18 +389,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform2f, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform2i, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_INT_VEC2);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform2fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_VEC2);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform2iv, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_INT_VEC2);
 };
@@ -442,18 +418,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform3i, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform3fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_VEC3);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform3iv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_INT_VEC3);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform3fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_VEC3);
@@ -478,18 +442,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4i, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_VEC4);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4iv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_INT_VEC4);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_VEC4);
@@ -502,33 +454,15 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4ivImmediate, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT2);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT2);
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix3fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT3);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT3);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix4fv, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT4);
 };
 
 template <>
@@ -569,19 +503,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameteri, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterfv, 0>(
-    bool /* valid */) {
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterfvImmediate, 0>(
-    bool /* valid */) {
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameteriv, 0>(
     bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 };

@@ -260,25 +260,6 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     GLES2DecoderWithShaderTest::TearDown();
   }
 
-  void GenVertexArraysOESValidArgs() {
-    AddExpectationsForGenVertexArraysOES();
-    GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
-    GenVertexArraysOES cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) != NULL);
-    AddExpectationsForDeleteVertexArraysOES();
-  }
-
-  void GenVertexArraysOESInvalidArgs() {
-    EXPECT_CALL(*gl_, GenVertexArraysOES(_, _)).Times(0);
-    GetSharedMemoryAs<GLuint*>()[0] = client_vertexarray_id_;
-    GenVertexArraysOES cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-  }
-
   void GenVertexArraysOESImmediateValidArgs() {
     AddExpectationsForGenVertexArraysOES();
     GenVertexArraysOESImmediate* cmd =
@@ -298,24 +279,6 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     cmd->Init(1, &client_vertexarray_id_);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(*cmd, sizeof(&client_vertexarray_id_)));
-  }
-
-  void DeleteVertexArraysOESValidArgs() {
-    AddExpectationsForDeleteVertexArraysOES();
-    GetSharedMemoryAs<GLuint*>()[0] = client_vertexarray_id_;
-    DeleteVertexArraysOES cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_TRUE(GetVertexArrayInfo(client_vertexarray_id_) == NULL);
-    vertex_array_deleted_manually_ = true;
-  }
-
-  void DeleteVertexArraysOESInvalidArgs() {
-    GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
-    DeleteVertexArraysOES cmd;
-    cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DeleteVertexArraysOESImmediateValidArgs() {
@@ -413,20 +376,6 @@ INSTANTIATE_TEST_CASE_P(Service,
                         ::testing::Bool());
 
 // Test vertex array objects with native support
-TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESValidArgs) {
-  GenVertexArraysOESValidArgs();
-}
-TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, GenVertexArraysOESValidArgs) {
-  GenVertexArraysOESValidArgs();
-}
-
-TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESInvalidArgs) {
-  GenVertexArraysOESInvalidArgs();
-}
-TEST_P(GLES2DecoderEmulatedVertexArraysOESTest, ) {
-  GenVertexArraysOESInvalidArgs();
-}
-
 TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {
   GenVertexArraysOESImmediateValidArgs();
 }
@@ -442,22 +391,6 @@ TEST_P(GLES2DecoderVertexArraysOESTest,
 TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        GenVertexArraysOESImmediateInvalidArgs) {
   GenVertexArraysOESImmediateInvalidArgs();
-}
-
-TEST_P(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESValidArgs) {
-  DeleteVertexArraysOESValidArgs();
-}
-TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
-       DeleteVertexArraysOESValidArgs) {
-  DeleteVertexArraysOESValidArgs();
-}
-
-TEST_P(GLES2DecoderVertexArraysOESTest, DeleteVertexArraysOESInvalidArgs) {
-  DeleteVertexArraysOESInvalidArgs();
-}
-TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
-       DeleteVertexArraysOESInvalidArgs) {
-  DeleteVertexArraysOESInvalidArgs();
 }
 
 TEST_P(GLES2DecoderVertexArraysOESTest,

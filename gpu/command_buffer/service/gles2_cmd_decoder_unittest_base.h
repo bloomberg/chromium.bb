@@ -587,6 +587,10 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
 
 };
 
+// SpecializedSetup specializations that are needed in multiple unittest files.
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::LinkProgram, 0>(bool valid);
+
 }  // namespace gles2
 }  // namespace gpu
 

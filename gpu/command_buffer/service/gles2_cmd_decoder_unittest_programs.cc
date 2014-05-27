@@ -795,32 +795,6 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderWithShaderTest, Uniform1ivValidArgs) {
-  EXPECT_CALL(
-      *gl_,
-      Uniform1iv(kUniform1RealLocation,
-                 1,
-                 reinterpret_cast<const GLint*>(shared_memory_address_)));
-  Uniform1iv cmd;
-  cmd.Init(kUniform1FakeLocation, 1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  Uniform1iv cmd;
-  cmd.Init(kUniform1FakeLocation, 1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderWithShaderTest, Uniform1ivInvalidArgs2_1) {
-  EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  Uniform1iv cmd;
-  cmd.Init(
-      kUniform1FakeLocation, 1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
   Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
   EXPECT_CALL(*gl_,
@@ -834,19 +808,23 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_P(GLES2DecoderWithShaderTest, Uniform1ivInvalidValidArgs) {
+TEST_P(GLES2DecoderWithShaderTest, Uniform1ivImmediateInvalidValidArgs) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  Uniform1iv cmd;
-  cmd.Init(kUniform1FakeLocation, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
+  GLint temp[1 * 2] = {
+      0,
+  };
+  cmd.Init(kUniform1FakeLocation, 2, &temp[0]);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform1ivZeroCount) {
   EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
-  Uniform1iv cmd;
-  cmd.Init(kUniform1FakeLocation, 0, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
+  GLint temp = 0;
+  cmd.Init(kUniform1FakeLocation, 0, &temp);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
